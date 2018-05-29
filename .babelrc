@@ -1,0 +1,19 @@
+{
+  "presets": [
+    "react",
+    [
+      "env",
+      {
+        "exclude": ["transform-regenerator"],
+        "useBuiltins": true
+      }
+    ]
+  ],
+  "plugins": [
+    [
+      "react-intl",
+      { "messagesDir": "./public/messages", "enforceDescriptions": false }
+    ],
+    ["transform-react-jsx-img-import"]
+  ]
+}
