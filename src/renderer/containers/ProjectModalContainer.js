@@ -1,5 +1,6 @@
 import React, { Component } from "react";
-import { getTemplates } from "../api/electron";
+import PropTypes from "prop-types";
+import { getTemplates } from "../api";
 import ProjectModal from "../components/ProjectModal";
 
 export default class ProjectModalContainer extends Component {
@@ -30,7 +31,7 @@ export default class ProjectModalContainer extends Component {
   };
 
   onCreateFromTemplate = gltfUri => {
-    console.log(gltfUri);
+    this.props.onLoadGLTF(gltfUri);
   };
 
   render() {
@@ -43,3 +44,7 @@ export default class ProjectModalContainer extends Component {
     );
   }
 }
+
+ProjectModalContainer.propTypes = {
+  onLoadGLTF: PropTypes.func.isRequired
+};

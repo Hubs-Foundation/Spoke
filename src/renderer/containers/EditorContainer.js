@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import Modal from "react-modal";
 import ProjectModalContainer from "./ProjectModalContainer";
+import ViewportPanelContainer from "./ViewportPanelContainer";
 
 export default class EditorContainer extends Component {
   constructor(props) {
@@ -15,7 +16,7 @@ export default class EditorContainer extends Component {
     };
   }
 
-  onLoadGltf = gltfURI => {
+  onLoadGLTF = gltfURI => {
     this.setState({
       openModal: null,
       gltfURI
@@ -32,13 +33,14 @@ export default class EditorContainer extends Component {
     return (
       <div>
         <h1>Editor</h1>
+        <ViewportPanelContainer gltfURI={this.state.gltfURI} />
         <Modal
           isOpen={this.state.openModal !== null}
           onRequestClose={this.onCloseModal}
           shouldCloseOnOverlayClick={this.state.openModal && this.state.openModal.shouldCloseOnOverlayClick}
         >
           {this.state.openModal && (
-            <this.state.openModal.component gltfURI={this.state.gltfURI} onLoadGltf={this.onLoadGltf} />
+            <this.state.openModal.component gltfURI={this.state.gltfURI} onLoadGLTF={this.onLoadGLTF} />
           )}
         </Modal>
       </div>

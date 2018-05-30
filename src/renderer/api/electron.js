@@ -8,11 +8,11 @@ const APP_NAME = electron.remote.app.getName();
 const EDITOR_DIRECTORY_PATH = path.join(DOCUMENTS_PATH, APP_NAME);
 const TEMPLATES_PATH = path.join(EDITOR_DIRECTORY_PATH, "templates");
 
-export function pathToUri(path) {
+function pathToUri(path) {
   return "file://" + path;
 }
 
-export async function ensureEditorDirectory() {
+async function ensureEditorDirectory() {
   await fs.ensureDir(EDITOR_DIRECTORY_PATH);
   await fs.ensureDir(TEMPLATES_PATH);
 }
