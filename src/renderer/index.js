@@ -1,11 +1,8 @@
 import ReactDOM from "react-dom";
 import React from "react";
-
-import ProjectWindow from "./windows/ProjectWindow";
-import EditorWindow from "./windows/EditorWindow";
-import ExportWindow from "./windows/ExportWindow";
+import EditorContainer from "./containers/EditorContainer";
 
 const rootEl = document.createElement("div");
 document.body.appendChild(rootEl);
 
-ReactDOM.render(<ProjectWindow />, rootEl);
+ReactDOM.render(<EditorContainer />, rootEl);

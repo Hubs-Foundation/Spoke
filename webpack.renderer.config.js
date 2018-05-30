@@ -16,9 +16,9 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /\.less$/,
+        test: /\.scss$/,
         include: path.join(__dirname, "src", "renderer"),
-        use: ["style-loader", "css-loader", "less-loader"]
+        use: ["style-loader", "css-loader", "sass-loader"]
       },
       {
         test: /\.js$/,

@@ -10,6 +10,9 @@ let mainWindow;
 if (isDevelopment) {
   const sourceMapSupport = require("source-map-support");
   sourceMapSupport.install();
+
+  const packageJson = require("../../package.json");
+  app.setName(packageJson.productName || packageJson.name);
 }
 
 function createMainWindow() {

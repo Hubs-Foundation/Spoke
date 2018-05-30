@@ -1,22 +1,29 @@
 {
   "name": "hubs-editor",
+  "productName": "Hubs Editor",
   "version": "0.1.0",
   "license": "MPL-2.0",
   "main": "index.js",
   "scripts": {
     "start": "electron ./build/main.bundle.js",
     "build": "webpack --mode production",
-    "dev": "electron ./src/main/dev-entry.js"
+    "dev": "concurrently \"electron -r babel-register ./src/main/index.js\" \"npm run serve\"",
+    "serve": "webpack-serve ./webpack.renderer.config.js"
   },
   "dependencies": {
+    "fs-extra": "^6.0.1",
+    "glob-promise": "^3.4.0",
     "prop-types": "^15.6.1",
     "react": "^16.4.0",
     "react-color": "^2.14.1",
     "react-dnd": "^2.6.0",
     "react-dnd-html5-backend": "^2.6.0",
     "react-dom": "^16.4.0",
+    "react-modal": "^3.4.4",
     "react-mosaic-component": "^1.1.1",
     "react-numeric-input": "^2.2.3",
+    "react-router": "^4.2.0",
+    "react-router-dom": "^4.2.2",
     "react-select": "^1.2.1",
     "react-ui-tree": "^3.1.0",
     "source-map-support": "^0.5.6",
@@ -35,18 +42,16 @@
     "concurrently": "^3.5.1",
     "css-loader": "^0.28.11",
     "electron": "^2.0.2",
-    "electron-webpack": "^2.1.2",
     "eslint": "^4.19.1",
     "eslint-config-prettier": "^2.9.0",
     "eslint-plugin-prettier": "^2.6.0",
     "eslint-plugin-react": "^7.8.2",
-    "express": "^4.16.3",
     "html-webpack-plugin": "^3.2.0",
-    "less": "^3.0.4",
-    "less-loader": "^4.1.0",
+    "node-sass": "^4.9.0",
+    "sass-loader": "^7.0.1",
     "style-loader": "^0.21.0",
     "webpack": "^4.9.1",
     "webpack-cli": "^2.1.4",
-    "webpack-dev-middleware": "^3.1.3"
+    "webpack-serve": "^1.0.2"
   }
 }

@@ -14,6 +14,8 @@
       "react-intl",
       { "messagesDir": "./public/messages", "enforceDescriptions": false }
     ],
-    ["transform-react-jsx-img-import"]
+    "transform-react-jsx-img-import",
+    "transform-class-properties",
+    "transform-object-rest-spread"
   ]
 }

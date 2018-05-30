@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 
-export default class ExportWindow extends Component {
+export default class ExportModalContainer extends Component {
   render() {
     return <div>Export</div>;
   }

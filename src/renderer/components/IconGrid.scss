@@ -1,0 +1,13 @@
+.iconGrid {
+  display: flex;
+  flex: 1;
+}
+
+.item {
+  width: 200px;
+  height: 200px;
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: column;
+  padding: 12px;
+}
