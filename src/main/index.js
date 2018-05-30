@@ -69,7 +69,7 @@ app.on("activate", () => {
 
 // create main BrowserWindow when electron is ready
 app.on("ready", () => {
-  // TODO: make the file:// protocol scoped to the active project directory's assets + templates folder etc.
+  // TODO: make the file:// protocol scoped to the active project directory's assets + templates folder
   protocol.registerFileProtocol(
     "file",
     (request, callback) => {

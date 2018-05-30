@@ -3,8 +3,14 @@ import PropTypes from "prop-types";
 window.THREE = require("three");
 require("three/examples/js/loaders/GLTFLoader");
 import Viewport from "../components/Viewport";
+import Panel from "../components/Panel";
 
 export default class ViewportPanelContainer extends Component {
+  static propTypes = {
+    path: PropTypes.object,
+    gltfURI: PropTypes.string
+  };
+
   constructor(props) {
     super(props);
 
@@ -73,10 +79,10 @@ export default class ViewportPanelContainer extends Component {
   }
 
   render() {
-    return <Viewport ref={this.canvasRef} />;
+    return (
+      <Panel title="Viewport" path={this.props.path}>
+        <Viewport ref={this.canvasRef} />
+      </Panel>
+    );
   }
 }
-
-ViewportPanelContainer.propTypes = {
-  gltfURI: PropTypes.string
-};
