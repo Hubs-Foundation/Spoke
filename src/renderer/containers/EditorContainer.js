@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import Modal from "react-modal";
 import ProjectModalContainer from "./ProjectModalContainer";
 import ViewportPanelContainer from "./ViewportPanelContainer";
+import Editor from "../components/Editor";
 
 export default class EditorContainer extends Component {
   constructor(props) {
@@ -31,8 +32,7 @@ export default class EditorContainer extends Component {
 
   render() {
     return (
-      <div>
-        <h1>Editor</h1>
+      <Editor>
         <ViewportPanelContainer gltfURI={this.state.gltfURI} />
         <Modal
           isOpen={this.state.openModal !== null}
@@ -43,7 +43,7 @@ export default class EditorContainer extends Component {
             <this.state.openModal.component gltfURI={this.state.gltfURI} onLoadGLTF={this.onLoadGLTF} />
           )}
         </Modal>
-      </div>
+      </Editor>
     );
   }
 }

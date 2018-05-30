@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import PropTypes from "prop-types";
 window.THREE = require("three");
 require("three/examples/js/loaders/GLTFLoader");
+import Viewport from "../components/Viewport";
 
 export default class ViewportPanelContainer extends Component {
   constructor(props) {
@@ -72,7 +73,7 @@ export default class ViewportPanelContainer extends Component {
   }
 
   render() {
-    return <canvas ref={this.canvasRef} />;
+    return <Viewport ref={this.canvasRef} />;
   }
 }
 

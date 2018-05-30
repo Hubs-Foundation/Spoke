@@ -1,9 +1,9 @@
-.iconGrid {
+:local(.iconGrid) {
   display: flex;
   flex: 1;
 }
 
-.item {
+:local(.item) {
   width: 200px;
   height: 200px;
   display: flex;
