@@ -1,4 +1,4 @@
-import { app, BrowserWindow } from "electron";
+import { app, protocol, BrowserWindow } from "electron";
 import * as path from "path";
 import { format as formatUrl } from "url";
 
@@ -16,7 +16,11 @@ if (isDevelopment) {
 }
 
 function createMainWindow() {
-  const window = new BrowserWindow();
+  const window = new BrowserWindow({
+    webPreferences: {
+      webSecurity: false
+    }
+  });
 
   if (isDevelopment) {
     window.webContents.openDevTools();
@@ -65,5 +69,17 @@ app.on("activate", () => {
 
 // create main BrowserWindow when electron is ready
 app.on("ready", () => {
+  // TODO: make the file:// protocol scoped to the active project directory's assets + templates folder etc.
+  protocol.registerFileProtocol(
+    "file",
+    (request, callback) => {
+      const url = request.url.substr(7);
+      callback({ path: path.normalize(`${__dirname}/${url}`) });
+    },
+    error => {
+      if (error) console.error("Failed to register protocol", error);
+    }
+  );
+
   mainWindow = createMainWindow();
 });
