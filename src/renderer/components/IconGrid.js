@@ -1,27 +1,33 @@
 import React from "react";
 import PropTypes from "prop-types";
+import classNames from "classnames";
 import styles from "./IconGrid.scss";
 
-export default function IconGrid({ items }) {
+export default function IconGrid({ icons, onSelect }) {
   return (
     <div className={styles.iconGrid}>
-      {items.map(({ id, name, icon, onClick }) => (
-        <div key={id} onClick={onClick} className={styles.item}>
-          <img className={styles.icon} src={icon} />
-          <div className={styles.name}>{name}</div>
-        </div>
-      ))}
+      {icons.map(icon => {
+        const className = classNames(styles.item, { [styles.selected]: icon.selected });
+
+        return (
+          <div key={icon.id} onClick={e => onSelect(icon, e)} className={className}>
+            <img className={styles.icon} src={icon.src} />
+            <div className={styles.name}>{icon.name}</div>
+          </div>
+        );
+      })}
     </div>
   );
 }
 
 IconGrid.propTypes = {
-  items: PropTypes.arrayOf(
+  icons: PropTypes.arrayOf(
     PropTypes.shape({
-      id: PropTypes.string,
-      name: PropTypes.string,
-      icon: PropTypes.string,
-      onClick: PropTypes.func
+      id: PropTypes.string.isRequired,
+      name: PropTypes.string.isRequired,
+      src: PropTypes.string.isRequired,
+      selected: PropTypes.bool
     })
-  ).isRequired
+  ).isRequired,
+  onSelect: PropTypes.func.isRequired
 };

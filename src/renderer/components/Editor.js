@@ -4,18 +4,18 @@ import styles from "./Editor.scss";
 import Modal from "react-modal";
 import { Mosaic } from "react-mosaic-component";
 
-export default function Editor(props) {
+export default function Editor({ initialPanels, renderPanel, openModal, onCloseModal }) {
   return (
     <div className={styles.editor}>
-      <Mosaic className="mosaic-theme" renderTile={props.renderPanel} initialValue={props.initialPanels} />
+      <Mosaic className="mosaic-theme" renderTile={renderPanel} initialValue={initialPanels} />
       <Modal
-        isOpen={!!props.openModal}
-        onRequestClose={props.onCloseModal}
-        shouldCloseOnOverlayClick={props.openModal && props.openModal.shouldCloseOnOverlayClick}
+        isOpen={!!openModal}
+        onRequestClose={onCloseModal}
+        shouldCloseOnOverlayClick={openModal && openModal.shouldCloseOnOverlayClick}
         className="Modal"
         overlayClassName="Overlay"
       >
-        {props.openModal && <props.openModal.component gltfURI={props.gltfURI} onLoadGLTF={props.onLoadGLTF} />}
+        {openModal && <openModal.component {...openModal.props} />}
       </Modal>
     </div>
   );
@@ -25,7 +25,5 @@ Editor.propTypes = {
   initialPanels: PropTypes.object.isRequired,
   renderPanel: PropTypes.func.isRequired,
   openModal: PropTypes.object,
-  onCloseModal: PropTypes.func,
-  gltfURI: PropTypes.string,
-  onLoadGLTF: PropTypes.func
+  onCloseModal: PropTypes.func
 };

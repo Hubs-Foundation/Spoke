@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
-import { getTemplates } from "../api";
+import { getTemplates, getRecentProjects } from "../api";
 import ProjectModal from "../components/ProjectModal";
 
 export default class ProjectModalContainer extends Component {
@@ -8,8 +8,9 @@ export default class ProjectModalContainer extends Component {
     super(props);
 
     this.state = {
+      tab: "templates",
       templates: [],
-      recentProjects: localStorage.getItem("recent-projects") || []
+      recentProjects: []
     };
   }
 
@@ -23,28 +24,46 @@ export default class ProjectModalContainer extends Component {
       .catch(error => {
         throw error;
       });
+
+    getRecentProjects()
+      .then(recentProjects => {
+        this.setState({
+          recentProjects
+        });
+      })
+      .catch(error => {
+        throw error;
+      });
   }
 
-  onOpenProject = gltfUri => {
-    const recentProjects = this.state.recentProjects.concat(gltfUri);
-    localStorage.setItem("recent-projects", recentProjects);
+  onSelectProject = async projectOrTemplate => {
+    if (this.state.tab === "templates") {
+      this.props.onNewProject(projectOrTemplate);
+    } else {
+      this.props.onOpenProject(projectOrTemplate.uri);
+    }
   };
 
-  onCreateFromTemplate = gltfUri => {
-    this.props.onLoadGLTF(gltfUri);
+  onChangeTab = tab => {
+    this.setState({ tab });
   };
 
   render() {
+    const projects = this.state.tab === "templates" ? this.state.templates : this.state.recentProjects;
+
     return (
       <ProjectModal
-        templates={this.state.templates}
-        recentProjects={this.state.recentProjects}
-        onCreateFromTemplate={this.onCreateFromTemplate}
+        tab={this.state.tab}
+        onChangeTab={this.onChangeTab}
+        projects={projects}
+        onSelectProject={this.onSelectProject}
+        onOpenProject={this.props.onOpenProject}
       />
     );
   }
 }
 
 ProjectModalContainer.propTypes = {
-  onLoadGLTF: PropTypes.func.isRequired
+  onOpenProject: PropTypes.func.isRequired,
+  onNewProject: PropTypes.func.isRequired
 };

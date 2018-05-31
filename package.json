@@ -11,8 +11,8 @@
     "serve": "webpack-serve ./webpack.renderer.config.js"
   },
   "dependencies": {
+    "classnames": "^2.2.5",
     "fs-extra": "^6.0.1",
-    "glob-promise": "^3.4.0",
     "prop-types": "^15.6.1",
     "react": "^16.4.0",
     "react-color": "^2.14.1",

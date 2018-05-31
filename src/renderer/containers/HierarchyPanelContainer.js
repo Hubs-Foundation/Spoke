@@ -4,7 +4,7 @@ import Panel from "../components/Panel";
 
 export default class HierarchyPanelContainer extends Component {
   static propTypes = {
-    path: PropTypes.object
+    path: PropTypes.array
   };
 
   render() {

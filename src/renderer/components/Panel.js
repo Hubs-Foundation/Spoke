@@ -1,6 +1,5 @@
 import React from "react";
 import PropTypes from "prop-types";
-import styles from "./Panel.scss";
 import { MosaicWindow } from "react-mosaic-component";
 import PanelToolbar from "./PanelToolbar";
 
@@ -18,7 +17,7 @@ Panel.defaultProps = {
 
 Panel.propTypes = {
   title: PropTypes.string,
-  path: PropTypes.object,
+  path: PropTypes.array,
   toolbarControls: PropTypes.arrayOf(PropTypes.element),
   children: PropTypes.arrayOf(PropTypes.element)
 };

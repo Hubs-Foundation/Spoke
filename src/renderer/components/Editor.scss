@@ -19,12 +19,13 @@
     left: 40px;
     right: 40px;
     bottom: 40px;
-    background-color: $background;
+    background-color: $panel;
     display: flex;
     flex: 1;
     font-family: Arial, Helvetica, sans-serif;
     font-size: 14px;
     color: $text;
+    outline: none;
   }
 
   .Overlay {

@@ -2,6 +2,8 @@ const path = require("path");
 const HTMLWebpackPlugin = require("html-webpack-plugin");
 
 module.exports = {
+  mode: process.env.WEBPACK_SERVE ? "development" : "production",
+
   target: "electron-renderer",
 
   devtool: "source-map",

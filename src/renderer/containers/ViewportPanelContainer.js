@@ -7,7 +7,7 @@ import Panel from "../components/Panel";
 
 export default class ViewportPanelContainer extends Component {
   static propTypes = {
-    path: PropTypes.object,
+    path: PropTypes.array,
     gltfURI: PropTypes.string
   };
 
