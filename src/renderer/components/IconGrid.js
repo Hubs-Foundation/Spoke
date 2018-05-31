@@ -7,8 +7,8 @@ export default function IconGrid({ items }) {
     <div className={styles.iconGrid}>
       {items.map(({ id, name, icon, onClick }) => (
         <div key={id} onClick={onClick} className={styles.item}>
-          <img src={icon} />
-          <div>{name}</div>
+          <img className={styles.icon} src={icon} />
+          <div className={styles.name}>{name}</div>
         </div>
       ))}
     </div>

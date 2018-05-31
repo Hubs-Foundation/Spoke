@@ -9,5 +9,12 @@
   display: flex;
   flex-wrap: wrap;
   flex-direction: column;
-  padding: 12px;
+  padding: 25px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+:local(.icon) {
+  width: 175px;
+  height: 175px;
 }

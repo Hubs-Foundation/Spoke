@@ -13,6 +13,29 @@
 @import "../vendor/react-mosaic-component/mosaic-window";
 
 :global {
+  .Modal {
+    position: absolute;
+    top: 40px;
+    left: 40px;
+    right: 40px;
+    bottom: 40px;
+    background-color: $background;
+    display: flex;
+    flex: 1;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 14px;
+    color: $text;
+  }
+
+  .Overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+  }
+
   .ReactModal__Overlay--after-open {
     z-index: 999;
   }

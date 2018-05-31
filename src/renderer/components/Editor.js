@@ -12,6 +12,8 @@ export default function Editor(props) {
         isOpen={!!props.openModal}
         onRequestClose={props.onCloseModal}
         shouldCloseOnOverlayClick={props.openModal && props.openModal.shouldCloseOnOverlayClick}
+        className="Modal"
+        overlayClassName="Overlay"
       >
         {props.openModal && <props.openModal.component gltfURI={props.gltfURI} onLoadGLTF={props.onLoadGLTF} />}
       </Modal>
