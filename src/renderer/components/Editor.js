@@ -4,10 +4,10 @@ import styles from "./Editor.scss";
 import Modal from "react-modal";
 import { Mosaic } from "react-mosaic-component";
 
-export default function Editor({ initialPanels, renderPanel, openModal, onCloseModal }) {
+export default function Editor({ initialPanels, renderPanel, openModal, onCloseModal, onPanelChange }) {
   return (
     <div className={styles.editor}>
-      <Mosaic className="mosaic-theme" renderTile={renderPanel} initialValue={initialPanels} />
+      <Mosaic className="mosaic-theme" renderTile={renderPanel} initialValue={initialPanels} onChange={onPanelChange} />
       <Modal
         isOpen={!!openModal}
         onRequestClose={onCloseModal}
@@ -25,5 +25,6 @@ Editor.propTypes = {
   initialPanels: PropTypes.object.isRequired,
   renderPanel: PropTypes.func.isRequired,
   openModal: PropTypes.object,
-  onCloseModal: PropTypes.func
+  onCloseModal: PropTypes.func,
+  onPanelChange: PropTypes.func
 };

@@ -109,6 +109,10 @@ export default class EditorContainer extends Component {
     });
   };
 
+  onPanelChange = e => {
+    console.log(e);
+  };
+
   renderPanel = (panelId, path) => {
     const PanelComponent = this.state.registeredPanels[panelId];
     return <PanelComponent path={path} />;
@@ -121,6 +125,7 @@ export default class EditorContainer extends Component {
         renderPanel={this.renderPanel}
         openModal={this.state.openModal}
         onCloseModal={this.onCloseModal}
+        onPanelChange={this.onPanelChange}
       />
     );
   }

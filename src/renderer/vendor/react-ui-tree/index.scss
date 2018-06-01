@@ -1,0 +1,66 @@
+@import "../../theme";
+
+:global {
+  .f-no-select {
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+
+  .m-tree {
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    padding-right: 3px;
+  }
+
+  .m-draggable {
+    position: absolute;
+    opacity: 0.8;
+  }
+
+  .m-node {
+    display: inline-block;
+    width: 100%;
+
+    &.placeholder > * {
+      visibility: hidden;
+    }
+
+    &.placeholder {
+      border: 1px dashed $blue;
+    }
+
+    .inner {
+      position: relative;
+      cursor: pointer;
+      padding-left: 10px;
+    }
+
+    .node {
+      display: inline-block;
+      width: 100%;
+      padding: 4px 5px;
+
+      &.is-active {
+        background-color: $selected;
+      }
+    }
+
+    .collapse {
+      position: absolute;
+      left: 0;
+      cursor: pointer;
+    }
+
+    .caret-right:before {
+      content: "\25B8";
+    }
+
+    .caret-down:before {
+      content: "\25BE";
+    }
+  }
+}

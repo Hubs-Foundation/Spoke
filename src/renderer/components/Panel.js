@@ -5,7 +5,7 @@ import PanelToolbar from "./PanelToolbar";
 
 export default function Panel({ title, path, toolbarControls, children }) {
   return (
-    <MosaicWindow title={title} path={path} toolbarControls={toolbarControls}>
+    <MosaicWindow title={title} path={path} toolbarControls={toolbarControls} draggable>
       {children}
     </MosaicWindow>
   );
