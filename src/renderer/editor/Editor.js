@@ -321,12 +321,6 @@ export default class Editor {
   select(object) {
     if (this.selected === object) return;
 
-    let uuid = null;
-
-    if (object !== null) {
-      uuid = object.uuid;
-    }
-
     this.selected = object;
 
     this.signals.objectSelected.dispatch(object);

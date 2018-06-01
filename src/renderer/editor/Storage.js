@@ -52,7 +52,7 @@ const Storage = function() {
       const request = objectStore.put(data, 0);
       request.onsuccess = function() {
         console.log(
-          "[" + /\d\d\:\d\d\:\d\d/.exec(new Date())[0] + "]",
+          "[" + new Date() + "]",
           "Saved state to IndexedDB. " + (performance.now() - start).toFixed(2) + "ms"
         );
       };
@@ -65,7 +65,7 @@ const Storage = function() {
       const objectStore = transaction.objectStore("states");
       const request = objectStore.clear();
       request.onsuccess = function() {
-        console.log("[" + /\d\d\:\d\d\:\d\d/.exec(new Date())[0] + "]", "Cleared IndexedDB.");
+        console.log("[" + new Date() + "]", "Cleared IndexedDB.");
       };
     }
   };
