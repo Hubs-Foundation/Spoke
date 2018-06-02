@@ -10,8 +10,9 @@ import AssetExplorerPanelContainer from "./AssetExplorerPanelContainer";
 import { createProject, addRecentProject, DEFAULT_PROJECT_DIR_URI } from "../api";
 import { MosaicWindow } from "react-mosaic-component";
 import PanelToolbar from "../components/PanelToolbar";
+import { withEditor } from "./EditorContext";
 
-export default class EditorContainer extends Component {
+class EditorContainer extends Component {
   static defaultProps = {
     initialPanels: {
       direction: "column",
@@ -32,11 +33,14 @@ export default class EditorContainer extends Component {
   };
 
   static propTypes = {
-    initialPanels: PropTypes.object
+    initialPanels: PropTypes.object,
+    editor: PropTypes.object
   };
 
   constructor(props) {
     super(props);
+
+    window.addEventListener("resize", this.onWindowResize, false);
 
     this.state = {
       openProject: null,
@@ -81,6 +85,18 @@ export default class EditorContainer extends Component {
       }
     };
   }
+
+  componentDidMount() {
+    this.props.editor.signals.windowResize.dispatch();
+  }
+
+  onWindowResize = () => {
+    this.props.editor.signals.windowResize.dispatch();
+  };
+
+  onPanelChange = () => {
+    this.props.editor.signals.windowResize.dispatch();
+  };
 
   onOpenProject = async projectDirUri => {
     await addRecentProject(projectDirUri);
@@ -136,10 +152,6 @@ export default class EditorContainer extends Component {
     });
   };
 
-  onPanelChange = e => {
-    console.log(e);
-  };
-
   renderPanel = (panelId, path) => {
     const panel = this.state.registeredPanels[panelId];
 
@@ -161,4 +173,10 @@ export default class EditorContainer extends Component {
       />
     );
   }
+
+  componentWillUnmount() {
+    window.removeEventListener("resize", this.onWindowResize, false);
+  }
 }
+
+export default withEditor(EditorContainer);

@@ -379,13 +379,13 @@ export default class Viewport {
     signals.windowResize.add(function() {
       // TODO: Move this out?
 
-      editor.DEFAULT_CAMERA.aspect = canvas.offsetWidth / canvas.offsetHeight;
+      editor.DEFAULT_CAMERA.aspect = canvas.parentElement.offsetWidth / canvas.parentElement.offsetHeight;
       editor.DEFAULT_CAMERA.updateProjectionMatrix();
 
-      camera.aspect = canvas.offsetWidth / canvas.offsetHeight;
+      camera.aspect = canvas.parentElement.offsetWidth / canvas.parentElement.offsetHeight;
       camera.updateProjectionMatrix();
 
-      renderer.setSize(canvas.offsetWidth, canvas.offsetHeight);
+      renderer.setSize(canvas.parentElement.offsetWidth, canvas.parentElement.offsetHeight);
 
       render();
     });

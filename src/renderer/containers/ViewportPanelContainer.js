@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import PropTypes from "prop-types";
 import Viewport from "../components/Viewport";
 import { withEditor } from "./EditorContext";
+import styles from "./ViewportPanelContainer.scss";
 
 class ViewportPanelContainer extends Component {
   static propTypes = {
@@ -20,7 +21,7 @@ class ViewportPanelContainer extends Component {
 
   render() {
     return (
-      <div>
+      <div className={styles.viewportPanelContainer}>
         <Viewport ref={this.canvasRef} />
       </div>
     );

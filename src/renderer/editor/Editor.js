@@ -97,9 +97,6 @@ export default class Editor {
     this.helpers = {};
 
     this.viewport = null;
-
-    window.addEventListener("resize", this.onWindowResize, false);
-    this.onWindowResize();
   }
 
   onWindowResize = () => {
