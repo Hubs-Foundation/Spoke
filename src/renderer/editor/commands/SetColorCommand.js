@@ -12,36 +12,36 @@ import Command from "../Command";
  * @constructor
  */
 
-const SetColorCommand = function(object, attributeName, newValue) {
-  Command.call(this);
+export default class SetColorCommand extends Command {
+  constructor(object, attributeName, newValue) {
+    super();
 
-  this.type = "SetColorCommand";
-  this.name = "Set " + attributeName;
-  this.updatable = true;
+    this.type = "SetColorCommand";
+    this.name = "Set " + attributeName;
+    this.updatable = true;
 
-  this.object = object;
-  this.attributeName = attributeName;
-  this.oldValue = object !== undefined ? this.object[this.attributeName].getHex() : undefined;
-  this.newValue = newValue;
-};
+    this.object = object;
+    this.attributeName = attributeName;
+    this.oldValue = object !== undefined ? this.object[this.attributeName].getHex() : undefined;
+    this.newValue = newValue;
+  }
 
-SetColorCommand.prototype = {
-  execute: function() {
+  execute() {
     this.object[this.attributeName].setHex(this.newValue);
     this.editor.signals.objectChanged.dispatch(this.object);
-  },
+  }
 
-  undo: function() {
+  undo() {
     this.object[this.attributeName].setHex(this.oldValue);
     this.editor.signals.objectChanged.dispatch(this.object);
-  },
+  }
 
-  update: function(cmd) {
+  update(cmd) {
     this.newValue = cmd.newValue;
-  },
+  }
 
-  toJSON: function() {
-    const output = Command.prototype.toJSON.call(this);
+  toJSON() {
+    const output = super.toJSON();
 
     output.objectUuid = this.object.uuid;
     output.attributeName = this.attributeName;
@@ -49,16 +49,14 @@ SetColorCommand.prototype = {
     output.newValue = this.newValue;
 
     return output;
-  },
+  }
 
-  fromJSON: function(json) {
-    Command.prototype.fromJSON.call(this, json);
+  fromJSON(json) {
+    super.fromJSON(json);
 
     this.object = this.editor.objectByUuid(json.objectUuid);
     this.attributeName = json.attributeName;
     this.oldValue = json.oldValue;
     this.newValue = json.newValue;
   }
-};
-
-export default SetColorCommand;
+}

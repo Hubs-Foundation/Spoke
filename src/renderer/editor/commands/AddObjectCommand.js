@@ -12,18 +12,20 @@ import Command from "../Command";
  */
 
 export default class AddObjectCommand extends Command {
-  constructor(object) {
+  constructor(object, parent) {
     super();
     this.type = "AddObjectCommand";
 
     this.object = object;
+    this.parent = parent;
+
     if (object !== undefined) {
       this.name = "Add Object: " + object.name;
     }
   }
 
   execute() {
-    this.editor.addObject(this.object);
+    this.editor.addObject(this.object, this.parent);
     this.editor.select(this.object);
   }
 
@@ -35,6 +37,7 @@ export default class AddObjectCommand extends Command {
   toJSON() {
     const output = super.toJSON();
     output.object = this.object.toJSON();
+    output.parent = this.parent.uuid;
 
     return output;
   }
@@ -43,6 +46,7 @@ export default class AddObjectCommand extends Command {
     super.fromJSON(json);
 
     this.object = this.editor.objectByUuid(json.object.object.uuid);
+    this.parent = this.editor.objectByUuid(json.parent);
 
     if (this.object === undefined) {
       const loader = new THREE.ObjectLoader();

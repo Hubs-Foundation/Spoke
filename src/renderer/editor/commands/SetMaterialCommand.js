@@ -11,42 +11,42 @@ import Command from "../Command";
  * @constructor
  */
 
-const SetMaterialCommand = function(object, newMaterial, materialSlot) {
-  Command.call(this);
+export default class SetMaterialCommand extends Command {
+  constructor(object, newMaterial, materialSlot) {
+    super();
 
-  this.type = "SetMaterialCommand";
-  this.name = "New Material";
+    this.type = "SetMaterialCommand";
+    this.name = "New Material";
 
-  this.object = object;
-  this.materialSlot = materialSlot;
+    this.object = object;
+    this.materialSlot = materialSlot;
 
-  this.oldMaterial = this.editor.getObjectMaterial(object, materialSlot);
-  this.newMaterial = newMaterial;
-};
+    this.oldMaterial = this.editor.getObjectMaterial(object, materialSlot);
+    this.newMaterial = newMaterial;
+  }
 
-SetMaterialCommand.prototype = {
-  execute: function() {
+  execute() {
     this.editor.setObjectMaterial(this.object, this.materialSlot, this.newMaterial);
     this.editor.signals.materialChanged.dispatch(this.newMaterial);
-  },
+  }
 
-  undo: function() {
+  undo() {
     this.editor.setObjectMaterial(this.object, this.materialSlot, this.oldMaterial);
     this.editor.signals.materialChanged.dispatch(this.oldMaterial);
-  },
+  }
 
-  toJSON: function() {
-    const output = Command.prototype.toJSON.call(this);
+  toJSON() {
+    const output = super.toJSON();
 
     output.objectUuid = this.object.uuid;
     output.oldMaterial = this.oldMaterial.toJSON();
     output.newMaterial = this.newMaterial.toJSON();
 
     return output;
-  },
+  }
 
-  fromJSON: function(json) {
-    Command.prototype.fromJSON.call(this, json);
+  fromJSON(json) {
+    super.fromJSON(json);
 
     this.object = this.editor.objectByUuid(json.objectUuid);
 
@@ -61,6 +61,4 @@ SetMaterialCommand.prototype = {
     this.oldMaterial = parseMaterial(json.oldMaterial);
     this.newMaterial = parseMaterial(json.newMaterial);
   }
-};
-
-export default SetMaterialCommand;
+}

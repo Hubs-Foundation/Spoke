@@ -10,21 +10,21 @@ import Command from "../Command";
  * @constructor
  */
 
-const RemoveObjectCommand = function(object) {
-  Command.call(this);
+export default class RemoveObjectCommand extends Command {
+  constructor(object) {
+    super();
 
-  this.type = "RemoveObjectCommand";
-  this.name = "Remove Object";
+    this.type = "RemoveObjectCommand";
+    this.name = "Remove Object";
 
-  this.object = object;
-  this.parent = object !== undefined ? object.parent : undefined;
-  if (this.parent !== undefined) {
-    this.index = this.parent.children.indexOf(this.object);
+    this.object = object;
+    this.parent = object !== undefined ? object.parent : undefined;
+    if (this.parent !== undefined) {
+      this.index = this.parent.children.indexOf(this.object);
+    }
   }
-};
 
-RemoveObjectCommand.prototype = {
-  execute: function() {
+  execute() {
     const scope = this.editor;
     this.object.traverse(function(child) {
       scope.removeHelper(child);
@@ -35,9 +35,9 @@ RemoveObjectCommand.prototype = {
 
     this.editor.signals.objectRemoved.dispatch(this.object);
     this.editor.signals.sceneGraphChanged.dispatch();
-  },
+  }
 
-  undo: function() {
+  undo() {
     const scope = this.editor;
 
     this.object.traverse(function(child) {
@@ -53,19 +53,19 @@ RemoveObjectCommand.prototype = {
 
     this.editor.signals.objectAdded.dispatch(this.object);
     this.editor.signals.sceneGraphChanged.dispatch();
-  },
+  }
 
-  toJSON: function() {
-    const output = Command.prototype.toJSON.call(this);
+  toJSON() {
+    const output = super.toJSON();
     output.object = this.object.toJSON();
     output.index = this.index;
     output.parentUuid = this.parent.uuid;
 
     return output;
-  },
+  }
 
-  fromJSON: function(json) {
-    Command.prototype.fromJSON.call(this, json);
+  fromJSON(json) {
+    super.fromJSON(json);
 
     this.parent = this.editor.objectByUuid(json.parentUuid);
     if (this.parent === undefined) {
@@ -80,6 +80,4 @@ RemoveObjectCommand.prototype = {
       this.object = loader.parse(json.object);
     }
   }
-};
-
-export default RemoveObjectCommand;
+}

@@ -116,3 +116,11 @@ export async function browseDirectory(options) {
     );
   });
 }
+
+export function buildContextMenu(menuItems) {
+  return electron.remote.Menu.buildFromTemplate(menuItems);
+}
+
+export function showContextMenu(menu) {
+  menu.popup(electron.remote.getCurrentWindow());
+}

@@ -14,7 +14,6 @@ export default class History {
     this.idCounter = 0;
 
     this.historyDisabled = false;
-    this.config = editor.config;
 
     //Set editor-reference in Command
 
@@ -64,9 +63,7 @@ export default class History {
     cmd.execute();
     cmd.inMemory = true;
 
-    if (this.config.getKey("settings/history")) {
-      cmd.json = cmd.toJSON(); // serialize the cmd immediately after execution and append the json to the cmd
-    }
+    cmd.json = cmd.toJSON(); // serialize the cmd immediately after execution and append the json to the cmd
     this.lastCmdTime = new Date();
 
     // clearing all the redo-commands
@@ -129,10 +126,6 @@ export default class History {
     const history = {};
     history.undos = [];
     history.redos = [];
-
-    if (!this.config.getKey("settings/history")) {
-      return history;
-    }
 
     // Append Undos to History
 

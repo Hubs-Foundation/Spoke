@@ -12,53 +12,53 @@ import Command from "../Command";
  * @constructor
  */
 
-const SetGeometryCommand = function(object, newGeometry) {
-  Command.call(this);
+export default class SetGeometryCommand extends Command {
+  constructor(object, newGeometry) {
+    super();
 
-  this.type = "SetGeometryCommand";
-  this.name = "Set Geometry";
-  this.updatable = true;
+    this.type = "SetGeometryCommand";
+    this.name = "Set Geometry";
+    this.updatable = true;
 
-  this.object = object;
-  this.oldGeometry = object !== undefined ? object.geometry : undefined;
-  this.newGeometry = newGeometry;
-};
+    this.object = object;
+    this.oldGeometry = object !== undefined ? object.geometry : undefined;
+    this.newGeometry = newGeometry;
+  }
 
-SetGeometryCommand.prototype = {
-  execute: function() {
+  execute() {
     this.object.geometry.dispose();
     this.object.geometry = this.newGeometry;
     this.object.geometry.computeBoundingSphere();
 
     this.editor.signals.geometryChanged.dispatch(this.object);
     this.editor.signals.sceneGraphChanged.dispatch();
-  },
+  }
 
-  undo: function() {
+  undo() {
     this.object.geometry.dispose();
     this.object.geometry = this.oldGeometry;
     this.object.geometry.computeBoundingSphere();
 
     this.editor.signals.geometryChanged.dispatch(this.object);
     this.editor.signals.sceneGraphChanged.dispatch();
-  },
+  }
 
-  update: function(cmd) {
+  update(cmd) {
     this.newGeometry = cmd.newGeometry;
-  },
+  }
 
-  toJSON: function() {
-    const output = Command.prototype.toJSON.call(this);
+  toJSON() {
+    const output = super.toJSON();
 
     output.objectUuid = this.object.uuid;
     output.oldGeometry = this.object.geometry.toJSON();
     output.newGeometry = this.newGeometry.toJSON();
 
     return output;
-  },
+  }
 
-  fromJSON: function(json) {
-    Command.prototype.fromJSON.call(this, json);
+  fromJSON(json) {
+    super.fromJSON(json);
 
     this.object = this.editor.objectByUuid(json.objectUuid);
 
@@ -70,6 +70,4 @@ SetGeometryCommand.prototype = {
     this.oldGeometry = parseGeometry(json.oldGeometry);
     this.newGeometry = parseGeometry(json.newGeometry);
   }
-};
-
-export default SetGeometryCommand;
+}

@@ -13,59 +13,57 @@ import Command from "../Command";
  * @constructor
  */
 
-const SetScaleCommand = function(object, newScale, optionalOldScale) {
-  Command.call(this);
+export default class SetScaleCommand extends Command {
+  constructor(object, newScale, optionalOldScale) {
+    super();
 
-  this.type = "SetScaleCommand";
-  this.name = "Set Scale";
-  this.updatable = true;
+    this.type = "SetScaleCommand";
+    this.name = "Set Scale";
+    this.updatable = true;
 
-  this.object = object;
+    this.object = object;
 
-  if (object !== undefined && newScale !== undefined) {
-    this.oldScale = object.scale.clone();
-    this.newScale = newScale.clone();
+    if (object !== undefined && newScale !== undefined) {
+      this.oldScale = object.scale.clone();
+      this.newScale = newScale.clone();
+    }
+
+    if (optionalOldScale !== undefined) {
+      this.oldScale = optionalOldScale.clone();
+    }
   }
 
-  if (optionalOldScale !== undefined) {
-    this.oldScale = optionalOldScale.clone();
-  }
-};
-
-SetScaleCommand.prototype = {
-  execute: function() {
+  execute() {
     this.object.scale.copy(this.newScale);
     this.object.updateMatrixWorld(true);
     this.editor.signals.objectChanged.dispatch(this.object);
-  },
+  }
 
-  undo: function() {
+  undo() {
     this.object.scale.copy(this.oldScale);
     this.object.updateMatrixWorld(true);
     this.editor.signals.objectChanged.dispatch(this.object);
-  },
+  }
 
-  update: function(command) {
+  update(command) {
     this.newScale.copy(command.newScale);
-  },
+  }
 
-  toJSON: function() {
-    const output = Command.prototype.toJSON.call(this);
+  toJSON() {
+    const output = super.toJSON();
 
     output.objectUuid = this.object.uuid;
     output.oldScale = this.oldScale.toArray();
     output.newScale = this.newScale.toArray();
 
     return output;
-  },
+  }
 
-  fromJSON: function(json) {
-    Command.prototype.fromJSON.call(this, json);
+  fromJSON(json) {
+    super.fromJSONtoJSON(json);
 
     this.object = this.editor.objectByUuid(json.objectUuid);
     this.oldScale = new THREE.Vector3().fromArray(json.oldScale);
     this.newScale = new THREE.Vector3().fromArray(json.newScale);
   }
-};
-
-export default SetScaleCommand;
+}

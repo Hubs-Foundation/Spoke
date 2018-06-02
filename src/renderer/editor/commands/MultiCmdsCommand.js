@@ -10,17 +10,17 @@ import Command from "../Command";
  * @constructor
  */
 
-const MultiCmdsCommand = function(cmdArray) {
-  Command.call(this);
+export default class MultiCmdsCommand extends Command {
+  constructor(cmdArray) {
+    super();
 
-  this.type = "MultiCmdsCommand";
-  this.name = "Multiple Changes";
+    this.type = "MultiCmdsCommand";
+    this.name = "Multiple Changes";
 
-  this.cmdArray = cmdArray !== undefined ? cmdArray : [];
-};
+    this.cmdArray = cmdArray !== undefined ? cmdArray : [];
+  }
 
-MultiCmdsCommand.prototype = {
-  execute: function() {
+  execute() {
     this.editor.signals.sceneGraphChanged.active = false;
 
     for (let i = 0; i < this.cmdArray.length; i++) {
@@ -29,9 +29,9 @@ MultiCmdsCommand.prototype = {
 
     this.editor.signals.sceneGraphChanged.active = true;
     this.editor.signals.sceneGraphChanged.dispatch();
-  },
+  }
 
-  undo: function() {
+  undo() {
     this.editor.signals.sceneGraphChanged.active = false;
 
     for (let i = this.cmdArray.length - 1; i >= 0; i--) {
@@ -40,10 +40,10 @@ MultiCmdsCommand.prototype = {
 
     this.editor.signals.sceneGraphChanged.active = true;
     this.editor.signals.sceneGraphChanged.dispatch();
-  },
+  }
 
-  toJSON: function() {
-    const output = Command.prototype.toJSON.call(this);
+  toJSON() {
+    const output = super.toJSON();
 
     const cmds = [];
     for (let i = 0; i < this.cmdArray.length; i++) {
@@ -52,10 +52,10 @@ MultiCmdsCommand.prototype = {
     output.cmds = cmds;
 
     return output;
-  },
+  }
 
-  fromJSON: function(json) {
-    Command.prototype.fromJSON.call(this, json);
+  fromJSON(json) {
+    super.fromJSON(json);
 
     const cmds = json.cmds;
     for (let i = 0; i < cmds.length; i++) {
@@ -64,6 +64,4 @@ MultiCmdsCommand.prototype = {
       this.cmdArray.push(cmd);
     }
   }
-};
-
-export default MultiCmdsCommand;
+}

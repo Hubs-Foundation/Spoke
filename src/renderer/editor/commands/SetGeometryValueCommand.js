@@ -12,35 +12,34 @@ import Command from "../Command";
  * @constructor
  */
 
-const SetGeometryValueCommand = function(object, attributeName, newValue) {
-  Command.call(this);
+export default class SetGeometryValueCommand extends Command {
+  constructor(object, attributeName, newValue) {
+    super();
 
-  this.type = "SetGeometryValueCommand";
-  this.name = "Set Geometry." + attributeName;
+    this.type = "SetGeometryValueCommand";
+    this.name = "Set Geometry." + attributeName;
 
-  this.object = object;
-  this.attributeName = attributeName;
-  this.oldValue = object !== undefined ? object.geometry[attributeName] : undefined;
-  this.newValue = newValue;
-};
-
-SetGeometryValueCommand.prototype = {
-  execute: function() {
+    this.object = object;
+    this.attributeName = attributeName;
+    this.oldValue = object !== undefined ? object.geometry[attributeName] : undefined;
+    this.newValue = newValue;
+  }
+  execute() {
     this.object.geometry[this.attributeName] = this.newValue;
     this.editor.signals.objectChanged.dispatch(this.object);
     this.editor.signals.geometryChanged.dispatch();
     this.editor.signals.sceneGraphChanged.dispatch();
-  },
+  }
 
-  undo: function() {
+  undo() {
     this.object.geometry[this.attributeName] = this.oldValue;
     this.editor.signals.objectChanged.dispatch(this.object);
     this.editor.signals.geometryChanged.dispatch();
     this.editor.signals.sceneGraphChanged.dispatch();
-  },
+  }
 
-  toJSON: function() {
-    const output = Command.prototype.toJSON.call(this);
+  toJSON() {
+    const output = super.toJSON();
 
     output.objectUuid = this.object.uuid;
     output.attributeName = this.attributeName;
@@ -48,16 +47,14 @@ SetGeometryValueCommand.prototype = {
     output.newValue = this.newValue;
 
     return output;
-  },
+  }
 
-  fromJSON: function(json) {
-    Command.prototype.fromJSON.call(this, json);
+  fromJSON(json) {
+    super.fromJSON(json);
 
     this.object = this.editor.objectByUuid(json.objectUuid);
     this.attributeName = json.attributeName;
     this.oldValue = json.oldValue;
     this.newValue = json.newValue;
   }
-};
-
-export default SetGeometryValueCommand;
+}

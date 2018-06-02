@@ -13,38 +13,38 @@ import Command from "../Command";
  * @constructor
  */
 
-const SetMaterialMapCommand = function(object, mapName, newMap, materialSlot) {
-  Command.call(this);
+export default class SetMaterialMapCommand extends Command {
+  constructor(object, mapName, newMap, materialSlot) {
+    super();
 
-  this.type = "SetMaterialMapCommand";
-  this.name = "Set Material." + mapName;
+    this.type = "SetMaterialMapCommand";
+    this.name = "Set Material." + mapName;
 
-  this.object = object;
-  this.material = this.editor.getObjectMaterial(object, materialSlot);
+    this.object = object;
+    this.material = this.editor.getObjectMaterial(object, materialSlot);
 
-  this.oldMap = object !== undefined ? this.material[mapName] : undefined;
-  this.newMap = newMap;
+    this.oldMap = object !== undefined ? this.material[mapName] : undefined;
+    this.newMap = newMap;
 
-  this.mapName = mapName;
-};
+    this.mapName = mapName;
+  }
 
-SetMaterialMapCommand.prototype = {
-  execute: function() {
+  execute() {
     this.material[this.mapName] = this.newMap;
     this.material.needsUpdate = true;
 
     this.editor.signals.materialChanged.dispatch(this.material);
-  },
+  }
 
-  undo: function() {
+  undo() {
     this.material[this.mapName] = this.oldMap;
     this.material.needsUpdate = true;
 
     this.editor.signals.materialChanged.dispatch(this.material);
-  },
+  }
 
-  toJSON: function() {
-    const output = Command.prototype.toJSON.call(this);
+  toJSON() {
+    const output = super.toJSON();
 
     // Note: The function 'extractFromCache' is copied from Object3D.toJSON()
 
@@ -87,10 +87,10 @@ SetMaterialMapCommand.prototype = {
     output.oldMap = serializeMap(this.oldMap);
 
     return output;
-  },
+  }
 
-  fromJSON: function(json) {
-    Command.prototype.fromJSON.call(this, json);
+  fromJSON(json) {
+    super.fromJSON(json);
 
     function parseTexture(json) {
       let map = null;
@@ -109,6 +109,4 @@ SetMaterialMapCommand.prototype = {
     this.oldMap = parseTexture(json.oldMap);
     this.newMap = parseTexture(json.newMap);
   }
-};
-
-export default SetMaterialMapCommand;
+}

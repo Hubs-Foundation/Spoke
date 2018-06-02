@@ -149,7 +149,7 @@ export default class Editor {
 
   //
 
-  addObject(object) {
+  addObject(object, parent) {
     const scope = this;
 
     object.traverse(function(child) {
@@ -159,7 +159,11 @@ export default class Editor {
       scope.addHelper(child);
     });
 
-    this.scene.add(object);
+    if (parent !== undefined) {
+      parent.add(object);
+    } else {
+      this.scene.add(object);
+    }
 
     this.signals.objectAdded.dispatch(object);
     this.signals.sceneGraphChanged.dispatch();

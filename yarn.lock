@@ -89,6 +89,14 @@
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/@nodelib/fs.stat/-/fs.stat-1.1.0.tgz#50c1e2260ac0ed9439a181de3725a0168d59c48a"
 
+"@robertlong/react-ui-tree@3.3.1":
+  version "3.3.1"
+  resolved "https://registry.yarnpkg.com/@robertlong/react-ui-tree/-/react-ui-tree-3.3.1.tgz#75407fc2ea6d906f6d72b11a592a2ff30c55b09f"
+  dependencies:
+    classnames "^2.2.5"
+    js-tree "^2.0.1"
+    prop-types "^15.5.10"
+
 "@samverschueren/stream-to-observable@^0.3.0":
   version "0.3.0"
   resolved "https://registry.yarnpkg.com/@samverschueren/stream-to-observable/-/stream-to-observable-0.3.0.tgz#ecdf48d532c58ea477acfcab80348424f8d0662f"
@@ -6117,14 +6125,6 @@ react-select@^1.2.1:
     classnames "^2.2.4"
     prop-types "^15.5.8"
     react-input-autosize "^2.1.2"
-
-react-ui-tree@^3.1.0:
-  version "3.1.0"
-  resolved "https://registry.yarnpkg.com/react-ui-tree/-/react-ui-tree-3.1.0.tgz#713ff2e840849dc3d65b15e7e986d8224df0fd8c"
-  dependencies:
-    classnames "^2.2.5"
-    js-tree "^2.0.1"
-    prop-types "^15.5.10"
 
 react@^16.4.0:
   version "16.4.0"

@@ -12,41 +12,40 @@ import Command from "../Command";
  * @constructor
  */
 
-const SetMaterialColorCommand = function(object, attributeName, newValue, materialSlot) {
-  Command.call(this);
+export default class SetMaterialColorCommand extends Command {
+  constructor(object, attributeName, newValue, materialSlot) {
+    super();
 
-  this.type = "SetMaterialColorCommand";
-  this.name = "Set Material." + attributeName;
-  this.updatable = true;
+    this.type = "SetMaterialColorCommand";
+    this.name = "Set Material." + attributeName;
+    this.updatable = true;
 
-  this.object = object;
-  this.material = this.editor.getObjectMaterial(object, materialSlot);
+    this.object = object;
+    this.material = this.editor.getObjectMaterial(object, materialSlot);
 
-  this.oldValue = this.material !== undefined ? this.material[attributeName].getHex() : undefined;
-  this.newValue = newValue;
+    this.oldValue = this.material !== undefined ? this.material[attributeName].getHex() : undefined;
+    this.newValue = newValue;
 
-  this.attributeName = attributeName;
-};
-
-SetMaterialColorCommand.prototype = {
-  execute: function() {
+    this.attributeName = attributeName;
+  }
+  execute() {
     this.material[this.attributeName].setHex(this.newValue);
 
     this.editor.signals.materialChanged.dispatch(this.material);
-  },
+  }
 
-  undo: function() {
+  undo() {
     this.material[this.attributeName].setHex(this.oldValue);
 
     this.editor.signals.materialChanged.dispatch(this.material);
-  },
+  }
 
-  update: function(cmd) {
+  update(cmd) {
     this.newValue = cmd.newValue;
-  },
+  }
 
-  toJSON: function() {
-    const output = Command.prototype.toJSON.call(this);
+  toJSON() {
+    const output = super.toJSON();
 
     output.objectUuid = this.object.uuid;
     output.attributeName = this.attributeName;
@@ -54,16 +53,14 @@ SetMaterialColorCommand.prototype = {
     output.newValue = this.newValue;
 
     return output;
-  },
+  }
 
-  fromJSON: function(json) {
-    Command.prototype.fromJSON.call(this, json);
+  fromJSON(json) {
+    super.fromJSON(json);
 
     this.object = this.editor.objectByUuid(json.objectUuid);
     this.attributeName = json.attributeName;
     this.oldValue = json.oldValue;
     this.newValue = json.newValue;
   }
-};
-
-export default SetMaterialColorCommand;
+}

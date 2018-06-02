@@ -12,32 +12,32 @@ import Command from "../Command";
  * @constructor
  */
 
-const MoveObjectCommand = function(object, newParent, newBefore) {
-  Command.call(this);
+export default class MoveObjectCommand extends Command {
+  constructor(object, newParent, newBefore) {
+    super();
 
-  this.type = "MoveObjectCommand";
-  this.name = "Move Object";
+    this.type = "MoveObjectCommand";
+    this.name = "Move Object";
 
-  this.object = object;
-  this.oldParent = object !== undefined ? object.parent : undefined;
-  this.oldIndex = this.oldParent !== undefined ? this.oldParent.children.indexOf(this.object) : undefined;
-  this.newParent = newParent;
+    this.object = object;
+    this.oldParent = object !== undefined ? object.parent : undefined;
+    this.oldIndex = this.oldParent !== undefined ? this.oldParent.children.indexOf(this.object) : undefined;
+    this.newParent = newParent;
 
-  if (newBefore !== undefined) {
-    this.newIndex = newParent !== undefined ? newParent.children.indexOf(newBefore) : undefined;
-  } else {
-    this.newIndex = newParent !== undefined ? newParent.children.length : undefined;
+    if (newBefore !== undefined) {
+      this.newIndex = newParent !== undefined ? newParent.children.indexOf(newBefore) : undefined;
+    } else {
+      this.newIndex = newParent !== undefined ? newParent.children.length : undefined;
+    }
+
+    if (this.oldParent === this.newParent && this.newIndex > this.oldIndex) {
+      this.newIndex--;
+    }
+
+    this.newBefore = newBefore;
   }
 
-  if (this.oldParent === this.newParent && this.newIndex > this.oldIndex) {
-    this.newIndex--;
-  }
-
-  this.newBefore = newBefore;
-};
-
-MoveObjectCommand.prototype = {
-  execute: function() {
+  execute() {
     this.oldParent.remove(this.object);
 
     const children = this.newParent.children;
@@ -45,9 +45,9 @@ MoveObjectCommand.prototype = {
     this.object.parent = this.newParent;
 
     this.editor.signals.sceneGraphChanged.dispatch();
-  },
+  }
 
-  undo: function() {
+  undo() {
     this.newParent.remove(this.object);
 
     const children = this.oldParent.children;
@@ -55,10 +55,10 @@ MoveObjectCommand.prototype = {
     this.object.parent = this.oldParent;
 
     this.editor.signals.sceneGraphChanged.dispatch();
-  },
+  }
 
-  toJSON: function() {
-    const output = Command.prototype.toJSON.call(this);
+  toJSON() {
+    const output = super.toJSON();
 
     output.objectUuid = this.object.uuid;
     output.newParentUuid = this.newParent.uuid;
@@ -67,10 +67,10 @@ MoveObjectCommand.prototype = {
     output.oldIndex = this.oldIndex;
 
     return output;
-  },
+  }
 
-  fromJSON: function(json) {
-    Command.prototype.fromJSON.call(this, json);
+  fromJSON(json) {
+    super.fromJSON(json);
 
     this.object = this.editor.objectByUuid(json.objectUuid);
     this.oldParent = this.editor.objectByUuid(json.oldParentUuid);
@@ -84,6 +84,4 @@ MoveObjectCommand.prototype = {
     this.newIndex = json.newIndex;
     this.oldIndex = json.oldIndex;
   }
-};
-
-export default MoveObjectCommand;
+}

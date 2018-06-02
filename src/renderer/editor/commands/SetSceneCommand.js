@@ -13,28 +13,30 @@ import Command from "../Command";
  * @constructor
  */
 
-const SetSceneCommand = function(scene) {
-  Command.call(this);
+export default class SetSceneCommand extends Command {
+  constructor(scene) {
+    super();
 
-  this.type = "SetSceneCommand";
-  this.name = "Set Scene";
+    this.type = "SetSceneCommand";
+    this.name = "Set Scene";
 
-  this.cmdArray = [];
+    this.cmdArray = [];
 
-  if (scene !== undefined) {
-    this.cmdArray.push(new SetUuidCommand(this.editor.scene, scene.uuid));
-    this.cmdArray.push(new SetValueCommand(this.editor.scene, "name", scene.name));
-    this.cmdArray.push(new SetValueCommand(this.editor.scene, "userData", JSON.parse(JSON.stringify(scene.userData))));
+    if (scene !== undefined) {
+      this.cmdArray.push(new SetUuidCommand(this.editor.scene, scene.uuid));
+      this.cmdArray.push(new SetValueCommand(this.editor.scene, "name", scene.name));
+      this.cmdArray.push(
+        new SetValueCommand(this.editor.scene, "userData", JSON.parse(JSON.stringify(scene.userData)))
+      );
 
-    while (scene.children.length > 0) {
-      const child = scene.children.pop();
-      this.cmdArray.push(new AddObjectCommand(child));
+      while (scene.children.length > 0) {
+        const child = scene.children.pop();
+        this.cmdArray.push(new AddObjectCommand(child));
+      }
     }
   }
-};
 
-SetSceneCommand.prototype = {
-  execute: function() {
+  execute() {
     this.editor.signals.sceneGraphChanged.active = false;
 
     for (let i = 0; i < this.cmdArray.length; i++) {
@@ -43,9 +45,9 @@ SetSceneCommand.prototype = {
 
     this.editor.signals.sceneGraphChanged.active = true;
     this.editor.signals.sceneGraphChanged.dispatch();
-  },
+  }
 
-  undo: function() {
+  undo() {
     this.editor.signals.sceneGraphChanged.active = false;
 
     for (let i = this.cmdArray.length - 1; i >= 0; i--) {
@@ -54,10 +56,10 @@ SetSceneCommand.prototype = {
 
     this.editor.signals.sceneGraphChanged.active = true;
     this.editor.signals.sceneGraphChanged.dispatch();
-  },
+  }
 
-  toJSON: function() {
-    const output = Command.prototype.toJSON.call(this);
+  toJSON() {
+    const output = super.toJSON();
 
     const cmds = [];
     for (let i = 0; i < this.cmdArray.length; i++) {
@@ -66,10 +68,10 @@ SetSceneCommand.prototype = {
     output.cmds = cmds;
 
     return output;
-  },
+  }
 
-  fromJSON: function(json) {
-    Command.prototype.fromJSON.call(this, json);
+  fromJSON(json) {
+    super.fromJSON(json);
 
     const cmds = json.cmds;
     for (let i = 0; i < cmds.length; i++) {
@@ -78,6 +80,4 @@ SetSceneCommand.prototype = {
       this.cmdArray.push(cmd);
     }
   }
-};
-
-export default SetSceneCommand;
+}

@@ -8,6 +8,8 @@ import HierarchyPanelContainer from "./HierarchyPanelContainer";
 import PropertiesPanelContainer from "./PropertiesPanelContainer";
 import AssetExplorerPanelContainer from "./AssetExplorerPanelContainer";
 import { createProject, addRecentProject, DEFAULT_PROJECT_DIR_URI } from "../api";
+import { MosaicWindow } from "react-mosaic-component";
+import PanelToolbar from "../components/PanelToolbar";
 
 export default class EditorContainer extends Component {
   static defaultProps = {
@@ -39,10 +41,35 @@ export default class EditorContainer extends Component {
     this.state = {
       openProject: null,
       registeredPanels: {
-        hierarchy: HierarchyPanelContainer,
-        viewport: ViewportPanelContainer,
-        properties: PropertiesPanelContainer,
-        assetExplorer: AssetExplorerPanelContainer
+        hierarchy: {
+          component: HierarchyPanelContainer,
+          windowProps: {
+            title: "Hierarchy",
+            toolbarControls: PanelToolbar
+          }
+        },
+        viewport: {
+          component: ViewportPanelContainer,
+          windowProps: {
+            title: "Viewport",
+            toolbarControls: [],
+            draggable: false
+          }
+        },
+        properties: {
+          component: PropertiesPanelContainer,
+          windowProps: {
+            title: "Properties",
+            toolbarControls: PanelToolbar
+          }
+        },
+        assetExplorer: {
+          component: AssetExplorerPanelContainer,
+          windowProps: {
+            title: "Asset Explorer",
+            toolbarControls: PanelToolbar
+          }
+        }
       },
       openModal: {
         component: ProjectModalContainer,
@@ -114,8 +141,13 @@ export default class EditorContainer extends Component {
   };
 
   renderPanel = (panelId, path) => {
-    const PanelComponent = this.state.registeredPanels[panelId];
-    return <PanelComponent path={path} />;
+    const panel = this.state.registeredPanels[panelId];
+
+    return (
+      <MosaicWindow path={path} {...panel.windowProps}>
+        <panel.component {...panel.props} />
+      </MosaicWindow>
+    );
   };
 
   render() {

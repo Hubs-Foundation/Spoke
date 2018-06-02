@@ -12,45 +12,44 @@ import Command from "../Command";
  * @constructor
  */
 
-const SetMaterialValueCommand = function(object, attributeName, newValue, materialSlot) {
-  Command.call(this);
+export default class SetMaterialValueCommand extends Command {
+  constructor(object, attributeName, newValue, materialSlot) {
+    super();
 
-  this.type = "SetMaterialValueCommand";
-  this.name = "Set Material." + attributeName;
-  this.updatable = true;
+    this.type = "SetMaterialValueCommand";
+    this.name = "Set Material." + attributeName;
+    this.updatable = true;
 
-  this.object = object;
-  this.material = this.editor.getObjectMaterial(object, materialSlot);
+    this.object = object;
+    this.material = this.editor.getObjectMaterial(object, materialSlot);
 
-  this.oldValue = this.material !== undefined ? this.material[attributeName] : undefined;
-  this.newValue = newValue;
+    this.oldValue = this.material !== undefined ? this.material[attributeName] : undefined;
+    this.newValue = newValue;
 
-  this.attributeName = attributeName;
-};
-
-SetMaterialValueCommand.prototype = {
-  execute: function() {
+    this.attributeName = attributeName;
+  }
+  execute() {
     this.material[this.attributeName] = this.newValue;
     this.material.needsUpdate = true;
 
     this.editor.signals.objectChanged.dispatch(this.object);
     this.editor.signals.materialChanged.dispatch(this.material);
-  },
+  }
 
-  undo: function() {
+  undo() {
     this.material[this.attributeName] = this.oldValue;
     this.material.needsUpdate = true;
 
     this.editor.signals.objectChanged.dispatch(this.object);
     this.editor.signals.materialChanged.dispatch(this.material);
-  },
+  }
 
-  update: function(cmd) {
+  update(cmd) {
     this.newValue = cmd.newValue;
-  },
+  }
 
-  toJSON: function() {
-    const output = Command.prototype.toJSON.call(this);
+  toJSON() {
+    const output = super.toJSON();
 
     output.objectUuid = this.object.uuid;
     output.attributeName = this.attributeName;
@@ -58,16 +57,14 @@ SetMaterialValueCommand.prototype = {
     output.newValue = this.newValue;
 
     return output;
-  },
+  }
 
-  fromJSON: function(json) {
-    Command.prototype.fromJSON.call(this, json);
+  fromJSON(json) {
+    super.fromJSON(json);
 
     this.attributeName = json.attributeName;
     this.oldValue = json.oldValue;
     this.newValue = json.newValue;
     this.object = this.editor.objectByUuid(json.objectUuid);
   }
-};
-
-export default SetMaterialValueCommand;
+}
