@@ -18,6 +18,15 @@ module.exports = {
   module: {
     rules: [
       {
+        test: /\.(png|jpg|gif|svg)$/,
+        use: [
+          {
+            loader: "file-loader",
+            options: {}
+          }
+        ]
+      },
+      {
         test: /\.scss$/,
         include: path.join(__dirname, "src", "renderer"),
         use: ["style-loader", "css-loader", "sass-loader"]

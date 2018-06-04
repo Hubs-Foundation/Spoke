@@ -1,0 +1,21 @@
+:local(.assetExplorerPanelContainer) {
+  display: flex;
+  flex-direction: row;
+  height: 100%;
+}
+
+:local(.leftColumn) {
+  padding: 8px;
+  display: flex;
+  width: 200px;
+  height: 100%;
+  overflow: auto;
+  border-right: 1px solid rgba(0, 0, 0, 0.5);
+}
+
+:local(.rightColumn) {
+  padding: 8px;
+  display: flex;
+  flex: 1;
+  overflow-y: auto;
+}

@@ -3,24 +3,40 @@
 :local(.iconGrid) {
   display: flex;
   flex: 1;
-}
 
-:local(.item) {
-  width: 200px;
-  height: 200px;
-  display: flex;
-  flex-wrap: wrap;
-  flex-direction: column;
-  padding: 25px;
-  align-items: center;
-  justify-content: space-between;
+  :local(.item) {
+    width: 200px;
+    height: 200px;
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: column;
+    padding: 25px;
+    align-items: center;
+    justify-content: space-between;
+  
+    &:local(.selected) {
+      background-color: $selected;
+    }
+  
+    :local(.icon) {
+      width: 175px;
+      height: 175px;
+    }
+  }
 
-  &:local(.selected) {
-    background-color: $selected;
+  &:local(.small) {
+    :local(.item) {
+      width: 120px;
+      height: 120px;
+      padding: 12px;
+    }
+    
+    :local(.icon) {
+      width: 100px;
+      height: 100px;
+    }
   }
 }
 
-:local(.icon) {
-  width: 175px;
-  height: 175px;
-}
+
+

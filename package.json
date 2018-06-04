@@ -11,9 +11,10 @@
     "serve": "webpack-serve ./webpack.renderer.config.js"
   },
   "dependencies": {
-    "@robertlong/react-ui-tree": "3.3.1",
+    "@robertlong/react-ui-tree": "3.4.1",
     "classnames": "^2.2.5",
     "fs-extra": "^6.0.1",
+    "node-watch": "^0.5.8",
     "prop-types": "^15.6.1",
     "react": "^16.4.0",
     "react-color": "^2.14.1",
@@ -47,6 +48,7 @@
     "eslint-config-prettier": "^2.9.0",
     "eslint-plugin-prettier": "^2.6.0",
     "eslint-plugin-react": "^7.8.2",
+    "file-loader": "^1.1.11",
     "html-webpack-plugin": "^3.2.0",
     "node-sass": "^4.9.0",
     "sass-loader": "^7.0.1",

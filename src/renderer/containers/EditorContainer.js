@@ -7,9 +7,10 @@ import ViewportPanelContainer from "./ViewportPanelContainer";
 import HierarchyPanelContainer from "./HierarchyPanelContainer";
 import PropertiesPanelContainer from "./PropertiesPanelContainer";
 import AssetExplorerPanelContainer from "./AssetExplorerPanelContainer";
-import { createProject, addRecentProject, DEFAULT_PROJECT_DIR_URI } from "../api";
+import { createProject, addRecentProject, openProject, DEFAULT_PROJECT_DIR_URI } from "../api";
 import { MosaicWindow } from "react-mosaic-component";
 import PanelToolbar from "../components/PanelToolbar";
+import { Provider as ProjectProvider } from "./ProjectContext";
 import { withEditor } from "./EditorContext";
 
 class EditorContainer extends Component {
@@ -43,7 +44,7 @@ class EditorContainer extends Component {
     window.addEventListener("resize", this.onWindowResize, false);
 
     this.state = {
-      openProject: null,
+      project: null,
       registeredPanels: {
         hierarchy: {
           component: HierarchyPanelContainer,
@@ -103,7 +104,7 @@ class EditorContainer extends Component {
 
     this.setState({
       openModal: null,
-      openProject: projectDirUri
+      project: openProject(projectDirUri)
     });
   };
 
@@ -129,7 +130,7 @@ class EditorContainer extends Component {
 
     this.setState({
       openModal: null,
-      openProject: project.uri
+      project
     });
   };
 
@@ -163,14 +164,20 @@ class EditorContainer extends Component {
   };
 
   render() {
+    const projectContext = {
+      project: this.state.project
+    };
+
     return (
-      <Editor
-        initialPanels={this.props.initialPanels}
-        renderPanel={this.renderPanel}
-        openModal={this.state.openModal}
-        onCloseModal={this.onCloseModal}
-        onPanelChange={this.onPanelChange}
-      />
+      <ProjectProvider value={projectContext}>
+        <Editor
+          initialPanels={this.props.initialPanels}
+          renderPanel={this.renderPanel}
+          openModal={this.state.openModal}
+          onCloseModal={this.onCloseModal}
+          onPanelChange={this.onPanelChange}
+        />
+      </ProjectProvider>
     );
   }
 

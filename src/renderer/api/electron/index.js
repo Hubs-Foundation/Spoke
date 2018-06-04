@@ -1,6 +1,10 @@
 import electron from "electron";
 import path from "path";
 import fs from "fs-extra";
+import { uriToPath, pathToUri } from "./utils";
+import Project from "./Project";
+
+export { uriToPath, pathToUri } from "./utils";
 
 const DOCUMENTS_PATH = electron.remote.app.getPath("documents");
 const APP_NAME = electron.remote.app.getName();
@@ -8,16 +12,7 @@ const EDITOR_DIRECTORY_PATH = path.join(DOCUMENTS_PATH, APP_NAME);
 const TEMPLATES_PATH = path.join(EDITOR_DIRECTORY_PATH, "templates");
 const PROJECTS_PATH = path.join(EDITOR_DIRECTORY_PATH, "projects");
 const RECENT_PROJECTS_KEY = "recent-projects";
-
-export function uriToPath(path) {
-  return path.replace("file://", "");
-}
-
-export function pathToUri(path) {
-  return "file://" + path;
-}
-
-export const isNative = true;
+export const DEFAULT_PROJECT_DIR_URI = pathToUri(PROJECTS_PATH);
 
 async function ensureEditorDirectory() {
   await fs.ensureDir(EDITOR_DIRECTORY_PATH);
@@ -25,22 +20,15 @@ async function ensureEditorDirectory() {
   await fs.ensureDir(PROJECTS_PATH);
 }
 
-export const DEFAULT_PROJECT_DIR_URI = pathToUri(PROJECTS_PATH);
+export const isNative = true;
 
-function getProjectObjects(projectPaths, ensure) {
+function getProjects(projectPaths, ensure) {
   return projectPaths.reduce((acc, projectPath) => {
     if (ensure && !fs.existsSync(projectPath)) {
       return acc;
     }
 
-    const iconPath = path.join(projectPath, "thumbnail.png");
-    const iconExists = fs.existsSync(iconPath);
-
-    acc.push({
-      name: path.parse(projectPath).name,
-      uri: pathToUri(projectPath),
-      icon: iconExists ? pathToUri(iconPath) : null
-    });
+    acc.push(new Project(pathToUri(projectPath)));
 
     return acc;
   }, []);
@@ -55,13 +43,17 @@ export async function getTemplates() {
     .map(templateDir => path.join(TEMPLATES_PATH, templateDir))
     .filter(templatePath => fs.lstatSync(templatePath).isDirectory());
 
-  return getProjectObjects(templatePaths);
+  return getProjects(templatePaths);
 }
 
 export async function getRecentProjects() {
   const projectPaths = JSON.parse(localStorage.getItem(RECENT_PROJECTS_KEY)) || [];
 
-  return getProjectObjects(projectPaths, true);
+  return getProjects(projectPaths, true);
+}
+
+export function openProject(projectUri) {
+  return new Project(projectUri);
 }
 
 export async function addRecentProject(projectDirUri) {
@@ -78,22 +70,6 @@ export async function addRecentProject(projectDirUri) {
   recentProjects.unshift(projectDirPath);
 
   localStorage.setItem(RECENT_PROJECTS_KEY, JSON.stringify(recentProjects));
-}
-
-export async function createProject(name, templateUri, projectDirUri) {
-  const templateDirPath = uriToPath(templateUri);
-  const projectDirPath = path.join(uriToPath(projectDirUri) || PROJECTS_PATH, name);
-
-  await fs.copy(templateDirPath, projectDirPath);
-
-  const iconPath = path.join(projectDirPath, "thumbnail.png");
-  const iconExists = fs.existsSync(iconPath);
-
-  return {
-    name,
-    uri: pathToUri(projectDirPath),
-    icon: iconExists ? pathToUri(iconPath) : null
-  };
 }
 
 export async function browseDirectory(options) {
@@ -123,4 +99,8 @@ export function buildContextMenu(menuItems) {
 
 export function showContextMenu(menu) {
   menu.popup(electron.remote.getCurrentWindow());
+}
+
+export function openFile(uri) {
+  electron.remote.shell.openItem(uriToPath(uri));
 }
