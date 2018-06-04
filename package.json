@@ -11,7 +11,7 @@
     "serve": "webpack-serve ./webpack.renderer.config.js"
   },
   "dependencies": {
-    "@robertlong/react-ui-tree": "3.4.1",
+    "@robertlong/react-ui-tree": "3.4.2",
     "classnames": "^2.2.5",
     "fs-extra": "^6.0.1",
     "node-watch": "^0.5.8",

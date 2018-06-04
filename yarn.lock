@@ -89,9 +89,9 @@
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/@nodelib/fs.stat/-/fs.stat-1.1.0.tgz#50c1e2260ac0ed9439a181de3725a0168d59c48a"
 
-"@robertlong/react-ui-tree@3.3.1":
-  version "3.3.1"
-  resolved "https://registry.yarnpkg.com/@robertlong/react-ui-tree/-/react-ui-tree-3.3.1.tgz#75407fc2ea6d906f6d72b11a592a2ff30c55b09f"
+"@robertlong/react-ui-tree@3.4.2":
+  version "3.4.2"
+  resolved "https://registry.yarnpkg.com/@robertlong/react-ui-tree/-/react-ui-tree-3.4.2.tgz#63aafc9c6af445aa1bfa6b5b56b8619b564be017"
   dependencies:
     classnames "^2.2.5"
     js-tree "^2.0.1"
