@@ -4,7 +4,7 @@ import { withEditor } from "./EditorContext";
 import Tree from "@robertlong/react-ui-tree";
 import "../vendor/react-ui-tree/index.scss";
 import classNames from "classnames";
-import ContextMenuContainer from "./ContextMenuContainer";
+import { ContextMenu, MenuItem, ContextMenuTrigger } from "react-contextmenu";
 import AddObjectCommand from "../editor/commands/AddObjectCommand";
 import MoveObjectCommand from "../editor/commands/MoveObjectCommand";
 import RemoveObjectCommand from "../editor/commands/RemoveObjectCommand";
@@ -21,6 +21,10 @@ function createNodeHierarchy(object) {
   }
 
   return node;
+}
+
+function collectNodeMenuProps({ node }) {
+  return { node };
 }
 
 class HierarchyPanelContainer extends Component {
@@ -71,7 +75,7 @@ class HierarchyPanelContainer extends Component {
     this.props.editor.execute(new MoveObjectCommand(object, newParent, newBefore));
   };
 
-  onClickNode = node => {
+  onClickNode = (e, node) => {
     if (this.clicked === node.object) {
       this.props.editor.focusById(node.object.id);
       return;
@@ -86,13 +90,13 @@ class HierarchyPanelContainer extends Component {
     }, 500);
   };
 
-  onAddNode = node => {
+  onAddNode = (e, node) => {
     const object = new THREE.Object3D();
     object.name = "New Node";
     this.props.editor.execute(new AddObjectCommand(object, node.object));
   };
 
-  onDeleteNode = node => {
+  onDeleteNode = (e, node) => {
     this.props.editor.execute(new RemoveObjectCommand(node.object));
   };
 
@@ -103,27 +107,18 @@ class HierarchyPanelContainer extends Component {
   };
 
   renderNode = node => {
-    const menuItems = [
-      {
-        label: "Add Node",
-        click: this.onAddNode.bind(this, node)
-      },
-      {
-        label: "Delete",
-        click: this.onDeleteNode.bind(this, node)
-      }
-    ];
-
     return (
-      <ContextMenuContainer
+      <ContextMenuTrigger
+        id="hierarchy-node-menu"
         className={classNames("node", {
           "is-active": this.props.editor.selected && node.object.id === this.props.editor.selected.id
         })}
-        onClick={e => this.onClickNode(node, e)}
-        menuItems={menuItems}
+        node={node}
+        collect={collectNodeMenuProps}
+        onClick={e => this.onClickNode(e, node)}
       >
         {node.object.name}
-      </ContextMenuContainer>
+      </ContextMenuTrigger>
     );
   };
 
@@ -137,6 +132,10 @@ class HierarchyPanelContainer extends Component {
           renderNode={this.renderNode}
           onChange={this.onChange}
         />
+        <ContextMenu id="hierarchy-node-menu">
+          <MenuItem onClick={this.onAddNode}>Add Node</MenuItem>
+          <MenuItem onClick={this.onDeleteNode}>Delete</MenuItem>
+        </ContextMenu>
       </div>
     );
   }

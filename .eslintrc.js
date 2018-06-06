@@ -6,7 +6,8 @@ module.exports = {
     node: true
   },
   globals: {
-    THREE: true
+    THREE: true,
+    Components: true
   },
   plugins: ["prettier", "react"],
   rules: {

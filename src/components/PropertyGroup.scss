@@ -1,0 +1,17 @@
+:local(.propertyGroup) {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+
+  :local(.name) {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+  }
+
+  :local(.content) {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+  }
+}

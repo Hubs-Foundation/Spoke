@@ -7,7 +7,7 @@ import ViewportPanelContainer from "./ViewportPanelContainer";
 import HierarchyPanelContainer from "./HierarchyPanelContainer";
 import PropertiesPanelContainer from "./PropertiesPanelContainer";
 import AssetExplorerPanelContainer from "./AssetExplorerPanelContainer";
-import { createProject, addRecentProject, openProject, DEFAULT_PROJECT_DIR_URI } from "../api";
+import { createProjectFromTemplate, addRecentProject, openProject, DEFAULT_PROJECT_DIR_URI } from "../api";
 import { MosaicWindow } from "react-mosaic-component";
 import PanelToolbar from "../components/PanelToolbar";
 import { Provider as ProjectProvider } from "./ProjectContext";
@@ -102,9 +102,11 @@ class EditorContainer extends Component {
   onOpenProject = async projectDirUri => {
     await addRecentProject(projectDirUri);
 
+    const project = await openProject(projectDirUri);
+
     this.setState({
       openModal: null,
-      project: openProject(projectDirUri)
+      project
     });
   };
 
@@ -124,7 +126,7 @@ class EditorContainer extends Component {
   };
 
   onCreateProject = async (name, templateUri, projectDirUri) => {
-    const project = await createProject(name, templateUri, projectDirUri);
+    const project = await createProjectFromTemplate(name, templateUri, projectDirUri);
 
     await addRecentProject(project.uri);
 

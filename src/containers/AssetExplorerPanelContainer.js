@@ -3,7 +3,6 @@ import PropTypes from "prop-types";
 import Tree from "@robertlong/react-ui-tree";
 import "../vendor/react-ui-tree/index.scss";
 import classNames from "classnames";
-import ContextMenuContainer from "./ContextMenuContainer";
 import { withProject } from "./ProjectContext";
 import IconGrid from "../components/IconGrid";
 import fileIcon from "../assets/file-icon.svg";
@@ -16,44 +15,38 @@ class AssetExplorerPanelContainer extends Component {
     project: PropTypes.any
   };
 
-  static getDerivedStateFromProps(props, state = {}) {
-    let tree;
-
-    if (props.project === null) {
-      tree = {
-        name: "New Project"
-      };
-    } else {
-      tree = props.project.getFileHierarchy();
-    }
-
-    return {
-      ...state,
-      tree
-    };
-  }
-
   constructor(props) {
     super(props);
 
     this.clicked = null;
 
-    this.state = AssetExplorerPanelContainer.getDerivedStateFromProps(props, {
+    this.state = {
+      tree: {
+        name: "New Project"
+      },
       selectedDirectory: null,
       selectedFile: null,
       singleClickedFile: null
-    });
+    };
   }
 
-  onClickNode = node => {
+  onClickNode = (e, node) => {
     if (node.isDirectory) {
       this.setState({
         selectedDirectory: node
       });
-    } else if (node.ext === ".gltf" || node.ext === ".glb") {
+    } else if (node.ext === "gltf" || node.ext === "glb") {
       console.log("Open gltf");
     }
   };
+
+  componentDidMount() {
+    if (this.props.project !== null) {
+      this.props.project.getFileHierarchy().then(tree => {
+        this.setState({ tree });
+      });
+    }
+  }
 
   componentDidUpdate(prevProps) {
     if (this.props.project !== prevProps.project) {
@@ -62,8 +55,8 @@ class AssetExplorerPanelContainer extends Component {
       }
 
       if (this.props.project !== null) {
-        this.setState({
-          tree: this.props.project.getFileHierarchy()
+        this.props.project.getFileHierarchy().then(tree => {
+          this.setState({ tree });
         });
 
         this.props.project.addListener("hierarchychanged", this.onHierarchyChanged);
@@ -71,7 +64,7 @@ class AssetExplorerPanelContainer extends Component {
     }
   }
 
-  onHierarchyChanged = (event, name, fileHierarchy) => {
+  onHierarchyChanged = fileHierarchy => {
     this.setState({
       tree: fileHierarchy
     });
@@ -105,20 +98,18 @@ class AssetExplorerPanelContainer extends Component {
   };
 
   renderNode = node => {
-    const menuItems = [];
-
     return (
-      <ContextMenuContainer
+      <div
+        id="node-menu"
         className={classNames("node", {
           "is-active": this.state.selectedDirectory
             ? this.state.selectedDirectory.uri === node.uri
             : node === this.state.tree
         })}
-        onClick={e => this.onClickNode(node, e)}
-        menuItems={menuItems}
+        onClickNode={e => this.onClickNode(e, node)}
       >
         {node.name}
-      </ContextMenuContainer>
+      </div>
     );
   };
 

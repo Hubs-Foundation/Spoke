@@ -4,15 +4,13 @@ const HTMLWebpackPlugin = require("html-webpack-plugin");
 module.exports = {
   mode: process.env.WEBPACK_SERVE ? "development" : "production",
 
-  target: "electron-renderer",
-
   devtool: "source-map",
 
-  entry: "./src/renderer/index.js",
+  entry: "./src/index.js",
 
   output: {
-    path: path.join(__dirname, "build"),
-    filename: "renderer.bundle.js"
+    path: path.join(__dirname, "desktop", "app"),
+    filename: "bundle.js"
   },
 
   module: {
@@ -27,8 +25,12 @@ module.exports = {
         ]
       },
       {
+        test: /\.css$/,
+        use: ["style-loader", "css-loader"]
+      },
+      {
         test: /\.scss$/,
-        include: path.join(__dirname, "src", "renderer"),
+        include: path.join(__dirname, "src"),
         use: ["style-loader", "css-loader", "sass-loader"]
       },
       {

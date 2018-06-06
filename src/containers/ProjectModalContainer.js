@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
-import { getTemplates, getRecentProjects } from "../api";
+import { getTemplateProjects, getRecentProjects } from "../api";
 import ProjectModal from "../components/ProjectModal";
 
 export default class ProjectModalContainer extends Component {
@@ -15,7 +15,7 @@ export default class ProjectModalContainer extends Component {
   }
 
   componentDidMount() {
-    getTemplates()
+    getTemplateProjects()
       .then(templates => {
         this.setState({
           templates

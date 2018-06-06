@@ -3,8 +3,6 @@ import PropTypes from "prop-types";
 import styles from "./TabNavigation.scss";
 import classNames from "classnames";
 
-console.log(styles);
-
 function Tab({ children, selected, onClick }) {
   const className = classNames(styles.tab, {
     [styles.selected]: selected
