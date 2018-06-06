@@ -5,6 +5,7 @@ import Header from "./Header";
 import IconGrid from "./IconGrid";
 import TabNavigation from "./TabNavigation";
 import NativeFileInput from "./NativeFileInput";
+import defaultThumbnail from "../assets/default-thumbnail.png";
 
 function onSelectIcon(icon, event, projects, onSelectProject) {
   const project = projects.find(({ uri }) => uri === icon.id);
@@ -27,7 +28,7 @@ export default function ProjectModal({ tab, projects, onSelectProject, onChangeT
 
   const icons = projects.map(project => ({
     id: project.uri,
-    src: project.icon,
+    src: project.icon || defaultThumbnail,
     name: project.name
   }));
 

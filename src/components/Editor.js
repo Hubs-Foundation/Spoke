@@ -9,6 +9,7 @@ export default function Editor({ initialPanels, renderPanel, openModal, onCloseM
     <div className={styles.editor}>
       <Mosaic className="mosaic-theme" renderTile={renderPanel} initialValue={initialPanels} onChange={onPanelChange} />
       <Modal
+        ariaHideApp={false}
         isOpen={!!openModal}
         onRequestClose={onCloseModal}
         shouldCloseOnOverlayClick={openModal && openModal.shouldCloseOnOverlayClick}

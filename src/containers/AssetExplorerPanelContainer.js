@@ -31,7 +31,6 @@ class AssetExplorerPanelContainer extends Component {
   }
 
   onClickNode = (e, node) => {
-    console.log(node);
     if (node.isDirectory) {
       this.setState({
         selectedDirectory: node
