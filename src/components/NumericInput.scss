@@ -1,0 +1,18 @@
+@import "../theme";
+
+:local(.numericInput) {
+  display: flex;
+  width: 100%;
+  color: $text;
+  background-color: $input-background;
+  border: none;
+  padding-left: 6px;
+  font-size: 16px;
+  height: 24px;
+  -moz-appearance: textfield;
+
+  &::-webkit-outer-spin-button,
+  &::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+  }
+}

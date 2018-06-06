@@ -1,0 +1,16 @@
+:local(.inputGroup) {
+  display: flex;
+  flex-direction: row;
+
+  :local(.name) {
+    display: flex;
+    align-items: center;
+    padding-right: 8px;
+  }
+
+  :local(.content) {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: row;
+  }
+}
