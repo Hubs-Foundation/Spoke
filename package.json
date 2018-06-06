@@ -6,7 +6,6 @@
   "main": "src/index.js",
   "scripts": {
     "start": "qbrt run ./desktop",
-    "dev": "qbrt run ./desktop http://localhost:8080",
     "watch": "webpack --mode development --config webpack.config.js --watch",
     "build": "webpack --mode production --config webpack.config.js",
     "package": "qbrt package ./desktop",
