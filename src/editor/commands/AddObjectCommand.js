@@ -16,6 +16,7 @@ export default class AddObjectCommand extends Command {
     super();
     this.type = "AddObjectCommand";
 
+    console.log(parent);
     this.object = object;
     this.parent = parent;
 

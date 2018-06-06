@@ -31,6 +31,7 @@ class AssetExplorerPanelContainer extends Component {
   }
 
   onClickNode = (e, node) => {
+    console.log(node);
     if (node.isDirectory) {
       this.setState({
         selectedDirectory: node
@@ -106,7 +107,7 @@ class AssetExplorerPanelContainer extends Component {
             ? this.state.selectedDirectory.uri === node.uri
             : node === this.state.tree
         })}
-        onClickNode={e => this.onClickNode(e, node)}
+        onClick={e => this.onClickNode(e, node)}
       >
         {node.name}
       </div>

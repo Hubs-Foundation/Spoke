@@ -58,7 +58,7 @@ class EditorContainer extends Component {
           windowProps: {
             title: "Viewport",
             toolbarControls: [],
-            draggable: false
+            draggable: true
           }
         },
         properties: {

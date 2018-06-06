@@ -3,6 +3,7 @@ import PropTypes from "prop-types";
 import { withEditor } from "./EditorContext";
 import Tree from "@robertlong/react-ui-tree";
 import "../vendor/react-ui-tree/index.scss";
+import "../vendor/react-contextmenu/index.scss";
 import classNames from "classnames";
 import { ContextMenu, MenuItem, ContextMenuTrigger } from "react-contextmenu";
 import AddObjectCommand from "../editor/commands/AddObjectCommand";
@@ -24,7 +25,7 @@ function createNodeHierarchy(object) {
 }
 
 function collectNodeMenuProps({ node }) {
-  return { node };
+  return node;
 }
 
 class HierarchyPanelContainer extends Component {
@@ -108,17 +109,16 @@ class HierarchyPanelContainer extends Component {
 
   renderNode = node => {
     return (
-      <ContextMenuTrigger
-        id="hierarchy-node-menu"
+      <div
         className={classNames("node", {
           "is-active": this.props.editor.selected && node.object.id === this.props.editor.selected.id
         })}
-        node={node}
-        collect={collectNodeMenuProps}
         onClick={e => this.onClickNode(e, node)}
       >
-        {node.object.name}
-      </ContextMenuTrigger>
+        <ContextMenuTrigger holdToDisplay={-1} id="hierarchy-node-menu" node={node} collect={collectNodeMenuProps}>
+          {node.object.name}
+        </ContextMenuTrigger>
+      </div>
     );
   };
 
@@ -128,6 +128,7 @@ class HierarchyPanelContainer extends Component {
         <Tree
           paddingLeft={8}
           isNodeCollapsed={false}
+          draggable={true}
           tree={this.state.tree}
           renderNode={this.renderNode}
           onChange={this.onChange}
