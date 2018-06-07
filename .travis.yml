@@ -16,10 +16,16 @@ script:
   - cp hubs-editor.zip hubs-editor.win.zip
   - npx qbrt package --linux desktop
   - cp hubs-editor.tgz hubs-editor.linux.tgz
-#deploy:
-#  provider: releases
-#  file: 
-#    - "hubs-editor.macos.dmg"
-#    - "hubs-editor.win.zip"
-#    - "hubs-editor.linux.tgz"
-#  skip_cleanup: true
+before_deploy:
+  - git tag "$(date +'%Y-%m-%d')_$(git log --format=%h -1)"
+deploy:
+  provider: releases
+  api_key:
+    secure: fD8SwrudoCqMkignWFKkjnX9rPAKwy2F71MnbPOKeaTY0qcrcabtFp0DUbmypt4POawNEzhRiykwcHTEo86jjhayfb26wXgflSKIS+ZHKxmAAYBuTCQgwwWfOmNGbJYGBEJs3IBETUfr8GKxK2gzJ0F/MJuk9oL+zOckcPSLTAc00biGRcE9WZ9NEeBjckofrUenUHDpjQUnG1jiRfYAkMVUXJKFsGH3shBkAEJ4+2cGpkj32DtRZ96FrkPxHQghZGUDiIysKVllggS2PEiMgYcgcGj00hduUbZ4eXLvDQDu7t7kJuNsCvq+O183eBuYkmTJMwUgpuo7EoBoMMK0Z33pM7GcstT1ceZVn6nSM2qEDYgzKvJya8wLYOprYruzF7fUBPwkMynCDPNJg7USXibZ/90nxrVOoaor1Mgxb1zHwbKx/7HdhBabrNVdQaxxcig/4B6+K9jGLcO9GhIibacobWYXJKdtJDjvB3r8W2sOX+tELwXhvumHf7PcycQbmDVT46UIOMjWk1a+Jyxm3gX+2KWq0KdhKS8NjEP1l0Ws8LWC2qJHtW5fQ69rhNnSRyUQT8XLd51DlJ0dCy7+fiih4stKkF3jgs8cqqceijh+jqGnZkkEhukvSX/+h2hwBc6y55FZv+VoioR8Laoh8++zXtqqA5zmc912cmcrQbs=
+  file: 
+    - "hubs-editor.macos.dmg"
+    - "hubs-editor.win.zip"
+    - "hubs-editor.linux.tgz"
+  skip_cleanup: true
+  on:
+    repo: MozillaReality/hubs-editor
