@@ -17,7 +17,9 @@ script:
   - npx qbrt package --linux desktop
   - cp hubs-editor.tgz hubs-editor.linux.tgz
 before_deploy:
-  - git tag "$(date +'%Y-%m-%d')_$(git log --format=%h -1)"
+  - git config --local user.name "hubs-editor bot"
+  - git config --local user.email "hubs-editor-bot@mozilla.com"
+  - git tag "$(date +'%Y-%m-%d_%H-%M-%S')_$(git log --format=%h -1)"
 deploy:
   provider: releases
   api_key:
