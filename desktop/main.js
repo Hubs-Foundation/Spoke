@@ -3,7 +3,9 @@ const { Services } = Components.utils.import("resource://gre/modules/Services.js
 
 const WINDOW_URL = "chrome://app/content/app/index.html";
 
-const WINDOW_FEATURES = ["chrome", "centerscreen", "dialog=no", "all", "width=1280", "height=768"].join(",");
+const WINDOW_FEATURES = ["chrome", "centerscreen", "dialog=no", "all", "width=1280", "height=768", "resizable"].join(
+  ","
+);
 
 if (Services.appinfo.OS === "Darwin") {
   Components.classes["@mozilla.org/widget/macdocksupport;1"]
@@ -13,6 +15,4 @@ if (Services.appinfo.OS === "Darwin") {
 
 const window = Services.ww.openWindow(null, WINDOW_URL, "Hubs Editor", WINDOW_FEATURES, null);
 
-if (Runtime.commandLineArgs.indexOf("--dev")) {
-  Runtime.openDevTools(window);
-}
+Runtime.openDevTools(window);

@@ -1,8 +1,9 @@
 const { OS } = Components.utils.import("resource://gre/modules/osfile.jsm");
 const { FileUtils } = Components.utils.import("resource://gre/modules/FileUtils.jsm");
+const { Services } = Components.utils.import("resource://gre/modules/Services.jsm", {});
 const FilePicker = Components.classes["@mozilla.org/filepicker;1"];
 import Project from "./Project";
-import { getDirectoryEntries, writeJSONAtomic, readJSON } from "./utils";
+import { getDirectoryEntries, writeJSONAtomic, readJSON, copyRecursive } from "./utils";
 
 export function uriToPath(path) {
   return OS.Path.fromFileURI(path);
@@ -23,16 +24,31 @@ const DEFAULT_WORKSPACE = {
   recentProjects: []
 };
 
-async function ensureEditorDirectory() {
-  await OS.File.makeDir(EDITOR_DIRECTORY_PATH, { ignoreExisting: true });
-  await OS.File.makeDir(TEMPLATES_PATH, { ignoreExisting: true });
-  await OS.File.makeDir(PROJECTS_PATH, { ignoreExisting: true });
-  await writeJSONAtomic(WORKSPACE_PATH, DEFAULT_WORKSPACE, false);
+let APP_DIR_PATH;
+let RESOURCES_PATH;
+
+export async function init() {
+  const gredPath = Services.dirsvc.get("GreD", Components.interfaces.nsIFile).path;
+  const webappPath = OS.Path.join(gredPath, "webapp");
+
+  if (!(await OS.File.exists(webappPath))) {
+    const WORK_DIR_PATH = Services.dirsvc.get("CurWorkD", Components.interfaces.nsIFile).path;
+    APP_DIR_PATH = OS.Path.join(WORK_DIR_PATH, "desktop");
+  } else {
+    APP_DIR_PATH = webappPath;
+  }
+
+  RESOURCES_PATH = OS.Path.join(APP_DIR_PATH, "resources");
+
+  if (!(await OS.File.exists(EDITOR_DIRECTORY_PATH))) {
+    await OS.File.makeDir(EDITOR_DIRECTORY_PATH, { ignoreExisting: true });
+    await copyRecursive(RESOURCES_PATH, EDITOR_DIRECTORY_PATH);
+    await OS.File.makeDir(PROJECTS_PATH, { ignoreExisting: true });
+    await writeJSONAtomic(WORKSPACE_PATH, DEFAULT_WORKSPACE, false);
+  }
 }
 
 export async function getTemplateProjects() {
-  await ensureEditorDirectory();
-
   const templateEntries = await getDirectoryEntries(TEMPLATES_PATH);
 
   const projects = [];
