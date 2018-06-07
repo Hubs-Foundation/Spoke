@@ -18,10 +18,11 @@ export async function copyRecursive(srcPath, destPath) {
   for (const entry of entries) {
     const entryDest = OS.Path.join(destPath, entry.name);
 
-    OS.File.copy(entry.path, entryDest);
-
     if (entry.isDir) {
+      await OS.File.makeDir(entryDest);
       await copyRecursive(entry.path, entryDest);
+    } else {
+      await OS.File.copy(entry.path, entryDest);
     }
   }
 }

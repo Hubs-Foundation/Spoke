@@ -28,6 +28,7 @@ let APP_DIR_PATH;
 let RESOURCES_PATH;
 
 export async function init() {
+  // Get the Gecko Runtime Engine path
   const gredPath = Services.dirsvc.get("GreD", Components.interfaces.nsIFile).path;
   const webappPath = OS.Path.join(gredPath, "webapp");
 
