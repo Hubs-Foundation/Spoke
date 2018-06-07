@@ -3,40 +3,30 @@ import PropTypes from "prop-types";
 import styles from "./ProjectModal.scss";
 import Header from "./Header";
 import IconGrid from "./IconGrid";
+import Icon from "./Icon";
 import TabNavigation from "./TabNavigation";
+import Tab from "./Tab";
 import NativeFileInput from "./NativeFileInput";
 import defaultThumbnail from "../assets/default-thumbnail.png";
 
-function onSelectIcon(icon, event, projects, onSelectProject) {
-  const project = projects.find(({ uri }) => uri === icon.id);
-  onSelectProject(project, event);
-}
-
 export default function ProjectModal({ tab, projects, onSelectProject, onChangeTab, onOpenProject }) {
-  const tabs = [
-    {
-      name: "Recent Projects",
-      selected: tab === "projects",
-      onClick: () => onChangeTab("projects")
-    },
-    {
-      name: "Templates",
-      selected: tab === "templates",
-      onClick: () => onChangeTab("templates")
-    }
-  ];
-
-  const icons = projects.map(project => ({
-    id: project.uri,
-    src: project.icon || defaultThumbnail,
-    name: project.name
-  }));
-
   return (
     <div className={styles.projectModal}>
       <Header title="Projects" />
-      <TabNavigation tabs={tabs} />
-      <IconGrid icons={icons} onSelect={(icon, event) => onSelectIcon(icon, event, projects, onSelectProject)} />
+      <TabNavigation>
+        <Tab name="Recent Projects" selected={tab === "projects"} onClick={() => onChangeTab("projects")} />
+        <Tab name="Templates" selected={tab === "templates"} onClick={() => onChangeTab("templates")} />
+      </TabNavigation>
+      <IconGrid>
+        {projects.map(project => (
+          <Icon
+            key={project.uri}
+            src={project.icon || defaultThumbnail}
+            name={project.name}
+            onClick={() => onSelectProject(project)}
+          />
+        ))}
+      </IconGrid>
       <NativeFileInput label="Open Project..." onChange={onOpenProject} />
     </div>
   );

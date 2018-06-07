@@ -1,0 +1,46 @@
+@import "../theme";
+
+:local(.icon) {
+  display: flex;
+  flex-wrap: nowrap;
+  flex-direction: column;
+  padding: 25px;
+  align-items: center;
+  width: 180px;
+  height: 180px;
+
+  &:local(.selected) {
+    background-color: $selected;
+  }
+
+  :local(.image) {
+    width: 150px;
+    height: 150px;
+  }
+
+  :local(.name) {
+    margin-top: 12px;
+    text-overflow: ellipsis;
+    word-wrap: break-word;
+    white-space: nowrap;
+    width: 100px;
+    overflow: hidden;
+    text-align: center;
+  }
+}
+
+:local(.small) {
+  padding: 8px;
+  width: 80px;
+  height: 80px;
+
+  :local(.image) {
+    width: 50px;
+    height: 50px;
+  }
+
+  :local(.name) {
+    margin-top: 8px;
+    font-size: 11px;
+  }
+}

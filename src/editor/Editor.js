@@ -97,6 +97,8 @@ export default class Editor {
     this.helpers = {};
 
     this.viewport = null;
+
+    this.gltfLoader = new THREE.GLTFLoader();
   }
 
   onWindowResize = () => {
@@ -224,6 +226,12 @@ export default class Editor {
 
   addTexture(texture) {
     this.textures[texture.uuid] = texture;
+  }
+
+  loadGLTF(url) {
+    this.gltfLoader.load(url, ({ scene }) => {
+      this.addObject(scene);
+    });
   }
 
   //
