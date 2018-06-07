@@ -1,0 +1,25 @@
+os: osx
+language: node_js
+node_js: '9'
+cache: yarn
+branches:
+  only: master
+before_install:
+  - curl -o- -L https://yarnpkg.com/install.sh | bash -s -- --version 1.7.0
+  - export PATH="$HOME/.yarn/bin:$PATH"
+install: yarn
+script:
+  - yarn build
+  - npx qbrt package desktop
+  - cp hubs-editor.dmg hubs-editor.macos.dmg
+  - npx qbrt package --win desktop
+  - cp hubs-editor.zip hubs-editor.win.zip
+  - npx qbrt package --linux desktop
+  - cp hubs-editor.tgz hubs-editor.linux.tgz
+#deploy:
+#  provider: releases
+#  file: 
+#    - "hubs-editor.macos.dmg"
+#    - "hubs-editor.win.zip"
+#    - "hubs-editor.linux.tgz"
+#  skip_cleanup: true
