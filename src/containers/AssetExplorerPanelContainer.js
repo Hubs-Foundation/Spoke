@@ -5,10 +5,9 @@ import "../vendor/react-ui-tree/index.scss";
 import classNames from "classnames";
 import { withProject } from "./ProjectContext";
 import IconGrid from "../components/IconGrid";
-import fileIcon from "../assets/file-icon.svg";
-import folderIcon from "../assets/folder-icon.svg";
 import { openFile } from "../api";
 import styles from "./AssetExplorerPanelContainer.scss";
+import DraggableFile from "../components/DraggableFile";
 
 class AssetExplorerPanelContainer extends Component {
   static propTypes = {
@@ -70,7 +69,7 @@ class AssetExplorerPanelContainer extends Component {
     });
   };
 
-  onSelectIcon = ({ file }) => {
+  onClickFile = (e, file) => {
     if (this.state.singleClickedFile && file.uri === this.state.singleClickedFile.uri) {
       if (file.isDirectory) {
         this.setState({ selectedDirectory: file });
@@ -117,13 +116,6 @@ class AssetExplorerPanelContainer extends Component {
     const selectedDirectory = this.state.selectedDirectory || this.state.tree;
     const files = selectedDirectory.files || [];
     const selectedFile = this.state.selectedFile;
-    const icons = files.map(file => ({
-      id: file.uri,
-      name: file.name,
-      src: file.isDirectory ? folderIcon : fileIcon,
-      selected: selectedFile && selectedFile.uri === file.uri,
-      file
-    }));
 
     return (
       <div className={styles.assetExplorerPanelContainer}>
@@ -138,7 +130,16 @@ class AssetExplorerPanelContainer extends Component {
           />
         </div>
         <div className={styles.rightColumn}>
-          <IconGrid icons={icons} onSelect={this.onSelectIcon} small />
+          <IconGrid>
+            {files.map(file => (
+              <DraggableFile
+                key={file.uri}
+                file={file}
+                selected={selectedFile && selectedFile.uri === file.uri}
+                onClick={this.onClickFile}
+              />
+            ))}
+          </IconGrid>
         </div>
       </div>
     );

@@ -13,5 +13,5 @@ export default function InputGroup({ name, children }) {
 
 InputGroup.propTypes = {
   name: PropTypes.string,
-  children: PropTypes.arrayOf(PropTypes.element)
+  children: PropTypes.any
 };

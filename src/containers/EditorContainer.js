@@ -1,5 +1,7 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
+import { DragDropContextProvider } from "react-dnd";
+import HTML5Backend from "react-dnd-html5-backend";
 import Editor from "../components/Editor";
 import ProjectModalContainer from "./ProjectModalContainer";
 import NewProjectModalContainer from "./NewProjectModalContainer";
@@ -172,13 +174,15 @@ class EditorContainer extends Component {
 
     return (
       <ProjectProvider value={projectContext}>
-        <Editor
-          initialPanels={this.props.initialPanels}
-          renderPanel={this.renderPanel}
-          openModal={this.state.openModal}
-          onCloseModal={this.onCloseModal}
-          onPanelChange={this.onPanelChange}
-        />
+        <DragDropContextProvider backend={HTML5Backend}>
+          <Editor
+            initialPanels={this.props.initialPanels}
+            renderPanel={this.renderPanel}
+            openModal={this.state.openModal}
+            onCloseModal={this.onCloseModal}
+            onPanelChange={this.onPanelChange}
+          />
+        </DragDropContextProvider>
       </ProjectProvider>
     );
   }
