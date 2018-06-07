@@ -122,6 +122,7 @@ export default class Project extends EventEmitter {
     const projectDirPath = OS.Path.join(baseProjectDir, name);
     const finalDestUri = OS.Path.toFileURI(projectDirPath);
 
+    await OS.File.makeDir(projectDirPath, { ignoreExisting: true });
     await copyRecursive(templateDirPath, projectDirPath);
 
     const iconPath = OS.Path.join(projectDirPath, "thumbnail.png");
