@@ -97,8 +97,6 @@ export default class Editor {
     this.helpers = {};
 
     this.viewport = null;
-
-    this.gltfLoader = new THREE.GLTFLoader();
   }
 
   onWindowResize = () => {
@@ -228,9 +226,25 @@ export default class Editor {
     this.textures[texture.uuid] = texture;
   }
 
-  loadGLTF(url) {
-    this.gltfLoader.load(url, ({ scene }) => {
-      this.addObject(scene);
+  loadGLTF(name, url, parent) {
+    const gltfLoader = new THREE.GLTFLoader();
+
+    gltfLoader.load(url, ({ scene }) => {
+      const gltfContainer = new THREE.Object3D();
+      gltfContainer.name = name;
+      gltfContainer.userData.components = {
+        "gltf-model": {
+          src: url
+        }
+      };
+      gltfContainer.add(scene);
+
+      scene.userData = {
+        dontShowInHierarchy: true,
+        dontExport: true
+      };
+
+      this.addObject(gltfContainer, parent);
     });
   }
 

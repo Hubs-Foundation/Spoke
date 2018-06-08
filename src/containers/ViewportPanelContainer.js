@@ -16,7 +16,7 @@ class ViewportPanelContainer extends Component {
 
     this.state = {
       viewportHotKeyHandlers: {
-        translateTool: this.onTranslateScale,
+        translateTool: this.onTranslateTool,
         rotateTool: this.onRotateTool,
         scaleTool: this.onScaleTool
       }
@@ -31,7 +31,8 @@ class ViewportPanelContainer extends Component {
 
   onDropFile = file => {
     if (file.ext === "gltf") {
-      this.props.editor.loadGLTF(file.uri);
+      const nodeName = file.name.replace(".gltf", "");
+      this.props.editor.loadGLTF(nodeName, file.uri);
     }
   };
 
