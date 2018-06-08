@@ -76,7 +76,7 @@ class HierarchyPanelContainer extends Component {
     this.props.editor.execute(new MoveObjectCommand(object, newParent, newBefore));
   };
 
-  onClickNode = (e, node) => {
+  onMouseUpNode = (e, node) => {
     if (this.clicked === node.object) {
       this.props.editor.focusById(node.object.id);
       return;
@@ -113,7 +113,7 @@ class HierarchyPanelContainer extends Component {
         className={classNames("node", {
           "is-active": this.props.editor.selected && node.object.id === this.props.editor.selected.id
         })}
-        onClick={e => this.onClickNode(e, node)}
+        onMouseUp={e => this.onMouseUpNode(e, node)}
       >
         <ContextMenuTrigger holdToDisplay={-1} id="hierarchy-node-menu" node={node} collect={collectNodeMenuProps}>
           {node.object.name}

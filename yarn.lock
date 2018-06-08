@@ -89,9 +89,9 @@
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/@nodelib/fs.stat/-/fs.stat-1.1.0.tgz#50c1e2260ac0ed9439a181de3725a0168d59c48a"
 
-"@robertlong/react-ui-tree@3.4.2":
-  version "3.4.2"
-  resolved "https://registry.yarnpkg.com/@robertlong/react-ui-tree/-/react-ui-tree-3.4.2.tgz#63aafc9c6af445aa1bfa6b5b56b8619b564be017"
+"@robertlong/react-ui-tree@3.4.4":
+  version "3.4.4"
+  resolved "https://registry.yarnpkg.com/@robertlong/react-ui-tree/-/react-ui-tree-3.4.4.tgz#f1a4e46ea94e3443598c19332919d6d81c45e3a2"
   dependencies:
     classnames "^2.2.5"
     js-tree "^2.0.1"
@@ -6650,6 +6650,10 @@ preserve@^0.2.0:
 prettier@^1.12.1:
   version "1.13.0"
   resolved "https://registry.yarnpkg.com/prettier/-/prettier-1.13.0.tgz#054de8d5fb1a4405c845d16183f58a2c301f6f16"
+
+prettier@^1.13.4:
+  version "1.13.4"
+  resolved "https://registry.yarnpkg.com/prettier/-/prettier-1.13.4.tgz#31bbae6990f13b1093187c731766a14036fa72e6"
 
 pretty-bytes@^4.0.2:
   version "4.0.2"

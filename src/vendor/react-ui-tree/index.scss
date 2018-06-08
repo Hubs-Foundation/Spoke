@@ -24,6 +24,7 @@
   .m-node {
     display: inline-block;
     width: 100%;
+    user-select: none;
 
     &.placeholder > * {
       visibility: hidden;
@@ -43,6 +44,12 @@
       display: inline-block;
       width: 100%;
       padding: 4px 5px;
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      -khtml-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
 
       &.is-active {
         background-color: $selected;
