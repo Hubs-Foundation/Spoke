@@ -8,6 +8,15 @@ import Viewport from "./Viewport";
  * @author mrdoob / http://mrdoob.com/
  */
 
+function getFileNameFromURI(uri) {
+  const matches = uri.match(/\/([^\\/?#]+)[^\\/]*$/);
+
+  if (matches.length > 1) {
+    return matches[1].split(".")[0];
+  }
+  return null;
+}
+
 export default class Editor {
   constructor() {
     this.DEFAULT_CAMERA = new THREE.PerspectiveCamera(50, 1, 0.01, 1000);
@@ -226,26 +235,49 @@ export default class Editor {
     this.textures[texture.uuid] = texture;
   }
 
-  loadGLTF(name, url, parent) {
+  loadGLTF(uri, object) {
     const gltfLoader = new THREE.GLTFLoader();
 
-    gltfLoader.load(url, ({ scene }) => {
-      const gltfContainer = new THREE.Object3D();
-      gltfContainer.name = name;
-      gltfContainer.userData.components = {
-        "gltf-model": {
-          src: url
-        }
-      };
+    const gltfContainer = object || new THREE.Object3D();
+
+    gltfContainer.userData.MOZ_gltf_ref = {
+      uri
+    };
+
+    if (!object) {
+      gltfContainer.name = getFileNameFromURI(uri);
+      this.addObject(gltfContainer);
+    }
+
+    gltfLoader.load(uri, ({ scene }) => {
+      const curGLTFChild = gltfContainer.children.find(child => child.userData._gltfRoot);
+
+      if (curGLTFChild) {
+        gltfContainer.remove(curGLTFChild);
+      }
+
       gltfContainer.add(scene);
 
       scene.userData = {
-        dontShowInHierarchy: true,
-        dontExport: true
+        _gltfRoot: true,
+        _dontShowInHierarchy: true,
+        _dontExport: true
       };
 
-      this.addObject(gltfContainer, parent);
+      this.signals.sceneGraphChanged.dispatch();
     });
+  }
+
+  removeGLTF(uri, object) {
+    const glTFChild = object.children.find(child => child.userData._gltfRoot);
+
+    if (glTFChild) {
+      object.remove(glTFChild);
+    }
+
+    if (object.userData.MOZ_gltf_ref) {
+      delete object.userData.MOZ_gltf_ref;
+    }
   }
 
   //

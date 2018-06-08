@@ -18,7 +18,7 @@ function createNodeHierarchy(object) {
   };
 
   if (object.children.length !== 0) {
-    node.children = object.children.filter(({ userData }) => !userData.dontShowInHierarchy).map(createNodeHierarchy);
+    node.children = object.children.filter(({ userData }) => !userData._dontShowInHierarchy).map(createNodeHierarchy);
   }
 
   return node;

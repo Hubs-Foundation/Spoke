@@ -100,10 +100,45 @@ class EditorContainer extends Component {
         redo: this.onRedo
       }
     };
+
+    this.gltfChangeHandlers = new Map();
   }
 
   componentDidMount() {
     this.props.editor.signals.windowResize.dispatch();
+
+    this.props.editor.signals.objectAdded.add(object => {
+      const gltfRef = object.userData.MOZ_gltf_ref;
+
+      if (gltfRef) {
+        const onChange = (event, uri) => this.onGLTFChanged(event, uri, object);
+        this.gltfChangeHandlers.set(object, onChange);
+        this.state.project.watchFile(gltfRef.uri, onChange);
+      }
+    });
+
+    this.props.editor.signals.objectRemoved.add(object => {
+      const gltfRef = object.userData.MOZ_gltf_ref;
+
+      if (gltfRef) {
+        const onChange = this.gltfChangeHandlers.get(object);
+        this.state.project.unwatchFile(gltfRef.uri, onChange);
+      }
+    });
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if (this.state.project !== prevState.project && prevState.project) {
+      prevState.project.close();
+    }
+  }
+
+  componentWillUnmount() {
+    if (this.state.project) {
+      this.state.project.close();
+    }
+
+    window.removeEventListener("resize", this.onWindowResize, false);
   }
 
   onWindowResize = () => {
@@ -178,6 +213,16 @@ class EditorContainer extends Component {
     this.props.editor.redo();
   };
 
+  onGLTFChanged = (event, uri, object) => {
+    if (event === "changed") {
+      this.props.editor.loadGLTF(uri, object);
+    } else if (event === "removed") {
+      this.props.editor.removeGLTF(uri, object);
+      const onChange = this.gltfChangeHandlers.get(object);
+      this.state.project.unwatchFile(uri, onChange);
+    }
+  };
+
   renderPanel = (panelId, path) => {
     const panel = this.state.registeredPanels[panelId];
 
@@ -212,10 +257,6 @@ class EditorContainer extends Component {
         </DragDropContextProvider>
       </ProjectProvider>
     );
-  }
-
-  componentWillUnmount() {
-    window.removeEventListener("resize", this.onWindowResize, false);
   }
 }
 

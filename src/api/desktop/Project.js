@@ -16,6 +16,10 @@ export default class Project extends EventEmitter {
 
     this._checkHierarchyTimeout = null;
     this._fileHierarchy = null;
+
+    this._fileWatchHandlerCount = 0;
+    this._fileWatchHandlers = new Map();
+    this._prevWatchedFileModified = new Map();
   }
 
   async getFileHierarchy(force) {
@@ -86,7 +90,7 @@ export default class Project extends EventEmitter {
     super.addListener(event, callback);
 
     if (event === "hierarchychanged" && this._checkHierarchyTimeout === null) {
-      this._checkHierarchyTimeout = setTimeout(this._checkHierarchy, 5000);
+      this._checkHierarchyTimeout = setTimeout(this._checkHierarchy, 1000);
     }
   }
 
@@ -110,10 +114,72 @@ export default class Project extends EventEmitter {
     this._checkHierarchyTimeout = setTimeout(this._checkHierarchy, 5000);
   };
 
+  async watchFile(uri, callback) {
+    if (this._fileWatchHandlers.has(uri)) {
+      this._fileWatchHandlers.get(uri).push(callback);
+    } else {
+      const filePath = OS.Path.fromFileURI(uri);
+      const { lastModificationDate } = await OS.File.stat(filePath);
+      this._prevWatchedFileModified.set(uri, lastModificationDate);
+
+      this._fileWatchHandlers.set(uri, [callback]);
+    }
+
+    if (this._fileWatchHandlerCount === 0) {
+      this.addListener("hierarchychanged", this._onWatchedFileChanged);
+    }
+
+    this._fileWatchHandlerCount++;
+  }
+
+  unwatchFile(uri, callback) {
+    if (this._fileWatchHandlers.has(uri)) {
+      if (this._fileWatchHandlers.get(uri).length === 1) {
+        this._fileWatchHandlers.delete(uri);
+        this._fileWatchHandlerCount--;
+      } else {
+        const index = this._fileWatchHandlers.get(uri).indexOf(callback);
+
+        if (index !== -1) {
+          this._fileWatchHandlers.get(uri).splice(index, 1);
+          this._fileWatchHandlerCount--;
+        }
+      }
+    }
+
+    if (this._fileWatchHandlerCount === 0) {
+      this.removeListener("hierarchychanged", this._onWatchedFileChanged);
+    }
+  }
+
+  _onWatchedFileChanged = async () => {
+    for (const [fileUri, callbacks] of this._fileWatchHandlers) {
+      const filePath = OS.Path.fromFileURI(fileUri);
+
+      try {
+        const { lastModificationDate } = await OS.File.stat(filePath);
+
+        const prevLastModificationDate = this._prevWatchedFileModified.get(fileUri);
+
+        if (lastModificationDate.getTime() !== prevLastModificationDate.getTime()) {
+          for (const callback of callbacks) {
+            callback("changed", fileUri);
+          }
+        }
+      } catch (e) {
+        for (const callback of callbacks) {
+          callback("removed", fileUri);
+        }
+      }
+    }
+  };
+
   close() {
     if (this.watcher) {
       this.watcher.close();
     }
+
+    this.removeListener("hierarchychanged", this._onWatchedFileChanged);
   }
 
   static async createFromTemplate(name, templateUri, projectDirUri) {

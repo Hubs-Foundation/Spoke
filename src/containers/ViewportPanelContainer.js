@@ -30,9 +30,8 @@ class ViewportPanelContainer extends Component {
   }
 
   onDropFile = file => {
-    if (file.ext === "gltf") {
-      const nodeName = file.name.replace(".gltf", "");
-      this.props.editor.loadGLTF(nodeName, file.uri);
+    if (file.ext === "gltf" || file.ext === "glb") {
+      this.props.editor.loadGLTF(file.uri);
     }
   };
 
