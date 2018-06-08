@@ -2,11 +2,15 @@ import React, { Component } from "react";
 import PropertyGroup from "../components/PropertyGroup";
 import InputGroup from "../components/InputGroup";
 import Vector3Input from "../components/Vector3Input";
+import StringInput from "../components/StringInput";
 
 export default class NodePropertyGroupContainer extends Component {
   render() {
     return (
       <PropertyGroup name="Node">
+        <InputGroup name="Name">
+          <StringInput />
+        </InputGroup>
         <InputGroup name="Position">
           <Vector3Input />
         </InputGroup>
