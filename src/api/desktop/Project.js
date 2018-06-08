@@ -162,6 +162,8 @@ export default class Project extends EventEmitter {
         const prevLastModificationDate = this._prevWatchedFileModified.get(fileUri);
 
         if (lastModificationDate.getTime() !== prevLastModificationDate.getTime()) {
+          this._prevWatchedFileModified.set(fileUri, lastModificationDate);
+
           for (const callback of callbacks) {
             callback("changed", fileUri);
           }
