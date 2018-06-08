@@ -1,8 +1,21 @@
 # Hubs Editor
 
-# Desktop App Development
+## Installation
 
 ```
+git clone https://github.com/MozillaReality/hubs-editor.git
+cd hubs-editor
+yarn install
+```
+
+## Desktop App Development
+
+In one terminal session:
+```
 yarn watch
-yarn start --dev
+```
+
+In another:
+```
+yarn start
 ```
