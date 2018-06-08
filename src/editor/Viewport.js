@@ -134,6 +134,8 @@ export default class Viewport {
     function onMouseDown(event) {
       event.preventDefault();
 
+      canvas.focus();
+
       const array = getMousePosition(canvas, event.clientX, event.clientY);
       onDownPosition.fromArray(array);
 

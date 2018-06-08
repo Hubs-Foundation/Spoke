@@ -14,7 +14,7 @@ import { MosaicWindow } from "react-mosaic-component";
 import PanelToolbar from "../components/PanelToolbar";
 import { Provider as ProjectProvider } from "./ProjectContext";
 import { withEditor } from "./EditorContext";
-import {HotKeys} from 'react-hotkeys';
+import { HotKeys } from "react-hotkeys";
 import styles from "./EditorContainer.scss";
 
 class EditorContainer extends Component {
@@ -89,12 +89,13 @@ class EditorContainer extends Component {
         }
       },
       keyMap: {
-        test: "up",
-        undo: ['ctrl+z', 'command+z'],
-        redo: ['ctrl+shit+z', 'command+shift+z']
+        translateTool: "w",
+        rotateTool: "e",
+        scaleTool: "r",
+        undo: ["ctrl+z", "command+z"],
+        redo: ["ctrl+shit+z", "command+shift+z"]
       },
       globalHotKeyHandlers: {
-        test: (e) => console.log(e),
         undo: this.onUndo,
         redo: this.onRedo
       }
@@ -170,7 +171,6 @@ class EditorContainer extends Component {
   };
 
   onUndo = () => {
-    console.log("undo");
     this.props.editor.undo();
   };
 
@@ -196,7 +196,11 @@ class EditorContainer extends Component {
     return (
       <ProjectProvider value={projectContext}>
         <DragDropContextProvider backend={HTML5Backend}>
-          <HotKeys keyMap={this.state.keyMap} handlers={this.state.globalHotKeyHandlers} className={styles.hotKeysContainer}>
+          <HotKeys
+            keyMap={this.state.keyMap}
+            handlers={this.state.globalHotKeyHandlers}
+            className={styles.hotKeysContainer}
+          >
             <Editor
               initialPanels={this.props.initialPanels}
               renderPanel={this.renderPanel}
