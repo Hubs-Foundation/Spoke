@@ -24,6 +24,7 @@
     "react-dnd": "^2.6.0",
     "react-dnd-html5-backend": "^2.6.0",
     "react-dom": "^16.4.0",
+    "react-hotkeys": "^1.1.4",
     "react-modal": "^3.4.4",
     "react-mosaic-component": "^1.1.1",
     "react-numeric-input": "^2.2.3",

@@ -14,6 +14,8 @@ import { MosaicWindow } from "react-mosaic-component";
 import PanelToolbar from "../components/PanelToolbar";
 import { Provider as ProjectProvider } from "./ProjectContext";
 import { withEditor } from "./EditorContext";
+import { HotKeys } from "react-hotkeys";
+import styles from "./EditorContainer.scss";
 
 class EditorContainer extends Component {
   static defaultProps = {
@@ -85,12 +87,58 @@ class EditorContainer extends Component {
           onOpenProject: this.onOpenProject,
           onNewProject: this.onNewProject
         }
+      },
+      keyMap: {
+        translateTool: "w",
+        rotateTool: "e",
+        scaleTool: "r",
+        undo: ["ctrl+z", "command+z"],
+        redo: ["ctrl+shit+z", "command+shift+z"]
+      },
+      globalHotKeyHandlers: {
+        undo: this.onUndo,
+        redo: this.onRedo
       }
     };
+
+    this.gltfChangeHandlers = new Map();
   }
 
   componentDidMount() {
     this.props.editor.signals.windowResize.dispatch();
+
+    this.props.editor.signals.objectAdded.add(object => {
+      const gltfRef = object.userData.MOZ_gltf_ref;
+
+      if (gltfRef) {
+        const onChange = (event, uri) => this.onGLTFChanged(event, uri, object);
+        this.gltfChangeHandlers.set(object, onChange);
+        this.state.project.watchFile(gltfRef.uri, onChange);
+      }
+    });
+
+    this.props.editor.signals.objectRemoved.add(object => {
+      const gltfRef = object.userData.MOZ_gltf_ref;
+
+      if (gltfRef) {
+        const onChange = this.gltfChangeHandlers.get(object);
+        this.state.project.unwatchFile(gltfRef.uri, onChange);
+      }
+    });
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if (this.state.project !== prevState.project && prevState.project) {
+      prevState.project.close();
+    }
+  }
+
+  componentWillUnmount() {
+    if (this.state.project) {
+      this.state.project.close();
+    }
+
+    window.removeEventListener("resize", this.onWindowResize, false);
   }
 
   onWindowResize = () => {
@@ -157,6 +205,24 @@ class EditorContainer extends Component {
     });
   };
 
+  onUndo = () => {
+    this.props.editor.undo();
+  };
+
+  onRedo = () => {
+    this.props.editor.redo();
+  };
+
+  onGLTFChanged = (event, uri, object) => {
+    if (event === "changed") {
+      this.props.editor.loadGLTF(uri, object);
+    } else if (event === "removed") {
+      this.props.editor.removeGLTF(uri, object);
+      const onChange = this.gltfChangeHandlers.get(object);
+      this.state.project.unwatchFile(uri, onChange);
+    }
+  };
+
   renderPanel = (panelId, path) => {
     const panel = this.state.registeredPanels[panelId];
 
@@ -175,20 +241,22 @@ class EditorContainer extends Component {
     return (
       <ProjectProvider value={projectContext}>
         <DragDropContextProvider backend={HTML5Backend}>
-          <Editor
-            initialPanels={this.props.initialPanels}
-            renderPanel={this.renderPanel}
-            openModal={this.state.openModal}
-            onCloseModal={this.onCloseModal}
-            onPanelChange={this.onPanelChange}
-          />
+          <HotKeys
+            keyMap={this.state.keyMap}
+            handlers={this.state.globalHotKeyHandlers}
+            className={styles.hotKeysContainer}
+          >
+            <Editor
+              initialPanels={this.props.initialPanels}
+              renderPanel={this.renderPanel}
+              openModal={this.state.openModal}
+              onCloseModal={this.onCloseModal}
+              onPanelChange={this.onPanelChange}
+            />
+          </HotKeys>
         </DragDropContextProvider>
       </ProjectProvider>
     );
-  }
-
-  componentWillUnmount() {
-    window.removeEventListener("resize", this.onWindowResize, false);
   }
 }
 
