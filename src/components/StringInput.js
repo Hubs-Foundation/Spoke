@@ -6,6 +6,11 @@ export default function StringInput({ value, onChange }) {
   return <input className={styles.stringInput} value={value} onChange={onChange} />;
 }
 
+StringInput.defaultProps = {
+  value: "",
+  onChange: () => {}
+};
+
 StringInput.propTypes = {
   value: PropTypes.string,
   onChange: PropTypes.func
