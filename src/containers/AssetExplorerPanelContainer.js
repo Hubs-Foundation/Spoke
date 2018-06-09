@@ -4,6 +4,7 @@ import Tree from "@robertlong/react-ui-tree";
 import "../vendor/react-ui-tree/index.scss";
 import classNames from "classnames";
 import { withProject } from "./ProjectContext";
+import { withEditor } from "./EditorContext";
 import IconGrid from "../components/IconGrid";
 import { openFile } from "../api";
 import styles from "./AssetExplorerPanelContainer.scss";
@@ -11,7 +12,8 @@ import DraggableFile from "../components/DraggableFile";
 
 class AssetExplorerPanelContainer extends Component {
   static propTypes = {
-    project: PropTypes.any
+    project: PropTypes.any,
+    editor: PropTypes.any
   };
 
   constructor(props) {
@@ -34,8 +36,6 @@ class AssetExplorerPanelContainer extends Component {
       this.setState({
         selectedDirectory: node
       });
-    } else if (node.ext === "gltf" || node.ext === "glb") {
-      console.log("Open gltf");
     }
   };
 
@@ -76,8 +76,8 @@ class AssetExplorerPanelContainer extends Component {
         return;
       }
 
-      if (file.ext === ".gltf" || file.ext === ".glb") {
-        console.log("Open gltf");
+      if (file.ext === "gltf") {
+        this.props.editor.signals.openScene.dispatch(file.uri);
         return;
       }
 
@@ -146,4 +146,4 @@ class AssetExplorerPanelContainer extends Component {
   }
 }
 
-export default withProject(AssetExplorerPanelContainer);
+export default withProject(withEditor(AssetExplorerPanelContainer));

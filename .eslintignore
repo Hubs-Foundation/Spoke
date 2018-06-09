@@ -1,1 +1,2 @@
 desktop/app/**/*.js
+src/vendor/three/GLTFExporter.js

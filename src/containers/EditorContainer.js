@@ -49,6 +49,8 @@ class EditorContainer extends Component {
 
     this.state = {
       project: null,
+      sceneURI: null,
+      sceneModified: null,
       registeredPanels: {
         hierarchy: {
           component: HierarchyPanelContainer,
@@ -92,12 +94,16 @@ class EditorContainer extends Component {
         translateTool: "w",
         rotateTool: "e",
         scaleTool: "r",
+        save: ["ctrl+s", "command+s"],
+        saveAs: ["ctrl+shift+s", "command+shift+s"],
         undo: ["ctrl+z", "command+z"],
         redo: ["ctrl+shit+z", "command+shift+z"]
       },
       globalHotKeyHandlers: {
         undo: this.onUndo,
-        redo: this.onRedo
+        redo: this.onRedo,
+        save: this.onSave,
+        saveAs: this.onSaveAs
       }
     };
 
@@ -125,6 +131,9 @@ class EditorContainer extends Component {
         this.state.project.unwatchFile(gltfRef.uri, onChange);
       }
     });
+
+    this.props.editor.signals.openScene.add(this.onOpenScene);
+    this.props.editor.signals.sceneGraphChanged.add(this.onSceneChanged);
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -213,6 +222,54 @@ class EditorContainer extends Component {
     this.props.editor.redo();
   };
 
+  onSave = async () => {
+    if (!this.state.sceneModified && this.state.sceneURI) {
+      return;
+    }
+
+    try {
+      const { json, bin } = await this.props.editor.exportScene();
+
+      let sceneURI;
+
+      if (this.state.sceneURI) {
+        sceneURI = await this.state.project.saveScene(this.state.sceneURI, json, bin);
+      } else {
+        sceneURI = await this.state.project.saveSceneAs(this.props.editor.scene.name, json, bin);
+      }
+
+      if (sceneURI === null) {
+        return;
+      }
+
+      this.setState({
+        sceneModified: false,
+        sceneURI
+      });
+    } catch (e) {
+      throw e;
+    }
+  };
+
+  onSaveAs = async () => {
+    try {
+      const { json, bin } = await this.props.editor.exportScene();
+
+      const sceneURI = await this.state.project.saveSceneAs(this.props.editor.scene.name, json, bin);
+
+      if (sceneURI === null) {
+        return;
+      }
+
+      this.setState({
+        sceneModified: false,
+        sceneURI
+      });
+    } catch (e) {
+      throw e;
+    }
+  };
+
   onGLTFChanged = (event, uri, object) => {
     if (event === "changed") {
       this.props.editor.loadGLTF(uri, object);
@@ -221,6 +278,41 @@ class EditorContainer extends Component {
       const onChange = this.gltfChangeHandlers.get(object);
       this.state.project.unwatchFile(uri, onChange);
     }
+  };
+
+  onSceneChanged = () => {
+    if (!this.state.sceneModified) {
+      this.setState({ sceneModified: true });
+      document.title = `Hubs Editor - ${this.props.editor.scene.name}*`;
+    }
+  };
+
+  onOpenScene = uri => {
+    console.log(uri);
+    if (this.state.sceneURI === uri) {
+      return;
+    }
+
+    if (
+      this.state.sceneModified &&
+      !confirm("This scene has unsaved changes do you really want to really want to open a new scene without saving?")
+    ) {
+      return;
+    }
+
+    this.props.editor.clear();
+    this.props.editor.loadGLTFScene(uri);
+
+    // Set state after sceneGraphChanged signals have fired.
+    setTimeout(() => {
+      this.setState({
+        sceneURI: uri,
+        sceneLastSaved: new Date(),
+        sceneModified: false
+      });
+
+      document.title = `Hubs Editor - ${this.props.editor.scene.name}`;
+    }, 0);
   };
 
   renderPanel = (panelId, path) => {

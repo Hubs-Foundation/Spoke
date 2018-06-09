@@ -93,7 +93,7 @@ class HierarchyPanelContainer extends Component {
 
   onAddNode = (e, node) => {
     const object = new THREE.Object3D();
-    object.name = "New Node";
+    object.name = "New_Node";
     this.props.editor.execute(new AddObjectCommand(object, node.object));
   };
 
