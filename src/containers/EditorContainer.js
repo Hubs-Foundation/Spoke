@@ -9,7 +9,13 @@ import ViewportPanelContainer from "./ViewportPanelContainer";
 import HierarchyPanelContainer from "./HierarchyPanelContainer";
 import PropertiesPanelContainer from "./PropertiesPanelContainer";
 import AssetExplorerPanelContainer from "./AssetExplorerPanelContainer";
-import { createProjectFromTemplate, addRecentProject, openProject, DEFAULT_PROJECT_DIR_URI } from "../api";
+import {
+  createProjectFromTemplate,
+  addRecentProject,
+  openProject,
+  runGLTFBundle,
+  DEFAULT_PROJECT_DIR_URI
+} from "../api";
 import { MosaicWindow } from "react-mosaic-component";
 import PanelToolbar from "../components/PanelToolbar";
 import { Provider as ProjectProvider } from "./ProjectContext";
@@ -97,13 +103,15 @@ class EditorContainer extends Component {
         save: ["ctrl+s", "command+s"],
         saveAs: ["ctrl+shift+s", "command+shift+s"],
         undo: ["ctrl+z", "command+z"],
-        redo: ["ctrl+shit+z", "command+shift+z"]
+        redo: ["ctrl+shit+z", "command+shift+z"],
+        export: ["ctrl+b", "command+b"]
       },
       globalHotKeyHandlers: {
         undo: this.onUndo,
         redo: this.onRedo,
         save: this.onSave,
-        saveAs: this.onSaveAs
+        saveAs: this.onSaveAs,
+        export: this.onExport
       }
     };
 
@@ -268,6 +276,14 @@ class EditorContainer extends Component {
     } catch (e) {
       throw e;
     }
+  };
+
+  onExport = async () => {
+    if (!this.state.sceneURI) {
+      return;
+    }
+
+    await runGLTFBundle(this.state.sceneURI);
   };
 
   onGLTFChanged = (event, uri, object) => {
