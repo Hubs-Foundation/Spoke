@@ -11,6 +11,9 @@ import SetPositionCommand from "../editor/commands/SetPositionCommand";
 import SetRotationCommand from "../editor/commands/SetRotationCommand";
 import SetScaleCommand from "../editor/commands/SetScaleCommand";
 
+const RAD2DEG = THREE.Math.RAD2DEG;
+const DEG2RAD = THREE.Math.DEG2RAD;
+
 class NodePropertyGroupContainer extends Component {
   static propTypes = {
     editor: PropTypes.object
@@ -19,9 +22,10 @@ class NodePropertyGroupContainer extends Component {
     super(props);
     this.props.editor.signals.objectSelected.add(this.updateNode);
     this.props.editor.signals.objectChanged.add(this.updateStateFromNode);
-    this.state = { node: {} };
+    this.state = { node: null };
     this.positionVector = new THREE.Vector3();
     this.rotationEuler = new THREE.Euler();
+    this.degreesVector = new THREE.Vector3();
     this.scaleVector = new THREE.Vector3();
   }
   updateNode = node => {
@@ -51,7 +55,7 @@ class NodePropertyGroupContainer extends Component {
   };
   updateRotation = newRotation => {
     if (!this.state.node) return;
-    this.rotationEuler.set(newRotation.x, newRotation.y, newRotation.z);
+    this.rotationEuler.set(newRotation.x * DEG2RAD, newRotation.y * DEG2RAD, newRotation.z * DEG2RAD);
     this.props.editor.execute(new SetRotationCommand(this.state.node, this.rotationEuler));
   };
   updateScale = newScale => {
@@ -60,7 +64,12 @@ class NodePropertyGroupContainer extends Component {
   };
   render() {
     const position = this.state.node ? this.state.node.position : null;
-    const rotation = this.state.node ? this.state.node.rotation : null;
+    let rotation = null;
+    if (this.state.node) {
+      const eulerRadians = this.state.node.rotation;
+      this.degreesVector.set(eulerRadians.x * RAD2DEG, eulerRadians.y * RAD2DEG, eulerRadians.z * RAD2DEG);
+      rotation = this.degreesVector;
+    }
     const scale = this.state.node ? this.state.node.scale : null;
     return (
       <PropertyGroup name="Node">
