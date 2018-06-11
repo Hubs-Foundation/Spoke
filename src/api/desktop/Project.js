@@ -217,10 +217,12 @@ export default class Project extends EventEmitter {
 
     if (bin) {
       let binPath = OS.Path.join(sceneDir, sceneFileName + ".bin");
+      json.buffers[0].uri = sceneFileName + ".bin";
 
       if (bufferCount === 1 && buffers[0].uri) {
         // Set the binPath to overwrite the existing .bin file
         binPath = OS.Path.join(sceneDir, buffers[0].uri);
+        json.buffers[0].uri = buffers[0].uri;
       } else if (bufferCount > 1) {
         const bufferPaths = buffers.filter(buffer => buffer.uri).map(buffer => OS.Path.join(sceneDir, buffer.uri));
         const bufferPathsMessage = bufferPaths.join("\n");
@@ -237,6 +239,16 @@ export default class Project extends EventEmitter {
 
       // Write the .bin file
       await writeBlobAtomic(binPath, bin, true);
+    }
+
+    if (json.images) {
+      for (const image of json.images) {
+        const sceneDirUri = OS.Path.toFileURI(sceneDir);
+
+        if (image.uri) {
+          image.uri = image.uri.replace(sceneDirUri, ".");
+        }
+      }
     }
 
     // write the .gltf file

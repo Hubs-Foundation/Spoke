@@ -2,6 +2,7 @@
 
 :local(.icon) {
   display: flex;
+  flex-grow: 0;
   flex-wrap: nowrap;
   flex-direction: column;
   padding: 25px;

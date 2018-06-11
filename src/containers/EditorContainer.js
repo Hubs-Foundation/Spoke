@@ -258,7 +258,11 @@ class EditorContainer extends Component {
     try {
       const { json, bin } = await this.props.editor.exportScene();
 
+      console.log("export");
+
       const sceneURI = await this.state.project.saveSceneAs(this.props.editor.scene.name, json, bin);
+
+      console.log("save");
 
       if (sceneURI === null) {
         return;

@@ -20,13 +20,15 @@ const TEMPLATES_PATH = OS.Path.join(EDITOR_DIRECTORY_PATH, "templates");
 const PROJECTS_PATH = OS.Path.join(EDITOR_DIRECTORY_PATH, "projects");
 const WORKSPACE_PATH = OS.Path.join(EDITOR_DIRECTORY_PATH, "workspace.json");
 export const DEFAULT_PROJECT_DIR_URI = pathToUri(PROJECTS_PATH);
-
 const DEFAULT_WORKSPACE = {
   recentProjects: []
 };
 
 let APP_DIR_PATH;
 let RESOURCES_PATH;
+let NODE_PATH;
+let GLTF_BUNDLE_PATH;
+let DEVSERVER_PATH;
 
 export async function init() {
   // Get the Gecko Runtime Engine path
@@ -41,6 +43,11 @@ export async function init() {
   }
 
   RESOURCES_PATH = OS.Path.join(APP_DIR_PATH, "resources");
+
+  const binPath = OS.Path.join(APP_DIR_PATH, "node_modules", ".bin");
+  NODE_PATH = OS.Path.join(binPath, "node");
+  GLTF_BUNDLE_PATH = OS.Path.join(binPath, "gltf-bundle");
+  DEVSERVER_PATH = OS.Path.join(APP_DIR_PATH, "dev-server.js");
 
   if (!(await OS.File.exists(EDITOR_DIRECTORY_PATH))) {
     await OS.File.makeDir(EDITOR_DIRECTORY_PATH, { ignoreExisting: true });
@@ -145,6 +152,7 @@ class ProcessObserver {
   }
 
   observe(subject, topic, data) {
+    console.log(subject);
     switch (topic) {
       case "process-finished":
         this.resolve(data);
@@ -160,11 +168,28 @@ class ProcessObserver {
   }
 }
 
+async function runBundleConfig(bundleConfigPath, destDirUri) {
+  const bundleConfigDir = OS.Path.dirname(bundleConfigPath);
+  const destDirPath = destDirUri ? OS.Path.fromFileURI(destDirUri) : OS.Path.join(bundleConfigDir, "dist");
+
+  const bundle = await readJSON(bundleConfigPath);
+  const bundleOutputPath = OS.Path.join(destDirPath, bundle.name + ".bundle.json");
+
+  const nodeExe = new FileUtils.File(NODE_PATH);
+
+  const gltfBundleProcess = Process.createInstance(Components.interfaces.nsIProcess);
+  gltfBundleProcess.init(nodeExe);
+
+  const args = [GLTF_BUNDLE_PATH, bundleConfigPath, "-o", destDirPath];
+
+  return new Promise((resolve, reject) => {
+    const observer = new ProcessObserver(process, resolve, reject);
+    gltfBundleProcess.runAsync(args, args.length, observer);
+  }).then(() => bundleOutputPath);
+}
+
 export async function runGLTFBundle(gltfUri, destDirUri) {
   const gltfPath = OS.Path.fromFileURI(gltfUri);
-  const binPath = OS.Path.join(APP_DIR_PATH, "node_modules", ".bin");
-  const nodePath = OS.Path.join(binPath, "node");
-  const gltfBundlePath = OS.Path.join(binPath, "gltf-bundle");
 
   const name = getFileName(gltfPath);
 
@@ -183,17 +208,40 @@ export async function runGLTFBundle(gltfUri, destDirUri) {
   const bundleConfigPath = OS.Path.join(gltfDir, name + ".bundle.config.json");
   await writeJSONAtomic(bundleConfigPath, bundleConfig, true);
 
-  const destDirPath = OS.Path.fromFileURI(destDirUri);
+  const bundleOutputPath = await runBundleConfig(bundleConfigPath, destDirUri);
 
-  const nodeExe = new FileUtils.File(nodePath);
+  return OS.Path.toFileURI(bundleOutputPath);
+}
 
-  const gltfBundleProcess = Process.createInstance(Components.interfaces.nsIProcess);
-  gltfBundleProcess.init(nodeExe);
+export async function previewInHubs(file) {
+  let bundleURI;
 
-  const args = [gltfBundlePath, gltfDir, "-o", destDirPath];
+  if (file.ext === "json") {
+    if (file.name.endsWith(".bundle.config.json")) {
+      const bundleConfigPath = OS.Path.fromFileURI(file.uri);
+      const bundleOutputPath = await runBundleConfig(bundleConfigPath);
+      bundleURI = OS.Path.toFileURI(bundleOutputPath);
+    } else if (file.name.endsWith(".bundle.json")) {
+      bundleURI = file.uri;
+    }
+  } else if (file.ext === "gltf") {
+    bundleURI = await runGLTFBundle(file.uri);
+  }
+
+  if (!bundleURI) {
+    return;
+  }
+
+  const bundlePath = OS.Path.fromFileURI(bundleURI);
+
+  const devServerProcess = Process.createInstance(Components.interfaces.nsIProcess);
+  const nodeExe = new FileUtils.File(NODE_PATH);
+  devServerProcess.init(nodeExe);
+
+  const args = [DEVSERVER_PATH, bundlePath];
 
   return new Promise((resolve, reject) => {
     const observer = new ProcessObserver(process, resolve, reject);
-    gltfBundleProcess.runAsync(args, args.length, observer);
+    devServerProcess.runAsync(args, args.length, observer);
   });
 }

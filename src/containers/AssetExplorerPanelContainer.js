@@ -6,9 +6,27 @@ import classNames from "classnames";
 import { withProject } from "./ProjectContext";
 import { withEditor } from "./EditorContext";
 import IconGrid from "../components/IconGrid";
-import { openFile } from "../api";
+import { openFile, previewInHubs } from "../api";
 import styles from "./AssetExplorerPanelContainer.scss";
 import DraggableFile from "../components/DraggableFile";
+import { ContextMenu, MenuItem, ContextMenuTrigger } from "react-contextmenu";
+
+function collectFileMenuProps({ file }) {
+  return file;
+}
+
+function getFileContextMenuId(file) {
+  if (file.isDirectory) {
+    return "directory-menu-default";
+  } else if (
+    file.ext === "gltf" ||
+    (file.ext === "json" && (file.name.endsWith("bundle.config.json") || file.name.endsWith("bundle.json")))
+  ) {
+    return "file-menu-preview";
+  } else {
+    return "file-menu-default";
+  }
+}
 
 class AssetExplorerPanelContainer extends Component {
   static propTypes = {
@@ -96,6 +114,10 @@ class AssetExplorerPanelContainer extends Component {
     }, 500);
   };
 
+  onPreview = (e, file) => {
+    previewInHubs(file);
+  };
+
   renderNode = node => {
     return (
       <div
@@ -132,14 +154,34 @@ class AssetExplorerPanelContainer extends Component {
         <div className={styles.rightColumn}>
           <IconGrid>
             {files.map(file => (
-              <DraggableFile
+              <ContextMenuTrigger
                 key={file.uri}
+                holdToDisplay={-1}
+                id={getFileContextMenuId(file)}
                 file={file}
-                selected={selectedFile && selectedFile.uri === file.uri}
-                onClick={this.onClickFile}
-              />
+                collect={collectFileMenuProps}
+              >
+                <DraggableFile
+                  file={file}
+                  selected={selectedFile && selectedFile.uri === file.uri}
+                  onClick={this.onClickFile}
+                />
+              </ContextMenuTrigger>
             ))}
           </IconGrid>
+          <ContextMenu id="directory-menu-default">
+            <MenuItem>Open Directory</MenuItem>
+            <MenuItem>Delete Directory</MenuItem>
+          </ContextMenu>
+          <ContextMenu id="file-menu-default">
+            <MenuItem>Open File</MenuItem>
+            <MenuItem>Delete File</MenuItem>
+          </ContextMenu>
+          <ContextMenu id="file-menu-preview">
+            <MenuItem onClick={this.onPreview}>Preview in Hubs</MenuItem>
+            <MenuItem>Open File</MenuItem>
+            <MenuItem>Delete File</MenuItem>
+          </ContextMenu>
         </div>
       </div>
     );

@@ -2,7 +2,10 @@
   "name": "hubs-editor",
   "main": "main.js",
   "dependencies": {
-    "gltf-bundle": "^0.8.5",
-    "node": "^10.4.0"
+    "cors": "^2.8.4",
+    "express": "^4.16.3",
+    "gltf-bundle": "^0.9.0",
+    "node": "^10.4.0",
+    "opn": "^5.3.0"
   }
 }

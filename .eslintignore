@@ -1,3 +1,4 @@
 desktop/app/**/*.js
 desktop/node_modules/
 src/vendor/three/GLTFExporter.js
+src/vendor/three/GLTFLoader.js
