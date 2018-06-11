@@ -18,6 +18,7 @@ class NodePropertyGroupContainer extends Component {
     this.props.editor.signals.objectSelected.add(this.updateNode);
     this.props.editor.signals.objectChanged.add(this.updateStateFromNode);
     this.state = { node: {} };
+    this.positionVector = new THREE.Vector3();
   }
   updateNode = node => {
     this.setState({ node }, () => this.updateStateFromNode(node));
@@ -35,7 +36,7 @@ class NodePropertyGroupContainer extends Component {
   };
   updatePosition = newPosition => {
     if (!this.state.node) return;
-    this.props.editor.execute(new SetPositionCommand(this.state.node, new THREE.Vector3().copy(newPosition)));
+    this.props.editor.execute(new SetPositionCommand(this.state.node, this.positionVector.copy(newPosition)));
   };
   render() {
     return (
