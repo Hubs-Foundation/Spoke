@@ -160,7 +160,7 @@ class ProcessObserver {
   }
 }
 
-export async function runGLTFBundle(gltfUri) {
+export async function runGLTFBundle(gltfUri, destDirUri) {
   const gltfPath = OS.Path.fromFileURI(gltfUri);
   const binPath = OS.Path.join(APP_DIR_PATH, "node_modules", ".bin");
   const nodePath = OS.Path.join(binPath, "node");
@@ -183,16 +183,14 @@ export async function runGLTFBundle(gltfUri) {
   const bundleConfigPath = OS.Path.join(gltfDir, name + ".bundle.config.json");
   await writeJSONAtomic(bundleConfigPath, bundleConfig, true);
 
-  const distDir = OS.Path.join(gltfDir, "dist");
+  const destDirPath = OS.Path.fromFileURI(destDirUri);
 
   const nodeExe = new FileUtils.File(nodePath);
 
   const gltfBundleProcess = Process.createInstance(Components.interfaces.nsIProcess);
   gltfBundleProcess.init(nodeExe);
 
-  const args = [gltfBundlePath, gltfDir, "-o", distDir];
-
-  console.log(nodeExe, args.join(" "));
+  const args = [gltfBundlePath, gltfDir, "-o", destDirPath];
 
   return new Promise((resolve, reject) => {
     const observer = new ProcessObserver(process, resolve, reject);

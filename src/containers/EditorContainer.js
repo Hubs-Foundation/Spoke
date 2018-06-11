@@ -5,17 +5,12 @@ import HTML5Backend from "react-dnd-html5-backend";
 import Editor from "../components/Editor";
 import ProjectModalContainer from "./ProjectModalContainer";
 import NewProjectModalContainer from "./NewProjectModalContainer";
+import ExportModalContainer from "./ExportModalContainer";
 import ViewportPanelContainer from "./ViewportPanelContainer";
 import HierarchyPanelContainer from "./HierarchyPanelContainer";
 import PropertiesPanelContainer from "./PropertiesPanelContainer";
 import AssetExplorerPanelContainer from "./AssetExplorerPanelContainer";
-import {
-  createProjectFromTemplate,
-  addRecentProject,
-  openProject,
-  runGLTFBundle,
-  DEFAULT_PROJECT_DIR_URI
-} from "../api";
+import { createProjectFromTemplate, addRecentProject, openProject, DEFAULT_PROJECT_DIR_URI } from "../api";
 import { MosaicWindow } from "react-mosaic-component";
 import PanelToolbar from "../components/PanelToolbar";
 import { Provider as ProjectProvider } from "./ProjectContext";
@@ -279,11 +274,16 @@ class EditorContainer extends Component {
   };
 
   onExport = async () => {
-    if (!this.state.sceneURI) {
-      return;
-    }
-
-    await runGLTFBundle(this.state.sceneURI);
+    this.setState({
+      openModal: {
+        component: ExportModalContainer,
+        shouldCloseOnOverlayClick: true,
+        props: {
+          sceneURI: this.state.sceneURI,
+          onCloseModal: this.onCloseModal
+        }
+      }
+    });
   };
 
   onGLTFChanged = (event, uri, object) => {
@@ -304,7 +304,6 @@ class EditorContainer extends Component {
   };
 
   onOpenScene = uri => {
-    console.log(uri);
     if (this.state.sceneURI === uri) {
       return;
     }
