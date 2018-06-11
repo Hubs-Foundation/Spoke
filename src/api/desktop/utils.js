@@ -5,6 +5,13 @@ export function getFileExtension(path) {
   return basename.split(".").pop();
 }
 
+export function getFileName(path) {
+  const basename = OS.Path.basename(path);
+  const parts = basename.split(".");
+  parts.pop();
+  return parts.join("");
+}
+
 export async function getDirectoryEntries(path) {
   const iterator = new OS.File.DirectoryIterator(path);
   const entries = await iterator.nextBatch();
@@ -33,6 +40,34 @@ export async function writeTextAtomic(path, data, overwrite) {
 
   try {
     await OS.File.writeAtomic(path, byteArray, { tmpPath: path + ".tmp", noOverwrite: !overwrite });
+  } catch (e) {
+    if (overwrite) {
+      throw new Error("Error writing file:" + path + " " + e.message);
+    }
+  }
+}
+
+function readAsArrayBuffer(blob) {
+  return new Promise((resolve, reject) => {
+    const fileReader = new FileReader();
+
+    fileReader.onload = () => {
+      resolve(fileReader.result);
+    };
+
+    fileReader.onerror = () => {
+      reject(fileReader.error);
+    };
+
+    fileReader.readAsArrayBuffer(blob);
+  });
+}
+
+export async function writeBlobAtomic(path, blob, overwrite) {
+  const arrayBuffer = await readAsArrayBuffer(blob);
+
+  try {
+    await OS.File.writeAtomic(path, arrayBuffer, { tmpPath: path + ".tmp", noOverwrite: !overwrite });
   } catch (e) {
     if (overwrite) {
       throw new Error("Error writing file:" + path + " " + e.message);

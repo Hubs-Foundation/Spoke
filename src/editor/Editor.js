@@ -3,19 +3,11 @@ import THREE from "../vendor/three";
 import History from "./History";
 import Storage from "./Storage";
 import Viewport from "./Viewport";
+import getFileNameFromURI from "../utlis/getFileNameFromURI";
 
 /**
  * @author mrdoob / http://mrdoob.com/
  */
-
-function getFileNameFromURI(uri) {
-  const matches = uri.match(/\/([^\\/?#]+)[^\\/]*$/);
-
-  if (matches.length > 1) {
-    return matches[1].split(".")[0];
-  }
-  return null;
-}
 
 export default class Editor {
   constructor() {
@@ -39,6 +31,8 @@ export default class Editor {
       // actions
 
       showModal: new Signal(),
+
+      openScene: new Signal(),
 
       // notifications
 
@@ -89,6 +83,8 @@ export default class Editor {
     this.storage = new Storage();
 
     this.camera = this.DEFAULT_CAMERA.clone();
+
+    this.openFile = null;
 
     this.scene = new THREE.Scene();
     this.scene.name = "Scene";
@@ -233,6 +229,28 @@ export default class Editor {
 
   addTexture(texture) {
     this.textures[texture.uuid] = texture;
+  }
+
+  exportScene() {
+    return new Promise((resolve, reject) => {
+      try {
+        const gltfExporter = new THREE.GLTFExporter();
+        gltfExporter.parseParts(this.scene, resolve, {
+          trs: true,
+          embedImages: false
+        });
+      } catch (e) {
+        reject(e);
+      }
+    });
+  }
+
+  loadGLTFScene(uri) {
+    const gltfLoader = new THREE.GLTFLoader();
+
+    gltfLoader.load(uri, ({ scene }) => {
+      this.setScene(scene);
+    });
   }
 
   loadGLTF(uri, object) {

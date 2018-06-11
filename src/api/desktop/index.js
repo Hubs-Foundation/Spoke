@@ -2,8 +2,9 @@ const { OS } = Components.utils.import("resource://gre/modules/osfile.jsm");
 const { FileUtils } = Components.utils.import("resource://gre/modules/FileUtils.jsm");
 const { Services } = Components.utils.import("resource://gre/modules/Services.jsm", {});
 const FilePicker = Components.classes["@mozilla.org/filepicker;1"];
+const Process = Components.classes["@mozilla.org/process/util;1"];
 import Project from "./Project";
-import { getDirectoryEntries, writeJSONAtomic, readJSON, copyRecursive } from "./utils";
+import { getDirectoryEntries, writeJSONAtomic, readJSON, copyRecursive, getFileName } from "./utils";
 
 export function uriToPath(path) {
   return OS.Path.fromFileURI(path);
@@ -132,4 +133,67 @@ export async function browseDirectory(options) {
 export function openFile(uri) {
   const file = new FileUtils.File(OS.Path.fromFileURI(uri));
   file.launch();
+}
+
+class ProcessObserver {
+  constructor(process, resolve, reject) {
+    this.process = process;
+    this.resolve = resolve;
+    this.reject = reject;
+
+    Services.obs.addObserver(this, "quit-application-granted", false);
+  }
+
+  observe(subject, topic, data) {
+    switch (topic) {
+      case "process-finished":
+        this.resolve(data);
+        break;
+      case "process-failed":
+        this.reject(data);
+        break;
+      case "quit-application-granted":
+        // Shut down any Node.js processes
+        this.process.kill();
+        break;
+    }
+  }
+}
+
+export async function runGLTFBundle(gltfUri, destDirUri) {
+  const gltfPath = OS.Path.fromFileURI(gltfUri);
+  const binPath = OS.Path.join(APP_DIR_PATH, "node_modules", ".bin");
+  const nodePath = OS.Path.join(binPath, "node");
+  const gltfBundlePath = OS.Path.join(binPath, "gltf-bundle");
+
+  const name = getFileName(gltfPath);
+
+  const bundleConfig = {
+    name,
+    version: "0.0.1",
+    assets: [
+      {
+        name,
+        src: "./" + name + ".gltf"
+      }
+    ]
+  };
+
+  const gltfDir = OS.Path.dirname(gltfPath);
+  const bundleConfigPath = OS.Path.join(gltfDir, name + ".bundle.config.json");
+  await writeJSONAtomic(bundleConfigPath, bundleConfig, true);
+
+  const destDirPath = OS.Path.fromFileURI(destDirUri);
+
+  const nodeExe = new FileUtils.File(nodePath);
+
+  const gltfBundleProcess = Process.createInstance(Components.interfaces.nsIProcess);
+  gltfBundleProcess.init(nodeExe);
+
+  const args = [gltfBundlePath, gltfDir, "-o", destDirPath];
+
+  return new Promise((resolve, reject) => {
+    const observer = new ProcessObserver(process, resolve, reject);
+    gltfBundleProcess.runAsync(args, args.length, observer);
+  });
 }

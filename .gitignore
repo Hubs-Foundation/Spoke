@@ -60,5 +60,6 @@ typings/
 # Ignore public folder with webpack build output
 dist/
 desktop/app/
+desktop/node_modules/
 
 .DS_Store

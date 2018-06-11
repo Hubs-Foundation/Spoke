@@ -2,7 +2,17 @@ import { PROJECTS_PATH } from "./index";
 import { EventEmitter } from "eventemitter3";
 import deepEqual from "fast-deep-equal";
 const { OS } = Components.utils.import("resource://gre/modules/osfile.jsm");
-import { getFileExtension, getDirectoryEntries, copyRecursive } from "./utils";
+const FilePicker = Components.classes["@mozilla.org/filepicker;1"];
+const { FileUtils } = Components.utils.import("resource://gre/modules/FileUtils.jsm");
+import {
+  getFileExtension,
+  getDirectoryEntries,
+  copyRecursive,
+  readJSON,
+  writeJSONAtomic,
+  writeBlobAtomic,
+  getFileName
+} from "./utils";
 
 export default class Project extends EventEmitter {
   constructor(name, uri, icon) {
@@ -62,7 +72,7 @@ export default class Project extends EventEmitter {
         );
 
         // children are visible in the tree view. Directories and gltf files can be expanded.
-        if (childNode.isDirectory || childNode.ext === "gltf" || childNode.ext === "glb") {
+        if (childNode.isDirectory) {
           children.push(childNode);
         }
 
@@ -150,6 +160,89 @@ export default class Project extends EventEmitter {
     if (this._fileWatchHandlerCount === 0) {
       this.removeListener("hierarchychanged", this._onWatchedFileChanged);
     }
+  }
+
+  async saveSceneAs(sceneName, json, bin) {
+    const sceneURI = await new Promise(resolve => {
+      const fp = FilePicker.createInstance(Components.interfaces.nsIFilePicker);
+
+      fp.init(window, "Save scene as...", Components.interfaces.nsIFilePicker.modeSave);
+
+      fp.defaultExtension = "gltf";
+      fp.defaultString = sceneName + ".gltf";
+
+      fp.displayDirectory = new FileUtils.File(this.path);
+
+      fp.appendFilter("glTF", "*.gltf");
+
+      fp.open(rv => {
+        if (
+          (rv === Components.interfaces.nsIFilePicker.returnOK ||
+            rv === Components.interfaces.nsIFilePicker.returnReplace) &&
+          fp.file
+        ) {
+          resolve(OS.Path.toFileURI(fp.file.path));
+        }
+
+        resolve(null);
+      });
+    });
+
+    if (!sceneURI) {
+      return null;
+    }
+
+    await this.saveScene(sceneURI, json, bin);
+
+    return sceneURI;
+  }
+
+  async saveScene(sceneURI, json, bin) {
+    const savedSceneURI = sceneURI;
+    const scenePath = OS.Path.fromFileURI(sceneURI);
+    const sceneFileName = getFileName(scenePath);
+
+    const sceneExists = await OS.File.exists(scenePath);
+
+    let buffers = [];
+    let bufferCount = 0;
+
+    if (sceneExists) {
+      const existingScene = await readJSON(scenePath);
+      buffers = existingScene.buffers;
+      bufferCount = buffers ? buffers.length : 0;
+    }
+
+    const sceneDir = OS.Path.dirname(scenePath);
+
+    if (bin) {
+      let binPath = OS.Path.join(sceneDir, sceneFileName + ".bin");
+
+      if (bufferCount === 1 && buffers[0].uri) {
+        // Set the binPath to overwrite the existing .bin file
+        binPath = OS.Path.join(sceneDir, buffers[0].uri);
+      } else if (bufferCount > 1) {
+        const bufferPaths = buffers.filter(buffer => buffer.uri).map(buffer => OS.Path.join(sceneDir, buffer.uri));
+        const bufferPathsMessage = bufferPaths.join("\n");
+
+        const message = `This gltf file references multiple .bin files. Hubs Editor will only save a single .bin file ${sceneFileName}.bin would you like to delete the unneeded .bin files?\n ${bufferPathsMessage}`;
+
+        // Check to see if we should delete the unneeded multiple bin files.
+        if (confirm(message)) {
+          for (const bufferPath of bufferPaths) {
+            await OS.File.remove(bufferPath, { ignoreAbsent: true });
+          }
+        }
+      }
+
+      // Write the .bin file
+      await writeBlobAtomic(binPath, bin, true);
+    }
+
+    // write the .gltf file
+    await writeJSONAtomic(scenePath, json, true);
+
+    return savedSceneURI;
   }
 
   _onWatchedFileChanged = async () => {

@@ -1,4 +1,8 @@
 {
   "name": "hubs-editor",
-  "main": "main.js"
+  "main": "main.js",
+  "dependencies": {
+    "gltf-bundle": "^0.8.5",
+    "node": "^10.4.0"
+  }
 }
