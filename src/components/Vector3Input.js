@@ -4,14 +4,17 @@ import styles from "./Vector3Input.scss";
 import NumericInput from "./NumericInput";
 
 export default function Vector3Input({ value, onChange, ...rest }) {
+  const vx = value ? value.x : 0;
+  const vy = value ? value.y : 0;
+  const vz = value ? value.z : 0;
   return (
     <div className={styles.vector3Input}>
       <div className={styles.label}>X:</div>
-      <NumericInput value={value.x} onChange={x => onChange({ x, y: value.y, z: value.z })} {...rest} />
+      <NumericInput value={vx} onChange={x => onChange({ x, y: vy, z: vz })} {...rest} />
       <div className={styles.label}>Y:</div>
-      <NumericInput value={value.y} onChange={y => onChange({ x: value.y, y, z: value.z })} {...rest} />
+      <NumericInput value={vy} onChange={y => onChange({ x: vx, y, z: vz })} {...rest} />
       <div className={styles.label}>Z:</div>
-      <NumericInput value={value.z} onChange={z => onChange({ x: value.y, y: value.y, z })} {...rest} />
+      <NumericInput value={vz} onChange={z => onChange({ x: vx, y: vy, z })} {...rest} />
     </div>
   );
 }
