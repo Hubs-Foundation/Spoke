@@ -300,6 +300,17 @@ export default class Editor {
 
   //
 
+  static gltfComponents = new Map();
+
+  static registerGLTFComponent(name, component) {
+    if (Editor.gltfComponents.has(name)) {
+      throw new Error(`${name} already registered`);
+    }
+    Editor.gltfComponents.set(name, component);
+  }
+
+  //
+
   addHelper = (function() {
     const geometry = new THREE.SphereBufferGeometry(2, 4, 2);
     const material = new THREE.MeshBasicMaterial({ color: 0xff0000, visible: false });
