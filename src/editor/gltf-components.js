@@ -19,12 +19,26 @@ function getDefaultsFromSchema(schema) {
   return defaults;
 }
 
+Editor.registerGLTFComponent("ambient-light", {
+  schema: lightSchema,
+  inflate: function(node, props) {
+    if (!props) {
+      props = getDefaultsFromSchema(this.schema);
+    }
+    const light = new THREE.AmbientLight(props.color, props.intensity);
+    light.userData._dontShowInHierarchy = true;
+    node.add(light);
+  }
+});
+
 Editor.registerGLTFComponent("directional-light", {
   schema: lightSchema,
   inflate: function(node, props) {
     if (!props) {
       props = getDefaultsFromSchema(this.schema);
     }
-    node.add(new THREE.DirectionalLight(props.color, props.intensity));
+    const light = new THREE.DirectionalLight(props.color, props.intensity);
+    light.userData._dontShowInHierarchy = true;
+    node.add(light);
   }
 });
