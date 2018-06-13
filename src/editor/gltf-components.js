@@ -1,25 +1,32 @@
 import Editor from "./Editor";
 
-const types = {
-  color: Symbol(),
-  number: Symbol()
+export const types = {
+  color: Symbol("color"),
+  number: Symbol("number")
 };
 
-const lightSchema = {
-  color: { type: types.color, default: new THREE.Color(1, 1, 1) },
-  intensity: { type: types.number, default: 1 }
-};
+export function getDisplayName(name) {
+  return name
+    .split("-")
+    .map(([f, ...rest]) => f.toUpperCase() + rest.join(""))
+    .join(" ");
+}
 
 function getDefaultsFromSchema(schema) {
   const defaults = {};
-  for (const key in schema) {
-    if (!schema.hasOwnProperty(key)) continue;
-    defaults[key] = schema[key].default;
-  }
+  schema.forEach(prop => {
+    defaults[prop.name] = prop.default;
+  });
   return defaults;
 }
 
-Editor.registerGLTFComponent("ambient-light", {
+const lightSchema = [
+  { name: "color", type: types.color, default: "white" },
+  { name: "intensity", type: types.number, default: 1 }
+];
+
+Editor.registerGLTFComponent({
+  name: "ambient-light",
   schema: lightSchema,
   inflate: function(node, props) {
     if (!props) {
@@ -31,12 +38,17 @@ Editor.registerGLTFComponent("ambient-light", {
   }
 });
 
-Editor.registerGLTFComponent("directional-light", {
+Editor.registerGLTFComponent({
+  name: "directional-light",
   schema: lightSchema,
   inflate: function(node, props) {
     if (!props) {
       props = getDefaultsFromSchema(this.schema);
     }
+    if (!node.userData.MOZ_components) {
+      node.userData.MOZ_components = [];
+    }
+    node.userData.MOZ_components.push({ name: this.name, props });
     const light = new THREE.DirectionalLight(props.color, props.intensity);
     light.userData._dontShowInHierarchy = true;
     node.add(light);

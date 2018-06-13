@@ -16,12 +16,13 @@ export default class AddGLTFComponentCommand extends Command {
     this.object = object;
     this.componentName = componentName;
 
-    this.name = `Add GLTF Component ${object.name} to ${componentName}`;
+    this.name = `Add ${object.name} GLTF Component to ${componentName}`;
   }
 
   execute() {
     const component = Editor.gltfComponents.get(this.componentName);
     component.inflate(this.object);
+    this.editor.signals.objectChanged.dispatch(this.object);
   }
 
   undo() {}

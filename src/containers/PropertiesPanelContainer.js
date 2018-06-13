@@ -1,10 +1,12 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
 import NodePropertyGroupContainer from "./NodePropertyGroupContainer";
+import GLTFComponentsContainer from "./GLTFComponentsContainer";
 import styles from "./PropertiesPanelContainer.scss";
 import Editor from "../editor/Editor";
 import { withEditor } from "./EditorContext";
 import AddGLTFComponentCommand from "../editor/commands/AddGLTFComponentCommand";
+import { getDisplayName } from "../editor/gltf-components";
 
 class PropertiesPanelContainer extends Component {
   static propTypes = {
@@ -14,9 +16,20 @@ class PropertiesPanelContainer extends Component {
     super(props);
     this.state = {
       currentComponent: "none",
-      node: null
+      node: null,
+      components: null
     };
-    this.props.editor.signals.objectSelected.add(node => this.setState({ node }));
+    this.props.editor.signals.objectSelected.add(node =>
+      this.setState({
+        node,
+        components: node.userData.MOZ_components
+      })
+    );
+    this.props.editor.signals.objectChanged.add(object => {
+      if (this.state.node === object) {
+        this.setState({ components: object.userData.MOZ_components });
+      }
+    });
   }
   addComponent = () => {
     if (this.state.currentComponent === "none" || !this.state.node) return;
@@ -26,19 +39,16 @@ class PropertiesPanelContainer extends Component {
     const gltfComponentOptions = [];
     // TODO Maybe don't use a static method
     Editor.gltfComponents.forEach((component, name) => {
-      const displayName = name
-        .split("-")
-        .map(([f, ...rest]) => f.toUpperCase() + rest.join(""))
-        .join(" ");
       gltfComponentOptions.push(
         <option key={name} value={name}>
-          {displayName}
+          {getDisplayName(name)}
         </option>
       );
     });
+    const { node } = this.state;
     return (
       <div className={styles.propertiesPanelContainer}>
-        <NodePropertyGroupContainer node={this.state.node} />
+        <NodePropertyGroupContainer node={node} />
         <div>
           <select
             value={this.state.currentComponent}
@@ -47,10 +57,11 @@ class PropertiesPanelContainer extends Component {
             <option value="none">Select a component</option>
             {gltfComponentOptions}
           </select>
-          <button enabled={this.state.node} onClick={this.addComponent}>
+          <button enabled={node} onClick={this.addComponent}>
             add
           </button>
         </div>
+        <GLTFComponentsContainer components={this.state.components} />
       </div>
     );
   }

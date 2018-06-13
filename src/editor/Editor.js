@@ -302,7 +302,8 @@ export default class Editor {
 
   static gltfComponents = new Map();
 
-  static registerGLTFComponent(name, component) {
+  static registerGLTFComponent(component) {
+    const { name } = component;
     if (Editor.gltfComponents.has(name)) {
       throw new Error(`${name} already registered`);
     }
