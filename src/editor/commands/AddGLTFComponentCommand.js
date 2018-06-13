@@ -1,6 +1,5 @@
 import THREE from "../../vendor/three";
 import Command from "../Command";
-import Editor from "../Editor";
 
 /**
  * @param object THREE.Object3D
@@ -20,7 +19,7 @@ export default class AddGLTFComponentCommand extends Command {
   }
 
   execute() {
-    const component = Editor.gltfComponents.get(this.componentName);
+    const component = this.editor.gltfComponents.get(this.componentName);
     component.inflate(this.object);
     this.editor.signals.objectChanged.dispatch(this.object);
   }

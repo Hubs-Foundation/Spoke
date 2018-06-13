@@ -1,8 +1,9 @@
 import React from "react";
 import Editor from "../editor/Editor";
-import "../editor/gltf-components";
+import { registerGLTFComponents } from "../editor/gltf-components";
 
 const editor = new Editor();
+registerGLTFComponents(editor);
 const EditorContext = React.createContext(editor);
 
 export function withEditor(Component) {

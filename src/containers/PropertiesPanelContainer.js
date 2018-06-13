@@ -3,7 +3,6 @@ import PropTypes from "prop-types";
 import NodePropertyGroupContainer from "./NodePropertyGroupContainer";
 import GLTFComponentsContainer from "./GLTFComponentsContainer";
 import styles from "./PropertiesPanelContainer.scss";
-import Editor from "../editor/Editor";
 import { withEditor } from "./EditorContext";
 import AddGLTFComponentCommand from "../editor/commands/AddGLTFComponentCommand";
 import { getDisplayName } from "../editor/gltf-components";
@@ -22,7 +21,7 @@ class PropertiesPanelContainer extends Component {
     this.props.editor.signals.objectSelected.add(node =>
       this.setState({
         node,
-        components: node.userData.MOZ_components
+        components: node ? node.userData.MOZ_components : null
       })
     );
     this.props.editor.signals.objectChanged.add(object => {
@@ -37,8 +36,7 @@ class PropertiesPanelContainer extends Component {
   };
   render() {
     const gltfComponentOptions = [];
-    // TODO Maybe don't use a static method
-    Editor.gltfComponents.forEach((component, name) => {
+    this.props.editor.gltfComponents.forEach((component, name) => {
       gltfComponentOptions.push(
         <option key={name} value={name}>
           {getDisplayName(name)}

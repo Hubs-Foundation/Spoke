@@ -3,7 +3,6 @@ import PropTypes from "prop-types";
 import { withEditor } from "./EditorContext";
 import PropertyGroup from "../components/PropertyGroup";
 import InputGroup from "../components/InputGroup";
-import Editor from "../editor/Editor";
 import { gltfComponentTypeToReactComponent } from "../components/gltf-type-mappings";
 import { getDisplayName } from "../editor/gltf-components";
 import SetGLTFComponentPropertyCommand from "../editor/commands/SetGLTFComponentPropertyCommand";
@@ -20,7 +19,7 @@ class GLTFComponentsContainer extends Component {
   render() {
     if (!this.props.components) return null;
     return this.props.components.map(component => {
-      const componentDefinition = Editor.gltfComponents.get(component.name);
+      const componentDefinition = this.props.editor.gltfComponents.get(component.name);
       return (
         <PropertyGroup name={getDisplayName(component.name)} key={component.name}>
           {componentDefinition.schema.map(prop => (
