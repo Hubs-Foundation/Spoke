@@ -61,7 +61,7 @@ class PropertiesPanelContainer extends Component {
             add
           </button>
         </div>
-        <GLTFComponentsContainer components={this.state.components} />
+        <GLTFComponentsContainer node={node} components={this.state.components} />
       </div>
     );
   }

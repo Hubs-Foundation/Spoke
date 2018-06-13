@@ -26,21 +26,19 @@ const lightSchema = [
 ];
 
 Editor.registerGLTFComponent({
-  name: "ambient-light",
-  schema: lightSchema,
-  inflate: function(node, props) {
-    if (!props) {
-      props = getDefaultsFromSchema(this.schema);
-    }
-    const light = new THREE.AmbientLight(props.color, props.intensity);
-    light.userData._dontShowInHierarchy = true;
-    node.add(light);
-  }
-});
-
-Editor.registerGLTFComponent({
   name: "directional-light",
   schema: lightSchema,
+  updateProperty: function(node, propertyName, value) {
+    const component = node.userData.MOZ_components.find(component => component.name == this.name);
+    component.props[propertyName] = value;
+    switch (propertyName) {
+      case "color":
+        component._object.color.set(value);
+        break;
+      default:
+        component._object[propertyName] = value;
+    }
+  },
   inflate: function(node, props) {
     if (!props) {
       props = getDefaultsFromSchema(this.schema);
@@ -48,9 +46,10 @@ Editor.registerGLTFComponent({
     if (!node.userData.MOZ_components) {
       node.userData.MOZ_components = [];
     }
-    node.userData.MOZ_components.push({ name: this.name, props });
+    // TODO Dunno if it's a good idea to store _object on the component, but I need it for updateProperties
     const light = new THREE.DirectionalLight(props.color, props.intensity);
     light.userData._dontShowInHierarchy = true;
+    node.userData.MOZ_components.push({ _object: light, name: this.name, props });
     node.add(light);
   }
 });
