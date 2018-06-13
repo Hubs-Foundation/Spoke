@@ -18,6 +18,7 @@ class GLTFComponentsContainer extends Component {
   };
   render() {
     if (!this.props.components) return null;
+    // Generate property groups for each component and property editors for each property.
     return this.props.components.map(component => {
       const componentDefinition = this.props.editor.gltfComponents.get(component.name);
       return (
