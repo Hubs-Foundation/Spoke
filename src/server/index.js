@@ -28,16 +28,21 @@ async function getProjectHierarchy(projectPath) {
     const directoryEntries = await fs.readdir(filePath);
 
     for (const childEntry of directoryEntries) {
-      const childPath = path.join(filePath, childEntry);
-      const { name, ext } = path.parse(childPath);
+      // eslint-disable-next-line
+      if (/(^|\/)\.[^\/\.]/g.test(childEntry)) {
+        continue;
+      }
+
+      const childPath = path.resolve(filePath, childEntry);
+      const { base, ext } = path.parse(childPath);
       const stats = await fs.stat(childPath);
 
       const childNode = await buildProjectNode(
         childPath,
-        name,
+        base,
         ext,
         stats.isDirectory(),
-        path.relative(childPath, projectPath)
+        childPath.replace(projectPath, "/api/files")
       );
 
       if (childNode.isDirectory) {
@@ -58,7 +63,7 @@ async function getProjectHierarchy(projectPath) {
 
   const projectName = path.parse(projectPath).name;
 
-  const projectHierarchy = await buildProjectNode(projectPath, projectName, undefined, true, "");
+  const projectHierarchy = await buildProjectNode(projectPath, projectName, undefined, true, "/api/files");
 
   return projectHierarchy;
 }
@@ -71,6 +76,8 @@ export default async function startServer(options) {
     options
   );
 
+  const projectPath = path.resolve(opts.projectPath);
+
   const app = new Koa();
   const server = http.createServer(app.callback());
   const wss = new WebSocket.Server({ server });
@@ -79,16 +86,18 @@ export default async function startServer(options) {
     const message = JSON.stringify(json);
 
     for (const client of wss.clients) {
+      console.log("sending", message);
       client.send(message);
     }
   }
 
-  let projectHierarchy = await getProjectHierarchy(opts.projectPath);
+  let projectHierarchy = await getProjectHierarchy(projectPath);
 
   const debouncedBroadcastHierarchy = debounce(async () => {
-    projectHierarchy = await getProjectHierarchy(opts.projectPath);
+    console.log("debounced");
+    projectHierarchy = await getProjectHierarchy(projectPath);
     broadcast({
-      type: "change",
+      type: "changed",
       hierarchy: projectHierarchy
     });
   }, 1000);
@@ -98,11 +107,17 @@ export default async function startServer(options) {
       alwaysWriteFinish: true
     })
     .on("all", () => {
+      console.log("file system changed");
       debouncedBroadcastHierarchy();
     });
 
   wss.on("connection", ws => {
-    ws.send(JSON.stringify(projectHierarchy));
+    const message = JSON.stringify({
+      type: "changed",
+      hierarchy: projectHierarchy
+    });
+
+    ws.send(message);
   });
 
   if (process.env.NODE_ENV === "development") {
@@ -143,32 +158,24 @@ export default async function startServer(options) {
     ctx.body = projectHierarchy;
   });
 
-  app.use(mount("/api/files/", serve(opts.projectPath)));
+  app.use(mount("/api/files/", serve(projectPath)));
 
-  router.post("/api/files", koaBody({ multipart: true }), async ctx => {
-    if (ctx.request.files && ctx.request.files.file && ctx.request.body && ctx.request.body.filePath) {
+  router.post("/api/files/:filePath", koaBody({ multipart: true }), async ctx => {
+    const filePath = path.resolve(projectPath, ctx.params.filePath);
+
+    if (ctx.params.open) {
+      opn(filePath);
+    } else if (ctx.request.files && ctx.request.files.file) {
       const file = ctx.request.files.file;
-      const filePath = path.resolve(opts.projectPath, ctx.request.body.filePath);
 
       await fs.rename(file.path, filePath);
 
       ctx.body = {
-        filePath,
         success: true
       };
     } else {
       ctx.throw(400, "Invalid request");
     }
-  });
-
-  router.post("/api/open/:filePath", async ctx => {
-    const filePath = path.resolve(opts.projectPath, ctx.params.filePath);
-
-    opn(filePath);
-
-    ctx.body = {
-      success: true
-    };
   });
 
   app.use(router.routes());

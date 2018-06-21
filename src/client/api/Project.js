@@ -19,10 +19,6 @@ export default class Project extends EventEmitter {
     this.hierarchy = null;
   }
 
-  getFileURL(relativePath) {
-    return this.serverUrl + "/files" + relativePath;
-  }
-
   async writeBlob(relativePath, blob) {
     const res = await fetch(this.serverUrl + "/files" + relativePath, {
       method: "POST",
@@ -63,7 +59,7 @@ export default class Project extends EventEmitter {
   }
 
   async openFile(relativePath) {
-    const res = await fetch(this.serverUrl + "/open" + relativePath, {
+    const res = await fetch(this.serverUrl + relativePath + "?open=true", {
       method: "POST"
     });
 
@@ -111,6 +107,18 @@ export default class Project extends EventEmitter {
   unwatch() {
     this.ws.close();
     return Promise.resolve(this);
+  }
+
+  saveScene(...args) {
+    console.log("saveScene", ...args);
+  }
+
+  saveSceneAs(...args) {
+    console.log("saveSceneAs", ...args);
+  }
+
+  export(...args) {
+    console.log("export", ...args);
   }
 
   close() {

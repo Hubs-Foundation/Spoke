@@ -214,8 +214,7 @@ class EditorContainer extends Component {
       this.props.editor.loadGLTF(uri, object);
     } else if (event === "removed") {
       this.props.editor.removeGLTF(uri, object);
-      const onChange = this.gltfChangeHandlers.get(object);
-      this.props.project.unwatchFile(uri, onChange);
+      this.gltfChangeHandlers.delete(object);
     }
   };
 

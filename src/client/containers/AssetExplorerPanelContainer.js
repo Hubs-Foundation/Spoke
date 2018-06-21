@@ -18,13 +18,31 @@ function getFileContextMenuId(file) {
   if (file.isDirectory) {
     return "directory-menu-default";
   } else if (
-    file.ext === "gltf" ||
-    (file.ext === "json" && (file.name.endsWith("bundle.config.json") || file.name.endsWith("bundle.json")))
+    file.ext === ".gltf" ||
+    (file.ext === ".json" && (file.name.endsWith("bundle.config.json") || file.name.endsWith("bundle.json")))
   ) {
     return "file-menu-preview";
   } else {
     return "file-menu-default";
   }
+}
+
+function getSelectedDirectory(tree, uri) {
+  if (uri === tree.uri) {
+    return tree;
+  }
+
+  if (tree.children) {
+    for (const child of tree.children) {
+      const selectedDirectory = getSelectedDirectory(child, uri);
+
+      if (selectedDirectory) {
+        return selectedDirectory;
+      }
+    }
+  }
+
+  return null;
 }
 
 class AssetExplorerPanelContainer extends Component {
@@ -51,49 +69,51 @@ class AssetExplorerPanelContainer extends Component {
   onClickNode = (e, node) => {
     if (node.isDirectory) {
       this.setState({
-        selectedDirectory: node
+        selectedDirectory: node.uri
       });
     }
   };
 
   componentDidMount() {
     if (this.props.project !== null) {
-      this.props.project.getFileHierarchy().then(tree => {
+      this.props.project.watch().then(tree => {
         this.setState({ tree });
       });
+
+      this.props.project.addListener("changed", this.onHierarchyChanged);
     }
   }
 
   componentDidUpdate(prevProps) {
     if (this.props.project !== prevProps.project) {
       if (prevProps.project !== null) {
-        prevProps.project.removeListener("hierarchychanged", this.onHierarchyChanged);
+        prevProps.project.removeListener("changed", this.onHierarchyChanged);
       }
 
       if (this.props.project !== null) {
-        this.props.project.getFileHierarchy().then(tree => {
+        this.props.project.watch().then(tree => {
           this.setState({ tree });
         });
 
-        this.props.project.addListener("hierarchychanged", this.onHierarchyChanged);
+        this.props.project.addListener("changed", this.onHierarchyChanged);
       }
     }
   }
 
-  onHierarchyChanged = fileHierarchy => {
+  onHierarchyChanged = tree => {
     this.setState({
-      tree: fileHierarchy
+      tree
     });
   };
 
   onClickFile = (e, file) => {
     if (this.state.singleClickedFile && file.uri === this.state.singleClickedFile.uri) {
       if (file.isDirectory) {
-        this.setState({ selectedDirectory: file });
+        this.setState({ selectedDirectory: file.uri });
         return;
       }
 
-      if (file.ext === "gltf") {
+      if (file.ext === ".gltf") {
         this.props.editor.signals.openScene.dispatch(file.uri);
         return;
       }
@@ -123,7 +143,7 @@ class AssetExplorerPanelContainer extends Component {
         id="node-menu"
         className={classNames("node", {
           "is-active": this.state.selectedDirectory
-            ? this.state.selectedDirectory.uri === node.uri
+            ? this.state.selectedDirectory === node.uri
             : node === this.state.tree
         })}
         onClick={e => this.onClickNode(e, node)}
@@ -134,7 +154,7 @@ class AssetExplorerPanelContainer extends Component {
   };
 
   render() {
-    const selectedDirectory = this.state.selectedDirectory || this.state.tree;
+    const selectedDirectory = getSelectedDirectory(this.state.tree, this.state.selectedDirectory) || this.state.tree;
     const files = selectedDirectory.files || [];
     const selectedFile = this.state.selectedFile;
 
