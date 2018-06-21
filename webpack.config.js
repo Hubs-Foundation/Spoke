@@ -1,3 +1,4 @@
+const pkg = require("./package.json");
 const path = require("path");
 const HTMLWebpackPlugin = require("html-webpack-plugin");
 
@@ -6,11 +7,14 @@ module.exports = {
 
   devtool: "source-map",
 
-  entry: "./src/index.js",
+  entry: {
+    app: ["./src/client/index.js"]
+  },
 
   output: {
-    path: path.join(__dirname, "desktop", "app"),
-    filename: "bundle.js"
+    path: path.join(__dirname, "public"),
+    filename: `[name].js`,
+    publicPath: "/"
   },
 
   module: {
@@ -43,7 +47,7 @@ module.exports = {
 
   plugins: [
     new HTMLWebpackPlugin({
-      title: "Hubs Editor"
+      title: pkg.productName
     })
   ]
 };
