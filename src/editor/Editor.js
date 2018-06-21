@@ -247,6 +247,14 @@ export default class Editor {
 
   loadGLTFScene(uri) {
     const gltfLoader = new THREE.GLTFLoader();
+    gltfLoader.onNodeAdded = node => {
+      if (node.userData.MOZ_components) {
+        for (const component of node.userData.MOZ_components) {
+          console.log("BPDEBUG component", component);
+          this.gltfComponents.get(component.name).inflate(node, component.props);
+        }
+      }
+    };
 
     gltfLoader.load(uri, ({ scene }) => {
       this.setScene(scene);
