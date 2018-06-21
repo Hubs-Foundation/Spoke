@@ -163,7 +163,9 @@ class EditorContainer extends Component {
     this.props.editor.redo();
   };
 
-  onSave = async () => {
+  onSave = async e => {
+    e.preventDefault();
+
     if (!this.state.sceneModified && this.state.sceneURI) {
       return;
     }
@@ -192,8 +194,25 @@ class EditorContainer extends Component {
     }
   };
 
-  onSaveAs = async () => {
-    console.log("save as...");
+  onSaveAs = async e => {
+    e.preventDefault();
+
+    try {
+      const { json, bin } = await this.props.editor.exportScene();
+
+      const sceneURI = await this.state.project.saveSceneAs(this.props.editor.scene.name, json, bin);
+
+      if (sceneURI === null) {
+        return;
+      }
+
+      this.setState({
+        sceneModified: false,
+        sceneURI
+      });
+    } catch (e) {
+      throw e;
+    }
   };
 
   onExport = async () => {
