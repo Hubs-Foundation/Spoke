@@ -86,7 +86,6 @@ export default async function startServer(options) {
     const message = JSON.stringify(json);
 
     for (const client of wss.clients) {
-      console.log("sending", message);
       client.send(message);
     }
   }
@@ -94,7 +93,6 @@ export default async function startServer(options) {
   let projectHierarchy = await getProjectHierarchy(projectPath);
 
   const debouncedBroadcastHierarchy = debounce(async () => {
-    console.log("debounced");
     projectHierarchy = await getProjectHierarchy(projectPath);
     broadcast({
       type: "changed",
@@ -107,7 +105,6 @@ export default async function startServer(options) {
       alwaysWriteFinish: true
     })
     .on("all", () => {
-      console.log("file system changed");
       debouncedBroadcastHierarchy();
     });
 
@@ -170,6 +167,11 @@ export default async function startServer(options) {
 
       await fs.rename(file.path, filePath);
 
+      ctx.body = {
+        success: true
+      };
+    } else if (ctx.request.type === "application/json") {
+      await fs.writeJSON(filePath, ctx.request.body);
       ctx.body = {
         success: true
       };

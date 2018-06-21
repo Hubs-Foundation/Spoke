@@ -1,4 +1,9 @@
+@import "../theme";
+
 .Button {
-  border: 1px solid #ccc;
-  background: #222;
+  display: flex;
+  border: none;
+  background: $selected;
+  color: $text;
+  white-space: nowrap;
 }

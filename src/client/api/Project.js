@@ -6,7 +6,7 @@ export default class Project extends EventEmitter {
 
     const { protocol, host } = new URL(window.location.href);
 
-    this.serverUrl = protocol + "//" + host + "/api";
+    this.serverUrl = protocol + "//" + host;
 
     if (protocol === "http:") {
       this.wsServerUrl = "ws://" + host;
@@ -31,7 +31,7 @@ export default class Project extends EventEmitter {
   }
 
   async readBlob(relativePath) {
-    const res = await fetch(this.serverUrl + "/files" + relativePath);
+    const res = await fetch(this.serverUrl + relativePath);
 
     const blob = await res.blob();
 
@@ -39,7 +39,7 @@ export default class Project extends EventEmitter {
   }
 
   async readJSON(relativePath) {
-    const res = await fetch(this.serverUrl + "/files" + relativePath);
+    const res = await fetch(this.serverUrl + relativePath);
 
     const json = await res.json();
 
@@ -47,7 +47,7 @@ export default class Project extends EventEmitter {
   }
 
   async writeJSON(relativePath, data) {
-    const res = await fetch(this.serverUrl + "/files" + relativePath, {
+    const res = await fetch(this.serverUrl + relativePath, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data)
@@ -93,7 +93,7 @@ export default class Project extends EventEmitter {
 
   watch() {
     if (this.ws) {
-      throw new Error("Already watching project.");
+      return Promise.resolve(this.hierarchy);
     }
 
     return new Promise((resolve, reject) => {
@@ -109,12 +109,13 @@ export default class Project extends EventEmitter {
     return Promise.resolve(this);
   }
 
-  saveScene(...args) {
-    console.log("saveScene", ...args);
-  }
+  async saveScene(filePath, json, blob) {
+    await this.writeJSON(filePath, json);
 
-  saveSceneAs(...args) {
-    console.log("saveSceneAs", ...args);
+    if (blob) {
+      const binFilePath = filePath.replace(".gltf", ".bin");
+      await this.writeBlob(binFilePath, blob);
+    }
   }
 
   export(...args) {

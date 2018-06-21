@@ -3,6 +3,7 @@ import PropTypes from "prop-types";
 import { DragDropContextProvider } from "react-dnd";
 import HTML5Backend from "react-dnd-html5-backend";
 import Editor from "../components/Editor";
+import FileDialogModalContainer from "./FileDialogModalContainer";
 import ExportModalContainer from "./ExportModalContainer";
 import ViewportPanelContainer from "./ViewportPanelContainer";
 import HierarchyPanelContainer from "./HierarchyPanelContainer";
@@ -163,52 +164,47 @@ class EditorContainer extends Component {
     this.props.editor.redo();
   };
 
+  openSaveAsDialog(onSave) {
+    this.setState({
+      openModal: {
+        component: FileDialogModalContainer,
+        shouldCloseOnOverlayClick: true,
+        props: {
+          title: "Save scene as...",
+          confirmButtonLabel: "Save as...",
+          filter: ".gltf",
+          onConfirm: onSave,
+          onCancel: this.onCloseModal
+        }
+      }
+    });
+  }
+
   onSave = async e => {
     e.preventDefault();
 
-    if (!this.state.sceneModified && this.state.sceneURI) {
-      return;
-    }
-
-    try {
-      const { json, bin } = await this.props.editor.exportScene();
-
-      let sceneURI;
-
-      if (this.state.sceneURI) {
-        sceneURI = await this.props.project.saveScene(this.state.sceneURI, json, bin);
-      } else {
-        sceneURI = await this.props.project.saveSceneAs(this.props.editor.scene.name, json, bin);
-      }
-
-      if (sceneURI === null) {
-        return;
-      }
-
-      this.setState({
-        sceneModified: false,
-        sceneURI
-      });
-    } catch (e) {
-      throw e;
+    if (!this.state.sceneURI) {
+      this.openSaveAsDialog(this.exportAndSaveScene);
+    } else {
+      this.exportAndSaveScene(this.state.sceneURI);
     }
   };
 
-  onSaveAs = async e => {
+  onSaveAs = e => {
     e.preventDefault();
+    this.openSaveAsDialog(this.exportAndSaveScene);
+  };
 
+  exportAndSaveScene = async sceneURI => {
     try {
       const { json, bin } = await this.props.editor.exportScene();
 
-      const sceneURI = await this.state.project.saveSceneAs(this.props.editor.scene.name, json, bin);
-
-      if (sceneURI === null) {
-        return;
-      }
+      await this.props.project.saveScene(sceneURI, json, bin);
 
       this.setState({
         sceneModified: false,
-        sceneURI
+        sceneURI,
+        openModal: null
       });
     } catch (e) {
       throw e;

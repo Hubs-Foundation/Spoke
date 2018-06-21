@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
-import "./Button.less";
+import "./Button.scss";
 
 export default class Button extends Component {
   render() {
@@ -14,5 +14,5 @@ export default class Button extends Component {
 
 Button.propTypes = {
   onClick: PropTypes.func,
-  children: PropTypes.arrayOf(PropTypes.element)
+  children: PropTypes.node
 };

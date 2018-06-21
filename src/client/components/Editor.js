@@ -2,12 +2,17 @@ import React from "react";
 import PropTypes from "prop-types";
 import styles from "./Editor.scss";
 import Modal from "react-modal";
-import { Mosaic } from "react-mosaic-component";
+import { MosaicWithoutDragDropContext } from "react-mosaic-component";
 
 export default function Editor({ initialPanels, renderPanel, openModal, onCloseModal, onPanelChange }) {
   return (
     <div className={styles.editor}>
-      <Mosaic className="mosaic-theme" renderTile={renderPanel} initialValue={initialPanels} onChange={onPanelChange} />
+      <MosaicWithoutDragDropContext
+        className="mosaic-theme"
+        renderTile={renderPanel}
+        initialValue={initialPanels}
+        onChange={onPanelChange}
+      />
       <Modal
         ariaHideApp={false}
         isOpen={!!openModal}
