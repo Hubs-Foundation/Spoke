@@ -3,9 +3,7 @@ const path = require("path");
 const HTMLWebpackPlugin = require("html-webpack-plugin");
 
 module.exports = {
-  mode: process.env.WEBPACK_SERVE ? "development" : "production",
-
-  devtool: "source-map",
+  mode: process.env.NODE_ENV ? "development" : "production",
 
   entry: {
     app: ["./src/client/index.js"]
@@ -21,6 +19,7 @@ module.exports = {
     rules: [
       {
         test: /\.(png|jpg|gif|svg)$/,
+        include: path.join(__dirname, "src", "client"),
         use: [
           {
             loader: "file-loader",
@@ -34,12 +33,12 @@ module.exports = {
       },
       {
         test: /\.scss$/,
-        include: path.join(__dirname, "src"),
+        include: path.join(__dirname, "src", "client"),
         use: ["style-loader", "css-loader", "sass-loader"]
       },
       {
         test: /\.js$/,
-        include: path.join(__dirname, "src"),
+        include: path.join(__dirname, "src", "client"),
         use: "babel-loader"
       }
     ]
