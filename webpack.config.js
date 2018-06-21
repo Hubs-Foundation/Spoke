@@ -1,22 +1,25 @@
+const pkg = require("./package.json");
 const path = require("path");
 const HTMLWebpackPlugin = require("html-webpack-plugin");
 
 module.exports = {
-  mode: process.env.WEBPACK_SERVE ? "development" : "production",
+  mode: process.env.NODE_ENV ? "development" : "production",
 
-  devtool: "source-map",
-
-  entry: "./src/index.js",
+  entry: {
+    app: ["./src/client/index.js"]
+  },
 
   output: {
-    path: path.join(__dirname, "desktop", "app"),
-    filename: "bundle.js"
+    path: path.join(__dirname, "public"),
+    filename: `[name].js`,
+    publicPath: "/"
   },
 
   module: {
     rules: [
       {
         test: /\.(png|jpg|gif|svg)$/,
+        include: path.join(__dirname, "src", "client"),
         use: [
           {
             loader: "file-loader",
@@ -30,12 +33,12 @@ module.exports = {
       },
       {
         test: /\.scss$/,
-        include: path.join(__dirname, "src"),
+        include: path.join(__dirname, "src", "client"),
         use: ["style-loader", "css-loader", "sass-loader"]
       },
       {
         test: /\.js$/,
-        include: path.join(__dirname, "src"),
+        include: path.join(__dirname, "src", "client"),
         use: "babel-loader"
       }
     ]
@@ -43,7 +46,7 @@ module.exports = {
 
   plugins: [
     new HTMLWebpackPlugin({
-      title: "Hubs Editor"
+      title: pkg.productName
     })
   ]
 };
