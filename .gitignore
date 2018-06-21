@@ -5,3 +5,4 @@ yarn-debug.log*
 yarn-error.log*
 yarn.lock
 node_modules/
+desktop/app/node_modules/
