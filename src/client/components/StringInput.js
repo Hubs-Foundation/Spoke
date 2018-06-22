@@ -1,9 +1,11 @@
 import React from "react";
 import PropTypes from "prop-types";
 import styles from "./StringInput.scss";
+import classNames from "classnames";
 
-export default function StringInput({ value, onChange }) {
-  return <input className={styles.stringInput} value={value} onChange={onChange} />;
+export default function StringInput(props) {
+  const fullClassName = classNames(styles.stringInput, props.className);
+  return <input {...props} className={fullClassName} />;
 }
 
 StringInput.defaultProps = {
@@ -12,6 +14,7 @@ StringInput.defaultProps = {
 };
 
 StringInput.propTypes = {
+  className: PropTypes.string,
   value: PropTypes.string,
   onChange: PropTypes.func
 };

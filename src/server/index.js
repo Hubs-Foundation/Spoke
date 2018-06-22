@@ -160,7 +160,7 @@ export default async function startServer(options) {
   router.post("/api/files/:filePath", koaBody({ multipart: true }), async ctx => {
     const filePath = path.resolve(projectPath, ctx.params.filePath);
 
-    if (ctx.params.open) {
+    if (ctx.request.query.open) {
       opn(filePath);
     } else if (ctx.request.files && ctx.request.files.file) {
       const file = ctx.request.files.file;
@@ -172,6 +172,12 @@ export default async function startServer(options) {
       };
     } else if (ctx.request.type === "application/json") {
       await fs.writeJSON(filePath, ctx.request.body);
+      ctx.body = {
+        success: true
+      };
+    } else if (ctx.request.query.mkdir) {
+      await fs.ensureDir(filePath);
+
       ctx.body = {
         success: true
       };

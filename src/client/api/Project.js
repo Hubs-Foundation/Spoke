@@ -58,6 +58,14 @@ export default class Project extends EventEmitter {
     return json;
   }
 
+  async mkdir(relativePath) {
+    const res = await fetch(this.serverUrl + relativePath + "?mkdir=true", { method: "POST" });
+
+    const json = await res.json();
+
+    return json;
+  }
+
   async openFile(relativePath) {
     const res = await fetch(this.serverUrl + relativePath + "?open=true", {
       method: "POST"
