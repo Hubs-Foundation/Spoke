@@ -11,6 +11,9 @@ import { ContextMenu, MenuItem, ContextMenuTrigger } from "react-contextmenu";
 import Button from "../components/Button";
 import StringInput from "../components/StringInput";
 import Header from "../components/Header";
+import Icon from "../components/Icon";
+import iconStyles from "../components/Icon.scss";
+import folderIcon from "../assets/folder-icon.svg";
 
 function collectFileMenuProps({ file }) {
   return file;
@@ -18,9 +21,9 @@ function collectFileMenuProps({ file }) {
 
 function getFileContextMenuId(file) {
   if (file.isDirectory) {
-    return "directory-menu-default";
+    return "dialog-directory-menu-default";
   } else {
-    return "file-menu-default";
+    return "dialog-file-menu-default";
   }
 }
 
@@ -71,7 +74,9 @@ class FileDialogContainer extends Component {
       selectedDirectory: null,
       selectedFile: null,
       singleClickedFile: null,
-      fileName: props.defaultFileName
+      fileName: props.defaultFileName,
+      newFolderActive: false,
+      newFolderName: null
     };
   }
 
@@ -127,6 +132,9 @@ class FileDialogContainer extends Component {
 
     if (this.props.filter) {
       if (!file.name.endsWith(this.props.filter)) {
+        this.setState({
+          singleClickedFile: file
+        });
         return;
       }
 
@@ -143,6 +151,43 @@ class FileDialogContainer extends Component {
     this.doubleClickTimeout = setTimeout(() => {
       this.setState({ singleClickedFile: null });
     }, 500);
+  };
+
+  onNewFolder = e => {
+    e.preventDefault();
+    this.setState({
+      newFolderActive: true,
+      newFolderName: "New Folder"
+    });
+  };
+
+  onCancelNewFolder = () => {
+    this.setState({
+      newFolderActive: false,
+      newFolderName: null
+    });
+  };
+
+  onNewFolderChange = e => {
+    this.setState({ newFolderName: e.target.value });
+  };
+
+  onSubmitNewFolder = () => {
+    const folderName = this.state.newFolderName;
+    const directoryURI = this.state.selectedDirectory || this.state.tree.uri;
+
+    // eslint-disable-next-line
+    if (!/^[0-9a-zA-Z\^\&\'\@\{\}\[\]\,\$\=\!\-\#\(\)\.\%\+\~\_ ]+$/.test(fileName)) {
+      alert('Invalid folder name. The following characters are not allowed:  / : * ? " < > |');
+      return;
+    }
+
+    this.props.project.mkdir(directoryURI + "/" + folderName);
+
+    this.setState({
+      newFolderActive: false,
+      newFolderName: null
+    });
   };
 
   onChangeFileName = e => {
@@ -163,6 +208,7 @@ class FileDialogContainer extends Component {
       // eslint-disable-next-line
       if (!/^[0-9a-zA-Z\^\&\'\@\{\}\[\]\,\$\=\!\-\#\(\)\.\%\+\~\_ ]+$/.test(fileName)) {
         alert('Invalid file name. The following characters are not allowed:  / : * ? " < > |');
+        return;
       }
 
       if (this.props.filter && !this.state.fileName.endsWith(this.props.filter)) {
@@ -210,7 +256,11 @@ class FileDialogContainer extends Component {
               onChange={this.onChange}
             />
           </div>
-          <div className={styles.rightColumn}>
+          <ContextMenuTrigger
+            attributes={{ className: styles.rightColumn }}
+            holdToDisplay={-1}
+            id="dialog-current-directory-menu-default"
+          >
             <IconGrid>
               {files.map(file => (
                 <ContextMenuTrigger
@@ -227,16 +277,30 @@ class FileDialogContainer extends Component {
                   />
                 </ContextMenuTrigger>
               ))}
+              {this.state.newFolderActive && (
+                <Icon
+                  rename
+                  src={folderIcon}
+                  className={iconStyles.small}
+                  name={this.state.newFolderName}
+                  onChange={this.onNewFolderChange}
+                  onCancel={this.onCancelNewFolder}
+                  onSubmit={this.onSubmitNewFolder}
+                />
+              )}
             </IconGrid>
-            <ContextMenu id="directory-menu-default">
-              <MenuItem>Open Directory</MenuItem>
-              <MenuItem>Delete Directory</MenuItem>
-            </ContextMenu>
-            <ContextMenu id="file-menu-default">
-              <MenuItem>Open File</MenuItem>
-              <MenuItem>Delete File</MenuItem>
-            </ContextMenu>
-          </div>
+          </ContextMenuTrigger>
+          <ContextMenu id="dialog-directory-menu-default">
+            <MenuItem>Open Directory</MenuItem>
+            <MenuItem>Delete Directory</MenuItem>
+          </ContextMenu>
+          <ContextMenu id="dialog-file-menu-default">
+            <MenuItem>Open File</MenuItem>
+            <MenuItem>Delete File</MenuItem>
+          </ContextMenu>
+          <ContextMenu id="dialog-current-directory-menu-default">
+            <MenuItem onClick={this.onNewFolder}>New Folder</MenuItem>
+          </ContextMenu>
         </div>
         <div className={styles.bottom}>
           <div className={styles.fileNameLabel}>File Name:</div>

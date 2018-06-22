@@ -6,9 +6,12 @@ import classNames from "classnames";
 import { withProject } from "./ProjectContext";
 import { withEditor } from "./EditorContext";
 import IconGrid from "../components/IconGrid";
+import Icon from "../components/Icon";
+import iconStyles from "../components/Icon.scss";
 import styles from "./AssetExplorerPanelContainer.scss";
 import DraggableFile from "../components/DraggableFile";
 import { ContextMenu, MenuItem, ContextMenuTrigger } from "react-contextmenu";
+import folderIcon from "../assets/folder-icon.svg";
 
 function collectFileMenuProps({ file }) {
   return file;
@@ -62,7 +65,9 @@ class AssetExplorerPanelContainer extends Component {
       },
       selectedDirectory: null,
       selectedFile: null,
-      singleClickedFile: null
+      singleClickedFile: null,
+      newFolderActive: false,
+      newFolderName: null
     };
   }
 
@@ -133,6 +138,43 @@ class AssetExplorerPanelContainer extends Component {
     }, 500);
   };
 
+  onNewFolder = e => {
+    e.preventDefault();
+    this.setState({
+      newFolderActive: true,
+      newFolderName: "New Folder"
+    });
+  };
+
+  onCancelNewFolder = () => {
+    this.setState({
+      newFolderActive: false,
+      newFolderName: null
+    });
+  };
+
+  onNewFolderChange = e => {
+    this.setState({ newFolderName: e.target.value });
+  };
+
+  onSubmitNewFolder = () => {
+    const folderName = this.state.newFolderName;
+    const directoryURI = this.state.selectedDirectory || this.state.tree.uri;
+
+    // eslint-disable-next-line
+    if (!/^[0-9a-zA-Z\^\&\'\@\{\}\[\]\,\$\=\!\-\#\(\)\.\%\+\~\_ ]+$/.test(folderName)) {
+      alert('Invalid folder name. The following characters are not allowed:  / : * ? " < > |');
+      return;
+    }
+
+    this.props.project.mkdir(directoryURI + "/" + folderName);
+
+    this.setState({
+      newFolderActive: false,
+      newFolderName: null
+    });
+  };
+
   onPreview = (e, file) => {
     console.log("preview in hubs", file);
   };
@@ -170,7 +212,11 @@ class AssetExplorerPanelContainer extends Component {
             onChange={this.onChange}
           />
         </div>
-        <div className={styles.rightColumn}>
+        <ContextMenuTrigger
+          attributes={{ className: styles.rightColumn }}
+          holdToDisplay={-1}
+          id="current-directory-menu-default"
+        >
           <IconGrid>
             {files.map(file => (
               <ContextMenuTrigger
@@ -187,21 +233,35 @@ class AssetExplorerPanelContainer extends Component {
                 />
               </ContextMenuTrigger>
             ))}
+            {this.state.newFolderActive && (
+              <Icon
+                rename
+                src={folderIcon}
+                className={iconStyles.small}
+                name={this.state.newFolderName}
+                onChange={this.onNewFolderChange}
+                onCancel={this.onCancelNewFolder}
+                onSubmit={this.onSubmitNewFolder}
+              />
+            )}
           </IconGrid>
-          <ContextMenu id="directory-menu-default">
-            <MenuItem>Open Directory</MenuItem>
-            <MenuItem>Delete Directory</MenuItem>
-          </ContextMenu>
-          <ContextMenu id="file-menu-default">
-            <MenuItem>Open File</MenuItem>
-            <MenuItem>Delete File</MenuItem>
-          </ContextMenu>
-          <ContextMenu id="file-menu-preview">
-            <MenuItem onClick={this.onPreview}>Preview in Hubs</MenuItem>
-            <MenuItem>Open File</MenuItem>
-            <MenuItem>Delete File</MenuItem>
-          </ContextMenu>
-        </div>
+        </ContextMenuTrigger>
+        <ContextMenu id="directory-menu-default">
+          <MenuItem>Open Directory</MenuItem>
+          <MenuItem>Delete Directory</MenuItem>
+        </ContextMenu>
+        <ContextMenu id="file-menu-default">
+          <MenuItem>Open File</MenuItem>
+          <MenuItem>Delete File</MenuItem>
+        </ContextMenu>
+        <ContextMenu id="file-menu-preview">
+          <MenuItem onClick={this.onPreview}>Preview in Hubs</MenuItem>
+          <MenuItem>Open File</MenuItem>
+          <MenuItem>Delete File</MenuItem>
+        </ContextMenu>
+        <ContextMenu id="current-directory-menu-default">
+          <MenuItem onClick={this.onNewFolder}>New Folder</MenuItem>
+        </ContextMenu>
       </div>
     );
   }
