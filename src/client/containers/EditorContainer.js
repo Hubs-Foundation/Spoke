@@ -4,7 +4,6 @@ import { DragDropContextProvider } from "react-dnd";
 import HTML5Backend from "react-dnd-html5-backend";
 import Editor from "../components/Editor";
 import FileDialogModalContainer from "./FileDialogModalContainer";
-import ExportModalContainer from "./ExportModalContainer";
 import ViewportPanelContainer from "./ViewportPanelContainer";
 import HierarchyPanelContainer from "./HierarchyPanelContainer";
 import PropertiesPanelContainer from "./PropertiesPanelContainer";
@@ -90,14 +89,14 @@ class EditorContainer extends Component {
         saveAs: ["ctrl+shift+s", "command+shift+s"],
         undo: ["ctrl+z", "command+z"],
         redo: ["ctrl+shit+z", "command+shift+z"],
-        export: ["ctrl+b", "command+b"]
+        bundle: ["ctrl+b", "command+b"]
       },
       globalHotKeyHandlers: {
         undo: this.onUndo,
         redo: this.onRedo,
         save: this.onSave,
         saveAs: this.onSaveAs,
-        export: this.onExport
+        bundle: this.onOpenBundleModal
       }
     };
 
@@ -211,17 +210,32 @@ class EditorContainer extends Component {
     }
   };
 
-  onExport = async () => {
+  onOpenBundleModal = e => {
+    e.preventDefault();
+
+    if (!this.state.sceneURI) {
+      console.warn("TODO: save scene before bundling instead of doing nothing");
+      return;
+    }
+
     this.setState({
       openModal: {
-        component: ExportModalContainer,
+        component: FileDialogModalContainer,
         shouldCloseOnOverlayClick: true,
         props: {
-          sceneURI: this.state.sceneURI,
-          onCloseModal: this.onCloseModal
+          title: "Select glTF bundle output directory",
+          confirmButtonLabel: "Bundle scene...",
+          directory: true,
+          onConfirm: this.onBundle,
+          onCancel: this.onCloseModal
         }
       }
     });
+  };
+
+  onBundle = async outputPath => {
+    await this.props.project.bundleScene(this.props.editor.scene.name, "0.1.0", this.state.sceneURI, outputPath);
+    this.setState({ openModal: null });
   };
 
   onGLTFChanged = (event, uri, object) => {

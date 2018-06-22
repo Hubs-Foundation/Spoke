@@ -126,8 +126,21 @@ export default class Project extends EventEmitter {
     }
   }
 
-  export(...args) {
-    console.log("export", ...args);
+  async bundleScene(name, version, sceneURI, outputDir) {
+    const res = await fetch(this.serverUrl + "/api/bundle", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name,
+        version,
+        sceneURI,
+        outputDir
+      })
+    });
+
+    const json = await res.json();
+
+    return json;
   }
 
   close() {

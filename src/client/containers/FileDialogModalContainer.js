@@ -177,7 +177,7 @@ class FileDialogContainer extends Component {
     const directoryURI = this.state.selectedDirectory || this.state.tree.uri;
 
     // eslint-disable-next-line
-    if (!/^[0-9a-zA-Z\^\&\'\@\{\}\[\]\,\$\=\!\-\#\(\)\.\%\+\~\_ ]+$/.test(fileName)) {
+    if (!/^[0-9a-zA-Z\^\&\'\@\{\}\[\]\,\$\=\!\-\#\(\)\.\%\+\~\_ ]+$/.test(folderName)) {
       alert('Invalid folder name. The following characters are not allowed:  / : * ? " < > |');
       return;
     }
