@@ -42,7 +42,7 @@ async function getProjectHierarchy(projectPath) {
         base,
         ext,
         stats.isDirectory(),
-        childPath.replace(projectPath, "/api/files")
+        childPath.replace(projectPath, "/api/files").replace(/\\/g, "/")
       );
 
       if (childNode.isDirectory) {
