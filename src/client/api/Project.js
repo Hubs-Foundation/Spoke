@@ -20,7 +20,7 @@ export default class Project extends EventEmitter {
   }
 
   async writeBlob(relativePath, blob) {
-    const res = await fetch(this.serverUrl + "/files" + relativePath, {
+    const res = await fetch(this.serverUrl + relativePath, {
       method: "POST",
       body: blob
     });
