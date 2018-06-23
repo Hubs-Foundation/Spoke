@@ -1,0 +1,177 @@
+{
+    "asset": {
+        "generator": "Maya2glTF V0.9.7-BETA 66f7270",
+        "version": "2.0"
+    },
+    "scenes": [
+        {
+            "nodes": [
+                0
+            ]
+        }
+    ],
+    "scene": 0,
+    "nodes": [
+        {
+            "children": [
+                1
+            ],
+            "translation": [
+                550.0,
+                0.0,
+                0.0
+            ],
+            "name": "RailStairs2x2x1_5R"
+        },
+        {
+            "mesh": 0,
+            "translation": [
+                -3350.0,
+                0.0,
+                1000.0
+            ],
+            "name": "RailStairs2x2x1_5R21Shape"
+        }
+    ],
+    "meshes": [
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "NORMAL": 1,
+                        "POSITION": 2,
+                        "TANGENT": 3,
+                        "TEXCOORD_0": 4
+                    },
+                    "indices": 0,
+                    "mode": 4,
+                    "material": 0
+                }
+            ],
+            "name": "RailStairs2x2x1_5R21Shape"
+        }
+    ],
+    "accessors": [
+        {
+            "bufferView": 0,
+            "byteOffset": 0,
+            "componentType": 5123,
+            "count": 186,
+            "max": [
+                131
+            ],
+            "min": [
+                0
+            ],
+            "type": "SCALAR"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 0,
+            "componentType": 5126,
+            "count": 132,
+            "max": [
+                0.7072325944900513,
+                1.0,
+                1.0
+            ],
+            "min": [
+                -0.7074131965637207,
+                -0.7071786522865295,
+                -1.0
+            ],
+            "type": "VEC3"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1584,
+            "componentType": 5126,
+            "count": 132,
+            "max": [
+                96.85009765625,
+                251.5511016845703,
+                4.7012939453125
+            ],
+            "min": [
+                90.6494140625,
+                0.0,
+                -189.05120849609376
+            ],
+            "type": "VEC3"
+        },
+        {
+            "bufferView": 2,
+            "byteOffset": 0,
+            "componentType": 5126,
+            "count": 132,
+            "max": [
+                1.0,
+                0.7075312733650208,
+                0.7071477770805359,
+                1.0
+            ],
+            "min": [
+                -1.0,
+                -0.7074886560440064,
+                -0.707148015499115,
+                1.0
+            ],
+            "type": "VEC4"
+        },
+        {
+            "bufferView": 3,
+            "byteOffset": 0,
+            "componentType": 5126,
+            "count": 132,
+            "max": [
+                0.1433790922164917,
+                0.362135648727417
+            ],
+            "min": [
+                0.1090097874403,
+                0.00964123010635376
+            ],
+            "type": "VEC2"
+        }
+    ],
+    "materials": [
+        {
+            "pbrMetallicRoughness": {}
+        }
+    ],
+    "bufferViews": [
+        {
+            "buffer": 0,
+            "byteOffset": 6336,
+            "byteLength": 372,
+            "target": 34963
+        },
+        {
+            "buffer": 0,
+            "byteOffset": 2112,
+            "byteLength": 3168,
+            "byteStride": 12,
+            "target": 34962
+        },
+        {
+            "buffer": 0,
+            "byteOffset": 0,
+            "byteLength": 2112,
+            "byteStride": 16,
+            "target": 34962
+        },
+        {
+            "buffer": 0,
+            "byteOffset": 5280,
+            "byteLength": 1056,
+            "byteStride": 8,
+            "target": 34962
+        }
+    ],
+    "buffers": [
+        {
+            "byteLength": 6708,
+            "uri": "RailStairs2x2x1_5R0.bin"
+        }
+    ]
+}

@@ -1,0 +1,177 @@
+{
+    "asset": {
+        "generator": "Maya2glTF V0.9.7-BETA 66f7270",
+        "version": "2.0"
+    },
+    "scenes": [
+        {
+            "nodes": [
+                0
+            ]
+        }
+    ],
+    "scene": 0,
+    "nodes": [
+        {
+            "children": [
+                1
+            ],
+            "translation": [
+                -550.0,
+                0.0,
+                300.0
+            ],
+            "name": "TrimCornIn3Vert"
+        },
+        {
+            "mesh": 0,
+            "translation": [
+                3750.0,
+                0.0,
+                -250.0
+            ],
+            "name": "TrimCornIn3VertShape"
+        }
+    ],
+    "meshes": [
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "NORMAL": 1,
+                        "POSITION": 2,
+                        "TANGENT": 3,
+                        "TEXCOORD_0": 4
+                    },
+                    "indices": 0,
+                    "mode": 4,
+                    "material": 0
+                }
+            ],
+            "name": "TrimCornIn3VertShape"
+        }
+    ],
+    "accessors": [
+        {
+            "bufferView": 0,
+            "byteOffset": 0,
+            "componentType": 5123,
+            "count": 24,
+            "max": [
+                15
+            ],
+            "min": [
+                0
+            ],
+            "type": "SCALAR"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 0,
+            "componentType": 5126,
+            "count": 16,
+            "max": [
+                1.0,
+                0.0000010426853123135516,
+                1.0
+            ],
+            "min": [
+                0.0000016666535884724,
+                -0.0000020137440515100026,
+                -0.00003875184484058991
+            ],
+            "type": "VEC3"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 192,
+            "componentType": 5126,
+            "count": 16,
+            "max": [
+                50.00048828125,
+                287.5,
+                50.00030517578125
+            ],
+            "min": [
+                12.449951171875,
+                -12.499991416931153,
+                12.500076293945313
+            ],
+            "type": "VEC3"
+        },
+        {
+            "bufferView": 2,
+            "byteOffset": 0,
+            "componentType": 5126,
+            "count": 16,
+            "max": [
+                0.00005099546251585707,
+                1.0,
+                -2.543808363952849e-7,
+                1.0
+            ],
+            "min": [
+                0.000001031429746944923,
+                1.0,
+                -0.00005039135066908784,
+                1.0
+            ],
+            "type": "VEC4"
+        },
+        {
+            "bufferView": 3,
+            "byteOffset": 0,
+            "componentType": 5126,
+            "count": 16,
+            "max": [
+                0.8527637124061585,
+                0.5341976881027222
+            ],
+            "min": [
+                0.5713738203048706,
+                0.4638258218765259
+            ],
+            "type": "VEC2"
+        }
+    ],
+    "materials": [
+        {
+            "pbrMetallicRoughness": {}
+        }
+    ],
+    "bufferViews": [
+        {
+            "buffer": 0,
+            "byteOffset": 768,
+            "byteLength": 48,
+            "target": 34963
+        },
+        {
+            "buffer": 0,
+            "byteOffset": 256,
+            "byteLength": 384,
+            "byteStride": 12,
+            "target": 34962
+        },
+        {
+            "buffer": 0,
+            "byteOffset": 0,
+            "byteLength": 256,
+            "byteStride": 16,
+            "target": 34962
+        },
+        {
+            "buffer": 0,
+            "byteOffset": 640,
+            "byteLength": 128,
+            "byteStride": 8,
+            "target": 34962
+        }
+    ],
+    "buffers": [
+        {
+            "byteLength": 816,
+            "uri": "TrimCornIn3Vert0.bin"
+        }
+    ]
+}

@@ -1,0 +1,172 @@
+{
+    "asset": {
+        "generator": "Maya2glTF V0.9.7-BETA 66f7270",
+        "version": "2.0"
+    },
+    "scenes": [
+        {
+            "nodes": [
+                0
+            ]
+        }
+    ],
+    "scene": 0,
+    "nodes": [
+        {
+            "children": [
+                1
+            ],
+            "name": "WallRoof6x1_5R"
+        },
+        {
+            "mesh": 0,
+            "translation": [
+                -1700.0,
+                0.0,
+                -50.0
+            ],
+            "name": "WallRoof6x1_5RShape"
+        }
+    ],
+    "meshes": [
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "NORMAL": 1,
+                        "POSITION": 2,
+                        "TANGENT": 3,
+                        "TEXCOORD_0": 4
+                    },
+                    "indices": 0,
+                    "mode": 4,
+                    "material": 0
+                }
+            ],
+            "name": "WallRoof6x1_5RShape"
+        }
+    ],
+    "accessors": [
+        {
+            "bufferView": 0,
+            "byteOffset": 0,
+            "componentType": 5123,
+            "count": 3,
+            "max": [
+                2
+            ],
+            "min": [
+                0
+            ],
+            "type": "SCALAR"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 0,
+            "componentType": 5126,
+            "count": 3,
+            "max": [
+                -5.4253472825394058e-8,
+                0.0,
+                1.0
+            ],
+            "min": [
+                -5.4253476378107737e-8,
+                0.0,
+                1.0
+            ],
+            "type": "VEC3"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 36,
+            "componentType": 5126,
+            "count": 3,
+            "max": [
+                600.0,
+                137.5,
+                12.499969482421877
+            ],
+            "min": [
+                0.0,
+                -12.5,
+                12.49993896484375
+            ],
+            "type": "VEC3"
+        },
+        {
+            "bufferView": 2,
+            "byteOffset": 0,
+            "componentType": 5126,
+            "count": 3,
+            "max": [
+                1.0,
+                0.0,
+                5.4253476378107737e-8,
+                1.0
+            ],
+            "min": [
+                1.0,
+                0.0,
+                5.4253472825394058e-8,
+                1.0
+            ],
+            "type": "VEC4"
+        },
+        {
+            "bufferView": 3,
+            "byteOffset": 0,
+            "componentType": 5126,
+            "count": 3,
+            "max": [
+                0.5649774670600891,
+                0.5765244960784912
+            ],
+            "min": [
+                0.002477342262864113,
+                0.4358994960784912
+            ],
+            "type": "VEC2"
+        }
+    ],
+    "materials": [
+        {
+            "pbrMetallicRoughness": {}
+        }
+    ],
+    "bufferViews": [
+        {
+            "buffer": 0,
+            "byteOffset": 144,
+            "byteLength": 6,
+            "target": 34963
+        },
+        {
+            "buffer": 0,
+            "byteOffset": 48,
+            "byteLength": 72,
+            "byteStride": 12,
+            "target": 34962
+        },
+        {
+            "buffer": 0,
+            "byteOffset": 0,
+            "byteLength": 48,
+            "byteStride": 16,
+            "target": 34962
+        },
+        {
+            "buffer": 0,
+            "byteOffset": 120,
+            "byteLength": 24,
+            "byteStride": 8,
+            "target": 34962
+        }
+    ],
+    "buffers": [
+        {
+            "byteLength": 150,
+            "uri": "WallRoof6x1_5R0.bin"
+        }
+    ]
+}
