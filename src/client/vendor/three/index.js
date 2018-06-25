@@ -1,7 +1,8 @@
-window.THREE = require("three");
+const THREE = require("three");
+window.THREE = THREE;
 require("three/examples/js/controls/EditorControls");
 require("three/examples/js/controls/TransformControls");
-require("./GLTFExporter");
-require("./GLTFLoader");
+require("three/examples/js/exporters/GLTFExporter");
+require("three/examples/js/loaders/GLTFLoader");
 
 export default THREE;

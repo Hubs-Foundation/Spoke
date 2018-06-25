@@ -39,7 +39,7 @@
     "react-numeric-input": "^2.2.3",
     "react-select": "^1.2.1",
     "signals": "^1.0.0",
-    "three": "^0.93.0",
+    "three": "mozillareality/three.js#hubs-editor/dev",
     "ws": "^5.2.0"
   },
   "devDependencies": {
