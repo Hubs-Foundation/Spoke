@@ -1,6 +1,6 @@
 {
     "asset": {
-        "generator": "Maya2glTF V0.9.7-BETA 66f7270",
+        "generator": "Maya2glTF V0.9.7-BETA ab18f62",
         "version": "2.0"
     },
     "scenes": [
@@ -16,20 +16,10 @@
             "children": [
                 1
             ],
-            "translation": [
-                0.0,
-                0.0,
-                -250.0
-            ],
             "name": "Roof4x2x1_5B"
         },
         {
             "mesh": 0,
-            "translation": [
-                -2200.0,
-                0.0,
-                -350.0
-            ],
             "name": "Roof4x2x1_5BShape"
         }
     ],
@@ -88,14 +78,14 @@
             "componentType": 5126,
             "count": 24,
             "max": [
-                400.0,
-                150.0,
-                100.0
+                4.0,
+                1.5,
+                1.0
             ],
             "min": [
-                4.547473508864641e-13,
-                -25.0,
-                -100.0
+                0.0,
+                -0.25,
+                -1.0
             ],
             "type": "VEC3"
         },

@@ -1,6 +1,6 @@
 {
     "asset": {
-        "generator": "Maya2glTF V0.9.7-BETA 66f7270",
+        "generator": "Maya2glTF V0.9.7-BETA ab18f62",
         "version": "2.0"
     },
     "scenes": [
@@ -20,11 +20,6 @@
         },
         {
             "mesh": 0,
-            "translation": [
-                500.0,
-                0.0,
-                800.0
-            ],
             "name": "WinFrame1x1_5VertShape"
         }
     ],
@@ -83,14 +78,14 @@
             "componentType": 5126,
             "count": 128,
             "max": [
-                50.0,
-                225.0,
-                15.0
+                0.5,
+                2.25,
+                0.1499996930360794
             ],
             "min": [
-                -50.0,
-                75.0,
-                -14.99993896484375
+                -0.5,
+                0.75,
+                -0.14999938011169434
             ],
             "type": "VEC3"
         },
