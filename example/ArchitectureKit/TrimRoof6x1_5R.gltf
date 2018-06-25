@@ -1,6 +1,6 @@
 {
     "asset": {
-        "generator": "Maya2glTF V0.9.7-BETA 66f7270",
+        "generator": "Maya2glTF V0.9.7-BETA ab18f62",
         "version": "2.0"
     },
     "scenes": [
@@ -20,11 +20,6 @@
         },
         {
             "mesh": 0,
-            "translation": [
-                -1700.0,
-                0.0,
-                -150.0
-            ],
             "name": "TrimRoof6x1_5RShape"
         }
     ],
@@ -83,14 +78,14 @@
             "componentType": 5126,
             "count": 24,
             "max": [
-                600.0,
-                150.0,
-                0.000030517578125
+                6.0,
+                1.5,
+                3.051757744287898e-7
             ],
             "min": [
                 0.0,
-                -25.0,
-                -17.2000732421875
+                -0.25,
+                -0.1720007359981537
             ],
             "type": "VEC3"
         },

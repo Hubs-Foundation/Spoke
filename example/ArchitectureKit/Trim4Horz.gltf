@@ -1,6 +1,6 @@
 {
     "asset": {
-        "generator": "Maya2glTF V0.9.7-BETA 66f7270",
+        "generator": "Maya2glTF V0.9.7-BETA ab18f62",
         "version": "2.0"
     },
     "scenes": [
@@ -16,20 +16,10 @@
             "children": [
                 1
             ],
-            "translation": [
-                550.0,
-                0.0,
-                0.0
-            ],
             "name": "Trim4Horz"
         },
         {
             "mesh": 0,
-            "translation": [
-                -3950.0,
-                -0.0,
-                750.0
-            ],
             "name": "Trim4HorzShape"
         }
     ],
@@ -88,13 +78,13 @@
             "componentType": 5126,
             "count": 24,
             "max": [
-                400.0,
+                4.0,
                 0.0,
-                15.60003662109375
+                0.15600036084651948
             ],
             "min": [
                 0.0,
-                -25.0,
+                -0.25,
                 0.0
             ],
             "type": "VEC3"

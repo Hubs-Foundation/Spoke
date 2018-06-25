@@ -1,6 +1,6 @@
 {
     "asset": {
-        "generator": "Maya2glTF V0.9.7-BETA 66f7270",
+        "generator": "Maya2glTF V0.9.7-BETA ab18f62",
         "version": "2.0"
     },
     "scenes": [
@@ -16,20 +16,10 @@
             "children": [
                 1
             ],
-            "translation": [
-                550.0,
-                0.0,
-                0.0
-            ],
             "name": "Floor4x4x1_5Bloc"
         },
         {
             "mesh": 0,
-            "translation": [
-                -3750.0,
-                0.0,
-                -450.0
-            ],
             "name": "Floor4x4x1_5BlocShape"
         }
     ],
@@ -88,14 +78,14 @@
             "componentType": 5126,
             "count": 24,
             "max": [
-                200.0,
-                150.0,
-                200.0
+                2.0,
+                1.5,
+                2.0
             ],
             "min": [
-                -200.0,
-                -25.0,
-                -200.0
+                -2.0,
+                -0.25,
+                -2.0
             ],
             "type": "VEC3"
         },

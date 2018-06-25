@@ -1,6 +1,6 @@
 {
     "asset": {
-        "generator": "Maya2glTF V0.9.7-BETA 66f7270",
+        "generator": "Maya2glTF V0.9.7-BETA ab18f62",
         "version": "2.0"
     },
     "scenes": [
@@ -16,20 +16,10 @@
             "children": [
                 1
             ],
-            "translation": [
-                550.0,
-                0.0,
-                0.0
-            ],
             "name": "Rail2x1Simp"
         },
         {
             "mesh": 0,
-            "translation": [
-                -4000.0,
-                0.0,
-                900.0
-            ],
             "name": "Rail2x1SimpShape"
         }
     ],
@@ -89,13 +79,13 @@
             "count": 24,
             "max": [
                 0.0,
-                100.0,
-                -3.10003662109375
+                1.0,
+                -0.03100036643445492
             ],
             "min": [
-                -200.0,
+                -2.0,
                 0.0,
-                -12.4998779296875
+                -0.1249987781047821
             ],
             "type": "VEC3"
         },

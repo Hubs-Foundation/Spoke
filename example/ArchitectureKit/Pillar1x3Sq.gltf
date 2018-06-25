@@ -1,6 +1,6 @@
 {
     "asset": {
-        "generator": "Maya2glTF V0.9.7-BETA 66f7270",
+        "generator": "Maya2glTF V0.9.7-BETA ab18f62",
         "version": "2.0"
     },
     "scenes": [
@@ -16,20 +16,10 @@
             "children": [
                 1
             ],
-            "translation": [
-                550.0,
-                0.0,
-                0.0
-            ],
             "name": "Pillar1x3Sq"
         },
         {
             "mesh": 0,
-            "translation": [
-                -4900.0,
-                0.0,
-                400.0
-            ],
             "name": "Pillar1x3SqShape"
         }
     ],
@@ -88,14 +78,14 @@
             "componentType": 5126,
             "count": 16,
             "max": [
-                50.0,
-                287.5,
-                50.0
+                0.5,
+                2.875,
+                0.5
             ],
             "min": [
-                -50.0,
-                -12.5,
-                -50.0
+                -0.5,
+                -0.125,
+                -0.5
             ],
             "type": "VEC3"
         },

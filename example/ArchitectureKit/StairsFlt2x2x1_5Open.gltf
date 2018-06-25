@@ -1,6 +1,6 @@
 {
     "asset": {
-        "generator": "Maya2glTF V0.9.7-BETA 66f7270",
+        "generator": "Maya2glTF V0.9.7-BETA ab18f62",
         "version": "2.0"
     },
     "scenes": [
@@ -16,20 +16,10 @@
             "children": [
                 1
             ],
-            "translation": [
-                550.0,
-                0.0,
-                0.0
-            ],
             "name": "StairsFlt2x2x1_5Open"
         },
         {
             "mesh": 0,
-            "translation": [
-                -3350.0,
-                0.0,
-                700.0
-            ],
             "name": "StairsFlt2x2x1_5OpenShape"
         }
     ],
@@ -88,14 +78,14 @@
             "componentType": 5126,
             "count": 184,
             "max": [
-                100.00048828125,
-                128.572265625,
-                300.0
+                1.0000048875808716,
+                1.2857226133346558,
+                3.0
             ],
             "min": [
-                -100.00048828125,
-                -10.714813232421877,
-                100.0
+                -1.0000048875808716,
+                -0.10714813321828842,
+                1.0
             ],
             "type": "VEC3"
         },
