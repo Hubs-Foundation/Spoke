@@ -118,12 +118,13 @@ export default class Project extends EventEmitter {
   }
 
   async saveScene(filePath, json, blob) {
-    await this.writeJSON(filePath, json);
-
     if (blob) {
       const binFilePath = filePath.replace(".gltf", ".bin");
+      json.buffers[0].uri = binFilePath.replace("/api/files/", "");
       await this.writeBlob(binFilePath, blob);
     }
+
+    await this.writeJSON(filePath, json);
   }
 
   async bundleScene(name, version, sceneURI, outputDir) {

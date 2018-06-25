@@ -173,7 +173,7 @@ export default async function startServer(options) {
         success: true
       };
     } else if (ctx.request.type === "application/octet-stream") {
-      await fs.writeFile(filePath, ctx.request.body);
+      await fs.writeFile(filePath, ctx.req.read());
       ctx.body = { success: true };
     } else if (ctx.request.query.mkdir) {
       await fs.ensureDir(filePath);
