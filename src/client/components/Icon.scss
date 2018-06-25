@@ -4,11 +4,9 @@
   display: flex;
   flex-grow: 0;
   flex-wrap: nowrap;
-  flex-direction: column;
+  flex-direction: row;
   padding: 25px;
   align-items: center;
-  width: 180px;
-  height: 180px;
 
   &:local(.selected) {
     background-color: $selected;
@@ -21,10 +19,7 @@
 
   :local(.name) {
     margin-top: 12px;
-    text-overflow: ellipsis;
-    word-wrap: break-word;
     white-space: nowrap;
-    width: 100px;
     overflow: hidden;
     text-align: center;
   }
@@ -32,12 +27,11 @@
 
 :local(.small) {
   padding: 8px;
-  width: 80px;
-  height: 80px;
 
   :local(.image) {
     width: 50px;
     height: 50px;
+    margin: 0 4px;
   }
 
   :local(.name) {

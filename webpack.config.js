@@ -34,7 +34,11 @@ module.exports = {
       {
         test: /\.scss$/,
         include: path.join(__dirname, "src", "client"),
-        use: ["style-loader", "css-loader", "sass-loader"]
+        use: [
+          "style-loader",
+          { loader: "css-loader", options: { localIdentName: "[name]__[local]__[hash:base64:5]" } },
+          "sass-loader"
+        ]
       },
       {
         test: /\.js$/,
