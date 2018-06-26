@@ -4,6 +4,7 @@ import { registerGLTFComponents } from "../editor/gltf-components";
 
 const editor = new Editor();
 registerGLTFComponents(editor);
+editor.onComponentsRegistered();
 const EditorContext = React.createContext(editor);
 
 export function withEditor(Component) {

@@ -104,6 +104,10 @@ export default class Editor {
     this.viewport = null;
   }
 
+  onComponentsRegistered = () => {
+    this.gltfComponents.get("directional-light").inflate(this.scene);
+  };
+
   onWindowResize = () => {
     this.signals.windowResize.dispatch();
   };
@@ -120,6 +124,7 @@ export default class Editor {
     const renderer = new THREE.WebGLRenderer({
       canvas
     });
+    renderer.shadowMap.enabled = true;
 
     this.viewport = new Viewport(this);
 
@@ -250,7 +255,6 @@ export default class Editor {
     gltfLoader.onNodeAdded = node => {
       if (node.userData.MOZ_components) {
         for (const component of node.userData.MOZ_components) {
-          console.log("BPDEBUG component", component);
           this.gltfComponents.get(component.name).inflate(node, component.props);
         }
       }
@@ -283,6 +287,7 @@ export default class Editor {
       }
 
       gltfContainer.add(scene);
+      this.gltfComponents.get("shadow").inflate(gltfContainer);
 
       scene.userData = {
         _gltfRoot: true,
