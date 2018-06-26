@@ -8,9 +8,10 @@ export default function Icon({ name, src, selected, rename, onClick, onChange, o
   const fullClassName = classNames(styles.icon, className, {
     [styles.selected]: selected
   });
+  const [fileName, fileExt] = name.split(".");
 
   return (
-    <div className={fullClassName} onClick={onClick}>
+    <div className={fullClassName} onMouseDown={onClick}>
       <img className={styles.image} src={src} />
       {rename ? (
         <StringInput
@@ -30,7 +31,12 @@ export default function Icon({ name, src, selected, rename, onClick, onChange, o
           }}
         />
       ) : (
-        <div className={styles.name}>{name}</div>
+        <div>
+          <div className={styles.name} title={fileName}>
+            {fileName}
+          </div>
+          <div className={styles.type}>{fileExt}</div>
+        </div>
       )}
     </div>
   );
