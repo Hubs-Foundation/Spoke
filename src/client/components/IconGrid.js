@@ -7,5 +7,5 @@ export default function IconGrid({ children }) {
 }
 
 IconGrid.propTypes = {
-  children: PropTypes.arrayOf(PropTypes.element)
+  children: PropTypes.arrayOf(PropTypes.any)
 };
