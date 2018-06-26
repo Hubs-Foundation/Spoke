@@ -253,7 +253,7 @@ export default class Viewport {
       renderer.autoClear = false;
       renderer.autoUpdateScene = false;
       renderer.setPixelRatio(window.devicePixelRatio);
-      renderer.setSize(canvas.offsetWidth, canvas.offsetHeight);
+      renderer.setSize(canvas.parentElement.offsetWidth, canvas.parentElement.offsetHeight);
 
       render();
     });
