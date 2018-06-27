@@ -137,7 +137,10 @@ export default async function startServer(options) {
     const compiler = webpack(config);
 
     try {
-      const devMiddleware = await koaWebpack({ compiler });
+      const devMiddleware = await koaWebpack({
+        compiler,
+        hotClient: { host: { server: "0.0.0.0", client: "*" } }
+      });
       app.use(devMiddleware);
     } catch (e) {
       throw e;
