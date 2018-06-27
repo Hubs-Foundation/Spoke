@@ -289,6 +289,11 @@ export default class Editor {
       }
 
       gltfContainer.add(scene);
+      scene.traverse(child => {
+        child.userData.selectionRoot = gltfContainer;
+      });
+      this.signals.objectAdded.dispatch(scene);
+      this.select(gltfContainer);
       this.gltfComponents.get("shadow").inflate(gltfContainer);
 
       scene.userData = {

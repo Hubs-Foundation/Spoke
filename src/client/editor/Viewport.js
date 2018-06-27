@@ -110,10 +110,9 @@ export default class Viewport {
         if (intersects.length > 0) {
           const object = intersects[0].object;
 
-          if (object.userData.object !== undefined) {
+          if (object.userData.selectionRoot !== undefined) {
             // helper
-
-            editor.select(object.userData.object);
+            editor.select(object.userData.selectionRoot);
           } else {
             editor.select(object);
           }
