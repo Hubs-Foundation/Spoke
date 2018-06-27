@@ -1,10 +1,11 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
+import { HotKeys } from "react-hotkeys";
+
 import Viewport from "../components/Viewport";
 import { withEditor } from "./EditorContext";
 import styles from "./ViewportPanelContainer.scss";
 import FileDropTarget from "../components/FileDropTarget";
-import { HotKeys } from "react-hotkeys";
 
 class ViewportPanelContainer extends Component {
   static propTypes = {
@@ -18,7 +19,8 @@ class ViewportPanelContainer extends Component {
       viewportHotKeyHandlers: {
         translateTool: this.onTranslateTool,
         rotateTool: this.onRotateTool,
-        scaleTool: this.onScaleTool
+        scaleTool: this.onScaleTool,
+        delete: this.onDelete
       }
     };
 
@@ -45,6 +47,10 @@ class ViewportPanelContainer extends Component {
 
   onScaleTool = () => {
     this.props.editor.signals.transformModeChanged.dispatch("scale");
+  };
+
+  onDelete = () => {
+    this.props.editor.deleteSelectedObject();
   };
 
   render() {

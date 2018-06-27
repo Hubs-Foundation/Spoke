@@ -1,14 +1,15 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
-import { withEditor } from "./EditorContext";
+import { HotKeys } from "react-hotkeys";
 import Tree from "@robertlong/react-ui-tree";
-import "../vendor/react-ui-tree/index.scss";
-import "../vendor/react-contextmenu/index.scss";
 import classNames from "classnames";
 import { ContextMenu, MenuItem, ContextMenuTrigger } from "react-contextmenu";
+
+import { withEditor } from "./EditorContext";
+import "../vendor/react-ui-tree/index.scss";
+import "../vendor/react-contextmenu/index.scss";
 import AddObjectCommand from "../editor/commands/AddObjectCommand";
 import MoveObjectCommand from "../editor/commands/MoveObjectCommand";
-import RemoveObjectCommand from "../editor/commands/RemoveObjectCommand";
 import THREE from "../vendor/three";
 
 function createNodeHierarchy(object) {
@@ -38,7 +39,10 @@ class HierarchyPanelContainer extends Component {
     super(props);
 
     this.state = {
-      tree: createNodeHierarchy(props.editor.scene)
+      tree: createNodeHierarchy(props.editor.scene),
+      hierarchyHotKeyHandlers: {
+        delete: this.onDeleteSelected
+      }
     };
 
     this.clicked = null;
@@ -97,8 +101,12 @@ class HierarchyPanelContainer extends Component {
     this.props.editor.execute(new AddObjectCommand(object, node.object));
   };
 
+  onDeleteSelected = () => {
+    this.props.editor.deleteSelectedObject();
+  };
+
   onDeleteNode = (e, node) => {
-    this.props.editor.execute(new RemoveObjectCommand(node.object));
+    this.props.editor.deleteObject(node.object);
   };
 
   rebuildNodeHierarchy = () => {
@@ -124,7 +132,7 @@ class HierarchyPanelContainer extends Component {
 
   render() {
     return (
-      <div>
+      <HotKeys handlers={this.state.hierarchyHotKeyHandlers}>
         <Tree
           paddingLeft={8}
           isNodeCollapsed={false}
@@ -137,7 +145,7 @@ class HierarchyPanelContainer extends Component {
           <MenuItem onClick={this.onAddNode}>Add Node</MenuItem>
           <MenuItem onClick={this.onDeleteNode}>Delete</MenuItem>
         </ContextMenu>
-      </div>
+      </HotKeys>
     );
   }
 }

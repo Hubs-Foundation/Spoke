@@ -4,6 +4,7 @@ import History from "./History";
 import Storage from "./Storage";
 import Viewport from "./Viewport";
 import getFileNameFromURI from "../utlis/getFileNameFromURI";
+import RemoveObjectCommand from "./commands/RemoveObjectCommand";
 
 /**
  * @author mrdoob / http://mrdoob.com/
@@ -42,6 +43,8 @@ export default class Editor {
       savingFinished: new Signal(),
 
       themeChanged: new Signal(),
+
+      deleteSelectedObject: new Signal(),
 
       transformModeChanged: new Signal(),
       snapToggled: new Signal(),
@@ -465,6 +468,14 @@ export default class Editor {
 
   focusById(id) {
     this.focus(this.scene.getObjectById(id, true));
+  }
+
+  deleteObject(object) {
+    this.execute(new RemoveObjectCommand(object));
+  }
+
+  deleteSelectedObject() {
+    this.deleteObject(this.selected);
   }
 
   clear() {
