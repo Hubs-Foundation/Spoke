@@ -44,8 +44,9 @@ export default class Editor {
       themeChanged: new Signal(),
 
       transformModeChanged: new Signal(),
-      snapChanged: new Signal(),
+      snapToggled: new Signal(),
       spaceChanged: new Signal(),
+      viewportInitialized: new Signal(),
       rendererChanged: new Signal(),
 
       sceneBackgroundChanged: new Signal(),
@@ -127,6 +128,7 @@ export default class Editor {
     renderer.shadowMap.enabled = true;
 
     this.viewport = new Viewport(this);
+    this.signals.viewportInitialized.dispatch(this.viewport);
 
     this.signals.rendererChanged.dispatch(renderer);
   }

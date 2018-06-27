@@ -57,9 +57,9 @@ export default class Viewport {
       renderer.render(sceneHelpers, camera);
     }
 
-    const transformControls = new THREE.TransformControls(camera, canvas);
-    transformControls.addEventListener("change", function() {
-      const object = transformControls.object;
+    this._transformControls = new THREE.TransformControls(camera, canvas);
+    this._transformControls.addEventListener("change", () => {
+      const object = this._transformControls.object;
 
       if (object !== undefined) {
         selectionBox.setFromObject(object);
@@ -74,7 +74,10 @@ export default class Viewport {
       render();
     });
 
-    sceneHelpers.add(transformControls);
+    this.snapEnabled = false;
+    this.toggleSnap(true);
+
+    sceneHelpers.add(this._transformControls);
 
     // object picking
 
@@ -183,13 +186,13 @@ export default class Viewport {
     // otherwise controls.enabled doesn't work.
 
     const controls = new THREE.EditorControls(camera, canvas);
-    controls.addEventListener("change", function() {
-      transformControls.update();
+    controls.addEventListener("change", () => {
+      this._transformControls.update();
       signals.cameraChanged.dispatch(camera);
     });
 
-    transformControls.addEventListener("mouseDown", function() {
-      const object = transformControls.object;
+    this._transformControls.addEventListener("mouseDown", () => {
+      const object = this._transformControls.object;
 
       objectPositionOnDown = object.position.clone();
       objectRotationOnDown = object.rotation.clone();
@@ -197,11 +200,11 @@ export default class Viewport {
 
       controls.enabled = false;
     });
-    transformControls.addEventListener("mouseUp", function() {
-      const object = transformControls.object;
+    this._transformControls.addEventListener("mouseUp", () => {
+      const object = this._transformControls.object;
 
       if (object !== undefined) {
-        switch (transformControls.getMode()) {
+        switch (this._transformControls.getMode()) {
           case "translate":
             if (!objectPositionOnDown.equals(object.position)) {
               editor.execute(new SetPositionCommand(object, object.position, objectPositionOnDown));
@@ -235,16 +238,14 @@ export default class Viewport {
       render();
     });
 
-    signals.transformModeChanged.add(function(mode) {
-      transformControls.setMode(mode);
+    signals.transformModeChanged.add(mode => {
+      this._transformControls.setMode(mode);
     });
 
-    signals.snapChanged.add(function(dist) {
-      transformControls.setTranslationSnap(dist);
-    });
+    signals.snapToggled.add(this.toggleSnap);
 
-    signals.spaceChanged.add(function(space) {
-      transformControls.setSpace(space);
+    signals.spaceChanged.add(space => {
+      this._transformControls.setSpace(space);
     });
 
     signals.rendererChanged.add(function(newRenderer) {
@@ -266,9 +267,9 @@ export default class Viewport {
       render();
     });
 
-    signals.objectSelected.add(function(object) {
+    signals.objectSelected.add(object => {
       selectionBox.visible = false;
-      transformControls.detach();
+      this._transformControls.detach();
 
       if (object !== null && object !== scene && object !== camera) {
         box.setFromObject(object);
@@ -278,7 +279,7 @@ export default class Viewport {
           selectionBox.visible = true;
         }
 
-        transformControls.attach(object);
+        this._transformControls.attach(object);
       }
 
       render();
@@ -302,10 +303,10 @@ export default class Viewport {
       });
     });
 
-    signals.objectChanged.add(function(object) {
+    signals.objectChanged.add(object => {
       if (editor.selected === object) {
         selectionBox.setFromObject(object);
-        transformControls.update();
+        this._transformControls.update();
       }
 
       if (object instanceof THREE.PerspectiveCamera) {
@@ -397,4 +398,9 @@ export default class Viewport {
       render();
     });
   }
+  toggleSnap = enabled => {
+    this.snapEnabled = enabled;
+    this._transformControls.setTranslationSnap(enabled ? 1 : null);
+    this._transformControls.setRotationSnap(enabled ? Math.PI / 2 : null);
+  };
 }

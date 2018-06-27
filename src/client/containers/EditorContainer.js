@@ -8,6 +8,7 @@ import ViewportPanelContainer from "./ViewportPanelContainer";
 import HierarchyPanelContainer from "./HierarchyPanelContainer";
 import PropertiesPanelContainer from "./PropertiesPanelContainer";
 import AssetExplorerPanelContainer from "./AssetExplorerPanelContainer";
+import ViewportToolbarContainer from "./ViewportToolbarContainer";
 import { MosaicWindow } from "react-mosaic-component";
 import PanelToolbar from "../components/PanelToolbar";
 import { withProject } from "./ProjectContext";
@@ -61,7 +62,7 @@ class EditorContainer extends Component {
           component: ViewportPanelContainer,
           windowProps: {
             title: "Viewport",
-            toolbarControls: [],
+            toolbarControls: ViewportToolbarContainer(),
             draggable: true
           }
         },
