@@ -290,7 +290,7 @@ export default class Editor {
 
       gltfContainer.add(scene);
       scene.traverse(child => {
-        child.userData.selectionRoot = gltfContainer;
+        Object.defineProperty(child.userData, "selectionRoot", { value: gltfContainer, enumerable: false });
       });
       this.signals.objectAdded.dispatch(scene);
       this.select(gltfContainer);
