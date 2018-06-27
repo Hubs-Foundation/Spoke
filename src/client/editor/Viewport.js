@@ -400,6 +400,6 @@ export default class Viewport {
   toggleSnap = enabled => {
     this.snapEnabled = enabled;
     this._transformControls.setTranslationSnap(enabled ? 1 : null);
-    this._transformControls.setRotationSnap(enabled ? Math.PI / 2 : null);
+    this._transformControls.setRotationSnap(enabled ? Math.PI / 4 : null);
   };
 }
