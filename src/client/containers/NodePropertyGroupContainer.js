@@ -88,7 +88,7 @@ class NodePropertyGroupContainer extends Component {
         </InputGroup>
         <div className={styles.addComponentContainer}>
           <Select
-            placeholder="none"
+            placeholder="Add a component..."
             className={styles.addComponentSelect}
             options={gltfComponentOptions}
             onChange={this.onChangeComponent}
