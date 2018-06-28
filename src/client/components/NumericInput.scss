@@ -9,6 +9,7 @@
   padding-left: 6px;
   font-size: 16px;
   height: 24px;
+  box-sizing: border-box;
   -moz-appearance: textfield;
 
   &::-webkit-outer-spin-button,

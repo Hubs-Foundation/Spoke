@@ -13,14 +13,13 @@
     padding: 6px 8px;
     border-top: 1px solid $border;
     border-bottom: 1px solid $border;
-    font-weight: bold;
+    background-color: $header;
   }
 
   :local(.content) {
     padding: 0 8px;
     display: flex;
     flex-direction: column;
-    width: 100%;
 
     & > * {
       margin-top: 8px;
