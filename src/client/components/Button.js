@@ -1,18 +1,19 @@
-import React, { Component } from "react";
+import React from "react";
 import PropTypes from "prop-types";
-import "./Button.scss";
+import classNames from "classnames";
+import styles from "./Button.scss";
 
-export default class Button extends Component {
-  render() {
-    return (
-      <button className="Button" onClick={this.props.onClick}>
-        {this.props.children}
-      </button>
-    );
-  }
+export default function Button({ className, children, ...props }) {
+  const fullClassName = classNames(styles.button, className);
+
+  return (
+    <button className={fullClassName} {...props}>
+      {children}
+    </button>
+  );
 }
 
 Button.propTypes = {
-  onClick: PropTypes.func,
+  className: PropTypes.string,
   children: PropTypes.node
 };

@@ -1,6 +1,6 @@
 @import "../theme";
 
-.Button {
+:local(.button) {
   display: flex;
   border: none;
   background: $selected;

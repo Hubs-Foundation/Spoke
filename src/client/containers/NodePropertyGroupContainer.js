@@ -10,6 +10,11 @@ import SetValueCommand from "../editor/commands/SetValueCommand";
 import SetPositionCommand from "../editor/commands/SetPositionCommand";
 import SetRotationCommand from "../editor/commands/SetRotationCommand";
 import SetScaleCommand from "../editor/commands/SetScaleCommand";
+import AddGLTFComponentCommand from "../editor/commands/AddGLTFComponentCommand";
+import { getDisplayName } from "../editor/gltf-components";
+import Select from "react-select";
+import "../vendor/react-select/index.scss";
+import styles from "./NodePropertyGroupContainer.scss";
 
 const RAD2DEG = THREE.Math.RAD2DEG;
 const DEG2RAD = THREE.Math.DEG2RAD;
@@ -17,47 +22,56 @@ const DEG2RAD = THREE.Math.DEG2RAD;
 class NodePropertyGroupContainer extends Component {
   static propTypes = {
     editor: PropTypes.object,
-    node: PropTypes.object
+    node: PropTypes.object.isRequired
   };
+
   constructor(props) {
     super(props);
-    this.state = { node: null };
     this.positionVector = new THREE.Vector3();
     this.rotationEuler = new THREE.Euler();
     this.degreesVector = new THREE.Vector3();
     this.scaleVector = new THREE.Vector3();
   }
+
   updateName = e => {
-    if (!this.props.node) return;
     this.props.editor.execute(new SetValueCommand(this.props.node, "name", e.target.value));
   };
+
   updatePosition = newPosition => {
-    if (!this.props.node) return;
     this.props.editor.execute(new SetPositionCommand(this.props.node, this.positionVector.copy(newPosition)));
   };
+
   updateRotation = newRotation => {
-    if (!this.props.node) return;
     this.rotationEuler.set(newRotation.x * DEG2RAD, newRotation.y * DEG2RAD, newRotation.z * DEG2RAD);
     this.props.editor.execute(new SetRotationCommand(this.props.node, this.rotationEuler));
   };
+
   updateScale = newScale => {
-    if (!this.props.node) return;
     this.props.editor.execute(new SetScaleCommand(this.props.node, this.scaleVector.copy(newScale)));
   };
+
+  onChangeComponent = ({ value }) => {
+    this.props.editor.execute(new AddGLTFComponentCommand(this.props.node, value));
+  };
+
   render() {
-    let name = "";
-    let position = null;
-    let rotation = null;
-    let scale = null;
-    if (this.props.node) {
-      const { node } = this.props;
-      name = node.name;
-      position = node.position;
-      scale = node.scale;
-      const eulerRadians = node.rotation;
-      this.degreesVector.set(eulerRadians.x * RAD2DEG, eulerRadians.y * RAD2DEG, eulerRadians.z * RAD2DEG);
-      rotation = this.degreesVector;
+    const node = this.props.node;
+    const name = node.name;
+    const position = node.position;
+    const scale = node.scale;
+    const eulerRadians = node.rotation;
+    this.degreesVector.set(eulerRadians.x * RAD2DEG, eulerRadians.y * RAD2DEG, eulerRadians.z * RAD2DEG);
+    const rotation = this.degreesVector;
+
+    const gltfComponentOptions = [];
+
+    for (const [name] of this.props.editor.gltfComponents) {
+      gltfComponentOptions.push({
+        value: name,
+        label: getDisplayName(name)
+      });
     }
+
     return (
       <PropertyGroup name="Node">
         <InputGroup name="Name">
@@ -72,6 +86,14 @@ class NodePropertyGroupContainer extends Component {
         <InputGroup name="Scale">
           <Vector3Input value={scale} onChange={this.updateScale} />
         </InputGroup>
+        <div className={styles.addComponentContainer}>
+          <Select
+            placeholder="none"
+            className={styles.addComponentSelect}
+            options={gltfComponentOptions}
+            onChange={this.onChangeComponent}
+          />
+        </div>
       </PropertyGroup>
     );
   }

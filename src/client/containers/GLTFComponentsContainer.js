@@ -10,14 +10,15 @@ import SetGLTFComponentPropertyCommand from "../editor/commands/SetGLTFComponent
 class GLTFComponentsContainer extends Component {
   static propTypes = {
     editor: PropTypes.object,
-    node: PropTypes.object,
-    components: PropTypes.array
+    node: PropTypes.object.isRequired,
+    components: PropTypes.array.isRequired
   };
+
   onChange = (componentName, propertyName, value) => {
     this.props.editor.execute(new SetGLTFComponentPropertyCommand(this.props.node, componentName, propertyName, value));
   };
+
   render() {
-    if (!this.props.components) return null;
     // Generate property groups for each component and property editors for each property.
     return this.props.components.map(component => {
       const componentDefinition = this.props.editor.gltfComponents.get(component.name);
