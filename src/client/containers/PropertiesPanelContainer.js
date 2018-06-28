@@ -21,7 +21,7 @@ class PropertiesPanelContainer extends Component {
     this.props.editor.signals.objectSelected.add(node =>
       this.setState({
         node,
-        components: (node && node.userData.MOZ_component) || []
+        components: (node && node.userData.MOZ_components) || []
       })
     );
 
