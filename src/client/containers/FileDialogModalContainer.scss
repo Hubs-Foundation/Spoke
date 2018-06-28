@@ -47,3 +47,7 @@
   white-space: nowrap;
   justify-content: center;
 }
+
+:local(.node) {
+  padding: 4px 5px;
+}

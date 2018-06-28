@@ -11,8 +11,7 @@
 
   .m-tree {
     position: relative;
-    overflow: hidden;
-    width: 100%;
+    overflow: visible;
     padding-right: 3px;
   }
 
@@ -31,7 +30,7 @@
     }
 
     &.placeholder {
-      border: 1px dashed $blue;
+      outline: 1px dashed $blue;
     }
 
     .inner {
@@ -43,7 +42,6 @@
     .node {
       display: inline-block;
       width: 100%;
-      padding: 4px 5px;
       -webkit-touch-callout: none;
       -webkit-user-select: none;
       -khtml-user-select: none;

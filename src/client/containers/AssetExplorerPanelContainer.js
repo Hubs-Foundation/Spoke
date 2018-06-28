@@ -183,7 +183,7 @@ class AssetExplorerPanelContainer extends Component {
     return (
       <div
         id="node-menu"
-        className={classNames("node", {
+        className={classNames("node", styles.node, {
           "is-active": this.state.selectedDirectory
             ? this.state.selectedDirectory === node.uri
             : node === this.state.tree

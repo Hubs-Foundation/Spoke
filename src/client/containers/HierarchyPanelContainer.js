@@ -5,6 +5,7 @@ import Tree from "@robertlong/react-ui-tree";
 import classNames from "classnames";
 import { ContextMenu, MenuItem, ContextMenuTrigger } from "react-contextmenu";
 
+import styles from "./HierarchyPanelContainer.scss";
 import { withEditor } from "./EditorContext";
 import "../vendor/react-ui-tree/index.scss";
 import "../vendor/react-contextmenu/index.scss";
@@ -123,7 +124,13 @@ class HierarchyPanelContainer extends Component {
         })}
         onMouseUp={e => this.onMouseUpNode(e, node)}
       >
-        <ContextMenuTrigger holdToDisplay={-1} id="hierarchy-node-menu" node={node} collect={collectNodeMenuProps}>
+        <ContextMenuTrigger
+          attributes={{ className: styles.treeNode }}
+          holdToDisplay={-1}
+          id="hierarchy-node-menu"
+          node={node}
+          collect={collectNodeMenuProps}
+        >
           {node.object.name}
         </ContextMenuTrigger>
       </div>
@@ -132,7 +139,7 @@ class HierarchyPanelContainer extends Component {
 
   render() {
     return (
-      <HotKeys handlers={this.state.hierarchyHotKeyHandlers}>
+      <HotKeys className={styles.hierarchyRoot} handlers={this.state.hierarchyHotKeyHandlers}>
         <Tree
           paddingLeft={8}
           isNodeCollapsed={false}

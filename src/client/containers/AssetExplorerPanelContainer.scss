@@ -19,3 +19,7 @@
   flex: 1;
   overflow-y: auto;
 }
+
+:local(.node) {
+  padding: 4px 5px;
+}
