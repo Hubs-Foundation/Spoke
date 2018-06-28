@@ -31,17 +31,20 @@
 
     &.placeholder {
       outline: 1px dashed $blue;
+      margin-left: 16px;
     }
 
     .inner {
       position: relative;
       cursor: pointer;
       padding-left: 10px;
+      display: flex;
     }
 
     .node {
       display: inline-block;
-      width: 100%;
+      flex: 1;
+      margin-left: 6px;
       -webkit-touch-callout: none;
       -webkit-user-select: none;
       -khtml-user-select: none;
@@ -58,6 +61,7 @@
       position: absolute;
       left: 0;
       cursor: pointer;
+      font-size: 22px;
     }
 
     .caret-right:before {
