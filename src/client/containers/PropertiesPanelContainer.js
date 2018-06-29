@@ -26,7 +26,7 @@ class PropertiesPanelContainer extends Component {
     );
 
     this.props.editor.signals.objectChanged.add(object => {
-      if (this.state.node === object && object.userData.MOZ_components) {
+      if (this.state.node === object) {
         this.setState({
           components: object.userData.MOZ_components || []
         });
