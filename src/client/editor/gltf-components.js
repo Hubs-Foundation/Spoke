@@ -96,6 +96,7 @@ class DirectionalLightComponent extends BaseComponent {
     this.updateProperty(node, "elevation", props.elevation);
     this.updateProperty(node, "castShadow", props.castShadow);
     light.userData._dontShowInHierarchy = true;
+    light.userData._inflated = true;
     node.add(light);
   }
 }
@@ -119,6 +120,7 @@ class PointLightComponent extends BaseComponent {
     Object.defineProperty(component, "_object", { enumerable: false, value: light });
     this.updateProperty(node, "castShadow", props.castShadow);
     light.userData._dontShowInHierarchy = true;
+    light.userData._inflated = true;
     node.add(light);
   }
 }

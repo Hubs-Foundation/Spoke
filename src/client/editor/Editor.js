@@ -338,7 +338,7 @@ export default class Editor {
 
   addHelper = (function() {
     const geometry = new THREE.SphereBufferGeometry(2, 4, 2);
-    const material = new THREE.MeshBasicMaterial({ color: 0xff0000, visible: true, wireframe: true });
+    const material = new THREE.MeshBasicMaterial({ color: 0xff0000, visible: false });
 
     return function(object) {
       let helper;
@@ -479,11 +479,25 @@ export default class Editor {
     this.deleteObject(this.selected);
   }
 
+  _cloneAndInflate(object, root) {
+    const clone = object.clone(false);
+    if (clone.userData.MOZ_components) {
+      for (const component of clone.userData.MOZ_components) {
+        this.gltfComponents.get(component.name).inflate(clone, component.props);
+      }
+    }
+    if (!root) root = clone;
+    for (const child of object.children) {
+      if (child.userData._inflated) continue;
+      const childClone = this._cloneAndInflate(child, root);
+      clone.add(childClone);
+      Object.defineProperty(childClone.userData, "selectionRoot", { value: root, enumerable: false });
+    }
+    return clone;
+  }
+
   duplicateObject(object) {
-    const clone = object.clone();
-    clone.traverse(child => {
-      Object.defineProperty(child.userData, "selectionRoot", { value: clone, enumerable: false });
-    });
+    const clone = this._cloneAndInflate(object);
     this.execute(new AddObjectCommand(clone, object.parent));
   }
 
