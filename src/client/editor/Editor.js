@@ -5,6 +5,7 @@ import Storage from "./Storage";
 import Viewport from "./Viewport";
 import getFileNameFromURI from "../utlis/getFileNameFromURI";
 import RemoveObjectCommand from "./commands/RemoveObjectCommand";
+import AddObjectCommand from "./commands/AddObjectCommand";
 
 /**
  * @author mrdoob / http://mrdoob.com/
@@ -337,7 +338,7 @@ export default class Editor {
 
   addHelper = (function() {
     const geometry = new THREE.SphereBufferGeometry(2, 4, 2);
-    const material = new THREE.MeshBasicMaterial({ color: 0xff0000, visible: false });
+    const material = new THREE.MeshBasicMaterial({ color: 0xff0000, visible: true, wireframe: true });
 
     return function(object) {
       let helper;
@@ -476,6 +477,18 @@ export default class Editor {
 
   deleteSelectedObject() {
     this.deleteObject(this.selected);
+  }
+
+  duplicateObject(object) {
+    const clone = object.clone();
+    clone.traverse(child => {
+      Object.defineProperty(child.userData, "selectionRoot", { value: clone, enumerable: false });
+    });
+    this.execute(new AddObjectCommand(clone, object.parent));
+  }
+
+  duplicateSelectedObject() {
+    this.duplicateObject(this.selected);
   }
 
   clear() {

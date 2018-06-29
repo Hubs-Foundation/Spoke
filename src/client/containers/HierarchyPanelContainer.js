@@ -42,7 +42,8 @@ class HierarchyPanelContainer extends Component {
     this.state = {
       tree: createNodeHierarchy(props.editor.scene),
       hierarchyHotKeyHandlers: {
-        delete: this.onDeleteSelected
+        delete: this.onDeleteSelected,
+        duplicate: this.onDuplicateSelected
       }
     };
 
@@ -102,6 +103,15 @@ class HierarchyPanelContainer extends Component {
     this.props.editor.execute(new AddObjectCommand(object, node.object));
   };
 
+  onDuplicateSelected = () => {
+    this.props.editor.duplicateSelectedObject();
+    return false;
+  };
+
+  onDuplicateNode = (e, node) => {
+    this.props.editor.duplicateObject(node.object);
+  };
+
   onDeleteSelected = () => {
     this.props.editor.deleteSelectedObject();
   };
@@ -150,6 +160,7 @@ class HierarchyPanelContainer extends Component {
         />
         <ContextMenu id="hierarchy-node-menu">
           <MenuItem onClick={this.onAddNode}>Add Node</MenuItem>
+          <MenuItem onClick={this.onDuplicateNode}>Duplicate</MenuItem>
           <MenuItem onClick={this.onDeleteNode}>Delete</MenuItem>
         </ContextMenu>
       </HotKeys>

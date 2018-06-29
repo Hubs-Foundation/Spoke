@@ -87,6 +87,7 @@ class EditorContainer extends Component {
         rotateTool: "e",
         scaleTool: "r",
         delete: "del",
+        duplicate: ["ctrl+d", "command+d"],
         save: ["ctrl+s", "command+s"],
         saveAs: ["ctrl+shift+s", "command+shift+s"],
         undo: ["ctrl+z", "command+z"],

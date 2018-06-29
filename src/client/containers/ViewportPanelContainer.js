@@ -20,7 +20,8 @@ class ViewportPanelContainer extends Component {
         translateTool: this.onTranslateTool,
         rotateTool: this.onRotateTool,
         scaleTool: this.onScaleTool,
-        delete: this.onDelete
+        delete: this.onDelete,
+        duplicate: this.onDuplicate
       }
     };
 
@@ -47,6 +48,11 @@ class ViewportPanelContainer extends Component {
 
   onScaleTool = () => {
     this.props.editor.signals.transformModeChanged.dispatch("scale");
+  };
+
+  onDuplicate = () => {
+    this.props.editor.duplicateSelectedObject();
+    return false;
   };
 
   onDelete = () => {
