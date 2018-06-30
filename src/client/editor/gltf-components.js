@@ -28,12 +28,19 @@ class BaseComponent {
     this.name = this.constructor.componentName;
     this.schema = this.constructor.schema;
   }
-  updateProperty(node, propertyName, value) {
-    const component = node.userData.MOZ_components.find(component => component.name === this.name);
-    component.props[propertyName] = value;
-    return { component };
+  _getComponent(node) {
+    return node.userData.MOZ_components.find(component => component.name === this.name);
   }
-  inflate(node, props) {
+  getProperty(node, propertyName) {
+    return this._getComponent(node).props[propertyName];
+  }
+  _updateComponentProperty(component, propertyName, value) {
+    component.props[propertyName] = value;
+  }
+  updateProperty(node, propertyName, value) {
+    this._updateComponentProperty(this._getComponent(node), propertyName, value);
+  }
+  _getOrCreateComponent(node, props) {
     if (!props) {
       props = getDefaultsFromSchema(this.constructor.schema);
     }
@@ -41,7 +48,7 @@ class BaseComponent {
       node.userData.MOZ_components = [];
     }
 
-    let component = node.userData.MOZ_components.find(component => component.name === this.name);
+    let component = this._getComponent(node);
     if (!component) {
       component = { name: this.name, props: {} };
       node.userData.MOZ_components.push(component);
@@ -53,7 +60,10 @@ class BaseComponent {
       }
     }
 
-    return { props, component };
+    return { component, props };
+  }
+  inflate(node, props) {
+    this._getOrCreateComponent(node, props);
   }
 }
 
@@ -71,8 +81,8 @@ class DirectionalLightComponent extends BaseComponent {
     { name: "azimuth", type: types.number, default: 245 }
   ];
   static _tempEuler = new THREE.Euler(0, 0, 0, "YXZ");
-  updateProperty(node, propertyName, value) {
-    const { component } = super.updateProperty(node, propertyName, value);
+  _updateComponentProperty(component, propertyName, value) {
+    super._updateComponentProperty(component, propertyName, value);
     const { _tempEuler } = DirectionalLightComponent;
     switch (propertyName) {
       case "color":
@@ -89,12 +99,12 @@ class DirectionalLightComponent extends BaseComponent {
     }
   }
   inflate(node, _props) {
-    const { props, component } = super.inflate(node, _props);
+    const { component, props } = this._getOrCreateComponent(node, _props);
     const light = new THREE.DirectionalLight(props.color, props.intensity);
     Object.defineProperty(component, "_object", { enumerable: false, value: light });
-    this.updateProperty(node, "azimuth", props.azimuth);
-    this.updateProperty(node, "elevation", props.elevation);
-    this.updateProperty(node, "castShadow", props.castShadow);
+    this._updateComponentProperty(component, "azimuth", props.azimuth);
+    this._updateComponentProperty(component, "elevation", props.elevation);
+    this._updateComponentProperty(component, "castShadow", props.castShadow);
     light.userData._dontShowInHierarchy = true;
     light.userData._inflated = true;
     node.add(light);
@@ -104,8 +114,8 @@ class DirectionalLightComponent extends BaseComponent {
 class PointLightComponent extends BaseComponent {
   static componentName = "point-light";
   static schema = [...lightSchema, { name: "castShadow", type: types.boolean, default: true }];
-  updateProperty(node, propertyName, value) {
-    const { component } = super.updateProperty(node, propertyName, value);
+  _updateComponentProperty(component, propertyName, value) {
+    super._updateComponentProperty(component, propertyName, value);
     switch (propertyName) {
       case "color":
         component._object.color.set(value);
@@ -115,10 +125,10 @@ class PointLightComponent extends BaseComponent {
     }
   }
   inflate(node, _props) {
-    const { props, component } = super.inflate(node, _props);
+    const { component, props } = this._getOrCreateComponent(node, _props);
     const light = new THREE.PointLight(props.color, props.intensity);
     Object.defineProperty(component, "_object", { enumerable: false, value: light });
-    this.updateProperty(node, "castShadow", props.castShadow);
+    this._updateComponentProperty(component, "castShadow", props.castShadow);
     light.userData._dontShowInHierarchy = true;
     light.userData._inflated = true;
     node.add(light);
@@ -131,8 +141,8 @@ class ShadowComponent extends BaseComponent {
     { name: "castShadow", type: types.boolean, default: true },
     { name: "receiveShadow", type: types.boolean, default: true }
   ];
-  updateProperty(node, propertyName, value) {
-    const { component } = super.updateProperty(node, propertyName, value);
+  _updateComponentProperty(component, propertyName, value) {
+    super._updateComponentProperty(component, propertyName, value);
     component._object.traverse(obj => {
       if (obj instanceof THREE.Mesh) {
         obj[propertyName] = value;
@@ -141,10 +151,10 @@ class ShadowComponent extends BaseComponent {
     });
   }
   inflate(node, _props) {
-    const { props, component } = super.inflate(node, _props);
+    const { component, props } = this._getOrCreateComponent(node, _props);
     Object.defineProperty(component, "_object", { enumerable: false, value: node });
-    this.updateProperty(node, "castShadow", props.castShadow);
-    this.updateProperty(node, "receiveShadow", props.receiveShadow);
+    this._updateComponentProperty(component, "castShadow", props.castShadow);
+    this._updateComponentProperty(component, "receiveShadow", props.receiveShadow);
   }
 }
 
