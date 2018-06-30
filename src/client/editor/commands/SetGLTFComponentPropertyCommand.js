@@ -32,8 +32,4 @@ export default class SetGLTFComponentPropertyCommand extends Command {
     component.updateProperty(this.object, this.propertyName, this.oldValue);
     this.editor.signals.objectChanged.dispatch(this.object);
   }
-
-  toJSON() {}
-
-  fromJSON() {}
 }

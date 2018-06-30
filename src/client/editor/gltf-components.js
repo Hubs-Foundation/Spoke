@@ -65,6 +65,15 @@ class BaseComponent {
   inflate(node, props) {
     this._getOrCreateComponent(node, props);
   }
+  deflate(node) {
+    const components = node.userData.MOZ_components;
+    const componentIndex = components.findIndex(component => component.name === this.name);
+    const component = components[componentIndex];
+    if (component._object) {
+      component._object.parent.remove(component._object);
+    }
+    components.splice(componentIndex, 1);
+  }
 }
 
 const lightSchema = [
