@@ -111,6 +111,9 @@ export default class Editor {
 
   onComponentsRegistered = () => {
     this.gltfComponents.get("directional-light").inflate(this.scene);
+    this.scene.traverse(child => {
+      this.addHelper(child, this.scene);
+    });
   };
 
   onWindowResize = () => {
@@ -169,7 +172,7 @@ export default class Editor {
       if (child.geometry !== undefined) scope.addGeometry(child.geometry);
       if (child.material !== undefined) scope.addMaterial(child.material);
 
-      scope.addHelper(child);
+      scope.addHelper(child, object);
     });
 
     if (parent !== undefined) {
@@ -340,7 +343,8 @@ export default class Editor {
     const geometry = new THREE.SphereBufferGeometry(2, 4, 2);
     const material = new THREE.MeshBasicMaterial({ color: 0xff0000, visible: false });
 
-    return function(object) {
+    return function(object, selectionRoot) {
+      if (this.helpers[object.id]) return;
       let helper;
 
       if (object instanceof THREE.Camera) {
@@ -362,11 +366,11 @@ export default class Editor {
 
       const picker = new THREE.Mesh(geometry, material);
       picker.name = "picker";
-      picker.userData.object = object;
+      picker.userData.selectionRoot = selectionRoot;
       helper.add(picker);
 
       this.sceneHelpers.add(helper);
-      this.helpers[object.id] = helper;
+      this.helpers[selectionRoot.id] = helper;
 
       this.signals.helperAdded.dispatch(helper);
     };
