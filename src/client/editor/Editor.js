@@ -334,7 +334,7 @@ export default class Editor {
     if (this.gltfComponents.has(componentName)) {
       throw new Error(`${componentName} already registered`);
     }
-    this.gltfComponents.set(componentName, new componentClass());
+    this.gltfComponents.set(componentName, componentClass);
   }
 
   //

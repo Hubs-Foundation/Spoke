@@ -14,22 +14,22 @@ export default class SetGLTFComponentPropertyCommand extends Command {
     this.object = object;
     this.componentName = componentName;
     this.propertyName = propertyName;
-    const component = this.editor.gltfComponents.get(this.componentName);
-    this.oldValue = component.getProperty(object, propertyName);
+    const component = this.editor.gltfComponents.get(this.componentName).getComponent(object);
+    this.oldValue = component.getProperty(propertyName);
     this.newValue = value;
 
     this.name = `Set ${componentName}.${propertyName} on ${object.name}`;
   }
 
   execute() {
-    const component = this.editor.gltfComponents.get(this.componentName);
-    component.updateProperty(this.object, this.propertyName, this.newValue);
+    const component = this.editor.gltfComponents.get(this.componentName).getComponent(this.object);
+    component.updateProperty(this.propertyName, this.newValue);
     this.editor.signals.objectChanged.dispatch(this.object);
   }
 
   undo() {
-    const component = this.editor.gltfComponents.get(this.componentName);
-    component.updateProperty(this.object, this.propertyName, this.oldValue);
+    const component = this.editor.gltfComponents.get(this.componentName).getComponent(this.object);
+    component.updateProperty(this.propertyName, this.oldValue);
     this.editor.signals.objectChanged.dispatch(this.object);
   }
 }
