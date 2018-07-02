@@ -144,6 +144,29 @@ class PointLightComponent extends BaseComponent {
   }
 }
 
+class AmbientLightComponent extends BaseComponent {
+  static componentName = "ambient-light";
+  static schema = [...lightSchema];
+  _updateComponentProperty(component, propertyName, value) {
+    super._updateComponentProperty(component, propertyName, value);
+    switch (propertyName) {
+      case "color":
+        component._object.color.set(value);
+        break;
+      default:
+        component._object[propertyName] = value;
+    }
+  }
+  inflate(node, _props) {
+    const { component, props } = this._getOrCreateComponent(node, _props);
+    const light = new THREE.AmbientLight(props.color, props.intensity);
+    Object.defineProperty(component, "_object", { enumerable: false, value: light });
+    light.userData._dontShowInHierarchy = true;
+    light.userData._inflated = true;
+    node.add(light);
+  }
+}
+
 class ShadowComponent extends BaseComponent {
   static componentName = "shadow";
   static schema = [
@@ -168,5 +191,7 @@ class ShadowComponent extends BaseComponent {
 }
 
 export function registerGLTFComponents(editor) {
-  [DirectionalLightComponent, PointLightComponent, ShadowComponent].forEach(editor.registerGLTFComponent.bind(editor));
+  [DirectionalLightComponent, PointLightComponent, AmbientLightComponent, ShadowComponent].forEach(
+    editor.registerGLTFComponent.bind(editor)
+  );
 }
