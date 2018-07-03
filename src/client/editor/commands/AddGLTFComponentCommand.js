@@ -21,29 +21,16 @@ export default class AddGLTFComponentCommand extends Command {
   execute() {
     const component = this.editor.gltfComponents.get(this.componentName);
     component.inflate(this.object);
+    this.object.traverse(child => {
+      this.editor.addHelper(child, this.object);
+    });
     this.editor.signals.objectChanged.dispatch(this.object);
   }
 
-  undo() {}
-
-  toJSON() {
-    const output = super.toJSON();
-    output.object = this.object.toJSON();
-    output.component = this.component;
-
-    return output;
-  }
-
-  fromJSON(json) {
-    super.fromJSON(json);
-
-    this.object = this.editor.objectByUuid(json.object.object.uuid);
-    this.component = json.component;
-
-    // TODO: Does this make sense for AddGLTFComponentCommand?
-    if (this.object === undefined) {
-      const loader = new THREE.ObjectLoader();
-      this.object = loader.parse(json.object);
-    }
+  undo() {
+    const component = this.editor.gltfComponents.get(this.componentName);
+    component.deflate(this.object);
+    this.editor.removeHelper(this.object);
+    this.editor.signals.objectChanged.dispatch(this.object);
   }
 }

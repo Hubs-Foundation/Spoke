@@ -110,6 +110,9 @@ export default class Editor {
 
   onComponentsRegistered = () => {
     this.gltfComponents.get("directional-light").inflate(this.scene);
+    this.scene.traverse(child => {
+      this.addHelper(child, this.scene);
+    });
   };
 
   onWindowResize = () => {
@@ -168,11 +171,20 @@ export default class Editor {
   addObject(object, parent) {
     const scope = this;
 
-    object.traverse(function(child) {
+    object.traverse(child => {
       if (child.geometry !== undefined) scope.addGeometry(child.geometry);
       if (child.material !== undefined) scope.addMaterial(child.material);
 
-      scope.addHelper(child);
+      if (child.userData.MOZ_components) {
+        for (const component of child.userData.MOZ_components) {
+          this.gltfComponents.get(component.name).inflate(child, component.props);
+        }
+      }
+      if (child instanceof THREE.Mesh && child.material instanceof THREE.MeshStandardMaterial) {
+        this.gltfComponents.get("standard-material").inflate(child);
+      }
+
+      scope.addHelper(child, object);
     });
 
     if (parent !== undefined) {
@@ -268,16 +280,17 @@ export default class Editor {
     if (this.gltfComponents.has(componentName)) {
       throw new Error(`${componentName} already registered`);
     }
-    this.gltfComponents.set(componentName, new componentClass());
+    this.gltfComponents.set(componentName, componentClass);
   }
 
   //
 
   addHelper = (function() {
     const geometry = new THREE.SphereBufferGeometry(2, 4, 2);
-    const material = new THREE.MeshBasicMaterial({ color: 0xff0000, visible: true, wireframe: true });
+    const material = new THREE.MeshBasicMaterial({ color: 0xff0000, visible: false });
 
-    return function(object) {
+    return function(object, selectionRoot) {
+      if (this.helpers[object.id]) return;
       let helper;
 
       if (object instanceof THREE.Camera) {
@@ -299,11 +312,11 @@ export default class Editor {
 
       const picker = new THREE.Mesh(geometry, material);
       picker.name = "picker";
-      picker.userData.object = object;
+      picker.userData.selectionRoot = selectionRoot;
       helper.add(picker);
 
       this.sceneHelpers.add(helper);
-      this.helpers[object.id] = helper;
+      this.helpers[selectionRoot.id] = helper;
 
       this.signals.helperAdded.dispatch(helper);
     };
@@ -416,11 +429,25 @@ export default class Editor {
     this.deleteObject(this.selected);
   }
 
+  _cloneAndInflate(object, root) {
+    const clone = object.clone(false);
+    if (clone.userData.MOZ_components) {
+      for (const component of clone.userData.MOZ_components) {
+        this.gltfComponents.get(component.name).inflate(clone, component.props);
+      }
+    }
+    if (!root) root = clone;
+    for (const child of object.children) {
+      if (child.userData._inflated) continue;
+      const childClone = this._cloneAndInflate(child, root);
+      clone.add(childClone);
+      Object.defineProperty(childClone.userData, "selectionRoot", { value: root, enumerable: false });
+    }
+    return clone;
+  }
+
   duplicateObject(object) {
-    const clone = object.clone();
-    clone.traverse(child => {
-      Object.defineProperty(child.userData, "selectionRoot", { value: clone, enumerable: false });
-    });
+    const clone = this._cloneAndInflate(object);
     this.execute(new AddObjectCommand(clone, object.parent));
   }
 

@@ -93,7 +93,7 @@ class EditorContainer extends Component {
         save: ["ctrl+s", "command+s"],
         saveAs: ["ctrl+shift+s", "command+shift+s"],
         undo: ["ctrl+z", "command+z"],
-        redo: ["ctrl+shit+z", "command+shift+z"],
+        redo: ["ctrl+shift+z", "command+shift+z"],
         bundle: ["ctrl+b", "command+b"]
       },
       globalHotKeyHandlers: {
