@@ -5,14 +5,26 @@ const { DEG2RAD } = THREE.Math;
 export const types = {
   color: Symbol("color"),
   number: Symbol("number"),
-  boolean: Symbol("boolean")
+  boolean: Symbol("boolean"),
+  file: Symbol("file")
 };
 
 export function getDisplayName(name) {
-  return name
-    .split("-")
-    .map(([f, ...rest]) => f.toUpperCase() + rest.join(""))
-    .join(" ");
+  if (name.includes("-")) {
+    return name
+      .split("-")
+      .map(([f, ...rest]) => f.toUpperCase() + rest.join(""))
+      .join(" ");
+  } else {
+    const displayName = name.replace(/[A-Z]/g, " $&");
+    return displayName[0].toUpperCase() + displayName.substr(1);
+  }
+}
+
+function getFilePath(image) {
+  const fullPath = image.src.substr(image.baseURI.length);
+  // TODO Shouldn't have to hardcode api path here.
+  return fullPath.replace("api/files/", "");
 }
 
 function getDefaultsFromSchema(schema) {
@@ -29,9 +41,6 @@ class BaseComponent {
     this.schema = this.constructor.schema;
     this.props = {};
   }
-  static getComponent(node) {
-    return node.userData.MOZ_components.find(component => component.name === this.componentName);
-  }
   getProperty(propertyName) {
     return this.props[propertyName];
   }
@@ -41,9 +50,15 @@ class BaseComponent {
   updateProperty(propertyName, value) {
     this._updateComponentProperty(propertyName, value);
   }
+  static getComponent(node) {
+    return node.userData.MOZ_components.find(component => component.name === this.componentName);
+  }
+  static _propsFromObject() {
+    return {};
+  }
   static _getOrCreateComponent(node, props) {
     if (!props) {
-      props = getDefaultsFromSchema(this.schema);
+      props = { ...getDefaultsFromSchema(this.schema), ...this._propsFromObject(node) };
     }
     if (!node.userData.MOZ_components) {
       node.userData.MOZ_components = [];
@@ -68,7 +83,7 @@ class BaseComponent {
   }
   static deflate(node) {
     const components = node.userData.MOZ_components;
-    const componentIndex = components.findIndex(component => component.name === this.name);
+    const componentIndex = components.findIndex(component => component.name === this.componentName);
     const component = components[componentIndex];
     if (component._object) {
       component._object.parent.remove(component._object);
@@ -191,8 +206,74 @@ class ShadowComponent extends BaseComponent {
   }
 }
 
+class StandardMaterialComponent extends BaseComponent {
+  static componentName = "standard-material";
+  static schema = [
+    { name: "color", type: types.color, default: "white" },
+    { name: "emissiveFactor", type: types.color, default: "white" },
+    { name: "metallic", type: types.number, default: 1 },
+    { name: "roughness", type: types.number, default: 1 },
+    { name: "alphaCutoff", type: types.number, default: 0.5 },
+    { name: "doubleSided", type: types.boolean, default: false },
+    { name: "baseColorTexture", type: types.file, default: "" },
+    { name: "normalTexture", type: types.file, default: "" },
+    { name: "metallicRoughnessTexture", type: types.file, default: "" },
+    { name: "emissiveTexture", type: types.file, default: "" },
+    { name: "occlusionTexture", type: types.file, default: "" }
+    // TODO alphaMode
+  ];
+  _updateComponentProperty(propertyName, value) {
+    super._updateComponentProperty(propertyName, value);
+    switch (propertyName) {
+      case "color":
+        this._object.color.set(value);
+        break;
+      case "emissiveFactor":
+        this._object.emissive.set(value);
+        break;
+      case "metallic":
+        this._object.metalness = value;
+        this._object.needsUpdate = true;
+        break;
+      case "alphaCutoff":
+        this._object.alphaTest = value;
+        this._object.needsUpdate = true;
+        break;
+      case "doubleSided":
+        this._object.side = value ? THREE.DoubleSide : THREE.FrontSide;
+        break;
+      default:
+        this._object[propertyName] = value;
+    }
+  }
+  static _propsFromObject(node) {
+    const { map, normalMap, emissiveMap, roughnessMap, aoMap } = node.material;
+    return {
+      color: node.material.color.getStyle(),
+      emissiveFactor: node.material.emissive.getStyle(),
+      metallic: node.material.metalness,
+      roughness: node.material.roughness,
+      alphaCutoff: node.material.alphaTest,
+      doubleSided: node.material.side === THREE.DoubleSide,
+      baseColorTexture: map && getFilePath(map.image),
+      normalTexture: normalMap && getFilePath(normalMap.image),
+      metallicRoughnessTexture: roughnessMap && getFilePath(roughnessMap.image),
+      emissiveTexture: emissiveMap && getFilePath(emissiveMap.image),
+      occlusionTexture: aoMap && getFilePath(aoMap.image)
+    };
+  }
+  static inflate(node, _props) {
+    const { component } = this._getOrCreateComponent(node, _props);
+    Object.defineProperty(component, "_object", { enumerable: false, value: node.material });
+  }
+}
+
 export function registerGLTFComponents(editor) {
-  [DirectionalLightComponent, PointLightComponent, AmbientLightComponent, ShadowComponent].forEach(
-    editor.registerGLTFComponent.bind(editor)
-  );
+  [
+    DirectionalLightComponent,
+    PointLightComponent,
+    AmbientLightComponent,
+    StandardMaterialComponent,
+    ShadowComponent
+  ].forEach(editor.registerGLTFComponent.bind(editor));
 }
