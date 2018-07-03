@@ -78,6 +78,7 @@ export default async function startServer(options) {
   );
 
   const projectPath = path.resolve(opts.projectPath);
+  const projectDirName = path.basename(projectPath);
 
   const app = new Koa();
   const server = http.createServer(app.callback());
@@ -96,7 +97,7 @@ export default async function startServer(options) {
   const debouncedBroadcastHierarchy = debounce(async () => {
     projectHierarchy = await getProjectHierarchy(projectPath);
     broadcast({
-      type: "changed",
+      type: "projectHierarchyChanged",
       hierarchy: projectHierarchy
     });
   }, 1000);
@@ -105,13 +106,17 @@ export default async function startServer(options) {
     .watch(opts.projectPath, {
       alwaysWriteFinish: true
     })
-    .on("all", () => {
+    .on("all", (type, filePath) => {
+      broadcast({
+        type,
+        path: filePath.replace(projectDirName, "/api/files").replace(/\\/g, "/")
+      });
       debouncedBroadcastHierarchy();
     });
 
   wss.on("connection", ws => {
     const message = JSON.stringify({
-      type: "changed",
+      type: "projectHierarchyChanged",
       hierarchy: projectHierarchy
     });
 

@@ -15,6 +15,7 @@ import { withProject } from "./ProjectContext";
 import { withEditor } from "./EditorContext";
 import { HotKeys } from "react-hotkeys";
 import styles from "./EditorContainer.scss";
+import { loadScene, loadSerializedScene, serializeScene } from "../editor/SceneLoader";
 
 class EditorContainer extends Component {
   static defaultProps = {
@@ -50,6 +51,7 @@ class EditorContainer extends Component {
     this.state = {
       sceneURI: null,
       sceneModified: null,
+      sceneLastSaved: null,
       registeredPanels: {
         hierarchy: {
           component: HierarchyPanelContainer,
@@ -102,32 +104,13 @@ class EditorContainer extends Component {
         bundle: this.onOpenBundleModal
       }
     };
-
-    this.gltfChangeHandlers = new Map();
   }
 
   componentDidMount() {
     this.props.editor.signals.windowResize.dispatch();
-
-    this.props.editor.signals.objectAdded.add(object => {
-      const gltfRef = object.userData.MOZ_gltf_ref;
-
-      if (gltfRef) {
-        const onChange = (event, uri) => this.onGLTFChanged(event, uri, object);
-        this.gltfChangeHandlers.set(object, onChange);
-      }
-    });
-
-    this.props.editor.signals.objectRemoved.add(object => {
-      const gltfRef = object.userData.MOZ_gltf_ref;
-
-      if (gltfRef) {
-        this.gltfChangeHandlers.delete(object);
-      }
-    });
-
     this.props.editor.signals.openScene.add(this.onOpenScene);
     this.props.editor.signals.sceneGraphChanged.add(this.onSceneChanged);
+    this.props.project.addListener("change", this.onFileChanged);
   }
 
   componentDidUpdate(prevProps) {
@@ -174,7 +157,7 @@ class EditorContainer extends Component {
         props: {
           title: "Save scene as...",
           confirmButtonLabel: "Save as...",
-          filter: ".gltf",
+          filter: ".scene",
           onConfirm: onSave,
           onCancel: this.onCloseModal
         }
@@ -199,9 +182,9 @@ class EditorContainer extends Component {
 
   exportAndSaveScene = async sceneURI => {
     try {
-      const { json, bin } = await this.props.editor.exportScene();
+      const serializedScene = serializeScene(this.props.editor.scene, sceneURI);
 
-      await this.props.project.saveScene(sceneURI, json, bin);
+      await this.props.project.writeJSON(sceneURI, serializedScene);
 
       this.setState({
         sceneModified: false,
@@ -241,19 +224,26 @@ class EditorContainer extends Component {
     this.setState({ openModal: null });
   };
 
-  onGLTFChanged = (event, uri, object) => {
-    if (event === "changed") {
-      this.props.editor.loadGLTF(uri, object);
-    } else if (event === "removed") {
-      this.props.editor.removeGLTF(uri, object);
-      this.gltfChangeHandlers.delete(object);
-    }
-  };
-
   onSceneChanged = () => {
     if (!this.state.sceneModified) {
       this.setState({ sceneModified: true });
       document.title = `Hubs Editor - ${this.props.editor.scene.name}*`;
+    }
+  };
+
+  onFileChanged = async path => {
+    if (path === this.state.gltfDependency) {
+      const url = new URL(this.state.sceneURI, window.location);
+      const sceneDef = serializeScene(this.props.editor.scene, url.href);
+      const scene = await loadSerializedScene(sceneDef, url.href, {}, true);
+
+      const gltfDependency = scene.userData._gltfDependency;
+
+      this.props.editor.setScene(scene);
+
+      this.setState({
+        gltfDependency: gltfDependency ? new URL(gltfDependency).pathname : null
+      });
     }
   };
 
@@ -270,14 +260,25 @@ class EditorContainer extends Component {
     }
 
     this.props.editor.clear();
-    this.props.editor.loadGLTFScene(uri);
+
+    const url = new URL(uri, window.location);
+
+    loadScene(url.href, {}, true).then(scene => {
+      const gltfDependency = scene.userData._gltfDependency;
+
+      this.props.editor.setScene(scene);
+
+      this.setState({
+        gltfDependency: gltfDependency ? new URL(gltfDependency).pathname : null
+      });
+    });
 
     // Set state after sceneGraphChanged signals have fired.
     setTimeout(() => {
       this.setState({
         sceneURI: uri,
-        sceneLastSaved: new Date(),
-        sceneModified: false
+        // Set scene modified to true when opening a gltf/glb scene so that we force the save as dialog.
+        sceneModified: !uri.endsWith(".scene")
       });
 
       document.title = `Hubs Editor - ${this.props.editor.scene.name}`;

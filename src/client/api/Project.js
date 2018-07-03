@@ -79,14 +79,16 @@ export default class Project extends EventEmitter {
   _onWebsocketMessage = event => {
     const json = JSON.parse(event.data);
 
-    if (json.type === "changed") {
+    if (json.type === "projectHierarchyChanged") {
       if (this.watchPromise) {
         this.watchPromise.resolve(json.hierarchy);
         this.watchPromise = undefined;
       }
 
       this.hierarchy = json.hierarchy;
-      this.emit("changed", this.hierarchy);
+      this.emit("projectHierarchyChanged", this.hierarchy);
+    } else if (json.type !== undefined && json.path !== undefined) {
+      this.emit(json.type, json.path);
     }
   };
 
@@ -115,16 +117,6 @@ export default class Project extends EventEmitter {
   unwatch() {
     this.ws.close();
     return Promise.resolve(this);
-  }
-
-  async saveScene(filePath, json, blob) {
-    if (blob) {
-      const binFilePath = filePath.replace(".gltf", ".bin");
-      json.buffers[0].uri = binFilePath.replace("/api/files/", "");
-      await this.writeBlob(binFilePath, blob);
-    }
-
-    await this.writeJSON(filePath, json);
   }
 
   async bundleScene(name, version, sceneURI, outputDir) {

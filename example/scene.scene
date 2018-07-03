@@ -1,0 +1,1 @@
+{"entities":{"Scene":{},"Hall1":{"components":{"ref":"./prefabs/Hallway.scene","position":[0,0,0]},"parent":"Scene","index":0},"Hall2":{"components":{"ref":"./prefabs/MetalWall.scene","position":[-1,0,0]},"parent":"Scene","index":1}}}

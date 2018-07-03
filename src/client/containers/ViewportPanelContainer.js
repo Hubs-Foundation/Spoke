@@ -33,8 +33,8 @@ class ViewportPanelContainer extends Component {
   }
 
   onDropFile = file => {
-    if (file.ext === ".gltf") {
-      this.props.editor.loadGLTF(file.uri);
+    if (file.ext === ".gltf" || file.ext === ".scene") {
+      console.log("TODO: add component with scene ref");
     }
   };
 

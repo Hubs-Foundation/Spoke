@@ -1,0 +1,12 @@
+{
+  "inherits": "../ArchitectureKit/Wall4x3Simp.gltf",
+  "entities": {
+    "Wall4x3SimpShape": {
+      "components": {
+        "material": {
+          "src": "../materials/metal.material"
+        }
+      }
+    }
+  }
+}

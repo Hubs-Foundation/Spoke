@@ -9,6 +9,8 @@ module.exports = {
     app: ["./src/client/index.js"]
   },
 
+  devtool: process.env.NODE_ENV === "production" ? "source-map" : "inline-source-map",
+
   output: {
     path: path.join(__dirname, "public"),
     filename: `[name].js`,

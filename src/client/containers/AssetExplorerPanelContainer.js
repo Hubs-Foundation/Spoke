@@ -20,11 +20,6 @@ function collectFileMenuProps({ file }) {
 function getFileContextMenuId(file) {
   if (file.isDirectory) {
     return "directory-menu-default";
-  } else if (
-    file.ext === ".gltf" ||
-    (file.ext === ".json" && (file.name.endsWith("bundle.config.json") || file.name.endsWith("bundle.json")))
-  ) {
-    return "file-menu-preview";
   } else {
     return "file-menu-default";
   }
@@ -85,14 +80,14 @@ class AssetExplorerPanelContainer extends Component {
         this.setState({ tree });
       });
 
-      this.props.project.addListener("changed", this.onHierarchyChanged);
+      this.props.project.addListener("projectHierarchyChanged", this.onHierarchyChanged);
     }
   }
 
   componentDidUpdate(prevProps) {
     if (this.props.project !== prevProps.project) {
       if (prevProps.project !== null) {
-        prevProps.project.removeListener("changed", this.onHierarchyChanged);
+        prevProps.project.removeListener("projectHierarchyChanged", this.onHierarchyChanged);
       }
 
       if (this.props.project !== null) {
@@ -100,7 +95,7 @@ class AssetExplorerPanelContainer extends Component {
           this.setState({ tree });
         });
 
-        this.props.project.addListener("changed", this.onHierarchyChanged);
+        this.props.project.addListener("projectHierarchyChanged", this.onHierarchyChanged);
       }
     }
   }
@@ -118,7 +113,7 @@ class AssetExplorerPanelContainer extends Component {
         return;
       }
 
-      if (file.ext === ".gltf") {
+      if (file.ext === ".gltf" || file.ext === ".scene") {
         this.props.editor.signals.openScene.dispatch(file.uri);
         return;
       }
@@ -175,10 +170,6 @@ class AssetExplorerPanelContainer extends Component {
     });
   };
 
-  onPreview = (e, file) => {
-    console.log("preview in hubs", file);
-  };
-
   renderNode = node => {
     return (
       <div
@@ -197,7 +188,9 @@ class AssetExplorerPanelContainer extends Component {
 
   render() {
     const selectedDirectory = getSelectedDirectory(this.state.tree, this.state.selectedDirectory) || this.state.tree;
-    const files = (selectedDirectory.files || []).filter(file => file.ext === ".gltf" || file.isDirectory);
+    const files = (selectedDirectory.files || []).filter(
+      file => file.ext === ".gltf" || file.ext === ".scene" || file.isDirectory
+    );
     const selectedFile = this.state.selectedFile;
 
     return (
@@ -251,11 +244,6 @@ class AssetExplorerPanelContainer extends Component {
           <MenuItem>Delete Directory</MenuItem>
         </ContextMenu>
         <ContextMenu id="file-menu-default">
-          <MenuItem>Open File</MenuItem>
-          <MenuItem>Delete File</MenuItem>
-        </ContextMenu>
-        <ContextMenu id="file-menu-preview">
-          <MenuItem onClick={this.onPreview}>Preview in Hubs</MenuItem>
           <MenuItem>Open File</MenuItem>
           <MenuItem>Delete File</MenuItem>
         </ContextMenu>

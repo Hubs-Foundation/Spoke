@@ -1,0 +1,22 @@
+{
+  "root": "Hallway",
+  "entities": {
+    "Hallway": {},
+    "LeftWall": {
+      "parent": "Hallway",
+      "index": 0,
+      "components": {
+        "ref": "./MetalWall.scene",
+        "position": [-1, 0, 0]
+      }
+    },
+    "RightWall": {
+      "parent": "Hallway",
+      "index": 1,
+      "components": {
+        "ref": "./MetalWall.scene",
+        "position": [-1, 0, 0]
+      }
+    }
+  }
+}

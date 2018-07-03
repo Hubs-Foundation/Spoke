@@ -3,7 +3,6 @@ import THREE from "../vendor/three";
 import History from "./History";
 import Storage from "./Storage";
 import Viewport from "./Viewport";
-import getFileNameFromURI from "../utlis/getFileNameFromURI";
 import RemoveObjectCommand from "./commands/RemoveObjectCommand";
 import AddObjectCommand from "./commands/AddObjectCommand";
 
@@ -152,6 +151,10 @@ export default class Editor {
 
     this.signals.sceneGraphChanged.active = false;
 
+    while (this.scene.children.length > 0) {
+      this.removeObject(this.scene.children[0]);
+    }
+
     while (scene.children.length > 0) {
       this.addObject(scene.children[0]);
     }
@@ -254,72 +257,6 @@ export default class Editor {
         reject(e);
       }
     });
-  }
-
-  loadGLTFScene(uri) {
-    const gltfLoader = new THREE.GLTFLoader();
-    gltfLoader.onNodeAdded = node => {
-      if (node.userData.MOZ_components) {
-        for (const component of node.userData.MOZ_components) {
-          this.gltfComponents.get(component.name).inflate(node, component.props);
-        }
-      }
-    };
-
-    gltfLoader.load(uri, ({ scene }) => {
-      this.setScene(scene);
-    });
-  }
-
-  loadGLTF(uri, object) {
-    const gltfLoader = new THREE.GLTFLoader();
-
-    const gltfContainer = object || new THREE.Object3D();
-
-    gltfContainer.userData.MOZ_gltf_ref = {
-      uri
-    };
-
-    if (!object) {
-      gltfContainer.name = getFileNameFromURI(uri);
-      this.addObject(gltfContainer);
-    }
-
-    gltfLoader.load(uri, ({ scene }) => {
-      const curGLTFChild = gltfContainer.children.find(child => child.userData._gltfRoot);
-
-      if (curGLTFChild) {
-        gltfContainer.remove(curGLTFChild);
-      }
-
-      gltfContainer.add(scene);
-      scene.traverse(child => {
-        Object.defineProperty(child.userData, "selectionRoot", { value: gltfContainer, enumerable: false });
-      });
-      this.signals.objectAdded.dispatch(scene);
-      this.select(gltfContainer);
-      this.gltfComponents.get("shadow").inflate(gltfContainer);
-
-      scene.userData = {
-        _gltfRoot: true,
-        _dontShowInHierarchy: true,
-        _dontExport: true
-      };
-
-      this.signals.sceneGraphChanged.dispatch();
-    });
-  }
-
-  removeGLTF(uri, object) {
-    const glTFChild = object.children.find(child => child.userData._gltfRoot);
-
-    if (glTFChild) {
-      object.remove(glTFChild);
-    }
-
-    if (object.userData.MOZ_gltf_ref) {
-      delete object.userData.MOZ_gltf_ref;
-    }
   }
 
   //

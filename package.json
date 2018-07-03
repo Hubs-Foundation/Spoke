@@ -8,7 +8,8 @@
     "dev": "cross-env NODE_ENV=development node ./bin/hubs-editor ./example",
     "build": "concurrently \"npm run build:server\" \"npm run build:client\"",
     "build:server": "babel src/server/ -d lib/server/",
-    "build:client": "webpack --mode production"
+    "build:client": "webpack --mode production",
+    "test": "ava"
   },
   "dependencies": {
     "@robertlong/react-ui-tree": "3.4.6",
@@ -43,6 +44,7 @@
     "ws": "^5.2.0"
   },
   "devDependencies": {
+    "ava": "^0.25.0",
     "babel-cli": "^6.26.0",
     "babel-core": "^6.26.3",
     "babel-eslint": "^8.2.3",
