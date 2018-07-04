@@ -7,6 +7,7 @@ class ViewportToolbarContainer extends Component {
   static propTypes = {
     editor: PropTypes.object
   };
+
   constructor(props) {
     super(props);
     this.state = {
@@ -16,11 +17,13 @@ class ViewportToolbarContainer extends Component {
       this.setState({ snapEnabled: viewport.snapEnabled });
     });
   }
+
   toggleSnap(snapEnabled) {
     this.setState({ snapEnabled }, () => {
       this.props.editor.signals.snapToggled.dispatch(snapEnabled);
     });
   }
+
   render() {
     return (
       <label className={styles.snap}>

@@ -110,9 +110,9 @@ export default class Viewport {
         if (intersects.length > 0) {
           const object = intersects[0].object;
 
-          if (object.userData.selectionRoot !== undefined) {
+          if (object.userData._selectionRoot !== undefined) {
             // helper
-            editor.select(object.userData.selectionRoot);
+            editor.select(object.userData._selectionRoot);
           } else {
             editor.select(object);
           }
@@ -397,6 +397,7 @@ export default class Viewport {
       render();
     });
   }
+
   toggleSnap = enabled => {
     this.snapEnabled = enabled;
     this._transformControls.setTranslationSnap(enabled ? 1 : null);

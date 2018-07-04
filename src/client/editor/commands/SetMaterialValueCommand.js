@@ -28,6 +28,7 @@ export default class SetMaterialValueCommand extends Command {
 
     this.attributeName = attributeName;
   }
+
   execute() {
     this.material[this.attributeName] = this.newValue;
     this.material.needsUpdate = true;

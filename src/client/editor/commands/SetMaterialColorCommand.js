@@ -28,6 +28,7 @@ export default class SetMaterialColorCommand extends Command {
 
     this.attributeName = attributeName;
   }
+
   execute() {
     this.material[this.attributeName].setHex(this.newValue);
 

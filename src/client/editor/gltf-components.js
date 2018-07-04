@@ -41,21 +41,27 @@ class BaseComponent {
     this.schema = this.constructor.schema;
     this.props = {};
   }
+
   getProperty(propertyName) {
     return this.props[propertyName];
   }
+
   _updateComponentProperty(propertyName, value) {
     this.props[propertyName] = value;
   }
+
   updateProperty(propertyName, value) {
     this._updateComponentProperty(propertyName, value);
   }
+
   static getComponent(node) {
     return node.userData.MOZ_components.find(component => component.name === this.componentName);
   }
+
   static _propsFromObject() {
     return {};
   }
+
   static _getOrCreateComponent(node, props) {
     if (!props) {
       props = { ...getDefaultsFromSchema(this.schema), ...this._propsFromObject(node) };
@@ -78,9 +84,11 @@ class BaseComponent {
 
     return { component, props };
   }
+
   static inflate(node, props) {
     this._getOrCreateComponent(node, props);
   }
+
   static deflate(node) {
     const components = node.userData.MOZ_components;
     const componentIndex = components.findIndex(component => component.name === this.componentName);
@@ -99,13 +107,16 @@ const lightSchema = [
 
 class DirectionalLightComponent extends BaseComponent {
   static componentName = "directional-light";
+
   static schema = [
     ...lightSchema,
     { name: "castShadow", type: types.boolean, default: true },
     { name: "elevation", type: types.number, default: 63 },
     { name: "azimuth", type: types.number, default: 245 }
   ];
+
   static _tempEuler = new THREE.Euler(0, 0, 0, "YXZ");
+
   _updateComponentProperty(propertyName, value) {
     super._updateComponentProperty(propertyName, value);
     const { _tempEuler } = DirectionalLightComponent;
@@ -123,6 +134,7 @@ class DirectionalLightComponent extends BaseComponent {
         this._object[propertyName] = value;
     }
   }
+
   static inflate(node, _props) {
     const { component, props } = this._getOrCreateComponent(node, _props);
     const light = new THREE.DirectionalLight(props.color, props.intensity);
@@ -138,7 +150,9 @@ class DirectionalLightComponent extends BaseComponent {
 
 class PointLightComponent extends BaseComponent {
   static componentName = "point-light";
+
   static schema = [...lightSchema, { name: "castShadow", type: types.boolean, default: true }];
+
   _updateComponentProperty(propertyName, value) {
     super._updateComponentProperty(propertyName, value);
     switch (propertyName) {
@@ -149,6 +163,7 @@ class PointLightComponent extends BaseComponent {
         this._object[propertyName] = value;
     }
   }
+
   static inflate(node, _props) {
     const { component, props } = this._getOrCreateComponent(node, _props);
     const light = new THREE.PointLight(props.color, props.intensity);
@@ -162,7 +177,9 @@ class PointLightComponent extends BaseComponent {
 
 class AmbientLightComponent extends BaseComponent {
   static componentName = "ambient-light";
+
   static schema = [...lightSchema];
+
   _updateComponentProperty(propertyName, value) {
     super._updateComponentProperty(propertyName, value);
     switch (propertyName) {
@@ -173,6 +190,7 @@ class AmbientLightComponent extends BaseComponent {
         this._object[propertyName] = value;
     }
   }
+
   static inflate(node, _props) {
     const { component, props } = this._getOrCreateComponent(node, _props);
     const light = new THREE.AmbientLight(props.color, props.intensity);
@@ -185,10 +203,12 @@ class AmbientLightComponent extends BaseComponent {
 
 class ShadowComponent extends BaseComponent {
   static componentName = "shadow";
+
   static schema = [
     { name: "castShadow", type: types.boolean, default: true },
     { name: "receiveShadow", type: types.boolean, default: true }
   ];
+
   _updateComponentProperty(propertyName, value) {
     super._updateComponentProperty(propertyName, value);
     this._object.traverse(obj => {
@@ -198,6 +218,7 @@ class ShadowComponent extends BaseComponent {
       }
     });
   }
+
   static inflate(node, _props) {
     const { component, props } = this._getOrCreateComponent(node, _props);
     Object.defineProperty(component, "_object", { enumerable: false, value: node });
@@ -208,6 +229,7 @@ class ShadowComponent extends BaseComponent {
 
 class StandardMaterialComponent extends BaseComponent {
   static componentName = "standard-material";
+
   static schema = [
     { name: "color", type: types.color, default: "white" },
     { name: "emissiveFactor", type: types.color, default: "white" },
@@ -222,6 +244,7 @@ class StandardMaterialComponent extends BaseComponent {
     { name: "occlusionTexture", type: types.file, default: "" }
     // TODO alphaMode
   ];
+
   _updateComponentProperty(propertyName, value) {
     super._updateComponentProperty(propertyName, value);
     switch (propertyName) {
@@ -246,6 +269,7 @@ class StandardMaterialComponent extends BaseComponent {
         this._object[propertyName] = value;
     }
   }
+
   static _propsFromObject(node) {
     const { map, normalMap, emissiveMap, roughnessMap, aoMap } = node.material;
     return {
@@ -262,6 +286,7 @@ class StandardMaterialComponent extends BaseComponent {
       occlusionTexture: aoMap && getFilePath(aoMap.image)
     };
   }
+
   static inflate(node, _props) {
     const { component } = this._getOrCreateComponent(node, _props);
     Object.defineProperty(component, "_object", { enumerable: false, value: node.material });

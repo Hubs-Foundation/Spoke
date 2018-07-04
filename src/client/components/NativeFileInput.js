@@ -1,7 +1,7 @@
 import React from "react";
 import PropTypes from "prop-types";
 
-async function onBrowse(e, { title, value, buttonLabel, onChange }) {
+async function onBrowse(e, props) {
   e.preventDefault();
 
   console.log("browse");
@@ -9,7 +9,7 @@ async function onBrowse(e, { title, value, buttonLabel, onChange }) {
   const newPath = "";
 
   if (newPath !== null) {
-    onChange(newPath);
+    props.onChange(newPath);
   }
 }
 

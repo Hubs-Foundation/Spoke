@@ -24,6 +24,7 @@ export default class SetGeometryValueCommand extends Command {
     this.oldValue = object !== undefined ? object.geometry[attributeName] : undefined;
     this.newValue = newValue;
   }
+
   execute() {
     this.object.geometry[this.attributeName] = this.newValue;
     this.editor.signals.objectChanged.dispatch(this.object);

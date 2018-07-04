@@ -312,7 +312,7 @@ export default class Editor {
 
       const picker = new THREE.Mesh(geometry, material);
       picker.name = "picker";
-      picker.userData.selectionRoot = selectionRoot;
+      picker.userData._selectionRoot = selectionRoot;
       helper.add(picker);
 
       this.sceneHelpers.add(helper);
@@ -441,7 +441,7 @@ export default class Editor {
       if (child.userData._inflated) continue;
       const childClone = this._cloneAndInflate(child, root);
       clone.add(childClone);
-      Object.defineProperty(childClone.userData, "selectionRoot", { value: root, enumerable: false });
+      Object.defineProperty(childClone.userData, "_selectionRoot", { value: root, enumerable: false });
     }
     return clone;
   }

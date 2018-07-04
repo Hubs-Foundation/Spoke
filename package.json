@@ -9,7 +9,8 @@
     "build": "concurrently \"npm run build:server\" \"npm run build:client\"",
     "build:server": "babel src/server/ -d lib/server/",
     "build:client": "webpack --mode production",
-    "test": "ava"
+    "test": "ava",
+    "lint": "eslint ./src"
   },
   "dependencies": {
     "@robertlong/react-ui-tree": "3.4.6",
