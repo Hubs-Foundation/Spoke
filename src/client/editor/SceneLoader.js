@@ -166,6 +166,10 @@ export async function loadScene(url, components, isRoot = true) {
       scene.userData._inherits = url;
     }
 
+    if (!scene.name) {
+      scene.name = "Scene";
+    }
+
     scene.userData._gltfDependency = url;
 
     return scene;
