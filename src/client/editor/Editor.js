@@ -55,6 +55,7 @@ export default class Editor {
       sceneBackgroundChanged: new Signal(),
       sceneFogChanged: new Signal(),
       sceneGraphChanged: new Signal(),
+      sceneSet: new Signal(),
 
       cameraChanged: new Signal(),
 
@@ -163,7 +164,8 @@ export default class Editor {
     }
 
     this.signals.sceneGraphChanged.active = true;
-    this.signals.sceneGraphChanged.dispatch();
+
+    this.signals.sceneSet.dispatch();
   }
 
   //

@@ -168,7 +168,7 @@ class EditorContainer extends Component {
   onSave = async e => {
     e.preventDefault();
 
-    if (!this.state.sceneURI) {
+    if (!this.state.sceneURI || this.state.sceneURI.endsWith(".gltf")) {
       this.openSaveAsDialog(this.exportAndSaveScene);
     } else {
       this.exportAndSaveScene(this.state.sceneURI);
@@ -226,6 +226,7 @@ class EditorContainer extends Component {
 
   onSceneChanged = () => {
     if (!this.state.sceneModified) {
+      console.log("sceneModified");
       this.setState({ sceneModified: true });
       document.title = `Hubs Editor - ${this.props.editor.scene.name}*`;
     }
@@ -239,6 +240,9 @@ class EditorContainer extends Component {
 
       const gltfDependency = scene.userData._gltfDependency;
 
+      this.props.editor.signals.sceneGraphChanged.active = false;
+      this.props.editor.clear();
+      this.props.editor.signals.sceneGraphChanged.active = true;
       this.props.editor.setScene(scene);
 
       this.setState({
@@ -259,7 +263,9 @@ class EditorContainer extends Component {
       return;
     }
 
+    this.props.editor.signals.sceneGraphChanged.active = false;
     this.props.editor.clear();
+    this.props.editor.signals.sceneGraphChanged.active = true;
 
     const url = new URL(uri, window.location);
 
@@ -275,10 +281,11 @@ class EditorContainer extends Component {
 
     // Set state after sceneGraphChanged signals have fired.
     setTimeout(() => {
+      this.props.editor.signals.sceneGraphChanged.active = true;
+
       this.setState({
         sceneURI: uri,
-        // Set scene modified to true when opening a gltf/glb scene so that we force the save as dialog.
-        sceneModified: !uri.endsWith(".scene")
+        sceneModified: false
       });
 
       document.title = `Hubs Editor - ${this.props.editor.scene.name}`;

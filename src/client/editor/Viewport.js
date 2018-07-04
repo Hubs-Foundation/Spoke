@@ -258,6 +258,10 @@ export default class Viewport {
       render();
     });
 
+    signals.sceneSet.add(function() {
+      render();
+    });
+
     signals.sceneGraphChanged.add(function() {
       render();
     });

@@ -52,6 +52,7 @@ class HierarchyPanelContainer extends Component {
 
     const editor = this.props.editor;
     editor.signals.editorCleared.add(this.rebuildNodeHierarchy);
+    editor.signals.sceneSet.add(this.rebuildNodeHierarchy);
     editor.signals.sceneGraphChanged.add(this.rebuildNodeHierarchy);
     editor.signals.objectChanged.add(this.rebuildNodeHierarchy);
     editor.signals.objectSelected.add(this.rebuildNodeHierarchy);
