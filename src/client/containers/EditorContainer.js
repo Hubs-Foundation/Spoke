@@ -226,7 +226,6 @@ class EditorContainer extends Component {
 
   onSceneChanged = () => {
     if (!this.state.sceneModified) {
-      console.log("sceneModified");
       this.setState({ sceneModified: true });
       document.title = `Hubs Editor - ${this.props.editor.scene.name}*`;
     }
