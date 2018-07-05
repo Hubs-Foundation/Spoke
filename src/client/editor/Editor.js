@@ -457,6 +457,10 @@ export default class Editor {
     this.duplicateObject(this.selected);
   }
 
+  editPrefab(object) {
+
+  }
+
   clear() {
     this.history.clear();
     this.storage.clear();

@@ -113,6 +113,10 @@ class HierarchyPanelContainer extends Component {
     this.props.editor.duplicateObject(node.object);
   };
 
+  onEditPrefab = (e, node) => {
+    this.props.editor.editPrefab(node.object);
+  };
+
   onDeleteSelected = () => {
     this.props.editor.deleteSelectedObject();
   };
@@ -162,6 +166,7 @@ class HierarchyPanelContainer extends Component {
         <ContextMenu id="hierarchy-node-menu">
           <MenuItem onClick={this.onAddNode}>Add Node</MenuItem>
           <MenuItem onClick={this.onDuplicateNode}>Duplicate</MenuItem>
+          <MenuItem onClick={this.onEditPrefab}>Edit Prefab</MenuItem>
           <MenuItem onClick={this.onDeleteNode}>Delete</MenuItem>
         </ContextMenu>
       </HotKeys>
