@@ -465,6 +465,8 @@ export default class Editor {
     this.scene.background.setHex(0xaaaaaa);
     this.scene.fog = null;
 
+    this.scene.traverse(this.removeHelper.bind(this));
+
     const objects = this.scene.children;
 
     while (objects.length > 0) {
