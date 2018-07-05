@@ -2,6 +2,9 @@ import React, { Component } from "react";
 import PropTypes from "prop-types";
 import { DragDropContextProvider } from "react-dnd";
 import HTML5Backend from "react-dnd-html5-backend";
+import { MosaicWindow } from "react-mosaic-component";
+import { HotKeys } from "react-hotkeys";
+
 import Editor from "../components/Editor";
 import FileDialogModalContainer from "./FileDialogModalContainer";
 import ViewportPanelContainer from "./ViewportPanelContainer";
@@ -9,11 +12,9 @@ import HierarchyPanelContainer from "./HierarchyPanelContainer";
 import PropertiesPanelContainer from "./PropertiesPanelContainer";
 import AssetExplorerPanelContainer from "./AssetExplorerPanelContainer";
 import ViewportToolbarContainer from "./ViewportToolbarContainer";
-import { MosaicWindow } from "react-mosaic-component";
 import PanelToolbar from "../components/PanelToolbar";
 import { withProject } from "./ProjectContext";
 import { withEditor } from "./EditorContext";
-import { HotKeys } from "react-hotkeys";
 import styles from "./EditorContainer.scss";
 import { loadScene, loadSerializedScene, serializeScene } from "../editor/SceneLoader";
 
