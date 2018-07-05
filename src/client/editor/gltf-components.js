@@ -55,7 +55,7 @@ class BaseComponent {
   }
 
   static getComponent(node) {
-    return node.userData.MOZ_components.find(component => component.name === this.componentName);
+    return node.userData._gltfComponents.find(component => component.name === this.componentName);
   }
 
   static _propsFromObject() {
@@ -66,14 +66,14 @@ class BaseComponent {
     if (!props) {
       props = { ...getDefaultsFromSchema(this.schema), ...this._propsFromObject(node) };
     }
-    if (!node.userData.MOZ_components) {
-      node.userData.MOZ_components = [];
+    if (!node.userData._gltfComponents) {
+      node.userData._gltfComponents = [];
     }
 
     let component = this.getComponent(node);
     if (!component) {
       component = new this();
-      node.userData.MOZ_components.push(component);
+      node.userData._gltfComponents.push(component);
     }
 
     for (const key in props) {
@@ -90,7 +90,7 @@ class BaseComponent {
   }
 
   static deflate(node) {
-    const components = node.userData.MOZ_components;
+    const components = node.userData._gltfComponents;
     const componentIndex = components.findIndex(component => component.name === this.componentName);
     const component = components[componentIndex];
     if (component._object) {
