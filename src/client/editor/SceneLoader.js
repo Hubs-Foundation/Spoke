@@ -20,6 +20,21 @@ function loadGLTF(url) {
   });
 }
 
+function inflateGLTFComponents(scene, components) {
+  scene.traverse(object => {
+    const extensions = object.userData.gltfExtensions;
+    if (extensions !== undefined) {
+      for (const extensionName in extensions) {
+        if (components[extensionName]) {
+          components[extensionName].inflate(object, extensions[extensionName]);
+        } else if (object instanceof THREE.Mesh && object.material instanceof THREE.MeshStandardMaterial) {
+          components.get("standard-material").inflate(object);
+        }
+      }
+    }
+  });
+}
+
 function addChildAtIndex(parent, child, index) {
   parent.children.splice(index, 0, child);
   child.parent = parent;
@@ -171,6 +186,8 @@ export async function loadScene(url, components, isRoot = true) {
     }
 
     scene.userData._gltfDependency = url;
+
+    inflateGLTFComponents(scene, components);
 
     return scene;
   }

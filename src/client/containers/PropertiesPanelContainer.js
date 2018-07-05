@@ -21,14 +21,14 @@ class PropertiesPanelContainer extends Component {
     this.props.editor.signals.objectSelected.add(node =>
       this.setState({
         node,
-        components: (node && node.userData.MOZ_components) || []
+        components: (node && node.userData._gltfComponents) || []
       })
     );
 
     this.props.editor.signals.objectChanged.add(object => {
       if (this.state.node === object) {
         this.setState({
-          components: object.userData.MOZ_components || []
+          components: object.userData._gltfComponents || []
         });
       }
     });

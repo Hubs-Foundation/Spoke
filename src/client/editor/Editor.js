@@ -177,15 +177,6 @@ export default class Editor {
       if (child.geometry !== undefined) scope.addGeometry(child.geometry);
       if (child.material !== undefined) scope.addMaterial(child.material);
 
-      if (child.userData.MOZ_components) {
-        for (const component of child.userData.MOZ_components) {
-          this.gltfComponents.get(component.name).inflate(child, component.props);
-        }
-      }
-      if (child instanceof THREE.Mesh && child.material instanceof THREE.MeshStandardMaterial) {
-        this.gltfComponents.get("standard-material").inflate(child);
-      }
-
       scope.addHelper(child, object);
     });
 
@@ -433,8 +424,8 @@ export default class Editor {
 
   _cloneAndInflate(object, root) {
     const clone = object.clone(false);
-    if (clone.userData.MOZ_components) {
-      for (const component of clone.userData.MOZ_components) {
+    if (clone.userData._gltfComponents) {
+      for (const component of clone.userData._gltfComponents) {
         this.gltfComponents.get(component.name).inflate(clone, component.props);
       }
     }
