@@ -66,7 +66,7 @@
     "file-loader": "^1.1.11",
     "html-webpack-plugin": "^3.2.0",
     "koa-webpack": "^5.0.2",
-    "node-sass": "^4.9.0",
+    "node-sass": "^4.9.1",
     "prettier": "^1.13.4",
     "sass-loader": "^7.0.1",
     "style-loader": "^0.21.0",
