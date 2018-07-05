@@ -52,7 +52,6 @@ class EditorContainer extends Component {
     this.state = {
       sceneURI: null,
       sceneModified: null,
-      sceneLastSaved: null,
       registeredPanels: {
         hierarchy: {
           component: HierarchyPanelContainer,
