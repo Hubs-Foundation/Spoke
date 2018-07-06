@@ -18,8 +18,9 @@ export default class AddGLTFComponentCommand extends Command {
   }
 
   execute() {
-    const component = this.editor.gltfComponents.get(this.componentName);
-    component.inflate(this.object);
+    const componentClass = this.editor.gltfComponents.get(this.componentName);
+    const component = componentClass.inflate(this.object);
+    component.shouldSave = true;
     this.object.traverse(child => {
       this.editor.addHelper(child, this.object);
     });

@@ -155,6 +155,9 @@ export default class Editor {
 
   setSceneURI(uri) {
     this.sceneURI = uri;
+    if (this.breadCrumbs.length === 0) {
+      this.breadCrumbs.push({});
+    }
     this._updateBreadCrumb(this.breadCrumbs[this.breadCrumbs.length - 1]);
   }
 
@@ -210,6 +213,7 @@ export default class Editor {
   addObject(object, parent) {
     const scope = this;
 
+    object.userData._saveParent = true;
     object.traverse(child => {
       if (child.geometry !== undefined) scope.addGeometry(child.geometry);
       if (child.material !== undefined) scope.addMaterial(child.material);
