@@ -1,4 +1,5 @@
 import Command from "../Command";
+import { gltfComponents } from "../ComponentRegistry";
 
 /**
  * @param object THREE.Object3D
@@ -14,7 +15,7 @@ export default class SetGLTFComponentPropertyCommand extends Command {
     this.object = object;
     this.componentName = componentName;
     this.propertyName = propertyName;
-    const component = this.editor.gltfComponents.get(this.componentName).getComponent(object);
+    const component = gltfComponents.get(this.componentName).getComponent(object);
     this.oldValue = component.getProperty(propertyName);
     this.newValue = value;
 
@@ -22,13 +23,13 @@ export default class SetGLTFComponentPropertyCommand extends Command {
   }
 
   execute() {
-    const component = this.editor.gltfComponents.get(this.componentName).getComponent(this.object);
+    const component = gltfComponents.get(this.componentName).getComponent(this.object);
     component.updateProperty(this.propertyName, this.newValue);
     this.editor.signals.objectChanged.dispatch(this.object);
   }
 
   undo() {
-    const component = this.editor.gltfComponents.get(this.componentName).getComponent(this.object);
+    const component = gltfComponents.get(this.componentName).getComponent(this.object);
     component.updateProperty(this.propertyName, this.oldValue);
     this.editor.signals.objectChanged.dispatch(this.object);
   }

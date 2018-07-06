@@ -11,10 +11,11 @@ import SetPositionCommand from "../editor/commands/SetPositionCommand";
 import SetRotationCommand from "../editor/commands/SetRotationCommand";
 import SetScaleCommand from "../editor/commands/SetScaleCommand";
 import AddGLTFComponentCommand from "../editor/commands/AddGLTFComponentCommand";
-import { getDisplayName } from "../editor/gltf-components";
+import { getDisplayName } from "../editor/components";
 import Select from "react-select";
 import "../vendor/react-select/index.scss";
 import styles from "./NodePropertyGroupContainer.scss";
+import { gltfComponents } from "../editor/ComponentRegistry";
 
 const RAD2DEG = THREE.Math.RAD2DEG;
 const DEG2RAD = THREE.Math.DEG2RAD;
@@ -65,7 +66,7 @@ class NodePropertyGroupContainer extends Component {
 
     const gltfComponentOptions = [];
 
-    for (const [name] of this.props.editor.gltfComponents) {
+    for (const [name] of gltfComponents) {
       gltfComponentOptions.push({
         value: name,
         label: getDisplayName(name)

@@ -1,5 +1,5 @@
 import React from "react";
-import { types } from "../editor/gltf-components";
+import { types } from "../editor/components";
 import NumericInput from "../components/NumericInput";
 import ColorInput from "../components/ColorInput";
 import StringInput from "../components/StringInput";

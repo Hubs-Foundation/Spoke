@@ -5,6 +5,7 @@ import Storage from "./Storage";
 import Viewport from "./Viewport";
 import RemoveObjectCommand from "./commands/RemoveObjectCommand";
 import AddObjectCommand from "./commands/AddObjectCommand";
+import { gltfComponents } from "./ComponentRegistry";
 
 /**
  * @author mrdoob / http://mrdoob.com/
@@ -110,7 +111,7 @@ export default class Editor {
   }
 
   onComponentsRegistered = () => {
-    this.gltfComponents.get("directional-light").inflate(this.scene);
+    gltfComponents.get("directional-light").inflate(this.scene);
     this.scene.traverse(child => {
       this.addHelper(child, this.scene);
     });
@@ -266,18 +267,6 @@ export default class Editor {
 
   //
 
-  gltfComponents = new Map();
-
-  registerGLTFComponent(componentClass) {
-    const { componentName } = componentClass;
-    if (this.gltfComponents.has(componentName)) {
-      throw new Error(`${componentName} already registered`);
-    }
-    this.gltfComponents.set(componentName, componentClass);
-  }
-
-  //
-
   addHelper = (function() {
     const geometry = new THREE.SphereBufferGeometry(2, 4, 2);
     const material = new THREE.MeshBasicMaterial({ color: 0xff0000, visible: false });
@@ -426,7 +415,7 @@ export default class Editor {
     const clone = object.clone(false);
     if (clone.userData._gltfComponents) {
       for (const component of clone.userData._gltfComponents) {
-        this.gltfComponents.get(component.name).inflate(clone, component.props);
+        gltfComponents.get(component.name).inflate(clone, component.props);
       }
     }
     if (!root) root = clone;

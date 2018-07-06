@@ -16,6 +16,7 @@ import { withEditor } from "./EditorContext";
 import { HotKeys } from "react-hotkeys";
 import styles from "./EditorContainer.scss";
 import { loadScene, loadSerializedScene, serializeScene } from "../editor/SceneLoader";
+import { gltfComponents } from "../editor/ComponentRegistry";
 
 class EditorContainer extends Component {
   static defaultProps = {
@@ -235,7 +236,7 @@ class EditorContainer extends Component {
     if (path === this.state.gltfDependency) {
       const url = new URL(this.state.sceneURI, window.location);
       const sceneDef = serializeScene(this.props.editor.scene, url.href);
-      const scene = await loadSerializedScene(sceneDef, url.href, this.props.editor.gltfComponents, true);
+      const scene = await loadSerializedScene(sceneDef, url.href, gltfComponents, true);
 
       const gltfDependency = scene.userData._gltfDependency;
 
@@ -268,7 +269,7 @@ class EditorContainer extends Component {
 
     const url = new URL(uri, window.location);
 
-    loadScene(url.href, this.props.editor.gltfComponents, true)
+    loadScene(url.href, gltfComponents, true)
       .then(scene => {
         const gltfDependency = scene.userData._gltfDependency;
 

@@ -4,8 +4,9 @@ import { withEditor } from "./EditorContext";
 import PropertyGroup from "../components/PropertyGroup";
 import InputGroup from "../components/InputGroup";
 import { gltfComponentTypeToReactComponent } from "../components/gltf-type-mappings";
-import { getDisplayName } from "../editor/gltf-components";
+import { getDisplayName } from "../editor/components";
 import SetGLTFComponentPropertyCommand from "../editor/commands/SetGLTFComponentPropertyCommand";
+import { gltfComponents } from "../editor/ComponentRegistry";
 
 class GLTFComponentsContainer extends Component {
   static propTypes = {
@@ -21,7 +22,7 @@ class GLTFComponentsContainer extends Component {
   render() {
     // Generate property groups for each component and property editors for each property.
     return this.props.components.map(component => {
-      const componentDefinition = this.props.editor.gltfComponents.get(component.name);
+      const componentDefinition = gltfComponents.get(component.name);
 
       if (componentDefinition === undefined) {
         return <PropertyGroup name={getDisplayName(component.name)} key={component.name} />;
