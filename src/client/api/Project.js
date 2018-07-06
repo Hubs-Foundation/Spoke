@@ -19,6 +19,10 @@ export default class Project extends EventEmitter {
     this.hierarchy = null;
   }
 
+  getUrl(relativePath) {
+    return new URL(`api/files/${relativePath}`, window.location).href;
+  }
+
   async writeBlob(relativePath, blob) {
     const res = await fetch(this.serverUrl + relativePath, {
       method: "POST",

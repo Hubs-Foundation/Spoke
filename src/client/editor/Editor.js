@@ -1,10 +1,12 @@
 import signals from "signals";
+
 import THREE from "../vendor/three";
 import History from "./History";
 import Storage from "./Storage";
 import Viewport from "./Viewport";
 import RemoveObjectCommand from "./commands/RemoveObjectCommand";
 import AddObjectCommand from "./commands/AddObjectCommand";
+import { loadScene } from "./SceneLoader";
 
 /**
  * @author mrdoob / http://mrdoob.com/
@@ -91,6 +93,9 @@ export default class Editor {
 
     this.openFile = null;
 
+    this.breadCrumbs = [];
+
+    this.sceneURI = null;
     this.scene = new THREE.Scene();
     this.scene.name = "Scene";
     this.scene.background = new THREE.Color(0xaaaaaa);
@@ -142,6 +147,26 @@ export default class Editor {
 
   //
 
+  _updateBreadCrumb(breadCrumb) {
+    const uriParts = this.sceneURI.split("/");
+    breadCrumb.name = uriParts[uriParts.length - 1];
+    breadCrumb.uri = this.sceneURI;
+  }
+
+  setSceneURI(uri) {
+    this.sceneURI = uri;
+    this._updateBreadCrumb(this.breadCrumbs[this.breadCrumbs.length - 1]);
+  }
+
+  openScene(url) {
+    return loadScene(url, {}, true).then(scene => {
+      this.breadCrumbs.push({});
+      this.setSceneURI(url);
+      this.setScene(scene);
+      return scene;
+    });
+  }
+
   setScene(scene) {
     this.scene.uuid = scene.uuid;
     this.scene.name = scene.name;
@@ -166,6 +191,11 @@ export default class Editor {
     this.signals.sceneGraphChanged.active = true;
 
     this.signals.sceneSet.dispatch();
+  }
+
+  popBreadCrumb() {
+    this.breadCrumbs.pop();
+    loadScene(this.breadCrumbs[this.breadCrumbs.length - 1].uri, {}, true).then(this.setScene.bind(this));
   }
 
   //
@@ -448,8 +478,8 @@ export default class Editor {
     this.duplicateObject(this.selected);
   }
 
-  editPrefab(object) {
-
+  editScenePrefab(url) {
+    this.openScene(url);
   }
 
   clear() {

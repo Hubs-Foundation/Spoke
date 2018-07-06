@@ -3,9 +3,10 @@ import PropTypes from "prop-types";
 import { HotKeys } from "react-hotkeys";
 import Tree from "@robertlong/react-ui-tree";
 import classNames from "classnames";
-import { ContextMenu, MenuItem, ContextMenuTrigger } from "react-contextmenu";
+import { ContextMenu, MenuItem, ContextMenuTrigger, connectMenu } from "react-contextmenu";
 
 import styles from "./HierarchyPanelContainer.scss";
+import { withProject } from "./ProjectContext";
 import { withEditor } from "./EditorContext";
 import "../vendor/react-ui-tree/index.scss";
 import "../vendor/react-contextmenu/index.scss";
@@ -33,7 +34,8 @@ function collectNodeMenuProps({ node }) {
 class HierarchyPanelContainer extends Component {
   static propTypes = {
     path: PropTypes.array,
-    editor: PropTypes.object
+    editor: PropTypes.object,
+    project: PropTypes.object
   };
 
   constructor(props) {
@@ -114,7 +116,8 @@ class HierarchyPanelContainer extends Component {
   };
 
   onEditPrefab = (e, node) => {
-    this.props.editor.editPrefab(node.object);
+    // TODO Does it make sense to access `ref` here directly?
+    this.props.editor.editScenePrefab(this.props.project.getUrl(node.object.userData.ref));
   };
 
   onDeleteSelected = () => {
@@ -152,26 +155,47 @@ class HierarchyPanelContainer extends Component {
     );
   };
 
+  renderHierarchyNodeMenu = props => {
+    const hasRef = props.trigger && props.trigger.object.userData.ref;
+    return (
+      <ContextMenu id="hierarchy-node-menu">
+        <MenuItem onClick={this.onAddNode}>Add Node</MenuItem>
+        <MenuItem onClick={this.onDuplicateNode}>Duplicate</MenuItem>
+        {hasRef && <MenuItem onClick={this.onEditPrefab}>Edit Prefab</MenuItem>}
+        <MenuItem onClick={this.onDeleteNode}>Delete</MenuItem>
+      </ContextMenu>
+    );
+  };
+
+  HierarchyNodeMenu = connectMenu("hierarchy-node-menu")(this.renderHierarchyNodeMenu);
+
   render() {
     return (
-      <HotKeys className={styles.hierarchyRoot} handlers={this.state.hierarchyHotKeyHandlers}>
-        <Tree
-          paddingLeft={8}
-          isNodeCollapsed={false}
-          draggable={true}
-          tree={this.state.tree}
-          renderNode={this.renderNode}
-          onChange={this.onChange}
-        />
-        <ContextMenu id="hierarchy-node-menu">
-          <MenuItem onClick={this.onAddNode}>Add Node</MenuItem>
-          <MenuItem onClick={this.onDuplicateNode}>Duplicate</MenuItem>
-          <MenuItem onClick={this.onEditPrefab}>Edit Prefab</MenuItem>
-          <MenuItem onClick={this.onDeleteNode}>Delete</MenuItem>
-        </ContextMenu>
-      </HotKeys>
+      <div className={styles.hierarchyRoot}>
+        {this.props.editor.breadCrumbs.map((breadCrumb, i) => (
+          <button
+            className={styles.breadCrumb}
+            disabled={i !== this.props.editor.breadCrumbs.length - 2}
+            onClick={this.props.editor.popBreadCrumb.bind(this.props.editor)}
+            key={breadCrumb.name}
+          >
+            {breadCrumb.name}
+          </button>
+        ))}
+        <HotKeys handlers={this.state.hierarchyHotKeyHandlers}>
+          <Tree
+            paddingLeft={8}
+            isNodeCollapsed={false}
+            draggable={true}
+            tree={this.state.tree}
+            renderNode={this.renderNode}
+            onChange={this.onChange}
+          />
+          <this.HierarchyNodeMenu />
+        </HotKeys>
+      </div>
     );
   }
 }
 
-export default withEditor(HierarchyPanelContainer);
+export default withProject(withEditor(HierarchyPanelContainer));

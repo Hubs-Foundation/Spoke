@@ -16,7 +16,7 @@ import PanelToolbar from "../components/PanelToolbar";
 import { withProject } from "./ProjectContext";
 import { withEditor } from "./EditorContext";
 import styles from "./EditorContainer.scss";
-import { loadScene, loadSerializedScene, serializeScene } from "../editor/SceneLoader";
+import { loadSerializedScene, serializeScene } from "../editor/SceneLoader";
 
 class EditorContainer extends Component {
   static defaultProps = {
@@ -50,7 +50,6 @@ class EditorContainer extends Component {
     window.addEventListener("resize", this.onWindowResize, false);
 
     this.state = {
-      sceneURI: null,
       sceneModified: null,
       registeredPanels: {
         hierarchy: {
@@ -168,10 +167,10 @@ class EditorContainer extends Component {
   onSave = async e => {
     e.preventDefault();
 
-    if (!this.state.sceneURI || this.state.sceneURI.endsWith(".gltf")) {
+    if (!this.props.editor.sceneURI || this.props.editor.sceneURI.endsWith(".gltf")) {
       this.openSaveAsDialog(this.exportAndSaveScene);
     } else {
-      this.exportAndSaveScene(this.state.sceneURI);
+      this.exportAndSaveScene(this.props.editor.sceneURI);
     }
   };
 
@@ -186,9 +185,9 @@ class EditorContainer extends Component {
 
       await this.props.project.writeJSON(sceneURI, serializedScene);
 
+      this.props.editor.setSceneURI(sceneURI);
       this.setState({
         sceneModified: false,
-        sceneURI,
         openModal: null
       });
     } catch (e) {
@@ -199,7 +198,7 @@ class EditorContainer extends Component {
   onOpenBundleModal = e => {
     e.preventDefault();
 
-    if (!this.state.sceneURI) {
+    if (!this.props.editor.sceneURI) {
       console.warn("TODO: save scene before bundling instead of doing nothing");
       return;
     }
@@ -220,7 +219,7 @@ class EditorContainer extends Component {
   };
 
   onBundle = async outputPath => {
-    await this.props.project.bundleScene(this.props.editor.scene.name, "0.1.0", this.state.sceneURI, outputPath);
+    await this.props.project.bundleScene(this.props.editor.scene.name, "0.1.0", this.props.editor.sceneURI, outputPath);
     this.setState({ openModal: null });
   };
 
@@ -233,7 +232,7 @@ class EditorContainer extends Component {
 
   onFileChanged = async path => {
     if (path === this.state.gltfDependency) {
-      const url = new URL(this.state.sceneURI, window.location);
+      const url = new URL(this.props.editor.sceneURI, window.location);
       const sceneDef = serializeScene(this.props.editor.scene, url.href);
       const scene = await loadSerializedScene(sceneDef, url.href, {}, true);
 
@@ -251,7 +250,7 @@ class EditorContainer extends Component {
   };
 
   onOpenScene = uri => {
-    if (this.state.sceneURI === uri) {
+    if (this.props.editor.sceneURI === uri) {
       return;
     }
 
@@ -268,11 +267,8 @@ class EditorContainer extends Component {
 
     const url = new URL(uri, window.location);
 
-    loadScene(url.href, {}, true).then(scene => {
+    this.props.editor.openScene(url.href).then(scene => {
       const gltfDependency = scene.userData._gltfDependency;
-
-      this.props.editor.setScene(scene);
-
       this.setState({
         gltfDependency: gltfDependency ? new URL(gltfDependency).pathname : null
       });
@@ -283,7 +279,6 @@ class EditorContainer extends Component {
       this.props.editor.signals.sceneGraphChanged.active = true;
 
       this.setState({
-        sceneURI: uri,
         sceneModified: false
       });
 
