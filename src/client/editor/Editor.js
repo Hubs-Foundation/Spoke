@@ -462,8 +462,13 @@ export default class Editor {
   _cloneAndInflate(object, root) {
     const clone = object.clone(false);
     if (clone.userData._gltfComponents) {
-      for (const component of clone.userData._gltfComponents) {
-        this.gltfComponents.get(component.name).inflate(clone, component.props);
+      const components = clone.userData._gltfComponents;
+      clone.userData._gltfComponents = null;
+      for (const component of components) {
+        const componentClass = this.gltfComponents.get(component.name);
+        if (componentClass) {
+          componentClass.inflate(clone, component.props);
+        }
       }
     }
     if (!root) root = clone;
