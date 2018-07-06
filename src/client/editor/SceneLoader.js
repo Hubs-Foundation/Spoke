@@ -25,12 +25,14 @@ function inflateGLTFComponents(scene, components) {
     const extensions = object.userData.gltfExtensions;
     if (extensions !== undefined) {
       for (const extensionName in extensions) {
-        if (components[extensionName]) {
-          components[extensionName].inflate(object, extensions[extensionName]);
-        } else if (object instanceof THREE.Mesh && object.material instanceof THREE.MeshStandardMaterial) {
-          components.get("standard-material").inflate(object);
+        if (components.has(extensionName)) {
+          components.get(extensionName).inflate(object, extensions[extensionName]);
         }
       }
+    }
+
+    if (object instanceof THREE.Mesh && object.material instanceof THREE.MeshStandardMaterial) {
+      components.get("standard-material").inflate(object);
     }
   });
 }
@@ -40,6 +42,7 @@ function addChildAtIndex(parent, child, index) {
   child.parent = parent;
 }
 
+// Sort entities by insertion order
 function sortEntities(entitiesObj) {
   const sortedEntityNames = [];
   let entitiesToSort = [];
@@ -124,11 +127,13 @@ export async function loadSerializedScene(sceneDef, baseURL, components, isRoot 
   }
 
   if (entities) {
+    // Sort entities by insertion order (uses parent and index to determine order).
     const sortedEntities = sortEntities(entities);
 
     for (const entityName of sortedEntities) {
       const entity = entities[entityName];
 
+      // Find or create the entity's Object3D
       let entityObj = scene.getObjectByName(entityName);
 
       if (entityObj === undefined) {
@@ -136,34 +141,48 @@ export async function loadSerializedScene(sceneDef, baseURL, components, isRoot 
         entityObj.name = entityName;
       }
 
+      // Entities defined in the root scene should be saved.
+      if (isRoot) {
+        entityObj.userData._saveEntity = true;
+      }
+
+      // Attach the entity to its parent.
+      // An entity doesn't have a parent defined if the entity is loaded in an inherited scene.
       if (entity.parent) {
         const parentObject = scene.getObjectByName(entity.parent);
         addChildAtIndex(parentObject, entityObj, entity.index);
-        entityObj.userData._saveParent = true;
-      }
 
-      let componentsToSave;
-
-      if (isRoot) {
-        componentsToSave = [];
-      }
-
-      for (const componentName in entity.components) {
-        const component = entity.components[componentName];
-
-        if (components[componentName] === undefined) {
-          entityObj.userData[componentName] = component;
-        } else {
-          components[componentName].inflate(entityObj, component);
-        }
-
+        // Parents defined in the root scene should be saved.
         if (isRoot) {
-          componentsToSave.push(componentName);
+          entityObj.userData._saveParent = true;
         }
       }
 
-      if (isRoot) {
-        entityObj.userData._componentsToSave = componentsToSave;
+      // Inflate the entity's components.
+      if (Array.isArray(entity.components)) {
+        for (const componentDef of entity.components) {
+          let component;
+
+          if (components.has(componentDef.name)) {
+            component = components.get(componentDef.name).inflate(entityObj, componentDef.props);
+          } else {
+            component = {
+              name: componentDef.name,
+              props: componentDef.props
+            };
+
+            if (entityObj.userData._gltfComponents === undefined) {
+              entityObj.userData._gltfComponents = [];
+            }
+
+            entityObj.userData._gltfComponents.push(component);
+          }
+
+          // Components defined in the root scene should be saved.
+          if (isRoot) {
+            component.shouldSave = true;
+          }
+        }
       }
     }
   }
@@ -238,48 +257,49 @@ export function serializeScene(scene, scenePath) {
   const entities = {};
 
   scene.traverse(entityObject => {
-    const componentsToSave = entityObject.userData._componentsToSave;
+    let parent;
+    let index;
+    let components;
 
-    if (Array.isArray(componentsToSave)) {
-      const entityDef = {};
-      const entityComponents = {};
+    // Serialize the parent and index if _saveParent is set.
+    if (entityObject.userData._saveParent) {
+      parent = entityObject.parent.name;
 
-      for (const componentName of componentsToSave) {
-        const componentData = entityObject.userData[componentName];
+      const parentIndex = entityObject.parent.children.indexOf(entityObject);
 
-        if (componentData === undefined) {
-          console.warn(
-            `serializeScene: Object3d named "${
-              entityObject.name
-            }" includes "${componentName}" in userData._componentsToSave but userData.${componentName} is undefined.`
-          );
-          continue;
-        }
-
-        if (typeof componentData.toJSON === "function") {
-          entityComponents[componentName] = componentData.serialize(scenePath);
-        } else {
-          entityComponents[componentName] = componentData;
-        }
+      if (parentIndex === -1) {
+        throw new Error("Entity not found in parent.");
       }
 
-      if (componentsToSave.length > 0) {
-        entityDef.components = entityComponents;
-      }
+      index = parentIndex;
+    }
 
-      if (entityObject.userData._saveParent) {
-        entityDef.parent = entityObject.parent.name;
+    // Serialize all components with shouldSave set.
+    const gltfComponents = entityObject.userData._gltfComponents;
 
-        const index = entityObject.parent.children.indexOf(entityObject);
+    if (Array.isArray(gltfComponents)) {
+      for (const component of gltfComponents) {
+        if (component.shouldSave) {
+          if (components === undefined) {
+            components = [];
+          }
 
-        if (index === -1) {
-          throw new Error("Entity not found in parent.");
+          components.push({
+            name: component.name,
+            props: component.props
+          });
         }
-
-        entityDef.index = index;
       }
+    }
 
-      entities[entityObject.name] = entityDef;
+    const saveEntity = entityObject.userData._saveEntity;
+
+    if (parent !== undefined || components !== undefined || saveEntity) {
+      entities[entityObject.name] = {
+        parent,
+        index,
+        components
+      };
     }
   });
 
