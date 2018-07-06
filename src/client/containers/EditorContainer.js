@@ -234,7 +234,7 @@ class EditorContainer extends Component {
     if (path === this.state.gltfDependency) {
       const url = new URL(this.props.editor.sceneURI, window.location);
       const sceneDef = serializeScene(this.props.editor.scene, url.href);
-      const scene = await loadSerializedScene(sceneDef, url.href, {}, true);
+      const scene = await loadSerializedScene(sceneDef, url.href, this.props.editor.gltfComponents, true);
 
       const gltfDependency = scene.userData._gltfDependency;
 
@@ -267,12 +267,18 @@ class EditorContainer extends Component {
 
     const url = new URL(uri, window.location);
 
-    this.props.editor.openScene(url.href).then(scene => {
-      const gltfDependency = scene.userData._gltfDependency;
-      this.setState({
-        gltfDependency: gltfDependency ? new URL(gltfDependency).pathname : null
+    this.props.editor
+      .openScene(url.href)
+      .then(scene => {
+        const gltfDependency = scene.userData._gltfDependency;
+
+        this.setState({
+          gltfDependency: gltfDependency ? new URL(gltfDependency).pathname : null
+        });
+      })
+      .catch(e => {
+        console.error(e);
       });
-    });
 
     // Set state after sceneGraphChanged signals have fired.
     setTimeout(() => {

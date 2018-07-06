@@ -159,7 +159,7 @@ export default class Editor {
   }
 
   openScene(url) {
-    return loadScene(url, {}, true).then(scene => {
+    return loadScene(url, this.gltfComponents, true).then(scene => {
       this.breadCrumbs.push({});
       this.setSceneURI(url);
       this.setScene(scene);

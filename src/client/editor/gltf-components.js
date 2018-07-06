@@ -40,6 +40,7 @@ class BaseComponent {
     this.name = this.constructor.componentName;
     this.schema = this.constructor.schema;
     this.props = {};
+    this.shouldSave = false;
   }
 
   getProperty(propertyName) {
@@ -86,7 +87,7 @@ class BaseComponent {
   }
 
   static inflate(node, props) {
-    this._getOrCreateComponent(node, props);
+    return this._getOrCreateComponent(node, props).component;
   }
 
   static deflate(node) {
@@ -145,6 +146,7 @@ class DirectionalLightComponent extends BaseComponent {
     light.userData._dontShowInHierarchy = true;
     light.userData._inflated = true;
     node.add(light);
+    return component;
   }
 }
 
@@ -172,6 +174,7 @@ class PointLightComponent extends BaseComponent {
     light.userData._dontShowInHierarchy = true;
     light.userData._inflated = true;
     node.add(light);
+    return component;
   }
 }
 
@@ -198,6 +201,7 @@ class AmbientLightComponent extends BaseComponent {
     light.userData._dontShowInHierarchy = true;
     light.userData._inflated = true;
     node.add(light);
+    return component;
   }
 }
 
@@ -224,6 +228,7 @@ class ShadowComponent extends BaseComponent {
     Object.defineProperty(component, "_object", { enumerable: false, value: node });
     component._updateComponentProperty("castShadow", props.castShadow);
     component._updateComponentProperty("receiveShadow", props.receiveShadow);
+    return component;
   }
 }
 
@@ -290,6 +295,7 @@ class StandardMaterialComponent extends BaseComponent {
   static inflate(node, _props) {
     const { component } = this._getOrCreateComponent(node, _props);
     Object.defineProperty(component, "_object", { enumerable: false, value: node.material });
+    return component;
   }
 }
 

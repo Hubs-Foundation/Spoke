@@ -22,6 +22,11 @@ class GLTFComponentsContainer extends Component {
     // Generate property groups for each component and property editors for each property.
     return this.props.components.map(component => {
       const componentDefinition = this.props.editor.gltfComponents.get(component.name);
+
+      if (componentDefinition === undefined) {
+        return <PropertyGroup name={getDisplayName(component.name)} key={component.name} />;
+      }
+
       return (
         <PropertyGroup name={getDisplayName(component.name)} key={component.name}>
           {componentDefinition.schema.map(prop => (
