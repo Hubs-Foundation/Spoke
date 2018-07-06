@@ -158,13 +158,18 @@ export default class Editor {
     this._updateBreadCrumb(this.breadCrumbs[this.breadCrumbs.length - 1]);
   }
 
-  openScene(url) {
+  _loadScene(url) {
     return loadScene(url, this.gltfComponents, true).then(scene => {
       this.breadCrumbs.push({});
       this.setSceneURI(url);
       this.setScene(scene);
       return scene;
     });
+  }
+
+  openScene(url) {
+    this.breadCrumbs = [];
+    return this._loadScene(url);
   }
 
   setScene(scene) {
@@ -195,7 +200,9 @@ export default class Editor {
 
   popBreadCrumb() {
     this.breadCrumbs.pop();
-    loadScene(this.breadCrumbs[this.breadCrumbs.length - 1].uri, {}, true).then(this.setScene.bind(this));
+    const { uri } = this.breadCrumbs[this.breadCrumbs.length - 1];
+    this.setSceneURI(uri);
+    loadScene(uri, this.gltfComponents, true).then(this.setScene.bind(this));
   }
 
   //
@@ -479,7 +486,7 @@ export default class Editor {
   }
 
   editScenePrefab(url) {
-    this.openScene(url);
+    this._loadScene(url);
   }
 
   clear() {

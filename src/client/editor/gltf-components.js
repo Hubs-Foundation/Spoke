@@ -299,12 +299,21 @@ class StandardMaterialComponent extends BaseComponent {
   }
 }
 
+class SceneRefComponent extends BaseComponent {
+  static componentName = "scene-ref";
+
+  static schema = [
+    { name: "src", type: types.file, default: "" },
+  ];
+}
+
 export function registerGLTFComponents(editor) {
   [
     DirectionalLightComponent,
     PointLightComponent,
     AmbientLightComponent,
     StandardMaterialComponent,
-    ShadowComponent
+    ShadowComponent,
+    SceneRefComponent
   ].forEach(editor.registerGLTFComponent.bind(editor));
 }

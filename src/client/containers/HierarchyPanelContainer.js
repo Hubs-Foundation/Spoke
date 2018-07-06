@@ -115,9 +115,8 @@ class HierarchyPanelContainer extends Component {
     this.props.editor.duplicateObject(node.object);
   };
 
-  onEditPrefab = (e, node) => {
-    // TODO Does it make sense to access `ref` here directly?
-    this.props.editor.editScenePrefab(this.props.project.getUrl(node.object.userData.ref));
+  onEditPrefab = (refComponent) => {
+    this.props.editor.editScenePrefab(this.props.project.getUrl(refComponent.getProperty("src")));
   };
 
   onDeleteSelected = () => {
@@ -156,12 +155,13 @@ class HierarchyPanelContainer extends Component {
   };
 
   renderHierarchyNodeMenu = props => {
-    const hasRef = props.trigger && props.trigger.object.userData.ref;
+    const refComponent =
+      props.trigger && this.props.editor.gltfComponents.get("scene-ref").getComponent(props.trigger.object);
     return (
       <ContextMenu id="hierarchy-node-menu">
         <MenuItem onClick={this.onAddNode}>Add Node</MenuItem>
         <MenuItem onClick={this.onDuplicateNode}>Duplicate</MenuItem>
-        {hasRef && <MenuItem onClick={this.onEditPrefab}>Edit Prefab</MenuItem>}
+        {refComponent && <MenuItem onClick={this.onEditPrefab.bind(null, refComponent)}>Edit Prefab</MenuItem>}
         <MenuItem onClick={this.onDeleteNode}>Delete</MenuItem>
       </ContextMenu>
     );

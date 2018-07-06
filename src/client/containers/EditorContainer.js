@@ -250,7 +250,8 @@ class EditorContainer extends Component {
   };
 
   onOpenScene = uri => {
-    if (this.props.editor.sceneURI === uri) {
+    const uriPath = new URL(this.props.editor.sceneURI, window.location);
+    if (uriPath.pathname === uri) {
       return;
     }
 
