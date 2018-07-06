@@ -302,9 +302,7 @@ class StandardMaterialComponent extends BaseComponent {
 class SceneRefComponent extends BaseComponent {
   static componentName = "scene-ref";
 
-  static schema = [
-    { name: "src", type: types.file, default: "" },
-  ];
+  static schema = [{ name: "src", type: types.file, default: "" }];
 }
 
 export function registerGLTFComponents(editor) {

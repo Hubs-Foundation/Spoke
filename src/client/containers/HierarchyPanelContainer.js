@@ -115,7 +115,7 @@ class HierarchyPanelContainer extends Component {
     this.props.editor.duplicateObject(node.object);
   };
 
-  onEditPrefab = (refComponent) => {
+  onEditPrefab = refComponent => {
     this.props.editor.editScenePrefab(this.props.project.getUrl(refComponent.getProperty("src")));
   };
 
