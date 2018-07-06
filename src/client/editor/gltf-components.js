@@ -56,6 +56,7 @@ class BaseComponent {
   }
 
   static getComponent(node) {
+    if (!node.userData._gltfComponents) return null;
     return node.userData._gltfComponents.find(component => component.name === this.componentName);
   }
 
@@ -72,7 +73,7 @@ class BaseComponent {
     }
 
     let component = this.getComponent(node);
-    if (!component) {
+    if (!component || !(component instanceof this)) {
       component = new this();
       node.userData._gltfComponents.push(component);
     }
@@ -284,11 +285,11 @@ class StandardMaterialComponent extends BaseComponent {
       roughness: node.material.roughness,
       alphaCutoff: node.material.alphaTest,
       doubleSided: node.material.side === THREE.DoubleSide,
-      baseColorTexture: map && getFilePath(map.image),
-      normalTexture: normalMap && getFilePath(normalMap.image),
-      metallicRoughnessTexture: roughnessMap && getFilePath(roughnessMap.image),
-      emissiveTexture: emissiveMap && getFilePath(emissiveMap.image),
-      occlusionTexture: aoMap && getFilePath(aoMap.image)
+      baseColorTexture: (map && getFilePath(map.image)) || "",
+      normalTexture: (normalMap && getFilePath(normalMap.image)) || "",
+      metallicRoughnessTexture: (roughnessMap && getFilePath(roughnessMap.image)) || "",
+      emissiveTexture: (emissiveMap && getFilePath(emissiveMap.image)) || "",
+      occlusionTexture: (aoMap && getFilePath(aoMap.image)) || ""
     };
   }
 
