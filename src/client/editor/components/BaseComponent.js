@@ -21,7 +21,11 @@ export default class BaseComponent {
   }
 
   static getComponent(node) {
-    return node.userData._gltfComponents.find(component => component.name === this.componentName);
+    if (!node.userData._components) {
+      return undefined;
+    }
+
+    return node.userData._components.find(component => component.name === this.componentName);
   }
 
   static _propsFromObject() {
@@ -32,14 +36,14 @@ export default class BaseComponent {
     if (!props) {
       props = { ...getDefaultsFromSchema(this.schema), ...this._propsFromObject(node) };
     }
-    if (!node.userData._gltfComponents) {
-      node.userData._gltfComponents = [];
+    if (!node.userData._components) {
+      node.userData._components = [];
     }
 
     let component = this.getComponent(node);
     if (!component) {
       component = new this();
-      node.userData._gltfComponents.push(component);
+      node.userData._components.push(component);
     }
 
     for (const key in props) {
@@ -56,7 +60,7 @@ export default class BaseComponent {
   }
 
   static deflate(node) {
-    const components = node.userData._gltfComponents;
+    const components = node.userData._components;
     const componentIndex = components.findIndex(component => component.name === this.componentName);
     const component = components[componentIndex];
     if (component._object) {

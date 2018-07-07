@@ -6,7 +6,6 @@ import Viewport from "../components/Viewport";
 import { withEditor } from "./EditorContext";
 import styles from "./ViewportPanelContainer.scss";
 import FileDropTarget from "../components/FileDropTarget";
-import { gltfComponents } from "../editor/ComponentRegistry";
 
 class ViewportPanelContainer extends Component {
   static propTypes = {
@@ -38,7 +37,7 @@ class ViewportPanelContainer extends Component {
       const object = new THREE.Object3D();
       object.name = file.name;
       this.props.editor.addObject(object);
-      gltfComponents.get("scene-reference").inflate(object, {
+      this.props.editor.addComponent(object, "scene-reference", {
         src: file.uri
       });
     }

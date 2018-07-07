@@ -1,5 +1,4 @@
 import Command from "../Command";
-import { gltfComponents } from "../ComponentRegistry";
 
 /**
  * @param object THREE.Object3D
@@ -7,20 +6,19 @@ import { gltfComponents } from "../ComponentRegistry";
  * @constructor
  */
 
-export default class AddGLTFComponentCommand extends Command {
+export default class AddComponentCommand extends Command {
   constructor(object, componentName) {
     super();
-    this.type = "AddGLTFComponentCommand";
+    this.type = "AddComponentCommand";
 
     this.object = object;
     this.componentName = componentName;
 
-    this.name = `Add ${object.name} GLTF Component to ${componentName}`;
+    this.name = `Add ${object.name} Component to ${componentName}`;
   }
 
   execute() {
-    const component = gltfComponents.get(this.componentName);
-    component.inflate(this.object);
+    this.editor.addComponent(this.object, this.componentName);
     this.object.traverse(child => {
       this.editor.addHelper(child, this.object);
     });
@@ -28,8 +26,7 @@ export default class AddGLTFComponentCommand extends Command {
   }
 
   undo() {
-    const component = gltfComponents.get(this.componentName);
-    component.deflate(this.object);
+    this.editor.removeComponent(this.object, this.componentName);
     this.editor.removeHelper(this.object);
     this.editor.signals.objectChanged.dispatch(this.object);
   }

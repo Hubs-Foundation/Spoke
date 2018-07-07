@@ -10,12 +10,11 @@ import SetValueCommand from "../editor/commands/SetValueCommand";
 import SetPositionCommand from "../editor/commands/SetPositionCommand";
 import SetRotationCommand from "../editor/commands/SetRotationCommand";
 import SetScaleCommand from "../editor/commands/SetScaleCommand";
-import AddGLTFComponentCommand from "../editor/commands/AddGLTFComponentCommand";
+import AddComponentCommand from "../editor/commands/AddComponentCommand";
 import { getDisplayName } from "../editor/components";
 import Select from "react-select";
 import "../vendor/react-select/index.scss";
 import styles from "./NodePropertyGroupContainer.scss";
-import { gltfComponents } from "../editor/ComponentRegistry";
 
 const RAD2DEG = THREE.Math.RAD2DEG;
 const DEG2RAD = THREE.Math.DEG2RAD;
@@ -52,7 +51,7 @@ class NodePropertyGroupContainer extends Component {
   };
 
   onChangeComponent = ({ value }) => {
-    this.props.editor.execute(new AddGLTFComponentCommand(this.props.node, value));
+    this.props.editor.execute(new AddComponentCommand(this.props.node, value));
   };
 
   render() {
@@ -64,10 +63,10 @@ class NodePropertyGroupContainer extends Component {
     this.degreesVector.set(eulerRadians.x * RAD2DEG, eulerRadians.y * RAD2DEG, eulerRadians.z * RAD2DEG);
     const rotation = this.degreesVector;
 
-    const gltfComponentOptions = [];
+    const componentOptions = [];
 
-    for (const [name] of gltfComponents) {
-      gltfComponentOptions.push({
+    for (const [name] of this.props.editor.components) {
+      componentOptions.push({
         value: name,
         label: getDisplayName(name)
       });
@@ -91,7 +90,7 @@ class NodePropertyGroupContainer extends Component {
           <Select
             placeholder="Add a component..."
             className={styles.addComponentSelect}
-            options={gltfComponentOptions}
+            options={componentOptions}
             onChange={this.onChangeComponent}
           />
         </div>

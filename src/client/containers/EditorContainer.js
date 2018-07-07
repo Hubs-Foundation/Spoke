@@ -15,8 +15,6 @@ import { withProject } from "./ProjectContext";
 import { withEditor } from "./EditorContext";
 import { HotKeys } from "react-hotkeys";
 import styles from "./EditorContainer.scss";
-import { loadScene, loadSerializedScene, serializeScene } from "../editor/SceneLoader";
-import { gltfComponents } from "../editor/ComponentRegistry";
 
 class EditorContainer extends Component {
   static defaultProps = {
@@ -111,7 +109,10 @@ class EditorContainer extends Component {
     this.props.editor.signals.windowResize.dispatch();
     this.props.editor.signals.openScene.add(this.onOpenScene);
     this.props.editor.signals.sceneGraphChanged.add(this.onSceneChanged);
-    this.props.project.addListener("change", this.onFileChanged);
+    this.props.project.addListener("change", path => {
+      const url = new URL(path, window.location).href;
+      this.props.editor.signals.fileChanged.dispatch(url);
+    });
   }
 
   componentDidUpdate(prevProps) {
@@ -183,8 +184,7 @@ class EditorContainer extends Component {
 
   exportAndSaveScene = async sceneURI => {
     try {
-      const serializedScene = serializeScene(this.props.editor.scene, sceneURI);
-
+      const serializedScene = this.props.editor.serializeScene();
       await this.props.project.writeJSON(sceneURI, serializedScene);
 
       this.setState({
@@ -232,25 +232,6 @@ class EditorContainer extends Component {
     }
   };
 
-  onFileChanged = async path => {
-    if (path === this.state.gltfDependency) {
-      const url = new URL(this.state.sceneURI, window.location);
-      const sceneDef = serializeScene(this.props.editor.scene, url.href);
-      const scene = await loadSerializedScene(sceneDef, url.href, gltfComponents, true);
-
-      const gltfDependency = scene.userData._gltfDependency;
-
-      this.props.editor.signals.sceneGraphChanged.active = false;
-      this.props.editor.clear();
-      this.props.editor.signals.sceneGraphChanged.active = true;
-      this.props.editor.setScene(scene);
-
-      this.setState({
-        gltfDependency: gltfDependency ? new URL(gltfDependency).pathname : null
-      });
-    }
-  };
-
   onOpenScene = uri => {
     if (this.state.sceneURI === uri) {
       return;
@@ -263,37 +244,21 @@ class EditorContainer extends Component {
       return;
     }
 
-    this.props.editor.signals.sceneGraphChanged.active = false;
-    this.props.editor.clear();
-    this.props.editor.signals.sceneGraphChanged.active = true;
-
     const url = new URL(uri, window.location);
 
-    loadScene(url.href, gltfComponents, true)
+    this.props.editor
+      .loadScene(url.href)
       .then(scene => {
-        const gltfDependency = scene.userData._gltfDependency;
-
-        this.props.editor.setScene(scene);
-
         this.setState({
-          gltfDependency: gltfDependency ? new URL(gltfDependency).pathname : null
+          sceneURI: uri,
+          sceneModified: false
         });
+
+        document.title = `Hubs Editor - ${scene.name}`;
       })
       .catch(e => {
         console.error(e);
       });
-
-    // Set state after sceneGraphChanged signals have fired.
-    setTimeout(() => {
-      this.props.editor.signals.sceneGraphChanged.active = true;
-
-      this.setState({
-        sceneURI: uri,
-        sceneModified: false
-      });
-
-      document.title = `Hubs Editor - ${this.props.editor.scene.name}`;
-    }, 0);
   };
 
   renderPanel = (panelId, path) => {

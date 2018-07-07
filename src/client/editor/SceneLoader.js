@@ -20,19 +20,17 @@ function loadGLTF(url) {
   });
 }
 
-function inflateGLTFComponents(scene, components) {
+function inflateGLTFComponents(scene, addComponent) {
   scene.traverse(object => {
     const extensions = object.userData.gltfExtensions;
     if (extensions !== undefined) {
       for (const extensionName in extensions) {
-        if (components.has(extensionName)) {
-          components.get(extensionName).inflate(object, extensions[extensionName]);
-        }
+        addComponent(object, extensionName, extensions[extensionName], true);
       }
     }
 
     if (object instanceof THREE.Mesh && object.material instanceof THREE.MeshStandardMaterial) {
-      components.get("standard-material").inflate(object);
+      addComponent(object, "standard-material", undefined, true);
     }
   });
 }
@@ -106,7 +104,7 @@ function sortEntities(entitiesObj) {
   return sortedEntityNames;
 }
 
-export async function loadSerializedScene(sceneDef, baseURL, components, isRoot = true) {
+export async function loadSerializedScene(sceneDef, baseURL, addComponent, isRoot = true) {
   let scene;
 
   const { inherits, root, entities } = sceneDef;
@@ -114,7 +112,7 @@ export async function loadSerializedScene(sceneDef, baseURL, components, isRoot 
   if (inherits) {
     const inheritedSceneURL = new URL(inherits, baseURL);
     // eslint-disable-next-line
-    scene = await loadScene(inheritedSceneURL.href, components, false);
+    scene = await loadScene(inheritedSceneURL.href, addComponent, false);
 
     if (isRoot) {
       scene.userData._inherits = inherits;
@@ -161,27 +159,7 @@ export async function loadSerializedScene(sceneDef, baseURL, components, isRoot 
       // Inflate the entity's components.
       if (Array.isArray(entity.components)) {
         for (const componentDef of entity.components) {
-          let component;
-
-          if (components.has(componentDef.name)) {
-            component = components.get(componentDef.name).inflate(entityObj, componentDef.props);
-          } else {
-            component = {
-              name: componentDef.name,
-              props: componentDef.props
-            };
-
-            if (entityObj.userData._gltfComponents === undefined) {
-              entityObj.userData._gltfComponents = [];
-            }
-
-            entityObj.userData._gltfComponents.push(component);
-          }
-
-          // Components defined in the root scene should be saved.
-          if (isRoot) {
-            component.shouldSave = true;
-          }
+          addComponent(entityObj, componentDef.name, componentDef.props, !isRoot);
         }
       }
     }
@@ -190,7 +168,7 @@ export async function loadSerializedScene(sceneDef, baseURL, components, isRoot 
   return scene;
 }
 
-export async function loadScene(url, components, isRoot = true) {
+export async function loadScene(url, addComponent, isRoot = true) {
   let scene;
 
   if (url.endsWith(".gltf")) {
@@ -206,7 +184,7 @@ export async function loadScene(url, components, isRoot = true) {
 
     scene.userData._gltfDependency = url;
 
-    inflateGLTFComponents(scene, components);
+    inflateGLTFComponents(scene, addComponent);
 
     return scene;
   }
@@ -214,7 +192,7 @@ export async function loadScene(url, components, isRoot = true) {
   const sceneResponse = await fetch(url);
   const sceneDef = await sceneResponse.json();
 
-  scene = await loadSerializedScene(sceneDef, url, components, isRoot);
+  scene = await loadSerializedScene(sceneDef, url, addComponent, isRoot);
 
   return scene;
 }
@@ -275,10 +253,10 @@ export function serializeScene(scene, scenePath) {
     }
 
     // Serialize all components with shouldSave set.
-    const gltfComponents = entityObject.userData._gltfComponents;
+    const entityComponents = entityObject.userData._components;
 
-    if (Array.isArray(gltfComponents)) {
-      for (const component of gltfComponents) {
+    if (Array.isArray(entityComponents)) {
+      for (const component of entityComponents) {
         if (component.shouldSave) {
           if (components === undefined) {
             components = [];

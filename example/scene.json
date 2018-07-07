@@ -6,7 +6,7 @@
       "index": 0,
       "components": [
         {
-          "name": "scene-ref",
+          "name": "scene-reference",
           "props": {
             "src": "./prefabs/Hallway.scene"
           }
@@ -24,7 +24,7 @@
       "index": 1,
       "components": [
         {
-          "name": "scene-ref",
+          "name": "scene-reference",
           "props": {
             "src": "./prefabs/Hallway.scene"
           }
