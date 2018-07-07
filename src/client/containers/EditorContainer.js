@@ -4,6 +4,7 @@ import { DragDropContextProvider } from "react-dnd";
 import HTML5Backend from "react-dnd-html5-backend";
 import { MosaicWindow } from "react-mosaic-component";
 import { HotKeys } from "react-hotkeys";
+import last from "lodash.last";
 
 import Editor from "../components/Editor";
 import FileDialogModalContainer from "./FileDialogModalContainer";
@@ -50,7 +51,6 @@ class EditorContainer extends Component {
     window.addEventListener("resize", this.onWindowResize, false);
 
     this.state = {
-      sceneModified: null,
       registeredPanels: {
         hierarchy: {
           component: HierarchyPanelContainer,
@@ -107,6 +107,7 @@ class EditorContainer extends Component {
 
   componentDidMount() {
     this.props.editor.signals.windowResize.dispatch();
+    this.props.editor.signals.popScene.add(this.onPopScene);
     this.props.editor.signals.openScene.add(this.onOpenScene);
     this.props.editor.signals.sceneGraphChanged.add(this.onSceneChanged);
     this.props.project.addListener("change", this.onFileChanged);
@@ -186,8 +187,8 @@ class EditorContainer extends Component {
       await this.props.project.writeJSON(sceneURI, serializedScene);
 
       this.props.editor.setSceneURI(sceneURI);
+      last(this.props.editor.scenes).modified = false;
       this.setState({
-        sceneModified: false,
         openModal: null
       });
     } catch (e) {
@@ -224,10 +225,7 @@ class EditorContainer extends Component {
   };
 
   onSceneChanged = () => {
-    if (!this.state.sceneModified) {
-      this.setState({ sceneModified: true });
-      document.title = `Hubs Editor - ${this.props.editor.scene.name}*`;
-    }
+    document.title = `Hubs Editor - ${this.props.editor.scene.name}*`;
   };
 
   onFileChanged = async path => {
@@ -249,18 +247,22 @@ class EditorContainer extends Component {
     }
   };
 
+  confirmSceneChange = () => {
+    return (
+      !this.props.editor.sceneModified() ||
+      confirm("This scene has unsaved changes. Do you really want to really want to change scenes without saving?")
+    );
+  };
+
+  onPopScene = () => {
+    if (!this.confirmSceneChange()) return;
+    this.props.editor.popScene();
+  };
+
   onOpenScene = uri => {
     const uriPath = new URL(this.props.editor.sceneURI, window.location);
-    if (uriPath.pathname === uri) {
-      return;
-    }
-
-    if (
-      this.state.sceneModified &&
-      !confirm("This scene has unsaved changes do you really want to really want to open a new scene without saving?")
-    ) {
-      return;
-    }
+    if (uriPath.pathname === uri) return;
+    if (!this.confirmSceneChange()) return;
 
     this.props.editor.signals.sceneGraphChanged.active = false;
     this.props.editor.clear();
@@ -269,7 +271,7 @@ class EditorContainer extends Component {
     const url = new URL(uri, window.location);
 
     this.props.editor
-      .openScene(url.href)
+      .openRootScene(url.href)
       .then(scene => {
         const gltfDependency = scene.userData._gltfDependency;
 
@@ -284,10 +286,6 @@ class EditorContainer extends Component {
     // Set state after sceneGraphChanged signals have fired.
     setTimeout(() => {
       this.props.editor.signals.sceneGraphChanged.active = true;
-
-      this.setState({
-        sceneModified: false
-      });
 
       document.title = `Hubs Editor - ${this.props.editor.scene.name}`;
     }, 0);

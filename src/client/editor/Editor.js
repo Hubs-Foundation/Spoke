@@ -1,4 +1,5 @@
 import signals from "signals";
+import last from "lodash.last";
 
 import THREE from "../vendor/three";
 import History from "./History";
@@ -36,6 +37,7 @@ export default class Editor {
       showModal: new Signal(),
 
       openScene: new Signal(),
+      popScene: new Signal(),
 
       // notifications
 
@@ -93,12 +95,22 @@ export default class Editor {
 
     this.openFile = null;
 
-    this.breadCrumbs = [];
+    this.scenes = [];
 
-    this.sceneURI = null;
-    this.scene = new THREE.Scene();
-    this.scene.name = "Scene";
-    this.scene.background = new THREE.Color(0xaaaaaa);
+    const initialSceneInfo = {
+      uri: null,
+      obj: new THREE.Scene(),
+      modified: false
+    };
+    initialSceneInfo.obj.name = "Scene";
+    initialSceneInfo.obj.background = new THREE.Color(0xaaaaaa);
+    this.scenes.push(initialSceneInfo);
+
+    this.scene = initialSceneInfo.obj;
+
+    this.signals.sceneGraphChanged.add(() => {
+      last(this.scenes).modified = true;
+    });
 
     this.sceneHelpers = new THREE.Scene();
 
@@ -147,65 +159,64 @@ export default class Editor {
 
   //
 
-  _updateBreadCrumb(breadCrumb) {
-    const uriParts = this.sceneURI.split("/");
-    breadCrumb.name = uriParts[uriParts.length - 1];
-    breadCrumb.uri = this.sceneURI;
+  popScene() {
+    this.scenes.pop();
+    const { uri, obj } = last(this.scenes);
+    this.setSceneURI(uri);
+    this.setScene(obj);
   }
 
   setSceneURI(uri) {
-    this.sceneURI = uri;
-    if (this.breadCrumbs.length === 0) {
-      this.breadCrumbs.push({});
-    }
-    this._updateBreadCrumb(this.breadCrumbs[this.breadCrumbs.length - 1]);
+    const sceneInfo = last(this.scenes);
+    sceneInfo.uri = uri;
   }
 
-  _loadScene(url) {
+  _loadAndSetScene(url) {
     return loadScene(url, this.gltfComponents, true).then(scene => {
-      this.breadCrumbs.push({});
-      this.setSceneURI(url);
+      this.scenes.push({ uri: url, obj: scene });
       this.setScene(scene);
       return scene;
     });
   }
 
-  openScene(url) {
-    this.breadCrumbs = [];
-    return this._loadScene(url);
+  editScenePrefab(url) {
+    this._loadAndSetScene(url);
+  }
+
+  openRootScene(url) {
+    this.scenes = [];
+    return this._loadAndSetScene(url);
   }
 
   setScene(scene) {
-    this.scene.uuid = scene.uuid;
-    this.scene.name = scene.name;
+    this.scene = scene;
+    //this.scene.uuid = scene.uuid;
+    //this.scene.name = scene.name;
 
-    if (scene.background !== null) this.scene.background = scene.background.clone();
-    if (scene.fog !== null) this.scene.fog = scene.fog.clone();
+    //if (scene.background !== null) this.scene.background = scene.background.clone();
+    //if (scene.fog !== null) this.scene.fog = scene.fog.clone();
 
-    this.scene.userData = JSON.parse(JSON.stringify(scene.userData));
+    //this.scene.userData = JSON.parse(JSON.stringify(scene.userData));
 
     // avoid render per object
 
-    this.signals.sceneGraphChanged.active = false;
+    // this.signals.sceneGraphChanged.active = false;
 
-    while (this.scene.children.length > 0) {
-      this.removeObject(this.scene.children[0]);
-    }
+    // while (this.scene.children.length > 0) {
+    //   this.removeObject(this.scene.children[0]);
+    // }
 
-    while (scene.children.length > 0) {
-      this.addObject(scene.children[0]);
-    }
+    // while (scene.children.length > 0) {
+    //   this.addObject(scene.children[0]);
+    // }
 
-    this.signals.sceneGraphChanged.active = true;
+    // this.signals.sceneGraphChanged.active = true;
 
     this.signals.sceneSet.dispatch();
   }
 
-  popBreadCrumb() {
-    this.breadCrumbs.pop();
-    const { uri } = this.breadCrumbs[this.breadCrumbs.length - 1];
-    this.setSceneURI(uri);
-    loadScene(uri, this.gltfComponents, true).then(this.setScene.bind(this));
+  sceneModified() {
+    return last(this.scenes).modified;
   }
 
   //
@@ -494,16 +505,11 @@ export default class Editor {
     this.duplicateObject(this.selected);
   }
 
-  editScenePrefab(url) {
-    this._loadScene(url);
-  }
-
   clear() {
     this.history.clear();
     this.storage.clear();
 
     this.camera.copy(this.DEFAULT_CAMERA);
-    this.scene.background.setHex(0xaaaaaa);
     this.scene.fog = null;
 
     this.scene.traverse(this.removeHelper.bind(this));

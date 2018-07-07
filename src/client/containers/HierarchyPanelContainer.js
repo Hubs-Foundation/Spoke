@@ -4,6 +4,7 @@ import { HotKeys } from "react-hotkeys";
 import Tree from "@robertlong/react-ui-tree";
 import classNames from "classnames";
 import { ContextMenu, MenuItem, ContextMenuTrigger, connectMenu } from "react-contextmenu";
+import last from "lodash.last";
 
 import styles from "./HierarchyPanelContainer.scss";
 import { withProject } from "./ProjectContext";
@@ -169,19 +170,26 @@ class HierarchyPanelContainer extends Component {
 
   HierarchyNodeMenu = connectMenu("hierarchy-node-menu")(this.renderHierarchyNodeMenu);
 
+  popScene = () => {
+    this.props.editor.signals.popScene.dispatch();
+  };
+
   render() {
     return (
       <div className={styles.hierarchyRoot}>
-        {this.props.editor.breadCrumbs.map((breadCrumb, i) => (
-          <button
-            className={styles.breadCrumb}
-            disabled={i !== this.props.editor.breadCrumbs.length - 2}
-            onClick={this.props.editor.popBreadCrumb.bind(this.props.editor)}
-            key={breadCrumb.name}
-          >
-            {breadCrumb.name}
-          </button>
-        ))}
+        {this.props.editor.scenes.map((sceneInfo, i) => {
+          const name = sceneInfo.uri ? last(sceneInfo.uri.split("/")) : "...";
+          return (
+            <button
+              className={styles.breadCrumb}
+              disabled={i !== this.props.editor.scenes.length - 2}
+              onClick={this.popScene}
+              key={name}
+            >
+              {name}
+            </button>
+          );
+        })}
         <HotKeys handlers={this.state.hierarchyHotKeyHandlers}>
           <Tree
             paddingLeft={8}
