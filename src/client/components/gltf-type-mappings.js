@@ -12,5 +12,5 @@ export const gltfComponentTypeToReactComponent = new Map([
     types.boolean,
     (value, onChange) => <input type="checkbox" checked={value} onChange={e => onChange(e.target.checked)} />
   ],
-  [types.file, (value, onChange) => <StringInput value={value} onChange={onChange} />]
+  [types.file, (value, onChange) => <StringInput value={value} onChange={e => onChange(e.target.value)} />]
 ]);
