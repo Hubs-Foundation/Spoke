@@ -190,28 +190,6 @@ export default class Editor {
 
   setScene(scene) {
     this.scene = scene;
-    //this.scene.uuid = scene.uuid;
-    //this.scene.name = scene.name;
-
-    //if (scene.background !== null) this.scene.background = scene.background.clone();
-    //if (scene.fog !== null) this.scene.fog = scene.fog.clone();
-
-    //this.scene.userData = JSON.parse(JSON.stringify(scene.userData));
-
-    // avoid render per object
-
-    // this.signals.sceneGraphChanged.active = false;
-
-    // while (this.scene.children.length > 0) {
-    //   this.removeObject(this.scene.children[0]);
-    // }
-
-    // while (scene.children.length > 0) {
-    //   this.addObject(scene.children[0]);
-    // }
-
-    // this.signals.sceneGraphChanged.active = true;
-
     this.signals.sceneSet.dispatch();
   }
 
