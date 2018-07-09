@@ -256,6 +256,13 @@ export default class Editor {
     const scene = await loadScene(url, this.addComponent, false);
     scene.userData._dontShowInHierarchy = true;
     scene.userData._sceneReference = url;
+
+    scene.traverse(child => {
+      Object.defineProperty(child.userData, "selectionRoot", { value: parent, enumerable: false });
+    });
+
+    this.signals.objectAdded.dispatch(scene);
+
     parent.add(scene);
     this.signals.sceneGraphChanged.dispatch();
 
