@@ -288,7 +288,7 @@ export function serializeScene(scene, scenePath) {
   if (scene.userData._inherits) {
     serializedScene.inherits = absoluteToRelativeURL(scenePath, scene.userData._inherits);
   } else {
-    serializeScene.root = scene.name;
+    serializedScene.root = scene.name;
   }
 
   return serializedScene;

@@ -53,11 +53,11 @@ export default class StandardMaterialComponent extends BaseComponent {
       roughness: node.material.roughness,
       alphaCutoff: node.material.alphaTest,
       doubleSided: node.material.side === THREE.DoubleSide,
-      baseColorTexture: map && getFilePath(map.image),
-      normalTexture: normalMap && getFilePath(normalMap.image),
-      metallicRoughnessTexture: roughnessMap && getFilePath(roughnessMap.image),
-      emissiveTexture: emissiveMap && getFilePath(emissiveMap.image),
-      occlusionTexture: aoMap && getFilePath(aoMap.image)
+      baseColorTexture: (map && getFilePath(map.image)) || "",
+      normalTexture: (normalMap && getFilePath(normalMap.image)) || "",
+      metallicRoughnessTexture: (roughnessMap && getFilePath(roughnessMap.image)) || "",
+      emissiveTexture: (emissiveMap && getFilePath(emissiveMap.image)) || "",
+      occlusionTexture: (aoMap && getFilePath(aoMap.image)) || ""
     };
   }
 

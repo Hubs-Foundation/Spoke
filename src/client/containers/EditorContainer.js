@@ -2,6 +2,9 @@ import React, { Component } from "react";
 import PropTypes from "prop-types";
 import { DragDropContextProvider } from "react-dnd";
 import HTML5Backend from "react-dnd-html5-backend";
+import { MosaicWindow } from "react-mosaic-component";
+import { HotKeys } from "react-hotkeys";
+
 import Editor from "../components/Editor";
 import FileDialogModalContainer from "./FileDialogModalContainer";
 import ViewportPanelContainer from "./ViewportPanelContainer";
@@ -9,11 +12,9 @@ import HierarchyPanelContainer from "./HierarchyPanelContainer";
 import PropertiesPanelContainer from "./PropertiesPanelContainer";
 import AssetExplorerPanelContainer from "./AssetExplorerPanelContainer";
 import ViewportToolbarContainer from "./ViewportToolbarContainer";
-import { MosaicWindow } from "react-mosaic-component";
 import PanelToolbar from "../components/PanelToolbar";
 import { withProject } from "./ProjectContext";
 import { withEditor } from "./EditorContext";
-import { HotKeys } from "react-hotkeys";
 import styles from "./EditorContainer.scss";
 
 class EditorContainer extends Component {
@@ -48,9 +49,7 @@ class EditorContainer extends Component {
     window.addEventListener("resize", this.onWindowResize, false);
 
     this.state = {
-      sceneURI: null,
       sceneModified: null,
-      sceneLastSaved: null,
       registeredPanels: {
         hierarchy: {
           component: HierarchyPanelContainer,
@@ -170,10 +169,10 @@ class EditorContainer extends Component {
   onSave = async e => {
     e.preventDefault();
 
-    if (!this.state.sceneURI || this.state.sceneURI.endsWith(".gltf")) {
+    if (!this.props.editor.sceneURI || this.props.editor.sceneURI.endsWith(".gltf")) {
       this.openSaveAsDialog(this.exportAndSaveScene);
     } else {
-      this.exportAndSaveScene(this.state.sceneURI);
+      this.exportAndSaveScene(this.props.editor.sceneURI);
     }
   };
 
@@ -187,9 +186,9 @@ class EditorContainer extends Component {
       const serializedScene = this.props.editor.serializeScene();
       await this.props.project.writeJSON(sceneURI, serializedScene);
 
+      this.props.editor.setSceneURI(sceneURI);
       this.setState({
         sceneModified: false,
-        sceneURI,
         openModal: null
       });
     } catch (e) {
@@ -200,7 +199,7 @@ class EditorContainer extends Component {
   onOpenBundleModal = e => {
     e.preventDefault();
 
-    if (!this.state.sceneURI) {
+    if (!this.props.editor.sceneURI) {
       console.warn("TODO: save scene before bundling instead of doing nothing");
       return;
     }
@@ -221,7 +220,7 @@ class EditorContainer extends Component {
   };
 
   onBundle = async outputPath => {
-    await this.props.project.bundleScene(this.props.editor.scene.name, "0.1.0", this.state.sceneURI, outputPath);
+    await this.props.project.bundleScene(this.props.editor.scene.name, "0.1.0", this.props.editor.sceneURI, outputPath);
     this.setState({ openModal: null });
   };
 
@@ -233,7 +232,8 @@ class EditorContainer extends Component {
   };
 
   onOpenScene = uri => {
-    if (this.state.sceneURI === uri) {
+    const uriPath = new URL(this.props.editor.sceneURI, window.location);
+    if (uriPath.pathname === uri) {
       return;
     }
 

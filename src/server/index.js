@@ -176,7 +176,7 @@ export default async function startServer(options) {
         success: true
       };
     } else if (ctx.request.type === "application/json") {
-      await fs.writeJSON(filePath, ctx.request.body);
+      await fs.writeJSON(filePath, ctx.request.body, { spaces: 2 });
       ctx.body = {
         success: true
       };

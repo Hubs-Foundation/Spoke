@@ -1,4 +1,5 @@
 import signals from "signals";
+
 import THREE from "../vendor/three";
 import History from "./History";
 import Storage from "./Storage";
@@ -13,7 +14,6 @@ import DirectionalLightComponent from "./components/DirectionalLightComponent";
 /**
  * @author mrdoob / http://mrdoob.com/
  */
-
 export default class Editor {
   constructor() {
     this.DEFAULT_CAMERA = new THREE.PerspectiveCamera(50, 1, 0.01, 1000);
@@ -97,6 +97,9 @@ export default class Editor {
 
     this.openFile = null;
 
+    this.breadCrumbs = [];
+
+    this.sceneURI = null;
     this.scene = new THREE.Scene();
     this.scene.name = "Scene";
     this.scene.background = new THREE.Color(0xaaaaaa);
@@ -167,6 +170,25 @@ export default class Editor {
 
   //
 
+  _updateBreadCrumb(breadCrumb) {
+    const uriParts = this.sceneURI.split("/");
+    breadCrumb.name = uriParts[uriParts.length - 1];
+    breadCrumb.uri = this.sceneURI;
+  }
+
+  setSceneURI(uri) {
+    this.sceneURI = uri;
+    if (this.breadCrumbs.length === 0) {
+      this.breadCrumbs.push({});
+    }
+    this._updateBreadCrumb(this.breadCrumbs[this.breadCrumbs.length - 1]);
+  }
+
+  openScene(url) {
+    this.breadCrumbs = [];
+    return this.loadScene(url);
+  }
+
   setScene(scene) {
     this.scene.uuid = scene.uuid;
     this.scene.name = scene.name;
@@ -222,6 +244,9 @@ export default class Editor {
     gltfDependencies.add(this.scene);
     this.fileDependencies.set(url, gltfDependencies);
 
+    this.breadCrumbs.push({});
+    this.setSceneURI(url);
+
     return scene;
   }
 
@@ -272,11 +297,19 @@ export default class Editor {
     return serializeScene(this.scene, sceneURL);
   }
 
+  popBreadCrumb() {
+    this.breadCrumbs.pop();
+    const { uri } = this.breadCrumbs[this.breadCrumbs.length - 1];
+    this.setSceneURI(uri);
+    loadScene(uri, this.gltfComponents, true).then(this.setScene.bind(this));
+  }
+
   //
 
   addObject(object, parent) {
     const scope = this;
 
+    object.userData._saveParent = true;
     object.traverse(child => {
       if (child.geometry !== undefined) scope.addGeometry(child.geometry);
       if (child.material !== undefined) scope.addMaterial(child.material);
@@ -631,6 +664,10 @@ export default class Editor {
     this.duplicateObject(this.selected);
   }
 
+  editScenePrefab(url) {
+    this._loadScene(url);
+  }
+
   clear() {
     this.history.clear();
     this.storage.clear();
@@ -638,6 +675,8 @@ export default class Editor {
     this.camera.copy(this.DEFAULT_CAMERA);
     this.scene.background.setHex(0xaaaaaa);
     this.scene.fog = null;
+
+    this.scene.traverse(this.removeHelper.bind(this));
 
     const objects = this.scene.children;
 

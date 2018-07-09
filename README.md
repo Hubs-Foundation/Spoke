@@ -5,17 +5,13 @@
 ```
 git clone https://github.com/MozillaReality/hubs-editor.git
 cd hubs-editor
-yarn install
+npm install
 ```
 
-## Desktop App Development
+## Development
 
-In one terminal session:
 ```
-yarn watch
+npm run dev
 ```
 
-In another:
-```
-yarn start
-```
+Then open http://localhost:8080.

@@ -1,7 +1,26 @@
+@import "../theme";
+
 :local(.hierarchyRoot) {
   outline: none;
   width: 100%;
 }
+
+:local(.breadCrumb) {
+  background: $header;
+  display: block;
+  width: 100%;
+  border: none;
+  padding: 4px;
+  border: 1px solid $border;
+  border-left: 0;
+  border-right: 0;
+  color: $text;
+  cursor: pointer;
+  &[disabled] {
+    cursor: auto;
+  }
+}
+
 
 :local(.treeNode) {
   padding: 4px 5px;

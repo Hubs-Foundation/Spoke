@@ -22,7 +22,7 @@ export default class BaseComponent {
 
   static getComponent(node) {
     if (!node.userData._components) {
-      return undefined;
+      return null;
     }
 
     return node.userData._components.find(component => component.name === this.componentName);
@@ -41,7 +41,7 @@ export default class BaseComponent {
     }
 
     let component = this.getComponent(node);
-    if (!component) {
+    if (!component || !(component instanceof this)) {
       component = new this();
       node.userData._components.push(component);
     }
