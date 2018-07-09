@@ -258,7 +258,7 @@ export default class Editor {
     scene.userData._sceneReference = url;
 
     scene.traverse(child => {
-      Object.defineProperty(child.userData, "selectionRoot", { value: parent, enumerable: false });
+      Object.defineProperty(child.userData, "_selectionRoot", { value: parent, enumerable: false });
     });
 
     this.signals.objectAdded.dispatch(scene);
@@ -307,7 +307,7 @@ export default class Editor {
     this.breadCrumbs.pop();
     const { uri } = this.breadCrumbs[this.breadCrumbs.length - 1];
     this.setSceneURI(uri);
-    loadScene(uri, this.gltfComponents, true).then(this.setScene.bind(this));
+    loadScene(uri, this.components, true).then(this.setScene.bind(this));
   }
 
   //
