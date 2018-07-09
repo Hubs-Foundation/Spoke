@@ -292,9 +292,8 @@ export default class Editor {
     return scene;
   }
 
-  serializeScene() {
-    const sceneURL = this.scene.userData._url;
-    return serializeScene(this.scene, sceneURL);
+  serializeScene(sceneURL) {
+    return serializeScene(this.scene, sceneURL || this.scene.userData._url);
   }
 
   popBreadCrumb() {

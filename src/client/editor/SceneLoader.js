@@ -1,4 +1,5 @@
 import THREE from "../vendor/three";
+import SceneReferenceComponent from "./components/SceneReferenceComponent";
 
 function loadGLTF(url) {
   return new Promise((resolve, reject) => {
@@ -104,6 +105,70 @@ function sortEntities(entitiesObj) {
   return sortedEntityNames;
 }
 
+function resolveRelativeURLs(entities, absoluteSceneURL) {
+  for (const entityId in entities) {
+    const entity = entities[entityId];
+    const entityComponents = entity.components;
+
+    if (entityComponents) {
+      for (const component of entityComponents) {
+        if (component.name === SceneReferenceComponent.componentName) {
+          component.props.src = new URL(component.props.src, absoluteSceneURL).href;
+        }
+      }
+    }
+  }
+}
+
+export function absoluteToRelativeURL(from, to) {
+  if (from === to) {
+    return to;
+  }
+
+  const fromURL = new URL(from, window.location);
+  const toURL = new URL(to, window.location);
+
+  if (fromURL.host === toURL.host) {
+    const relativeParts = [];
+    const fromParts = fromURL.pathname.split("/");
+    const toParts = toURL.pathname.split("/");
+
+    while (fromParts.length > 0 && toParts.length > 0 && fromParts[0] === toParts[0]) {
+      fromParts.shift();
+      toParts.shift();
+    }
+
+    if (fromParts.length > 1) {
+      for (let j = 0; j++; j < fromParts.length - 1) {
+        relativeParts.push("..");
+      }
+    }
+
+    for (let k = 0; k < toParts.length; k++) {
+      relativeParts.push(toParts[k]);
+    }
+
+    return "./" + relativeParts.join("/");
+  }
+
+  return to;
+}
+
+function convertAbsoluteURLs(entities, sceneURL) {
+  for (const entityId in entities) {
+    const entity = entities[entityId];
+    const entityComponents = entity.components;
+
+    if (entityComponents) {
+      for (const component of entityComponents) {
+        if (component.name === SceneReferenceComponent.componentName) {
+          component.props.src = absoluteToRelativeURL(sceneURL, component.props.src);
+        }
+      }
+    }
+  }
+}
+
 export async function loadSerializedScene(sceneDef, baseURL, addComponent, isRoot = true) {
   let scene;
 
@@ -125,6 +190,9 @@ export async function loadSerializedScene(sceneDef, baseURL, addComponent, isRoo
   }
 
   if (entities) {
+    // Convert any relative URLs in the scene to absolute URLs so that other code does not need to know about the scene path.
+    resolveRelativeURLs(entities, baseURL);
+
     // Sort entities by insertion order (uses parent and index to determine order).
     const sortedEntities = sortEntities(entities);
 
@@ -197,40 +265,6 @@ export async function loadScene(url, addComponent, isRoot = true) {
   return scene;
 }
 
-export function absoluteToRelativeURL(from, to) {
-  if (from === to) {
-    return to;
-  }
-
-  const fromURL = new URL(from, window.location);
-  const toURL = new URL(to, window.location);
-
-  if (fromURL.host === toURL.host) {
-    const relativeParts = [];
-    const fromParts = fromURL.pathname.split("/");
-    const toParts = toURL.pathname.split("/");
-
-    while (fromParts.length > 0 && toParts.length > 0 && fromParts[0] === toParts[0]) {
-      fromParts.shift();
-      toParts.shift();
-    }
-
-    if (fromParts.length > 1) {
-      for (let j = 0; j++; j < fromParts.length - 1) {
-        relativeParts.push("..");
-      }
-    }
-
-    for (let k = 0; k < toParts.length; k++) {
-      relativeParts.push(toParts[k]);
-    }
-
-    return "./" + relativeParts.join("/");
-  }
-
-  return to;
-}
-
 export function serializeScene(scene, scenePath) {
   const entities = {};
 
@@ -280,6 +314,8 @@ export function serializeScene(scene, scenePath) {
       };
     }
   });
+
+  convertAbsoluteURLs(entities, scenePath);
 
   const serializedScene = {
     entities

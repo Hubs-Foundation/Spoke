@@ -183,7 +183,7 @@ class EditorContainer extends Component {
 
   exportAndSaveScene = async sceneURI => {
     try {
-      const serializedScene = this.props.editor.serializeScene();
+      const serializedScene = this.props.editor.serializeScene(sceneURI);
       await this.props.project.writeJSON(sceneURI, serializedScene);
 
       this.props.editor.setSceneURI(sceneURI);
