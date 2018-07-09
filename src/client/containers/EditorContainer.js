@@ -16,6 +16,7 @@ import PanelToolbar from "../components/PanelToolbar";
 import { withProject } from "./ProjectContext";
 import { withEditor } from "./EditorContext";
 import styles from "./EditorContainer.scss";
+import { last } from "../utils";
 
 class EditorContainer extends Component {
   static defaultProps = {
@@ -49,7 +50,6 @@ class EditorContainer extends Component {
     window.addEventListener("resize", this.onWindowResize, false);
 
     this.state = {
-      sceneModified: null,
       registeredPanels: {
         hierarchy: {
           component: HierarchyPanelContainer,
@@ -106,6 +106,7 @@ class EditorContainer extends Component {
 
   componentDidMount() {
     this.props.editor.signals.windowResize.dispatch();
+    this.props.editor.signals.popScene.add(this.onPopScene);
     this.props.editor.signals.openScene.add(this.onOpenScene);
     this.props.editor.signals.sceneGraphChanged.add(this.onSceneChanged);
     this.props.project.addListener("change", path => {
@@ -187,8 +188,8 @@ class EditorContainer extends Component {
       await this.props.project.writeJSON(sceneURI, serializedScene);
 
       this.props.editor.setSceneURI(sceneURI);
+      last(this.props.editor.scenes).modified = false;
       this.setState({
-        sceneModified: false,
         openModal: null
       });
     } catch (e) {
@@ -225,35 +226,31 @@ class EditorContainer extends Component {
   };
 
   onSceneChanged = () => {
-    if (!this.state.sceneModified) {
-      this.setState({ sceneModified: true });
-      document.title = `Hubs Editor - ${this.props.editor.scene.name}*`;
-    }
+    document.title = `Hubs Editor - ${this.props.editor.scene.name}*`;
+  };
+
+  confirmSceneChange = () => {
+    return (
+      !this.props.editor.sceneModified() ||
+      confirm("This scene has unsaved changes. Do you really want to really want to change scenes without saving?")
+    );
+  };
+
+  onPopScene = () => {
+    if (!this.confirmSceneChange()) return;
+    this.props.editor.popScene();
   };
 
   onOpenScene = uri => {
     const uriPath = new URL(this.props.editor.sceneURI, window.location);
-    if (uriPath.pathname === uri) {
-      return;
-    }
-
-    if (
-      this.state.sceneModified &&
-      !confirm("This scene has unsaved changes do you really want to really want to open a new scene without saving?")
-    ) {
-      return;
-    }
+    if (uriPath.pathname === uri) return;
+    if (!this.confirmSceneChange()) return;
 
     const url = new URL(uri, window.location);
 
     this.props.editor
-      .loadScene(url.href)
+      .openRootScene(url.href)
       .then(scene => {
-        this.setState({
-          sceneURI: uri,
-          sceneModified: false
-        });
-
         document.title = `Hubs Editor - ${scene.name}`;
       })
       .catch(e => {

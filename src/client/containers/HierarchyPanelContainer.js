@@ -6,7 +6,6 @@ import classNames from "classnames";
 import { ContextMenu, MenuItem, ContextMenuTrigger, connectMenu } from "react-contextmenu";
 
 import styles from "./HierarchyPanelContainer.scss";
-import { withProject } from "./ProjectContext";
 import { withEditor } from "./EditorContext";
 import "../vendor/react-ui-tree/index.scss";
 import "../vendor/react-contextmenu/index.scss";
@@ -14,6 +13,7 @@ import AddObjectCommand from "../editor/commands/AddObjectCommand";
 import MoveObjectCommand from "../editor/commands/MoveObjectCommand";
 import THREE from "../vendor/three";
 import SceneReferenceComponent from "../editor/components/SceneReferenceComponent";
+import { last } from "../utils";
 
 function createNodeHierarchy(object) {
   const node = {
@@ -35,8 +35,7 @@ function collectNodeMenuProps({ node }) {
 class HierarchyPanelContainer extends Component {
   static propTypes = {
     path: PropTypes.array,
-    editor: PropTypes.object,
-    project: PropTypes.object
+    editor: PropTypes.object
   };
 
   constructor(props) {
@@ -117,7 +116,7 @@ class HierarchyPanelContainer extends Component {
   };
 
   onEditPrefab = refComponent => {
-    this.props.editor.editScenePrefab(this.props.project.getUrl(refComponent.getProperty("src")));
+    this.props.editor.editScenePrefab(refComponent.getProperty("src"));
   };
 
   onDeleteSelected = () => {
@@ -158,7 +157,6 @@ class HierarchyPanelContainer extends Component {
   renderHierarchyNodeMenu = props => {
     const refComponent =
       props.trigger && this.props.editor.getComponent(props.trigger.object, SceneReferenceComponent.componentName);
-
     return (
       <ContextMenu id="hierarchy-node-menu">
         <MenuItem onClick={this.onAddNode}>Add Node</MenuItem>
@@ -171,19 +169,26 @@ class HierarchyPanelContainer extends Component {
 
   HierarchyNodeMenu = connectMenu("hierarchy-node-menu")(this.renderHierarchyNodeMenu);
 
+  popScene = () => {
+    this.props.editor.signals.popScene.dispatch();
+  };
+
   render() {
     return (
       <div className={styles.hierarchyRoot}>
-        {this.props.editor.breadCrumbs.map((breadCrumb, i) => (
-          <button
-            className={styles.breadCrumb}
-            disabled={i !== this.props.editor.breadCrumbs.length - 2}
-            onClick={this.props.editor.popBreadCrumb.bind(this.props.editor)}
-            key={breadCrumb.name}
-          >
-            {breadCrumb.name}
-          </button>
-        ))}
+        {this.props.editor.scenes.map((sceneInfo, i) => {
+          const name = sceneInfo.uri ? last(sceneInfo.uri.split("/")) : "...";
+          return (
+            <button
+              className={styles.breadCrumb}
+              disabled={i !== this.props.editor.scenes.length - 2}
+              onClick={this.popScene}
+              key={name}
+            >
+              {name}
+            </button>
+          );
+        })}
         <HotKeys handlers={this.state.hierarchyHotKeyHandlers}>
           <Tree
             paddingLeft={8}
@@ -200,4 +205,4 @@ class HierarchyPanelContainer extends Component {
   }
 }
 
-export default withProject(withEditor(HierarchyPanelContainer));
+export default withEditor(HierarchyPanelContainer);
