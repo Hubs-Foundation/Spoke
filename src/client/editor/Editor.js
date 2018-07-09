@@ -646,8 +646,10 @@ export default class Editor {
 
   _cloneAndInflate(object, root) {
     const clone = object.clone(false);
-    if (clone.userData._components) {
-      for (const component of clone.userData._components) {
+    if (object.userData._components) {
+      clone.userData._components = [];
+
+      for (const component of object.userData._components) {
         this.addComponent(clone, component.name, component.props);
       }
     }
