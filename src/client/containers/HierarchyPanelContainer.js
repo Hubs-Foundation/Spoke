@@ -12,6 +12,7 @@ import "../vendor/react-contextmenu/index.scss";
 import AddObjectCommand from "../editor/commands/AddObjectCommand";
 import MoveObjectCommand from "../editor/commands/MoveObjectCommand";
 import THREE from "../vendor/three";
+import SceneReferenceComponent from "../editor/components/SceneReferenceComponent";
 import { last } from "../utils";
 
 function createNodeHierarchy(object) {
@@ -155,7 +156,7 @@ class HierarchyPanelContainer extends Component {
 
   renderHierarchyNodeMenu = props => {
     const refComponent =
-      props.trigger && this.props.editor.components.get("scene-reference").getComponent(props.trigger.object);
+      props.trigger && this.props.editor.getComponent(props.trigger.object, SceneReferenceComponent.componentName);
     return (
       <ContextMenu id="hierarchy-node-menu">
         <MenuItem onClick={this.onAddNode}>Add Node</MenuItem>

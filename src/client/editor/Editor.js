@@ -251,7 +251,7 @@ export default class Editor {
     scene.userData._sceneReference = url;
 
     scene.traverse(child => {
-      Object.defineProperty(child.userData, "selectionRoot", { value: parent, enumerable: false });
+      Object.defineProperty(child.userData, "_selectionRoot", { value: parent, enumerable: false });
     });
 
     this.signals.objectAdded.dispatch(scene);
@@ -629,8 +629,10 @@ export default class Editor {
 
   _cloneAndInflate(object, root) {
     const clone = object.clone(false);
-    if (clone.userData._components) {
-      for (const component of clone.userData._components) {
+    if (object.userData._components) {
+      clone.userData._components = [];
+
+      for (const component of object.userData._components) {
         this.addComponent(clone, component.name, component.props);
       }
     }

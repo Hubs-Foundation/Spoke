@@ -60,7 +60,8 @@ class ViewportPanelContainer extends Component {
     return false;
   };
 
-  onDelete = () => {
+  onDelete = e => {
+    e.preventDefault();
     this.props.editor.deleteSelectedObject();
   };
 
