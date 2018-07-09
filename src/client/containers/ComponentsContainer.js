@@ -3,11 +3,11 @@ import PropTypes from "prop-types";
 import { withEditor } from "./EditorContext";
 import PropertyGroup from "../components/PropertyGroup";
 import InputGroup from "../components/InputGroup";
-import { gltfComponentTypeToReactComponent } from "../components/gltf-type-mappings";
-import { getDisplayName } from "../editor/gltf-components";
-import SetGLTFComponentPropertyCommand from "../editor/commands/SetGLTFComponentPropertyCommand";
+import { componentTypeToReactComponent } from "../components/component-type-mappings";
+import { getDisplayName } from "../editor/components";
+import SetComponentPropertyCommand from "../editor/commands/SetComponentPropertyCommand";
 
-class GLTFComponentsContainer extends Component {
+class ComponentsContainer extends Component {
   static propTypes = {
     editor: PropTypes.object,
     node: PropTypes.object.isRequired,
@@ -15,13 +15,13 @@ class GLTFComponentsContainer extends Component {
   };
 
   onChange = (componentName, propertyName, value) => {
-    this.props.editor.execute(new SetGLTFComponentPropertyCommand(this.props.node, componentName, propertyName, value));
+    this.props.editor.execute(new SetComponentPropertyCommand(this.props.node, componentName, propertyName, value));
   };
 
   render() {
     // Generate property groups for each component and property editors for each property.
     return this.props.components.map(component => {
-      const componentDefinition = this.props.editor.gltfComponents.get(component.name);
+      const componentDefinition = this.props.editor.components.get(component.name);
 
       if (componentDefinition === undefined) {
         return <PropertyGroup name={getDisplayName(component.name)} key={component.name} />;
@@ -31,7 +31,7 @@ class GLTFComponentsContainer extends Component {
         <PropertyGroup name={getDisplayName(component.name)} key={component.name}>
           {componentDefinition.schema.map(prop => (
             <InputGroup name={getDisplayName(prop.name)} key={prop.name}>
-              {gltfComponentTypeToReactComponent.get(prop.type)(
+              {componentTypeToReactComponent.get(prop.type)(
                 component.props[prop.name],
                 this.onChange.bind(null, component.name, prop.name)
               )}
@@ -43,4 +43,4 @@ class GLTFComponentsContainer extends Component {
   }
 }
 
-export default withEditor(GLTFComponentsContainer);
+export default withEditor(ComponentsContainer);

@@ -117,7 +117,7 @@ class HierarchyPanelContainer extends Component {
   };
 
   onEditPrefab = refComponent => {
-    this.props.editor.editScenePrefab(this.props.project.getUrl(refComponent.getProperty("src")));
+    this.props.editor.editScenePrefab(refComponent.getProperty("src"));
   };
 
   onDeleteSelected = () => {
@@ -157,7 +157,7 @@ class HierarchyPanelContainer extends Component {
 
   renderHierarchyNodeMenu = props => {
     const refComponent =
-      props.trigger && this.props.editor.gltfComponents.get("scene-ref").getComponent(props.trigger.object);
+      props.trigger && this.props.editor.components.get("scene-reference").getComponent(props.trigger.object);
     return (
       <ContextMenu id="hierarchy-node-menu">
         <MenuItem onClick={this.onAddNode}>Add Node</MenuItem>

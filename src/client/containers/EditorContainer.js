@@ -17,7 +17,6 @@ import PanelToolbar from "../components/PanelToolbar";
 import { withProject } from "./ProjectContext";
 import { withEditor } from "./EditorContext";
 import styles from "./EditorContainer.scss";
-import { loadSerializedScene, serializeScene } from "../editor/SceneLoader";
 
 class EditorContainer extends Component {
   static defaultProps = {
@@ -110,7 +109,10 @@ class EditorContainer extends Component {
     this.props.editor.signals.popScene.add(this.onPopScene);
     this.props.editor.signals.openScene.add(this.onOpenScene);
     this.props.editor.signals.sceneGraphChanged.add(this.onSceneChanged);
-    this.props.project.addListener("change", this.onFileChanged);
+    this.props.project.addListener("change", path => {
+      const url = new URL(path, window.location).href;
+      this.props.editor.signals.fileChanged.dispatch(url);
+    });
   }
 
   componentDidUpdate(prevProps) {
@@ -182,8 +184,7 @@ class EditorContainer extends Component {
 
   exportAndSaveScene = async sceneURI => {
     try {
-      const serializedScene = serializeScene(this.props.editor.scene, sceneURI);
-
+      const serializedScene = this.props.editor.serializeScene(sceneURI);
       await this.props.project.writeJSON(sceneURI, serializedScene);
 
       this.props.editor.setSceneURI(sceneURI);
@@ -228,25 +229,6 @@ class EditorContainer extends Component {
     document.title = `Hubs Editor - ${this.props.editor.scene.name}*`;
   };
 
-  onFileChanged = async path => {
-    if (path === this.state.gltfDependency) {
-      const url = new URL(this.props.editor.sceneURI, window.location);
-      const sceneDef = serializeScene(this.props.editor.scene, url.href);
-      const scene = await loadSerializedScene(sceneDef, url.href, this.props.editor.gltfComponents, true);
-
-      const gltfDependency = scene.userData._gltfDependency;
-
-      this.props.editor.signals.sceneGraphChanged.active = false;
-      this.props.editor.clear();
-      this.props.editor.signals.sceneGraphChanged.active = true;
-      this.props.editor.setScene(scene);
-
-      this.setState({
-        gltfDependency: gltfDependency ? new URL(gltfDependency).pathname : null
-      });
-    }
-  };
-
   confirmSceneChange = () => {
     return (
       !this.props.editor.sceneModified() ||
@@ -264,31 +246,16 @@ class EditorContainer extends Component {
     if (uriPath.pathname === uri) return;
     if (!this.confirmSceneChange()) return;
 
-    this.props.editor.signals.sceneGraphChanged.active = false;
-    this.props.editor.clear();
-    this.props.editor.signals.sceneGraphChanged.active = true;
-
     const url = new URL(uri, window.location);
 
     this.props.editor
       .openRootScene(url.href)
       .then(scene => {
-        const gltfDependency = scene.userData._gltfDependency;
-
-        this.setState({
-          gltfDependency: gltfDependency ? new URL(gltfDependency).pathname : null
-        });
+        document.title = `Hubs Editor - ${scene.name}`;
       })
       .catch(e => {
         console.error(e);
       });
-
-    // Set state after sceneGraphChanged signals have fired.
-    setTimeout(() => {
-      this.props.editor.signals.sceneGraphChanged.active = true;
-
-      document.title = `Hubs Editor - ${this.props.editor.scene.name}`;
-    }, 0);
   };
 
   renderPanel = (panelId, path) => {

@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
 import NodePropertyGroupContainer from "./NodePropertyGroupContainer";
-import GLTFComponentsContainer from "./GLTFComponentsContainer";
+import ComponentsContainer from "./ComponentsContainer";
 import styles from "./PropertiesPanelContainer.scss";
 import { withEditor } from "./EditorContext";
 
@@ -21,14 +21,14 @@ class PropertiesPanelContainer extends Component {
     this.props.editor.signals.objectSelected.add(node =>
       this.setState({
         node,
-        components: (node && node.userData._gltfComponents) || []
+        components: (node && node.userData._components) || []
       })
     );
 
     this.props.editor.signals.objectChanged.add(object => {
       if (this.state.node === object) {
         this.setState({
-          components: object.userData._gltfComponents || []
+          components: object.userData._components || []
         });
       }
     });
@@ -48,7 +48,7 @@ class PropertiesPanelContainer extends Component {
     return (
       <div className={styles.propertiesPanelContainer}>
         <NodePropertyGroupContainer node={node} />
-        <GLTFComponentsContainer node={node} components={this.state.components} />
+        <ComponentsContainer node={node} components={this.state.components} />
       </div>
     );
   }

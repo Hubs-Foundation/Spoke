@@ -6,21 +6,19 @@ import Command from "../Command";
  * @constructor
  */
 
-export default class AddGLTFComponentCommand extends Command {
+export default class AddComponentCommand extends Command {
   constructor(object, componentName) {
     super();
-    this.type = "AddGLTFComponentCommand";
+    this.type = "AddComponentCommand";
 
     this.object = object;
     this.componentName = componentName;
 
-    this.name = `Add ${object.name} GLTF Component to ${componentName}`;
+    this.name = `Add ${object.name} Component to ${componentName}`;
   }
 
   execute() {
-    const componentClass = this.editor.gltfComponents.get(this.componentName);
-    const component = componentClass.inflate(this.object);
-    component.shouldSave = true;
+    this.editor.addComponent(this.object, this.componentName);
     this.object.traverse(child => {
       this.editor.addHelper(child, this.object);
     });
@@ -28,8 +26,7 @@ export default class AddGLTFComponentCommand extends Command {
   }
 
   undo() {
-    const component = this.editor.gltfComponents.get(this.componentName);
-    component.deflate(this.object);
+    this.editor.removeComponent(this.object, this.componentName);
     this.editor.removeHelper(this.object);
     this.editor.signals.objectChanged.dispatch(this.object);
   }

@@ -7,12 +7,14 @@ import Storage from "./Storage";
 import Viewport from "./Viewport";
 import RemoveObjectCommand from "./commands/RemoveObjectCommand";
 import AddObjectCommand from "./commands/AddObjectCommand";
-import { loadScene } from "./SceneLoader";
+import { Components } from "./components";
+import SceneReferenceComponent from "./components/SceneReferenceComponent";
+import { loadScene, loadSerializedScene, serializeScene } from "./SceneLoader";
+import DirectionalLightComponent from "./components/DirectionalLightComponent";
 
 /**
  * @author mrdoob / http://mrdoob.com/
  */
-
 export default class Editor {
   constructor() {
     this.DEFAULT_CAMERA = new THREE.PerspectiveCamera(50, 1, 0.01, 1000);
@@ -85,7 +87,9 @@ export default class Editor {
 
       showGridChanged: new Signal(),
       refreshSidebarObject3D: new Signal(),
-      historyChanged: new Signal()
+      historyChanged: new Signal(),
+
+      fileChanged: new Signal()
     };
 
     this.history = new History(this);
@@ -124,17 +128,36 @@ export default class Editor {
     this.helpers = {};
 
     this.viewport = null;
-  }
 
-  onComponentsRegistered = () => {
-    this.gltfComponents.get("directional-light").inflate(this.scene);
-    this.scene.traverse(child => {
-      this.addHelper(child, this.scene);
-    });
-  };
+    this.components = new Map();
+
+    for (const componentClass of Components) {
+      this.registerComponent(componentClass);
+    }
+
+    this.fileDependencies = new Map();
+
+    this.initNewScene();
+
+    this.signals.fileChanged.add(this.onFileChanged);
+  }
 
   onWindowResize = () => {
     this.signals.windowResize.dispatch();
+  };
+
+  onFileChanged = url => {
+    const dependencies = this.fileDependencies.get(url);
+
+    if (dependencies) {
+      for (const dependency of dependencies) {
+        if (this.getComponent(dependency, SceneReferenceComponent.componentName)) {
+          this.loadSceneReference(url, dependency);
+        } else {
+          this.reloadScene();
+        }
+      }
+    }
   };
 
   setTheme(value) {
@@ -171,21 +194,13 @@ export default class Editor {
     sceneInfo.uri = uri;
   }
 
-  _loadAndSetScene(url) {
-    return loadScene(url, this.gltfComponents, true).then(scene => {
-      this.scenes.push({ uri: url, obj: scene });
-      this.setScene(scene);
-      return scene;
-    });
-  }
-
   editScenePrefab(url) {
-    this._loadAndSetScene(url);
+    this.loadScene(url);
   }
 
   openRootScene(url) {
     this.scenes = [];
-    return this._loadAndSetScene(url);
+    return this.loadScene(url);
   }
 
   setScene(scene) {
@@ -195,6 +210,87 @@ export default class Editor {
 
   sceneModified() {
     return last(this.scenes).modified;
+  }
+
+  initNewScene() {
+    this.addComponent(this.scene, DirectionalLightComponent.componentName);
+
+    this.scene.traverse(child => {
+      this.addHelper(child, this.scene);
+    });
+  }
+
+  async loadScene(url) {
+    // Remove existing gltf dependency
+    const prevDependencies = this.fileDependencies.get(this.scene.userData._url);
+
+    if (prevDependencies) {
+      prevDependencies.delete(this.scene);
+    }
+
+    const scene = await loadScene(url, this.addComponent, true);
+
+    this.scene.userData._url = url;
+    this.scenes.push({ uri: url, obj: scene });
+    this.setSceneURI(url);
+    this.setScene(scene);
+
+    // Add gltf dependency
+    const gltfDependencies = this.fileDependencies.get(url) || new Set();
+    gltfDependencies.add(this.scene);
+    this.fileDependencies.set(url, gltfDependencies);
+
+    return scene;
+  }
+
+  async loadSceneReference(url, parent) {
+    this.removeSceneRefDependency(parent);
+
+    const scene = await loadScene(url, this.addComponent, false);
+    scene.userData._dontShowInHierarchy = true;
+    scene.userData._sceneReference = url;
+
+    scene.traverse(child => {
+      Object.defineProperty(child.userData, "selectionRoot", { value: parent, enumerable: false });
+    });
+
+    this.signals.objectAdded.dispatch(scene);
+
+    parent.add(scene);
+    this.signals.sceneGraphChanged.dispatch();
+
+    // Add gltf dependency
+    const gltfDependencies = this.fileDependencies.get(url) || new Set();
+    gltfDependencies.add(parent);
+    this.fileDependencies.set(url, gltfDependencies);
+
+    return scene;
+  }
+
+  removeSceneRefDependency(object) {
+    const sceneRefComponent = this.getComponent(object, SceneReferenceComponent.componentName);
+
+    if (sceneRefComponent) {
+      const dependencies = this.fileDependencies.get(sceneRefComponent.getProperty("src"));
+
+      if (dependencies) {
+        dependencies.delete(object);
+      }
+    }
+  }
+
+  async reloadScene() {
+    const sceneURL = this.scene.userData._url;
+    const sceneDef = serializeScene(this.scene, sceneURL);
+    const scene = await loadSerializedScene(sceneDef, sceneURL, this.addComponent, true);
+
+    this.setScene(scene);
+
+    return scene;
+  }
+
+  serializeScene(sceneURL) {
+    return serializeScene(this.scene, sceneURL || this.scene.userData._url);
   }
 
   //
@@ -246,10 +342,9 @@ export default class Editor {
   removeObject(object) {
     if (object.parent === null) return; // avoid deleting the camera or scene
 
-    const scope = this;
-
-    object.traverse(function(child) {
-      scope.removeHelper(child);
+    object.traverse(child => {
+      this.removeHelper(child);
+      this.removeSceneRefDependency(child);
     });
 
     object.parent.remove(object);
@@ -292,18 +387,6 @@ export default class Editor {
         reject(e);
       }
     });
-  }
-
-  //
-
-  gltfComponents = new Map();
-
-  registerGLTFComponent(componentClass) {
-    const { componentName } = componentClass;
-    if (this.gltfComponents.has(componentName)) {
-      throw new Error(`${componentName} already registered`);
-    }
-    this.gltfComponents.set(componentName, componentClass);
   }
 
   //
@@ -380,6 +463,98 @@ export default class Editor {
     this.signals.scriptRemoved.dispatch(script);
   }
 
+  //
+
+  registerComponent(componentClass) {
+    const { componentName } = componentClass;
+
+    if (this.components.has(componentName)) {
+      throw new Error(`${componentName} already registered`);
+    }
+
+    this.components.set(componentName, componentClass);
+  }
+
+  addComponent = (object, componentName, props, skipSave) => {
+    let component;
+
+    if (this.components.has(componentName)) {
+      component = this.components.get(componentName).inflate(object, props);
+
+      if (componentName === SceneReferenceComponent.componentName && props.src) {
+        this.loadSceneReference(props.src, object);
+      }
+    } else {
+      component = {
+        name: componentName,
+        props
+      };
+
+      if (object.userData._components === undefined) {
+        object.userData._components = [];
+      }
+
+      object.userData._components.push(component);
+    }
+
+    component.shouldSave = !skipSave;
+
+    return component;
+  };
+
+  removeComponent(object, componentName) {
+    if (this.components.has(componentName)) {
+      if (componentName === SceneReferenceComponent.componentName) {
+        this.removeSceneRefDependency(object);
+      }
+
+      this.components.get(componentName).deflate(object);
+    } else {
+      if (object.userData._components === undefined) {
+        return;
+      }
+
+      const index = object.userData._components.findIndex(({ name }) => name === componentName);
+      object.userData._components.splice(index, 1);
+    }
+  }
+
+  getComponent(object, componentName) {
+    if (this.components.has(componentName)) {
+      return this.components.get(componentName).getComponent(object);
+    } else {
+      return object.userData._components.find(({ name }) => name === componentName);
+    }
+  }
+
+  getComponentProperty(object, componentName, propertyName) {
+    if (this.components.has(componentName)) {
+      return this.getComponent(object, componentName).getProperty(propertyName);
+    } else {
+      return this.getComponent(object, componentName)[propertyName];
+    }
+  }
+
+  updateComponentProperty(object, componentName, propertyName, value) {
+    const component = this.getComponent(object, componentName);
+
+    let result;
+
+    if (this.components.has(componentName)) {
+      result = component.updateProperty(propertyName, value);
+
+      if (componentName === SceneReferenceComponent.componentName && propertyName === "src") {
+        this.loadSceneReference(value, object);
+      }
+    } else {
+      result = component[propertyName] = value;
+    }
+
+    return result;
+  }
+
+  //
+
   getObjectMaterial(object, slot) {
     let material = object.material;
 
@@ -454,14 +629,9 @@ export default class Editor {
 
   _cloneAndInflate(object, root) {
     const clone = object.clone(false);
-    if (clone.userData._gltfComponents) {
-      const components = clone.userData._gltfComponents;
-      clone.userData._gltfComponents = null;
-      for (const component of components) {
-        const componentClass = this.gltfComponents.get(component.name);
-        if (componentClass) {
-          componentClass.inflate(clone, component.props);
-        }
+    if (clone.userData._components) {
+      for (const component of clone.userData._components) {
+        this.addComponent(clone, component.name, component.props);
       }
     }
     if (!root) root = clone;

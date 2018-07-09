@@ -1,4 +1,5 @@
 import THREE from "../vendor/three";
+import SceneReferenceComponent from "./components/SceneReferenceComponent";
 
 function loadGLTF(url) {
   return new Promise((resolve, reject) => {
@@ -20,19 +21,17 @@ function loadGLTF(url) {
   });
 }
 
-function inflateGLTFComponents(scene, components) {
+function inflateGLTFComponents(scene, addComponent) {
   scene.traverse(object => {
     const extensions = object.userData.gltfExtensions;
     if (extensions !== undefined) {
       for (const extensionName in extensions) {
-        if (components.has(extensionName)) {
-          components.get(extensionName).inflate(object, extensions[extensionName]);
-        }
+        addComponent(object, extensionName, extensions[extensionName], true);
       }
     }
 
     if (object instanceof THREE.Mesh && object.material instanceof THREE.MeshStandardMaterial) {
-      components.get("standard-material").inflate(object);
+      addComponent(object, "standard-material", undefined, true);
     }
   });
 }
@@ -106,117 +105,19 @@ function sortEntities(entitiesObj) {
   return sortedEntityNames;
 }
 
-export async function loadSerializedScene(sceneDef, baseURL, components, isRoot = true) {
-  let scene;
+function resolveRelativeURLs(entities, absoluteSceneURL) {
+  for (const entityId in entities) {
+    const entity = entities[entityId];
+    const entityComponents = entity.components;
 
-  const { inherits, root, entities } = sceneDef;
-
-  if (inherits) {
-    const inheritedSceneURL = new URL(inherits, baseURL);
-    // eslint-disable-next-line
-    scene = await loadScene(inheritedSceneURL.href, components, false);
-
-    if (isRoot) {
-      scene.userData._inherits = inherits;
-    }
-  } else if (root) {
-    scene = new THREE.Scene();
-    scene.name = root;
-  } else {
-    throw new Error("Invalid Scene: Scene does not inherit from another scene or have a root entity.");
-  }
-
-  if (entities) {
-    // Sort entities by insertion order (uses parent and index to determine order).
-    const sortedEntities = sortEntities(entities);
-
-    for (const entityName of sortedEntities) {
-      const entity = entities[entityName];
-
-      // Find or create the entity's Object3D
-      let entityObj = scene.getObjectByName(entityName);
-
-      if (entityObj === undefined) {
-        entityObj = new THREE.Object3D();
-        entityObj.name = entityName;
-      }
-
-      // Entities defined in the root scene should be saved.
-      if (isRoot) {
-        entityObj.userData._saveEntity = true;
-      }
-
-      // Attach the entity to its parent.
-      // An entity doesn't have a parent defined if the entity is loaded in an inherited scene.
-      if (entity.parent) {
-        const parentObject = scene.getObjectByName(entity.parent);
-        addChildAtIndex(parentObject, entityObj, entity.index);
-
-        // Parents defined in the root scene should be saved.
-        if (isRoot) {
-          entityObj.userData._saveParent = true;
-        }
-      }
-
-      // Inflate the entity's components.
-      if (Array.isArray(entity.components)) {
-        for (const componentDef of entity.components) {
-          let component;
-
-          if (components.has(componentDef.name)) {
-            component = components.get(componentDef.name).inflate(entityObj, componentDef.props);
-          } else {
-            component = {
-              name: componentDef.name,
-              props: componentDef.props
-            };
-
-            if (entityObj.userData._gltfComponents === undefined) {
-              entityObj.userData._gltfComponents = [];
-            }
-
-            entityObj.userData._gltfComponents.push(component);
-          }
-
-          // Components defined in the root scene should be saved.
-          if (isRoot) {
-            component.shouldSave = true;
-          }
+    if (entityComponents) {
+      for (const component of entityComponents) {
+        if (component.name === SceneReferenceComponent.componentName) {
+          component.props.src = new URL(component.props.src, absoluteSceneURL).href;
         }
       }
     }
   }
-
-  return scene;
-}
-
-export async function loadScene(url, components, isRoot = true) {
-  let scene;
-
-  if (url.endsWith(".gltf")) {
-    scene = await loadGLTF(url);
-
-    if (isRoot) {
-      scene.userData._inherits = url;
-    }
-
-    if (!scene.name) {
-      scene.name = "Scene";
-    }
-
-    scene.userData._gltfDependency = url;
-
-    inflateGLTFComponents(scene, components);
-
-    return scene;
-  }
-
-  const sceneResponse = await fetch(url);
-  const sceneDef = await sceneResponse.json();
-
-  scene = await loadSerializedScene(sceneDef, url, components, isRoot);
-
-  return scene;
 }
 
 export function absoluteToRelativeURL(from, to) {
@@ -253,6 +154,117 @@ export function absoluteToRelativeURL(from, to) {
   return to;
 }
 
+function convertAbsoluteURLs(entities, sceneURL) {
+  for (const entityId in entities) {
+    const entity = entities[entityId];
+    const entityComponents = entity.components;
+
+    if (entityComponents) {
+      for (const component of entityComponents) {
+        if (component.name === SceneReferenceComponent.componentName) {
+          component.props.src = absoluteToRelativeURL(sceneURL, component.props.src);
+        }
+      }
+    }
+  }
+}
+
+export async function loadSerializedScene(sceneDef, baseURL, addComponent, isRoot = true) {
+  let scene;
+
+  const { inherits, root, entities } = sceneDef;
+
+  if (inherits) {
+    const inheritedSceneURL = new URL(inherits, baseURL);
+    // eslint-disable-next-line
+    scene = await loadScene(inheritedSceneURL.href, addComponent, false);
+
+    if (isRoot) {
+      scene.userData._inherits = inherits;
+    }
+  } else if (root) {
+    scene = new THREE.Scene();
+    scene.name = root;
+  } else {
+    throw new Error("Invalid Scene: Scene does not inherit from another scene or have a root entity.");
+  }
+
+  if (entities) {
+    // Convert any relative URLs in the scene to absolute URLs so that other code does not need to know about the scene path.
+    resolveRelativeURLs(entities, baseURL);
+
+    // Sort entities by insertion order (uses parent and index to determine order).
+    const sortedEntities = sortEntities(entities);
+
+    for (const entityName of sortedEntities) {
+      const entity = entities[entityName];
+
+      // Find or create the entity's Object3D
+      let entityObj = scene.getObjectByName(entityName);
+
+      if (entityObj === undefined) {
+        entityObj = new THREE.Object3D();
+        entityObj.name = entityName;
+      }
+
+      // Entities defined in the root scene should be saved.
+      if (isRoot) {
+        entityObj.userData._saveEntity = true;
+      }
+
+      // Attach the entity to its parent.
+      // An entity doesn't have a parent defined if the entity is loaded in an inherited scene.
+      if (entity.parent) {
+        const parentObject = scene.getObjectByName(entity.parent);
+        addChildAtIndex(parentObject, entityObj, entity.index);
+
+        // Parents defined in the root scene should be saved.
+        if (isRoot) {
+          entityObj.userData._saveParent = true;
+        }
+      }
+
+      // Inflate the entity's components.
+      if (Array.isArray(entity.components)) {
+        for (const componentDef of entity.components) {
+          addComponent(entityObj, componentDef.name, componentDef.props, !isRoot);
+        }
+      }
+    }
+  }
+
+  return scene;
+}
+
+export async function loadScene(url, addComponent, isRoot = true) {
+  let scene;
+
+  if (url.endsWith(".gltf")) {
+    scene = await loadGLTF(url);
+
+    if (isRoot) {
+      scene.userData._inherits = url;
+    }
+
+    if (!scene.name) {
+      scene.name = "Scene";
+    }
+
+    scene.userData._gltfDependency = url;
+
+    inflateGLTFComponents(scene, addComponent);
+
+    return scene;
+  }
+
+  const sceneResponse = await fetch(url);
+  const sceneDef = await sceneResponse.json();
+
+  scene = await loadSerializedScene(sceneDef, url, addComponent, isRoot);
+
+  return scene;
+}
+
 export function serializeScene(scene, scenePath) {
   const entities = {};
 
@@ -275,10 +287,10 @@ export function serializeScene(scene, scenePath) {
     }
 
     // Serialize all components with shouldSave set.
-    const gltfComponents = entityObject.userData._gltfComponents;
+    const entityComponents = entityObject.userData._components;
 
-    if (Array.isArray(gltfComponents)) {
-      for (const component of gltfComponents) {
+    if (Array.isArray(entityComponents)) {
+      for (const component of entityComponents) {
         if (component.shouldSave) {
           if (components === undefined) {
             components = [];
@@ -302,6 +314,8 @@ export function serializeScene(scene, scenePath) {
       };
     }
   });
+
+  convertAbsoluteURLs(entities, scenePath);
 
   const serializedScene = {
     entities

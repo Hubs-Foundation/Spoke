@@ -7,7 +7,7 @@
       "index": 0,
       "components": [
         {
-          "name": "scene-ref",
+          "name": "scene-reference",
           "props": {
             "src": "./MetalWall.scene"
           }
@@ -25,7 +25,7 @@
       "index": 1,
       "components": [
         {
-          "name": "scene-ref",
+          "name": "scene-reference",
           "props": {
             "src": "./MetalWall.scene"
           }

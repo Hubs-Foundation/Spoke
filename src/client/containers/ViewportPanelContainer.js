@@ -35,8 +35,11 @@ class ViewportPanelContainer extends Component {
   onDropFile = file => {
     if (file.ext === ".gltf" || file.ext === ".scene") {
       const object = new THREE.Object3D();
-      // TODO: add scene-ref component
+      object.name = file.name;
       this.props.editor.addObject(object);
+      this.props.editor.addComponent(object, "scene-reference", {
+        src: file.uri
+      });
     }
   };
 
