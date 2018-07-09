@@ -7,7 +7,6 @@ import { ContextMenu, MenuItem, ContextMenuTrigger, connectMenu } from "react-co
 import last from "lodash.last";
 
 import styles from "./HierarchyPanelContainer.scss";
-import { withProject } from "./ProjectContext";
 import { withEditor } from "./EditorContext";
 import "../vendor/react-ui-tree/index.scss";
 import "../vendor/react-contextmenu/index.scss";
@@ -36,7 +35,6 @@ class HierarchyPanelContainer extends Component {
   static propTypes = {
     path: PropTypes.array,
     editor: PropTypes.object,
-    project: PropTypes.object
   };
 
   constructor(props) {
@@ -206,4 +204,4 @@ class HierarchyPanelContainer extends Component {
   }
 }
 
-export default withProject(withEditor(HierarchyPanelContainer));
+export default withEditor(HierarchyPanelContainer);
