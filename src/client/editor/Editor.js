@@ -1,5 +1,4 @@
 import signals from "signals";
-import last from "lodash.last";
 
 import THREE from "../vendor/three";
 import History from "./History";
@@ -11,6 +10,7 @@ import { Components } from "./components";
 import SceneReferenceComponent from "./components/SceneReferenceComponent";
 import { loadScene, loadSerializedScene, serializeScene } from "./SceneLoader";
 import DirectionalLightComponent from "./components/DirectionalLightComponent";
+import { last } from "../utils";
 
 /**
  * @author mrdoob / http://mrdoob.com/

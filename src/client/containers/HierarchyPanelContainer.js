@@ -4,7 +4,6 @@ import { HotKeys } from "react-hotkeys";
 import Tree from "@robertlong/react-ui-tree";
 import classNames from "classnames";
 import { ContextMenu, MenuItem, ContextMenuTrigger, connectMenu } from "react-contextmenu";
-import last from "lodash.last";
 
 import styles from "./HierarchyPanelContainer.scss";
 import { withEditor } from "./EditorContext";
@@ -13,6 +12,7 @@ import "../vendor/react-contextmenu/index.scss";
 import AddObjectCommand from "../editor/commands/AddObjectCommand";
 import MoveObjectCommand from "../editor/commands/MoveObjectCommand";
 import THREE from "../vendor/three";
+import { last } from "../utils";
 
 function createNodeHierarchy(object) {
   const node = {
@@ -34,7 +34,7 @@ function collectNodeMenuProps({ node }) {
 class HierarchyPanelContainer extends Component {
   static propTypes = {
     path: PropTypes.array,
-    editor: PropTypes.object,
+    editor: PropTypes.object
   };
 
   constructor(props) {

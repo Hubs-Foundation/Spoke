@@ -4,7 +4,6 @@ import { DragDropContextProvider } from "react-dnd";
 import HTML5Backend from "react-dnd-html5-backend";
 import { MosaicWindow } from "react-mosaic-component";
 import { HotKeys } from "react-hotkeys";
-import last from "lodash.last";
 
 import Editor from "../components/Editor";
 import FileDialogModalContainer from "./FileDialogModalContainer";
@@ -17,6 +16,7 @@ import PanelToolbar from "../components/PanelToolbar";
 import { withProject } from "./ProjectContext";
 import { withEditor } from "./EditorContext";
 import styles from "./EditorContainer.scss";
+import { last } from "../utils";
 
 class EditorContainer extends Component {
   static defaultProps = {
