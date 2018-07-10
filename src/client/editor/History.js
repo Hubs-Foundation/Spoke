@@ -18,18 +18,6 @@ export default class History {
     //Set editor-reference in Command
 
     Command.editor = editor;
-
-    // signals
-
-    const scope = this;
-
-    this.editor.signals.startPlayer.add(function() {
-      scope.historyDisabled = true;
-    });
-
-    this.editor.signals.stopPlayer.add(function() {
-      scope.historyDisabled = false;
-    });
   }
 
   execute(cmd, optionalName) {
@@ -42,15 +30,9 @@ export default class History {
       cmd.updatable &&
       lastCmd.object === cmd.object &&
       lastCmd.type === cmd.type &&
-      lastCmd.script === cmd.script &&
       lastCmd.attributeName === cmd.attributeName;
 
-    if (isUpdatableCmd && cmd.type === "SetScriptValueCommand") {
-      // When the cmd.type is "SetScriptValueCommand" the timeDifference is ignored
-
-      lastCmd.update(cmd);
-      cmd = lastCmd;
-    } else if (isUpdatableCmd && timeDifference < 500) {
+    if (isUpdatableCmd && timeDifference < 500) {
       lastCmd.update(cmd);
       cmd = lastCmd;
     } else {

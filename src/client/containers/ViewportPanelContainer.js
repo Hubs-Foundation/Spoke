@@ -29,7 +29,7 @@ class ViewportPanelContainer extends Component {
   }
 
   componentDidMount() {
-    this.props.editor.createRenderer(this.canvasRef.current);
+    this.props.editor.createViewport(this.canvasRef.current);
   }
 
   onDropFile = file => {
