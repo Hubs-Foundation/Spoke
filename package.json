@@ -4,6 +4,12 @@
   "version": "0.1.0",
   "bin": "bin/hubs-editor",
   "main": "lib/server/index.js",
+  "files": [
+    "bin/",
+    "lib/",
+    "public/",
+    "LICENSE"
+  ],
   "scripts": {
     "dev": "cross-env NODE_ENV=development node ./bin/hubs-editor ./example",
     "build": "concurrently \"npm run build:server\" \"npm run build:client\"",
