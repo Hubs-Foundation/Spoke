@@ -180,7 +180,7 @@ export default class History {
         cmd = this.redo();
       }
     } else {
-      // eslint-disable-next-line
+      // eslint-disable-next-line no-constant-condition
       while (true) {
         cmd = this.undos[this.undos.length - 1]; // next cmd to pop
 

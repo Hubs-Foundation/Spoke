@@ -176,7 +176,7 @@ export async function loadSerializedScene(sceneDef, baseURL, addComponent, isRoo
 
   if (inherits) {
     const inheritedSceneURL = new URL(inherits, baseURL);
-    // eslint-disable-next-line
+    // eslint-disable-next-line no-use-before-define
     scene = await loadScene(inheritedSceneURL.href, addComponent, false);
 
     if (isRoot) {

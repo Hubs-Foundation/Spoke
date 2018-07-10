@@ -176,7 +176,7 @@ class FileDialogContainer extends Component {
     const folderName = this.state.newFolderName;
     const directoryURI = this.state.selectedDirectory || this.state.tree.uri;
 
-    // eslint-disable-next-line
+    // eslint-disable-next-line no-useless-escape
     if (!/^[0-9a-zA-Z\^\&\'\@\{\}\[\]\,\$\=\!\-\#\(\)\.\%\+\~\_ ]+$/.test(folderName)) {
       alert('Invalid folder name. The following characters are not allowed:  / : * ? " < > |');
       return;
@@ -205,7 +205,7 @@ class FileDialogContainer extends Component {
     } else {
       let fileName = this.state.fileName;
 
-      // eslint-disable-next-line
+      // eslint-disable-next-line no-useless-escape
       if (!/^[0-9a-zA-Z\^\&\'\@\{\}\[\]\,\$\=\!\-\#\(\)\.\%\+\~\_ ]+$/.test(fileName)) {
         alert('Invalid file name. The following characters are not allowed:  / : * ? " < > |');
         return;
