@@ -9,10 +9,10 @@ import { MosaicWithoutDragDropContext } from "react-mosaic-component";
 import MenuBarContainer from "./MenuBarContainer";
 import FileDialogModalContainer from "./FileDialogModalContainer";
 import ViewportPanelContainer from "./ViewportPanelContainer";
+import ViewportPanelToolbarContainer from "./ViewportPanelToolbarContainer";
 import HierarchyPanelContainer from "./HierarchyPanelContainer";
 import PropertiesPanelContainer from "./PropertiesPanelContainer";
 import AssetExplorerPanelContainer from "./AssetExplorerPanelContainer";
-import ViewportToolbarContainer from "./ViewportToolbarContainer";
 import PanelToolbar from "../components/PanelToolbar";
 import { withProject } from "./ProjectContext";
 import { withEditor } from "./EditorContext";
@@ -63,7 +63,7 @@ class EditorContainer extends Component {
           component: ViewportPanelContainer,
           windowProps: {
             title: "Viewport",
-            toolbarControls: ViewportToolbarContainer(),
+            toolbarControls: ViewportPanelToolbarContainer(),
             draggable: true
           }
         },

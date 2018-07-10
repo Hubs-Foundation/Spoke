@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import { withEditor } from "./EditorContext";
 import styles from "./ViewportToolbarContainer.scss";
 
-class ViewportToolbarContainer extends Component {
+class ViewportPanelToolbarContainer extends Component {
   static propTypes = {
     editor: PropTypes.object
   };
@@ -39,4 +39,4 @@ class ViewportToolbarContainer extends Component {
   }
 }
 
-export default withEditor(ViewportToolbarContainer);
+export default withEditor(ViewportPanelToolbarContainer);
