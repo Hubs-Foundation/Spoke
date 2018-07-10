@@ -101,15 +101,15 @@ class EditorContainer extends Component {
           items: [
             {
               name: "New Scene",
-              action: () => console.log("New Scene")
+              action: e => this.onNewScene(e)
             },
             {
               name: "Save Scene",
-              action: () => console.log("Save Scene")
+              action: e => this.onSave(e)
             },
             {
               name: "Save Scene As...",
-              action: () => console.log("Save Scene As...")
+              action: e => this.onSaveAs(e)
             },
             {
               name: "Export Scene...",
@@ -280,6 +280,13 @@ class EditorContainer extends Component {
   onPopScene = () => {
     if (!this.confirmSceneChange()) return;
     this.props.editor.popScene();
+  };
+
+  onNewScene = () => {
+    if (!this.confirmSceneChange()) return;
+
+    const scene = this.props.editor.loadNewScene();
+    document.title = `Hubs Editor - ${scene.name}`;
   };
 
   onOpenScene = uri => {

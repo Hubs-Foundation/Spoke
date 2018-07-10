@@ -167,6 +167,36 @@ export default class Editor {
     this.loadScene(url);
   }
 
+  loadNewScene() {
+    // Remove existing gltf dependency
+    const prevDependencies = this.fileDependencies.get(this.scene.userData._url);
+
+    if (prevDependencies) {
+      prevDependencies.delete(this.scene);
+    }
+
+    this.helperScene = new THREE.Scene();
+    this.helpers = {};
+    this.objects = [];
+
+    const scene = new THREE.Scene();
+    scene.name = "Scene";
+
+    this.setSceneDefaults(scene, true);
+
+    this.sceneInfo = {
+      uri: null,
+      scene: scene,
+      helperScene: this.helperScene,
+      helpers: this.helpers,
+      objects: this.objects
+    };
+    this.scenes = [this.sceneInfo];
+    this._setScene(scene);
+
+    return scene;
+  }
+
   openRootScene(url) {
     this.scenes = [];
     return this.loadScene(url);
