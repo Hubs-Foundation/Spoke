@@ -73,7 +73,7 @@ class NodePropertyGroupContainer extends Component {
     }
 
     return (
-      <PropertyGroup name="Node">
+      <PropertyGroup name="Node" removable={false}>
         <InputGroup name="Name">
           <StringInput value={name} onChange={this.updateName} />
         </InputGroup>

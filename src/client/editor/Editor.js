@@ -202,6 +202,8 @@ export default class Editor {
       prevDependencies.delete(this.scene);
     }
 
+    // Have to set these objects before loading the scene since Viewport will manipulate them
+    // as it receives signals while the scene is loading.
     this.helperScene = new THREE.Scene();
     this.helpers = {};
     this.objects = [];
