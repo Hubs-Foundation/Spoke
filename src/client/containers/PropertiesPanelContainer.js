@@ -17,22 +17,35 @@ class PropertiesPanelContainer extends Component {
       node: null,
       components: []
     };
-
-    this.props.editor.signals.objectSelected.add(node =>
-      this.setState({
-        node,
-        components: (node && node.userData._components) || []
-      })
-    );
-
-    this.props.editor.signals.objectChanged.add(object => {
-      if (this.state.node === object) {
-        this.setState({
-          components: object.userData._components || []
-        });
-      }
-    });
   }
+
+  componentDidMount() {
+    this.props.editor.signals.objectSelected.add(this.onObjectSelected);
+    this.props.editor.signals.transformChanged.add(this.onNodeChanged);
+    this.props.editor.signals.objectChanged.add(this.onNodeChanged);
+  }
+
+  componentWillUnmount() {
+    this.props.editor.signals.objectSelected.remove(this.onObjectSelected);
+    this.props.editor.signals.transformChanged.remove(this.onNodeChanged);
+    this.props.editor.signals.objectChanged.remove(this.onNodeChanged);
+  }
+
+  onObjectSelected = object => {
+    this.setState({
+      node: object,
+      components: (object && object.userData._components) || []
+    });
+  };
+
+  onNodeChanged = object => {
+    if (this.state.node === object) {
+      this.setState({
+        node: object,
+        components: object.userData._components || []
+      });
+    }
+  };
 
   render() {
     const { node } = this.state;
