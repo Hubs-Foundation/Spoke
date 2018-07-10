@@ -421,7 +421,7 @@ export default class Editor {
     if (this.components.has(componentName)) {
       component = this.components.get(componentName).inflate(object, props);
 
-      if (componentName === SceneReferenceComponent.componentName && props.src) {
+      if (componentName === SceneReferenceComponent.componentName && props && props.src) {
         this.loadSceneReference(props.src, object);
       }
     } else {
