@@ -1,7 +1,16 @@
 #!/usr/bin/env node
 const commander = require("commander");
-const path = require("path");
+const opn = require("opn");
 const pkg = require("../package.json");
+
+commander.version(pkg.version);
+
+commander.usage("[options] <projectDir>");
+
+commander.option("-o, --open", "Open browser");
+commander.option("-p, --port <port>", "Web server port. Defaults to 8080", 8080);
+
+commander.parse(process.argv);
 
 let startServer;
 
@@ -12,23 +21,22 @@ if (process.env.NODE_ENV === "development") {
   startServer = require("../lib/server/index");
 }
 
-commander.version(pkg.version);
-
-commander.usage("[options] <projectDir>");
-
-commander.parse(process.argv);
-
 const projectPath = commander.args.length > 0 ? commander.args[0] : process.cwd();
 
 console.log(`Starting ${pkg.name} server...`);
 console.log(`Serving project directory: ${projectPath}`);
 
 startServer({
-  projectPath
+  projectPath,
+  port: commander.port
 })
   .then(() => {
-    console.log(`Server listening on port ${commander.port || 8080}`);
+    console.log(`Server listening on port ${commander.port}`);
+
+    if (commander.open) {
+      opn(`http://localhost:${commander.port}`);
+    }
   })
-  .catch(e => {
-    throw e;
+  .catch(error => {
+    console.error(error);
   });
