@@ -48,22 +48,4 @@ export default class SetPositionCommand extends Command {
   update(command) {
     this.newPosition.copy(command.newPosition);
   }
-
-  toJSON() {
-    const output = super.toJSON();
-
-    output.objectUuid = this.object.uuid;
-    output.oldPosition = this.oldPosition.toArray();
-    output.newPosition = this.newPosition.toArray();
-
-    return output;
-  }
-
-  fromJSON(json) {
-    super.fromJSON(json);
-
-    this.object = this.editor.objectByUuid(json.objectUuid);
-    this.oldPosition = new THREE.Vector3().fromArray(json.oldPosition);
-    this.newPosition = new THREE.Vector3().fromArray(json.newPosition);
-  }
 }
