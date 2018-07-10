@@ -68,25 +68,20 @@ export default class MenuBarContainer extends Component {
     }
   };
 
-  buildMenu = menu => {
-    return {
+  render() {
+    const menus = this.props.menus.map(menu => ({
       name: menu.name,
       open: this.state.openMenu === menu.name,
-      items: menu.items ? menu.items.map(this.buildMenuItem) : [],
+      items: menu.items
+        ? menu.items.map(menuItem => ({
+            name: menuItem.name,
+            onClick: e => this.onClickMenuItem(e, menuItem)
+          }))
+        : [],
       onMouseOver: e => this.onMouseOverMenu(e, menu),
       onClick: e => this.onClickMenu(e, menu)
-    };
-  };
+    }));
 
-  buildMenuItem = menuItem => {
-    return {
-      name: menuItem.name,
-      onClick: e => this.onClickMenuItem(e, menuItem)
-    };
-  };
-
-  render() {
-    const menus = this.props.menus.map(this.buildMenu);
     return <MenuBar ref={this.menuBarRef} menus={menus} />;
   }
 }
