@@ -12,7 +12,8 @@ export default class Viewport {
     const signals = editor.signals;
 
     const renderer = new THREE.WebGLRenderer({
-      canvas
+      canvas,
+      antialias: true
     });
 
     renderer.shadowMap.enabled = true;

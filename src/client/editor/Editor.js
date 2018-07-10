@@ -9,6 +9,7 @@ import { Components } from "./components";
 import SceneReferenceComponent from "./components/SceneReferenceComponent";
 import { loadScene, loadSerializedScene, serializeScene } from "./SceneLoader";
 import DirectionalLightComponent from "./components/DirectionalLightComponent";
+import AmbientLightComponent from "./components/AmbientLightComponent";
 import { last } from "../utils";
 
 /**
@@ -175,6 +176,7 @@ export default class Editor {
   }
 
   initNewScene() {
+    this.addComponent(this.scene, AmbientLightComponent.componentName);
     this.addComponent(this.scene, DirectionalLightComponent.componentName);
 
     this.scene.traverse(child => {
