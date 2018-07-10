@@ -1,6 +1,6 @@
 import ReactDOM from "react-dom";
 import React from "react";
-import EditorContainer from "./containers/EditorContainer";
+import EditorContainer from "./ui/EditorContainer";
 import "./global.scss";
 
 const rootEl = document.createElement("div");

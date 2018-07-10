@@ -1,19 +1,19 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
 import Tree from "@robertlong/react-ui-tree";
-import "../vendor/react-ui-tree/index.scss";
+import "../../vendor/react-ui-tree/index.scss";
 import classNames from "classnames";
-import { withProject } from "./ProjectContext";
-import IconGrid from "../components/IconGrid";
+import { withProject } from "../contexts/ProjectContext";
+import IconGrid from "../IconGrid";
 import styles from "./FileDialogModalContainer.scss";
-import DraggableFile from "../components/DraggableFile";
+import DraggableFile from "../DraggableFile";
 import { ContextMenu, MenuItem, ContextMenuTrigger } from "react-contextmenu";
-import Button from "../components/Button";
-import StringInput from "../components/StringInput";
-import Header from "../components/Header";
-import Icon from "../components/Icon";
-import iconStyles from "../components/Icon.scss";
-import folderIcon from "../assets/folder-icon.svg";
+import Button from "../Button";
+import StringInput from "../inputs/StringInput";
+import Header from "../Header";
+import Icon from "../Icon";
+import iconStyles from "../Icon.scss";
+import folderIcon from "../../assets/folder-icon.svg";
 
 function collectFileMenuProps({ file }) {
   return file;

@@ -1,7 +1,7 @@
 import React, { Component } from "react";
-import Header from "../components/Header";
-import NativeFileInput from "../components/NativeFileInput";
-import { withProject } from "./ProjectContext";
+import Header from "../Header";
+import NativeFileInput from "../inputs/NativeFileInput";
+import { withProject } from "../contexts/ProjectContext";
 import PropTypes from "prop-types";
 
 class ExportModalContainer extends Component {

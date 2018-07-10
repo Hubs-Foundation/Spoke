@@ -12,3 +12,17 @@
   justify-content: center;
   align-items: center;
 }
+
+:local(.addComponentContainer) {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  margin-top: 16px !important;
+}
+
+:local(.addComponentSelect) {
+  display: flex;
+  flex: 1;
+  margin-right: 8px;
+  max-width: 300px;
+}

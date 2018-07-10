@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
-import MenuBar from "../components/MenuBar";
+import MenuBar from "./MenuBar";
 
 export default class MenuBarContainer extends Component {
   static propTypes = {

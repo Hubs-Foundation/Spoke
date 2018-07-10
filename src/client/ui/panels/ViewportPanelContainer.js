@@ -2,10 +2,10 @@ import React, { Component } from "react";
 import PropTypes from "prop-types";
 import { HotKeys } from "react-hotkeys";
 
-import Viewport from "../components/Viewport";
-import { withEditor } from "./EditorContext";
+import Viewport from "../Viewport";
+import { withEditor } from "../contexts/EditorContext";
 import styles from "./ViewportPanelContainer.scss";
-import FileDropTarget from "../components/FileDropTarget";
+import FileDropTarget from "../FileDropTarget";
 
 class ViewportPanelContainer extends Component {
   static propTypes = {
