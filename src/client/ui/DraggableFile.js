@@ -1,11 +1,11 @@
 import React from "react";
 import PropTypes from "prop-types";
 import { DragSource } from "react-dnd";
-import Icon from "../components/Icon";
+import Icon from "./Icon";
 import fileIcon from "../assets/file-icon.svg";
 import folderIcon from "../assets/folder-icon.svg";
 import styles from "./DraggableFile.scss";
-import iconStyles from "../components/Icon.scss";
+import iconStyles from "./Icon.scss";
 
 function DraggableFile({ file, selected, onClick, connectDragSource }) {
   return connectDragSource(
