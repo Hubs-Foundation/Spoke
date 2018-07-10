@@ -2,7 +2,7 @@ import React from "react";
 import PropTypes from "prop-types";
 import classNames from "classnames";
 import styles from "./Icon.scss";
-import StringInput from "./StringInput";
+import StringInput from "./inputs/StringInput";
 
 export default function Icon({ name, src, selected, rename, onClick, onChange, onCancel, onSubmit, className }) {
   const fullClassName = classNames(styles.icon, className, {

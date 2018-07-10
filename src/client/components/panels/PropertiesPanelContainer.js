@@ -1,24 +1,24 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
 import styles from "./PropertiesPanelContainer.scss";
-import PropertyGroup from "../components/PropertyGroup";
-import InputGroup from "../components/InputGroup";
-import Vector3Input from "../components/Vector3Input";
-import StringInput from "../components/StringInput";
-import { componentTypeToReactComponent } from "../component-type-mappings";
+import PropertyGroup from "../PropertyGroup";
+import InputGroup from "../InputGroup";
+import Vector3Input from "../inputs/Vector3Input";
+import StringInput from "../inputs/StringInput";
+import componentTypeMappings from "../inputs/componentTypeMappings";
 import Select from "react-select";
-import "../vendor/react-select/index.scss";
-import SetValueCommand from "../editor/commands/SetValueCommand";
-import SetPositionCommand from "../editor/commands/SetPositionCommand";
-import SetRotationCommand from "../editor/commands/SetRotationCommand";
-import SetScaleCommand from "../editor/commands/SetScaleCommand";
-import AddComponentCommand from "../editor/commands/AddComponentCommand";
-import SetComponentPropertyCommand from "../editor/commands/SetComponentPropertyCommand";
-import RemoveComponentCommand from "../editor/commands/RemoveComponentCommand";
-import { getDisplayName } from "../editor/components";
+import "../../vendor/react-select/index.scss";
+import SetValueCommand from "../../editor/commands/SetValueCommand";
+import SetPositionCommand from "../../editor/commands/SetPositionCommand";
+import SetRotationCommand from "../../editor/commands/SetRotationCommand";
+import SetScaleCommand from "../../editor/commands/SetScaleCommand";
+import AddComponentCommand from "../../editor/commands/AddComponentCommand";
+import SetComponentPropertyCommand from "../../editor/commands/SetComponentPropertyCommand";
+import RemoveComponentCommand from "../../editor/commands/RemoveComponentCommand";
+import { getDisplayName } from "../../editor/components";
 const RAD2DEG = THREE.Math.RAD2DEG;
 const DEG2RAD = THREE.Math.DEG2RAD;
-import { withEditor } from "./EditorContext";
+import { withEditor } from "../contexts/EditorContext";
 
 class PropertiesPanelContainer extends Component {
   static propTypes = {
@@ -159,7 +159,7 @@ class PropertiesPanelContainer extends Component {
             >
               {componentDefinition.schema.map(prop => (
                 <InputGroup name={getDisplayName(prop.name)} key={prop.name}>
-                  {componentTypeToReactComponent.get(prop.type)(
+                  {componentTypeMappings.get(prop.type)(
                     component.props[prop.name],
                     this.onChangeComponent.bind(null, component.name, prop.name)
                   )}

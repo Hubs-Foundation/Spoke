@@ -6,14 +6,14 @@ import classNames from "classnames";
 import { ContextMenu, MenuItem, ContextMenuTrigger, connectMenu } from "react-contextmenu";
 
 import styles from "./HierarchyPanelContainer.scss";
-import { withEditor } from "./EditorContext";
-import "../vendor/react-ui-tree/index.scss";
-import "../vendor/react-contextmenu/index.scss";
-import AddObjectCommand from "../editor/commands/AddObjectCommand";
-import MoveObjectCommand from "../editor/commands/MoveObjectCommand";
-import THREE from "../vendor/three";
-import SceneReferenceComponent from "../editor/components/SceneReferenceComponent";
-import { last } from "../utils";
+import { withEditor } from "../contexts/EditorContext";
+import "../../vendor/react-ui-tree/index.scss";
+import "../../vendor/react-contextmenu/index.scss";
+import AddObjectCommand from "../../editor/commands/AddObjectCommand";
+import MoveObjectCommand from "../../editor/commands/MoveObjectCommand";
+import THREE from "../../vendor/three";
+import SceneReferenceComponent from "../../editor/components/SceneReferenceComponent";
+import { last } from "../../utils";
 
 function createNodeHierarchy(object) {
   const node = {

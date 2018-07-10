@@ -1,5 +1,5 @@
 import React from "react";
-import Editor from "../editor/Editor";
+import Editor from "../../editor/Editor";
 
 const editor = new Editor();
 window.editor = editor;
