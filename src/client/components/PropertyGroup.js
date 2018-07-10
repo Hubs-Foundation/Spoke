@@ -3,9 +3,9 @@ import Button from "./Button";
 import PropTypes from "prop-types";
 import styles from "./PropertyGroup.scss";
 
-export default function PropertyGroup({ name, removeHandler, children }) {
-  const displayRemoveButton = (name, removeHandler) => {
-    if (name === "Node") {
+export default function PropertyGroup({ name, removable, removeHandler, children }) {
+  const displayRemoveButton = (removable, removeHandler) => {
+    if (!removable) {
       return;
     }
     return <Button onClick={removeHandler}>Remove</Button>;
@@ -15,7 +15,7 @@ export default function PropertyGroup({ name, removeHandler, children }) {
     <div className={styles.propertyGroup}>
       <div className={styles.name}>
         {name}
-        {displayRemoveButton(name, removeHandler)}
+        {displayRemoveButton(removable, removeHandler)}
       </div>
       <div className={styles.content}>{children}</div>
     </div>
@@ -24,6 +24,7 @@ export default function PropertyGroup({ name, removeHandler, children }) {
 
 PropertyGroup.propTypes = {
   name: PropTypes.string,
+  removable: PropTypes.bool,
   removeHandler: PropTypes.func,
   children: PropTypes.arrayOf(PropTypes.element)
 };

@@ -33,7 +33,7 @@ class ComponentsContainer extends Component {
       }
 
       return (
-        <PropertyGroup name={getDisplayName(component.name)} key={component.name} removeHandler={this.onRemove}>
+        <PropertyGroup name={getDisplayName(component.name)} key={component.name} removable={true} removeHandler={this.onRemove}>
           {componentDefinition.schema.map(prop => (
             <InputGroup name={getDisplayName(prop.name)} key={prop.name}>
               {componentTypeToReactComponent.get(prop.type)(
