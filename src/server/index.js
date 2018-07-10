@@ -29,7 +29,7 @@ async function getProjectHierarchy(projectPath) {
     const directoryEntries = await fs.readdir(filePath);
 
     for (const childEntry of directoryEntries) {
-      // eslint-disable-next-line
+      // eslint-disable-next-line no-useless-escape
       if (/(^|\/)\.[^\/\.]/g.test(childEntry)) {
         continue;
       }

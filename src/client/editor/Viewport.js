@@ -23,7 +23,6 @@ export default class Viewport {
     renderer.setSize(canvas.parentElement.offsetWidth, canvas.parentElement.offsetHeight);
 
     const camera = editor.camera;
-    const scene = editor.scene;
     const sceneHelpers = editor.sceneHelpers;
     const objects = editor.objects;
 
@@ -268,7 +267,7 @@ export default class Viewport {
       selectionBox.visible = false;
       this._transformControls.detach();
 
-      if (object !== null && object !== scene && object !== camera) {
+      if (object !== null && object !== editor.scene && object !== camera) {
         box.setFromObject(object);
 
         if (box.isEmpty() === false) {
@@ -338,7 +337,7 @@ export default class Viewport {
     // fog
 
     signals.sceneBackgroundChanged.add(function(backgroundColor) {
-      scene.background.setHex(backgroundColor);
+      editor.scene.background.setHex(backgroundColor);
 
       render();
     });
@@ -346,6 +345,7 @@ export default class Viewport {
     let currentFogType = null;
 
     signals.sceneFogChanged.add(function(fogType, fogColor, fogNear, fogFar, fogDensity) {
+      const scene = editor.scene;
       if (currentFogType !== fogType) {
         switch (fogType) {
           case "None":

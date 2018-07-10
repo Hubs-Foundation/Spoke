@@ -5,17 +5,20 @@
   width: 100%;
 }
 
-:local(.breadCrumb) {
-  background: $header;
+:local(.breadCrumb),:local(.ancestor) {
   display: block;
   width: 100%;
   border: none;
   padding: 4px;
-  border: 1px solid $border;
-  border-left: 0;
-  border-right: 0;
-  color: $text;
+  border-top: 1px solid $border;
+  color: #737373;
+  text-align: center;
+  font-size: 14px;
+}
+:local(button.breadCrumb) {
   cursor: pointer;
+  color: $text;
+  background: $header;
   &[disabled] {
     cursor: auto;
   }

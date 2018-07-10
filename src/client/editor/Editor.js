@@ -84,7 +84,6 @@ export default class Editor {
       modified: false
     };
     initialSceneInfo.obj.name = "Scene";
-    initialSceneInfo.obj.background = new THREE.Color(0xaaaaaa);
     this.scenes.push(initialSceneInfo);
 
     this.scene = initialSceneInfo.obj;
@@ -114,7 +113,7 @@ export default class Editor {
 
     this.fileDependencies = new Map();
 
-    this.initNewScene();
+    this.setSceneDefaults(this.scene);
 
     this.signals.fileChanged.add(this.onFileChanged);
   }
@@ -175,13 +174,14 @@ export default class Editor {
     return last(this.scenes).modified;
   }
 
-  initNewScene() {
-    this.addComponent(this.scene, AmbientLightComponent.componentName);
-    this.addComponent(this.scene, DirectionalLightComponent.componentName);
-
-    this.scene.traverse(child => {
-      this.addHelper(child, this.scene);
-    });
+  setSceneDefaults(scene, skipSave) {
+    scene.background = new THREE.Color(0xaaaaaa);
+    if (!this.getComponent(scene, AmbientLightComponent.componentName)) {
+      this.addComponent(scene, AmbientLightComponent.componentName, null, skipSave);
+    }
+    if (!this.getComponent(scene, DirectionalLightComponent.componentName)) {
+      this.addComponent(scene, DirectionalLightComponent.componentName, null, skipSave);
+    }
   }
 
   async loadScene(url) {
@@ -193,6 +193,8 @@ export default class Editor {
     }
 
     const scene = await loadScene(url, this.addComponent, true);
+
+    this.setSceneDefaults(scene, true);
 
     this.scene.userData._url = url;
     this.scenes.push({ uri: url, obj: scene });
@@ -438,6 +440,10 @@ export default class Editor {
     }
 
     component.shouldSave = !skipSave;
+
+    object.traverse(child => {
+      this.addHelper(child, object);
+    });
 
     return component;
   };

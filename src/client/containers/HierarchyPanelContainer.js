@@ -177,16 +177,24 @@ class HierarchyPanelContainer extends Component {
     return (
       <div className={styles.hierarchyRoot}>
         {this.props.editor.scenes.map((sceneInfo, i) => {
-          const name = sceneInfo.uri ? last(sceneInfo.uri.split("/")) : "...";
+          const name = sceneInfo.uri ? last(sceneInfo.uri.split("/")) : "---";
+          const ancestors = sceneInfo.obj.userData._ancestors;
           return (
-            <button
-              className={styles.breadCrumb}
-              disabled={i !== this.props.editor.scenes.length - 2}
-              onClick={this.popScene}
-              key={name}
-            >
-              {name}
-            </button>
+            <div key={name}>
+              {ancestors &&
+                ancestors.map((ancestor, i) => (
+                  <div className={styles.ancestor} key={`ancestor_${i}`}>
+                    {last(ancestor.split("/"))}
+                  </div>
+                ))}
+              <button
+                className={styles.breadCrumb}
+                disabled={i !== this.props.editor.scenes.length - 2}
+                onClick={this.popScene}
+              >
+                {name}
+              </button>
+            </div>
           );
         })}
         <HotKeys handlers={this.state.hierarchyHotKeyHandlers}>

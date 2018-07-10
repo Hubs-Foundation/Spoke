@@ -169,16 +169,19 @@ function convertAbsoluteURLs(entities, sceneURL) {
   }
 }
 
-export async function loadSerializedScene(sceneDef, baseURL, addComponent, isRoot = true) {
+export async function loadSerializedScene(sceneDef, baseURL, addComponent, isRoot = true, ancestors) {
   let scene;
 
   const { inherits, root, entities } = sceneDef;
 
   if (inherits) {
     const inheritedSceneURL = new URL(inherits, baseURL);
-    // eslint-disable-next-line
-    scene = await loadScene(inheritedSceneURL.href, addComponent, false);
+    // eslint-disable-next-line no-use-before-define
+    scene = await loadScene(inheritedSceneURL.href, addComponent, false, ancestors);
 
+    if (ancestors) {
+      ancestors.push(inherits);
+    }
     if (isRoot) {
       scene.userData._inherits = inherits;
     }
@@ -236,7 +239,7 @@ export async function loadSerializedScene(sceneDef, baseURL, addComponent, isRoo
   return scene;
 }
 
-export async function loadScene(url, addComponent, isRoot = true) {
+export async function loadScene(url, addComponent, isRoot = true, ancestors) {
   let scene;
 
   if (url.endsWith(".gltf")) {
@@ -260,7 +263,13 @@ export async function loadScene(url, addComponent, isRoot = true) {
   const sceneResponse = await fetch(url);
   const sceneDef = await sceneResponse.json();
 
-  scene = await loadSerializedScene(sceneDef, url, addComponent, isRoot);
+  if (isRoot) {
+    ancestors = [];
+  }
+
+  scene = await loadSerializedScene(sceneDef, url, addComponent, isRoot, ancestors);
+
+  scene.userData._ancestors = ancestors;
 
   return scene;
 }

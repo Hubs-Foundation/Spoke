@@ -19,9 +19,6 @@ export default class AddComponentCommand extends Command {
 
   execute() {
     this.editor.addComponent(this.object, this.componentName);
-    this.object.traverse(child => {
-      this.editor.addHelper(child, this.object);
-    });
     this.editor.signals.objectChanged.dispatch(this.object);
   }
 
