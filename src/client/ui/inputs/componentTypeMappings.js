@@ -5,7 +5,7 @@ import ColorInput from "./ColorInput";
 import StringInput from "./ColorInput";
 
 /* eslint react/display-name: 0 */
-export const componentTypeMappings = new Map([
+const componentTypeMappings = new Map([
   [types.color, (value, onChange) => <ColorInput value={value} onChange={onChange} />],
   [types.number, (value, onChange) => <NumericInput value={value} onChange={onChange} />],
   [
@@ -14,3 +14,5 @@ export const componentTypeMappings = new Map([
   ],
   [types.file, (value, onChange) => <StringInput value={value} onChange={e => onChange(e.target.value)} />]
 ]);
+
+export default componentTypeMappings;
