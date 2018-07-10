@@ -6,6 +6,7 @@ import InputGroup from "../components/InputGroup";
 import { componentTypeToReactComponent } from "../components/component-type-mappings";
 import { getDisplayName } from "../editor/components";
 import SetComponentPropertyCommand from "../editor/commands/SetComponentPropertyCommand";
+import RemoveComponentCommand from "../editor/commands/RemoveComponentCommand";
 
 class ComponentsContainer extends Component {
   static propTypes = {
@@ -18,6 +19,10 @@ class ComponentsContainer extends Component {
     this.props.editor.execute(new SetComponentPropertyCommand(this.props.node, componentName, propertyName, value));
   };
 
+  onRemove = componentName => {
+    this.props.editor.execute(new RemoveComponentCommand(this.props.node, componentName));
+  };
+
   render() {
     // Generate property groups for each component and property editors for each property.
     return this.props.components.map(component => {
@@ -28,7 +33,7 @@ class ComponentsContainer extends Component {
       }
 
       return (
-        <PropertyGroup name={getDisplayName(component.name)} key={component.name}>
+        <PropertyGroup name={getDisplayName(component.name)} key={component.name} removeHandler={this.onRemove}>
           {componentDefinition.schema.map(prop => (
             <InputGroup name={getDisplayName(prop.name)} key={prop.name}>
               {componentTypeToReactComponent.get(prop.type)(
