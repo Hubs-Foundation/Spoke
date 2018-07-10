@@ -441,6 +441,10 @@ export default class Editor {
 
     component.shouldSave = !skipSave;
 
+    object.traverse(child => {
+      this.addHelper(child, object);
+    });
+
     return component;
   };
 

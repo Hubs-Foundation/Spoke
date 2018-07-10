@@ -1,0 +1,17 @@
+{
+  "entities": {
+    "Child": {
+      "parent": "Scene",
+      "index": 2,
+      "components": [
+        {
+          "name": "scene-reference",
+          "props": {
+            "src": "./child.scene"
+          }
+        }
+      ]
+    }
+  },
+  "inherits": "./extension_one.scene"
+}
