@@ -1,0 +1,43 @@
+@import "../theme";
+
+:local(.menu-bar) {
+  display: flex;
+  flex-direction: row;
+  height: 24px;
+  background-color: $panel;
+}
+
+:local(.menu) {
+  display: flex;
+  height: 100%;
+  position: relative;
+  padding: 0 6px;
+  align-items: center;
+  cursor: pointer;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+}
+
+:local(.dropdown) {
+  left: 0;
+  top: 24px;
+  position: absolute;
+  background-color: $panel;
+  display: flex;
+  flex-direction: column;
+  z-index: 5;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+:local(.menu-item) {
+  display: flex;
+  height: 24px;
+  align-items: center;
+  padding: 0 6px;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+}
