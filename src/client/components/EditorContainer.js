@@ -229,7 +229,7 @@ class EditorContainer extends Component {
       await this.props.project.writeJSON(sceneURI, serializedScene);
 
       this.props.editor.setSceneURI(sceneURI);
-      last(this.props.editor.scenes).modified = false;
+      this.props.editor.sceneInfo.modified = false;
       this.setState({
         openModal: null
       });

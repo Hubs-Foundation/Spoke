@@ -77,24 +77,27 @@ export default class Editor {
     this.openFile = null;
 
     this.scenes = [];
-
     const initialSceneInfo = {
       uri: null,
-      obj: new THREE.Scene(),
+      scene: new THREE.Scene(),
+      helperScene: new THREE.Scene(),
+      helpers: {},
+      objects: [],
       modified: false
     };
-    initialSceneInfo.obj.name = "Scene";
+    initialSceneInfo.scene.name = "Scene";
     this.scenes.push(initialSceneInfo);
 
-    this.scene = initialSceneInfo.obj;
+    this.scene = initialSceneInfo.scene;
+    this.sceneInfo = initialSceneInfo;
+    this.helperScene = initialSceneInfo.helperScene;
+    this.helpers = initialSceneInfo.helpers;
+    this.objects = initialSceneInfo.objects;
 
     this.signals.sceneGraphChanged.add(() => {
-      last(this.scenes).modified = true;
+      this.sceneInfo.modified = true;
     });
 
-    this.sceneHelpers = new THREE.Scene();
-
-    this.objects = [];
     this.geometries = {};
     this.materials = {};
     this.textures = {};
@@ -103,7 +106,6 @@ export default class Editor {
     this.viewports = [];
 
     this.selected = null;
-    this.helpers = {};
 
     this.components = new Map();
 
@@ -113,14 +115,15 @@ export default class Editor {
 
     this.fileDependencies = new Map();
 
-    this.setSceneDefaults(this.scene);
-
     this.signals.fileChanged.add(this.onFileChanged);
   }
 
   createViewport(canvas) {
     const viewport = new Viewport(this, canvas);
     this.viewports.push(viewport);
+    // This is odd, but since Viewport manages intersection objects, and since setSceneDefaults adds components to
+    // the scene, we need to set sceneDefaults after the viewport has been created.
+    this.setSceneDefaults(this.scene);
     return viewport;
   }
 
@@ -146,17 +149,21 @@ export default class Editor {
 
   popScene() {
     this.scenes.pop();
-    const { uri, obj } = last(this.scenes);
-    this.setSceneURI(uri);
-    this.setScene(obj);
+    this.sceneInfo = last(this.scenes);
+    this.scene = this.sceneInfo.scene;
+    this.helperScene = this.sceneInfo.helperScene;
+    this.helpers = this.sceneInfo.helpers;
+    this.objects = this.sceneInfo.objects;
+    this.deselect();
+    this.signals.sceneSet.dispatch();
   }
 
   setSceneURI(uri) {
-    const sceneInfo = last(this.scenes);
-    sceneInfo.uri = uri;
+    this.sceneInfo.uri = uri;
   }
 
   editScenePrefab(url) {
+    this.deselect();
     this.loadScene(url);
   }
 
@@ -165,13 +172,16 @@ export default class Editor {
     return this.loadScene(url);
   }
 
-  setScene(scene) {
+  _setScene(scene) {
     this.scene = scene;
+    this.scene.traverse(object => {
+      this.signals.objectAdded.dispatch(object);
+    });
     this.signals.sceneSet.dispatch();
   }
 
   sceneModified() {
-    return last(this.scenes).modified;
+    return this.sceneInfo.modified;
   }
 
   setSceneDefaults(scene, skipSave) {
@@ -192,14 +202,26 @@ export default class Editor {
       prevDependencies.delete(this.scene);
     }
 
+    // Have to set these objects before loading the scene since Viewport will manipulate them
+    // as it receives signals while the scene is loading.
+    this.helperScene = new THREE.Scene();
+    this.helpers = {};
+    this.objects = [];
+
     const scene = await loadScene(url, this.addComponent, true);
+    this.scene.userData._url = url;
 
     this.setSceneDefaults(scene, true);
 
-    this.scene.userData._url = url;
-    this.scenes.push({ uri: url, obj: scene });
-    this.setSceneURI(url);
-    this.setScene(scene);
+    this.sceneInfo = {
+      uri: url,
+      scene: scene,
+      helperScene: this.helperScene,
+      helpers: this.helpers,
+      objects: this.objects
+    };
+    this.scenes.push(this.sceneInfo);
+    this._setScene(scene);
 
     // Add gltf dependency
     const gltfDependencies = this.fileDependencies.get(url) || new Set();
@@ -250,7 +272,7 @@ export default class Editor {
     const sceneDef = serializeScene(this.scene, sceneURL);
     const scene = await loadSerializedScene(sceneDef, sceneURL, this.addComponent, true);
 
-    this.setScene(scene);
+    this._setScene(scene);
 
     return scene;
   }
@@ -387,7 +409,7 @@ export default class Editor {
       picker.userData._selectionRoot = selectionRoot;
       helper.add(picker);
 
-      this.sceneHelpers.add(helper);
+      this.helperScene.add(helper);
       this.helpers[selectionRoot.id] = helper;
 
       this.signals.helperAdded.dispatch(helper);

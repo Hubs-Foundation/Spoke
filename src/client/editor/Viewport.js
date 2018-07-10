@@ -23,13 +23,11 @@ export default class Viewport {
     renderer.setSize(canvas.parentElement.offsetWidth, canvas.parentElement.offsetHeight);
 
     const camera = editor.camera;
-    const sceneHelpers = editor.sceneHelpers;
-    const objects = editor.objects;
 
     // helpers
 
     const grid = new THREE.GridHelper(30, 30, 0x444444, 0x888888);
-    sceneHelpers.add(grid);
+    editor.helperScene.add(grid);
 
     const array = grid.geometry.attributes.color.array;
 
@@ -47,18 +45,18 @@ export default class Viewport {
     selectionBox.material.depthTest = false;
     selectionBox.material.transparent = true;
     selectionBox.visible = false;
-    sceneHelpers.add(selectionBox);
+    editor.helperScene.add(selectionBox);
 
     let objectPositionOnDown = null;
     let objectRotationOnDown = null;
     let objectScaleOnDown = null;
 
     function render() {
-      sceneHelpers.updateMatrixWorld();
+      editor.helperScene.updateMatrixWorld();
       editor.scene.updateMatrixWorld();
 
       renderer.render(editor.scene, camera);
-      renderer.render(sceneHelpers, camera);
+      renderer.render(editor.helperScene, camera);
     }
 
     this._transformControls = new THREE.TransformControls(camera, canvas);
@@ -81,7 +79,7 @@ export default class Viewport {
     this.snapEnabled = false;
     this.toggleSnap(true);
 
-    sceneHelpers.add(this._transformControls);
+    editor.helperScene.add(this._transformControls);
 
     // object picking
 
@@ -109,7 +107,7 @@ export default class Viewport {
 
     function handleClick() {
       if (onDownPosition.distanceTo(onUpPosition) === 0) {
-        const intersects = getIntersects(onUpPosition, objects);
+        const intersects = getIntersects(onUpPosition, editor.objects);
 
         if (intersects.length > 0) {
           const object = intersects[0].object;
@@ -172,7 +170,7 @@ export default class Viewport {
       const array = getMousePosition(canvas, event.clientX, event.clientY);
       onDoubleClickPosition.fromArray(array);
 
-      const intersects = getIntersects(onDoubleClickPosition, objects);
+      const intersects = getIntersects(onDoubleClickPosition, editor.objects);
 
       if (intersects.length > 0) {
         const intersect = intersects[0];
@@ -251,7 +249,10 @@ export default class Viewport {
       this._transformControls.setSpace(space);
     });
 
-    signals.sceneSet.add(function() {
+    signals.sceneSet.add(() => {
+      editor.helperScene.add(grid);
+      editor.helperScene.add(selectionBox);
+      editor.helperScene.add(this._transformControls);
       render();
     });
 
@@ -295,7 +296,7 @@ export default class Viewport {
 
     signals.objectAdded.add(function(object) {
       object.traverse(function(child) {
-        objects.push(child);
+        editor.objects.push(child);
       });
     });
 
@@ -317,17 +318,18 @@ export default class Viewport {
     });
 
     signals.objectRemoved.add(function(object) {
+      editor.objects.splice(editor.objects.indexOf(object), 1);
       object.traverse(function(child) {
-        objects.splice(objects.indexOf(child), 1);
+        editor.objects.splice(editor.objects.indexOf(child), 1);
       });
     });
 
     signals.helperAdded.add(function(object) {
-      objects.push(object.getObjectByName("picker"));
+      editor.objects.push(object.getObjectByName("picker"));
     });
 
     signals.helperRemoved.add(function(object) {
-      objects.splice(objects.indexOf(object.getObjectByName("picker")), 1);
+      editor.objects.splice(editor.objects.indexOf(object.getObjectByName("picker")), 1);
     });
 
     signals.materialChanged.add(function() {

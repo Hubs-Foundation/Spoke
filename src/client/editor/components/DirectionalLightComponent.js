@@ -27,7 +27,7 @@ export default class DirectionalLightComponent extends BaseComponent {
       case "elevation":
       case "azimuth":
         _tempEuler.set(this.props.elevation * DEG2RAD, -this.props.azimuth * DEG2RAD, 0);
-        this._object.position.set(0, 0, -100);
+        this._object.position.set(0, 0, -20);
         this._object.position.applyEuler(_tempEuler);
         break;
       default:
