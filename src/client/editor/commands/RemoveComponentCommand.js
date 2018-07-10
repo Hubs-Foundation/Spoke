@@ -24,9 +24,6 @@ export default class RemoveComponentCommand extends Command {
 
   undo() {
     this.editor.addComponent(this.object, this.componentName);
-    this.object.traverse(child => {
-      this.editor.addHelper(child, this.object);
-    });
     this.editor.signals.objectChanged.dispatch(this.object);
   }
 }
