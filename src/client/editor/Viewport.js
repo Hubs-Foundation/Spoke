@@ -56,9 +56,9 @@ export default class Viewport {
 
     function render() {
       sceneHelpers.updateMatrixWorld();
-      scene.updateMatrixWorld();
+      editor.scene.updateMatrixWorld();
 
-      renderer.render(scene, camera);
+      renderer.render(editor.scene, camera);
       renderer.render(sceneHelpers, camera);
     }
 

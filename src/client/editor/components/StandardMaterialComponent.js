@@ -1,5 +1,7 @@
 import BaseComponent from "./BaseComponent";
 import { types, getFilePath } from "./utils";
+import THREE from "../../vendor/three";
+import envMapURL from "../../assets/envmap.jpg";
 
 export default class StandardMaterialComponent extends BaseComponent {
   static componentName = "standard-material";
@@ -63,6 +65,12 @@ export default class StandardMaterialComponent extends BaseComponent {
 
   static inflate(node, _props) {
     const { component } = this._getOrCreateComponent(node, _props);
+    const texture = new THREE.TextureLoader().load(envMapURL);
+    texture.mapping = THREE.EquirectangularReflectionMapping;
+    texture.magFilter = THREE.LinearFilter;
+    texture.minFilter = THREE.LinearMipMapLinearFilter;
+    node.material.envMap = texture;
+    node.material.needsUpdate = true;
     Object.defineProperty(component, "_object", { enumerable: false, value: node.material });
     return component;
   }
