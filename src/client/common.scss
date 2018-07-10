@@ -1,0 +1,10 @@
+:local(.flexRow) {
+  display: flex;
+  flex: 1;
+}
+
+:local(.flexColumn) {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
