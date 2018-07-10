@@ -4,7 +4,9 @@ import { DragDropContextProvider } from "react-dnd";
 import HTML5Backend from "react-dnd-html5-backend";
 import { MosaicWindow } from "react-mosaic-component";
 import { HotKeys } from "react-hotkeys";
-
+import Modal from "react-modal";
+import { MosaicWithoutDragDropContext } from "react-mosaic-component";
+import MenuBarContainer from "./MenuBarContainer";
 import Editor from "../components/Editor";
 import FileDialogModalContainer from "./FileDialogModalContainer";
 import ViewportPanelContainer from "./ViewportPanelContainer";
@@ -15,7 +17,6 @@ import ViewportToolbarContainer from "./ViewportToolbarContainer";
 import PanelToolbar from "../components/PanelToolbar";
 import { withProject } from "./ProjectContext";
 import { withEditor } from "./EditorContext";
-import styles from "./EditorContainer.scss";
 import { last } from "../utils";
 
 class EditorContainer extends Component {
@@ -94,6 +95,46 @@ class EditorContainer extends Component {
         redo: ["ctrl+shift+z", "command+shift+z"],
         bundle: ["ctrl+b", "command+b"]
       },
+      menus: [
+        {
+          name: "File",
+          items: [
+            {
+              name: "New Scene",
+              action: () => console.log("New Scene")
+            },
+            {
+              name: "Save Scene",
+              action: () => console.log("Save Scene")
+            },
+            {
+              name: "Save Scene As...",
+              action: () => console.log("Save Scene As...")
+            },
+            {
+              name: "Export Scene...",
+              action: () => console.log("Export Scene...")
+            }
+          ]
+        },
+        {
+          name: "Help",
+          items: [
+            {
+              name: "Keyboard Shortcuts",
+              action: () => console.log("Keyboard Shortcuts")
+            },
+            {
+              name: "Getting Started",
+              action: () => console.log("Getting Started")
+            },
+            {
+              name: "Documentation",
+              action: () => console.log("Documentation")
+            }
+          ]
+        }
+      ],
       globalHotKeyHandlers: {
         undo: this.onUndo,
         redo: this.onRedo,
@@ -269,20 +310,30 @@ class EditorContainer extends Component {
   };
 
   render() {
+    const { openModal, menus } = this.state;
+
+    const { initialPanels } = this.props;
+
     return (
       <DragDropContextProvider backend={HTML5Backend}>
-        <HotKeys
-          keyMap={this.state.keyMap}
-          handlers={this.state.globalHotKeyHandlers}
-          className={styles.hotKeysContainer}
-        >
-          <Editor
-            initialPanels={this.props.initialPanels}
-            renderPanel={this.renderPanel}
-            openModal={this.state.openModal}
-            onCloseModal={this.onCloseModal}
-            onPanelChange={this.onPanelChange}
+        <HotKeys keyMap={this.state.keyMap} handlers={this.state.globalHotKeyHandlers} component={Editor}>
+          <MenuBarContainer menus={menus} />
+          <MosaicWithoutDragDropContext
+            className="mosaic-theme"
+            renderTile={this.renderPanel}
+            initialValue={initialPanels}
+            onChange={this.onPanelChange}
           />
+          <Modal
+            ariaHideApp={false}
+            isOpen={!!openModal}
+            onRequestClose={this.onCloseModal}
+            shouldCloseOnOverlayClick={openModal && openModal.shouldCloseOnOverlayClick}
+            className="Modal"
+            overlayClassName="Overlay"
+          >
+            {openModal && <openModal.component {...openModal.props} />}
+          </Modal>
         </HotKeys>
       </DragDropContextProvider>
     );

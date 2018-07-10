@@ -1,56 +1,6 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
-import styles from "./MenuBarContainer.scss";
-
-export function MenuItem(props) {
-  return (
-    <div className={styles.menuItem} onClick={props.onClick}>
-      {props.name}
-    </div>
-  );
-}
-
-MenuItem.propTypes = {
-  name: PropTypes.string,
-  onClick: PropTypes.func
-};
-
-export function Menu(props) {
-  return (
-    <div className={styles.menu} onMouseOver={props.onMouseOver} onClick={props.onClick}>
-      {props.name}
-      {props.open && (
-        <div className={styles.dropdown}>
-          {props.items.map(item => {
-            return <MenuItem key={item.name} {...item} />;
-          })}
-        </div>
-      )}
-    </div>
-  );
-}
-
-Menu.propTypes = {
-  name: PropTypes.string,
-  open: PropTypes.bool,
-  items: PropTypes.arrayOf(MenuItem.propTypes),
-  onMouseOver: PropTypes.func,
-  onClick: PropTypes.func
-};
-
-export function MenuBar(props) {
-  return (
-    <div className={styles.menuBar}>
-      {props.menus.map(menu => {
-        return <Menu key={menu.name} {...menu} />;
-      })}
-    </div>
-  );
-}
-
-MenuBar.propTypes = {
-  menus: PropTypes.arrayOf(Menu.propTypes)
-};
+import MenuBar from "../components/MenuBar";
 
 export default class MenuBarContainer extends Component {
   static propTypes = {
@@ -59,7 +9,7 @@ export default class MenuBarContainer extends Component {
         name: PropTypes.string.isRequired,
         items: PropTypes.arrayOf(
           PropTypes.shape({
-            name: PropTypes.name,
+            name: PropTypes.string.isRequired,
             action: PropTypes.func
           })
         )
@@ -77,29 +27,33 @@ export default class MenuBarContainer extends Component {
     this.state = {
       openMenu: null
     };
+
+    this.menuBarRef = React.createRef();
   }
 
   onClickMenuItem = (e, menuItem) => {
-    document.body.removeEventListener("click", this.onClickBody);
+    document.body.removeEventListener("click", this.onClickBody, false);
     this.setState({
       openMenu: null
     });
 
-    menuItem.action(e, menuItem);
+    if (menuItem.action) {
+      menuItem.action(e, menuItem);
+    }
   };
 
   onClickMenu = (e, menu) => {
     if (this.state.openMenu === null) {
-      document.body.addEventListener("click", this.onClickBody);
+      document.body.addEventListener("click", this.onClickBody, false);
       this.setState({
         openMenu: menu.name
       });
     }
   };
 
-  onClickBody = () => {
-    if (this.state.openMenu !== null) {
-      document.body.removeEventListener("click", this.onClickBody);
+  onClickBody = e => {
+    if (this.state.openMenu !== null && !this.menuBarRef.current.contains(e.target)) {
+      document.body.removeEventListener("click", this.onClickBody, false);
       this.setState({
         openMenu: null
       });
@@ -119,7 +73,7 @@ export default class MenuBarContainer extends Component {
       name: menu.name,
       open: this.state.openMenu === menu.name,
       items: menu.items ? menu.items.map(this.buildMenuItem) : [],
-      onMouseOver: e => this.onMouseOver(e, menu),
+      onMouseOver: e => this.onMouseOverMenu(e, menu),
       onClick: e => this.onClickMenu(e, menu)
     };
   };
@@ -133,6 +87,6 @@ export default class MenuBarContainer extends Component {
 
   render() {
     const menus = this.props.menus.map(this.buildMenu);
-    return <MenuBar menus={menus} />;
+    return <MenuBar ref={this.menuBarRef} menus={menus} />;
   }
 }

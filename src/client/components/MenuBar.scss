@@ -1,0 +1,8 @@
+@import "../theme";
+
+:local(.menuBar) {
+  display: flex;
+  flex-direction: row;
+  height: 24px;
+  background-color: $panel;
+}
