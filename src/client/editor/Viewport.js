@@ -8,19 +8,23 @@ import SetScaleCommand from "./commands/SetScaleCommand";
  */
 
 export default class Viewport {
-  constructor(editor) {
+  constructor(editor, canvas) {
     const signals = editor.signals;
 
-    //
+    const renderer = new THREE.WebGLRenderer({
+      canvas
+    });
 
-    let renderer = null;
+    renderer.shadowMap.enabled = true;
+    renderer.autoClear = false;
+    renderer.autoUpdateScene = false;
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setSize(canvas.parentElement.offsetWidth, canvas.parentElement.offsetHeight);
 
-    const canvas = editor.canvas;
     const camera = editor.camera;
     const scene = editor.scene;
     const sceneHelpers = editor.sceneHelpers;
-
-    const objects = [];
+    const objects = editor.objects;
 
     // helpers
 
@@ -68,7 +72,7 @@ export default class Viewport {
           editor.helpers[object.id].update();
         }
 
-        signals.refreshSidebarObject3D.dispatch(object);
+        signals.transformChanged.dispatch(object);
       }
 
       render();
@@ -247,17 +251,6 @@ export default class Viewport {
       this._transformControls.setSpace(space);
     });
 
-    signals.rendererChanged.add(function(newRenderer) {
-      renderer = newRenderer;
-
-      renderer.autoClear = false;
-      renderer.autoUpdateScene = false;
-      renderer.setPixelRatio(window.devicePixelRatio);
-      renderer.setSize(canvas.parentElement.offsetWidth, canvas.parentElement.offsetHeight);
-
-      render();
-    });
-
     signals.sceneSet.add(function() {
       render();
     });
@@ -400,6 +393,8 @@ export default class Viewport {
       grid.visible = showGrid;
       render();
     });
+
+    signals.viewportInitialized.dispatch(this);
   }
 
   toggleSnap = enabled => {

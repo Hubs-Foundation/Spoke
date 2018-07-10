@@ -2,7 +2,6 @@ import signals from "signals";
 
 import THREE from "../vendor/three";
 import History from "./History";
-import Storage from "./Storage";
 import Viewport from "./Viewport";
 import RemoveObjectCommand from "./commands/RemoveObjectCommand";
 import AddObjectCommand from "./commands/AddObjectCommand";
@@ -25,38 +24,21 @@ export default class Editor {
     const Signal = signals.Signal;
 
     this.signals = {
-      // script
-
-      editScript: new Signal(),
-
-      // player
-
-      startPlayer: new Signal(),
-      stopPlayer: new Signal(),
-
-      // actions
-
-      showModal: new Signal(),
-
       openScene: new Signal(),
       popScene: new Signal(),
-
-      // notifications
 
       editorCleared: new Signal(),
 
       savingStarted: new Signal(),
       savingFinished: new Signal(),
 
-      themeChanged: new Signal(),
-
       deleteSelectedObject: new Signal(),
 
+      transformChanged: new Signal(),
       transformModeChanged: new Signal(),
       snapToggled: new Signal(),
       spaceChanged: new Signal(),
       viewportInitialized: new Signal(),
-      rendererChanged: new Signal(),
 
       sceneBackgroundChanged: new Signal(),
       sceneFogChanged: new Signal(),
@@ -79,21 +61,15 @@ export default class Editor {
 
       materialChanged: new Signal(),
 
-      scriptAdded: new Signal(),
-      scriptChanged: new Signal(),
-      scriptRemoved: new Signal(),
-
       windowResize: new Signal(),
 
       showGridChanged: new Signal(),
-      refreshSidebarObject3D: new Signal(),
       historyChanged: new Signal(),
 
       fileChanged: new Signal()
     };
 
     this.history = new History(this);
-    this.storage = new Storage();
 
     this.camera = this.DEFAULT_CAMERA.clone();
 
@@ -118,16 +94,16 @@ export default class Editor {
 
     this.sceneHelpers = new THREE.Scene();
 
-    this.object = {};
+    this.objects = [];
     this.geometries = {};
     this.materials = {};
     this.textures = {};
-    this.scripts = {};
+
+    // TODO: Support multiple viewports
+    this.viewports = [];
 
     this.selected = null;
     this.helpers = {};
-
-    this.viewport = null;
 
     this.components = new Map();
 
@@ -140,6 +116,12 @@ export default class Editor {
     this.initNewScene();
 
     this.signals.fileChanged.add(this.onFileChanged);
+  }
+
+  createViewport(canvas) {
+    const viewport = new Viewport(this, canvas);
+    this.viewports.push(viewport);
+    return viewport;
   }
 
   onWindowResize = () => {
@@ -159,26 +141,6 @@ export default class Editor {
       }
     }
   };
-
-  setTheme(value) {
-    document.getElementById("theme").href = value;
-
-    this.signals.themeChanged.dispatch(value);
-  }
-
-  createRenderer(canvas) {
-    this.canvas = canvas;
-
-    const renderer = new THREE.WebGLRenderer({
-      canvas
-    });
-    renderer.shadowMap.enabled = true;
-
-    this.viewport = new Viewport(this);
-    this.signals.viewportInitialized.dispatch(this.viewport);
-
-    this.signals.rendererChanged.dispatch(renderer);
-  }
 
   //
 
@@ -441,30 +403,6 @@ export default class Editor {
 
   //
 
-  addScript(object, script) {
-    if (this.scripts[object.uuid] === undefined) {
-      this.scripts[object.uuid] = [];
-    }
-
-    this.scripts[object.uuid].push(script);
-
-    this.signals.scriptAdded.dispatch(script);
-  }
-
-  removeScript(object, script) {
-    if (this.scripts[object.uuid] === undefined) return;
-
-    const index = this.scripts[object.uuid].indexOf(script);
-
-    if (index !== -1) {
-      this.scripts[object.uuid].splice(index, 1);
-    }
-
-    this.signals.scriptRemoved.dispatch(script);
-  }
-
-  //
-
   registerComponent(componentClass) {
     const { componentName } = componentClass;
 
@@ -657,7 +595,6 @@ export default class Editor {
 
   clear() {
     this.history.clear();
-    this.storage.clear();
 
     this.camera.copy(this.DEFAULT_CAMERA);
     this.scene.fog = null;
@@ -673,66 +610,10 @@ export default class Editor {
     this.geometries = {};
     this.materials = {};
     this.textures = {};
-    this.scripts = {};
 
     this.deselect();
 
     this.signals.editorCleared.dispatch();
-  }
-
-  //
-
-  fromJSON(json) {
-    const loader = new THREE.ObjectLoader();
-
-    // backwards
-
-    if (json.scene === undefined) {
-      this.setScene(loader.parse(json));
-      return;
-    }
-
-    const camera = loader.parse(json.camera);
-
-    this.camera.copy(camera);
-    this.camera.aspect = this.DEFAULT_CAMERA.aspect;
-    this.camera.updateProjectionMatrix();
-
-    this.history.fromJSON(json.history);
-    this.scripts = json.scripts;
-
-    this.setScene(loader.parse(json.scene));
-  }
-
-  toJSON() {
-    // scripts clean up
-
-    const scene = this.scene;
-    const scripts = this.scripts;
-
-    for (const key in scripts) {
-      const script = scripts[key];
-
-      if (script.length === 0 || scene.getObjectByProperty("uuid", key) === undefined) {
-        delete scripts[key];
-      }
-    }
-
-    //
-
-    return {
-      metadata: {},
-      project: {
-        gammaInput: this.config.getKey("project/renderer/gammaInput"),
-        gammaOutput: this.config.getKey("project/renderer/gammaOutput"),
-        shadows: this.config.getKey("project/renderer/shadows"),
-        vr: this.config.getKey("project/vr")
-      },
-      camera: this.camera.toJSON(),
-      scene: this.scene.toJSON(),
-      scripts: this.scripts,
-      history: this.history.toJSON()
-    };
   }
 
   objectByUuid(uuid) {
