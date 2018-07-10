@@ -1,8 +1,8 @@
 import React from "react";
-import { types } from "../editor/components";
-import NumericInput from "../components/NumericInput";
-import ColorInput from "../components/ColorInput";
-import StringInput from "../components/StringInput";
+import { types } from "./editor/components";
+import NumericInput from "./components/NumericInput";
+import ColorInput from "./components/ColorInput";
+import StringInput from "./components/StringInput";
 
 /* eslint react/display-name: 0 */
 export const componentTypeToReactComponent = new Map([
