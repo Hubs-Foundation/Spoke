@@ -7,7 +7,6 @@ import { HotKeys } from "react-hotkeys";
 import Modal from "react-modal";
 import { MosaicWithoutDragDropContext } from "react-mosaic-component";
 import MenuBarContainer from "./MenuBarContainer";
-import Editor from "../components/Editor";
 import FileDialogModalContainer from "./FileDialogModalContainer";
 import ViewportPanelContainer from "./ViewportPanelContainer";
 import HierarchyPanelContainer from "./HierarchyPanelContainer";
@@ -18,6 +17,7 @@ import PanelToolbar from "../components/PanelToolbar";
 import { withProject } from "./ProjectContext";
 import { withEditor } from "./EditorContext";
 import { last } from "../utils";
+import styles from "../common.scss";
 
 class EditorContainer extends Component {
   static defaultProps = {
@@ -316,7 +316,7 @@ class EditorContainer extends Component {
 
     return (
       <DragDropContextProvider backend={HTML5Backend}>
-        <HotKeys keyMap={this.state.keyMap} handlers={this.state.globalHotKeyHandlers} component={Editor}>
+        <HotKeys keyMap={this.state.keyMap} handlers={this.state.globalHotKeyHandlers} className={styles.flexColumn}>
           <MenuBarContainer menus={menus} />
           <MosaicWithoutDragDropContext
             className="mosaic-theme"
