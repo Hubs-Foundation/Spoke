@@ -113,6 +113,10 @@ class EditorContainer extends Component {
             {
               name: "Export Scene...",
               action: e => this.onOpenExportModal(e)
+            },
+            {
+              name: "Open Project Directory",
+              action: () => this.props.project.openFile(this.props.project.projectDirectoryPath)
             }
           ]
         },
@@ -120,16 +124,16 @@ class EditorContainer extends Component {
           name: "Help",
           items: [
             {
-              name: "Keyboard Shortcuts",
-              action: () => console.log("Keyboard Shortcuts")
-            },
-            {
               name: "Getting Started",
-              action: () => console.log("Getting Started")
+              action: () => window.open("https://github.com/MozillaReality/hubs-editor/wiki/Getting-Started")
             },
             {
-              name: "Documentation",
-              action: () => console.log("Documentation")
+              name: "Tutorials",
+              action: () => window.open("https://github.com/MozillaReality/hubs-editor/wiki/Tutorials")
+            },
+            {
+              name: "Keyboard Shortcuts",
+              action: () => window.open("https://github.com/MozillaReality/hubs-editor/wiki/Keyboard-Shortcuts")
             }
           ]
         }

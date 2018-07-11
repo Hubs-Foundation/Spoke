@@ -14,6 +14,8 @@ export default class Project extends EventEmitter {
       this.wsServerUrl = "wss://" + host;
     }
 
+    this.projectDirectoryPath = "/api/files/";
+
     this.ws = null;
 
     this.hierarchy = null;

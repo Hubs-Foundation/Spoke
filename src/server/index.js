@@ -162,10 +162,14 @@ export default async function startServer(options) {
   app.use(mount("/api/files/", serve(projectPath)));
 
   router.post("/api/files/:filePath*", koaBody({ multipart: true }), async ctx => {
-    const filePath = path.resolve(projectPath, ctx.params.filePath);
+    const filePath = ctx.params.filePath ? path.resolve(projectPath, ctx.params.filePath) : projectPath;
 
     if (ctx.request.query.open) {
       opn(filePath);
+
+      ctx.body = {
+        success: true
+      };
     } else if (ctx.request.files && ctx.request.files.file) {
       const file = ctx.request.files.file;
 
