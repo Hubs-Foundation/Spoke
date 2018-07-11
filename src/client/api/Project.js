@@ -123,15 +123,13 @@ export default class Project extends EventEmitter {
     return Promise.resolve(this);
   }
 
-  async bundleScene(name, version, sceneURI, outputDir) {
-    const res = await fetch(this.serverUrl + "/api/bundle", {
+  async optimizeScene(sceneURI, outputURI) {
+    const res = await fetch(this.serverUrl + "/api/optimize", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        name,
-        version,
         sceneURI,
-        outputDir
+        outputURI
       })
     });
 

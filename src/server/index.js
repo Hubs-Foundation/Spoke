@@ -10,7 +10,6 @@ import fs from "fs-extra";
 import chokidar from "chokidar";
 import debounce from "lodash.debounce";
 import opn from "opn";
-import { createBundle } from "gltf-bundle";
 
 async function getProjectHierarchy(projectPath) {
   async function buildProjectNode(filePath, name, ext, isDirectory, uri) {
@@ -194,30 +193,17 @@ export default async function startServer(options) {
     }
   });
 
-  router.post("/api/bundle", koaBody(), async ctx => {
-    if (!ctx.request.body || !ctx.request.body.sceneURI || !ctx.request.body.outputDir) {
+  router.post("/api/optimize", koaBody(), async ctx => {
+    if (!ctx.request.body || !ctx.request.body.sceneURI || !ctx.request.body.outputURI) {
       return ctx.throw(400, "Invalid request");
     }
 
-    const { name, version, sceneURI, outputDir } = ctx.request.body;
+    const { sceneURI, outputURI } = ctx.request.body;
 
     const scenePath = path.resolve(projectPath, sceneURI.replace("/api/files/", ""));
-    const sceneDir = path.dirname(scenePath);
+    const outputPath = path.resolve(projectPath, outputURI.replace("/api/files/", ""));
 
-    const outputPath = path.resolve(projectPath, outputDir.replace("/api/files/", ""));
-
-    const bundleConfig = {
-      name,
-      version,
-      assets: [
-        {
-          name,
-          src: scenePath
-        }
-      ]
-    };
-
-    await createBundle(bundleConfig, sceneDir, outputPath);
+    console.log(`Optimize ${scenePath} and output to: ${outputPath}`);
 
     ctx.body = {
       success: true
