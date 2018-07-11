@@ -43,9 +43,7 @@ export default class History {
     }
     cmd.name = optionalName !== undefined ? optionalName : cmd.name;
     cmd.execute();
-    cmd.inMemory = true;
 
-    cmd.json = cmd.toJSON(); // serialize the cmd immediately after execution and append the json to the cmd
     this.lastCmdTime = new Date();
 
     // clearing all the redo-commands
@@ -64,10 +62,6 @@ export default class History {
 
     if (this.undos.length > 0) {
       cmd = this.undos.pop();
-
-      if (cmd.inMemory === false) {
-        cmd.fromJSON(cmd.json);
-      }
     }
 
     if (cmd !== undefined) {
@@ -89,10 +83,6 @@ export default class History {
 
     if (this.redos.length > 0) {
       cmd = this.redos.pop();
-
-      if (cmd.inMemory === false) {
-        cmd.fromJSON(cmd.json);
-      }
     }
 
     if (cmd !== undefined) {
@@ -102,57 +92,6 @@ export default class History {
     }
 
     return cmd;
-  }
-
-  toJSON() {
-    const history = {};
-    history.undos = [];
-    history.redos = [];
-
-    // Append Undos to History
-
-    for (let i = 0; i < this.undos.length; i++) {
-      if (this.undos[i].hasOwnProperty("json")) {
-        history.undos.push(this.undos[i].json);
-      }
-    }
-
-    // Append Redos to History
-
-    for (let i = 0; i < this.redos.length; i++) {
-      if (this.redos[i].hasOwnProperty("json")) {
-        history.redos.push(this.redos[i].json);
-      }
-    }
-
-    return history;
-  }
-
-  fromJSON(json) {
-    if (json === undefined) return;
-
-    for (let i = 0; i < json.undos.length; i++) {
-      const cmdJSON = json.undos[i];
-      const cmd = new window[cmdJSON.type](); // creates a new object of type "json.type"
-      cmd.json = cmdJSON;
-      cmd.id = cmdJSON.id;
-      cmd.name = cmdJSON.name;
-      this.undos.push(cmd);
-      this.idCounter = cmdJSON.id > this.idCounter ? cmdJSON.id : this.idCounter; // set last used idCounter
-    }
-
-    for (let i = 0; i < json.redos.length; i++) {
-      const cmdJSON = json.redos[i];
-      const cmd = new window[cmdJSON.type](); // creates a new object of type "json.type"
-      cmd.json = cmdJSON;
-      cmd.id = cmdJSON.id;
-      cmd.name = cmdJSON.name;
-      this.redos.push(cmd);
-      this.idCounter = cmdJSON.id > this.idCounter ? cmdJSON.id : this.idCounter; // set last used idCounter
-    }
-
-    // Select the last executed undo-command
-    this.editor.signals.historyChanged.dispatch(this.undos[this.undos.length - 1]);
   }
 
   clear() {
@@ -195,32 +134,5 @@ export default class History {
 
     this.editor.signals.sceneGraphChanged.dispatch();
     this.editor.signals.historyChanged.dispatch(cmd);
-  }
-
-  enableSerialization(id) {
-    /**
-     * because there might be commands in this.undos and this.redos
-     * which have not been serialized with .toJSON() we go back
-     * to the oldest command and redo one command after the other
-     * while also calling .toJSON() on them.
-     */
-
-    this.goToState(-1);
-
-    this.editor.signals.sceneGraphChanged.active = false;
-    this.editor.signals.historyChanged.active = false;
-
-    let cmd = this.redo();
-    while (cmd !== undefined) {
-      if (!cmd.hasOwnProperty("json")) {
-        cmd.json = cmd.toJSON();
-      }
-      cmd = this.redo();
-    }
-
-    this.editor.signals.sceneGraphChanged.active = true;
-    this.editor.signals.historyChanged.active = true;
-
-    this.goToState(id);
   }
 }

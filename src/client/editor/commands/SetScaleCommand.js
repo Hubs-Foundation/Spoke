@@ -1,4 +1,3 @@
-import THREE from "../../vendor/three";
 import Command from "../Command";
 
 /**
@@ -47,23 +46,5 @@ export default class SetScaleCommand extends Command {
 
   update(command) {
     this.newScale.copy(command.newScale);
-  }
-
-  toJSON() {
-    const output = super.toJSON();
-
-    output.objectUuid = this.object.uuid;
-    output.oldScale = this.oldScale.toArray();
-    output.newScale = this.newScale.toArray();
-
-    return output;
-  }
-
-  fromJSON(json) {
-    super.fromJSONtoJSON(json);
-
-    this.object = this.editor.objectByUuid(json.objectUuid);
-    this.oldScale = new THREE.Vector3().fromArray(json.oldScale);
-    this.newScale = new THREE.Vector3().fromArray(json.newScale);
   }
 }

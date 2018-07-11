@@ -138,7 +138,7 @@ class PropertiesPanelContainer extends Component {
               placeholder="Add a component..."
               className={styles.addComponentSelect}
               options={componentOptions}
-              onChange={this.onChangeComponent}
+              onChange={this.onAddComponent}
             />
           </div>
         </PropertyGroup>

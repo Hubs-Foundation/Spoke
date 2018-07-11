@@ -16,7 +16,7 @@ import AssetExplorerPanelContainer from "./panels/AssetExplorerPanelContainer";
 import PanelToolbar from "./PanelToolbar";
 import { withProject } from "./contexts/ProjectContext";
 import { withEditor } from "./contexts/EditorContext";
-import { last } from "../utils";
+import { exportScene } from "../editor/SceneLoader";
 import styles from "../common.scss";
 
 class EditorContainer extends Component {
@@ -92,8 +92,7 @@ class EditorContainer extends Component {
         save: ["ctrl+s", "command+s"],
         saveAs: ["ctrl+shift+s", "command+shift+s"],
         undo: ["ctrl+z", "command+z"],
-        redo: ["ctrl+shift+z", "command+shift+z"],
-        bundle: ["ctrl+b", "command+b"]
+        redo: ["ctrl+shift+z", "command+shift+z"]
       },
       menus: [
         {
@@ -113,7 +112,7 @@ class EditorContainer extends Component {
             },
             {
               name: "Export Scene...",
-              action: () => console.log("Export Scene...")
+              action: e => this.onOpenExportModal(e)
             }
           ]
         },
@@ -139,8 +138,7 @@ class EditorContainer extends Component {
         undo: this.onUndo,
         redo: this.onRedo,
         save: this.onSave,
-        saveAs: this.onSaveAs,
-        bundle: this.onOpenBundleModal
+        saveAs: this.onSaveAs
       }
     };
   }
@@ -212,18 +210,18 @@ class EditorContainer extends Component {
     e.preventDefault();
 
     if (!this.props.editor.sceneURI || this.props.editor.sceneURI.endsWith(".gltf")) {
-      this.openSaveAsDialog(this.exportAndSaveScene);
+      this.openSaveAsDialog(this.serializeAndSaveScene);
     } else {
-      this.exportAndSaveScene(this.props.editor.sceneURI);
+      this.serializeAndSaveScene(this.props.editor.sceneURI);
     }
   };
 
   onSaveAs = e => {
     e.preventDefault();
-    this.openSaveAsDialog(this.exportAndSaveScene);
+    this.openSaveAsDialog(this.serializeAndSaveScene);
   };
 
-  exportAndSaveScene = async sceneURI => {
+  serializeAndSaveScene = async sceneURI => {
     try {
       const serializedScene = this.props.editor.serializeScene(sceneURI);
       await this.props.project.writeJSON(sceneURI, serializedScene);
@@ -238,31 +236,41 @@ class EditorContainer extends Component {
     }
   };
 
-  onOpenBundleModal = e => {
+  onOpenExportModal = e => {
     e.preventDefault();
-
-    if (!this.props.editor.sceneURI) {
-      console.warn("TODO: save scene before bundling instead of doing nothing");
-      return;
-    }
 
     this.setState({
       openModal: {
         component: FileDialogModalContainer,
         shouldCloseOnOverlayClick: true,
         props: {
-          title: "Select glTF bundle output directory",
-          confirmButtonLabel: "Bundle scene...",
+          title: "Select the output directory",
+          confirmButtonLabel: "Export scene...",
           directory: true,
-          onConfirm: this.onBundle,
+          onConfirm: this.onExport,
           onCancel: this.onCloseModal
         }
       }
     });
   };
 
-  onBundle = async outputPath => {
-    await this.props.project.bundleScene(this.props.editor.scene.name, "0.1.0", this.props.editor.sceneURI, outputPath);
+  onExport = async outputPath => {
+    const scene = this.props.editor.scene;
+
+    const gltfPath = outputPath + "/" + scene.name + ".gltf";
+    const binPath = outputPath + "/" + scene.name + ".bin";
+
+    const { json, bin } = await exportScene(scene, gltfPath);
+
+    await this.props.project.mkdir(outputPath);
+    await this.props.project.writeJSON(gltfPath, json);
+
+    if (bin) {
+      await this.props.project.writeBlob(binPath, bin);
+    }
+
+    await this.props.project.optimizeScene(gltfPath, gltfPath);
+
     this.setState({ openModal: null });
   };
 

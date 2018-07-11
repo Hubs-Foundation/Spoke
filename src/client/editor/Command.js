@@ -13,19 +13,4 @@ export default class Command {
 
     this.editor = Command.editor;
   }
-
-  toJSON() {
-    const output = {};
-    output.type = this.type;
-    output.id = this.id;
-    output.name = this.name;
-    return output;
-  }
-
-  fromJSON(json) {
-    this.inMemory = true;
-    this.type = json.type;
-    this.id = json.id;
-    this.name = json.name;
-  }
 }

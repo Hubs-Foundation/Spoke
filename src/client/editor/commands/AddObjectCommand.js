@@ -1,4 +1,3 @@
-import THREE from "../../vendor/three";
 import Command from "../Command";
 
 /**
@@ -32,25 +31,5 @@ export default class AddObjectCommand extends Command {
   undo() {
     this.editor.removeObject(this.object);
     this.editor.deselect();
-  }
-
-  toJSON() {
-    const output = super.toJSON();
-    output.object = this.object.toJSON();
-    output.parent = this.parent.uuid;
-
-    return output;
-  }
-
-  fromJSON(json) {
-    super.fromJSON(json);
-
-    this.object = this.editor.objectByUuid(json.object.object.uuid);
-    this.parent = this.editor.objectByUuid(json.parent);
-
-    if (this.object === undefined) {
-      const loader = new THREE.ObjectLoader();
-      this.object = loader.parse(json.object);
-    }
   }
 }
