@@ -1,12 +1,13 @@
 import React from "react";
 import PropTypes from "prop-types";
 
+import styles from "./FileInput.scss";
 import Button from "../Button";
 
 export default function FileInput({ value, onChange, openFileDialog, filters }) {
   return (
-    <div>
-      <span>{value}</span>
+    <div className={styles.fileInput}>
+      <input value={value} onChange={e => onChange(e.target.value)} />
       <Button onClick={() => openFileDialog(onChange, filters)}>...</Button>
     </div>
   );

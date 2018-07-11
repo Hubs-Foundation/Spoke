@@ -1,0 +1,12 @@
+@import "../../theme";
+
+:local(.fileInput), :local(.fileInput input) {
+  display: flex;
+  width: 100%;
+  color: $text;
+  background-color: $input-background;
+  border: none;
+  padding-left: 6px;
+  font-size: 16px;
+  height: 24px;
+}
