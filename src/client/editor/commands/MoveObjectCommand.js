@@ -56,32 +56,4 @@ export default class MoveObjectCommand extends Command {
 
     this.editor.signals.sceneGraphChanged.dispatch();
   }
-
-  toJSON() {
-    const output = super.toJSON();
-
-    output.objectUuid = this.object.uuid;
-    output.newParentUuid = this.newParent.uuid;
-    output.oldParentUuid = this.oldParent.uuid;
-    output.newIndex = this.newIndex;
-    output.oldIndex = this.oldIndex;
-
-    return output;
-  }
-
-  fromJSON(json) {
-    super.fromJSON(json);
-
-    this.object = this.editor.objectByUuid(json.objectUuid);
-    this.oldParent = this.editor.objectByUuid(json.oldParentUuid);
-    if (this.oldParent === undefined) {
-      this.oldParent = this.editor.scene;
-    }
-    this.newParent = this.editor.objectByUuid(json.newParentUuid);
-    if (this.newParent === undefined) {
-      this.newParent = this.editor.scene;
-    }
-    this.newIndex = json.newIndex;
-    this.oldIndex = json.oldIndex;
-  }
 }

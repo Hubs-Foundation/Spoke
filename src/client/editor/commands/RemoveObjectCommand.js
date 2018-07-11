@@ -54,30 +54,4 @@ export default class RemoveObjectCommand extends Command {
     this.editor.signals.objectAdded.dispatch(this.object);
     this.editor.signals.sceneGraphChanged.dispatch();
   }
-
-  toJSON() {
-    const output = super.toJSON();
-    output.object = this.object.toJSON();
-    output.index = this.index;
-    output.parentUuid = this.parent.uuid;
-
-    return output;
-  }
-
-  fromJSON(json) {
-    super.fromJSON(json);
-
-    this.parent = this.editor.objectByUuid(json.parentUuid);
-    if (this.parent === undefined) {
-      this.parent = this.editor.scene;
-    }
-
-    this.index = json.index;
-
-    this.object = this.editor.objectByUuid(json.object.object.uuid);
-    if (this.object === undefined) {
-      const loader = new THREE.ObjectLoader();
-      this.object = loader.parse(json.object);
-    }
-  }
 }
