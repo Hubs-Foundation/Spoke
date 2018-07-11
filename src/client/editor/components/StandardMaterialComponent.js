@@ -32,8 +32,8 @@ export default class StandardMaterialComponent extends BaseComponent {
     }
   }
 
-  _updateComponentProperty(propertyName, value) {
-    super._updateComponentProperty(propertyName, value);
+  updateProperty(propertyName, value) {
+    super.updateProperty(propertyName, value);
     let texture;
     switch (propertyName) {
       case "color":

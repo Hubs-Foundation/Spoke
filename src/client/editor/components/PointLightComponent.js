@@ -10,8 +10,8 @@ export default class PointLightComponent extends BaseComponent {
     { name: "castShadow", type: types.boolean, default: true }
   ];
 
-  _updateComponentProperty(propertyName, value) {
-    super._updateComponentProperty(propertyName, value);
+  updateProperty(propertyName, value) {
+    super.updateProperty(propertyName, value);
     switch (propertyName) {
       case "color":
         this._object.color.set(value);
@@ -25,7 +25,7 @@ export default class PointLightComponent extends BaseComponent {
     const { component, props } = this._getOrCreateComponent(node, _props);
     const light = new THREE.PointLight(props.color, props.intensity);
     Object.defineProperty(component, "_object", { enumerable: false, value: light });
-    component._updateComponentProperty("castShadow", props.castShadow);
+    component.updateProperty("castShadow", props.castShadow);
     light.userData._dontShowInHierarchy = true;
     light.userData._inflated = true;
     node.add(light);

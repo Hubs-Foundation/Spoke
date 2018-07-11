@@ -12,12 +12,8 @@ export default class BaseComponent {
     return this.props[propertyName];
   }
 
-  _updateComponentProperty(propertyName, value) {
-    this.props[propertyName] = value;
-  }
-
   updateProperty(propertyName, value) {
-    this._updateComponentProperty(propertyName, value);
+    this.props[propertyName] = value;
   }
 
   static getComponent(node) {

@@ -9,8 +9,8 @@ export default class AmbientLightComponent extends BaseComponent {
     { name: "intensity", type: types.number, default: 1 }
   ];
 
-  _updateComponentProperty(propertyName, value) {
-    super._updateComponentProperty(propertyName, value);
+  updateProperty(propertyName, value) {
+    super.updateProperty(propertyName, value);
     switch (propertyName) {
       case "color":
         this._object.color.set(value);
