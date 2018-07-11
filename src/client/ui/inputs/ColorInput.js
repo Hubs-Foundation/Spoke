@@ -14,11 +14,11 @@ export default class ColorInput extends Component {
   }
 
   handleClick = () => {
-    this.setState({displayColorPicker: !this.state.displayColorPicker});
+    this.setState({ displayColorPicker: !this.state.displayColorPicker });
   };
 
   handleClose = () => {
-    this.setState({displayColorPicker: false});
+    this.setState({ displayColorPicker: false });
   };
 
   handleColorHexValue = () => {
@@ -33,7 +33,7 @@ export default class ColorInput extends Component {
     return (
       <div className={styles.popover}>
         <div className={styles.cover} onClick={this.handleClose} />
-        <SketchPicker color={this.props.value} disableAlpha={true} onChange={(color) => this.props.onChange(color.hex)} />
+        <SketchPicker color={this.props.value} disableAlpha={true} onChange={color => this.props.onChange(color.hex)} />
       </div>
     );
   };
@@ -42,10 +42,10 @@ export default class ColorInput extends Component {
     return (
       <div className={styles.colorInput}>
         <div className={styles.block} onClick={this.handleClick}>
-          <div className={styles.color} style={{background: this.props.value}}/>
+          <div className={styles.color} style={{ background: this.props.value }} />
         </div>
         <div>
-          <EditableInput value={this.handleColorHexValue()} onChange={(color) => this.props.onChange(color)} />
+          <EditableInput value={this.handleColorHexValue()} onChange={color => this.props.onChange(color)} />
         </div>
         {this.renderColorPicker()}
       </div>
