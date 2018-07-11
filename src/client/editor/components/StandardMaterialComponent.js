@@ -4,6 +4,7 @@ import THREE from "../../vendor/three";
 import envMapURL from "../../assets/envmap.jpg";
 
 const imageFilters = [".jpg", ".png"];
+const textureLoader = new THREE.TextureLoader();
 export default class StandardMaterialComponent extends BaseComponent {
   static componentName = "standard-material";
 
@@ -24,6 +25,7 @@ export default class StandardMaterialComponent extends BaseComponent {
 
   _updateComponentProperty(propertyName, value) {
     super._updateComponentProperty(propertyName, value);
+    let texture;
     switch (propertyName) {
       case "color":
         this._object.color.set(value);
@@ -41,6 +43,28 @@ export default class StandardMaterialComponent extends BaseComponent {
         break;
       case "doubleSided":
         this._object.side = value ? THREE.DoubleSide : THREE.FrontSide;
+        break;
+      case "baseColorTexture":
+        this._object.map = textureLoader.load(value);
+        this._object.needsUpdate = true;
+        break;
+      case "normalTexture":
+        this._object.normalMap = textureLoader.load(value);
+        this._object.needsUpdate = true;
+        break;
+      case "metallicRoughnessTexture":
+        texture = textureLoader.load(value);
+        this._object.roughnessMap = texture;
+        this._object.metalnessMap = texture;
+        this._object.needsUpdate = true;
+        break;
+      case "emissiveTexture":
+        this._object.emissiveMap = textureLoader.load(value);
+        this._object.needsUpdate = true;
+        break;
+      case "occlusionTexture":
+        this._object.aoMap = textureLoader.load(value);
+        this._object.needsUpdate = true;
         break;
       default:
         this._object[propertyName] = value;
