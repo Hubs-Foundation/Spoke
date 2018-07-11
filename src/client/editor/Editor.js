@@ -535,6 +535,16 @@ export default class Editor {
     }
   }
 
+  _removeChildren(object) {
+    const currentChildren = object.children.slice(0);
+    this.signals.sceneGraphChanged.active = false;
+    for (const child of currentChildren) {
+      this.removeObject(child);
+    }
+    this.signals.sceneGraphChanged.active = true;
+    this.signals.sceneGraphChanged.dispatch();
+  }
+
   updateComponentProperty(object, componentName, propertyName, value) {
     const component = this.getComponent(object, componentName);
 
@@ -544,7 +554,11 @@ export default class Editor {
       result = component.updateProperty(propertyName, value);
 
       if (componentName === SceneReferenceComponent.componentName && propertyName === "src") {
-        this.loadSceneReference(value, object);
+        this._removeChildren(object);
+        this.loadSceneReference(value, object).then(() => {
+          this.deselect();
+          this.select(object);
+        });
       }
     } else {
       result = component[propertyName] = value;
