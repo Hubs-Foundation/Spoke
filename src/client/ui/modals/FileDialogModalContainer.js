@@ -51,7 +51,8 @@ class FileDialogContainer extends Component {
     defaultFileName: PropTypes.string,
     project: PropTypes.any,
     confirmButtonLabel: PropTypes.string,
-    filter: PropTypes.string,
+    filters: PropTypes.arrayOf(PropTypes.string),
+    extension: PropTypes.string,
     onConfirm: PropTypes.func,
     onCancel: PropTypes.func
   };
@@ -130,15 +131,16 @@ class FileDialogContainer extends Component {
 
     let fileName = file.name;
 
-    if (this.props.filter) {
-      if (!file.name.endsWith(this.props.filter)) {
+    if (this.props.filters) {
+      const matchingFilter = this.props.filters.find(file.name.endsWith);
+      if (!matchingFilter) {
         this.setState({
           singleClickedFile: file
         });
         return;
       }
 
-      fileName = fileName.replace(this.props.filter, "");
+      fileName = fileName.replace(matchingFilter, "");
     }
 
     this.setState({
@@ -211,8 +213,8 @@ class FileDialogContainer extends Component {
         return;
       }
 
-      if (this.props.filter && !this.state.fileName.endsWith(this.props.filter)) {
-        fileName = fileName + this.props.filter;
+      if (this.props.extension && !this.state.fileName.endsWith(this.props.extension)) {
+        fileName = fileName + this.props.extension;
       }
 
       const directoryURI = this.state.selectedDirectory || this.state.tree.uri;

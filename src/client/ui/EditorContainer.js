@@ -69,6 +69,7 @@ class EditorContainer extends Component {
         },
         properties: {
           component: PropertiesPanelContainer,
+          props: { openFileDialog: this.openFileDialog },
           windowProps: {
             title: "Properties",
             toolbarControls: PanelToolbar
@@ -194,6 +195,25 @@ class EditorContainer extends Component {
     this.props.editor.redo();
   };
 
+  openFileDialog = (callback, filter) => {
+    this.setState({
+      openModal: {
+        component: FileDialogModalContainer,
+        shouldCloseOnOverlayClick: true,
+        props: {
+          title: "Select a file...",
+          confirmButtonLabel: "Select",
+          filter: filter,
+          onConfirm: filePath => {
+            this.setState({ openModal: null });
+            callback(filePath);
+          },
+          onCancel: this.onCloseModal
+        }
+      }
+    });
+  };
+
   openSaveAsDialog(onSave) {
     this.setState({
       openModal: {
@@ -201,8 +221,9 @@ class EditorContainer extends Component {
         shouldCloseOnOverlayClick: true,
         props: {
           title: "Save scene as...",
-          confirmButtonLabel: "Save as...",
-          filter: ".scene",
+          confirmButtonLabel: "Save",
+          filters: [".scene"],
+          extension: ".scene",
           onConfirm: onSave,
           onCancel: this.onCloseModal
         }
@@ -213,10 +234,10 @@ class EditorContainer extends Component {
   onSave = async e => {
     e.preventDefault();
 
-    if (!this.props.editor.sceneURI || this.props.editor.sceneURI.endsWith(".gltf")) {
+    if (!this.props.editor.sceneInfo.uri || this.props.editor.sceneInfo.uri.endsWith(".gltf")) {
       this.openSaveAsDialog(this.serializeAndSaveScene);
     } else {
-      this.serializeAndSaveScene(this.props.editor.sceneURI);
+      this.serializeAndSaveScene(this.props.editor.sceneInfo.uri);
     }
   };
 
@@ -249,7 +270,7 @@ class EditorContainer extends Component {
         shouldCloseOnOverlayClick: true,
         props: {
           title: "Select the output directory",
-          confirmButtonLabel: "Export scene...",
+          confirmButtonLabel: "Export scene",
           directory: true,
           onConfirm: this.onExport,
           onCancel: this.onCloseModal
@@ -302,7 +323,7 @@ class EditorContainer extends Component {
   };
 
   onOpenScene = uri => {
-    const uriPath = new URL(this.props.editor.sceneURI, window.location);
+    const uriPath = new URL(this.props.editor.sceneInfo.uri, window.location);
     if (uriPath.pathname === uri) return;
     if (!this.confirmSceneChange()) return;
 
