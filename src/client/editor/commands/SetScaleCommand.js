@@ -1,4 +1,3 @@
-import THREE from "../../vendor/three";
 import Command from "../Command";
 
 /**

@@ -1,0 +1,31 @@
+@import "../../theme";
+
+:local(.colorInput){
+  display: flex;
+  :local(.block) {
+    display: flex;
+    padding: 5px;
+    background: $input-background;
+    border-radius: 1px;
+    box-shadow: '0 0 0 1px rgba(0, 0, 0, .1)';
+    display: inline-block;
+    cursor: pointer;
+    :local(.color) {
+      width: 36px;
+      height: 14px;
+      border-radius: 2px;
+    }
+  }
+
+  :local(.popover) {
+    position: absolute;
+    z-index: 2;
+    :local(.cover) {
+      position: fixed;
+      top: 0px;
+      right: 0px;
+      bottom: 0px;
+      left: 0px;
+    }
+  }
+}

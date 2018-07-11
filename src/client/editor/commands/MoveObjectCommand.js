@@ -1,4 +1,5 @@
 import Command from "../Command";
+import THREE from "../../vendor/three";
 
 /**
  * @author dforrer / https://github.com/dforrer
@@ -12,6 +13,7 @@ import Command from "../Command";
  * @constructor
  */
 
+const matrix = new THREE.Matrix4();
 export default class MoveObjectCommand extends Command {
   constructor(object, newParent, newBefore) {
     super();
@@ -40,6 +42,11 @@ export default class MoveObjectCommand extends Command {
   execute() {
     this.oldParent.remove(this.object);
 
+    if (this.newParent !== this.oldParent) {
+      // Maintain world position when reparenting.
+      this.object.matrix.multiplyMatrices(this.oldParent.matrixWorld, this.object.matrix);
+      this.object.applyMatrix(matrix.getInverse(this.newParent.matrixWorld));
+    }
     const children = this.newParent.children;
     children.splice(this.newIndex, 0, this.object);
     this.object.parent = this.newParent;
