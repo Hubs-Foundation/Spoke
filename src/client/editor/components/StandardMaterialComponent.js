@@ -23,6 +23,15 @@ export default class StandardMaterialComponent extends BaseComponent {
     // TODO alphaMode
   ];
 
+  _loadTexture(url) {
+    try {
+      return textureLoader.load(url);
+    } catch (e) {
+      return null;
+      // TODO Should show warning on texture property when this happens.
+    }
+  }
+
   _updateComponentProperty(propertyName, value) {
     super._updateComponentProperty(propertyName, value);
     let texture;
@@ -45,25 +54,25 @@ export default class StandardMaterialComponent extends BaseComponent {
         this._object.side = value ? THREE.DoubleSide : THREE.FrontSide;
         break;
       case "baseColorTexture":
-        this._object.map = textureLoader.load(value);
+        this._object.map = this._loadTexture(value);
         this._object.needsUpdate = true;
         break;
       case "normalTexture":
-        this._object.normalMap = textureLoader.load(value);
+        this._object.normalMap = this._loadTexture(value);
         this._object.needsUpdate = true;
         break;
       case "metallicRoughnessTexture":
-        texture = textureLoader.load(value);
+        texture = this._loadTexture(value);
         this._object.roughnessMap = texture;
         this._object.metalnessMap = texture;
         this._object.needsUpdate = true;
         break;
       case "emissiveTexture":
-        this._object.emissiveMap = textureLoader.load(value);
+        this._object.emissiveMap = this._loadTexture(value);
         this._object.needsUpdate = true;
         break;
       case "occlusionTexture":
-        this._object.aoMap = textureLoader.load(value);
+        this._object.aoMap = this._loadTexture(value);
         this._object.needsUpdate = true;
         break;
       default:

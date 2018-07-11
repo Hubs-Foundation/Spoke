@@ -555,10 +555,14 @@ export default class Editor {
 
       if (componentName === SceneReferenceComponent.componentName && propertyName === "src") {
         this._removeChildren(object);
-        this.loadSceneReference(value, object).then(() => {
-          this.deselect();
-          this.select(object);
-        });
+        this.loadSceneReference(value, object)
+          .then(() => {
+            this.deselect();
+            this.select(object);
+          })
+          .catch(() => {
+            // TODO Show warning on property when this fails.
+          });
       }
     } else {
       result = component[propertyName] = value;
