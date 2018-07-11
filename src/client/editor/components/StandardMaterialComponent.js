@@ -3,6 +3,7 @@ import { types, getFilePath } from "./utils";
 import THREE from "../../vendor/three";
 import envMapURL from "../../assets/envmap.jpg";
 
+const imageFilters = [".jpg", ".png"];
 export default class StandardMaterialComponent extends BaseComponent {
   static componentName = "standard-material";
 
@@ -13,11 +14,11 @@ export default class StandardMaterialComponent extends BaseComponent {
     { name: "roughness", type: types.number, default: 1 },
     { name: "alphaCutoff", type: types.number, default: 0.5 },
     { name: "doubleSided", type: types.boolean, default: false },
-    { name: "baseColorTexture", type: types.file, default: "" },
-    { name: "normalTexture", type: types.file, default: "" },
-    { name: "metallicRoughnessTexture", type: types.file, default: "" },
-    { name: "emissiveTexture", type: types.file, default: "" },
-    { name: "occlusionTexture", type: types.file, default: "" }
+    { name: "baseColorTexture", type: types.file, default: "", filters: imageFilters },
+    { name: "normalTexture", type: types.file, default: "", filters: imageFilters },
+    { name: "metallicRoughnessTexture", type: types.file, default: "", filters: imageFilters },
+    { name: "emissiveTexture", type: types.file, default: "", filters: imageFilters },
+    { name: "occlusionTexture", type: types.file, default: "", filters: imageFilters }
     // TODO alphaMode
   ];
 

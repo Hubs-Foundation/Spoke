@@ -96,6 +96,15 @@ class PropertiesPanelContainer extends Component {
     this.props.editor.execute(new RemoveComponentCommand(this.state.object, componentName));
   };
 
+  getExtras(prop) {
+    switch (prop.type) {
+      case types.file:
+        return { openFileDialog: this.props.openFileDialog, filters: prop.filters };
+      default:
+        null;
+    }
+  }
+
   render() {
     const object = this.state.object;
 
@@ -165,7 +174,7 @@ class PropertiesPanelContainer extends Component {
                   {componentTypeMappings.get(prop.type)(
                     component.props[prop.name],
                     this.onChangeComponent.bind(null, component.name, prop.name),
-                    prop.type === types.file && { openFileDialog: this.props.openFileDialog, filters: prop.filters }
+                    this.getExtras(prop)
                   )}
                 </InputGroup>
               ))}

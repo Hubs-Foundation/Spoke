@@ -195,7 +195,7 @@ class EditorContainer extends Component {
     this.props.editor.redo();
   };
 
-  openFileDialog = (callback, filter) => {
+  openFileDialog = (callback, filters) => {
     this.setState({
       openModal: {
         component: FileDialogModalContainer,
@@ -203,7 +203,7 @@ class EditorContainer extends Component {
         props: {
           title: "Select a file...",
           confirmButtonLabel: "Select",
-          filter: filter,
+          filters: filters,
           onConfirm: filePath => {
             this.setState({ openModal: null });
             callback(filePath);

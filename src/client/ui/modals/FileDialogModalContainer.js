@@ -129,24 +129,21 @@ class FileDialogContainer extends Component {
       }
     }
 
-    let fileName = file.name;
-
     if (this.props.filters) {
-      const matchingFilter = this.props.filters.find(file.name.endsWith);
+      const matchingFilter = this.props.filters.find(filter => file.name.endsWith(filter));
       if (!matchingFilter) {
         this.setState({
-          singleClickedFile: file
+          singleClickedFile: file,
+          selectedFile: file
         });
         return;
       }
-
-      fileName = fileName.replace(matchingFilter, "");
     }
 
     this.setState({
       singleClickedFile: file,
       selectedFile: file,
-      fileName
+      fileName: file.name
     });
 
     clearTimeout(this.doubleClickTimeout);
@@ -241,7 +238,10 @@ class FileDialogContainer extends Component {
 
   render() {
     const selectedDirectory = getSelectedDirectory(this.state.tree, this.state.selectedDirectory) || this.state.tree;
-    const files = selectedDirectory.files || [];
+    let files = selectedDirectory.files || [];
+    if (this.props.filters && this.props.filters.length) {
+      files = files.filter(file => file.isDirectory || this.props.filters.some(filter => file.name.endsWith(filter)));
+    }
     const selectedFile = this.state.selectedFile;
 
     return (
