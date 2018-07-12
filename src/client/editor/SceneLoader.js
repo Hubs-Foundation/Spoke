@@ -228,6 +228,12 @@ export async function loadSerializedScene(sceneDef, baseURL, addComponent, isRoo
     throw new Error("Invalid Scene: Scene does not inherit from another scene or have a root entity.");
   }
 
+  // init scene conflict status
+  scene.conflicts = {
+    missing: false,
+    duplicate: false
+  };
+  
   if (entities) {
     // Convert any relative URLs in the scene to absolute URLs so that other code does not need to know about the scene path.
     resolveRelativeURLs(entities, baseURL);
@@ -256,18 +262,19 @@ export async function loadSerializedScene(sceneDef, baseURL, addComponent, isRoo
       if (entity.parent) {
         let parentObject = scene.getObjectByName(entity.parent);
         if (!parentObject) {
+          // parent node got renamed or deleted
           parentObject = new THREE.Object3D();
           parentObject.name = entity.parent;
           parentObject.isMissingRoot = true;
           parentObject.missing = true;
-          scene.isConflict = true;
+          scene.conflicts.missing = true;
           scene.add(parentObject);
         } else {
           parentObject.isMissingRoot = false;
           parentObject.missing = false;
         }
 
-        entityObj.missing = parentObject.isMissingRoot ? true : false;
+        entityObj.missing = parentObject.missing;
         addChildAtIndex(parentObject, entityObj, entity.index);
         // Parents defined in the root scene should be saved.
         if (isRoot) {
