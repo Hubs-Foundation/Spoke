@@ -10,6 +10,8 @@ import fs from "fs-extra";
 import chokidar from "chokidar";
 import debounce from "lodash.debounce";
 import opn from "opn";
+import generateUnlitTextures from "gltf-unlit-generator";
+import { contentHashAndCopy } from "./gltf";
 
 async function getProjectHierarchy(projectPath) {
   async function buildProjectNode(filePath, name, ext, isDirectory, uri) {
@@ -205,9 +207,18 @@ export default async function startServer(options) {
     const { sceneURI, outputURI } = ctx.request.body;
 
     const scenePath = path.resolve(projectPath, sceneURI.replace("/api/files/", ""));
+    const sceneDirPath = path.dirname(scenePath);
     const outputPath = path.resolve(projectPath, outputURI.replace("/api/files/", ""));
+    const outputDirPath = path.dirname(outputPath);
 
-    console.log(`Optimize ${scenePath} and output to: ${outputPath}`);
+    await generateUnlitTextures(scenePath, outputDirPath);
+
+    const json = await fs.readJSON(outputPath);
+
+    json.images = await contentHashAndCopy(json.images, sceneDirPath, outputDirPath);
+    json.buffers = await contentHashAndCopy(json.buffers, sceneDirPath, outputDirPath, true);
+
+    await fs.writeJSON(outputPath, json);
 
     ctx.body = {
       success: true
