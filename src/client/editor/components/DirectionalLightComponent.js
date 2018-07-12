@@ -17,8 +17,8 @@ export default class DirectionalLightComponent extends BaseComponent {
 
   static _tempEuler = new THREE.Euler(0, 0, 0, "YXZ");
 
-  _updateComponentProperty(propertyName, value) {
-    super._updateComponentProperty(propertyName, value);
+  updateProperty(propertyName, value) {
+    super.updateProperty(propertyName, value);
     const { _tempEuler } = DirectionalLightComponent;
     switch (propertyName) {
       case "color":
@@ -39,9 +39,9 @@ export default class DirectionalLightComponent extends BaseComponent {
     const { component, props } = this._getOrCreateComponent(node, _props);
     const light = new THREE.DirectionalLight(props.color, props.intensity);
     Object.defineProperty(component, "_object", { enumerable: false, value: light });
-    component._updateComponentProperty("azimuth", props.azimuth);
-    component._updateComponentProperty("elevation", props.elevation);
-    component._updateComponentProperty("castShadow", props.castShadow);
+    component.updateProperty("azimuth", props.azimuth);
+    component.updateProperty("elevation", props.elevation);
+    component.updateProperty("castShadow", props.castShadow);
     light.userData._dontShowInHierarchy = true;
     light.userData._inflated = true;
     node.add(light);

@@ -51,7 +51,8 @@ class FileDialogContainer extends Component {
     defaultFileName: PropTypes.string,
     project: PropTypes.any,
     confirmButtonLabel: PropTypes.string,
-    filter: PropTypes.string,
+    filters: PropTypes.arrayOf(PropTypes.string),
+    extension: PropTypes.string,
     onConfirm: PropTypes.func,
     onCancel: PropTypes.func
   };
@@ -128,23 +129,21 @@ class FileDialogContainer extends Component {
       }
     }
 
-    let fileName = file.name;
-
-    if (this.props.filter) {
-      if (!file.name.endsWith(this.props.filter)) {
+    if (this.props.filters) {
+      const matchingFilter = this.props.filters.find(filter => file.name.endsWith(filter));
+      if (!matchingFilter) {
         this.setState({
-          singleClickedFile: file
+          singleClickedFile: file,
+          selectedFile: file
         });
         return;
       }
-
-      fileName = fileName.replace(this.props.filter, "");
     }
 
     this.setState({
       singleClickedFile: file,
       selectedFile: file,
-      fileName
+      fileName: file.name
     });
 
     clearTimeout(this.doubleClickTimeout);
@@ -211,8 +210,8 @@ class FileDialogContainer extends Component {
         return;
       }
 
-      if (this.props.filter && !this.state.fileName.endsWith(this.props.filter)) {
-        fileName = fileName + this.props.filter;
+      if (this.props.extension && !this.state.fileName.endsWith(this.props.extension)) {
+        fileName = fileName + this.props.extension;
       }
 
       const directoryURI = this.state.selectedDirectory || this.state.tree.uri;
@@ -239,7 +238,10 @@ class FileDialogContainer extends Component {
 
   render() {
     const selectedDirectory = getSelectedDirectory(this.state.tree, this.state.selectedDirectory) || this.state.tree;
-    const files = selectedDirectory.files || [];
+    let files = selectedDirectory.files || [];
+    if (this.props.filters && this.props.filters.length) {
+      files = files.filter(file => file.isDirectory || this.props.filters.some(filter => file.name.endsWith(filter)));
+    }
     const selectedFile = this.state.selectedFile;
 
     return (

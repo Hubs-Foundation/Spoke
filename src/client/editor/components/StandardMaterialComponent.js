@@ -3,6 +3,8 @@ import { types, getFilePath } from "./utils";
 import THREE from "../../vendor/three";
 import envMapURL from "../../assets/envmap.jpg";
 
+const imageFilters = [".jpg", ".png"];
+const textureLoader = new THREE.TextureLoader();
 export default class StandardMaterialComponent extends BaseComponent {
   static componentName = "standard-material";
 
@@ -13,16 +15,26 @@ export default class StandardMaterialComponent extends BaseComponent {
     { name: "roughness", type: types.number, default: 1 },
     { name: "alphaCutoff", type: types.number, default: 0.5 },
     { name: "doubleSided", type: types.boolean, default: false },
-    { name: "baseColorTexture", type: types.file, default: "" },
-    { name: "normalTexture", type: types.file, default: "" },
-    { name: "metallicRoughnessTexture", type: types.file, default: "" },
-    { name: "emissiveTexture", type: types.file, default: "" },
-    { name: "occlusionTexture", type: types.file, default: "" }
+    { name: "baseColorTexture", type: types.file, default: "", filters: imageFilters },
+    { name: "normalTexture", type: types.file, default: "", filters: imageFilters },
+    { name: "metallicRoughnessTexture", type: types.file, default: "", filters: imageFilters },
+    { name: "emissiveTexture", type: types.file, default: "", filters: imageFilters },
+    { name: "occlusionTexture", type: types.file, default: "", filters: imageFilters }
     // TODO alphaMode
   ];
 
-  _updateComponentProperty(propertyName, value) {
-    super._updateComponentProperty(propertyName, value);
+  _loadTexture(url) {
+    try {
+      return textureLoader.load(url);
+    } catch (e) {
+      return null;
+      // TODO Should show warning on texture property when this happens.
+    }
+  }
+
+  updateProperty(propertyName, value) {
+    super.updateProperty(propertyName, value);
+    let texture;
     switch (propertyName) {
       case "color":
         this._object.color.set(value);
@@ -40,6 +52,28 @@ export default class StandardMaterialComponent extends BaseComponent {
         break;
       case "doubleSided":
         this._object.side = value ? THREE.DoubleSide : THREE.FrontSide;
+        break;
+      case "baseColorTexture":
+        this._object.map = this._loadTexture(value);
+        this._object.needsUpdate = true;
+        break;
+      case "normalTexture":
+        this._object.normalMap = this._loadTexture(value);
+        this._object.needsUpdate = true;
+        break;
+      case "metallicRoughnessTexture":
+        texture = this._loadTexture(value);
+        this._object.roughnessMap = texture;
+        this._object.metalnessMap = texture;
+        this._object.needsUpdate = true;
+        break;
+      case "emissiveTexture":
+        this._object.emissiveMap = this._loadTexture(value);
+        this._object.needsUpdate = true;
+        break;
+      case "occlusionTexture":
+        this._object.aoMap = this._loadTexture(value);
+        this._object.needsUpdate = true;
         break;
       default:
         this._object[propertyName] = value;

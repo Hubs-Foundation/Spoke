@@ -9,8 +9,8 @@ export default class ShadowComponent extends BaseComponent {
     { name: "receiveShadow", type: types.boolean, default: true }
   ];
 
-  _updateComponentProperty(propertyName, value) {
-    super._updateComponentProperty(propertyName, value);
+  updateProperty(propertyName, value) {
+    super.updateProperty(propertyName, value);
     this._object.traverse(obj => {
       if (obj instanceof THREE.Mesh) {
         obj[propertyName] = value;
@@ -22,8 +22,8 @@ export default class ShadowComponent extends BaseComponent {
   static inflate(node, _props) {
     const { component, props } = this._getOrCreateComponent(node, _props);
     Object.defineProperty(component, "_object", { enumerable: false, value: node });
-    component._updateComponentProperty("castShadow", props.castShadow);
-    component._updateComponentProperty("receiveShadow", props.receiveShadow);
+    component.updateProperty("castShadow", props.castShadow);
+    component.updateProperty("receiveShadow", props.receiveShadow);
     return component;
   }
 }

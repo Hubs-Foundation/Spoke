@@ -1,13 +1,14 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
+import Select from "react-select";
+
+import "../../vendor/react-select/index.scss";
 import styles from "./PropertiesPanelContainer.scss";
 import PropertyGroup from "../PropertyGroup";
 import InputGroup from "../InputGroup";
 import Vector3Input from "../inputs/Vector3Input";
 import StringInput from "../inputs/StringInput";
 import componentTypeMappings from "../inputs/componentTypeMappings";
-import Select from "react-select";
-import "../../vendor/react-select/index.scss";
 import SetValueCommand from "../../editor/commands/SetValueCommand";
 import SetPositionCommand from "../../editor/commands/SetPositionCommand";
 import SetRotationCommand from "../../editor/commands/SetRotationCommand";
@@ -16,13 +17,15 @@ import AddComponentCommand from "../../editor/commands/AddComponentCommand";
 import SetComponentPropertyCommand from "../../editor/commands/SetComponentPropertyCommand";
 import RemoveComponentCommand from "../../editor/commands/RemoveComponentCommand";
 import { getDisplayName } from "../../editor/components";
-const RAD2DEG = THREE.Math.RAD2DEG;
-const DEG2RAD = THREE.Math.DEG2RAD;
 import { withEditor } from "../contexts/EditorContext";
+import { types } from "../../editor/components";
+
+const { RAD2DEG, DEG2RAD } = THREE.Math;
 
 class PropertiesPanelContainer extends Component {
   static propTypes = {
-    editor: PropTypes.object
+    editor: PropTypes.object,
+    openFileDialog: PropTypes.func
   };
 
   constructor(props) {
@@ -93,6 +96,15 @@ class PropertiesPanelContainer extends Component {
     this.props.editor.execute(new RemoveComponentCommand(this.state.object, componentName));
   };
 
+  getExtras(prop) {
+    switch (prop.type) {
+      case types.file:
+        return { openFileDialog: this.props.openFileDialog, filters: prop.filters };
+      default:
+        null;
+    }
+  }
+
   render() {
     const object = this.state.object;
 
@@ -161,7 +173,8 @@ class PropertiesPanelContainer extends Component {
                 <InputGroup name={getDisplayName(prop.name)} key={prop.name}>
                   {componentTypeMappings.get(prop.type)(
                     component.props[prop.name],
-                    this.onChangeComponent.bind(null, component.name, prop.name)
+                    this.onChangeComponent.bind(null, component.name, prop.name),
+                    this.getExtras(prop)
                   )}
                 </InputGroup>
               ))}
