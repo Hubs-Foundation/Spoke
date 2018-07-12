@@ -233,7 +233,6 @@ export async function loadSerializedScene(sceneDef, baseURL, addComponent, isRoo
     missing: false,
     duplicate: false
   };
-  
   if (entities) {
     // Convert any relative URLs in the scene to absolute URLs so that other code does not need to know about the scene path.
     resolveRelativeURLs(entities, baseURL);
@@ -270,8 +269,10 @@ export async function loadSerializedScene(sceneDef, baseURL, addComponent, isRoo
           scene.conflicts.missing = true;
           scene.add(parentObject);
         } else {
-          parentObject.isMissingRoot = false;
-          parentObject.missing = false;
+          if (!parentObject.missing) {
+            parentObject.isMissingRoot = false;
+            parentObject.missing = false;
+          }
         }
 
         entityObj.missing = parentObject.missing;

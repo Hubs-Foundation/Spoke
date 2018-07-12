@@ -10,7 +10,7 @@ export default function SnackBar({ conflictType }) {
   const conflictTypes = {
     missing: {
       img: errorIcon,
-      content: "Missing nodes in your gltf modals.",
+      content: "Missing nodes in your .scene file.",
       helpURL: "https://github.com/MozillaReality/hubs-editor/wiki/Tutorials"
     },
     duplicate: {
@@ -19,7 +19,7 @@ export default function SnackBar({ conflictType }) {
       helpURL: "https://github.com/MozillaReality/hubs-editor/wiki/Tutorials"
     }
   };
-  console.log('type: ' + conflictType);
+
   return (
     <div className={styles.bar}>
       <div className={styles.icon}>
