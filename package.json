@@ -12,6 +12,7 @@
   ],
   "scripts": {
     "dev": "cross-env NODE_ENV=development node ./bin/hubs-editor ./example",
+    "dev:nopath": "cross-env NODE_ENV=development node ./bin/hubs-editor",
     "build": "concurrently \"npm run build:server\" \"npm run build:client\"",
     "build:server": "babel src/server/ -d lib/server/",
     "build:client": "webpack --mode production",
@@ -27,6 +28,7 @@
     "fast-deep-equal": "^2.0.1",
     "fs-extra": "^6.0.1",
     "gltf-bundle": "^0.10.0",
+    "gltf-unlit-generator": "^0.3.0",
     "koa": "^2.5.1",
     "koa-body": "^4.0.3",
     "koa-mount": "^3.0.0",
@@ -46,6 +48,7 @@
     "react-mosaic-component": "^1.1.1",
     "react-numeric-input": "^2.2.3",
     "react-select": "^1.2.1",
+    "selfsigned": "^1.10.3",
     "signals": "^1.0.0",
     "three": "github:mozillareality/three.js#hubs-editor/dev",
     "ws": "^5.2.0"

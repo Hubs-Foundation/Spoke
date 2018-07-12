@@ -5,11 +5,14 @@ import koaBody from "koa-body";
 import path from "path";
 import Router from "koa-router";
 import WebSocket from "ws";
-import http from "http";
+import https from "https";
+import selfsigned from "selfsigned";
 import fs from "fs-extra";
 import chokidar from "chokidar";
 import debounce from "lodash.debounce";
 import opn from "opn";
+import generateUnlitTextures from "gltf-unlit-generator";
+import { contentHashAndCopy } from "./gltf";
 
 async function getProjectHierarchy(projectPath) {
   async function buildProjectNode(filePath, name, ext, isDirectory, uri) {
@@ -80,7 +83,15 @@ export default async function startServer(options) {
   const projectDirName = path.basename(projectPath);
 
   const app = new Koa();
-  const server = http.createServer(app.callback());
+  if (!fs.existsSync(".certs/key.pem")) {
+    const cert = selfsigned.generate();
+    fs.writeFileSync(".certs/key.pem", cert.private);
+    fs.writeFileSync(".certs/cert.pem", cert.cert);
+  }
+  const server = https.createServer(
+    { key: fs.readFileSync(".certs/key.pem"), cert: fs.readFileSync(".certs/cert.pem") },
+    app.callback()
+  );
   const wss = new WebSocket.Server({ server });
 
   function broadcast(json) {
@@ -143,7 +154,7 @@ export default async function startServer(options) {
     try {
       const devMiddleware = await koaWebpack({
         compiler,
-        hotClient: { host: { server: "0.0.0.0", client: "*" } }
+        hotClient: { https: true, host: { server: "0.0.0.0", client: "*" } }
       });
       app.use(devMiddleware);
     } catch (e) {
@@ -159,7 +170,16 @@ export default async function startServer(options) {
     ctx.body = projectHierarchy;
   });
 
-  app.use(mount("/api/files/", serve(projectPath)));
+  app.use(
+    mount(
+      "/api/files/",
+      serve(projectPath, {
+        setHeaders: res => {
+          res.setHeader("Access-Control-Allow-Origin", "*");
+        }
+      })
+    )
+  );
 
   router.post("/api/files/:filePath*", koaBody({ multipart: true }), async ctx => {
     const filePath = ctx.params.filePath ? path.resolve(projectPath, ctx.params.filePath) : projectPath;
@@ -184,7 +204,12 @@ export default async function startServer(options) {
         success: true
       };
     } else if (ctx.request.type === "application/octet-stream") {
-      await fs.writeFile(filePath, ctx.req.read());
+      const bytes = await new Promise(resolve => {
+        ctx.req.on("readable", () => {
+          resolve(ctx.req.read());
+        });
+      });
+      await fs.writeFile(filePath, bytes);
       ctx.body = { success: true };
     } else if (ctx.request.query.mkdir) {
       await fs.ensureDir(filePath);
@@ -205,9 +230,18 @@ export default async function startServer(options) {
     const { sceneURI, outputURI } = ctx.request.body;
 
     const scenePath = path.resolve(projectPath, sceneURI.replace("/api/files/", ""));
+    const sceneDirPath = path.dirname(scenePath);
     const outputPath = path.resolve(projectPath, outputURI.replace("/api/files/", ""));
+    const outputDirPath = path.dirname(outputPath);
 
-    console.log(`Optimize ${scenePath} and output to: ${outputPath}`);
+    await generateUnlitTextures(scenePath, outputDirPath);
+
+    const json = await fs.readJSON(outputPath);
+
+    json.images = await contentHashAndCopy(json.images, sceneDirPath, outputDirPath);
+    json.buffers = await contentHashAndCopy(json.buffers, sceneDirPath, outputDirPath, true);
+
+    await fs.writeJSON(outputPath, json);
 
     ctx.body = {
       success: true
