@@ -5,7 +5,8 @@ import koaBody from "koa-body";
 import path from "path";
 import Router from "koa-router";
 import WebSocket from "ws";
-import http from "http";
+import https from "https";
+import selfsigned from "selfsigned";
 import fs from "fs-extra";
 import chokidar from "chokidar";
 import debounce from "lodash.debounce";
@@ -80,7 +81,15 @@ export default async function startServer(options) {
   const projectDirName = path.basename(projectPath);
 
   const app = new Koa();
-  const server = http.createServer(app.callback());
+  if (!fs.existsSync(".certs/key.pem")) {
+    const cert = selfsigned.generate();
+    fs.writeFileSync(".certs/key.pem", cert.private);
+    fs.writeFileSync(".certs/cert.pem", cert.cert);
+  }
+  const server = https.createServer(
+    { key: fs.readFileSync(".certs/key.pem"), cert: fs.readFileSync(".certs/cert.pem") },
+    app.callback()
+  );
   const wss = new WebSocket.Server({ server });
 
   function broadcast(json) {
@@ -143,7 +152,7 @@ export default async function startServer(options) {
     try {
       const devMiddleware = await koaWebpack({
         compiler,
-        hotClient: { host: { server: "0.0.0.0", client: "*" } }
+        hotClient: { https: true, host: { server: "0.0.0.0", client: "*" } }
       });
       app.use(devMiddleware);
     } catch (e) {
@@ -159,7 +168,16 @@ export default async function startServer(options) {
     ctx.body = projectHierarchy;
   });
 
-  app.use(mount("/api/files/", serve(projectPath)));
+  app.use(
+    mount(
+      "/api/files/",
+      serve(projectPath, {
+        setHeaders: res => {
+          res.setHeader("Access-Control-Allow-Origin", "*");
+        }
+      })
+    )
+  );
 
   router.post("/api/files/:filePath*", koaBody({ multipart: true }), async ctx => {
     const filePath = ctx.params.filePath ? path.resolve(projectPath, ctx.params.filePath) : projectPath;
@@ -184,7 +202,12 @@ export default async function startServer(options) {
         success: true
       };
     } else if (ctx.request.type === "application/octet-stream") {
-      await fs.writeFile(filePath, ctx.req.read());
+      const bytes = await new Promise(resolve => {
+        ctx.req.on("readable", () => {
+          resolve(ctx.req.read());
+        });
+      });
+      await fs.writeFile(filePath, bytes);
       ctx.body = { success: true };
     } else if (ctx.request.query.mkdir) {
       await fs.ensureDir(filePath);

@@ -7,3 +7,4 @@ yarn.lock
 node_modules/
 lib/
 public/
+.certs/
