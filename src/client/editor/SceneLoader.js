@@ -1,4 +1,5 @@
 import THREE from "../vendor/three";
+import { Components } from "./components";
 import SceneReferenceComponent from "./components/SceneReferenceComponent";
 
 export function absoluteToRelativeURL(from, to) {
@@ -76,6 +77,21 @@ function postProcessGLTF(scene, sceneURI, gltf) {
     for (const image of json.images) {
       image.uri = absoluteToRelativeURL(absoluteSceneURI, image.uri);
     }
+  }
+
+  const componentNames = Components.map(component => component.componentName);
+
+  for (const node of gltf.json.nodes) {
+    if (!node.extras) continue;
+    if (!node.extensions) {
+      node.extensions = [];
+    }
+    for (const component of node.extras._components) {
+      if (componentNames.includes(component.name)) {
+        node.extensions.push(component);
+      }
+    }
+    delete node.extras._components;
   }
 
   return gltf;
