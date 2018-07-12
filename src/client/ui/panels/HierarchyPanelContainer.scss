@@ -3,6 +3,7 @@
 :local(.hierarchyRoot) {
   outline: none;
   width: 100%;
+  position: relative;
 }
 
 :local(.breadCrumb),:local(.ancestor) {
@@ -29,3 +30,14 @@
   padding: 4px 5px;
 }
 
+:local(.conflictDisplay) {
+  bottom: 2%;
+  left: 50%;
+  transform: translate(-50%, 0%);
+  display: flex;
+  flex-direction: column;
+  align-content: space-between;
+  flex-wrap: wrap;
+  position: absolute;
+  width: 80%;
+}

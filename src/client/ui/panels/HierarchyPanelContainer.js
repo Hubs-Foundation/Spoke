@@ -141,7 +141,7 @@ class HierarchyPanelContainer extends Component {
           "is-active": this.props.editor.selected && node.object.id === this.props.editor.selected.id,
           conflict: node.object.missing,
           "error-root": node.object.isMissingRoot ? node.object.missing : false,
-          "conflict-child": node.object.missing && !node.object.isMissingRoot
+          disabled: node.object.missing && !node.object.isMissingRoot
         })}
         onMouseUp={node.object.missing ? undefined : e => this.onMouseUpNode(e, node)}
         onMouseDown={node.object.missing ? e => e.stopPropagation() : undefined}
@@ -176,6 +176,19 @@ class HierarchyPanelContainer extends Component {
 
   popScene = () => {
     this.props.editor.signals.popScene.dispatch();
+  };
+
+  renderWarnings = () => {
+    if (!this.props.editor.scene.conflicts) {
+      return;
+    }
+    const conflicts = this.props.editor.scene.conflicts;
+    console.log(Object.keys(conflicts));
+    return (
+      <div className={styles.conflictDisplay}>
+        {Object.keys(conflicts).map(type => (conflicts[type] ? <SnackBar conflictType={type} /> : null))}
+      </div>
+    );
   };
 
   render() {
@@ -213,7 +226,7 @@ class HierarchyPanelContainer extends Component {
           />
           <this.HierarchyNodeMenu />
         </HotKeys>
-        {this.props.editor.scene.isConflict ? <SnackBar /> : null}
+        {this.renderWarnings()}
       </div>
     );
   }
