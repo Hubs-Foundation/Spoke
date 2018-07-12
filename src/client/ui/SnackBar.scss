@@ -1,0 +1,29 @@
+@import "../theme";
+
+:local(.bar) {
+  bottom: 5%;
+  display: flex;
+  font-size: 12px;
+  height: auto;
+  position: absolute;
+  width: 80%;
+
+  :local(.icon) {
+    margin-left: 5%;
+    width: 20%;
+  }
+
+  :local(.content) {
+    margin-left: 1%;
+    width: 40%;
+  }
+
+  :local(.options) {
+    display: flex;
+    width: 30%;
+  }
+
+  :last-child {
+    margin-left: auto;
+  }
+}

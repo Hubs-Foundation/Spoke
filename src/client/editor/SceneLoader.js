@@ -254,9 +254,21 @@ export async function loadSerializedScene(sceneDef, baseURL, addComponent, isRoo
       // Attach the entity to its parent.
       // An entity doesn't have a parent defined if the entity is loaded in an inherited scene.
       if (entity.parent) {
-        const parentObject = scene.getObjectByName(entity.parent);
-        addChildAtIndex(parentObject, entityObj, entity.index);
+        let parentObject = scene.getObjectByName(entity.parent);
+        if (!parentObject) {
+          parentObject = new THREE.Object3D();
+          parentObject.name = entity.parent;
+          parentObject.isMissingRoot = true;
+          parentObject.missing = true;
+          scene.isConflict = true;
+          scene.add(parentObject);
+        } else {
+          parentObject.isMissingRoot = false;
+          parentObject.missing = false;
+        }
 
+        entityObj.missing = parentObject.isMissingRoot ? true : false;
+        addChildAtIndex(parentObject, entityObj, entity.index);
         // Parents defined in the root scene should be saved.
         if (isRoot) {
           entityObj.userData._saveParent = true;

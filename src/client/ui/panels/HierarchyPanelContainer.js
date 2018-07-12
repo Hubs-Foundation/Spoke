@@ -14,6 +14,7 @@ import MoveObjectCommand from "../../editor/commands/MoveObjectCommand";
 import THREE from "../../vendor/three";
 import SceneReferenceComponent from "../../editor/components/SceneReferenceComponent";
 import { last } from "../../utils";
+import SnackBar from "../SnackBar";
 
 function createNodeHierarchy(object) {
   const node = {
@@ -137,9 +138,13 @@ class HierarchyPanelContainer extends Component {
     return (
       <div
         className={classNames("node", {
-          "is-active": this.props.editor.selected && node.object.id === this.props.editor.selected.id
+          "is-active": this.props.editor.selected && node.object.id === this.props.editor.selected.id,
+          conflict: node.object.missing,
+          "error-root": node.object.isMissingRoot ? node.object.missing : false,
+          "conflict-child": node.object.missing && !node.object.isMissingRoot
         })}
-        onMouseUp={e => this.onMouseUpNode(e, node)}
+        onMouseUp={node.object.missing ? undefined : e => this.onMouseUpNode(e, node)}
+        onMouseDown={node.object.missing ? e => e.stopPropagation() : undefined}
       >
         <ContextMenuTrigger
           attributes={{ className: styles.treeNode }}
@@ -208,6 +213,7 @@ class HierarchyPanelContainer extends Component {
           />
           <this.HierarchyNodeMenu />
         </HotKeys>
+        {this.props.editor.scene.isConflict ? <SnackBar /> : null}
       </div>
     );
   }
