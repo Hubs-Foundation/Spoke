@@ -1,26 +1,49 @@
 @import "../theme";
 
 :local(.bar) {
-  bottom: 5%;
+  background-color: $background;
+  border-radius: 2px;
+  box-shadow: $shadow-30;
   display: flex;
   font-size: 12px;
-  height: auto;
-  position: absolute;
-  width: 80%;
+  height: 100%;
+  margin: 2% auto;
+  padding-bottom: 2%;
+  padding-top: 2%;
+  width: 100%;
 
   :local(.icon) {
-    margin-left: 5%;
-    width: 20%;
+    height: auto;
+    margin: auto 0 auto 2%;
+    width: 5%;
+
+    img {
+      display: block;
+      height: auto;
+      vertical-align: middle;
+      width: auto;
+    }
   }
 
   :local(.content) {
-    margin-left: 1%;
-    width: 40%;
+    display: inline-block;
+    margin: auto 0 auto 5px;
+    text-align: justify;
+    width: 90%;
+
+    &.error {
+      color: $red;
+    }
+
+    &.warning {
+      color: $yellow;
+    }
   }
 
   :local(.options) {
     display: flex;
-    width: 30%;
+    margin: auto 2%;
+    width: 20%;
   }
 
   :last-child {
