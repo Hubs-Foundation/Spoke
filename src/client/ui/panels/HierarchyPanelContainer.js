@@ -141,6 +141,7 @@ class HierarchyPanelContainer extends Component {
           "is-active": this.props.editor.selected && node.object.id === this.props.editor.selected.id,
           conflict: node.object.missing,
           "error-root": node.object.isMissingRoot ? node.object.missing : false,
+          "warning-root": node.object.isDuplicateRoot ? node.object.duplicate : false,
           disabled: node.object.missing && !node.object.isMissingRoot
         })}
         onMouseUp={node.object.missing ? undefined : e => this.onMouseUpNode(e, node)}
@@ -183,7 +184,6 @@ class HierarchyPanelContainer extends Component {
       return;
     }
     const conflicts = this.props.editor.scene.conflicts;
-    console.log(Object.keys(conflicts));
     return (
       <div className={styles.conflictDisplay}>
         {Object.keys(conflicts).map(type => (conflicts[type] ? <SnackBar conflictType={type} /> : null))}
