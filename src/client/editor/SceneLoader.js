@@ -229,10 +229,11 @@ export async function loadSerializedScene(sceneDef, baseURL, addComponent, isRoo
   }
 
   // init scene conflict status
-  scene.conflicts = {
+  scene.userData._conflicts = {
     missing: false,
     duplicate: false
   };
+
   if (entities) {
     // Convert any relative URLs in the scene to absolute URLs so that other code does not need to know about the scene path.
     resolveRelativeURLs(entities, baseURL);
@@ -264,18 +265,18 @@ export async function loadSerializedScene(sceneDef, baseURL, addComponent, isRoo
           // parent node got renamed or deleted
           parentObject = new THREE.Object3D();
           parentObject.name = entity.parent;
-          parentObject.isMissingRoot = true;
-          parentObject.missing = true;
-          scene.conflicts.missing = true;
+          parentObject.userData._isMissingRoot = true;
+          parentObject.userData._missing = true;
+          scene.userData._conflicts.missing = true;
           scene.add(parentObject);
         } else {
-          if (!parentObject.missing) {
-            parentObject.isMissingRoot = false;
-            parentObject.missing = false;
+          if (!parentObject.userData._missing) {
+            parentObject.userData._isMissingRoot = false;
+            parentObject.userData._missing = false;
           }
         }
 
-        entityObj.missing = parentObject.missing;
+        entityObj.userData._missing = parentObject.userData._missing;
         addChildAtIndex(parentObject, entityObj, entity.index);
         // Parents defined in the root scene should be saved.
         if (isRoot) {

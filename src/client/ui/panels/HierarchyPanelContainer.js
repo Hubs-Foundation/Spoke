@@ -139,12 +139,12 @@ class HierarchyPanelContainer extends Component {
       <div
         className={classNames("node", {
           "is-active": this.props.editor.selected && node.object.id === this.props.editor.selected.id,
-          conflict: node.object.missing,
-          "error-root": node.object.isMissingRoot ? node.object.missing : false,
-          disabled: node.object.missing && !node.object.isMissingRoot
+          conflict: node.object.userData._missing,
+          "error-root": node.object.userData._isMissingRoot ? node.object.userData._missing : false,
+          disabled: node.object.userData._missing && !node.object.userData._isMissingRoot
         })}
-        onMouseUp={node.object.missing ? undefined : e => this.onMouseUpNode(e, node)}
-        onMouseDown={node.object.missing ? e => e.stopPropagation() : undefined}
+        onMouseUp={node.object.userData._missing ? null : e => this.onMouseUpNode(e, node)}
+        onMouseDown={node.object.userData._missing ? e => e.stopPropagation() : null}
       >
         <ContextMenuTrigger
           attributes={{ className: styles.treeNode }}
@@ -179,14 +179,15 @@ class HierarchyPanelContainer extends Component {
   };
 
   renderWarnings = () => {
-    if (!this.props.editor.scene.conflicts) {
+    if (!this.props.editor.scene.userData._conflicts) {
       return;
     }
-    const conflicts = this.props.editor.scene.conflicts;
-    console.log(Object.keys(conflicts));
+
+    const conflicts = this.props.editor.scene.userData._conflicts;
+
     return (
       <div className={styles.conflictDisplay}>
-        {Object.keys(conflicts).map(type => (conflicts[type] ? <SnackBar conflictType={type} /> : null))}
+        {Object.keys(conflicts).map((type, i) => (conflicts[type] ? <SnackBar conflictType={type} key={i} /> : null))}
       </div>
     );
   };
