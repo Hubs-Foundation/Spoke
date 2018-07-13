@@ -6,6 +6,7 @@ import path from "path";
 import Router from "koa-router";
 import WebSocket from "ws";
 import https from "https";
+import http from "http";
 import selfsigned from "selfsigned";
 import fs from "fs-extra";
 import chokidar from "chokidar";
@@ -72,26 +73,27 @@ async function getProjectHierarchy(projectPath) {
 }
 
 export default async function startServer(options) {
-  const opts = Object.assign(
-    {
-      port: 8080
-    },
-    options
-  );
+  const opts = options;
 
   const projectPath = path.resolve(opts.projectPath);
   const projectDirName = path.basename(projectPath);
 
   const app = new Koa();
-  if (!fs.existsSync(".certs/key.pem")) {
-    const cert = selfsigned.generate();
-    fs.writeFileSync(".certs/key.pem", cert.private);
-    fs.writeFileSync(".certs/cert.pem", cert.cert);
+
+  let server;
+  if (opts.https) {
+    if (!fs.existsSync(".certs/key.pem")) {
+      const cert = selfsigned.generate();
+      fs.writeFileSync(".certs/key.pem", cert.private);
+      fs.writeFileSync(".certs/cert.pem", cert.cert);
+    }
+    server = https.createServer(
+      { key: fs.readFileSync(".certs/key.pem"), cert: fs.readFileSync(".certs/cert.pem") },
+      app.callback()
+    );
+  } else {
+    server = http.createServer(app.callback());
   }
-  const server = https.createServer(
-    { key: fs.readFileSync(".certs/key.pem"), cert: fs.readFileSync(".certs/cert.pem") },
-    app.callback()
-  );
   const wss = new WebSocket.Server({ server });
 
   function broadcast(json) {
@@ -154,7 +156,7 @@ export default async function startServer(options) {
     try {
       const devMiddleware = await koaWebpack({
         compiler,
-        hotClient: { https: true, host: { server: "0.0.0.0", client: "*" } }
+        hotClient: opts.https ? false : { host: { server: "0.0.0.0", client: "*" } }
       });
       app.use(devMiddleware);
     } catch (e) {
