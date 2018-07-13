@@ -10,7 +10,7 @@ export default function SnackBar({ conflictType }) {
   const conflictTypes = {
     missing: {
       img: errorIcon,
-      content: "Missing nodes in your .scene file.",
+      content: "Missing nodes in your gltf modals.",
       helpURL:
         "https://github.com/MozillaReality/hubs-editor/wiki/Conflict-Resolution#missing-node-in-the-inherited-file"
     },
