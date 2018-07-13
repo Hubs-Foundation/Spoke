@@ -9,6 +9,7 @@ commander.usage("[options] <projectDir>");
 
 commander.option("-o, --open", "Open browser");
 commander.option("-p, --port <port>", "Web server port. Defaults to 9090", 9090);
+commander.option("-s, --https", "Use HTTPS");
 
 commander.parse(process.argv);
 
@@ -28,7 +29,8 @@ console.log(`Serving project directory: ${projectPath}`);
 
 startServer({
   projectPath,
-  port: commander.port
+  port: commander.port,
+  https: commander.https
 })
   .then(() => {
     console.log(`Server listening on port ${commander.port}`);
