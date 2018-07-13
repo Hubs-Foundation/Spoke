@@ -72,12 +72,7 @@ async function getProjectHierarchy(projectPath) {
 }
 
 export default async function startServer(options) {
-  const opts = Object.assign(
-    {
-      port: 8080
-    },
-    options
-  );
+  const opts = options;
 
   const projectPath = path.resolve(opts.projectPath);
   const projectDirName = path.basename(projectPath);

@@ -8,7 +8,7 @@ commander.version(pkg.version);
 commander.usage("[options] <projectDir>");
 
 commander.option("-o, --open", "Open browser");
-commander.option("-p, --port <port>", "Web server port. Defaults to 8080", 8080);
+commander.option("-p, --port <port>", "Web server port. Defaults to 9090", 9090);
 
 commander.parse(process.argv);
 
