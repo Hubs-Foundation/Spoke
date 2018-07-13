@@ -249,6 +249,28 @@ export async function loadSerializedScene(sceneDef, baseURL, addComponent, isRoo
     missing: false,
     duplicate: false
   };
+  let duplicateList = {};
+  // check duplicate names
+  scene.traverse(child => {
+    const name = child.name;
+    if (name in duplicateList) {
+      duplicateList[name]++;
+    } else {
+      duplicateList[name] = 1;
+    }
+  });
+  // update children duplicate status
+  scene.traverse(child => {
+    child.duplicate = duplicateList[child.name] > 1;
+    child.isDuplicateRoot = child.duplicate;
+  });
+  // update scene conflict info
+  scene.traverse(child => {
+    if (child.duplicate) {
+      scene.conflicts.duplicate = true;
+    }
+  });
+
   if (entities) {
     // Convert any relative URLs in the scene to absolute URLs so that other code does not need to know about the scene path.
     resolveRelativeURLs(entities, baseURL);
@@ -282,6 +304,7 @@ export async function loadSerializedScene(sceneDef, baseURL, addComponent, isRoo
           parentObject.name = entity.parent;
           parentObject.isMissingRoot = true;
           parentObject.missing = true;
+          parentObject.duplicate = false;
           scene.conflicts.missing = true;
           scene.add(parentObject);
         } else {
@@ -292,6 +315,7 @@ export async function loadSerializedScene(sceneDef, baseURL, addComponent, isRoo
         }
 
         entityObj.missing = parentObject.missing;
+        entityObj.duplicate = parentObject.duplicate;
         addChildAtIndex(parentObject, entityObj, entity.index);
         // Parents defined in the root scene should be saved.
         if (isRoot) {
