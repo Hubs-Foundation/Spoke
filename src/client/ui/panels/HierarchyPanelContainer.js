@@ -14,6 +14,7 @@ import MoveObjectCommand from "../../editor/commands/MoveObjectCommand";
 import THREE from "../../vendor/three";
 import SceneReferenceComponent from "../../editor/components/SceneReferenceComponent";
 import { last } from "../../utils";
+import SnackBar from "../SnackBar";
 
 function createNodeHierarchy(object) {
   const node = {
@@ -137,9 +138,13 @@ class HierarchyPanelContainer extends Component {
     return (
       <div
         className={classNames("node", {
-          "is-active": this.props.editor.selected && node.object.id === this.props.editor.selected.id
+          "is-active": this.props.editor.selected && node.object.id === this.props.editor.selected.id,
+          conflict: node.object.userData._missing,
+          "error-root": node.object.userData._isMissingRoot ? node.object.userData._missing : false,
+          disabled: node.object.userData._missing && !node.object.userData._isMissingRoot
         })}
-        onMouseUp={e => this.onMouseUpNode(e, node)}
+        onMouseUp={node.object.userData._missing ? null : e => this.onMouseUpNode(e, node)}
+        onMouseDown={node.object.userData._missing ? e => e.stopPropagation() : null}
       >
         <ContextMenuTrigger
           attributes={{ className: styles.treeNode }}
@@ -171,6 +176,20 @@ class HierarchyPanelContainer extends Component {
 
   popScene = () => {
     this.props.editor.signals.popScene.dispatch();
+  };
+
+  renderWarnings = () => {
+    if (!this.props.editor.scene.userData._conflicts) {
+      return;
+    }
+
+    const conflicts = this.props.editor.scene.userData._conflicts;
+
+    return (
+      <div className={styles.conflictDisplay}>
+        {Object.keys(conflicts).map((type, i) => (conflicts[type] ? <SnackBar conflictType={type} key={i} /> : null))}
+      </div>
+    );
   };
 
   render() {
@@ -208,6 +227,7 @@ class HierarchyPanelContainer extends Component {
           />
           <this.HierarchyNodeMenu />
         </HotKeys>
+        {this.renderWarnings()}
       </div>
     );
   }
