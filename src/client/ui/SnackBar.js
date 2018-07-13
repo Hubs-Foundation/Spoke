@@ -10,13 +10,13 @@ export default function SnackBar({ conflictType }) {
   const conflictTypes = {
     missing: {
       img: errorIcon,
-      content: "Missing nodes in your gltf modals.",
+      content: "Missing nodes in your gltf models.",
       helpURL:
         "https://github.com/MozillaReality/hubs-editor/wiki/Conflict-Resolution#missing-node-in-the-inherited-file"
     },
     duplicate: {
       img: warningIcon,
-      content: "Duplicate node names in your gltf modals.",
+      content: "Duplicate node names in your gltf models.",
       helpURL:
         "https://github.com/MozillaReality/hubs-editor/wiki/Conflict-Resolution#duplicate-node-names-in-the-inherited-file"
     }
