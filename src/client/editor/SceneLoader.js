@@ -251,23 +251,33 @@ export async function loadSerializedScene(sceneDef, baseURL, addComponent, isRoo
   };
   let duplicateList = {};
   // check duplicate names
-  scene.traverse(child => {
-    const name = child.name;
-    if (name in duplicateList) {
-      duplicateList[name]++;
-    } else {
-      duplicateList[name] = 1;
-    }
-  });
   // update children duplicate status
+  const layerTraverse = (node, layer, index) => {
+    if (node.userData._path) {
+      node.userData._path.push(index);
+    } else {
+      node.userData._path = [0];
+    }
+    const name = node.name;
+    duplicateList[name] = name in duplicateList ? duplicateList[name] + 1 : 1;
+    //let n = node;
+    if (node.children) {
+      node.children.map((child, i) => {
+        child.userData._path = node.userData._path.slice(0);
+        layerTraverse(child, layer + 1, i);
+      });
+    }
+  };
+  layerTraverse(scene, 0, 0);
   scene.traverse(child => {
-    child.duplicate = duplicateList[child.name] > 1;
-    child.isDuplicateRoot = child.duplicate;
+    child.userData._duplicate = duplicateList[child.name] > 1;
+    child.userData._isDuplicateRoot = child.userData._duplicate;
   });
+
   // update scene conflict info
   scene.traverse(child => {
-    if (child.duplicate) {
-      scene.conflicts.duplicate = true;
+    if (child.userData._duplicate) {
+      scene.userData._conflicts.duplicate = true;
     }
   });
 
@@ -314,6 +324,7 @@ export async function loadSerializedScene(sceneDef, baseURL, addComponent, isRoo
         }
 
         entityObj.userData._missing = parentObject.userData._missing;
+        entityObj.userData._duplicate = parentObject.userData._duplicate;
         addChildAtIndex(parentObject, entityObj, entity.index);
         // Parents defined in the root scene should be saved.
         if (isRoot) {
