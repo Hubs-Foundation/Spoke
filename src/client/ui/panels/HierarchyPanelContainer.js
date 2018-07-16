@@ -15,6 +15,7 @@ import THREE from "../../vendor/three";
 import SceneReferenceComponent from "../../editor/components/SceneReferenceComponent";
 import { last } from "../../utils";
 import SnackBar from "../SnackBar";
+import ReactTooltip from "react-tooltip";
 
 function createNodeHierarchy(object) {
   const node = {
@@ -166,10 +167,19 @@ class HierarchyPanelContainer extends Component {
   renderNodeName = node => {
     let name = node.object.name;
     if (node.object.userData._isDuplicateRoot) {
-      const duplicatePostfix = ` (name duplicated, node path: ${node.object.userData._path.join("-")})`;
+      const duplicatePostfix = `_${node.object.userData._path.join("-")}`;
       name = `${name}${duplicatePostfix}`;
     }
-    return name;
+    return (
+      <div data-tip={node.object.userData._isDuplicateRoot} data-for={name}>
+        {name}
+        {node.object.userData._isDuplicateRoot ? (
+          <ReactTooltip id={name} type="warning" place="bottom" effect="float">
+            <span>Original node name: {node.object.name}</span>
+          </ReactTooltip>
+        ) : null}
+      </div>
+    );
   };
 
   renderHierarchyNodeMenu = props => {
