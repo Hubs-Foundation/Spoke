@@ -252,7 +252,7 @@ export async function loadSerializedScene(sceneDef, baseURL, addComponent, isRoo
   const duplicateList = {};
   // check duplicate names
   // update children duplicate status
-  const layerTraverse = (node, layer, index) => {
+  const findDuplicates = (node, layer, index) => {
     if (node.userData._path) {
       node.userData._path.push(index);
     } else {
@@ -262,23 +262,23 @@ export async function loadSerializedScene(sceneDef, baseURL, addComponent, isRoo
     // count the name and save to the list
     const name = node.name;
     duplicateList[name] = name in duplicateList ? duplicateList[name] + 1 : 1;
+    if (duplicateList[name] > 1) {
+      scene.userData._conflicts.duplicate = true;
+    }
 
     if (node.children) {
-      node.children.map((child, i) => {
+      node.children.forEach((child, i) => {
         child.userData._path = node.userData._path.slice(0);
-        layerTraverse(child, layer + 1, i);
+        findDuplicates(child, layer + 1, i);
       });
     }
   };
-  layerTraverse(scene, 0, 0);
+  findDuplicates(scene, 0, 0);
 
   scene.traverse(child => {
     child.userData._duplicate = duplicateList[child.name] > 1;
     child.userData._isDuplicateRoot = child.userData._duplicate;
   });
-
-  // update scene conflict info
-  scene.userData._conflicts.duplicate = Object.keys(duplicateList).filter(name => duplicateList[name] > 1).length > 0;
 
   if (entities) {
     // Convert any relative URLs in the scene to absolute URLs so that other code does not need to know about the scene path.
