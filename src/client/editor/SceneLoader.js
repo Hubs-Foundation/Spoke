@@ -249,6 +249,36 @@ export async function loadSerializedScene(sceneDef, baseURL, addComponent, isRoo
     missing: false,
     duplicate: false
   };
+  const duplicateList = {};
+  // check duplicate names
+  // update children duplicate status
+  const findDuplicates = (node, layer, index) => {
+    if (node.userData._path) {
+      node.userData._path.push(index);
+    } else {
+      node.userData._path = [0];
+    }
+
+    // count the name and save to the list
+    const name = node.name;
+    duplicateList[name] = name in duplicateList ? duplicateList[name] + 1 : 1;
+    if (duplicateList[name] > 1) {
+      scene.userData._conflicts.duplicate = true;
+    }
+
+    if (node.children) {
+      node.children.forEach((child, i) => {
+        child.userData._path = node.userData._path.slice(0);
+        findDuplicates(child, layer + 1, i);
+      });
+    }
+  };
+  findDuplicates(scene, 0, 0);
+
+  scene.traverse(child => {
+    child.userData._duplicate = duplicateList[child.name] > 1;
+    child.userData._isDuplicateRoot = child.userData._duplicate;
+  });
 
   if (entities) {
     // Convert any relative URLs in the scene to absolute URLs so that other code does not need to know about the scene path.
@@ -293,6 +323,7 @@ export async function loadSerializedScene(sceneDef, baseURL, addComponent, isRoo
         }
 
         entityObj.userData._missing = parentObject.userData._missing;
+        entityObj.userData._duplicate = parentObject.userData._duplicate;
         addChildAtIndex(parentObject, entityObj, entity.index);
         // Parents defined in the root scene should be saved.
         if (isRoot) {

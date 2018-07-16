@@ -15,6 +15,7 @@ import THREE from "../../vendor/three";
 import SceneReferenceComponent from "../../editor/components/SceneReferenceComponent";
 import { last } from "../../utils";
 import SnackBar from "../SnackBar";
+import ReactTooltip from "react-tooltip";
 
 function createNodeHierarchy(object) {
   const node = {
@@ -135,16 +136,20 @@ class HierarchyPanelContainer extends Component {
   };
 
   renderNode = node => {
+    const isConflict = node.object.userData._missing || node.object.userData._duplicate;
+    const isMissingChild = node.object.userData._missing && !node.object.userData._isMissingRoot;
+    const isDuplicateChild = node.object.userData._duplicate && !node.object.userData._isDuplicateRoot;
     return (
       <div
         className={classNames("node", {
           "is-active": this.props.editor.selected && node.object.id === this.props.editor.selected.id,
-          conflict: node.object.userData._missing,
+          conflict: isConflict,
           "error-root": node.object.userData._isMissingRoot ? node.object.userData._missing : false,
-          disabled: node.object.userData._missing && !node.object.userData._isMissingRoot
+          "warning-root": node.object.userData._isDuplicateRoot ? node.object.userData._duplicate : false,
+          disabled: isMissingChild || isDuplicateChild
         })}
-        onMouseUp={node.object.userData._missing ? null : e => this.onMouseUpNode(e, node)}
-        onMouseDown={node.object.userData._missing ? e => e.stopPropagation() : null}
+        onMouseUp={isConflict ? null : e => this.onMouseUpNode(e, node)}
+        onMouseDown={isConflict ? e => e.stopPropagation() : null}
       >
         <ContextMenuTrigger
           attributes={{ className: styles.treeNode }}
@@ -153,8 +158,26 @@ class HierarchyPanelContainer extends Component {
           node={node}
           collect={collectNodeMenuProps}
         >
-          {node.object.name}
+          {this.renderNodeName(node)}
         </ContextMenuTrigger>
+      </div>
+    );
+  };
+
+  renderNodeName = node => {
+    let name = node.object.name;
+    if (node.object.userData._isDuplicateRoot) {
+      const duplicatePostfix = `_${node.object.userData._path.join("-")}`;
+      name = `${name}${duplicatePostfix}`;
+    }
+    return (
+      <div data-tip={node.object.userData._isDuplicateRoot} data-for={name}>
+        {name}
+        {node.object.userData._isDuplicateRoot ? (
+          <ReactTooltip id={name} type="warning" place="bottom" effect="float">
+            <span>Original node name: {node.object.name}</span>
+          </ReactTooltip>
+        ) : null}
       </div>
     );
   };
