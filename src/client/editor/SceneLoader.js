@@ -220,13 +220,13 @@ function convertAbsoluteURLs(entities, sceneURL) {
   }
 }
 
-export async function loadSerializedScene(sceneDef, baseURL, addComponent, isRoot = true, ancestors) {
+export async function loadSerializedScene(sceneDef, baseURI, addComponent, isRoot = true, ancestors) {
   let scene;
 
   const { inherits, root, entities } = sceneDef;
 
+  const absoluteBaseURL = new URL(baseURI, window.location);
   if (inherits) {
-    const absoluteBaseURL = new URL(baseURL, window.location);
     const inheritedSceneURL = new URL(inherits, absoluteBaseURL);
     // eslint-disable-next-line no-use-before-define
     scene = await loadScene(inheritedSceneURL.href, addComponent, false, ancestors);
@@ -282,7 +282,7 @@ export async function loadSerializedScene(sceneDef, baseURL, addComponent, isRoo
 
   if (entities) {
     // Convert any relative URLs in the scene to absolute URLs so that other code does not need to know about the scene path.
-    resolveRelativeURLs(entities, baseURL);
+    resolveRelativeURLs(entities, absoluteBaseURL.href);
 
     // Sort entities by insertion order (uses parent and index to determine order).
     const sortedEntities = sortEntities(entities);
@@ -343,8 +343,10 @@ export async function loadSerializedScene(sceneDef, baseURL, addComponent, isRoo
   return scene;
 }
 
-export async function loadScene(url, addComponent, isRoot = true, ancestors) {
+export async function loadScene(uri, addComponent, isRoot = true, ancestors) {
   let scene;
+
+  const url = new URL(uri, window.location).href;
 
   if (url.endsWith(".gltf")) {
     scene = await loadGLTF(url);
@@ -356,8 +358,6 @@ export async function loadScene(url, addComponent, isRoot = true, ancestors) {
     if (!scene.name) {
       scene.name = "Scene";
     }
-
-    scene.userData._gltfDependency = url;
 
     inflateGLTFComponents(scene, addComponent);
 
@@ -371,7 +371,7 @@ export async function loadScene(url, addComponent, isRoot = true, ancestors) {
     ancestors = [];
   }
 
-  scene = await loadSerializedScene(sceneDef, url, addComponent, isRoot, ancestors);
+  scene = await loadSerializedScene(sceneDef, uri, addComponent, isRoot, ancestors);
 
   scene.userData._ancestors = ancestors;
 

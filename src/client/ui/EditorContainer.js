@@ -154,8 +154,7 @@ class EditorContainer extends Component {
     this.props.editor.signals.openScene.add(this.onOpenScene);
     this.props.editor.signals.sceneGraphChanged.add(this.onSceneChanged);
     this.props.project.addListener("change", path => {
-      const url = new URL(path, window.location).href;
-      this.props.editor.signals.fileChanged.dispatch(url);
+      this.props.editor.signals.fileChanged.dispatch(path);
     });
   }
 
@@ -323,14 +322,11 @@ class EditorContainer extends Component {
   };
 
   onOpenScene = uri => {
-    const uriPath = new URL(this.props.editor.sceneInfo.uri, window.location);
-    if (uriPath.pathname === uri) return;
+    if (this.props.editor.sceneInfo.uri === uri) return;
     if (!this.confirmSceneChange()) return;
 
-    const url = new URL(uri, window.location);
-
     this.props.editor
-      .openRootScene(url.href)
+      .openRootScene(uri)
       .then(scene => {
         document.title = `Hubs Editor - ${scene.name}`;
       })

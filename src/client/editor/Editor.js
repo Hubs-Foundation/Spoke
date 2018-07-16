@@ -132,13 +132,13 @@ export default class Editor {
     this.signals.windowResize.dispatch();
   };
 
-  onFileChanged = url => {
-    const dependencies = this.fileDependencies.get(url);
+  onFileChanged = uri => {
+    const dependencies = this.fileDependencies.get(uri);
 
     if (dependencies) {
       for (const dependency of dependencies) {
         if (this.getComponent(dependency, SceneReferenceComponent.componentName)) {
-          this.loadSceneReference(url, dependency);
+          this._loadSceneReference(uri, dependency);
         } else {
           this.reloadScene();
         }
@@ -163,14 +163,14 @@ export default class Editor {
     this.sceneInfo.uri = uri;
   }
 
-  editScenePrefab(url) {
+  editScenePrefab(uri) {
     this.deselect();
-    this.loadScene(url);
+    this._loadScene(uri);
   }
 
   loadNewScene() {
     // Remove existing gltf dependency
-    const prevDependencies = this.fileDependencies.get(this.scene.userData._url);
+    const prevDependencies = this.fileDependencies.get(this.scene.userData._uri);
 
     if (prevDependencies) {
       prevDependencies.delete(this.scene);
@@ -198,9 +198,9 @@ export default class Editor {
     return scene;
   }
 
-  openRootScene(url) {
+  openRootScene(uri) {
     this.scenes = [];
-    return this.loadScene(url);
+    return this._loadScene(uri);
   }
 
   _setScene(scene) {
@@ -225,9 +225,9 @@ export default class Editor {
     }
   }
 
-  async loadScene(url) {
+  async _loadScene(uri) {
     // Remove existing gltf dependency
-    const prevDependencies = this.fileDependencies.get(this.scene.userData._url);
+    const prevDependencies = this.fileDependencies.get(this.scene.userData._uri);
 
     if (prevDependencies) {
       prevDependencies.delete(this.scene);
@@ -239,13 +239,13 @@ export default class Editor {
     this.helpers = {};
     this.objects = [];
 
-    const scene = await loadScene(url, this.addComponent, true);
-    this.scene.userData._url = url;
+    const scene = await loadScene(uri, this.addComponent, true);
+    this.scene.userData._uri = uri;
 
     this.setSceneDefaults(scene, true);
 
     this.sceneInfo = {
-      uri: url,
+      uri: uri,
       scene: scene,
       helperScene: this.helperScene,
       helpers: this.helpers,
@@ -255,19 +255,19 @@ export default class Editor {
     this._setScene(scene);
 
     // Add gltf dependency
-    const gltfDependencies = this.fileDependencies.get(url) || new Set();
+    const gltfDependencies = this.fileDependencies.get(uri) || new Set();
     gltfDependencies.add(this.scene);
-    this.fileDependencies.set(url, gltfDependencies);
+    this.fileDependencies.set(uri, gltfDependencies);
 
     return scene;
   }
 
-  async loadSceneReference(url, parent) {
+  async _loadSceneReference(uri, parent) {
     this.removeSceneRefDependency(parent);
 
-    const scene = await loadScene(url, this.addComponent, false);
+    const scene = await loadScene(uri, this.addComponent, false);
     scene.userData._dontShowInHierarchy = true;
-    scene.userData._sceneReference = url;
+    scene.userData._sceneReference = uri;
 
     scene.traverse(child => {
       Object.defineProperty(child.userData, "_selectionRoot", { value: parent, enumerable: false });
@@ -280,9 +280,9 @@ export default class Editor {
     this.signals.sceneGraphChanged.dispatch();
 
     // Add gltf dependency
-    const gltfDependencies = this.fileDependencies.get(url) || new Set();
+    const gltfDependencies = this.fileDependencies.get(uri) || new Set();
     gltfDependencies.add(parent);
-    this.fileDependencies.set(url, gltfDependencies);
+    this.fileDependencies.set(uri, gltfDependencies);
 
     return scene;
   }
@@ -300,17 +300,17 @@ export default class Editor {
   }
 
   async reloadScene() {
-    const sceneURL = this.scene.userData._url;
-    const sceneDef = serializeScene(this.scene, sceneURL);
-    const scene = await loadSerializedScene(sceneDef, sceneURL, this.addComponent, true);
+    const sceneURI = this.scene.userData._uri;
+    const sceneDef = serializeScene(this.scene, sceneURI);
+    const scene = await loadSerializedScene(sceneDef, sceneURI, this.addComponent, true);
 
     this._setScene(scene);
 
     return scene;
   }
 
-  serializeScene(sceneURL) {
-    return serializeScene(this.scene, sceneURL || this.scene.userData._url);
+  serializeScene(sceneURI) {
+    return serializeScene(this.scene, sceneURI || this.scene.userData._uri);
   }
 
   //
@@ -478,7 +478,7 @@ export default class Editor {
       component = this.components.get(componentName).inflate(object, props);
 
       if (componentName === SceneReferenceComponent.componentName && props && props.src) {
-        this.loadSceneReference(props.src, object);
+        this._loadSceneReference(props.src, object);
       }
     } else {
       component = {
@@ -555,7 +555,7 @@ export default class Editor {
 
       if (componentName === SceneReferenceComponent.componentName && propertyName === "src") {
         this._removeChildren(object);
-        this.loadSceneReference(value, object)
+        this._loadSceneReference(value, object)
           .then(() => {
             this.deselect();
             this.select(object);
