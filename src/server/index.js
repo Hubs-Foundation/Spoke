@@ -13,7 +13,7 @@ import chokidar from "chokidar";
 import debounce from "lodash.debounce";
 import opn from "opn";
 import { contentHashAndCopy } from "./gltf";
-// import generateUnlitTextures from "gltf-unlit-generator";
+import generateUnlitTextures from "gltf-unlit-generator";
 
 async function getProjectHierarchy(projectPath) {
   async function buildProjectNode(filePath, name, ext, isDirectory, uri) {
@@ -237,7 +237,7 @@ export default async function startServer(options) {
     const outputDirPath = path.dirname(outputPath);
 
     // TODO: fix unlit texture generation
-    // await generateUnlitTextures(scenePath, outputDirPath);
+    await generateUnlitTextures(scenePath, outputDirPath);
 
     const json = await fs.readJSON(outputPath);
 

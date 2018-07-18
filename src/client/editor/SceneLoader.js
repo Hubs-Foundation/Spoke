@@ -82,12 +82,12 @@ export async function exportScene(scene) {
   for (const node of chunks.json.nodes) {
     if (!node.extras) continue;
     if (!node.extensions) {
-      node.extensions = [];
+      node.extensions = {};
     }
     if (node.extras._components) {
       for (const component of node.extras._components) {
         if (componentNames.includes(component.name)) {
-          node.extensions.push(component);
+          node.extensions[component.name] = component;
         }
       }
       delete node.extras._components;
