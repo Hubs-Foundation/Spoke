@@ -108,6 +108,7 @@ class AssetExplorerPanelContainer extends Component {
 
   onClickFile = (e, file) => {
     if (this.state.singleClickedFile && file.uri === this.state.singleClickedFile.uri) {
+      // Handle double click
       if (file.isDirectory) {
         this.setState({ selectedDirectory: file.uri });
         return;
