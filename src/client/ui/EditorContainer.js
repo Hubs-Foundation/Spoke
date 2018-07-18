@@ -279,22 +279,37 @@ class EditorContainer extends Component {
   };
 
   onExport = async outputPath => {
-    const scene = this.props.editor.scene;
+    // Export current editor scene using THREE.GLTFExporter
+    const { json, buffers, images } = await this.props.editor.exportScene();
 
-    const gltfPath = outputPath + "/" + scene.name + ".gltf";
-    const binPath = outputPath + "/" + scene.name + ".bin";
-
-    const { json, bin } = await exportScene(scene, gltfPath);
-
+    // Ensure the output directory exists
     await this.props.project.mkdir(outputPath);
+
+    // Write the .gltf file
+    const scene = this.props.editor.scene;
+    const gltfPath = outputPath + "/" + scene.name + ".gltf";
     await this.props.project.writeJSON(gltfPath, json);
 
-    if (bin) {
-      await this.props.project.writeBlob(binPath, bin);
+    // Write .bin files
+    for (const [index, buffer] of buffers.entries()) {
+      if (buffer !== undefined) {
+        const bufferName = json.buffers[index].uri;
+        await this.props.project.writeBlob(outputPath + "/" + bufferName, buffer);
+      }
     }
 
+    // Write image files
+    for (const [index, image] of images.entries()) {
+      if (image !== undefined) {
+        const imageName = json.images[index].uri;
+        await this.props.project.writeBlob(outputPath + "/" + imageName, image);
+      }
+    }
+
+    // Run optimizations on .gltf and overwrite any existing files
     await this.props.project.optimizeScene(gltfPath, gltfPath);
 
+    // Close modal
     this.setState({ openModal: null });
   };
 

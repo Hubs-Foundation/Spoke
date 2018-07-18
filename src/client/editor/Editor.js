@@ -7,7 +7,7 @@ import RemoveObjectCommand from "./commands/RemoveObjectCommand";
 import AddObjectCommand from "./commands/AddObjectCommand";
 import { Components } from "./components";
 import SceneReferenceComponent from "./components/SceneReferenceComponent";
-import { loadScene, loadSerializedScene, serializeScene } from "./SceneLoader";
+import { loadScene, loadSerializedScene, serializeScene, exportScene } from "./SceneLoader";
 import DirectionalLightComponent from "./components/DirectionalLightComponent";
 import AmbientLightComponent from "./components/AmbientLightComponent";
 import ShadowComponent from "./components/ShadowComponent";
@@ -313,6 +313,10 @@ export default class Editor {
     return serializeScene(this.scene, sceneURI || this.scene.userData._uri);
   }
 
+  exportScene() {
+    return exportScene(this.scene);
+  }
+
   //
 
   addObject(object, parent) {
@@ -393,20 +397,6 @@ export default class Editor {
 
   addTexture(texture) {
     this.textures[texture.uuid] = texture;
-  }
-
-  exportScene() {
-    return new Promise((resolve, reject) => {
-      try {
-        const gltfExporter = new THREE.GLTFExporter();
-        gltfExporter.parseParts(this.scene, resolve, {
-          trs: true,
-          embedImages: false
-        });
-      } catch (e) {
-        reject(e);
-      }
-    });
   }
 
   //

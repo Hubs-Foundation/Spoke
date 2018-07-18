@@ -62,48 +62,39 @@ function loadGLTF(url) {
   });
 }
 
-function postProcessGLTF(scene, sceneURI, gltf) {
-  const { json } = gltf;
+export async function exportScene(scene) {
+  // TODO: export animations
+  const chunks = await new Promise((resolve, reject) => {
+    new THREE.GLTFExporter().parseChunks(scene, resolve, reject, {
+      mode: "gltf",
+      onlyVisible: false
+    });
+  });
 
-  const buffers = json.buffers;
+  const buffers = chunks.json.buffers;
 
   if (buffers && buffers.length > 0 && buffers[0].uri === undefined) {
     buffers[0].uri = scene.name + ".bin";
   }
 
-  const absoluteSceneURI = new URL(sceneURI, window.location).href;
-
-  if (Array.isArray(json.images)) {
-    for (const image of json.images) {
-      image.uri = absoluteToRelativeURL(absoluteSceneURI, image.uri);
-    }
-  }
-
   const componentNames = Components.map(component => component.componentName);
 
-  for (const node of gltf.json.nodes) {
+  for (const node of chunks.json.nodes) {
     if (!node.extras) continue;
     if (!node.extensions) {
       node.extensions = [];
     }
-    for (const component of node.extras._components) {
-      if (componentNames.includes(component.name)) {
-        node.extensions.push(component);
+    if (node.extras._components) {
+      for (const component of node.extras._components) {
+        if (componentNames.includes(component.name)) {
+          node.extensions.push(component);
+        }
       }
+      delete node.extras._components;
     }
-    delete node.extras._components;
   }
 
-  return gltf;
-}
-
-export function exportScene(scene, sceneURI) {
-  return new Promise(resolve => {
-    new THREE.GLTFExporter().parseParts(scene, resolve, {
-      embedImages: false,
-      onlyVisible: false
-    });
-  }).then(gltf => postProcessGLTF(scene, sceneURI, gltf));
+  return chunks;
 }
 
 function inflateGLTFComponents(scene, addComponent) {
