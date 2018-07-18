@@ -1,11 +1,11 @@
-import BaseComponent from "./BaseComponent";
+import SaveableComponent from "./SaveableComponent";
 import { types, getFilePath } from "./utils";
 import THREE from "../../vendor/three";
 import envMapURL from "../../assets/envmap.jpg";
 
 const imageFilters = [".jpg", ".png"];
 const textureLoader = new THREE.TextureLoader();
-export default class StandardMaterialComponent extends BaseComponent {
+export default class StandardMaterialComponent extends SaveableComponent {
   static componentName = "standard-material";
 
   static schema = [
@@ -22,6 +22,10 @@ export default class StandardMaterialComponent extends BaseComponent {
     { name: "occlusionTexture", type: types.file, default: "", filters: imageFilters }
     // TODO alphaMode
   ];
+
+  constructor() {
+    super(".material");
+  }
 
   _loadTexture(url) {
     try {

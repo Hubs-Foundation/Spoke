@@ -1,6 +1,7 @@
 import THREE from "../vendor/three";
 import { Components } from "./components";
 import SceneReferenceComponent from "./components/SceneReferenceComponent";
+import SaveableComponent from "./components/SaveableComponent";
 
 export function absoluteToRelativeURL(from, to) {
   if (from === to) {
@@ -409,10 +410,17 @@ export function serializeScene(scene, scenePath) {
             components = [];
           }
 
-          components.push({
-            name: component.name,
-            props: component.props
-          });
+          if (component instanceof SaveableComponent) {
+            components.push({
+              name: component.name,
+              src: component.uri
+            });
+          } else {
+            components.push({
+              name: component.name,
+              props: component.props
+            });
+          }
         }
       }
     }

@@ -515,6 +515,9 @@ export default class Editor {
       }
 
       const index = object.userData._components.findIndex(({ name }) => name === componentName);
+      if (index === -1) {
+        throw new Error(`Component "${componentName}" does not exist on ${object}`);
+      }
       object.userData._components.splice(index, 1);
     }
   }

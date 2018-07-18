@@ -9,6 +9,7 @@ import InputGroup from "../InputGroup";
 import Vector3Input from "../inputs/Vector3Input";
 import StringInput from "../inputs/StringInput";
 import componentTypeMappings from "../inputs/componentTypeMappings";
+
 import SetValueCommand from "../../editor/commands/SetValueCommand";
 import SetPositionCommand from "../../editor/commands/SetPositionCommand";
 import SetRotationCommand from "../../editor/commands/SetRotationCommand";
@@ -16,15 +17,19 @@ import SetScaleCommand from "../../editor/commands/SetScaleCommand";
 import AddComponentCommand from "../../editor/commands/AddComponentCommand";
 import SetComponentPropertyCommand from "../../editor/commands/SetComponentPropertyCommand";
 import RemoveComponentCommand from "../../editor/commands/RemoveComponentCommand";
-import { getDisplayName } from "../../editor/components";
+
+import { getDisplayName, types } from "../../editor/components";
+import SaveableComponent from "../../editor/components/SaveableComponent";
+
 import { withEditor } from "../contexts/EditorContext";
-import { types } from "../../editor/components";
+import { withProject } from "../contexts/ProjectContext";
 
 const { RAD2DEG, DEG2RAD } = THREE.Math;
 
 class PropertiesPanelContainer extends Component {
   static propTypes = {
     editor: PropTypes.object,
+    project: PropTypes.object,
     openFileDialog: PropTypes.func
   };
 
@@ -88,12 +93,41 @@ class PropertiesPanelContainer extends Component {
     this.props.editor.execute(new AddComponentCommand(this.state.object, value));
   };
 
-  onChangeComponent = (componentName, propertyName, value) => {
-    this.props.editor.execute(new SetComponentPropertyCommand(this.state.object, componentName, propertyName, value));
+  onChangeComponent = (component, propertyName, value) => {
+    if (component instanceof SaveableComponent) {
+      component.modified = true;
+    }
+    this.props.editor.execute(new SetComponentPropertyCommand(this.state.object, component.name, propertyName, value));
   };
 
   onRemoveComponent = componentName => {
     this.props.editor.execute(new RemoveComponentCommand(this.state.object, componentName));
+  };
+
+  onSaveComponent = component => {
+    if (!component.uri) {
+      this.props.openFileDialog(
+        uri => {
+          component.uri = uri;
+          this.props.project.writeJSON(component.uri, component.props);
+          component.modified = false;
+        },
+        [component.fileExtension]
+      );
+    } else {
+      this.props.project.writeJSON(component.uri, component.props);
+    }
+  };
+
+  onLoadComponent = component => {
+    this.props.openFileDialog(
+      async uri => {
+        component.uri = uri;
+        component.modified = false;
+        component.constructor.inflate(this.state.object, await this.props.project.readJSON(component.uri));
+      },
+      [component.fileExtension]
+    );
   };
 
   getExtras(prop) {
@@ -167,13 +201,17 @@ class PropertiesPanelContainer extends Component {
               name={getDisplayName(component.name)}
               key={component.name}
               removable={true}
-              removeHandler={this.onRemoveComponent}
+              removeHandler={this.onRemoveComponent.bind(this, component.name)}
+              uri={component.uri}
+              saveable={component instanceof SaveableComponent}
+              saveHandler={this.onSaveComponent.bind(this, component)}
+              loadHandler={this.onLoadComponent.bind(this, component)}
             >
               {componentDefinition.schema.map(prop => (
                 <InputGroup name={getDisplayName(prop.name)} key={prop.name}>
                   {componentTypeMappings.get(prop.type)(
                     component.props[prop.name],
-                    this.onChangeComponent.bind(null, component.name, prop.name),
+                    this.onChangeComponent.bind(null, component, prop.name),
                     this.getExtras(prop)
                   )}
                 </InputGroup>
@@ -186,4 +224,4 @@ class PropertiesPanelContainer extends Component {
   }
 }
 
-export default withEditor(PropertiesPanelContainer);
+export default withProject(withEditor(PropertiesPanelContainer));

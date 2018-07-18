@@ -44,7 +44,7 @@ export default class BaseComponent {
 
     for (const key in props) {
       if (props.hasOwnProperty(key)) {
-        component.props[key] = props[key];
+        this.updateProperty(key, props[key]);
       }
     }
 

@@ -28,4 +28,14 @@
       margin-top: 8px;
     }
   }
+
+  :local(.uri) {
+    height: 1em;
+    display: block;
+  }
+
+  :local(.saveButtons) {
+    display: flex;
+    justify-content: space-evenly;
+  }
 }
