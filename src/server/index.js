@@ -236,7 +236,6 @@ export default async function startServer(options) {
     const outputPath = path.resolve(projectPath, outputURI.replace("/api/files/", ""));
     const outputDirPath = path.dirname(outputPath);
 
-    // TODO: fix unlit texture generation
     await generateUnlitTextures(scenePath, outputDirPath);
 
     const json = await fs.readJSON(outputPath);
