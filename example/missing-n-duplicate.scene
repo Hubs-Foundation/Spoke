@@ -1,0 +1,37 @@
+{
+  "entities": {
+    "New_Node1": {
+      "parent": "Pillar1x3RndShape",
+      "index": 0
+    },
+    "New_Node2": {
+      "parent": "Pillar1x3RndShape",
+      "index": 1
+    },
+    "New_Node3": {
+      "parent": "Pillar1x3Rnd1",
+      "index": 0
+    },
+    "New_Node4": {
+      "parent": "New_Node3",
+      "index": 0
+    },
+    "New_Node5": {
+      "parent": "New_Node4",
+      "index": 0
+    },
+    "New_Node6": {
+      "parent": "New_Node4",
+      "index": 0
+    },
+    "New_Node7": {
+      "parent": "New_Node6",
+      "index": 0
+    },
+    "New_Node8": {
+      "parent": "New_Node6",
+      "index": 0
+    }
+  },
+  "inherits": "./ArchitectureKit/Pillar1x3Rnd-copy.gltf"
+}

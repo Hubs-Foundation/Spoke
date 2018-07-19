@@ -69,22 +69,21 @@ class HierarchyPanelContainer extends Component {
     }
 
     const object = node.object;
-    const newParent = parent.object;
+    const newParent = parent;
     let newBefore; // The object to insert the moved node before.
 
     if (newParent.children.length === 1) {
       newBefore = undefined;
     } else {
-      const movedNodeIndex = newParent.children.indexOf(node.object);
-
+      const movedNodeIndex = newParent.children.indexOf(node);
       if (movedNodeIndex === newParent.children.length - 1) {
         newBefore = undefined;
       } else {
-        newBefore = newParent.children[movedNodeIndex + 1];
+        newBefore = newParent.children[movedNodeIndex + 1].object;
       }
     }
 
-    this.props.editor.execute(new MoveObjectCommand(object, newParent, newBefore));
+    this.props.editor.execute(new MoveObjectCommand(object, newParent.object, newBefore));
   };
 
   onMouseUpNode = (e, node) => {
@@ -130,26 +129,39 @@ class HierarchyPanelContainer extends Component {
   };
 
   rebuildNodeHierarchy = () => {
+    const handler = this.props.editor.scene.userData._conflictHandler;
+    if (handler) {
+      const list = handler.checkResolvedMissingRoot(this.props.editor.scene);
+      if (list.length > 0) {
+        list.forEach(resolvedMissingRoot => {
+          this.props.editor.removeObject(resolvedMissingRoot);
+        });
+      }
+      handler.updateNodesMissingStatus(this.props.editor.scene);
+      handler.updateNodesDuplicateStatus(this.props.editor.scene);
+    }
+
     this.setState({
       tree: createNodeHierarchy(this.props.editor.scene)
     });
   };
 
   renderNode = node => {
-    const isConflict = node.object.userData._missing || node.object.userData._duplicate;
     const isMissingChild = node.object.userData._missing && !node.object.userData._isMissingRoot;
     const isDuplicateChild = node.object.userData._duplicate && !node.object.userData._isDuplicateRoot;
+    const disableEditing =
+      node.object.userData._duplicate || node.object.userData._isDuplicateRoot || node.object.userData._isMissingRoot;
     return (
       <div
         className={classNames("node", {
           "is-active": this.props.editor.selected && node.object.id === this.props.editor.selected.id,
-          conflict: isConflict,
+          conflict: disableEditing,
           "error-root": node.object.userData._isMissingRoot ? node.object.userData._missing : false,
           "warning-root": node.object.userData._isDuplicateRoot ? node.object.userData._duplicate : false,
           disabled: isMissingChild || isDuplicateChild
         })}
-        onMouseUp={isConflict ? null : e => this.onMouseUpNode(e, node)}
-        onMouseDown={isConflict ? e => e.stopPropagation() : null}
+        onMouseUp={disableEditing ? null : e => this.onMouseUpNode(e, node)}
+        onMouseDown={disableEditing ? e => e.stopPropagation() : null}
       >
         <ContextMenuTrigger
           attributes={{ className: styles.treeNode }}
@@ -202,11 +214,12 @@ class HierarchyPanelContainer extends Component {
   };
 
   renderWarnings = () => {
-    if (!this.props.editor.scene.userData._conflicts) {
+    const handler = this.props.editor.scene.userData._conflictHandler;
+    if (!handler) {
       return;
     }
 
-    const conflicts = this.props.editor.scene.userData._conflicts;
+    const conflicts = handler.getConflictInfo();
 
     return (
       <div className={styles.conflictDisplay}>

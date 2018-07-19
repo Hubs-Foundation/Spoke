@@ -1,0 +1,25 @@
+{
+  "entities": {
+    "New_Node1": {
+      "parent": "Wall2x3Win1x0_75HorzShape",
+      "index": 0
+    },
+    "New_Node2": {
+      "parent": "Wall2x3Win1x0_75HorzShape1",
+      "index": 1
+    },
+    "New_Node3": {
+      "parent": "Wall2x3Win1x0_75Horz",
+      "index": 1
+    },
+    "New_Node4": {
+      "parent": "New_Node5",
+      "index": 0
+    },
+    "New_Node6": {
+      "parent": "New_Node4",
+      "index": 0
+    }
+  },
+  "inherits": "./ArchitectureKit/Wall2x3Win1x0_75Horz.gltf"
+}

@@ -1,6 +1,7 @@
 import THREE from "../vendor/three";
 import { Components } from "./components";
 import SceneReferenceComponent from "./components/SceneReferenceComponent";
+import ConflictHandler from "./ConflictHandler";
 
 export function absoluteToRelativeURL(from, to) {
   if (from === to) {
@@ -245,40 +246,9 @@ export async function loadSerializedScene(sceneDef, baseURI, addComponent, isRoo
   }
 
   // init scene conflict status
-  scene.userData._conflicts = {
-    missing: false,
-    duplicate: false
-  };
-  const duplicateList = {};
-  // check duplicate names
-  // update children duplicate status
-  const findDuplicates = (node, layer, index) => {
-    if (node.userData._path) {
-      node.userData._path.push(index);
-    } else {
-      node.userData._path = [0];
-    }
-
-    // count the name and save to the list
-    const name = node.name;
-    duplicateList[name] = name in duplicateList ? duplicateList[name] + 1 : 1;
-    if (duplicateList[name] > 1) {
-      scene.userData._conflicts.duplicate = true;
-    }
-
-    if (node.children) {
-      node.children.forEach((child, i) => {
-        child.userData._path = node.userData._path.slice(0);
-        findDuplicates(child, layer + 1, i);
-      });
-    }
-  };
-  findDuplicates(scene, 0, 0);
-
-  scene.traverse(child => {
-    child.userData._duplicate = duplicateList[child.name] > 1;
-    child.userData._isDuplicateRoot = child.userData._duplicate;
-  });
+  scene.userData._conflictHandler = new ConflictHandler();
+  scene.userData._conflictHandler.findDuplicates(scene, 0, 0);
+  scene.userData._conflictHandler.updateAllDuplicateStatus(scene);
 
   if (entities) {
     // Convert any relative URLs in the scene to absolute URLs so that other code does not need to know about the scene path.
@@ -313,7 +283,7 @@ export async function loadSerializedScene(sceneDef, baseURI, addComponent, isRoo
           parentObject.name = entity.parent;
           parentObject.userData._isMissingRoot = true;
           parentObject.userData._missing = true;
-          scene.userData._conflicts.missing = true;
+          scene.userData._conflictHandler.setMissingStatus(true);
           scene.add(parentObject);
         } else {
           if (!parentObject.userData._missing) {
