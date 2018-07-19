@@ -22,11 +22,15 @@ export default class Project extends EventEmitter {
   }
 
   getUrl(relativePath) {
-    return new URL(`api/files/${relativePath}`, window.location).href;
+    return new URL(relativePath, this.serverUrl).href;
+  }
+
+  fetch(relativePath, options) {
+    return fetch(this.getUrl(relativePath), options);
   }
 
   async writeBlob(relativePath, blob) {
-    const res = await fetch(this.serverUrl + relativePath, {
+    const res = await this.fetch(relativePath, {
       method: "POST",
       body: blob
     });
@@ -37,7 +41,7 @@ export default class Project extends EventEmitter {
   }
 
   async readBlob(relativePath) {
-    const res = await fetch(this.serverUrl + relativePath);
+    const res = await this.fetch(relativePath);
 
     const blob = await res.blob();
 
@@ -45,7 +49,7 @@ export default class Project extends EventEmitter {
   }
 
   async readJSON(relativePath) {
-    const res = await fetch(this.serverUrl + relativePath);
+    const res = await this.fetch(relativePath);
 
     const json = await res.json();
 
@@ -53,9 +57,8 @@ export default class Project extends EventEmitter {
   }
 
   async writeJSON(relativePath, data) {
-    const res = await fetch(this.serverUrl + relativePath, {
+    const res = await this.fetch(relativePath, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data)
     });
 
@@ -65,7 +68,7 @@ export default class Project extends EventEmitter {
   }
 
   async mkdir(relativePath) {
-    const res = await fetch(this.serverUrl + relativePath + "?mkdir=true", { method: "POST" });
+    const res = await this.fetch(relativePath + "?mkdir=true", { method: "POST" });
 
     const json = await res.json();
 
@@ -73,7 +76,7 @@ export default class Project extends EventEmitter {
   }
 
   async openFile(relativePath) {
-    const res = await fetch(this.serverUrl + relativePath + "?open=true", {
+    const res = await this.fetch(relativePath + "?open=true", {
       method: "POST"
     });
 
@@ -126,7 +129,7 @@ export default class Project extends EventEmitter {
   }
 
   async optimizeScene(sceneURI, outputURI) {
-    const res = await fetch(this.serverUrl + "/api/optimize", {
+    const res = await this.fetch("/api/optimize", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

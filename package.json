@@ -51,7 +51,7 @@
     "react-tooltip": "^3.6.1",
     "selfsigned": "^1.10.3",
     "signals": "^1.0.0",
-    "three": "github:mozillareality/three.js#hubs-editor/dev",
+    "three": "github:mozillareality/three.js#hubs/dev-v2",
     "ws": "^5.2.0"
   },
   "devDependencies": {

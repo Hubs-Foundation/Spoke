@@ -12,8 +12,8 @@ import fs from "fs-extra";
 import chokidar from "chokidar";
 import debounce from "lodash.debounce";
 import opn from "opn";
-import generateUnlitTextures from "gltf-unlit-generator";
 import { contentHashAndCopy } from "./gltf";
+import generateUnlitTextures from "gltf-unlit-generator";
 
 async function getProjectHierarchy(projectPath) {
   async function buildProjectNode(filePath, name, ext, isDirectory, uri) {
@@ -183,45 +183,43 @@ export default async function startServer(options) {
     )
   );
 
-  router.post("/api/files/:filePath*", koaBody({ multipart: true }), async ctx => {
+  router.post("/api/files/:filePath*", async ctx => {
     const filePath = ctx.params.filePath ? path.resolve(projectPath, ctx.params.filePath) : projectPath;
 
     if (ctx.request.query.open) {
+      // Attempt to open file at filePath with the default application for that file type.
       opn(filePath);
-
-      ctx.body = {
-        success: true
-      };
-    } else if (ctx.request.files && ctx.request.files.file) {
-      const file = ctx.request.files.file;
-
-      await fs.rename(file.path, filePath);
-
-      ctx.body = {
-        success: true
-      };
-    } else if (ctx.request.type === "application/json") {
-      await fs.writeJSON(filePath, ctx.request.body, { spaces: 2 });
-      ctx.body = {
-        success: true
-      };
-    } else if (ctx.request.type === "application/octet-stream") {
-      const bytes = await new Promise(resolve => {
-        ctx.req.on("readable", () => {
-          resolve(ctx.req.read());
-        });
-      });
-      await fs.writeFile(filePath, bytes);
-      ctx.body = { success: true };
     } else if (ctx.request.query.mkdir) {
+      // Make the directory at filePath if it doesn't already exist.
       await fs.ensureDir(filePath);
-
-      ctx.body = {
-        success: true
-      };
     } else {
-      ctx.throw(400, "Invalid request");
+      // If uploading as text body, write it to filePath using the stream API.
+      const writeStream = fs.createWriteStream(filePath, { flags: "w" });
+
+      ctx.req.pipe(writeStream);
+
+      await new Promise((resolve, reject) => {
+        function cleanUp() {
+          writeStream.removeListener("finish", onFinish);
+          writeStream.removeListener("error", onError);
+        }
+
+        function onFinish() {
+          cleanUp();
+          resolve();
+        }
+
+        function onError(err) {
+          cleanUp();
+          reject(err);
+        }
+
+        writeStream.on("finish", onFinish);
+        writeStream.on("error", onError);
+      });
     }
+
+    ctx.body = { success: true };
   });
 
   router.post("/api/optimize", koaBody(), async ctx => {
@@ -240,7 +238,7 @@ export default async function startServer(options) {
 
     const json = await fs.readJSON(outputPath);
 
-    json.images = await contentHashAndCopy(json.images, sceneDirPath, outputDirPath);
+    json.images = await contentHashAndCopy(json.images, sceneDirPath, outputDirPath, true);
     json.buffers = await contentHashAndCopy(json.buffers, sceneDirPath, outputDirPath, true);
 
     await fs.writeJSON(outputPath, json);
