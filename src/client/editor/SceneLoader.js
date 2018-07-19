@@ -82,12 +82,14 @@ export async function exportScene(scene) {
 
   const images = chunks.json.images;
 
-  if (images) {
+  if (images && images.length > 0) {
     // Map containing imageProp -> newIndex
     const uniqueImageProps = new Map();
     // Map containing oldIndex -> newIndex
     const imageIndexMap = new Map();
     // Array containing unique imageDefs
+    const uniqueImageDefs = [];
+    // Array containing unique image blobs
     const uniqueImages = [];
 
     for (const [index, imageDef] of images.entries()) {
@@ -95,19 +97,23 @@ export async function exportScene(scene) {
       let newIndex = uniqueImageProps.get(imageProp);
 
       if (newIndex === undefined) {
-        newIndex = uniqueImages.push(imageDef) - 1;
+        newIndex = uniqueImageDefs.push(imageDef) - 1;
         uniqueImageProps.set(imageProp, newIndex);
+        uniqueImages.push(chunks.images[index]);
       }
 
       imageIndexMap.set(index, newIndex);
     }
 
-    chunks.json.images = uniqueImages;
+    chunks.json.images = uniqueImageDefs;
+    chunks.images = uniqueImages;
 
     for (const textureDef of chunks.json.textures) {
       textureDef.source = imageIndexMap.get(textureDef.source);
     }
   }
+
+  console.log(chunks.json);
 
   const componentNames = Components.map(component => component.componentName);
 
