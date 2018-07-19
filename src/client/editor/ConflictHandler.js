@@ -53,6 +53,9 @@ export default class ConflictHandler {
 
   updateAllDuplicateStatus = scene => {
     scene.traverse(child => {
+      if (child === scene) {
+        return;
+      }
       child.userData._duplicate = this.getDuplicateByName(child.name);
       child.userData._isDuplicateRoot = child.userData._duplicate;
     });
@@ -93,5 +96,20 @@ export default class ConflictHandler {
     });
     this.setMissingStatus(newStatus);
     return resolvedList;
+  };
+
+  printoutList = () => {
+    const kv = Object.entries(this.duplicateList);
+    kv.forEach(p => {
+      console.log(`name: ${p[0]}, times: ${p[1]}`);
+    });
+  };
+
+  updateUnnamedNodes = scene => {
+    scene.traverse(child => {
+      if (child.userData._path && !child.name) {
+        child.name = `unnamed_${child.userData._path.join("-")}`;
+      }
+    });
   };
 }

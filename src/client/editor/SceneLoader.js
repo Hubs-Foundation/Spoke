@@ -1,7 +1,7 @@
 import THREE from "../vendor/three";
 import { Components } from "./components";
 import SceneReferenceComponent from "./components/SceneReferenceComponent";
-import ConflictHandler from "./ConflictResolution";
+import ConflictHandler from "./ConflictHandler";
 
 export function absoluteToRelativeURL(from, to) {
   if (from === to) {
