@@ -14,7 +14,7 @@
     "nodes": [
         {
             "children": [
-                1, 2
+                1
             ],
             "name": "Pillar1x3Rnd"
         },
@@ -140,22 +140,16 @@
                 "baseColorTexture": {
                     "index": 0
                 },
-                "metallicFactor": 1.0,
-                "roughnessFactor": 1.0,
-                "metallicRoughnessTexture": {
-                    "index": 1
-                }
+                "metallicFactor": 0.0,
+                "roughnessFactor": 1.0
             },
             "emissiveFactor": [
                 0.0,
                 0.0,
                 0.0
             ],
-            "normalTexture": {
-                "index": 2
-            },
             "occlusionTexture": {
-                "index": 2
+                "index": 1
             }
         }
     ],
@@ -167,21 +161,14 @@
         {
             "sampler": 0,
             "source": 1
-        },
-        {
-            "sampler": 0,
-            "source": 2
         }
     ],
     "images": [
         {
-            "uri": "ArchModuleTex_Albedo.jpg"
+            "uri": "./ArchitectureKit/ArchMods_Base_Color.jpg"
         },
         {
-            "uri": "ArchModuleTex_NormalMap-ArchModuleTex_Metalness.jpg"
-        },
-        {
-            "uri": "ArchModuleTex_NormalMap.jpg"
+            "uri": "./ArchitectureKit/ArchMods_Occlusion.jpg"
         }
     ],
     "samplers": [
@@ -224,7 +211,7 @@
     "buffers": [
         {
             "byteLength": 1824,
-            "uri": "Pillar1x3Rnd0.bin"
+            "uri": "./ArchitectureKit/Pillar1x3Rnd0.bin"
         }
     ]
 }
