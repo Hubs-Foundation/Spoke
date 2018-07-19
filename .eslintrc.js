@@ -12,7 +12,7 @@ module.exports = {
   rules: {
     "prettier/prettier": "error",
     "prefer-const": "error",
-    "no-use-before-define": "error",
+    "no-use-before-define": ["error", { "functions": false, "classes": false, "variables": true }],
     "no-var": "error",
     "no-throw-literal": "error",
     // Light console usage is useful but remove debug logs before merging to master.

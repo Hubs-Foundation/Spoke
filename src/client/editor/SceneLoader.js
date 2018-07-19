@@ -2,6 +2,7 @@ import THREE from "../vendor/three";
 import { Components } from "./components";
 import SceneReferenceComponent from "./components/SceneReferenceComponent";
 import SaveableComponent from "./components/SaveableComponent";
+import ConflictHandler from "./ConflictHandler";
 
 export function absoluteToRelativeURL(from, to) {
   if (from === to) {
@@ -63,48 +64,39 @@ function loadGLTF(url) {
   });
 }
 
-function postProcessGLTF(scene, sceneURI, gltf) {
-  const { json } = gltf;
+export async function exportScene(scene) {
+  // TODO: export animations
+  const chunks = await new Promise((resolve, reject) => {
+    new THREE.GLTFExporter().parseChunks(scene, resolve, reject, {
+      mode: "gltf",
+      onlyVisible: false
+    });
+  });
 
-  const buffers = json.buffers;
+  const buffers = chunks.json.buffers;
 
   if (buffers && buffers.length > 0 && buffers[0].uri === undefined) {
     buffers[0].uri = scene.name + ".bin";
   }
 
-  const absoluteSceneURI = new URL(sceneURI, window.location).href;
-
-  if (Array.isArray(json.images)) {
-    for (const image of json.images) {
-      image.uri = absoluteToRelativeURL(absoluteSceneURI, image.uri);
-    }
-  }
-
   const componentNames = Components.map(component => component.componentName);
 
-  for (const node of gltf.json.nodes) {
+  for (const node of chunks.json.nodes) {
     if (!node.extras) continue;
     if (!node.extensions) {
-      node.extensions = [];
+      node.extensions = {};
     }
-    for (const component of node.extras._components) {
-      if (componentNames.includes(component.name)) {
-        node.extensions.push(component);
+    if (node.extras._components) {
+      for (const component of node.extras._components) {
+        if (componentNames.includes(component.name)) {
+          node.extensions[component.name] = component;
+        }
       }
+      delete node.extras._components;
     }
-    delete node.extras._components;
   }
 
-  return gltf;
-}
-
-export function exportScene(scene, sceneURI) {
-  return new Promise(resolve => {
-    new THREE.GLTFExporter().parseParts(scene, resolve, {
-      embedImages: false,
-      onlyVisible: false
-    });
-  }).then(gltf => postProcessGLTF(scene, sceneURI, gltf));
+  return chunks;
 }
 
 function inflateGLTFComponents(scene, addComponent) {
@@ -229,7 +221,6 @@ export async function loadSerializedScene(sceneDef, baseURI, addComponent, isRoo
   const absoluteBaseURL = new URL(baseURI, window.location);
   if (inherits) {
     const inheritedSceneURL = new URL(inherits, absoluteBaseURL);
-    // eslint-disable-next-line no-use-before-define
     scene = await loadScene(inheritedSceneURL.href, addComponent, false, ancestors);
 
     if (ancestors) {
@@ -246,40 +237,9 @@ export async function loadSerializedScene(sceneDef, baseURI, addComponent, isRoo
   }
 
   // init scene conflict status
-  scene.userData._conflicts = {
-    missing: false,
-    duplicate: false
-  };
-  const duplicateList = {};
-  // check duplicate names
-  // update children duplicate status
-  const findDuplicates = (node, layer, index) => {
-    if (node.userData._path) {
-      node.userData._path.push(index);
-    } else {
-      node.userData._path = [0];
-    }
-
-    // count the name and save to the list
-    const name = node.name;
-    duplicateList[name] = name in duplicateList ? duplicateList[name] + 1 : 1;
-    if (duplicateList[name] > 1) {
-      scene.userData._conflicts.duplicate = true;
-    }
-
-    if (node.children) {
-      node.children.forEach((child, i) => {
-        child.userData._path = node.userData._path.slice(0);
-        findDuplicates(child, layer + 1, i);
-      });
-    }
-  };
-  findDuplicates(scene, 0, 0);
-
-  scene.traverse(child => {
-    child.userData._duplicate = duplicateList[child.name] > 1;
-    child.userData._isDuplicateRoot = child.userData._duplicate;
-  });
+  scene.userData._conflictHandler = new ConflictHandler();
+  scene.userData._conflictHandler.findDuplicates(scene, 0, 0);
+  scene.userData._conflictHandler.updateAllDuplicateStatus(scene);
 
   if (entities) {
     // Convert any relative URLs in the scene to absolute URLs so that other code does not need to know about the scene path.
@@ -314,7 +274,7 @@ export async function loadSerializedScene(sceneDef, baseURI, addComponent, isRoo
           parentObject.name = entity.parent;
           parentObject.userData._isMissingRoot = true;
           parentObject.userData._missing = true;
-          scene.userData._conflicts.missing = true;
+          scene.userData._conflictHandler.setMissingStatus(true);
           scene.add(parentObject);
         } else {
           if (!parentObject.userData._missing) {
