@@ -219,7 +219,6 @@ export async function loadSerializedScene(sceneDef, baseURI, addComponent, isRoo
   const absoluteBaseURL = new URL(baseURI, window.location);
   if (inherits) {
     const inheritedSceneURL = new URL(inherits, absoluteBaseURL);
-    // eslint-disable-next-line no-use-before-define
     scene = await loadScene(inheritedSceneURL.href, addComponent, false, ancestors);
 
     if (ancestors) {

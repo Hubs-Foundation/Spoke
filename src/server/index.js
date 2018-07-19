@@ -200,9 +200,7 @@ export default async function startServer(options) {
 
       await new Promise((resolve, reject) => {
         function cleanUp() {
-          // eslint-disable-next-line
           writeStream.removeListener("finish", onFinish);
-          // eslint-disable-next-line
           writeStream.removeListener("error", onError);
         }
 

@@ -16,7 +16,6 @@ import AssetExplorerPanelContainer from "./panels/AssetExplorerPanelContainer";
 import PanelToolbar from "./PanelToolbar";
 import { withProject } from "./contexts/ProjectContext";
 import { withEditor } from "./contexts/EditorContext";
-import { exportScene } from "../editor/SceneLoader";
 import styles from "../common.scss";
 
 class EditorContainer extends Component {
