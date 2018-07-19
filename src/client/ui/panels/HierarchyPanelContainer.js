@@ -130,15 +130,17 @@ class HierarchyPanelContainer extends Component {
 
   rebuildNodeHierarchy = () => {
     const handler = this.props.editor.scene.userData._conflictHandler;
-    const list = handler.checkResolvedMissinRoot(this.props.editor.scene);
-    if (list.length > 0) {
-      list.forEach(resolvedMissingRoot => {
-        this.props.editor.removeObject(resolvedMissingRoot);
-      });
+    if (handler) {
+      const list = handler.checkResolvedMissingRoot(this.props.editor.scene);
+      if (list.length > 0) {
+        list.forEach(resolvedMissingRoot => {
+          this.props.editor.removeObject(resolvedMissingRoot);
+        });
+      }
+      handler.updateNodesMissingStatus(this.props.editor.scene);
+      handler.updateNodesDuplicateStatus(this.props.editor.scene);
     }
 
-    handler.updateNodesMissingStatus(this.props.editor.scene);
-    handler.updateNodesDuplicateStatus(this.props.editor.scene);
     this.setState({
       tree: createNodeHierarchy(this.props.editor.scene)
     });

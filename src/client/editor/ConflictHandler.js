@@ -4,7 +4,7 @@ export default class ConflictHandler {
       missing: false,
       duplicate: false
     };
-    this.duplicateList = {};
+    this._duplicateList = {};
   }
 
   findDuplicates = (node, layer, index) => {
@@ -15,8 +15,8 @@ export default class ConflictHandler {
     }
 
     const name = node.name;
-    this.duplicateList[name] = name in this.duplicateList ? this.duplicateList[name] + 1 : 1;
-    if (this.duplicateList[name] > 1) {
+    this._duplicateList[name] = name in this._duplicateList ? this._duplicateList[name] + 1 : 1;
+    if (this._duplicateList[name] > 1) {
       this.setDuplicateStatus(true);
     }
 
@@ -37,14 +37,10 @@ export default class ConflictHandler {
   };
 
   getDuplicateByName = name => {
-    if (!(name in this.duplicateList)) {
+    if (!(name in this._duplicateList)) {
       return false;
     }
-    return this.duplicateList[name] > 1;
-  };
-
-  getMissingStatus = () => {
-    return this._conflicts.missing;
+    return this._duplicateList[name] > 1;
   };
 
   getConflictInfo = () => {
@@ -62,14 +58,14 @@ export default class ConflictHandler {
   };
 
   updateNodesMissingStatus = scene => {
-    this.updateNodesConflictInfoByProperty(scene, "_missing");
+    this._updateNodesConflictInfoByProperty(scene, "_missing");
   };
 
   updateNodesDuplicateStatus = scene => {
-    this.updateNodesConflictInfoByProperty(scene, "_duplicate");
+    this._updateNodesConflictInfoByProperty(scene, "_duplicate");
   };
 
-  updateNodesConflictInfoByProperty = (scene, propertyName) => {
+  _updateNodesConflictInfoByProperty = (scene, propertyName) => {
     scene.traverse(child => {
       if (child === scene) {
         return;
@@ -80,7 +76,7 @@ export default class ConflictHandler {
     });
   };
 
-  checkResolvedMissinRoot = scene => {
+  checkResolvedMissingRoot = scene => {
     let newStatus = false;
     const resolvedList = [];
     scene.traverse(child => {
@@ -96,20 +92,5 @@ export default class ConflictHandler {
     });
     this.setMissingStatus(newStatus);
     return resolvedList;
-  };
-
-  printoutList = () => {
-    const kv = Object.entries(this.duplicateList);
-    kv.forEach(p => {
-      console.log(`name: ${p[0]}, times: ${p[1]}`);
-    });
-  };
-
-  updateUnnamedNodes = scene => {
-    scene.traverse(child => {
-      if (child.userData._path && !child.name) {
-        child.name = `unnamed_${child.userData._path.join("-")}`;
-      }
-    });
   };
 }
