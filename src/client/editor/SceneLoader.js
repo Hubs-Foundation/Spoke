@@ -78,6 +78,37 @@ export async function exportScene(scene) {
     buffers[0].uri = scene.name + ".bin";
   }
 
+  // De-duplicate images.
+
+  const images = chunks.json.images;
+
+  if (images) {
+    // Map containing imageProp -> newIndex
+    const uniqueImageProps = new Map();
+    // Map containing oldIndex -> newIndex
+    const imageIndexMap = new Map();
+    // Array containing unique imageDefs
+    const uniqueImages = [];
+
+    for (const [index, imageDef] of images.entries()) {
+      const imageProp = imageDef.uri === undefined ? imageDef.bufferView : imageDef.uri;
+      let newIndex = uniqueImageProps.get(imageProp);
+
+      if (newIndex === undefined) {
+        newIndex = uniqueImages.push(imageDef) - 1;
+        uniqueImageProps.set(imageProp, newIndex);
+      }
+
+      imageIndexMap.set(index, newIndex);
+    }
+
+    chunks.json.images = uniqueImages;
+
+    for (const textureDef of chunks.json.textures) {
+      textureDef.source = imageIndexMap.get(textureDef.source);
+    }
+  }
+
   const componentNames = Components.map(component => component.componentName);
 
   for (const node of chunks.json.nodes) {
