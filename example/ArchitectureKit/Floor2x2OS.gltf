@@ -136,22 +136,16 @@
                 "baseColorTexture": {
                     "index": 0
                 },
-                "metallicFactor": 0.9,
-                "roughnessFactor": 0.5,
-                "metallicRoughnessTexture": {
-                    "index": 1
-                }
+                "metallicFactor": 0.0,
+                "roughnessFactor": 1.0
             },
             "emissiveFactor": [
-                0.0,
-                0.0,
-                0.0
+                1.0,
+                1.0,
+                1.0
             ],
-            "normalTexture": {
-                "index": 2
-            },
             "occlusionTexture": {
-                "index": 2
+                "index": 1
             }
         }
     ],
@@ -163,21 +157,14 @@
         {
             "sampler": 0,
             "source": 1
-        },
-        {
-            "sampler": 0,
-            "source": 2
         }
     ],
     "images": [
         {
-            "uri": "ArchModuleTex_Albedo.jpg"
+            "uri": "ArchMods_Base_Color.jpg"
         },
         {
-            "uri": "ArchModuleTex_NormalMap-ArchModuleTex_Metalness.jpg"
-        },
-        {
-            "uri": "ArchModuleTex_NormalMap.jpg"
+            "uri": "ArchMods_Occlusion.jpg"
         }
     ],
     "samplers": [
