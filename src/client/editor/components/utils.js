@@ -18,9 +18,7 @@ export function getDisplayName(name) {
 }
 
 export function getFilePath(image) {
-  const fullPath = image.src.substr(image.baseURI.length);
-  // TODO Shouldn't have to hardcode api path here.
-  return fullPath.replace("api/files/", "");
+  return image && image.src.substr(image.baseURI.length - 1);
 }
 
 export function getDefaultsFromSchema(schema) {

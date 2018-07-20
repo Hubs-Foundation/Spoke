@@ -1,6 +1,7 @@
 import THREE from "../vendor/three";
 import { Components } from "./components";
 import SceneReferenceComponent from "./components/SceneReferenceComponent";
+import SaveableComponent from "./components/SaveableComponent";
 import ConflictHandler from "./ConflictHandler";
 
 export function absoluteToRelativeURL(from, to) {
@@ -331,7 +332,16 @@ export async function loadSerializedScene(sceneDef, baseURI, addComponent, isRoo
       // Inflate the entity's components.
       if (Array.isArray(entity.components)) {
         for (const componentDef of entity.components) {
-          addComponent(entityObj, componentDef.name, componentDef.props, !isRoot);
+          const { props } = componentDef;
+          if (componentDef.src) {
+            // Process SaveableComponent
+            const resp = await fetch(componentDef.src);
+            const json = await resp.json();
+            const component = addComponent(entityObj, componentDef.name, json, !isRoot);
+            component.src = componentDef.src;
+          } else {
+            addComponent(entityObj, componentDef.name, props, !isRoot);
+          }
         }
       }
     }
@@ -406,10 +416,17 @@ export function serializeScene(scene, scenePath) {
             components = [];
           }
 
-          components.push({
-            name: component.name,
-            props: component.props
-          });
+          if (component instanceof SaveableComponent) {
+            components.push({
+              name: component.name,
+              src: component.src
+            });
+          } else {
+            components.push({
+              name: component.name,
+              props: component.props
+            });
+          }
         }
       }
     }

@@ -28,4 +28,16 @@
       margin-top: 8px;
     }
   }
+
+  :local(.src) {
+    display: block;
+    text-align: center;
+    margin: 0.5em;
+  }
+
+  :local(.saveButtons) {
+    display: flex;
+    margin: 0.5em;
+    justify-content: space-evenly;
+  }
 }

@@ -20,12 +20,9 @@ export default class AmbientLightComponent extends BaseComponent {
     }
   }
 
-  static inflate(node, _props) {
-    const { component, props } = this._getOrCreateComponent(node, _props);
-    const light = new THREE.AmbientLight(props.color, props.intensity);
-    Object.defineProperty(component, "_object", { enumerable: false, value: light });
-    light.userData._dontShowInHierarchy = true;
-    light.userData._inflated = true;
+  static inflate(node, props) {
+    const light = new THREE.AmbientLight();
+    const component = this._getOrCreateComponent(node, props, light);
     node.add(light);
     return component;
   }
