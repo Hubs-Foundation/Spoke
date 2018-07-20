@@ -36,14 +36,8 @@ export default class DirectionalLightComponent extends BaseComponent {
   }
 
   static inflate(node, _props) {
-    const { component, props } = this._getOrCreateComponent(node, _props);
-    const light = new THREE.DirectionalLight(props.color, props.intensity);
-    Object.defineProperty(component, "_object", { enumerable: false, value: light });
-    component.updateProperty("azimuth", props.azimuth);
-    component.updateProperty("elevation", props.elevation);
-    component.updateProperty("castShadow", props.castShadow);
-    light.userData._dontShowInHierarchy = true;
-    light.userData._inflated = true;
+    const light = new THREE.DirectionalLight();
+    const component = this._getOrCreateComponent(node, _props, light);
     node.add(light);
     return component;
   }

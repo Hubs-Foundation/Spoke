@@ -5,8 +5,8 @@ export default class SaveableComponent extends BaseComponent {
 
   modified = false;
 
-  constructor(fileExtension) {
-    super();
+  constructor(node, object, fileExtension) {
+    super(node, object);
     this.fileExtension = fileExtension;
   }
 }

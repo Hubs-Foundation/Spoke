@@ -18,12 +18,4 @@ export default class ShadowComponent extends BaseComponent {
       }
     });
   }
-
-  static inflate(node, _props) {
-    const { component, props } = this._getOrCreateComponent(node, _props);
-    Object.defineProperty(component, "_object", { enumerable: false, value: node });
-    component.updateProperty("castShadow", props.castShadow);
-    component.updateProperty("receiveShadow", props.receiveShadow);
-    return component;
-  }
 }

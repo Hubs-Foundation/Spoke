@@ -1,11 +1,12 @@
 import { getDefaultsFromSchema } from "./utils";
 
 export default class BaseComponent {
-  constructor() {
+  constructor(node, object) {
     this.name = this.constructor.componentName;
     this.schema = this.constructor.schema;
     this.props = {};
     this.shouldSave = false;
+    Object.defineProperty(this, "_object", { enumerable: false, value: object || node });
   }
 
   getProperty(propertyName) {
@@ -17,9 +18,7 @@ export default class BaseComponent {
   }
 
   static getComponent(node) {
-    if (!node.userData._components) {
-      return null;
-    }
+    if (!node.userData._components) return null;
 
     return node.userData._components.find(component => component.name === this.componentName);
   }
@@ -28,31 +27,34 @@ export default class BaseComponent {
     return {};
   }
 
-  static _getOrCreateComponent(node, props) {
-    if (!props) {
-      props = { ...getDefaultsFromSchema(this.schema), ...this._propsFromObject(node) };
-    }
+  static _getOrCreateComponent(node, props, object) {
+    props = { ...getDefaultsFromSchema(this.schema), ...this._propsFromObject(node), ...props };
     if (!node.userData._components) {
       node.userData._components = [];
     }
 
     let component = this.getComponent(node);
     if (!component || !(component instanceof this)) {
-      component = new this();
+      component = new this(node, object);
       node.userData._components.push(component);
+    }
+
+    if (object && object instanceof THREE.Object3D) {
+      object.userData._dontShowInHierarchy = true;
+      object.userData._inflated = true;
     }
 
     for (const key in props) {
       if (props.hasOwnProperty(key)) {
-        this.updateProperty(key, props[key]);
+        component.updateProperty(key, props[key]);
       }
     }
 
-    return { component, props };
+    return component;
   }
 
   static inflate(node, props) {
-    return this._getOrCreateComponent(node, props).component;
+    return this._getOrCreateComponent(node, props);
   }
 
   static deflate(node) {
