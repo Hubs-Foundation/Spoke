@@ -419,7 +419,7 @@ export function serializeScene(scene, scenePath) {
           if (component instanceof SaveableComponent) {
             components.push({
               name: component.name,
-              src: component.uri
+              src: component.src
             });
           } else {
             components.push({
