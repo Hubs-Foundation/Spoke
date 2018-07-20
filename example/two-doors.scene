@@ -1,0 +1,1 @@
+{"entities":{"red-door.scene":{"parent":"Scene","index":2,"components":[{"name":"scene-reference","props":{"src":"./red-door.scene"}}]},"Scene":{"components":[{"name":"shadow","props":{"castShadow":true,"receiveShadow":true}}]},"red-door.scene2":{"parent":"Scene","index":3,"components":[{"name":"scene-reference","props":{"src":"./red-door.scene"}}]}},"root":"Scene"}
