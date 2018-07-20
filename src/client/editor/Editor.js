@@ -164,11 +164,12 @@ export default class Editor {
   }
 
   editScenePrefab(uri) {
-    this.deselect();
     this._loadScene(uri);
   }
 
   loadNewScene() {
+    this.deselect();
+
     // Remove existing gltf dependency
     const prevDependencies = this.fileDependencies.get(this.scene.userData._uri);
 
@@ -226,6 +227,8 @@ export default class Editor {
   }
 
   async _loadScene(uri) {
+    this.deselect();
+
     // Remove existing gltf dependency
     const prevDependencies = this.fileDependencies.get(this.scene.userData._uri);
 

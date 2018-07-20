@@ -104,29 +104,42 @@ class PropertiesPanelContainer extends Component {
     this.props.editor.execute(new RemoveComponentCommand(this.state.object, componentName));
   };
 
-  onSaveComponent = component => {
-    if (!component.uri) {
+  onSaveComponent = (component, saveAs) => {
+    if (saveAs || !component.src) {
       this.props.openFileDialog(
-        uri => {
-          component.uri = uri;
-          this.props.project.writeJSON(component.uri, component.props);
+        src => {
+          component.src = src;
+          component.shouldSave = true;
+          this.props.project.writeJSON(component.src, component.props);
           component.modified = false;
+          this.props.editor.signals.objectChanged.dispatch(this.state.object);
         },
-        [component.fileExtension]
+        {
+          filters: [component.fileExtension],
+          extension: component.fileExtension,
+          title: "Save material as...",
+          confirmButtonLabel: "Save"
+        }
       );
     } else {
-      this.props.project.writeJSON(component.uri, component.props);
+      this.props.project.writeJSON(component.src, component.props);
     }
   };
 
   onLoadComponent = component => {
     this.props.openFileDialog(
-      async uri => {
-        component.uri = uri;
+      async src => {
+        component.src = src;
+        component.shouldSave = true;
         component.modified = false;
-        component.constructor.inflate(this.state.object, await this.props.project.readJSON(component.uri));
+        component.constructor.inflate(this.state.object, await this.props.project.readJSON(component.src));
+        this.props.editor.signals.objectChanged.dispatch(this.state.object);
       },
-      [component.fileExtension]
+      {
+        filters: [component.fileExtension],
+        title: "Load material...",
+        confirmButtonLabel: "Load"
+      }
     );
   };
 
@@ -202,9 +215,10 @@ class PropertiesPanelContainer extends Component {
               key={component.name}
               removable={true}
               removeHandler={this.onRemoveComponent.bind(this, component.name)}
-              uri={component.uri}
+              src={component.src}
               saveable={component instanceof SaveableComponent}
-              saveHandler={this.onSaveComponent.bind(this, component)}
+              saveHandler={this.onSaveComponent.bind(this, component, false)}
+              saveAsHandler={this.onSaveComponent.bind(this, component, true)}
               loadHandler={this.onLoadComponent.bind(this, component)}
             >
               {componentDefinition.schema.map(prop => (

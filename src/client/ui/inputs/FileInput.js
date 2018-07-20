@@ -8,7 +8,7 @@ export default function FileInput({ value, onChange, openFileDialog, filters }) 
   return (
     <div className={styles.fileInput}>
       <input value={value} onChange={e => onChange(e.target.value)} />
-      <Button onClick={() => openFileDialog(onChange, filters)}>...</Button>
+      <Button onClick={() => openFileDialog(onChange, { filters })}>...</Button>
     </div>
   );
 }

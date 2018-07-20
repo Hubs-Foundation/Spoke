@@ -332,7 +332,16 @@ export async function loadSerializedScene(sceneDef, baseURI, addComponent, isRoo
       // Inflate the entity's components.
       if (Array.isArray(entity.components)) {
         for (const componentDef of entity.components) {
-          addComponent(entityObj, componentDef.name, componentDef.props, !isRoot);
+          const { props } = componentDef;
+          if (componentDef.src) {
+            // Process SaveableComponent
+            const resp = await fetch(componentDef.src);
+            const json = await resp.json();
+            const component = addComponent(entityObj, componentDef.name, json, !isRoot);
+            component.src = componentDef.src;
+          } else {
+            addComponent(entityObj, componentDef.name, props, !isRoot);
+          }
         }
       }
     }
