@@ -8,7 +8,7 @@ export default class BaseComponent {
     this.schema = this.constructor.schema;
     this.props = {};
     this.shouldSave = false;
-    Object.defineProperty(this, "_object", { enumerable: false, value: object || node });
+    Object.defineProperty(this, "_object", { enumerable: false, value: object === undefined ? node : object });
   }
 
   getProperty(propertyName) {
