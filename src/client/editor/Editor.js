@@ -638,7 +638,11 @@ export default class Editor {
   }
 
   deleteSelectedObject() {
-    this.deleteObject(this.selected);
+    if (this.selected) {
+      this.deleteObject(this.selected);
+      return true;
+    }
+    return false;
   }
 
   _cloneAndInflate(object, root) {

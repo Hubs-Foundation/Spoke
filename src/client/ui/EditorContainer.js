@@ -141,6 +141,7 @@ class EditorContainer extends Component {
       globalHotKeyHandlers: {
         undo: this.onUndo,
         redo: this.onRedo,
+        delete: this.onDelete,
         save: this.onSave,
         saveAs: this.onSaveAs
       }
@@ -155,6 +156,16 @@ class EditorContainer extends Component {
     this.props.project.addListener("change", path => {
       this.props.editor.signals.fileChanged.dispatch(path);
     });
+
+    window.onbeforeunload = e => {
+      if (!this.props.editor.sceneModified()) {
+        return undefined;
+      }
+
+      const dialogText = "Your scene has unsaved changes, are you sure you wish to navigate away from the page?";
+      e.returnValue = dialogText;
+      return dialogText;
+    };
   }
 
   componentDidUpdate(prevProps) {
@@ -191,6 +202,16 @@ class EditorContainer extends Component {
 
   onRedo = () => {
     this.props.editor.redo();
+  };
+
+  onDelete = e => {
+    const el = e.target;
+    const nodeName = el.nodeName;
+    const isInput = el.isContentEditable || nodeName === "input" || nodeName === "select" || nodeName === "textArea";
+
+    if (!isInput) {
+      e.preventDefault();
+    }
   };
 
   openFileDialog = (callback, props) => {
