@@ -10,9 +10,6 @@ import StringInput from "../inputs/StringInput";
 import componentTypeMappings from "../inputs/componentTypeMappings";
 
 import SetValueCommand from "../../editor/commands/SetValueCommand";
-import SetPositionCommand from "../../editor/commands/SetPositionCommand";
-import SetRotationCommand from "../../editor/commands/SetRotationCommand";
-import SetScaleCommand from "../../editor/commands/SetScaleCommand";
 import AddComponentCommand from "../../editor/commands/AddComponentCommand";
 import SetComponentPropertyCommand from "../../editor/commands/SetComponentPropertyCommand";
 import RemoveComponentCommand from "../../editor/commands/RemoveComponentCommand";
@@ -22,8 +19,6 @@ import SaveableComponent from "../../editor/components/SaveableComponent";
 
 import { withEditor } from "../contexts/EditorContext";
 import { withProject } from "../contexts/ProjectContext";
-
-const { RAD2DEG, DEG2RAD } = THREE.Math;
 
 class PropertiesPanelContainer extends Component {
   static propTypes = {
