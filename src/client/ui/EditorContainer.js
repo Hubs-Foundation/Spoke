@@ -205,10 +205,9 @@ class EditorContainer extends Component {
   };
 
   onDelete = e => {
-    const el = e.target;
+    const el = document.activeElement;
     const nodeName = el.nodeName;
-    const isInput = el.isContentEditable || nodeName === "input" || nodeName === "select" || nodeName === "textArea";
-
+    const isInput = el.isContentEditable || nodeName === "INPUT" || nodeName === "SELECT" || nodeName === "TEXTAREA";
     if (!isInput) {
       e.preventDefault();
     }
