@@ -8,6 +8,8 @@ const textureLoader = new THREE.TextureLoader();
 export default class StandardMaterialComponent extends SaveableComponent {
   static componentName = "standard-material";
 
+  static dontExportProps = true;
+
   static schema = [
     { name: "color", type: types.color, default: "white" },
     { name: "emissiveFactor", type: types.color, default: "black" },

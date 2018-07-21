@@ -64,6 +64,33 @@ function loadGLTF(url) {
   });
 }
 
+function addComponentData(node, componentNames) {
+  if (!node.extras) return;
+  if (node.extras._components && node.extras._components.length > 0) {
+    for (const component of node.extras._components) {
+      if (componentNames.includes(component.name)) {
+        node.extras[component.name] = component.props;
+      }
+    }
+    delete node.extras._components;
+  }
+}
+
+function removeEditorData(node) {
+  if (node.extras) {
+    for (const key in node.extras) {
+      console.log(key);
+      if (key.startsWith("_")) {
+        delete node.extras[key];
+      }
+    }
+
+    if (Object.keys(node.extras).length === 0) {
+      delete node.extras;
+    }
+  }
+}
+
 export async function exportScene(scene) {
   // TODO: export animations
   const chunks = await new Promise((resolve, reject) => {
@@ -114,23 +141,23 @@ export async function exportScene(scene) {
     }
   }
 
-  console.log(chunks.json);
+  const componentNames = Components.filter(c => !c.dontExportProps).map(component => component.componentName);
 
-  const componentNames = Components.map(component => component.componentName);
+  for (const scene of chunks.json.scenes) {
+    addComponentData(scene, componentNames);
+  }
 
   for (const node of chunks.json.nodes) {
-    if (!node.extras) continue;
-    if (!node.extensions) {
-      node.extensions = {};
-    }
-    if (node.extras._components) {
-      for (const component of node.extras._components) {
-        if (componentNames.includes(component.name)) {
-          node.extensions[component.name] = component;
-        }
-      }
-      delete node.extras._components;
-    }
+    addComponentData(node, componentNames);
+  }
+
+  // Remove editor data.
+  for (const scene of chunks.json.scenes) {
+    removeEditorData(scene);
+  }
+
+  for (const node of chunks.json.nodes) {
+    removeEditorData(node);
   }
 
   return chunks;
