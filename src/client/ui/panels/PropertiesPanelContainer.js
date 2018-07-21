@@ -6,7 +6,6 @@ import "../../vendor/react-select/index.scss";
 import styles from "./PropertiesPanelContainer.scss";
 import PropertyGroup from "../PropertyGroup";
 import InputGroup from "../InputGroup";
-import Vector3Input from "../inputs/Vector3Input";
 import StringInput from "../inputs/StringInput";
 import componentTypeMappings from "../inputs/componentTypeMappings";
 
@@ -39,11 +38,6 @@ class PropertiesPanelContainer extends Component {
     this.state = {
       object: null
     };
-
-    this.positionVector = new THREE.Vector3();
-    this.rotationEuler = new THREE.Euler();
-    this.degreesVector = new THREE.Vector3();
-    this.scaleVector = new THREE.Vector3();
   }
 
   componentDidMount() {
@@ -74,19 +68,6 @@ class PropertiesPanelContainer extends Component {
 
   onUpdateName = e => {
     this.props.editor.execute(new SetValueCommand(this.state.object, "name", e.target.value));
-  };
-
-  onUpdatePosition = newPosition => {
-    this.props.editor.execute(new SetPositionCommand(this.state.object, this.positionVector.copy(newPosition)));
-  };
-
-  onUpdateRotation = newRotation => {
-    this.rotationEuler.set(newRotation.x * DEG2RAD, newRotation.y * DEG2RAD, newRotation.z * DEG2RAD);
-    this.props.editor.execute(new SetRotationCommand(this.state.object, this.rotationEuler));
-  };
-
-  onUpdateScale = newScale => {
-    this.props.editor.execute(new SetScaleCommand(this.state.object, this.scaleVector.copy(newScale)));
   };
 
   onAddComponent = ({ value }) => {
@@ -163,9 +144,6 @@ class PropertiesPanelContainer extends Component {
       );
     }
 
-    const rotation = object.rotation;
-    this.degreesVector.set(rotation.x * RAD2DEG, rotation.y * RAD2DEG, rotation.z * RAD2DEG);
-
     const componentOptions = [];
 
     for (const [name] of this.props.editor.components) {
@@ -182,15 +160,6 @@ class PropertiesPanelContainer extends Component {
         <PropertyGroup name="Node" removable={false}>
           <InputGroup name="Name">
             <StringInput value={object.name} onChange={this.onUpdateName} />
-          </InputGroup>
-          <InputGroup name="Position">
-            <Vector3Input value={object.position} onChange={this.onUpdatePosition} />
-          </InputGroup>
-          <InputGroup name="Rotation">
-            <Vector3Input value={this.degreesVector} onChange={this.onUpdateRotation} />
-          </InputGroup>
-          <InputGroup name="Scale">
-            <Vector3Input value={object.scale} onChange={this.onUpdateScale} />
           </InputGroup>
           <div className={styles.addComponentContainer}>
             <Select
@@ -213,7 +182,7 @@ class PropertiesPanelContainer extends Component {
             <PropertyGroup
               name={getDisplayName(component.name)}
               key={component.name}
-              removable={true}
+              removable={componentDefinition.removable}
               removeHandler={this.onRemoveComponent.bind(this, component.name)}
               src={component.src}
               saveable={component instanceof SaveableComponent}

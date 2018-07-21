@@ -325,6 +325,8 @@ export default class Editor {
   addObject(object, parent) {
     const scope = this;
 
+    this.addComponent(object, "transform");
+
     object.userData._saveParent = true;
     object.traverse(child => {
       if (child.geometry !== undefined) scope.addGeometry(child.geometry);
