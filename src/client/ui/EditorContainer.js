@@ -244,7 +244,6 @@ class EditorContainer extends Component {
       // check whether there is an inherited gltf
       // if yes => read gltf, write updated names back the file from conflicthandler
       const filePath = this.props.editor.scene.userData._inherits;
-      console.log(`filepath: ${filePath}`);
       if (filePath && filePath.endsWith(".gltf")) {
         const handler = this.props.editor.scene.userData._conflictHandler;
         this.props.project.overwriteNodeNamesOfExisitingGLTF(filePath, handler);
