@@ -5,6 +5,7 @@ export default class ConflictHandler {
       duplicate: false
     };
     this._duplicateList = {};
+    this._updatedNodes = {};
   }
 
   findDuplicates = (node, layer, index) => {
@@ -12,6 +13,11 @@ export default class ConflictHandler {
       node.userData._path.push(index);
     } else {
       node.userData._path = [0];
+    }
+
+    if (node.name.length === 0) {
+      // unnamed node
+      this._generateTempName(node);
     }
 
     const name = node.name;
@@ -92,5 +98,36 @@ export default class ConflictHandler {
     });
     this.setMissingStatus(newStatus);
     return resolvedList;
+  };
+
+  _generateTempName = node => {
+    const hashPath = this._hashTreePath(node.userData._path);
+    node.name = "node_" + hashPath;
+    this._updatedNodes[hashPath] = node.name;
+  };
+
+  _hashTreePath = path => {
+    // todo: maybe use different approaches to name unnamed nodes
+    // currently use the tree path for each node
+    return path.join("-");
+  };
+
+  // not used yet: should be used while the user modifies the name of the node that is inherited from the gltf.
+  updateInheritedNodeName = (newName, node) => {
+    const originalPath = this._hashTreePath(node.userData._path);
+    node.name = newName;
+    this._updatedNodes[originalPath] = newName;
+  };
+
+  getUpdatedNodeName = path => {
+    const hashPath = this._hashTreePath(path);
+    if (!(hashPath in this._updatedNodes)) {
+      return;
+    }
+    return this._updatedNodes[hashPath];
+  };
+
+  isUpdateNeeded = () => {
+    return Object.keys(this._updatedNodes).length > 0;
   };
 }
