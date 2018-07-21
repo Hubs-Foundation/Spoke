@@ -44,7 +44,7 @@ export default class ColorInput extends Component {
         <div className={styles.block} onClick={this.handleClick}>
           <div className={styles.color} style={{ background: this.props.value }} />
         </div>
-        <div>
+        <div className={styles.colorInput}>
           <EditableInput value={this.handleColorHexValue()} onChange={color => this.props.onChange(color)} />
         </div>
         {this.renderColorPicker()}

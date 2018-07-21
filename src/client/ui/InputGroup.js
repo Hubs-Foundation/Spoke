@@ -5,8 +5,8 @@ import styles from "./InputGroup.scss";
 export default function InputGroup({ name, children }) {
   return (
     <div className={styles.inputGroup}>
-      <label className={styles.name}>
-        {name}:
+      <label className={styles.label}>
+        <span className={styles.name}>{name}:</span>
         <div className={styles.content}>{children}</div>
       </label>
     </div>

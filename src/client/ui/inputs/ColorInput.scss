@@ -4,11 +4,11 @@
   display: flex;
   :local(.block) {
     display: flex;
+    align-items: center;
     padding: 5px;
     background: $input-background;
     border-radius: 1px;
     box-shadow: '0 0 0 1px rgba(0, 0, 0, .1)';
-    display: inline-block;
     cursor: pointer;
     :local(.color) {
       width: 36px;
@@ -27,5 +27,15 @@
       bottom: 0px;
       left: 0px;
     }
+  }
+
+  :local(.colorInput) input {
+    border: none;
+    color: $text;
+    background-color: $input-background;
+    padding-left: 6px;
+    font-size: 16px;
+    height: 24px;
+    width: 10em;
   }
 }
