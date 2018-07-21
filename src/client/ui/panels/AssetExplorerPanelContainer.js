@@ -171,6 +171,23 @@ class AssetExplorerPanelContainer extends Component {
     });
   };
 
+  onCopyURL = (e, file) => {
+    const url = new URL(file.uri, window.location).href;
+    const textArea = document.createElement("textarea");
+    textArea.value = url;
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+
+    try {
+      document.execCommand("copy");
+    } catch (err) {
+      console.warn("Unable to copy to clipboard.");
+    }
+
+    document.body.removeChild(textArea);
+  };
+
   renderNode = node => {
     return (
       <div
@@ -247,6 +264,7 @@ class AssetExplorerPanelContainer extends Component {
         <ContextMenu id="file-menu-default">
           <MenuItem>Open File</MenuItem>
           <MenuItem>Delete File</MenuItem>
+          <MenuItem onClick={this.onCopyURL}>Copy URL</MenuItem>
         </ContextMenu>
         <ContextMenu id="current-directory-menu-default">
           <MenuItem onClick={this.onNewFolder}>New Folder</MenuItem>
