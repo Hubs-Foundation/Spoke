@@ -15,4 +15,4 @@ cargo install gltf_unlit_generator
 npm run dev
 ```
 
-Then open https://localhost:8080.
+Then open https://localhost:9090.
