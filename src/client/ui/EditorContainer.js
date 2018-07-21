@@ -193,39 +193,31 @@ class EditorContainer extends Component {
     this.props.editor.redo();
   };
 
-  openFileDialog = (callback, filters) => {
+  openFileDialog = (callback, props) => {
     this.setState({
       openModal: {
         component: FileDialogModalContainer,
         shouldCloseOnOverlayClick: true,
         props: {
-          title: "Select a file...",
-          confirmButtonLabel: "Select",
-          filters: filters,
+          onCancel: this.onCloseModal,
           onConfirm: filePath => {
             this.setState({ openModal: null });
             callback(filePath);
           },
-          onCancel: this.onCloseModal
+          ...props
         }
       }
     });
   };
 
   openSaveAsDialog(onSave) {
-    this.setState({
-      openModal: {
-        component: FileDialogModalContainer,
-        shouldCloseOnOverlayClick: true,
-        props: {
-          title: "Save scene as...",
-          confirmButtonLabel: "Save",
-          filters: [".scene"],
-          extension: ".scene",
-          onConfirm: onSave,
-          onCancel: this.onCloseModal
-        }
-      }
+    this.openFileDialog(onSave, {
+      title: "Save scene as...",
+      filters: [".scene"],
+      extension: ".scene",
+      confirmButtonLabel: "Save",
+      onConfirm: onSave,
+      onCancel: this.onCloseModal
     });
   }
 

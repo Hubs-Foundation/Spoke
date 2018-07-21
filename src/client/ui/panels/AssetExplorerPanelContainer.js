@@ -190,7 +190,7 @@ class AssetExplorerPanelContainer extends Component {
   render() {
     const selectedDirectory = getSelectedDirectory(this.state.tree, this.state.selectedDirectory) || this.state.tree;
     const files = (selectedDirectory.files || []).filter(
-      file => file.ext === ".gltf" || file.ext === ".scene" || file.isDirectory
+      file => [".gltf", ".scene", ".material"].includes(file.ext) || file.isDirectory
     );
     const selectedFile = this.state.selectedFile;
 

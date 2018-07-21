@@ -1,6 +1,7 @@
 import THREE from "../vendor/three";
 import { Components } from "./components";
 import SceneReferenceComponent from "./components/SceneReferenceComponent";
+import SaveableComponent from "./components/SaveableComponent";
 import ConflictHandler from "./ConflictHandler";
 
 export function absoluteToRelativeURL(from, to) {
@@ -63,6 +64,33 @@ function loadGLTF(url) {
   });
 }
 
+function addComponentData(node, componentNames) {
+  if (!node.extras) return;
+  if (node.extras._components && node.extras._components.length > 0) {
+    for (const component of node.extras._components) {
+      if (componentNames.includes(component.name)) {
+        node.extras[component.name] = component.props;
+      }
+    }
+    delete node.extras._components;
+  }
+}
+
+function removeEditorData(node) {
+  if (node.extras) {
+    for (const key in node.extras) {
+      console.log(key);
+      if (key.startsWith("_")) {
+        delete node.extras[key];
+      }
+    }
+
+    if (Object.keys(node.extras).length === 0) {
+      delete node.extras;
+    }
+  }
+}
+
 export async function exportScene(scene) {
   // TODO: export animations
   const chunks = await new Promise((resolve, reject) => {
@@ -78,21 +106,58 @@ export async function exportScene(scene) {
     buffers[0].uri = scene.name + ".bin";
   }
 
-  const componentNames = Components.map(component => component.componentName);
+  // De-duplicate images.
+
+  const images = chunks.json.images;
+
+  if (images && images.length > 0) {
+    // Map containing imageProp -> newIndex
+    const uniqueImageProps = new Map();
+    // Map containing oldIndex -> newIndex
+    const imageIndexMap = new Map();
+    // Array containing unique imageDefs
+    const uniqueImageDefs = [];
+    // Array containing unique image blobs
+    const uniqueImages = [];
+
+    for (const [index, imageDef] of images.entries()) {
+      const imageProp = imageDef.uri === undefined ? imageDef.bufferView : imageDef.uri;
+      let newIndex = uniqueImageProps.get(imageProp);
+
+      if (newIndex === undefined) {
+        newIndex = uniqueImageDefs.push(imageDef) - 1;
+        uniqueImageProps.set(imageProp, newIndex);
+        uniqueImages.push(chunks.images[index]);
+      }
+
+      imageIndexMap.set(index, newIndex);
+    }
+
+    chunks.json.images = uniqueImageDefs;
+    chunks.images = uniqueImages;
+
+    for (const textureDef of chunks.json.textures) {
+      textureDef.source = imageIndexMap.get(textureDef.source);
+    }
+  }
+
+  const componentNames = Components.filter(c => !c.dontExportProps).map(component => component.componentName);
+
+  for (const scene of chunks.json.scenes) {
+    addComponentData(scene, componentNames);
+  }
 
   for (const node of chunks.json.nodes) {
-    if (!node.extras) continue;
-    if (!node.extensions) {
-      node.extensions = {};
-    }
-    if (node.extras._components) {
-      for (const component of node.extras._components) {
-        if (componentNames.includes(component.name)) {
-          node.extensions[component.name] = component;
-        }
-      }
-      delete node.extras._components;
-    }
+    addComponentData(node, componentNames);
+  }
+
+  // Remove editor data.
+  for (const scene of chunks.json.scenes) {
+    removeEditorData(scene);
+  }
+
+  for (const node of chunks.json.nodes) {
+    removeEditorData(node);
   }
 
   return chunks;
@@ -296,7 +361,16 @@ export async function loadSerializedScene(sceneDef, baseURI, addComponent, isRoo
       // Inflate the entity's components.
       if (Array.isArray(entity.components)) {
         for (const componentDef of entity.components) {
-          addComponent(entityObj, componentDef.name, componentDef.props, !isRoot);
+          const { props } = componentDef;
+          if (componentDef.src) {
+            // Process SaveableComponent
+            const resp = await fetch(componentDef.src);
+            const json = await resp.json();
+            const component = addComponent(entityObj, componentDef.name, json, !isRoot);
+            component.src = componentDef.src;
+          } else {
+            addComponent(entityObj, componentDef.name, props, !isRoot);
+          }
         }
       }
     }
@@ -374,10 +448,17 @@ export function serializeScene(scene, scenePath) {
             components = [];
           }
 
-          components.push({
-            name: component.name,
-            props: component.props
-          });
+          if (component instanceof SaveableComponent) {
+            components.push({
+              name: component.name,
+              src: component.src
+            });
+          } else {
+            components.push({
+              name: component.name,
+              props: component.props
+            });
+          }
         }
       }
     }

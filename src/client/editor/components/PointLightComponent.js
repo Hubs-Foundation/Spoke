@@ -22,12 +22,8 @@ export default class PointLightComponent extends BaseComponent {
   }
 
   static inflate(node, _props) {
-    const { component, props } = this._getOrCreateComponent(node, _props);
-    const light = new THREE.PointLight(props.color, props.intensity);
-    Object.defineProperty(component, "_object", { enumerable: false, value: light });
-    component.updateProperty("castShadow", props.castShadow);
-    light.userData._dontShowInHierarchy = true;
-    light.userData._inflated = true;
+    const light = new THREE.PointLight();
+    const component = this._getOrCreateComponent(node, _props, light);
     node.add(light);
     return component;
   }

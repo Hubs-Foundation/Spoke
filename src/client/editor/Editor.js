@@ -164,11 +164,12 @@ export default class Editor {
   }
 
   editScenePrefab(uri) {
-    this.deselect();
     this._loadScene(uri);
   }
 
   loadNewScene() {
+    this.deselect();
+
     // Remove existing gltf dependency
     const prevDependencies = this.fileDependencies.get(this.scene.userData._uri);
 
@@ -226,6 +227,8 @@ export default class Editor {
   }
 
   async _loadScene(uri) {
+    this.deselect();
+
     // Remove existing gltf dependency
     const prevDependencies = this.fileDependencies.get(this.scene.userData._uri);
 
@@ -505,6 +508,9 @@ export default class Editor {
       }
 
       const index = object.userData._components.findIndex(({ name }) => name === componentName);
+      if (index === -1) {
+        throw new Error(`Component "${componentName}" does not exist on ${object}`);
+      }
       object.userData._components.splice(index, 1);
     }
   }
