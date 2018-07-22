@@ -2,11 +2,6 @@
   display: flex;
   flex-direction: row;
   flex: 1 1 auto;
-
-  .react-numeric-input {
-    display: flex;
-    flex: 1 1 auto;
-  }
 }
 
 :local(.label) {
