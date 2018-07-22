@@ -32,9 +32,6 @@ export default class NumericInput extends React.Component {
       step: props.mediumStep
     };
     this.lastValidValue = this.props.value;
-    window.addEventListener("printstate", () => {
-      console.log("react state", this.props, this.state);
-    });
   }
 
   getStepForKeys(ctrlKey, shiftKey) {
