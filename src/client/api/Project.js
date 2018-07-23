@@ -1,5 +1,4 @@
 import EventEmitter from "eventemitter3";
-import { nodesToTree } from "../utils";
 
 export default class Project extends EventEmitter {
   constructor() {
@@ -147,25 +146,5 @@ export default class Project extends EventEmitter {
   close() {
     this.ws.close();
     return Promise.resolve(this);
-  }
-
-  async overwriteNodeNamesOfExisitingGLTF(relativePath, conflictHandler) {
-    if (!conflictHandler || !conflictHandler.isUpdateNeeded()) {
-      // no need to update the inherited file
-      return;
-    }
-
-    // read original gltf file
-    const originalGLTF = await this.readJSON(relativePath);
-    let nodes = originalGLTF.nodes;
-    nodes = nodesToTree(nodes);
-
-    nodes.forEach(node => {
-      node.name = conflictHandler.getUpdatedNodeName(node.userData._path);
-      delete node.userData;
-    });
-
-    // write to the gltf file
-    await this.writeJSON(relativePath, originalGLTF);
   }
 }
