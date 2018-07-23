@@ -6,7 +6,7 @@ export default class PointLightComponent extends BaseComponent {
 
   static schema = [
     { name: "color", type: types.color, default: "white" },
-    { name: "intensity", type: types.number, default: 1 },
+    { name: "intensity", type: types.number, default: 1, min: 0 },
     { name: "castShadow", type: types.boolean, default: true }
   ];
 
