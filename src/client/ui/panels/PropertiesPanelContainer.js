@@ -121,6 +121,8 @@ class PropertiesPanelContainer extends Component {
 
   getExtras(prop) {
     switch (prop.type) {
+      case types.number:
+        return { min: prop.min, max: prop.max };
       case types.file:
         return { openFileDialog: this.props.openFileDialog, filters: prop.filters };
       default:

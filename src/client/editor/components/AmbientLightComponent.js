@@ -6,7 +6,7 @@ export default class AmbientLightComponent extends BaseComponent {
 
   static schema = [
     { name: "color", type: types.color, default: "white" },
-    { name: "intensity", type: types.number, default: 1 }
+    { name: "intensity", type: types.number, default: 1, min: 0 }
   ];
 
   updateProperty(propertyName, value) {

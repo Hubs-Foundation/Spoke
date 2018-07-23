@@ -16,6 +16,8 @@ export default class NumericInput extends React.Component {
     mediumStep: PropTypes.number,
     smallStep: PropTypes.number,
     bigStep: PropTypes.number,
+    min: PropTypes.number,
+    max: PropTypes.number,
     onChange: PropTypes.func
   };
 
@@ -44,6 +46,23 @@ export default class NumericInput extends React.Component {
     return step;
   }
 
+  clamp(value) {
+    const { min, max } = this.props;
+    if (max !== null && max !== undefined) {
+      value = Math.min(value, this.props.max);
+    }
+    if (min !== null && min !== undefined) {
+      value = Math.max(value, this.props.min);
+    }
+    return value;
+  }
+
+  setValidValue(value) {
+    value = this.clamp(round(value));
+    this.lastValidValue = value;
+    this.props.onChange(value);
+  }
+
   onKeyDown = e => {
     const { ctrlKey, shiftKey, key } = e;
     if (key !== "ArrowUp" && key !== "ArrowDown") return;
@@ -57,10 +76,7 @@ export default class NumericInput extends React.Component {
     } else if (key === "ArrowDown") {
       value -= step;
     }
-    value = round(value);
-
-    this.lastValidValue = value;
-    this.props.onChange(value);
+    this.setValidValue(value);
   };
 
   onWheel = e => {
@@ -72,10 +88,7 @@ export default class NumericInput extends React.Component {
     const step = this.getStepForKeys(ctrlKey, shiftKey);
     let { value } = this.props;
     value += (deltaY > 0 ? 1 : -1) * step;
-    value = round(value);
-
-    this.lastValidValue = value;
-    this.props.onChange(value);
+    this.setValidValue(value);
   };
 
   setStep = e => {
@@ -105,9 +118,7 @@ export default class NumericInput extends React.Component {
   };
 
   onMouseMove = e => {
-    const value = round(this.props.value + (e.movementX / 100) * this.state.step);
-    this.lastValidValue = value;
-    this.props.onChange(value);
+    this.setValidValue(this.props.value + (e.movementX / 100) * this.state.step);
   };
 
   cleanUpListeners = () => {
@@ -130,10 +141,12 @@ export default class NumericInput extends React.Component {
 
     if (isNaN(trimmed)) return;
 
-    if (wholeNumber.test(trimmed) || (trimmed.length > 0 && !partialValue.test(trimmed))) {
-      const newValue = round(parseFloat(trimmed));
-      this.lastValidValue = newValue;
-      this.props.onChange(newValue);
+    const looksValid = wholeNumber.test(trimmed) || (trimmed.length > 0 && !partialValue.test(trimmed));
+    if (looksValid) {
+      const parsed = parseFloat(trimmed);
+      if (this.clamp(parsed) === parsed) {
+        this.setValidValue(parsed);
+      }
     }
   }
 

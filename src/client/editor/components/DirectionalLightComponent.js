@@ -9,10 +9,10 @@ export default class DirectionalLightComponent extends BaseComponent {
 
   static schema = [
     { name: "color", type: types.color, default: "white" },
-    { name: "intensity", type: types.number, default: 1 },
+    { name: "intensity", type: types.number, default: 1, min: 0 },
     { name: "castShadow", type: types.boolean, default: true },
-    { name: "elevation", type: types.number, default: 63 },
-    { name: "azimuth", type: types.number, default: 245 }
+    { name: "elevation", type: types.number, default: 63, min: -90, max: 90 },
+    { name: "azimuth", type: types.number, default: 245, min: 0, max: 360 }
   ];
 
   static _tempEuler = new THREE.Euler(0, 0, 0, "YXZ");
