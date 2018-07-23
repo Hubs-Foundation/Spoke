@@ -7,6 +7,11 @@ function round(value) {
   return Math.round(value * 1000) / 1000;
 }
 
+function copyStepKeys({ ctrlKey, metaKey, shiftKey }) {
+  // Copy keys so we don't have to persist the SyntheticEvent
+  return { ctrlKey, metaKey, shiftKey };
+}
+
 const partialValue = /[-.0]$/;
 const wholeNumber = /-?[0-9]+$/;
 
@@ -36,9 +41,10 @@ export default class NumericInput extends React.Component {
     this.lastValidValue = this.props.value;
   }
 
-  getStepForKeys(ctrlKey, shiftKey) {
+  getStepForEvent(e) {
+    const { ctrlKey, metaKey, shiftKey } = e;
     let step = this.props.mediumStep;
-    if (ctrlKey) {
+    if (ctrlKey || metaKey) {
       step = this.props.smallStep;
     } else if (shiftKey) {
       step = this.props.bigStep;
@@ -64,12 +70,12 @@ export default class NumericInput extends React.Component {
   }
 
   onKeyDown = e => {
-    const { ctrlKey, shiftKey, key } = e;
+    const { key } = e;
     if (key !== "ArrowUp" && key !== "ArrowDown") return;
 
     e.preventDefault();
 
-    const step = this.getStepForKeys(ctrlKey, shiftKey);
+    const step = this.getStepForEvent(e);
     let { value } = this.props;
     if (key === "ArrowUp") {
       value += step;
@@ -80,21 +86,21 @@ export default class NumericInput extends React.Component {
   };
 
   onWheel = e => {
-    const { ctrlKey, shiftKey, deltaY } = e;
+    const { deltaY } = e;
 
     e.stopPropagation();
     e.preventDefault();
 
-    const step = this.getStepForKeys(ctrlKey, shiftKey);
+    const step = this.getStepForEvent(e);
     let { value } = this.props;
     value += (deltaY > 0 ? 1 : -1) * step;
     this.setValidValue(value);
   };
 
   setStep = e => {
-    const { ctrlKey, shiftKey } = e;
+    const keys = copyStepKeys(e);
     this.setState(prevState => {
-      const newStep = this.getStepForKeys(ctrlKey, shiftKey);
+      const newStep = this.getStepForEvent(keys);
       if (newStep === prevState.step) return;
       return { step: newStep };
     });
@@ -103,9 +109,8 @@ export default class NumericInput extends React.Component {
   onMouseDown = e => {
     e.target.select();
     e.preventDefault();
-
-    const { ctrlKey, shiftKey } = e;
-    this.setState({ step: this.getStepForKeys(ctrlKey, shiftKey) });
+    const keys = copyStepKeys(e);
+    this.setState({ step: this.getStepForEvent(keys) });
 
     if (e.button === 1) {
       document.body.requestPointerLock();
