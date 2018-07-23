@@ -3,15 +3,15 @@ function nodesToTree(nodes) {
     return;
   }
 
-  nodes.forEach((node, i) => {
+  for (const [i, node] of nodes.entries()) {
     if (!node.userData) {
       createTreePath(node, 0, i, nodes);
     }
     if (node.userData._visited) {
-      return;
+      continue;
     }
     createTreePath(node, 0, i, nodes);
-  });
+  }
 
   return nodes;
 }
@@ -28,14 +28,14 @@ function createTreePath(node, layer, index, nodes) {
   }
 
   if (node.children) {
-    node.children.forEach((index, i) => {
+    for (const [i, index] of node.children.entries()) {
       const child = nodes[index];
       if (!child.userData) {
         child.userData = {};
       }
       child.userData._path = node.userData._path.slice(0);
       createTreePath(child, layer + 1, i, nodes);
-    });
+    }
   }
 }
 
