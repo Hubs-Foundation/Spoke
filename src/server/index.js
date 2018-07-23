@@ -83,15 +83,16 @@ export default async function startServer(options) {
   let server;
   if (opts.https) {
     if (!fs.existsSync(".certs/key.pem")) {
+      console.log("Creating selfsigned certs");
       const cert = selfsigned.generate();
-      await fs.ensureDir(path.join(projectPath, ".certs"));
-      fs.writeFileSync(path.join(projectPath, ".certs", "key.pem"), cert.private);
-      fs.writeFileSync(path.join(projectPath, ".certs", "cert.pem"), cert.cert);
+      await fs.ensureDir(".certs");
+      fs.writeFileSync(path.join(".certs", "key.pem"), cert.private);
+      fs.writeFileSync(path.join(".certs", "cert.pem"), cert.cert);
     }
     server = https.createServer(
       {
-        key: fs.readFileSync(path.join(projectPath, ".certs", "key.pem")),
-        cert: fs.readFileSync(path.join(projectPath, ".certs", "cert.pem"))
+        key: fs.readFileSync(path.join(".certs", "key.pem")),
+        cert: fs.readFileSync(path.join(".certs", "cert.pem"))
       },
       app.callback()
     );
