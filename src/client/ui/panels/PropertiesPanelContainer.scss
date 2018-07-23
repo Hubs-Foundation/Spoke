@@ -1,7 +1,5 @@
 :local(.propertiesPanelContainer) {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
+  width: 100%;
   overflow-x: hidden;
   overflow-y: auto;
 }

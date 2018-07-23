@@ -69,7 +69,11 @@ function addComponentData(node, componentNames) {
   if (node.extras._components && node.extras._components.length > 0) {
     for (const component of node.extras._components) {
       if (componentNames.includes(component.name)) {
-        node.extras[component.name] = component.props;
+        if (node.extras.components === undefined) {
+          node.extras.components = {};
+        }
+
+        node.extras.components[component.name] = component.props;
       }
     }
     delete node.extras._components;

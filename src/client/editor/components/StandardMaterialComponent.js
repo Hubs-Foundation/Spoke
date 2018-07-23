@@ -13,9 +13,9 @@ export default class StandardMaterialComponent extends SaveableComponent {
   static schema = [
     { name: "color", type: types.color, default: "white" },
     { name: "emissiveFactor", type: types.color, default: "black" },
-    { name: "metallic", type: types.number, default: 1 },
-    { name: "roughness", type: types.number, default: 1 },
-    { name: "alphaCutoff", type: types.number, default: 0.5 },
+    { name: "metallic", type: types.number, default: 1, min: 0, max: 1 },
+    { name: "roughness", type: types.number, default: 1, min: 0, max: 1 },
+    { name: "alphaCutoff", type: types.number, default: 0.5, min: 0, max: 1 },
     { name: "doubleSided", type: types.boolean, default: false },
     { name: "baseColorTexture", type: types.file, default: null, filters: imageFilters },
     { name: "normalTexture", type: types.file, default: null, filters: imageFilters },
@@ -59,6 +59,7 @@ export default class StandardMaterialComponent extends SaveableComponent {
 
   updateProperty(propertyName, value) {
     super.updateProperty(propertyName, value);
+    if (!this._object) return;
     switch (propertyName) {
       case "color":
         this._object.color.set(value);
@@ -98,6 +99,7 @@ export default class StandardMaterialComponent extends SaveableComponent {
   }
 
   static _propsFromObject(node) {
+    if (!node.material) return null;
     const { map, normalMap, emissiveMap, roughnessMap, aoMap } = node.material;
     return {
       color: node.material.color.getStyle(),
@@ -115,13 +117,15 @@ export default class StandardMaterialComponent extends SaveableComponent {
   }
 
   static inflate(node, _props) {
-    const component = this._getOrCreateComponent(node, _props, node.material);
-    const texture = new THREE.TextureLoader().load(envMapURL);
-    texture.mapping = THREE.EquirectangularReflectionMapping;
-    texture.magFilter = THREE.LinearFilter;
-    texture.minFilter = THREE.LinearMipMapLinearFilter;
-    node.material.envMap = texture;
-    node.material.needsUpdate = true;
+    const component = this._getOrCreateComponent(node, _props, node.material || null);
+    if (node.material) {
+      const texture = new THREE.TextureLoader().load(envMapURL);
+      texture.mapping = THREE.EquirectangularReflectionMapping;
+      texture.magFilter = THREE.LinearFilter;
+      texture.minFilter = THREE.LinearMipMapLinearFilter;
+      node.material.envMap = texture;
+      node.material.needsUpdate = true;
+    }
     return component;
   }
 }

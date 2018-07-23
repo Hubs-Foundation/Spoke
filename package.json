@@ -11,7 +11,7 @@
     "LICENSE"
   ],
   "scripts": {
-    "dev": "cross-env NODE_ENV=development node ./bin/hubs-editor ./example",
+    "dev": "cross-env NODE_ENV=development node ./bin/hubs-editor --https ./example",
     "dev:nopath": "cross-env NODE_ENV=development node ./bin/hubs-editor",
     "build": "concurrently \"npm run build:server\" \"npm run build:client\"",
     "build:server": "babel src/server/ -d lib/server/",
@@ -46,7 +46,6 @@
     "react-hotkeys": "^1.1.4",
     "react-modal": "^3.4.4",
     "react-mosaic-component": "^1.1.1",
-    "react-numeric-input": "^2.2.3",
     "react-select": "^1.2.1",
     "react-tooltip": "^3.6.1",
     "selfsigned": "^1.10.3",

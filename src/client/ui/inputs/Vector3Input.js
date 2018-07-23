@@ -8,7 +8,7 @@ export default function Vector3Input({ value, onChange, ...rest }) {
   const vy = value ? value.y : 0;
   const vz = value ? value.z : 0;
   return (
-    <div className={styles.vector3Input}>
+    <div className={styles.inputGroup}>
       <div className={styles.label}>X:</div>
       <NumericInput value={vx} onChange={x => onChange({ x, y: vy, z: vz })} {...rest} />
       <div className={styles.label}>Y:</div>

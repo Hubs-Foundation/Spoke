@@ -2,7 +2,7 @@
 
 :local(.numericInput) {
   display: flex;
-  width: 100%;
+  width: 4em;
   color: $text;
   background-color: $input-background;
   border: none;
@@ -10,10 +10,6 @@
   font-size: 16px;
   height: 24px;
   box-sizing: border-box;
-  -moz-appearance: textfield;
-
-  &::-webkit-outer-spin-button,
-  &::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-  }
+  cursor: col-resize;
+  outline: none;
 }
