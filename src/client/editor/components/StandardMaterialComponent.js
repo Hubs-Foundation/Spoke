@@ -40,7 +40,7 @@ export default class StandardMaterialComponent extends SaveableComponent {
     if (url === currentUrl) return;
 
     try {
-      const texture = textureLoader.load(url, null, null, () => {
+      const texture = textureLoader.load(url, () => {}, null, () => {
         this._object[map] = null;
         this._object.needsUpdate = true;
       });

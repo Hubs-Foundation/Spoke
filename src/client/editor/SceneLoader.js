@@ -5,9 +5,7 @@ import SaveableComponent from "./components/SaveableComponent";
 import ConflictHandler from "./ConflictHandler";
 
 export function absoluteToRelativeURL(from, to) {
-  if (from === to) {
-    return to;
-  }
+  if (from === to) return to;
 
   const fromURL = new URL(from, window.location);
   const toURL = new URL(to, window.location);
@@ -274,8 +272,7 @@ function convertAbsoluteURLs(entities, sceneURL) {
     if (entityComponents) {
       for (const component of entityComponents) {
         if (component.name === SceneReferenceComponent.componentName) {
-          const { src } = component.props;
-          component.props.src = absoluteToRelativeURL(sceneURL, src);
+          component.props.src = absoluteToRelativeURL(sceneURL, component.props.src);
         }
       }
     }
@@ -312,7 +309,7 @@ export async function loadSerializedScene(sceneDef, baseURI, addComponent, isRoo
 
   if (entities) {
     // Convert any relative URLs in the scene to absolute URLs so that other code does not need to know about the scene path.
-    // resolveRelativeURLs(entities, absoluteBaseURL.href);
+    resolveRelativeURLs(entities, absoluteBaseURL.href);
 
     // Sort entities by insertion order (uses parent and index to determine order).
     const sortedEntities = sortEntities(entities);
@@ -418,6 +415,7 @@ export async function loadScene(uri, addComponent, isRoot = true, ancestors) {
 }
 
 export function serializeScene(scene, scenePath) {
+  scene = scene.clone();
   const entities = {};
 
   scene.traverse(entityObject => {

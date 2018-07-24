@@ -259,13 +259,12 @@ class EditorContainer extends Component {
   serializeAndSaveScene = async sceneURI => {
     try {
       const serializedScene = this.props.editor.serializeScene(sceneURI);
+      this.props.editor.ignoreNextSceneFileChange = true;
       await this.props.project.writeJSON(sceneURI, serializedScene);
 
       this.props.editor.setSceneURI(sceneURI);
       this.props.editor.sceneInfo.modified = false;
-      this.setState({
-        openModal: null
-      });
+      this.setState({ openModal: null });
     } catch (e) {
       throw e;
     }
