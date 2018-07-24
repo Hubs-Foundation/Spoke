@@ -2,6 +2,7 @@ import React from "react";
 import Button from "./Button";
 import PropTypes from "prop-types";
 import styles from "./PropertyGroup.scss";
+import { getRelativeURI } from "../api/project";
 
 export default function PropertyGroup(props) {
   const { name, removable, removeHandler, src, saveable, saveHandler, saveAsHandler, loadHandler, children } = props;
@@ -14,7 +15,7 @@ export default function PropertyGroup(props) {
     if (!saveable) return;
     return (
       <div>
-        <span className={styles.src}>{src}</span>
+        <span className={styles.src}>{src && getRelativeURI(src)}</span>
         <div className={styles.saveButtons}>
           {src && <Button onClick={saveHandler}>Save</Button>}
           <Button onClick={saveAsHandler}>Save As...</Button>

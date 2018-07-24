@@ -21,11 +21,14 @@ export default class TransformComponent extends BaseComponent {
     };
   }
 
-  get props() {
-    return TransformComponent._propsFromObject(this._object);
+  constructor(node, object) {
+    super(node, object);
+    Object.defineProperty(this, "props", {
+      get: () => {
+        return TransformComponent._propsFromObject(this._object);
+      }
+    });
   }
-
-  set props(value) {}
 
   updateProperty(propertyName, value) {
     this._object[propertyName].set(value.x, value.y, value.z);
