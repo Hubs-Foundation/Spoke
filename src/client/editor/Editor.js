@@ -131,7 +131,10 @@ export default class Editor {
   }
 
   onFileChanged = uri => {
-    if (uri === this.sceneInfo.uri && this.ignoreNextSceneFileChange) return;
+    if (uri === this.sceneInfo.uri && this.ignoreNextSceneFileChange) {
+      this.ignoreNextSceneFileChange = false;
+      return;
+    }
 
     const dependencies = this.fileDependencies.get(uri);
 
