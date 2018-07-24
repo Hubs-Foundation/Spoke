@@ -171,7 +171,7 @@ export default class Editor {
     this.deselect();
 
     // Remove existing gltf dependency
-    const prevDependencies = this.fileDependencies.get(this.scene.userData._uri);
+    const prevDependencies = this.fileDependencies.get(this.sceneInfo.uri);
 
     if (prevDependencies) {
       prevDependencies.delete(this.scene);
@@ -230,7 +230,7 @@ export default class Editor {
     this.deselect();
 
     // Remove existing gltf dependency
-    const prevDependencies = this.fileDependencies.get(this.scene.userData._uri);
+    const prevDependencies = this.fileDependencies.get(this.sceneInfo.uri);
 
     if (prevDependencies) {
       prevDependencies.delete(this.scene);
@@ -243,7 +243,6 @@ export default class Editor {
     this.objects = [];
 
     const scene = await loadScene(uri, this.addComponent, true);
-    this.scene.userData._uri = uri;
 
     this.setSceneDefaults(scene, true);
 
@@ -303,7 +302,7 @@ export default class Editor {
   }
 
   async reloadScene() {
-    const sceneURI = this.scene.userData._uri;
+    const sceneURI = this.sceneInfo.uri;
     const sceneDef = serializeScene(this.scene, sceneURI);
     const scene = await loadSerializedScene(sceneDef, sceneURI, this.addComponent, true);
 
@@ -313,7 +312,7 @@ export default class Editor {
   }
 
   serializeScene(sceneURI) {
-    return serializeScene(this.scene, sceneURI || this.scene.userData._uri);
+    return serializeScene(this.scene, sceneURI || this.sceneInfo.uri);
   }
 
   exportScene() {

@@ -258,7 +258,7 @@ function resolveRelativeURLs(entities, absoluteSceneURL) {
 
     if (entityComponents) {
       for (const component of entityComponents) {
-        if (component.name === SceneReferenceComponent.componentName) {
+        if (component.props && component.props.src) {
           component.props.src = new URL(component.props.src, absoluteSceneURL).href;
         }
       }
@@ -274,7 +274,8 @@ function convertAbsoluteURLs(entities, sceneURL) {
     if (entityComponents) {
       for (const component of entityComponents) {
         if (component.name === SceneReferenceComponent.componentName) {
-          component.props.src = absoluteToRelativeURL(sceneURL, component.props.src);
+          const { src } = component.props;
+          component.props.src = absoluteToRelativeURL(sceneURL, src);
         }
       }
     }
@@ -311,7 +312,7 @@ export async function loadSerializedScene(sceneDef, baseURI, addComponent, isRoo
 
   if (entities) {
     // Convert any relative URLs in the scene to absolute URLs so that other code does not need to know about the scene path.
-    resolveRelativeURLs(entities, absoluteBaseURL.href);
+    // resolveRelativeURLs(entities, absoluteBaseURL.href);
 
     // Sort entities by insertion order (uses parent and index to determine order).
     const sortedEntities = sortEntities(entities);
