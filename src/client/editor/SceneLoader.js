@@ -3,6 +3,7 @@ import { Components } from "./components";
 import SceneReferenceComponent from "./components/SceneReferenceComponent";
 import SaveableComponent from "./components/SaveableComponent";
 import ConflictHandler from "./ConflictHandler";
+import StandardMaterialComponent from "../editor/components/StandardMaterialComponent";
 
 export function absoluteToRelativeURL(from, to) {
   if (from === to) {
@@ -64,14 +65,45 @@ function loadGLTF(url) {
   });
 }
 
+function shallowEquals(objA, objB) {
+  for (const key in objA) {
+    if (objA[key] !== objB[key]) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 export async function exportScene(scene) {
   const clonedScene = scene.clone();
 
   const componentsToExport = Components.filter(c => !c.dontExportProps).map(component => component.componentName);
 
+  const staticMeshesByMaterial = new Map();
+
   // Clean scene before exporting.
   clonedScene.traverse(object => {
     const userData = object.userData;
+
+    // Mark objects with meshes for merging
+    const materialComponent = StandardMaterialComponent.getComponent(object);
+
+    if (object.isMesh && object.userData._static && materialComponent) {
+      let foundMaterial = false;
+
+      for (const [staticMaterialComponent, meshes] of staticMeshesByMaterial) {
+        if (shallowEquals(materialComponent.props, staticMaterialComponent.props)) {
+          meshes.push(object);
+          foundMaterial = true;
+          break;
+        }
+      }
+
+      if (!foundMaterial) {
+        staticMeshesByMaterial.set(materialComponent, [object]);
+      }
+    }
 
     // Move component data to userData.components
     if (userData._components) {
@@ -101,6 +133,36 @@ export async function exportScene(scene) {
       }
     }
   });
+
+  const invMatrix = new THREE.Matrix4();
+
+  for (const meshes of staticMeshesByMaterial.values()) {
+    if (meshes.length > 1) {
+      const bufferGeometries = [];
+
+      for (const mesh of meshes) {
+        // Clone buffer geometry in case it is re-used across meshes with different materials.
+        const clonedBufferGeometry = mesh.geometry.clone();
+        invMatrix.getInverse(mesh.matrixWorld);
+        clonedBufferGeometry.applyMatrix(invMatrix);
+        bufferGeometries.push(clonedBufferGeometry);
+      }
+
+      const combinedGeometry = THREE.BufferGeometryUtils.mergeBufferGeometries(bufferGeometries);
+      const combinedMesh = new THREE.Mesh(combinedGeometry, meshes[0].material);
+      combinedMesh.name = "CombinedMesh";
+      clonedScene.add(combinedMesh);
+
+      for (const mesh of meshes) {
+        const meshIndex = mesh.parent.children.indexOf(mesh);
+        const parent = mesh.parent;
+        mesh.parent.remove(mesh);
+        const replacementObj = new THREE.Object3D();
+        replacementObj.copy(mesh, true);
+        addChildAtIndex(parent, replacementObj, meshIndex);
+      }
+    }
+  }
 
   // TODO: export animations
   const chunks = await new Promise((resolve, reject) => {

@@ -67,9 +67,18 @@ class PropertiesPanelContainer extends Component {
   };
 
   onUpdateStatic = value => {
-    // eslint-disable-next-line react/no-direct-mutation-state
-    this.state.object.userData._static = value;
-    this.props.editor.execute(new SetValueCommand(this.state.object, "userData", this.state.object.userData));
+    if (
+      this.state.object.children.length > 0 &&
+      !confirm("Setting an object static will apply to all child objects and cannot be undone.")
+    ) {
+      return;
+    }
+
+    this.state.object.traverse(obj => {
+      obj.userData._static = value;
+    });
+
+    this.props.editor.signals.objectChanged.dispatch(this.state.object);
   };
 
   onAddComponent = ({ value }) => {
