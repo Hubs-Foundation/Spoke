@@ -1,13 +1,10 @@
 import THREE from "../vendor/three";
-import { Components } from "./components";
+import { Components, saveableComponentNames } from "./components";
 import SceneReferenceComponent from "./components/SceneReferenceComponent";
-import SaveableComponent from "./components/SaveableComponent";
 import ConflictHandler from "./ConflictHandler";
 
 export function absoluteToRelativeURL(from, to) {
-  if (from === to) {
-    return to;
-  }
+  if (from === to) return to;
 
   const fromURL = new URL(from, window.location);
   const toURL = new URL(to, window.location);
@@ -260,6 +257,9 @@ function resolveRelativeURLs(entities, absoluteSceneURL) {
       for (const component of entityComponents) {
         if (component.name === SceneReferenceComponent.componentName) {
           component.props.src = new URL(component.props.src, absoluteSceneURL).href;
+        } else if (component.src) {
+          // SaveableComponent
+          component.src = new URL(component.src, absoluteSceneURL).href;
         }
       }
     }
@@ -275,6 +275,9 @@ function convertAbsoluteURLs(entities, sceneURL) {
       for (const component of entityComponents) {
         if (component.name === SceneReferenceComponent.componentName) {
           component.props.src = absoluteToRelativeURL(sceneURL, component.props.src);
+        } else if (component.src) {
+          // SaveableComponent
+          component.src = absoluteToRelativeURL(sceneURL, component.src);
         }
       }
     }
@@ -288,14 +291,14 @@ export async function loadSerializedScene(sceneDef, baseURI, addComponent, isRoo
 
   const absoluteBaseURL = new URL(baseURI, window.location);
   if (inherits) {
-    const inheritedSceneURL = new URL(inherits, absoluteBaseURL);
-    scene = await loadScene(inheritedSceneURL.href, addComponent, false, ancestors);
+    const inheritedSceneURL = new URL(inherits, absoluteBaseURL).href;
+    scene = await loadScene(inheritedSceneURL, addComponent, false, ancestors);
 
     if (ancestors) {
-      ancestors.push(inherits);
+      ancestors.push(inheritedSceneURL);
     }
     if (isRoot) {
-      scene.userData._inherits = inherits;
+      scene.userData._inherits = inheritedSceneURL;
     }
   } else if (root) {
     scene = new THREE.Scene();
@@ -422,6 +425,7 @@ export async function loadScene(uri, addComponent, isRoot = true, ancestors) {
 }
 
 export function serializeScene(scene, scenePath) {
+  scene = scene.clone();
   const entities = {};
 
   scene.traverse(entityObject => {
@@ -452,7 +456,8 @@ export function serializeScene(scene, scenePath) {
             components = [];
           }
 
-          if (component instanceof SaveableComponent) {
+          if (component.src) {
+            // Serialize SaveableComponent
             components.push({
               name: component.name,
               src: component.src

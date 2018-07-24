@@ -259,6 +259,7 @@ class EditorContainer extends Component {
   serializeAndSaveScene = async sceneURI => {
     try {
       const serializedScene = this.props.editor.serializeScene(sceneURI);
+      this.props.editor.ignoreNextSceneFileChange = true;
       await this.props.project.writeJSON(sceneURI, serializedScene);
       // check whether there is an inherited gltf
       // if yes => read gltf, write updated names back the file from conflicthandler
@@ -277,9 +278,7 @@ class EditorContainer extends Component {
 
       this.props.editor.setSceneURI(sceneURI);
       this.props.editor.sceneInfo.modified = false;
-      this.setState({
-        openModal: null
-      });
+      this.setState({ openModal: null });
     } catch (e) {
       throw e;
     }

@@ -1,10 +1,23 @@
 import React from "react";
-import Button from "./Button";
 import PropTypes from "prop-types";
-import styles from "./PropertyGroup.scss";
 
-export default function PropertyGroup(props) {
-  const { name, removable, removeHandler, src, saveable, saveHandler, saveAsHandler, loadHandler, children } = props;
+import Button from "./Button";
+import styles from "./PropertyGroup.scss";
+import { withProject } from "./contexts/ProjectContext";
+
+function PropertyGroup(props) {
+  const {
+    name,
+    removable,
+    removeHandler,
+    src,
+    saveable,
+    saveHandler,
+    saveAsHandler,
+    loadHandler,
+    children,
+    project
+  } = props;
   const renderRemoveButton = () => {
     if (!removable) return;
     return <Button onClick={removeHandler}>Remove</Button>;
@@ -14,7 +27,7 @@ export default function PropertyGroup(props) {
     if (!saveable) return;
     return (
       <div>
-        <span className={styles.src}>{src}</span>
+        <span className={styles.src}>{src && project.getRelativeURI(src)}</span>
         <div className={styles.saveButtons}>
           {src && <Button onClick={saveHandler}>Save</Button>}
           <Button onClick={saveAsHandler}>Save As...</Button>
@@ -45,5 +58,8 @@ PropertyGroup.propTypes = {
   saveHandler: PropTypes.func,
   saveAsHandler: PropTypes.func,
   loadHandler: PropTypes.func,
-  children: PropTypes.arrayOf(PropTypes.element)
+  children: PropTypes.arrayOf(PropTypes.element),
+  project: PropTypes.object
 };
+
+export default withProject(PropertyGroup);

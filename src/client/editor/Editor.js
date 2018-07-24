@@ -114,25 +114,28 @@ export default class Editor {
       this.registerComponent(componentClass);
     }
 
+    // Map from URI -> Set of Object3Ds
     this.fileDependencies = new Map();
 
+    this.ignoreNextSceneFileChange = false;
     this.signals.fileChanged.add(this.onFileChanged);
   }
 
   createViewport(canvas) {
     const viewport = new Viewport(this, canvas);
     this.viewports.push(viewport);
-    // This is odd, but since Viewport manages intersection objects, and since setSceneDefaults adds components to
+    // This is odd, but since Viewport manages intersection objects, and since _setSceneDefaults adds components to
     // the scene, we need to set sceneDefaults after the viewport has been created.
-    this.setSceneDefaults(this.scene);
+    this._setSceneDefaults(this.scene);
     return viewport;
   }
 
-  onWindowResize = () => {
-    this.signals.windowResize.dispatch();
-  };
-
   onFileChanged = uri => {
+    if (uri === this.sceneInfo.uri && this.ignoreNextSceneFileChange) {
+      this.ignoreNextSceneFileChange = false;
+      return;
+    }
+
     const dependencies = this.fileDependencies.get(uri);
 
     if (dependencies) {
@@ -140,7 +143,7 @@ export default class Editor {
         if (this.getComponent(dependency, SceneReferenceComponent.componentName)) {
           this._loadSceneReference(uri, dependency);
         } else {
-          this.reloadScene();
+          this._reloadScene();
         }
       }
     }
@@ -164,36 +167,49 @@ export default class Editor {
   }
 
   editScenePrefab(uri) {
-    this._loadScene(uri);
+    this._loadScene(uri, true);
   }
 
-  loadNewScene() {
-    this.deselect();
-
-    // Remove existing gltf dependency
-    const prevDependencies = this.fileDependencies.get(this.scene.userData._uri);
-
+  _deleteSceneDependencies() {
+    const prevDependencies = this.fileDependencies.get(this.sceneInfo.uri);
     if (prevDependencies) {
       prevDependencies.delete(this.scene);
     }
+  }
 
+  _resetHelpers() {
+    // Have to set these objects before loading the scene since Viewport will manipulate them
+    // as it receives signals while the scene is loading.
     this.helperScene = new THREE.Scene();
     this.helpers = {};
     this.objects = [];
+  }
 
-    const scene = new THREE.Scene();
-    scene.name = "Scene";
-
-    this.setSceneDefaults(scene, true);
-
+  _setSceneInfo(scene, uri) {
     this.sceneInfo = {
-      uri: null,
+      uri: uri,
       scene: scene,
       helperScene: this.helperScene,
       helpers: this.helpers,
       objects: this.objects
     };
+  }
+
+  loadNewScene() {
+    this.deselect();
+
+    this._deleteSceneDependencies();
+
+    this._resetHelpers();
+
+    const scene = new THREE.Scene();
+    scene.name = "Scene";
+
+    this._setSceneInfo(scene, null);
     this.scenes = [this.sceneInfo];
+
+    this._setSceneDefaults(scene);
+
     this._setScene(scene);
 
     return scene;
@@ -216,7 +232,7 @@ export default class Editor {
     return this.sceneInfo.modified;
   }
 
-  setSceneDefaults(scene, skipSave) {
+  _setSceneDefaults(scene, skipSave) {
     scene.background = new THREE.Color(0xaaaaaa);
     if (!this.getComponent(scene, AmbientLightComponent.componentName)) {
       this.addComponent(scene, AmbientLightComponent.componentName, null, skipSave);
@@ -226,47 +242,35 @@ export default class Editor {
     }
   }
 
-  async _loadScene(uri) {
+  _addDependency(uri, obj) {
+    const uriDependencies = this.fileDependencies.get(uri) || new Set();
+    uriDependencies.add(obj);
+    this.fileDependencies.set(uri, uriDependencies);
+  }
+
+  async _loadScene(uri, skipSaveDefaults) {
     this.deselect();
 
-    // Remove existing gltf dependency
-    const prevDependencies = this.fileDependencies.get(this.scene.userData._uri);
+    this._deleteSceneDependencies();
 
-    if (prevDependencies) {
-      prevDependencies.delete(this.scene);
-    }
-
-    // Have to set these objects before loading the scene since Viewport will manipulate them
-    // as it receives signals while the scene is loading.
-    this.helperScene = new THREE.Scene();
-    this.helpers = {};
-    this.objects = [];
+    this._resetHelpers();
 
     const scene = await loadScene(uri, this.addComponent, true);
-    this.scene.userData._uri = uri;
 
-    this.setSceneDefaults(scene, true);
-
-    this.sceneInfo = {
-      uri: uri,
-      scene: scene,
-      helperScene: this.helperScene,
-      helpers: this.helpers,
-      objects: this.objects
-    };
+    this._setSceneInfo(scene, uri);
     this.scenes.push(this.sceneInfo);
+
+    this._setSceneDefaults(scene, skipSaveDefaults);
+
     this._setScene(scene);
 
-    // Add gltf dependency
-    const gltfDependencies = this.fileDependencies.get(uri) || new Set();
-    gltfDependencies.add(this.scene);
-    this.fileDependencies.set(uri, gltfDependencies);
+    this._addDependency(uri, scene);
 
     return scene;
   }
 
   async _loadSceneReference(uri, parent) {
-    this.removeSceneRefDependency(parent);
+    this._removeSceneRefDependency(parent);
 
     const scene = await loadScene(uri, this.addComponent, false);
     scene.userData._dontShowInHierarchy = true;
@@ -282,15 +286,12 @@ export default class Editor {
     parent.add(scene);
     this.signals.sceneGraphChanged.dispatch();
 
-    // Add gltf dependency
-    const gltfDependencies = this.fileDependencies.get(uri) || new Set();
-    gltfDependencies.add(parent);
-    this.fileDependencies.set(uri, gltfDependencies);
+    this._addDependency(uri, parent);
 
     return scene;
   }
 
-  removeSceneRefDependency(object) {
+  _removeSceneRefDependency(object) {
     const sceneRefComponent = this.getComponent(object, SceneReferenceComponent.componentName);
 
     if (sceneRefComponent) {
@@ -302,10 +303,17 @@ export default class Editor {
     }
   }
 
-  async reloadScene() {
-    const sceneURI = this.scene.userData._uri;
+  async _reloadScene() {
+    this._resetHelpers();
+
+    const sceneURI = this.sceneInfo.uri;
     const sceneDef = serializeScene(this.scene, sceneURI);
     const scene = await loadSerializedScene(sceneDef, sceneURI, this.addComponent, true);
+
+    const sceneInfo = this.scenes.find(sceneInfo => sceneInfo.uri === sceneURI);
+    sceneInfo.scene = scene;
+
+    this._setSceneDefaults(scene);
 
     this._setScene(scene);
 
@@ -313,7 +321,7 @@ export default class Editor {
   }
 
   serializeScene(sceneURI) {
-    return serializeScene(this.scene, sceneURI || this.scene.userData._uri);
+    return serializeScene(this.scene, sceneURI || this.sceneInfo.uri);
   }
 
   exportScene() {
@@ -363,17 +371,12 @@ export default class Editor {
     this.signals.sceneGraphChanged.dispatch();
   }
 
-  nameObject(object, name) {
-    object.name = name;
-    this.signals.sceneGraphChanged.dispatch();
-  }
-
   removeObject(object) {
     if (object.parent === null) return; // avoid deleting the camera or scene
 
     object.traverse(child => {
       this.removeHelper(child);
-      this.removeSceneRefDependency(child);
+      this._removeSceneRefDependency(child);
     });
 
     object.parent.remove(object);
@@ -386,22 +389,8 @@ export default class Editor {
     this.geometries[geometry.uuid] = geometry;
   }
 
-  setGeometryName(geometry, name) {
-    geometry.name = name;
-    this.signals.sceneGraphChanged.dispatch();
-  }
-
   addMaterial(material) {
     this.materials[material.uuid] = material;
-  }
-
-  setMaterialName(material, name) {
-    material.name = name;
-    this.signals.sceneGraphChanged.dispatch();
-  }
-
-  addTexture(texture) {
-    this.textures[texture.uuid] = texture;
   }
 
   //
@@ -500,7 +489,7 @@ export default class Editor {
   removeComponent(object, componentName) {
     if (this.components.has(componentName)) {
       if (componentName === SceneReferenceComponent.componentName) {
-        this.removeSceneRefDependency(object);
+        this._removeSceneRefDependency(object);
       }
 
       this.components.get(componentName).deflate(object);

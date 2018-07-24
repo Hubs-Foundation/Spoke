@@ -21,6 +21,10 @@ export default class Project extends EventEmitter {
     this.hierarchy = null;
   }
 
+  getRelativeURI(uri) {
+    return uri.substring(uri.indexOf(this.projectDirectoryPath) + this.projectDirectoryPath.length);
+  }
+
   getUrl(relativePath) {
     return new URL(relativePath, this.serverUrl).href;
   }
