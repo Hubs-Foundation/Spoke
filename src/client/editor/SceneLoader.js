@@ -256,7 +256,7 @@ function resolveRelativeURLs(entities, absoluteSceneURL) {
 
     if (entityComponents) {
       for (const component of entityComponents) {
-        if (component.props.src === SceneReferenceComponent.componentName) {
+        if (component.name === SceneReferenceComponent.componentName) {
           component.props.src = new URL(component.props.src, absoluteSceneURL).href;
         }
       }
@@ -271,7 +271,7 @@ function convertAbsoluteURLs(entities, sceneURL) {
 
     if (entityComponents) {
       for (const component of entityComponents) {
-        if (component.props.src === SceneReferenceComponent.componentName) {
+        if (component.name === SceneReferenceComponent.componentName) {
           component.props.src = absoluteToRelativeURL(sceneURL, component.props.src);
         }
       }
@@ -286,14 +286,14 @@ export async function loadSerializedScene(sceneDef, baseURI, addComponent, isRoo
 
   const absoluteBaseURL = new URL(baseURI, window.location);
   if (inherits) {
-    const inheritedSceneURL = new URL(inherits, absoluteBaseURL);
-    scene = await loadScene(inheritedSceneURL.href, addComponent, false, ancestors);
+    const inheritedSceneURL = new URL(inherits, absoluteBaseURL).href;
+    scene = await loadScene(inheritedSceneURL, addComponent, false, ancestors);
 
     if (ancestors) {
-      ancestors.push(inherits);
+      ancestors.push(inheritedSceneURL);
     }
     if (isRoot) {
-      scene.userData._inherits = inherits;
+      scene.userData._inherits = inheritedSceneURL;
     }
   } else if (root) {
     scene = new THREE.Scene();
