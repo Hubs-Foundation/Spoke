@@ -20,12 +20,16 @@ import SaveableComponent from "../../editor/components/SaveableComponent";
 
 import { withEditor } from "../contexts/EditorContext";
 import { withProject } from "../contexts/ProjectContext";
+import { OptionDialog } from "../dialogs/OptionDialog";
+import { withDialog } from "../contexts/DialogContext";
 
 class PropertiesPanelContainer extends Component {
   static propTypes = {
     editor: PropTypes.object,
     project: PropTypes.object,
-    openFileDialog: PropTypes.func
+    openFileDialog: PropTypes.func,
+    showDialog: PropTypes.func.isRequired,
+    hideDialog: PropTypes.func.isRequired
   };
 
   constructor(props) {
@@ -67,18 +71,38 @@ class PropertiesPanelContainer extends Component {
   };
 
   onUpdateStatic = value => {
-    if (
-      this.state.object.children.length > 0 &&
-      !confirm("Setting an object static will apply to all child objects and cannot be undone.")
-    ) {
-      return;
+    const object = this.state.object;
+
+    if (object.children.length > 0) {
+      console.log(this.props.showDialog);
+      this.props.showDialog(OptionDialog, {
+        title: "Set Static",
+        message: "Do you wish to set this object's children's static flag as well?",
+        options: [
+          {
+            label: "Set object static flag",
+            onClick: () => {
+              object.userData._static = value;
+              this.props.editor.signals.objectChanged.dispatch(this.state.object);
+              this.props.hideDialog();
+            }
+          },
+          {
+            label: "Set object and children static flag",
+            onClick: () => {
+              object.traverse(child => {
+                child.userData._static = value;
+              });
+              this.props.editor.signals.objectChanged.dispatch(this.state.object);
+              this.props.hideDialog();
+            }
+          }
+        ]
+      });
+    } else {
+      object.userData._static = value;
+      this.props.editor.signals.objectChanged.dispatch(this.state.object);
     }
-
-    this.state.object.traverse(obj => {
-      obj.userData._static = value;
-    });
-
-    this.props.editor.signals.objectChanged.dispatch(this.state.object);
   };
 
   onAddComponent = ({ value }) => {
@@ -223,4 +247,4 @@ class PropertiesPanelContainer extends Component {
   }
 }
 
-export default withProject(withEditor(PropertiesPanelContainer));
+export default withProject(withEditor(withDialog(PropertiesPanelContainer)));
