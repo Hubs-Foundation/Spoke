@@ -473,7 +473,13 @@ export default class Editor {
       component = this.components.get(componentName).inflate(object, props);
 
       if (componentName === SceneReferenceComponent.componentName && props && props.src) {
-        this._loadSceneReference(props.src, object);
+        this._loadSceneReference(props.src, object)
+          .then(() => {
+            this._updateResourceValidation(object, component, "src", true);
+          })
+          .catch(() => {
+            this._updateResourceValidation(object, component, "src", false);
+          });
       }
     } else {
       component = {
@@ -557,9 +563,11 @@ export default class Editor {
           .then(() => {
             this.deselect();
             this.select(object);
+            this._updateResourceValidation(object, component, propertyName, true);
           })
           .catch(() => {
             // TODO Show warning on property when this fails.
+            this._updateResourceValidation(object, component, propertyName, false);
           });
       }
     } else {
@@ -570,6 +578,10 @@ export default class Editor {
   }
 
   //
+  _updateResourceValidation(object, component, res, value) {
+    component.updateResourceValidation(res, value);
+    this.signals.objectChanged.dispatch(object);
+  }
 
   getObjectMaterial(object, slot) {
     let material = object.material;

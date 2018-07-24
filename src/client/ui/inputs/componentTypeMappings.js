@@ -21,7 +21,9 @@ const componentTypeMappings = new Map([
   ],
   [
     types.file,
-    (value, onChange, { openFileDialog, filters }) => <FileInput {...{ value, onChange, openFileDialog, filters }} />
+    (value, onChange, { openFileDialog, filters, isValid }) => (
+      <FileInput {...{ value, onChange, openFileDialog, filters, isValid }} />
+    )
   ]
 ]);
 

@@ -14,3 +14,20 @@
   background: none;
   padding: 0;
 }
+
+:local(.invalidPath) {
+  border: 2px solid $red;
+  border-radius: 2px;
+  color: $red;
+  width: 100%;
+  display: flex;
+  padding: 0;
+  overflow: hidden;
+  :local(input) {
+    color: $red;
+  }
+}
+
+:local(.inputButton) {
+  display: inline-block;
+}

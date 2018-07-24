@@ -54,6 +54,8 @@ export default class StandardMaterialComponent extends SaveableComponent {
       this._object[map] = texture;
     } catch (e) {
       // TODO Should show warning on texture property when this happens.
+      const resource = this._mapTypesToTextureType(map);
+      this.updateResourceValidation(resource, false);
     }
   }
 
@@ -127,5 +129,30 @@ export default class StandardMaterialComponent extends SaveableComponent {
       node.material.needsUpdate = true;
     }
     return component;
+  }
+
+  _mapTypesToTextureType(map) {
+    let textureType = null;
+    switch (map) {
+      case "map":
+        textureType = "baseColorTexture";
+        break;
+      case "normalMap":
+        textureType = "normalTexture";
+        break;
+      case "roughnessMap":
+        textureType = "metallicRoughnessTexture";
+        break;
+      case "metalnessMap":
+        textureType = "metallicRoughnessTexture";
+        break;
+      case "emissiveMap":
+        textureType = "emissiveTexture";
+        break;
+      case "aoMap":
+        textureType = "occlusionTexture";
+        break;
+    }
+    return textureType;
   }
 }
