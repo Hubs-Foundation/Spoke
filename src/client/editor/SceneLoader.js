@@ -64,41 +64,47 @@ function loadGLTF(url) {
   });
 }
 
-function addComponentData(node, componentNames) {
-  if (!node.extras) return;
-  if (node.extras._components && node.extras._components.length > 0) {
-    for (const component of node.extras._components) {
-      if (componentNames.includes(component.name)) {
-        if (node.extras.components === undefined) {
-          node.extras.components = {};
-        }
-
-        node.extras.components[component.name] = component.props;
-      }
-    }
-    delete node.extras._components;
-  }
-}
-
-function removeEditorData(node) {
-  if (node.extras) {
-    for (const key in node.extras) {
-      console.log(key);
-      if (key.startsWith("_")) {
-        delete node.extras[key];
-      }
-    }
-
-    if (Object.keys(node.extras).length === 0) {
-      delete node.extras;
-    }
-  }
-}
-
 export async function exportScene(scene) {
+  const clonedScene = scene.clone();
+
+  const componentsToExport = Components.filter(c => !c.dontExportProps).map(component => component.componentName);
+
+  // Clean scene before exporting.
+  clonedScene.traverse(object => {
+    const userData = object.userData;
+
+    // Move component data to userData.components
+    if (userData._components) {
+      for (const component of userData._components) {
+        if (componentsToExport.includes(component.name)) {
+          if (userData.components === undefined) {
+            userData.components = {};
+          }
+
+          userData.components[component.name] = component.props;
+        }
+      }
+    }
+
+    // Remove editor data.
+    for (const key in userData) {
+      if (key.startsWith("_")) {
+        delete userData[key];
+      }
+    }
+
+    // Remove objects marked as _dontExport
+    for (const child of object.children) {
+      if (child.userData._dontExport) {
+        object.remove(child);
+        return;
+      }
+    }
+  });
+
   // TODO: export animations
   const chunks = await new Promise((resolve, reject) => {
-    new THREE.GLTFExporter().parseChunks(scene, resolve, reject, {
+    new THREE.GLTFExporter().parseChunks(clonedScene, resolve, reject, {
       mode: "gltf",
       onlyVisible: false
     });
@@ -107,7 +113,7 @@ export async function exportScene(scene) {
   const buffers = chunks.json.buffers;
 
   if (buffers && buffers.length > 0 && buffers[0].uri === undefined) {
-    buffers[0].uri = scene.name + ".bin";
+    buffers[0].uri = clonedScene.name + ".bin";
   }
 
   // De-duplicate images.
@@ -143,25 +149,6 @@ export async function exportScene(scene) {
     for (const textureDef of chunks.json.textures) {
       textureDef.source = imageIndexMap.get(textureDef.source);
     }
-  }
-
-  const componentNames = Components.filter(c => !c.dontExportProps).map(component => component.componentName);
-
-  for (const scene of chunks.json.scenes) {
-    addComponentData(scene, componentNames);
-  }
-
-  for (const node of chunks.json.nodes) {
-    addComponentData(node, componentNames);
-  }
-
-  // Remove editor data.
-  for (const scene of chunks.json.scenes) {
-    removeEditorData(scene);
-  }
-
-  for (const node of chunks.json.nodes) {
-    removeEditorData(node);
   }
 
   return chunks;
