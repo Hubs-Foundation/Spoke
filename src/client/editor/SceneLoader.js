@@ -305,9 +305,11 @@ export async function loadSerializedScene(sceneDef, baseURI, addComponent, isRoo
   }
 
   // init scene conflict status
-  scene.userData._conflictHandler = new ConflictHandler();
-  scene.userData._conflictHandler.findDuplicates(scene, 0, 0);
-  scene.userData._conflictHandler.updateAllDuplicateStatus(scene);
+  if (!scene.userData._conflictHandler) {
+    scene.userData._conflictHandler = new ConflictHandler();
+    scene.userData._conflictHandler.findDuplicates(scene, 0, 0);
+    scene.userData._conflictHandler.updateAllDuplicateStatus(scene);
+  }
 
   if (entities) {
     // Convert any relative URLs in the scene to absolute URLs so that other code does not need to know about the scene path.
@@ -397,6 +399,9 @@ export async function loadScene(uri, addComponent, isRoot = true, ancestors) {
       scene.name = "Scene";
     }
 
+    scene.userData._conflictHandler = new ConflictHandler();
+    scene.userData._conflictHandler.findDuplicates(scene, 0, 0);
+    scene.userData._conflictHandler.updateAllDuplicateStatus(scene);
     inflateGLTFComponents(scene, addComponent);
 
     return scene;
