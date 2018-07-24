@@ -286,14 +286,14 @@ export async function loadSerializedScene(sceneDef, baseURI, addComponent, isRoo
 
   const absoluteBaseURL = new URL(baseURI, window.location);
   if (inherits) {
-    const inheritedSceneURL = new URL(inherits, absoluteBaseURL);
-    scene = await loadScene(inheritedSceneURL.href, addComponent, false, ancestors);
+    const inheritedSceneURL = new URL(inherits, absoluteBaseURL).href;
+    scene = await loadScene(inheritedSceneURL, addComponent, false, ancestors);
 
     if (ancestors) {
-      ancestors.push(inherits);
+      ancestors.push(inheritedSceneURL);
     }
     if (isRoot) {
-      scene.userData._inherits = inherits;
+      scene.userData._inherits = inheritedSceneURL;
     }
   } else if (root) {
     scene = new THREE.Scene();
