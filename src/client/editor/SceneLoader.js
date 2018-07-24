@@ -256,7 +256,7 @@ function resolveRelativeURLs(entities, absoluteSceneURL) {
 
     if (entityComponents) {
       for (const component of entityComponents) {
-        if (component.props && component.props.src) {
+        if (component.props.src === SceneReferenceComponent.componentName) {
           component.props.src = new URL(component.props.src, absoluteSceneURL).href;
         }
       }
@@ -271,7 +271,7 @@ function convertAbsoluteURLs(entities, sceneURL) {
 
     if (entityComponents) {
       for (const component of entityComponents) {
-        if (component.name === SceneReferenceComponent.componentName) {
+        if (component.props.src === SceneReferenceComponent.componentName) {
           component.props.src = absoluteToRelativeURL(sceneURL, component.props.src);
         }
       }
