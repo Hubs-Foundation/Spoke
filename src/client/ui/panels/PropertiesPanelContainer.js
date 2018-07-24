@@ -74,7 +74,6 @@ class PropertiesPanelContainer extends Component {
     const object = this.state.object;
 
     if (object.children.length > 0) {
-      console.log(this.props.showDialog);
       this.props.showDialog(OptionDialog, {
         title: "Set Static",
         message: "Do you wish to set this object's children's static flag as well?",
