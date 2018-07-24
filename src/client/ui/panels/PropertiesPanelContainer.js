@@ -7,6 +7,7 @@ import styles from "./PropertiesPanelContainer.scss";
 import PropertyGroup from "../PropertyGroup";
 import InputGroup from "../InputGroup";
 import StringInput from "../inputs/StringInput";
+import BooleanInput from "../inputs/BooleanInput";
 import componentTypeMappings from "../inputs/componentTypeMappings";
 
 import SetValueCommand from "../../editor/commands/SetValueCommand";
@@ -63,6 +64,12 @@ class PropertiesPanelContainer extends Component {
 
   onUpdateName = e => {
     this.props.editor.execute(new SetValueCommand(this.state.object, "name", e.target.value));
+  };
+
+  onUpdateStatic = value => {
+    // eslint-disable-next-line react/no-direct-mutation-state
+    this.state.object.userData._static = value;
+    this.props.editor.execute(new SetValueCommand(this.state.object, "userData", this.state.object.userData));
   };
 
   onAddComponent = ({ value }) => {
@@ -157,6 +164,9 @@ class PropertiesPanelContainer extends Component {
         <PropertyGroup name="Node" removable={false}>
           <InputGroup name="Name">
             <StringInput value={object.name} onChange={this.onUpdateName} />
+          </InputGroup>
+          <InputGroup name="Static">
+            <BooleanInput value={object.userData._static || false} onChange={this.onUpdateStatic} />
           </InputGroup>
           <div className={styles.addComponentContainer}>
             <Select
