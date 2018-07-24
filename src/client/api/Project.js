@@ -1,16 +1,6 @@
 import EventEmitter from "eventemitter3";
 
-const projectDirectoryPath = "/api/files/";
-
-export function getRelativeURI(uri) {
-  return uri.substring(uri.indexOf(projectDirectoryPath) + projectDirectoryPath.length);
-}
-
-export function getURL(uri) {
-  return projectDirectoryPath + uri;
-}
-
-export class Project extends EventEmitter {
+export default class Project extends EventEmitter {
   constructor() {
     super();
 
@@ -24,11 +14,15 @@ export class Project extends EventEmitter {
       this.wsServerUrl = "wss://" + host;
     }
 
-    this.projectDirectoryPath = projectDirectoryPath;
+    this.projectDirectoryPath = "/api/files/";
 
     this.ws = null;
 
     this.hierarchy = null;
+  }
+
+  getRelativeURI(uri) {
+    return uri.substring(uri.indexOf(this.projectDirectoryPath) + this.projectDirectoryPath.length);
   }
 
   getUrl(relativePath) {

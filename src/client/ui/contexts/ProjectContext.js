@@ -1,5 +1,5 @@
 import React from "react";
-import { Project } from "../../api/project";
+import Project from "../../api/Project";
 
 const ProjectContext = React.createContext(new Project());
 
