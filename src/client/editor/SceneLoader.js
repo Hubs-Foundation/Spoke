@@ -225,8 +225,12 @@ function inflateGLTFComponents(scene, addComponent) {
       }
     }
 
-    if (object instanceof THREE.Mesh && object.material instanceof THREE.MeshStandardMaterial) {
-      addComponent(object, "standard-material", undefined, true);
+    if (object instanceof THREE.Mesh) {
+      addComponent(object, "mesh", undefined, true);
+
+      if (object.material instanceof THREE.MeshStandardMaterial) {
+        addComponent(object, "standard-material", undefined, true);
+      }
     }
   });
 }

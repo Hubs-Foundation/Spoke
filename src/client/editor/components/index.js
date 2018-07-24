@@ -2,7 +2,7 @@ import AmbientLightComponent from "./AmbientLightComponent";
 import DirectionalLightComponent from "./DirectionalLightComponent";
 import PointLightComponent from "./PointLightComponent";
 import SceneReferenceComponent from "./SceneReferenceComponent";
-import ShadowComponent from "./ShadowComponent";
+import MeshComponent from "./MeshComponent";
 import SkyboxComponent from "./SkyboxComponent";
 import StandardMaterialComponent from "./StandardMaterialComponent";
 import TransformComponent from "./TransformComponent";
@@ -14,7 +14,7 @@ export const Components = [
   DirectionalLightComponent,
   PointLightComponent,
   SceneReferenceComponent,
-  ShadowComponent,
+  MeshComponent,
   SkyboxComponent,
   StandardMaterialComponent,
   TransformComponent
