@@ -260,6 +260,20 @@ class EditorContainer extends Component {
     try {
       const serializedScene = this.props.editor.serializeScene(sceneURI);
       await this.props.project.writeJSON(sceneURI, serializedScene);
+      // check whether there is an inherited gltf
+      // if yes => read gltf, write updated names back the file from conflicthandler
+      const filePath = this.props.editor.scene.userData._inherits;
+      if (filePath && filePath.endsWith(".gltf")) {
+        const conflictHandler = this.props.editor.scene.userData._conflictHandler;
+        if (conflictHandler && conflictHandler.isUpdateNeeded()) {
+          const originalGLTF = await this.props.project.readJSON(filePath);
+          const nodes = originalGLTF.nodes;
+          if (nodes) {
+            conflictHandler.updateNodeNames(nodes);
+            await this.props.project.writeJSON(filePath, originalGLTF);
+          }
+        }
+      }
 
       this.props.editor.setSceneURI(sceneURI);
       this.props.editor.sceneInfo.modified = false;

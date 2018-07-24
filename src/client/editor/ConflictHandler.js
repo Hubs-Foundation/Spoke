@@ -1,3 +1,44 @@
+function nodesToTree(nodes) {
+  if (!nodes) {
+    return;
+  }
+
+  for (const [i, node] of nodes.entries()) {
+    if (!node.userData) {
+      createTreePath(node, 0, i, nodes);
+    }
+    if (node.userData._visited) {
+      continue;
+    }
+    createTreePath(node, 0, i, nodes);
+  }
+
+  return nodes;
+}
+
+function createTreePath(node, layer, index, nodes) {
+  if (!node.userData) {
+    node.userData = {};
+  }
+  node.userData._visited = true;
+  if (node.userData._path) {
+    node.userData._path.push(index);
+  } else {
+    node.userData._path = [0, 0];
+  }
+
+  if (node.children) {
+    for (const [i, index] of node.children.entries()) {
+      const child = nodes[index];
+      if (!child.userData) {
+        child.userData = {};
+      }
+      child.userData._path = node.userData._path.slice(0);
+      createTreePath(child, layer + 1, i, nodes);
+    }
+  }
+}
+
 export default class ConflictHandler {
   constructor() {
     this._conflicts = {
@@ -5,6 +46,7 @@ export default class ConflictHandler {
       duplicate: false
     };
     this._duplicateList = {};
+    this._updatedNodes = {};
   }
 
   findDuplicates = (node, layer, index) => {
@@ -12,6 +54,11 @@ export default class ConflictHandler {
       node.userData._path.push(index);
     } else {
       node.userData._path = [0];
+    }
+
+    if (node.name.length === 0) {
+      // unnamed node
+      this._generateTempName(node);
     }
 
     const name = node.name;
@@ -92,5 +139,45 @@ export default class ConflictHandler {
     });
     this.setMissingStatus(newStatus);
     return resolvedList;
+  };
+
+  _generateTempName = node => {
+    const hashPath = this._hashTreePath(node.userData._path);
+    node.name = "node_" + hashPath;
+    this._updatedNodes[hashPath] = node.name;
+  };
+
+  _hashTreePath = path => {
+    // todo: maybe use different approaches to name unnamed nodes
+    // currently use the tree path for each node
+    return path.join("-");
+  };
+
+  // not used yet: should be used while the user modifies the name of the node that is inherited from the gltf.
+  updateInheritedNodeName = (newName, node) => {
+    const originalPath = this._hashTreePath(node.userData._path);
+    node.name = newName;
+    this._updatedNodes[originalPath] = newName;
+  };
+
+  getUpdatedNodeName = path => {
+    const hashPath = this._hashTreePath(path);
+    if (!(hashPath in this._updatedNodes)) {
+      return;
+    }
+    return this._updatedNodes[hashPath];
+  };
+
+  updateNodeNames = nodes => {
+    const nodeTree = nodesToTree(nodes);
+
+    for (const node of nodeTree) {
+      node.name = this.getUpdatedNodeName(node.userData._path);
+      delete node.userData;
+    }
+  };
+
+  isUpdateNeeded = () => {
+    return Object.keys(this._updatedNodes).length > 0;
   };
 }
