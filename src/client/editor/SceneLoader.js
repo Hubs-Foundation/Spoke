@@ -4,6 +4,7 @@ import SceneReferenceComponent from "./components/SceneReferenceComponent";
 import SaveableComponent from "./components/SaveableComponent";
 import ConflictHandler from "./ConflictHandler";
 import StandardMaterialComponent from "../editor/components/StandardMaterialComponent";
+import ShadowComponent from "./components/ShadowComponent";
 
 export function absoluteToRelativeURL(from, to) {
   if (from === to) {
@@ -80,20 +81,24 @@ export async function exportScene(scene) {
 
   const componentsToExport = Components.filter(c => !c.dontExportProps).map(component => component.componentName);
 
-  const staticMeshesByMaterial = new Map();
+  const meshesToCombine = [];
 
   // Clean scene before exporting.
   clonedScene.traverse(object => {
     const userData = object.userData;
 
     // Mark objects with meshes for merging
-    const materialComponent = StandardMaterialComponent.getComponent(object);
+    const curShadowComponent = ShadowComponent.getComponent(object);
+    const curMaterialComponent = StandardMaterialComponent.getComponent(object);
 
-    if (object.isMesh && object.userData._static && materialComponent) {
+    if (object.userData._static && curShadowComponent && curMaterialComponent) {
       let foundMaterial = false;
 
-      for (const [staticMaterialComponent, meshes] of staticMeshesByMaterial) {
-        if (shallowEquals(materialComponent.props, staticMaterialComponent.props)) {
+      for (const { shadowComponent, materialComponent, meshes } of meshesToCombine) {
+        if (
+          shallowEquals(materialComponent.props, curMaterialComponent.props) &&
+          shallowEquals(shadowComponent.props, curShadowComponent.props)
+        ) {
           meshes.push(object);
           foundMaterial = true;
           break;
@@ -101,7 +106,11 @@ export async function exportScene(scene) {
       }
 
       if (!foundMaterial) {
-        staticMeshesByMaterial.set(materialComponent, [object]);
+        meshesToCombine.push({
+          shadowComponent: curShadowComponent,
+          materialComponent: curMaterialComponent,
+          meshes: [object]
+        });
       }
     }
 
@@ -136,7 +145,7 @@ export async function exportScene(scene) {
 
   const invMatrix = new THREE.Matrix4();
 
-  for (const meshes of staticMeshesByMaterial.values()) {
+  for (const { meshes } of meshesToCombine) {
     if (meshes.length > 1) {
       const bufferGeometries = [];
 
@@ -148,9 +157,16 @@ export async function exportScene(scene) {
         bufferGeometries.push(clonedBufferGeometry);
       }
 
+      const originalMesh = meshes[0];
+
       const combinedGeometry = THREE.BufferGeometryUtils.mergeBufferGeometries(bufferGeometries);
-      const combinedMesh = new THREE.Mesh(combinedGeometry, meshes[0].material);
+      const combinedMesh = new THREE.Mesh(combinedGeometry, originalMesh.material);
       combinedMesh.name = "CombinedMesh";
+      // Add shadow component to combined mesh.
+      combinedMesh.userData.components = {
+        shadow: originalMesh.userData.components.shadow
+      };
+
       clonedScene.add(combinedMesh);
 
       for (const mesh of meshes) {
@@ -159,10 +175,27 @@ export async function exportScene(scene) {
         mesh.parent.remove(mesh);
         const replacementObj = new THREE.Object3D();
         replacementObj.copy(mesh, true);
+
+        // Remove shadow component from replacement object.
+        delete replacementObj.userData.components.shadow;
+
         addChildAtIndex(parent, replacementObj, meshIndex);
       }
     }
   }
+
+  clonedScene.traverse(object => {
+    if (object.isMesh && (object.castShadow || object.receiveShadow)) {
+      if (!object.userData.components) {
+        object.userData.components = {};
+      }
+
+      object.userData.components.shadow = {
+        castShadow: object.castShadow,
+        receiveShadow: object.receiveShadow
+      };
+    }
+  });
 
   // TODO: export animations
   const chunks = await new Promise((resolve, reject) => {
@@ -227,6 +260,9 @@ function inflateGLTFComponents(scene, addComponent) {
 
     if (object instanceof THREE.Mesh) {
       addComponent(object, "mesh", undefined, true);
+
+      const shadowProps = object.userData.components ? object.userData.components.shadow : undefined;
+      addComponent(object, "shadow", shadowProps, true);
 
       if (object.material instanceof THREE.MeshStandardMaterial) {
         addComponent(object, "standard-material", undefined, true);
