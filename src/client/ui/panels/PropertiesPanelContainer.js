@@ -124,7 +124,7 @@ class PropertiesPanelContainer extends Component {
       case types.number:
         return { min: prop.min, max: prop.max };
       case types.file: {
-        const isValid = component.props.resourcesValidation ? component.props.resourcesValidation[prop.name] : true;
+        const isValid = component._object.resourcesValidation ? component._object.resourcesValidation[prop.name] : true;
         return {
           openFileDialog: this.props.openFileDialog,
           filters: prop.filters,
