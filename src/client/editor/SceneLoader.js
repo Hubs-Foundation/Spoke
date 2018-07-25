@@ -57,8 +57,7 @@ function loadGLTF(url) {
       },
       undefined,
       e => {
-        console.error(e);
-        reject(e);
+        reject(e.target.responseURL);
       }
     );
   });
@@ -413,6 +412,9 @@ export async function loadScene(uri, addComponent, isRoot = true, ancestors) {
   }
 
   const sceneResponse = await fetch(url);
+  if (!sceneResponse.ok) {
+    throw url;
+  }
   const sceneDef = await sceneResponse.json();
 
   if (isRoot) {

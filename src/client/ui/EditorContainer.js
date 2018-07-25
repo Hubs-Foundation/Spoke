@@ -16,6 +16,7 @@ import AssetExplorerPanelContainer from "./panels/AssetExplorerPanelContainer";
 import PanelToolbar from "./PanelToolbar";
 import { withProject } from "./contexts/ProjectContext";
 import { withEditor } from "./contexts/EditorContext";
+import SystemMessageModalContainer from "./modals/SystemMessageModalContainer";
 import styles from "../common.scss";
 
 class EditorContainer extends Component {
@@ -145,10 +146,10 @@ class EditorContainer extends Component {
         save: this.onSave,
         saveAs: this.onSaveAs
       },
-      missingResource: {
-        uri: null,
-        isMissingResource: false,
-        shouldCloseOnOverlayClick: true
+      systemMessage: {
+        messageType: null,
+        isOpen: false,
+        onRequestClose: null
       }
     };
   }
@@ -376,12 +377,31 @@ class EditorContainer extends Component {
         document.title = `Hubs Editor - ${scene.name}`;
       })
       .catch(e => {
-        // only missing inherits files situation would be here now
-        this.setState({ missingResource : {
-          isMissingResource: true,
-          shouldCloseOnOverlayClick: true
-        }});
-        console.error(e);
+        this.setState({
+          systemMessage: {
+            messageType: "error",
+            messageContent: [e],
+            isOpen: true,
+            onRequestClose: () => {
+              this.setState({ systemMessage: null });
+            },
+            actions: [
+              {
+                name: "Cancel",
+                method: () => {
+                  this.setState({ systemMessage: null });
+                }
+              },
+              {
+                name: "Resolved",
+                method: () => {
+                  this.onOpenScene(uri);
+                  this.setState({ systemMessage: null });
+                }
+              }
+            ]
+          }
+        });
       });
   };
 
@@ -396,7 +416,7 @@ class EditorContainer extends Component {
   };
 
   render() {
-    const { openModal, menus, missingResource } = this.state;
+    const { openModal, menus, systemMessage } = this.state;
 
     const { initialPanels } = this.props;
 
@@ -420,14 +440,7 @@ class EditorContainer extends Component {
           >
             {openModal && <openModal.component {...openModal.props} />}
           </Modal>
-          <Modal
-            ariaHideApp={false}
-            isOpen={missingResource.isMissingResource}
-            onRequestClose={this.onCloseModal}
-            shouldCloseOnOverlayClick={missingResource && missingResource.shouldCloseOnOverlayClick}
-            className="Modal"
-            overlayClassName="Overlay"
-          />
+          <SystemMessageModalContainer {...systemMessage} />
         </HotKeys>
       </DragDropContextProvider>
     );
