@@ -79,6 +79,8 @@
 
     .caret-down:before {
       content: "\25BE";
+      // Firefox decided to align this differently. This fixes it.
+      line-height: -moz-block-height;
     }
   }
 }
