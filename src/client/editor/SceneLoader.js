@@ -84,16 +84,20 @@ function isEmptyObject(obj) {
   return true;
 }
 
-function removeObjects(object, shouldRemoveFn) {
+function removeUnusedObjects(object) {
   let canBeRemoved = !!object.parent;
 
   for (const child of object.children.slice(0)) {
-    if (!removeObjects(child, shouldRemoveFn)) {
+    if (!removeUnusedObjects(child)) {
       canBeRemoved = false;
     }
   }
 
-  const shouldRemove = shouldRemoveFn(object, canBeRemoved);
+  const shouldRemove = canBeRemoved &&
+    (object.constructor === THREE.Object3D || object.constructor === THREE.Scene) &&
+    object.children.length === 0 &&
+    object.isStatic &&
+    isEmptyObject(object.userData);
 
   if (canBeRemoved && shouldRemove) {
     object.parent.remove(object);
@@ -232,15 +236,7 @@ export async function exportScene(scene) {
     }
   });
 
-  removeObjects(
-    clonedScene,
-    (object, canBeRemoved) =>
-      canBeRemoved &&
-      (object.constructor === THREE.Object3D || object.constructor === THREE.Scene) &&
-      object.children.length === 0 &&
-      object.isStatic &&
-      isEmptyObject(object.userData)
-  );
+  removeUnusedObjects(clonedScene);
 
   // TODO: export animations
   const chunks = await new Promise((resolve, reject) => {
