@@ -28,6 +28,9 @@
 }
 
 
+:local(.tree) {
+  outline: none;
+}
 :local(.treeNode) {
   padding: 4px 5px;
 }
