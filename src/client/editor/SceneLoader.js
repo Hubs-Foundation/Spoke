@@ -95,8 +95,6 @@ function removeObjects(object, shouldRemoveFn) {
 
   const shouldRemove = shouldRemoveFn(object, canBeRemoved);
 
-  console.log("removeObjects", object, canBeRemoved, shouldRemove);
-
   if (canBeRemoved && shouldRemove) {
     object.parent.remove(object);
     return true;
@@ -232,7 +230,6 @@ export async function exportScene(scene) {
     if (object.userData.components && isEmptyObject(object.userData.components)) {
       delete object.userData.components;
     }
-    console.log(object.userData);
   });
 
   removeObjects(
