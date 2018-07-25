@@ -369,9 +369,14 @@ export async function loadSerializedScene(sceneDef, baseURI, addComponent, isRoo
           if (componentDef.src) {
             // Process SaveableComponent
             const resp = await fetch(componentDef.src);
-            const json = await resp.json();
+            let json = {};
+            if (resp.ok) {
+              json = await resp.json();
+            }
             const component = addComponent(entityObj, componentDef.name, json, !isRoot);
             component.src = componentDef.src;
+            component.srcIsValid = false;
+            //component.updateResourceValidation("src", resp.ok);
           } else {
             addComponent(entityObj, componentDef.name, props, !isRoot);
           }

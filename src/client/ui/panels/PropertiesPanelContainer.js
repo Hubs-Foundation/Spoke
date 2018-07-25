@@ -124,7 +124,10 @@ class PropertiesPanelContainer extends Component {
       case types.number:
         return { min: prop.min, max: prop.max };
       case types.file: {
-        const isValid = component._object.resourcesValidation ? component._object.resourcesValidation[prop.name] : true;
+        const isValid =
+          component._object && component._object.resourcesValidation
+            ? component._object.resourcesValidation[prop.name]
+            : true;
         return {
           openFileDialog: this.props.openFileDialog,
           filters: prop.filters,
@@ -188,6 +191,7 @@ class PropertiesPanelContainer extends Component {
               removable={componentDefinition.removable}
               removeHandler={this.onRemoveComponent.bind(this, component.name)}
               src={component.src}
+              resourcesValidation={component.srcIsValid}
               saveable={component instanceof SaveableComponent}
               saveHandler={this.onSaveComponent.bind(this, component, false)}
               saveAsHandler={this.onSaveComponent.bind(this, component, true)}

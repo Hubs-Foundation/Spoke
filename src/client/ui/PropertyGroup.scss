@@ -35,6 +35,13 @@
     margin: 0.5em;
   }
 
+  :local(.invalidSrc) {
+    display: block;
+    text-align: center;
+    margin: 0.5em;
+    color: $red;
+  }
+
   :local(.saveButtons) {
     display: flex;
     margin: 0.5em;
