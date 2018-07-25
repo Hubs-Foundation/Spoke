@@ -6,12 +6,12 @@ export default class Project extends EventEmitter {
 
     const { protocol, host } = new URL(window.location.href);
 
-    this.serverUrl = protocol + "//" + host;
+    this.serverURL = protocol + "//" + host;
 
     if (protocol === "http:") {
-      this.wsServerUrl = "ws://" + host;
+      this.wsServerURL = "ws://" + host;
     } else {
-      this.wsServerUrl = "wss://" + host;
+      this.wsServerURL = "wss://" + host;
     }
 
     this.projectDirectoryPath = "/api/files/";
@@ -25,12 +25,16 @@ export default class Project extends EventEmitter {
     return uri.substring(uri.indexOf(this.projectDirectoryPath) + this.projectDirectoryPath.length);
   }
 
-  getUrl(relativePath) {
-    return new URL(relativePath, this.serverUrl).href;
+  getAbsoluteURI(relativeUri) {
+    return this.projectDirectoryPath + relativeUri;
+  }
+
+  getURL(relativePath) {
+    return new URL(relativePath, this.serverURL).href;
   }
 
   fetch(relativePath, options) {
-    return fetch(this.getUrl(relativePath), options);
+    return fetch(this.getURL(relativePath), options);
   }
 
   async writeBlob(relativePath, blob) {
@@ -121,7 +125,7 @@ export default class Project extends EventEmitter {
 
     return new Promise((resolve, reject) => {
       this.watchPromise = { resolve, reject };
-      this.ws = new WebSocket(this.wsServerUrl);
+      this.ws = new WebSocket(this.wsServerURL);
       this.ws.addEventListener("message", this._onWebsocketMessage);
       this.ws.addEventListener("error", this._onWebsocketMessage);
     });

@@ -8,7 +8,10 @@ import { withProject } from "../contexts/ProjectContext";
 function FileInput({ value, onChange, openFileDialog, filters, project }) {
   return (
     <div className={styles.fileInput}>
-      <input value={project.getRelativeURI(value) || ""} onChange={e => onChange(project.getURL(e.target.value))} />
+      <input
+        value={project.getRelativeURI(value) || ""}
+        onChange={e => onChange(project.getAbsoluteURI(e.target.value))}
+      />
       <Button onClick={() => openFileDialog(onChange, { filters })}>...</Button>
     </div>
   );
