@@ -335,12 +335,12 @@ export default class Editor {
     this.addComponent(object, "transform");
 
     let duplicateNameCount = this._duplicateNameCounters.get(object.name);
-    if (duplicateNameCount) {
+    if (duplicateNameCount !== undefined) {
+      duplicateNameCount++;
       this._duplicateNameCounters.set(object.name, duplicateNameCount);
       object.name += "_" + duplicateNameCount;
-      duplicateNameCount++;
     } else {
-      this._duplicateNameCounters.set(object.name, 1);
+      this._duplicateNameCounters.set(object.name, 0);
     }
 
     object.userData._saveParent = true;
