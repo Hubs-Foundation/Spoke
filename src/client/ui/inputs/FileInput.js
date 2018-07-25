@@ -9,7 +9,7 @@ function FileInput({ value, onChange, openFileDialog, filters, project }) {
   return (
     <div className={styles.fileInput}>
       <input
-        value={project.getRelativeURI(value) || ""}
+        value={(value && project.getRelativeURI(value)) || ""}
         onChange={e => onChange(project.getAbsoluteURI(e.target.value))}
       />
       <Button onClick={() => openFileDialog(onChange, { filters })}>...</Button>
