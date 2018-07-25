@@ -1,4 +1,7 @@
+@import "../../common";
+
 :local(.propertiesPanelContainer) {
+  @include no-select;
   width: 100%;
   overflow-x: hidden;
   overflow-y: auto;
@@ -6,9 +9,9 @@
 
 :local(.noNodeSelected) {
   display: flex;
-  flex: 1;
   justify-content: center;
   align-items: center;
+  height: 100%;
 }
 
 :local(.addComponentContainer) {

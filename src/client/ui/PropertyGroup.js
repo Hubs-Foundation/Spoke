@@ -1,13 +1,15 @@
 import React from "react";
-import Button from "./Button";
 import PropTypes from "prop-types";
+
+import Button from "./Button";
 import styles from "./PropertyGroup.scss";
+import { withProject } from "./contexts/ProjectContext";
 import ReactTooltip from "react-tooltip";
 
-export default function PropertyGroup(props) {
+function PropertyGroup(props) {
   const {
     name,
-    removable,
+    canRemove,
     removeHandler,
     src,
     srcIsValid,
@@ -15,10 +17,11 @@ export default function PropertyGroup(props) {
     saveHandler,
     saveAsHandler,
     loadHandler,
-    children
+    children,
+    project
   } = props;
   const renderRemoveButton = () => {
-    if (!removable) return;
+    if (!canRemove) return;
     return <Button onClick={removeHandler}>Remove</Button>;
   };
 
@@ -32,7 +35,7 @@ export default function PropertyGroup(props) {
     return (
       <div>
         <span className={srcStatus.class} data-tip={srcStatus.tip} data-type={srcStatus.type}>
-          {src}
+          {src && project.getRelativeURI(src)}
           <ReactTooltip />
         </span>
         <div className={styles.saveButtons}>
@@ -58,7 +61,7 @@ export default function PropertyGroup(props) {
 
 PropertyGroup.propTypes = {
   name: PropTypes.string,
-  removable: PropTypes.bool,
+  canRemove: PropTypes.bool,
   removeHandler: PropTypes.func,
   src: PropTypes.string,
   srcIsValid: PropTypes.bool,
@@ -66,5 +69,8 @@ PropertyGroup.propTypes = {
   saveHandler: PropTypes.func,
   saveAsHandler: PropTypes.func,
   loadHandler: PropTypes.func,
-  children: PropTypes.arrayOf(PropTypes.element)
+  children: PropTypes.arrayOf(PropTypes.element),
+  project: PropTypes.object
 };
+
+export default withProject(PropertyGroup);

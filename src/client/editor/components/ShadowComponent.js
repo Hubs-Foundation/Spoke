@@ -4,6 +4,10 @@ import { types } from "./utils";
 export default class ShadowComponent extends BaseComponent {
   static componentName = "shadow";
 
+  static canRemove = false;
+
+  static dontExportProps = true;
+
   static schema = [
     { name: "castShadow", type: types.boolean, default: true },
     { name: "receiveShadow", type: types.boolean, default: true }
@@ -11,11 +15,17 @@ export default class ShadowComponent extends BaseComponent {
 
   updateProperty(propertyName, value) {
     super.updateProperty(propertyName, value);
-    this._object.traverse(obj => {
-      if (obj instanceof THREE.Mesh) {
-        obj[propertyName] = value;
-        obj.material.needsUpdate = true;
-      }
-    });
+    this._object[propertyName] = value;
+
+    if (this._object.material) {
+      this._object.material.needsUpdate = true;
+    }
+  }
+
+  static _propsFromObject(object) {
+    return {
+      castShadow: object.castShadow,
+      receiveShadow: object.receiveShadow
+    };
   }
 }

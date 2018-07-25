@@ -16,6 +16,7 @@ import AssetExplorerPanelContainer from "./panels/AssetExplorerPanelContainer";
 import PanelToolbar from "./PanelToolbar";
 import { withProject } from "./contexts/ProjectContext";
 import { withEditor } from "./contexts/EditorContext";
+import { DialogContextProvider } from "./contexts/DialogContext";
 import SystemMessageModalContainer from "./modals/SystemMessageModalContainer";
 import styles from "../common.scss";
 
@@ -29,7 +30,7 @@ class EditorContainer extends Component {
           direction: "row",
           first: "hierarchy",
           second: "viewport",
-          splitPercentage: 33.333
+          splitPercentage: 33.4
         },
         second: "properties",
         splitPercentage: 75
@@ -56,7 +57,8 @@ class EditorContainer extends Component {
           component: HierarchyPanelContainer,
           windowProps: {
             title: "Hierarchy",
-            toolbarControls: PanelToolbar
+            toolbarControls: PanelToolbar,
+            draggable: false
           }
         },
         viewport: {
@@ -64,7 +66,7 @@ class EditorContainer extends Component {
           windowProps: {
             title: "Viewport",
             toolbarControls: ViewportPanelToolbarContainer(),
-            draggable: true
+            draggable: false
           }
         },
         properties: {
@@ -72,14 +74,16 @@ class EditorContainer extends Component {
           props: { openFileDialog: this.openFileDialog },
           windowProps: {
             title: "Properties",
-            toolbarControls: PanelToolbar
+            toolbarControls: PanelToolbar,
+            draggable: false
           }
         },
         assetExplorer: {
           component: AssetExplorerPanelContainer,
           windowProps: {
             title: "Asset Explorer",
-            toolbarControls: PanelToolbar
+            toolbarControls: PanelToolbar,
+            draggable: false
           }
         }
       },
@@ -158,7 +162,7 @@ class EditorContainer extends Component {
     this.props.editor.signals.windowResize.dispatch();
     this.props.editor.signals.popScene.add(this.onPopScene);
     this.props.editor.signals.openScene.add(this.onOpenScene);
-    this.props.editor.signals.sceneGraphChanged.add(this.onSceneChanged);
+    this.props.editor.signals.sceneModified.add(this.onSceneModified);
     this.props.project.addListener("change", path => {
       this.props.editor.signals.fileChanged.dispatch(path);
     });
@@ -265,6 +269,7 @@ class EditorContainer extends Component {
   serializeAndSaveScene = async sceneURI => {
     try {
       const serializedScene = this.props.editor.serializeScene(sceneURI);
+      this.props.editor.ignoreNextSceneFileChange = true;
       await this.props.project.writeJSON(sceneURI, serializedScene);
       // check whether there is an inherited gltf
       // if yes => read gltf, write updated names back the file from conflicthandler
@@ -283,9 +288,8 @@ class EditorContainer extends Component {
 
       this.props.editor.setSceneURI(sceneURI);
       this.props.editor.sceneInfo.modified = false;
-      this.setState({
-        openModal: null
-      });
+      this.onSceneModified();
+      this.setState({ openModal: null });
     } catch (e) {
       throw e;
     }
@@ -344,8 +348,9 @@ class EditorContainer extends Component {
     this.setState({ openModal: null });
   };
 
-  onSceneChanged = () => {
-    document.title = `Hubs Editor - ${this.props.editor.scene.name}*`;
+  onSceneModified = () => {
+    const modified = this.props.editor.sceneModified() ? "*" : "";
+    document.title = `Hubs Editor - ${this.props.editor.scene.name}${modified}`;
   };
 
   confirmSceneChange = () => {
@@ -362,9 +367,7 @@ class EditorContainer extends Component {
 
   onNewScene = () => {
     if (!this.confirmSceneChange()) return;
-
-    const scene = this.props.editor.loadNewScene();
-    document.title = `Hubs Editor - ${scene.name}`;
+    this.props.editor.loadNewScene();
   };
 
   onOpenScene = uri => {
@@ -423,24 +426,26 @@ class EditorContainer extends Component {
     return (
       <DragDropContextProvider backend={HTML5Backend}>
         <HotKeys keyMap={this.state.keyMap} handlers={this.state.globalHotKeyHandlers} className={styles.flexColumn}>
-          <MenuBarContainer menus={menus} />
-          <MosaicWithoutDragDropContext
-            className="mosaic-theme"
-            renderTile={this.renderPanel}
-            initialValue={initialPanels}
-            onChange={this.onPanelChange}
-          />
-          <Modal
-            ariaHideApp={false}
-            isOpen={!!openModal}
-            onRequestClose={this.onCloseModal}
-            shouldCloseOnOverlayClick={openModal && openModal.shouldCloseOnOverlayClick}
-            className="Modal"
-            overlayClassName="Overlay"
-          >
-            {openModal && <openModal.component {...openModal.props} />}
-          </Modal>
-          <SystemMessageModalContainer {...systemMessage} />
+          <DialogContextProvider>
+            <MenuBarContainer menus={menus} />
+            <MosaicWithoutDragDropContext
+              className="mosaic-theme"
+              renderTile={this.renderPanel}
+              initialValue={initialPanels}
+              onChange={this.onPanelChange}
+            />
+            <Modal
+              ariaHideApp={false}
+              isOpen={!!openModal}
+              onRequestClose={this.onCloseModal}
+              shouldCloseOnOverlayClick={openModal && openModal.shouldCloseOnOverlayClick}
+              className="Modal"
+              overlayClassName="Overlay"
+            >
+              {openModal && <openModal.component {...openModal.props} />}
+            </Modal>
+            <SystemMessageModalContainer {...systemMessage} />
+          </DialogContextProvider>
         </HotKeys>
       </DragDropContextProvider>
     );

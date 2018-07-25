@@ -1,3 +1,4 @@
+@import "./common";
 @import "./theme";
 
 html, body, #app {
@@ -50,11 +51,12 @@ html, body, #app {
     flex: 1;
 
     .mosaic-window-toolbar {
-      background-color: $panel;
+      background-color: $toolbar;
       height: 24px;
     }
 
     .mosaic-window-title {
+      @include no-select;
       padding-left: 8px;
       font-size: 12px;
       line-height: 24px;

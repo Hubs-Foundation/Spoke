@@ -252,7 +252,7 @@ class HierarchyPanelContainer extends Component {
             </div>
           );
         })}
-        <HotKeys handlers={this.state.hierarchyHotKeyHandlers}>
+        <HotKeys className={styles.tree} handlers={this.state.hierarchyHotKeyHandlers}>
           <Tree
             paddingLeft={8}
             isNodeCollapsed={false}

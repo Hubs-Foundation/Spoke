@@ -1,18 +1,17 @@
+@import "../../common";
 @import "../../theme";
 
 :global {
   .f-no-select {
-    -webkit-user-select: none;
-    -khtml-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
+    @include no-select;
   }
 
   .m-tree {
     position: relative;
-    overflow: visible;
+    overflow-y: auto;
+    overflow-x: hidden;
     padding-right: 3px;
+    height: 100%;
   }
 
   .m-draggable {
@@ -23,7 +22,7 @@
   .m-node {
     display: inline-block;
     width: 100%;
-    user-select: none;
+    @include no-select;
 
     &.placeholder > * {
       visibility: hidden;
@@ -46,11 +45,7 @@
       flex: 1;
       margin-left: 6px;
       -webkit-touch-callout: none;
-      -webkit-user-select: none;
-      -khtml-user-select: none;
-      -moz-user-select: none;
-      -ms-user-select: none;
-      user-select: none;
+      @include no-select;
 
       &.is-active {
         background-color: $selected;
@@ -86,6 +81,8 @@
 
     .caret-down:before {
       content: "\25BE";
+      // Firefox decided to align this differently. This fixes it.
+      line-height: -moz-block-height;
     }
   }
 }

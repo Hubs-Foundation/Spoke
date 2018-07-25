@@ -7,6 +7,7 @@ import styles from "./PropertiesPanelContainer.scss";
 import PropertyGroup from "../PropertyGroup";
 import InputGroup from "../InputGroup";
 import StringInput from "../inputs/StringInput";
+import BooleanInput from "../inputs/BooleanInput";
 import componentTypeMappings from "../inputs/componentTypeMappings";
 
 import SetValueCommand from "../../editor/commands/SetValueCommand";
@@ -19,12 +20,16 @@ import SaveableComponent from "../../editor/components/SaveableComponent";
 
 import { withEditor } from "../contexts/EditorContext";
 import { withProject } from "../contexts/ProjectContext";
+import { OptionDialog } from "../dialogs/OptionDialog";
+import { withDialog } from "../contexts/DialogContext";
 
 class PropertiesPanelContainer extends Component {
   static propTypes = {
     editor: PropTypes.object,
     project: PropTypes.object,
-    openFileDialog: PropTypes.func
+    openFileDialog: PropTypes.func,
+    showDialog: PropTypes.func.isRequired,
+    hideDialog: PropTypes.func.isRequired
   };
 
   constructor(props) {
@@ -63,6 +68,40 @@ class PropertiesPanelContainer extends Component {
 
   onUpdateName = e => {
     this.props.editor.execute(new SetValueCommand(this.state.object, "name", e.target.value));
+  };
+
+  onUpdateStatic = value => {
+    const object = this.state.object;
+
+    if (object.children.length > 0) {
+      this.props.showDialog(OptionDialog, {
+        title: "Set Static",
+        message: "Do you wish to set this object's children's static flag as well?",
+        options: [
+          {
+            label: "Set object static flag",
+            onClick: () => {
+              object.userData._static = value;
+              this.props.editor.signals.objectChanged.dispatch(this.state.object);
+              this.props.hideDialog();
+            }
+          },
+          {
+            label: "Set object and children static flag",
+            onClick: () => {
+              object.traverse(child => {
+                child.userData._static = value;
+              });
+              this.props.editor.signals.objectChanged.dispatch(this.state.object);
+              this.props.hideDialog();
+            }
+          }
+        ]
+      });
+    } else {
+      object.userData._static = value;
+      this.props.editor.signals.objectChanged.dispatch(this.state.object);
+    }
   };
 
   onAddComponent = ({ value }) => {
@@ -151,22 +190,27 @@ class PropertiesPanelContainer extends Component {
       );
     }
 
+    const objectComponents = object.userData._components || [];
+
     const componentOptions = [];
 
-    for (const [name] of this.props.editor.components) {
-      componentOptions.push({
-        value: name,
-        label: getDisplayName(name)
-      });
+    for (const [name, componentClass] of this.props.editor.components) {
+      if (componentClass.canAdd !== false && !objectComponents.find(c => c.name === name)) {
+        componentOptions.push({
+          value: name,
+          label: getDisplayName(name)
+        });
+      }
     }
-
-    const objectComponents = object.userData._components || [];
 
     return (
       <div className={styles.propertiesPanelContainer}>
-        <PropertyGroup name="Node" removable={false}>
+        <PropertyGroup name="Node" canRemove={false}>
           <InputGroup name="Name">
             <StringInput value={object.name} onChange={this.onUpdateName} />
+          </InputGroup>
+          <InputGroup name="Static">
+            <BooleanInput value={object.userData._static || false} onChange={this.onUpdateStatic} />
           </InputGroup>
           <div className={styles.addComponentContainer}>
             <Select
@@ -189,7 +233,7 @@ class PropertiesPanelContainer extends Component {
             <PropertyGroup
               name={getDisplayName(component.name)}
               key={component.name}
-              removable={componentDefinition.removable}
+              canRemove={componentDefinition.canRemove}
               removeHandler={this.onRemoveComponent.bind(this, component.name)}
               src={component.src}
               srcIsValid={component.srcIsValid}
@@ -215,4 +259,4 @@ class PropertiesPanelContainer extends Component {
   }
 }
 
-export default withProject(withEditor(PropertiesPanelContainer));
+export default withProject(withEditor(withDialog(PropertiesPanelContainer)));

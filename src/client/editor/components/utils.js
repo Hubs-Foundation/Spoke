@@ -20,7 +20,7 @@ export function getDisplayName(name) {
 }
 
 export function getFilePath(image) {
-  return image && image.src.substr(image.baseURI.length - 1);
+  return image && image.src;
 }
 
 export function getDefaultsFromSchema(schema) {

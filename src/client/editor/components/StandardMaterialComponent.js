@@ -5,8 +5,16 @@ import envMapURL from "../../assets/envmap.jpg";
 
 const imageFilters = [".jpg", ".png"];
 const textureLoader = new THREE.TextureLoader();
+const envMap = new THREE.TextureLoader().load(envMapURL);
+envMap.mapping = THREE.EquirectangularReflectionMapping;
+envMap.magFilter = THREE.LinearFilter;
+envMap.minFilter = THREE.LinearMipMapLinearFilter;
 export default class StandardMaterialComponent extends SaveableComponent {
   static componentName = "standard-material";
+
+  static canAdd = false;
+
+  static canRemove = false;
 
   static dontExportProps = true;
 
@@ -40,7 +48,7 @@ export default class StandardMaterialComponent extends SaveableComponent {
     if (url === currentUrl) return;
 
     try {
-      const texture = textureLoader.load(url, null, null, () => {
+      const texture = textureLoader.load(url, () => {}, null, () => {
         this._object[map] = null;
         this._object.needsUpdate = true;
       });
@@ -121,11 +129,7 @@ export default class StandardMaterialComponent extends SaveableComponent {
   static inflate(node, _props) {
     const component = this._getOrCreateComponent(node, _props, node.material || null);
     if (node.material) {
-      const texture = new THREE.TextureLoader().load(envMapURL);
-      texture.mapping = THREE.EquirectangularReflectionMapping;
-      texture.magFilter = THREE.LinearFilter;
-      texture.minFilter = THREE.LinearMipMapLinearFilter;
-      node.material.envMap = texture;
+      node.material.envMap = envMap;
       node.material.needsUpdate = true;
     }
     return component;
