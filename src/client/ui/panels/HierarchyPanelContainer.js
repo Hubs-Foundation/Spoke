@@ -120,7 +120,8 @@ class HierarchyPanelContainer extends Component {
     this.props.editor.editScenePrefab(refComponent.getProperty("src"));
   };
 
-  onDeleteSelected = () => {
+  onDeleteSelected = e => {
+    e.preventDefault();
     this.props.editor.deleteSelectedObject();
   };
 

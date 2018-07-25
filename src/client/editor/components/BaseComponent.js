@@ -1,7 +1,9 @@
 import { getDefaultsFromSchema } from "./utils";
 
 export default class BaseComponent {
-  static removable = true;
+  static canAdd = true;
+
+  static canRemove = true;
 
   constructor(node, object) {
     this.name = this.constructor.componentName;
@@ -44,6 +46,7 @@ export default class BaseComponent {
     if (object && object instanceof THREE.Object3D) {
       object.userData._dontShowInHierarchy = true;
       object.userData._inflated = true;
+      object.userData._dontExport = true;
     }
 
     for (const key in props) {

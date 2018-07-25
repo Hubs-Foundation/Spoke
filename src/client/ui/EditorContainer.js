@@ -16,6 +16,7 @@ import AssetExplorerPanelContainer from "./panels/AssetExplorerPanelContainer";
 import PanelToolbar from "./PanelToolbar";
 import { withProject } from "./contexts/ProjectContext";
 import { withEditor } from "./contexts/EditorContext";
+import { DialogContextProvider } from "./contexts/DialogContext";
 import styles from "../common.scss";
 
 class EditorContainer extends Component {
@@ -155,7 +156,7 @@ class EditorContainer extends Component {
     this.props.editor.signals.windowResize.dispatch();
     this.props.editor.signals.popScene.add(this.onPopScene);
     this.props.editor.signals.openScene.add(this.onOpenScene);
-    this.props.editor.signals.sceneGraphChanged.add(this.onSceneChanged);
+    this.props.editor.signals.sceneModified.add(this.onSceneModified);
     this.props.project.addListener("change", path => {
       this.props.editor.signals.fileChanged.dispatch(path);
     });
@@ -281,6 +282,7 @@ class EditorContainer extends Component {
 
       this.props.editor.setSceneURI(sceneURI);
       this.props.editor.sceneInfo.modified = false;
+      this.onSceneModified();
       this.setState({ openModal: null });
     } catch (e) {
       throw e;
@@ -340,8 +342,9 @@ class EditorContainer extends Component {
     this.setState({ openModal: null });
   };
 
-  onSceneChanged = () => {
-    document.title = `Hubs Editor - ${this.props.editor.scene.name}*`;
+  onSceneModified = () => {
+    const modified = this.props.editor.sceneModified() ? "*" : "";
+    document.title = `Hubs Editor - ${this.props.editor.scene.name}${modified}`;
   };
 
   confirmSceneChange = () => {
@@ -358,23 +361,16 @@ class EditorContainer extends Component {
 
   onNewScene = () => {
     if (!this.confirmSceneChange()) return;
-
-    const scene = this.props.editor.loadNewScene();
-    document.title = `Hubs Editor - ${scene.name}`;
+    this.props.editor.loadNewScene();
   };
 
   onOpenScene = uri => {
     if (this.props.editor.sceneInfo.uri === uri) return;
     if (!this.confirmSceneChange()) return;
 
-    this.props.editor
-      .openRootScene(uri)
-      .then(scene => {
-        document.title = `Hubs Editor - ${scene.name}`;
-      })
-      .catch(e => {
-        console.error(e);
-      });
+    this.props.editor.openRootScene(uri).catch(e => {
+      console.error(e);
+    });
   };
 
   renderPanel = (panelId, path) => {
@@ -395,23 +391,25 @@ class EditorContainer extends Component {
     return (
       <DragDropContextProvider backend={HTML5Backend}>
         <HotKeys keyMap={this.state.keyMap} handlers={this.state.globalHotKeyHandlers} className={styles.flexColumn}>
-          <MenuBarContainer menus={menus} />
-          <MosaicWithoutDragDropContext
-            className="mosaic-theme"
-            renderTile={this.renderPanel}
-            initialValue={initialPanels}
-            onChange={this.onPanelChange}
-          />
-          <Modal
-            ariaHideApp={false}
-            isOpen={!!openModal}
-            onRequestClose={this.onCloseModal}
-            shouldCloseOnOverlayClick={openModal && openModal.shouldCloseOnOverlayClick}
-            className="Modal"
-            overlayClassName="Overlay"
-          >
-            {openModal && <openModal.component {...openModal.props} />}
-          </Modal>
+          <DialogContextProvider>
+            <MenuBarContainer menus={menus} />
+            <MosaicWithoutDragDropContext
+              className="mosaic-theme"
+              renderTile={this.renderPanel}
+              initialValue={initialPanels}
+              onChange={this.onPanelChange}
+            />
+            <Modal
+              ariaHideApp={false}
+              isOpen={!!openModal}
+              onRequestClose={this.onCloseModal}
+              shouldCloseOnOverlayClick={openModal && openModal.shouldCloseOnOverlayClick}
+              className="Modal"
+              overlayClassName="Overlay"
+            >
+              {openModal && <openModal.component {...openModal.props} />}
+            </Modal>
+          </DialogContextProvider>
         </HotKeys>
       </DragDropContextProvider>
     );

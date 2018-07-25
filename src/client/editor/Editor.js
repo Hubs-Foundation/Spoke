@@ -10,7 +10,6 @@ import SceneReferenceComponent from "./components/SceneReferenceComponent";
 import { loadScene, loadSerializedScene, serializeScene, exportScene } from "./SceneLoader";
 import DirectionalLightComponent from "./components/DirectionalLightComponent";
 import AmbientLightComponent from "./components/AmbientLightComponent";
-import ShadowComponent from "./components/ShadowComponent";
 import { last } from "../utils";
 
 /**
@@ -46,6 +45,7 @@ export default class Editor {
       sceneFogChanged: new Signal(),
       sceneGraphChanged: new Signal(),
       sceneSet: new Signal(),
+      sceneModified: new Signal(),
 
       cameraChanged: new Signal(),
 
@@ -97,6 +97,17 @@ export default class Editor {
 
     this.signals.sceneGraphChanged.add(() => {
       this.sceneInfo.modified = true;
+      this.signals.sceneModified.dispatch();
+    });
+
+    this.signals.objectChanged.add(() => {
+      this.sceneInfo.modified = true;
+      this.signals.sceneModified.dispatch();
+    });
+
+    this.signals.sceneSet.add(() => {
+      this.sceneInfo.modified = false;
+      this.signals.sceneModified.dispatch();
     });
 
     this.materials = {};
@@ -280,12 +291,14 @@ export default class Editor {
     scene.traverse(child => {
       Object.defineProperty(child.userData, "_selectionRoot", { value: parent, enumerable: false });
     });
-    this.addComponent(scene, ShadowComponent.componentName);
 
     this.signals.objectAdded.dispatch(scene);
 
     parent.add(scene);
+    const modified = this.sceneInfo.modified;
     this.signals.sceneGraphChanged.dispatch();
+    this.sceneInfo.modified = modified;
+    this.signals.sceneModified.dispatch();
 
     this._addDependency(uri, parent);
 

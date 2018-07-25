@@ -2,6 +2,8 @@ import THREE from "../vendor/three";
 import { Components, saveableComponentNames } from "./components";
 import SceneReferenceComponent from "./components/SceneReferenceComponent";
 import ConflictHandler from "./ConflictHandler";
+import StandardMaterialComponent from "../editor/components/StandardMaterialComponent";
+import ShadowComponent from "./components/ShadowComponent";
 
 export function absoluteToRelativeURL(from, to) {
   if (from === to) return to;
@@ -61,41 +63,178 @@ function loadGLTF(url) {
   });
 }
 
-function addComponentData(node, componentNames) {
-  if (!node.extras) return;
-  if (node.extras._components && node.extras._components.length > 0) {
-    for (const component of node.extras._components) {
-      if (componentNames.includes(component.name)) {
-        if (node.extras.components === undefined) {
-          node.extras.components = {};
-        }
-
-        node.extras.components[component.name] = component.props;
-      }
+function shallowEquals(objA, objB) {
+  for (const key in objA) {
+    if (objA[key] !== objB[key]) {
+      return false;
     }
-    delete node.extras._components;
   }
+
+  return true;
 }
 
-function removeEditorData(node) {
-  if (node.extras) {
-    for (const key in node.extras) {
-      console.log(key);
-      if (key.startsWith("_")) {
-        delete node.extras[key];
-      }
-    }
+function isEmptyObject(obj) {
+  for (const key in obj) {
+    return false;
+  }
 
-    if (Object.keys(node.extras).length === 0) {
-      delete node.extras;
+  return true;
+}
+
+function removeUnusedObjects(object) {
+  let canBeRemoved = !!object.parent;
+
+  for (const child of object.children.slice(0)) {
+    if (!removeUnusedObjects(child)) {
+      canBeRemoved = false;
     }
   }
+
+  const shouldRemove =
+    canBeRemoved &&
+    (object.constructor === THREE.Object3D || object.constructor === THREE.Scene) &&
+    object.children.length === 0 &&
+    object.isStatic &&
+    isEmptyObject(object.userData);
+
+  if (canBeRemoved && shouldRemove) {
+    object.parent.remove(object);
+    return true;
+  }
+
+  return false;
 }
 
 export async function exportScene(scene) {
+  const clonedScene = scene.clone();
+
+  const meshesToCombine = [];
+
+  // First pass at scene optimization.
+  clonedScene.traverse(object => {
+    // Mark objects with meshes for merging
+    const curShadowComponent = ShadowComponent.getComponent(object);
+    const curMaterialComponent = StandardMaterialComponent.getComponent(object);
+
+    if (object.userData._static && curShadowComponent && curMaterialComponent) {
+      let foundMaterial = false;
+
+      for (const { shadowComponent, materialComponent, meshes } of meshesToCombine) {
+        if (
+          shallowEquals(materialComponent.props, curMaterialComponent.props) &&
+          shallowEquals(shadowComponent.props, curShadowComponent.props)
+        ) {
+          meshes.push(object);
+          foundMaterial = true;
+          break;
+        }
+      }
+
+      if (!foundMaterial) {
+        meshesToCombine.push({
+          shadowComponent: curShadowComponent,
+          materialComponent: curMaterialComponent,
+          meshes: [object]
+        });
+      }
+    }
+
+    // Remove objects marked as _dontExport
+    for (const child of object.children) {
+      if (child.userData._dontExport) {
+        object.remove(child);
+        return;
+      }
+    }
+  });
+
+  // Combine meshes and add to scene.
+  const invMatrix = new THREE.Matrix4();
+
+  for (const { meshes } of meshesToCombine) {
+    if (meshes.length > 1) {
+      const bufferGeometries = [];
+
+      for (const mesh of meshes) {
+        // Clone buffer geometry in case it is re-used across meshes with different materials.
+        const clonedBufferGeometry = mesh.geometry.clone();
+        invMatrix.getInverse(mesh.matrixWorld);
+        clonedBufferGeometry.applyMatrix(invMatrix);
+        bufferGeometries.push(clonedBufferGeometry);
+      }
+
+      const originalMesh = meshes[0];
+
+      const combinedGeometry = THREE.BufferGeometryUtils.mergeBufferGeometries(bufferGeometries);
+      delete combinedGeometry.userData.mergedUserData;
+      const combinedMesh = new THREE.Mesh(combinedGeometry, originalMesh.material);
+      combinedMesh.name = "CombinedMesh";
+      combinedMesh.receiveShadow = originalMesh.receiveShadow;
+      combinedMesh.castShadow = originalMesh.castShadow;
+
+      clonedScene.add(combinedMesh);
+
+      for (const mesh of meshes) {
+        const meshIndex = mesh.parent.children.indexOf(mesh);
+        const parent = mesh.parent;
+        mesh.parent.remove(mesh);
+        const replacementObj = new THREE.Object3D();
+        replacementObj.copy(mesh);
+        replacementObj.children = mesh.children;
+
+        addChildAtIndex(parent, replacementObj, meshIndex);
+      }
+    }
+  }
+
+  const componentsToExport = Components.filter(c => !c.dontExportProps).map(component => component.componentName);
+
+  // Second pass at scene optimization.
+  clonedScene.traverse(object => {
+    const userData = object.userData;
+
+    // Move component data to userData.components
+    if (userData._components) {
+      for (const component of userData._components) {
+        if (componentsToExport.includes(component.name)) {
+          if (userData.components === undefined) {
+            userData.components = {};
+          }
+
+          userData.components[component.name] = component.props;
+        }
+      }
+    }
+
+    if (userData._static) {
+      object.isStatic = true;
+    }
+
+    // Remove editor data.
+    for (const key in userData) {
+      if (key.startsWith("_")) {
+        delete userData[key];
+      }
+    }
+
+    // Add shadow component to meshes with non-default values.
+    if (object.isMesh && (object.castShadow || object.receiveShadow)) {
+      if (!object.userData.components) {
+        object.userData.components = {};
+      }
+
+      object.userData.components.shadow = {
+        castShadow: object.castShadow,
+        receiveShadow: object.receiveShadow
+      };
+    }
+  });
+
+  removeUnusedObjects(clonedScene);
+
   // TODO: export animations
   const chunks = await new Promise((resolve, reject) => {
-    new THREE.GLTFExporter().parseChunks(scene, resolve, reject, {
+    new THREE.GLTFExporter().parseChunks(clonedScene, resolve, reject, {
       mode: "gltf",
       onlyVisible: false
     });
@@ -104,7 +243,7 @@ export async function exportScene(scene) {
   const buffers = chunks.json.buffers;
 
   if (buffers && buffers.length > 0 && buffers[0].uri === undefined) {
-    buffers[0].uri = scene.name + ".bin";
+    buffers[0].uri = clonedScene.name + ".bin";
   }
 
   // De-duplicate images.
@@ -142,25 +281,6 @@ export async function exportScene(scene) {
     }
   }
 
-  const componentNames = Components.filter(c => !c.dontExportProps).map(component => component.componentName);
-
-  for (const scene of chunks.json.scenes) {
-    addComponentData(scene, componentNames);
-  }
-
-  for (const node of chunks.json.nodes) {
-    addComponentData(node, componentNames);
-  }
-
-  // Remove editor data.
-  for (const scene of chunks.json.scenes) {
-    removeEditorData(scene);
-  }
-
-  for (const node of chunks.json.nodes) {
-    removeEditorData(node);
-  }
-
   return chunks;
 }
 
@@ -173,8 +293,15 @@ function inflateGLTFComponents(scene, addComponent) {
       }
     }
 
-    if (object instanceof THREE.Mesh && object.material instanceof THREE.MeshStandardMaterial) {
-      addComponent(object, "standard-material", undefined, true);
+    if (object instanceof THREE.Mesh) {
+      addComponent(object, "mesh", null, true);
+
+      const shadowProps = object.userData.components ? object.userData.components.shadow : null;
+      addComponent(object, "shadow", shadowProps, true);
+
+      if (object.material instanceof THREE.MeshStandardMaterial) {
+        addComponent(object, "standard-material", null, true);
+      }
     }
   });
 }
