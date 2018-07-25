@@ -99,7 +99,6 @@ export default class Editor {
       this.sceneInfo.modified = true;
     });
 
-    this.geometries = {};
     this.materials = {};
     this.textures = {};
 
@@ -116,6 +115,8 @@ export default class Editor {
 
     // Map from URI -> Set of Object3Ds
     this.fileDependencies = new Map();
+
+    this._duplicateNameCounters = new Map();
 
     this.ignoreNextSceneFileChange = false;
     this.signals.fileChanged.add(this.onFileChanged);
@@ -331,16 +332,21 @@ export default class Editor {
   //
 
   addObject(object, parent) {
-    const scope = this;
-
     this.addComponent(object, "transform");
+
+    let duplicateNameCount = this._duplicateNameCounters.get(object.name);
+    if (duplicateNameCount) {
+      this._duplicateNameCounters.set(object.name, duplicateNameCount);
+      object.name += "_" + duplicateNameCount;
+      duplicateNameCount++;
+    } else {
+      this._duplicateNameCounters.set(object.name, 1);
+    }
 
     object.userData._saveParent = true;
     object.traverse(child => {
-      if (child.geometry !== undefined) scope.addGeometry(child.geometry);
-      if (child.material !== undefined) scope.addMaterial(child.material);
-
-      scope.addHelper(child, object);
+      if (child.material !== undefined) this.addMaterial(child.material);
+      this.addHelper(child, object);
     });
 
     if (parent !== undefined) {
@@ -379,14 +385,10 @@ export default class Editor {
       this._removeSceneRefDependency(child);
     });
 
-    object.parent.remove(object);
+    this._addedNames.delete(object.name);
 
     this.signals.objectRemoved.dispatch(object);
     this.signals.sceneGraphChanged.dispatch();
-  }
-
-  addGeometry(geometry) {
-    this.geometries[geometry.uuid] = geometry;
   }
 
   addMaterial(material) {
@@ -678,7 +680,6 @@ export default class Editor {
       this.removeObject(objects[0]);
     }
 
-    this.geometries = {};
     this.materials = {};
     this.textures = {};
 
