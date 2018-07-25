@@ -1,6 +1,11 @@
+@import "../../common";
 @import "../../theme";
 
+:local(.menu:first-child) {
+  margin-left: 6px;
+}
 :local(.menu) {
+  @include no-select;
   display: flex;
   height: 100%;
   position: relative;

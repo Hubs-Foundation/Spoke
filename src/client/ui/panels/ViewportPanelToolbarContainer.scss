@@ -1,6 +1,8 @@
+@import "../../common";
 @import "../../theme";
 
 :local(.snap) {
+  @include no-select;
   font-size: 12px;
 }
 

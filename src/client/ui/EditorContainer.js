@@ -28,7 +28,7 @@ class EditorContainer extends Component {
           direction: "row",
           first: "hierarchy",
           second: "viewport",
-          splitPercentage: 33.333
+          splitPercentage: 33.4
         },
         second: "properties",
         splitPercentage: 75

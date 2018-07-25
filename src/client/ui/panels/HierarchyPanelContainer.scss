@@ -1,6 +1,8 @@
+@import "../../common";
 @import "../../theme";
 
 :local(.hierarchyRoot) {
+  @include no-select;
   outline: none;
   width: 100%;
   position: relative;
