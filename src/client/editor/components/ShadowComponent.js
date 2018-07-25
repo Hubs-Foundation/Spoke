@@ -4,7 +4,7 @@ import { types } from "./utils";
 export default class ShadowComponent extends BaseComponent {
   static componentName = "shadow";
 
-  static removable = false;
+  static canRemove = false;
 
   static dontExportProps = true;
 

@@ -1,7 +1,9 @@
 import { getDefaultsFromSchema } from "./utils";
 
 export default class BaseComponent {
-  static removable = true;
+  static canAdd = true;
+
+  static canRemove = true;
 
   constructor(node, object) {
     this.name = this.constructor.componentName;

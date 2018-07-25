@@ -8,7 +8,7 @@ import { withProject } from "./contexts/ProjectContext";
 function PropertyGroup(props) {
   const {
     name,
-    removable,
+    canRemove,
     removeHandler,
     src,
     saveable,
@@ -19,7 +19,7 @@ function PropertyGroup(props) {
     project
   } = props;
   const renderRemoveButton = () => {
-    if (!removable) return;
+    if (!canRemove) return;
     return <Button onClick={removeHandler}>Remove</Button>;
   };
 
@@ -51,7 +51,7 @@ function PropertyGroup(props) {
 
 PropertyGroup.propTypes = {
   name: PropTypes.string,
-  removable: PropTypes.bool,
+  canRemove: PropTypes.bool,
   removeHandler: PropTypes.func,
   src: PropTypes.string,
   saveable: PropTypes.bool,

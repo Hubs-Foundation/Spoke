@@ -180,20 +180,22 @@ class PropertiesPanelContainer extends Component {
       );
     }
 
+    const objectComponents = object.userData._components || [];
+
     const componentOptions = [];
 
-    for (const [name] of this.props.editor.components) {
-      componentOptions.push({
-        value: name,
-        label: getDisplayName(name)
-      });
+    for (const [name, componentClass] of this.props.editor.components) {
+      if (componentClass.canAdd !== false && !objectComponents.find(c => c.name === name)) {
+        componentOptions.push({
+          value: name,
+          label: getDisplayName(name)
+        });
+      }
     }
-
-    const objectComponents = object.userData._components || [];
 
     return (
       <div className={styles.propertiesPanelContainer}>
-        <PropertyGroup name="Node" removable={false}>
+        <PropertyGroup name="Node" canRemove={false}>
           <InputGroup name="Name">
             <StringInput value={object.name} onChange={this.onUpdateName} />
           </InputGroup>
@@ -221,7 +223,7 @@ class PropertiesPanelContainer extends Component {
             <PropertyGroup
               name={getDisplayName(component.name)}
               key={component.name}
-              removable={componentDefinition.removable}
+              canRemove={componentDefinition.canRemove}
               removeHandler={this.onRemoveComponent.bind(this, component.name)}
               src={component.src}
               saveable={component instanceof SaveableComponent}
