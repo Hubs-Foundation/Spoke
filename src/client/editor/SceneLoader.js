@@ -93,7 +93,8 @@ function removeUnusedObjects(object) {
     }
   }
 
-  const shouldRemove = canBeRemoved &&
+  const shouldRemove =
+    canBeRemoved &&
     (object.constructor === THREE.Object3D || object.constructor === THREE.Scene) &&
     object.children.length === 0 &&
     object.isStatic &&
@@ -181,7 +182,8 @@ export async function exportScene(scene) {
         const parent = mesh.parent;
         mesh.parent.remove(mesh);
         const replacementObj = new THREE.Object3D();
-        replacementObj.copy(mesh, true);
+        replacementObj.copy(mesh);
+        replacementObj.children = mesh.children;
 
         addChildAtIndex(parent, replacementObj, meshIndex);
       }
@@ -228,11 +230,6 @@ export async function exportScene(scene) {
         castShadow: object.castShadow,
         receiveShadow: object.receiveShadow
       };
-    }
-
-    // Remove empty components object.
-    if (object.userData.components && isEmptyObject(object.userData.components)) {
-      delete object.userData.components;
     }
   });
 
@@ -300,13 +297,13 @@ function inflateGLTFComponents(scene, addComponent) {
     }
 
     if (object instanceof THREE.Mesh) {
-      addComponent(object, "mesh", undefined, true);
+      addComponent(object, "mesh", null, true);
 
-      const shadowProps = object.userData.components ? object.userData.components.shadow : undefined;
+      const shadowProps = object.userData.components ? object.userData.components.shadow : null;
       addComponent(object, "shadow", shadowProps, true);
 
       if (object.material instanceof THREE.MeshStandardMaterial) {
-        addComponent(object, "standard-material", undefined, true);
+        addComponent(object, "standard-material", null, true);
       }
     }
   });

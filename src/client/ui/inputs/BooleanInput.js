@@ -6,7 +6,7 @@ export default function BooleanInput({ onChange, value }) {
 }
 
 BooleanInput.defaultProps = {
-  value: "",
+  value: false,
   onChange: () => {}
 };
 
