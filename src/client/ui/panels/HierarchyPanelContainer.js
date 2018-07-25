@@ -86,7 +86,7 @@ class HierarchyPanelContainer extends Component {
     this.props.editor.execute(new MoveObjectCommand(object, newParent.object, newBefore));
   };
 
-  onMouseUpNode = (e, node) => {
+  onMouseDownNode = (e, node) => {
     if (this.clicked === node.object) {
       this.props.editor.focusById(node.object.id);
       return;
@@ -160,8 +160,7 @@ class HierarchyPanelContainer extends Component {
           "warning-root": node.object.userData._isDuplicateRoot ? node.object.userData._duplicate : false,
           disabled: isMissingChild || isDuplicateChild
         })}
-        onMouseUp={disableEditing ? null : e => this.onMouseUpNode(e, node)}
-        onMouseDown={disableEditing ? e => e.stopPropagation() : null}
+        onMouseDown={disableEditing ? e => e.stopPropagation() : e => this.onMouseDownNode(e, node)}
       >
         <ContextMenuTrigger
           attributes={{ className: styles.treeNode }}
