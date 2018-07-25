@@ -109,6 +109,7 @@ class PropertiesPanelContainer extends Component {
         component.shouldSave = true;
         component.modified = false;
         component.constructor.inflate(this.state.object, await this.props.project.readJSON(component.src));
+        component.srcIsValid = true;
         this.props.editor.signals.objectChanged.dispatch(this.state.object);
       },
       {
@@ -191,7 +192,7 @@ class PropertiesPanelContainer extends Component {
               removable={componentDefinition.removable}
               removeHandler={this.onRemoveComponent.bind(this, component.name)}
               src={component.src}
-              resourcesValidation={component.srcIsValid}
+              srcIsValid={component.srcIsValid}
               saveable={component instanceof SaveableComponent}
               saveHandler={this.onSaveComponent.bind(this, component, false)}
               saveAsHandler={this.onSaveComponent.bind(this, component, true)}
