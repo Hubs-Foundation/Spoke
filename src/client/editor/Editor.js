@@ -45,6 +45,7 @@ export default class Editor {
       sceneFogChanged: new Signal(),
       sceneGraphChanged: new Signal(),
       sceneSet: new Signal(),
+      sceneModified: new Signal(),
 
       cameraChanged: new Signal(),
 
@@ -96,6 +97,17 @@ export default class Editor {
 
     this.signals.sceneGraphChanged.add(() => {
       this.sceneInfo.modified = true;
+      this.signals.sceneModified.dispatch();
+    });
+
+    this.signals.objectChanged.add(() => {
+      this.sceneInfo.modified = true;
+      this.signals.sceneModified.dispatch();
+    });
+
+    this.signals.sceneSet.add(() => {
+      this.sceneInfo.modified = false;
+      this.signals.sceneModified.dispatch();
     });
 
     this.materials = {};
@@ -283,7 +295,10 @@ export default class Editor {
     this.signals.objectAdded.dispatch(scene);
 
     parent.add(scene);
+    const modified = this.sceneInfo.modified;
     this.signals.sceneGraphChanged.dispatch();
+    this.sceneInfo.modified = modified;
+    this.signals.sceneModified.dispatch();
 
     this._addDependency(uri, parent);
 
