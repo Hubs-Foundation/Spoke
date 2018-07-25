@@ -1,3 +1,4 @@
+@import "./common";
 @import "./theme";
 
 html, body, #app {
@@ -55,6 +56,7 @@ html, body, #app {
     }
 
     .mosaic-window-title {
+      @include no-select;
       padding-left: 8px;
       font-size: 12px;
       line-height: 24px;

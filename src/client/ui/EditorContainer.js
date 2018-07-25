@@ -55,7 +55,8 @@ class EditorContainer extends Component {
           component: HierarchyPanelContainer,
           windowProps: {
             title: "Hierarchy",
-            toolbarControls: PanelToolbar
+            toolbarControls: PanelToolbar,
+            draggable: false
           }
         },
         viewport: {
@@ -63,7 +64,7 @@ class EditorContainer extends Component {
           windowProps: {
             title: "Viewport",
             toolbarControls: ViewportPanelToolbarContainer(),
-            draggable: true
+            draggable: false
           }
         },
         properties: {
@@ -71,14 +72,16 @@ class EditorContainer extends Component {
           props: { openFileDialog: this.openFileDialog },
           windowProps: {
             title: "Properties",
-            toolbarControls: PanelToolbar
+            toolbarControls: PanelToolbar,
+            draggable: false
           }
         },
         assetExplorer: {
           component: AssetExplorerPanelContainer,
           windowProps: {
             title: "Asset Explorer",
-            toolbarControls: PanelToolbar
+            toolbarControls: PanelToolbar,
+            draggable: false
           }
         }
       },
