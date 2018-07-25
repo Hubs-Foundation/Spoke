@@ -8,6 +8,8 @@
   display: flex;
   flex: 1;
   flex-direction: row;
+  // This forces firefox to give the contents a proper height.
+  overflow: hidden;
 }
 
 :local(.leftColumn) {
