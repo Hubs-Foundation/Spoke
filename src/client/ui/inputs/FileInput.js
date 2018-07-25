@@ -8,7 +8,12 @@ import ReactTooltip from "react-tooltip";
 export default function FileInput({ value, onChange, openFileDialog, filters, isValid }) {
   const inputStyles = `${styles.fileInput} ${isValid ? "" : styles.invalidPath}`;
   return (
-    <div className={inputStyles} data-tip="Cannot find the file" data-type="error" data-event-off="">
+    <div
+      className={inputStyles}
+      data-tip={isValid ? "file path" : "Cannot find the file"}
+      data-type={isValid ? "info" : "error"}
+      data-event-off=""
+    >
       <input value={value || ""} onChange={e => onChange(e.target.value)} />
       {isValid ? null : <ReactTooltip />}
       <Button className={styles.inputButton} onClick={() => openFileDialog(onChange, { filters })}>
