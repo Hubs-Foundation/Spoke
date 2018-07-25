@@ -6,6 +6,8 @@
   outline: none;
   width: 100%;
   position: relative;
+  display: flex;
+  flex-direction: column;
 }
 
 :local(.breadCrumb),:local(.ancestor) {
@@ -30,6 +32,8 @@
 
 :local(.tree) {
   outline: none;
+  flex: 1;
+  overflow: hidden;
 }
 :local(.treeNode) {
   padding: 4px 5px;

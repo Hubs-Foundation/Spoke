@@ -20,7 +20,7 @@
     "lint": "eslint ./src"
   },
   "dependencies": {
-    "@robertlong/react-ui-tree": "3.4.6",
+    "@robertlong/react-ui-tree": "github:robertlong/react-ui-tree#dev",
     "chokidar": "^2.0.4",
     "classnames": "^2.2.5",
     "commander": "^2.15.1",

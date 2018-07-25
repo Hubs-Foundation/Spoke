@@ -8,8 +8,10 @@
 
   .m-tree {
     position: relative;
-    overflow: visible;
+    overflow-y: auto;
+    overflow-x: hidden;
     padding-right: 3px;
+    height: 100%;
   }
 
   .m-draggable {
