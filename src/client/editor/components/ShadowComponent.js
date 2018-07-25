@@ -6,6 +6,8 @@ export default class ShadowComponent extends BaseComponent {
 
   static removable = false;
 
+  static dontExportProps = true;
+
   static schema = [
     { name: "castShadow", type: types.boolean, default: true },
     { name: "receiveShadow", type: types.boolean, default: true }
