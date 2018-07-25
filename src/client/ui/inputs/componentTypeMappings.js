@@ -5,6 +5,7 @@ import Vector3Input from "./Vector3Input";
 import EulerInput from "./EulerInput";
 import ColorInput from "./ColorInput";
 import FileInput from "./FileInput";
+import BooleanInput from "./BooleanInput";
 
 /* eslint react/display-name: 0 */
 const componentTypeMappings = new Map([
@@ -15,10 +16,7 @@ const componentTypeMappings = new Map([
   ],
   [types.vector, (value, onChange) => <Vector3Input value={value} onChange={onChange} />],
   [types.euler, (value, onChange) => <EulerInput value={value} onChange={onChange} />],
-  [
-    types.boolean,
-    (value, onChange) => <input type="checkbox" checked={value} onChange={e => onChange(e.target.checked)} />
-  ],
+  [types.boolean, (value, onChange) => <BooleanInput value={value} onChange={onChange} />],
   [
     types.file,
     (value, onChange, { openFileDialog, filters }) => <FileInput {...{ value, onChange, openFileDialog, filters }} />

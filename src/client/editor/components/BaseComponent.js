@@ -44,6 +44,7 @@ export default class BaseComponent {
     if (object && object instanceof THREE.Object3D) {
       object.userData._dontShowInHierarchy = true;
       object.userData._inflated = true;
+      object.userData._dontExport = true;
     }
 
     for (const key in props) {

@@ -6,6 +6,8 @@ export default class TransformComponent extends BaseComponent {
 
   static removable = false;
 
+  static dontExportProps = true;
+
   static schema = [
     { name: "position", type: types.vector },
     { name: "rotation", type: types.euler },

@@ -10,7 +10,6 @@ import SceneReferenceComponent from "./components/SceneReferenceComponent";
 import { loadScene, loadSerializedScene, serializeScene, exportScene } from "./SceneLoader";
 import DirectionalLightComponent from "./components/DirectionalLightComponent";
 import AmbientLightComponent from "./components/AmbientLightComponent";
-import ShadowComponent from "./components/ShadowComponent";
 import { last } from "../utils";
 
 /**
@@ -280,7 +279,6 @@ export default class Editor {
     scene.traverse(child => {
       Object.defineProperty(child.userData, "_selectionRoot", { value: parent, enumerable: false });
     });
-    this.addComponent(scene, ShadowComponent.componentName);
 
     this.signals.objectAdded.dispatch(scene);
 

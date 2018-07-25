@@ -16,6 +16,7 @@ import AssetExplorerPanelContainer from "./panels/AssetExplorerPanelContainer";
 import PanelToolbar from "./PanelToolbar";
 import { withProject } from "./contexts/ProjectContext";
 import { withEditor } from "./contexts/EditorContext";
+import { DialogContextProvider } from "./contexts/DialogContext";
 import styles from "../common.scss";
 
 class EditorContainer extends Component {
@@ -395,23 +396,25 @@ class EditorContainer extends Component {
     return (
       <DragDropContextProvider backend={HTML5Backend}>
         <HotKeys keyMap={this.state.keyMap} handlers={this.state.globalHotKeyHandlers} className={styles.flexColumn}>
-          <MenuBarContainer menus={menus} />
-          <MosaicWithoutDragDropContext
-            className="mosaic-theme"
-            renderTile={this.renderPanel}
-            initialValue={initialPanels}
-            onChange={this.onPanelChange}
-          />
-          <Modal
-            ariaHideApp={false}
-            isOpen={!!openModal}
-            onRequestClose={this.onCloseModal}
-            shouldCloseOnOverlayClick={openModal && openModal.shouldCloseOnOverlayClick}
-            className="Modal"
-            overlayClassName="Overlay"
-          >
-            {openModal && <openModal.component {...openModal.props} />}
-          </Modal>
+          <DialogContextProvider>
+            <MenuBarContainer menus={menus} />
+            <MosaicWithoutDragDropContext
+              className="mosaic-theme"
+              renderTile={this.renderPanel}
+              initialValue={initialPanels}
+              onChange={this.onPanelChange}
+            />
+            <Modal
+              ariaHideApp={false}
+              isOpen={!!openModal}
+              onRequestClose={this.onCloseModal}
+              shouldCloseOnOverlayClick={openModal && openModal.shouldCloseOnOverlayClick}
+              className="Modal"
+              overlayClassName="Overlay"
+            >
+              {openModal && <openModal.component {...openModal.props} />}
+            </Modal>
+          </DialogContextProvider>
         </HotKeys>
       </DragDropContextProvider>
     );
