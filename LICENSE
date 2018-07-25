@@ -1,8 +1,10 @@
+====================================================================
+====================================================================
+
 
 Portions of this project, particularly code under src/client/editor/, are 
 derived from the "three.js / editor" project (https://github.com/mrdoob/three.js/), 
 licensed under the MIT License.
-
 
 Unless otherwise stated, the remainder of the code in the project is licensed
 under the Mozilla Public License Version 2.0
@@ -10,8 +12,8 @@ under the Mozilla Public License Version 2.0
 Both licenses and copyrights are listed below.
 
 
-==================================
-==================================
+====================================================================
+====================================================================
 
 
 The MIT License
@@ -37,8 +39,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 
-==================================
-==================================
+====================================================================
+====================================================================
 
 
 Mozilla Public License Version 2.0
