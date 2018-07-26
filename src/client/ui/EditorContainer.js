@@ -232,7 +232,7 @@ class EditorContainer extends Component {
           onCancel: this.onCloseModal,
           onConfirm: filePath => {
             this.setState({ openModal: null });
-            callback(filePath);
+            callback({ path: filePath, isValid: true });
           },
           ...props
         }

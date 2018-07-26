@@ -9,6 +9,7 @@ const envMap = new THREE.TextureLoader().load(envMapURL);
 envMap.mapping = THREE.EquirectangularReflectionMapping;
 envMap.magFilter = THREE.LinearFilter;
 envMap.minFilter = THREE.LinearMipMapLinearFilter;
+const defaultSrc = { path: "", isValid: true };
 export default class StandardMaterialComponent extends SaveableComponent {
   static componentName = "standard-material";
 
@@ -25,11 +26,11 @@ export default class StandardMaterialComponent extends SaveableComponent {
     { name: "roughness", type: types.number, default: 1, min: 0, max: 1 },
     { name: "alphaCutoff", type: types.number, default: 0.5, min: 0, max: 1 },
     { name: "doubleSided", type: types.boolean, default: false },
-    { name: "baseColorTexture", type: types.file, default: null, filters: imageFilters },
-    { name: "normalTexture", type: types.file, default: null, filters: imageFilters },
-    { name: "metallicRoughnessTexture", type: types.file, default: null, filters: imageFilters },
-    { name: "emissiveTexture", type: types.file, default: null, filters: imageFilters },
-    { name: "occlusionTexture", type: types.file, default: null, filters: imageFilters }
+    { name: "baseColorTexture", type: types.file, default: defaultSrc, filters: imageFilters },
+    { name: "normalTexture", type: types.file, default: defaultSrc, filters: imageFilters },
+    { name: "metallicRoughnessTexture", type: types.file, default: defaultSrc, filters: imageFilters },
+    { name: "emissiveTexture", type: types.file, default: defaultSrc, filters: imageFilters },
+    { name: "occlusionTexture", type: types.file, default: defaultSrc, filters: imageFilters }
     // TODO alphaMode
   ];
 
@@ -37,7 +38,7 @@ export default class StandardMaterialComponent extends SaveableComponent {
     super(node, object, ".material");
   }
 
-  _updateTexture(map, url, sRGB) {
+  _updateTexture(propertyName, map, url, sRGB) {
     if (!url) {
       this._object[map] = null;
       return;
@@ -51,6 +52,8 @@ export default class StandardMaterialComponent extends SaveableComponent {
       const texture = textureLoader.load(url, () => {}, null, () => {
         this._object[map] = null;
         this._object.needsUpdate = true;
+        // TODO: the right place to handle error texture loading
+        this.updateProperty(propertyName, { path: url, isValid: false });
       });
       if (sRGB) {
         texture.encoding = THREE.sRGBEncoding;
@@ -61,9 +64,7 @@ export default class StandardMaterialComponent extends SaveableComponent {
       texture.wrapT = THREE.RepeatWrapping;
       this._object[map] = texture;
     } catch (e) {
-      // TODO Should show warning on texture property when this happens.
-      const resource = this._mapTypesToTextureType(map);
-      this.updateResourceValidation(resource, false);
+      // TODO Should show warning on texture property when this happens
     }
   }
 
@@ -87,20 +88,20 @@ export default class StandardMaterialComponent extends SaveableComponent {
         this._object.side = value ? THREE.DoubleSide : THREE.FrontSide;
         break;
       case "baseColorTexture":
-        this._updateTexture("map", value, true);
+        this._updateTexture(propertyName, "map", value, true);
         break;
       case "normalTexture":
-        this._updateTexture("normalMap", value);
+        this._updateTexture(propertyName, "normalMap", value);
         break;
       case "metallicRoughnessTexture":
-        this._updateTexture("roughnessMap", value);
-        this._updateTexture("metalnessMap", value);
+        this._updateTexture(propertyName, "roughnessMap", value);
+        this._updateTexture(propertyName, "metalnessMap", value);
         break;
       case "emissiveTexture":
-        this._updateTexture("emissiveMap", value, true);
+        this._updateTexture(propertyName, "emissiveMap", value, true);
         break;
       case "occlusionTexture":
-        this._updateTexture("aoMap", value);
+        this._updateTexture(propertyName, "aoMap", value);
         break;
       default:
         this._object[propertyName] = value;
@@ -118,11 +119,18 @@ export default class StandardMaterialComponent extends SaveableComponent {
       roughness: node.material.roughness,
       alphaCutoff: node.material.alphaTest,
       doubleSided: node.material.side === THREE.DoubleSide,
-      baseColorTexture: (map && getFilePath(map.image)) || "",
-      normalTexture: (normalMap && getFilePath(normalMap.image)) || "",
-      metallicRoughnessTexture: (roughnessMap && getFilePath(roughnessMap.image)) || "",
-      emissiveTexture: (emissiveMap && getFilePath(emissiveMap.image)) || "",
-      occlusionTexture: (aoMap && getFilePath(aoMap.image)) || ""
+      baseColorTexture: this._setSrcObject(map, true),
+      normalTexture: this._setSrcObject(normalMap, true),
+      metallicRoughnessTexture: this._setSrcObject(roughnessMap, true),
+      emissiveTexture: this._setSrcObject(emissiveMap, true),
+      occlusionTexture: this._setSrcObject(aoMap, true)
+    };
+  }
+
+  static _setSrcObject(map, valid) {
+    return {
+      path: map ? getFilePath(map.image) : "",
+      isValid: valid
     };
   }
 
@@ -133,30 +141,5 @@ export default class StandardMaterialComponent extends SaveableComponent {
       node.material.needsUpdate = true;
     }
     return component;
-  }
-
-  _mapTypesToTextureType(map) {
-    let textureType = null;
-    switch (map) {
-      case "map":
-        textureType = "baseColorTexture";
-        break;
-      case "normalMap":
-        textureType = "normalTexture";
-        break;
-      case "roughnessMap":
-        textureType = "metallicRoughnessTexture";
-        break;
-      case "metalnessMap":
-        textureType = "metallicRoughnessTexture";
-        break;
-      case "emissiveMap":
-        textureType = "emissiveTexture";
-        break;
-      case "aoMap":
-        textureType = "occlusionTexture";
-        break;
-    }
-    return textureType;
   }
 }

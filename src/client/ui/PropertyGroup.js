@@ -12,7 +12,6 @@ function PropertyGroup(props) {
     canRemove,
     removeHandler,
     src,
-    srcIsValid,
     saveable,
     saveHandler,
     saveAsHandler,
@@ -28,18 +27,18 @@ function PropertyGroup(props) {
   const renderSaveButtons = () => {
     if (!saveable) return;
     const srcStatus = {
-      class: srcIsValid ? styles.src : styles.invalidSrc,
-      tip: srcIsValid ? "file path" : "Cannot find the file.",
-      type: srcIsValid ? "info" : "error"
+      class: src.isValid ? styles.src : styles.invalidSrc,
+      tip: src.isValid ? null : "Cannot find the file.",
+      type: src.isValid ? null : "error"
     };
     return (
       <div>
         <span className={srcStatus.class} data-tip={srcStatus.tip} data-type={srcStatus.type}>
-          {src && project.getRelativeURI(src)}
+          {src.path && project.getRelativeURI(src.path)}
           <ReactTooltip />
         </span>
         <div className={styles.saveButtons}>
-          {src && <Button onClick={saveHandler}>Save</Button>}
+          {src.path && <Button onClick={saveHandler}>Save</Button>}
           <Button onClick={saveAsHandler}>Save As...</Button>
           <Button onClick={loadHandler}>Load...</Button>
         </div>
@@ -63,8 +62,7 @@ PropertyGroup.propTypes = {
   name: PropTypes.string,
   canRemove: PropTypes.bool,
   removeHandler: PropTypes.func,
-  src: PropTypes.string,
-  srcIsValid: PropTypes.bool,
+  src: PropTypes.object,
   saveable: PropTypes.bool,
   saveHandler: PropTypes.func,
   saveAsHandler: PropTypes.func,
