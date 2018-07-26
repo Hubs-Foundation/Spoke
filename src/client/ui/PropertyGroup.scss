@@ -34,11 +34,35 @@
     display: block;
     text-align: center;
     margin: 0.5em;
+    margin-bottom: 0.7em;
+    padding: 0.2em;
+    background: $selected;
   }
 
   :local(.saveButtons) {
     display: flex;
     margin: 0.5em;
     justify-content: space-evenly;
+  }
+
+  :local(.saveInfo) {
+    background: $selected;
+    padding: 0.1em 0.5em 0.2em 0.5em;
+    width: auto;
+    display: inline;
+    align-self: center;
+    box-shadow: $shadow-30;
+    margin: 0.3em 0;
+    :local(.icon), :local(.text) {
+      vertical-align: middle
+    }
+    :local(.icon) {
+      width: 14px;
+    }
+    :local(.text) {
+      padding-left: 0.3em;
+      color: $blue;
+      font-size: 12px;
+    }
   }
 }

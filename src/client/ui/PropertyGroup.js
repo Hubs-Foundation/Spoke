@@ -3,6 +3,7 @@ import PropTypes from "prop-types";
 
 import Button from "./Button";
 import styles from "./PropertyGroup.scss";
+import infoIcon from "../assets/info-icon.svg";
 import { withProject } from "./contexts/ProjectContext";
 
 function PropertyGroup(props) {
@@ -12,6 +13,7 @@ function PropertyGroup(props) {
     removeHandler,
     src,
     saveable,
+    modified,
     saveHandler,
     saveAsHandler,
     loadHandler,
@@ -27,7 +29,12 @@ function PropertyGroup(props) {
     if (!saveable) return;
     return (
       <div>
-        <span className={styles.src}>{src && project.getRelativeURI(src)}</span>
+        {src && (
+          <span className={styles.src}>
+            {src && project.getRelativeURI(src)}
+            {modified && "*"}
+          </span>
+        )}
         <div className={styles.saveButtons}>
           {src && <Button onClick={saveHandler}>Save</Button>}
           <Button onClick={saveAsHandler}>Save As...</Button>
@@ -37,6 +44,8 @@ function PropertyGroup(props) {
     );
   };
 
+  const showSaveInfo = saveable && !src;
+
   return (
     <div className={styles.propertyGroup}>
       <div className={styles.name}>
@@ -44,6 +53,12 @@ function PropertyGroup(props) {
         {renderRemoveButton()}
       </div>
       {renderSaveButtons()}
+      {showSaveInfo && (
+        <div className={styles.saveInfo}>
+          <img className={styles.icon} src={infoIcon} />
+          <span className={styles.text}>You must save this component or load a saved file in order to edit it.</span>
+        </div>
+      )}
       <div className={styles.content}>{children}</div>
     </div>
   );
@@ -55,6 +70,7 @@ PropertyGroup.propTypes = {
   removeHandler: PropTypes.func,
   src: PropTypes.string,
   saveable: PropTypes.bool,
+  modified: PropTypes.bool,
   saveHandler: PropTypes.func,
   saveAsHandler: PropTypes.func,
   loadHandler: PropTypes.func,

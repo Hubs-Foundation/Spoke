@@ -1,0 +1,12 @@
+<svg id="warning-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #81a2be;
+      }
+    </style>
+  </defs>
+  <path id="Path_1" data-name="Path 1" class="cls-1" d="M8,16a8,8,0,1,1,8-8,8,8,0,0,1-8,8ZM8,2a6,6,0,1,0,6,6A6,6,0,0,0,8,2Z"/>
+  <path id="Path_2" data-name="Path 2" class="cls-1" d="M8,7A1,1,0,0,0,7,8v3a1,1,0,0,0,2,0V8A1,1,0,0,0,8,7Z"/>
+  <circle id="Ellipse_1" data-name="Ellipse 1" class="cls-1" cx="1.188" cy="1.188" r="1.188" transform="translate(6.812 3.812)"/>
+</svg>
