@@ -55,7 +55,8 @@ class ViewportPanelContainer extends Component {
     this.props.editor.signals.transformModeChanged.dispatch("scale");
   };
 
-  onDuplicate = () => {
+  onDuplicate = e => {
+    e.preventDefault();
     this.props.editor.duplicateSelectedObject();
     return false;
   };
