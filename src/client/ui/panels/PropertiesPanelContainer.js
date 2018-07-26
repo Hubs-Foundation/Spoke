@@ -159,19 +159,14 @@ class PropertiesPanelContainer extends Component {
     );
   };
 
-  getExtras(prop, component) {
+  getExtras(prop) {
     switch (prop.type) {
       case types.number:
         return { min: prop.min, max: prop.max };
       case types.file: {
-        const isValid =
-          component._object && component._object.resourcesValidation
-            ? component._object.resourcesValidation[prop.name]
-            : true;
         return {
           openFileDialog: this.props.openFileDialog,
-          filters: prop.filters,
-          isValid: isValid
+          filters: prop.filters
         };
       }
       default:
@@ -247,7 +242,7 @@ class PropertiesPanelContainer extends Component {
                   {componentTypeMappings.get(prop.type)(
                     component.props[prop.name],
                     this.onChangeComponent.bind(null, component, prop.name),
-                    this.getExtras(prop, component)
+                    this.getExtras(prop)
                   )}
                 </InputGroup>
               ))}

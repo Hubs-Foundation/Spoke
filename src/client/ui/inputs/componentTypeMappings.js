@@ -19,8 +19,8 @@ const componentTypeMappings = new Map([
   [types.boolean, (value, onChange) => <BooleanInput value={value} onChange={onChange} />],
   [
     types.file,
-    (value, onChange, { openFileDialog, filters, isValid }) => (
-      <FileInput {...{ value, onChange, openFileDialog, filters, isValid }} />
+    (fileObj, onChange, { openFileDialog, filters }) => (
+      <FileInput {...{ fileObj, onChange, openFileDialog, filters }} />
     )
   ]
 ]);
