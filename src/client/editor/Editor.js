@@ -644,7 +644,7 @@ export default class Editor {
   }
 
   deleteSelectedObject() {
-    if (this.selected) {
+    if (this.selected && this.selected.parent) {
       this.deleteObject(this.selected);
       return true;
     }
@@ -676,7 +676,11 @@ export default class Editor {
   }
 
   duplicateSelectedObject() {
-    this.duplicateObject(this.selected);
+    if (this.selected && this.selected.parent) {
+      this.duplicateObject(this.selected);
+      return true;
+    }
+    return false;
   }
 
   clear() {
