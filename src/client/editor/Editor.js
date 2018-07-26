@@ -347,17 +347,26 @@ export default class Editor {
   addObject(object, parent) {
     this.addComponent(object, "transform");
 
-    let duplicateNameCount = this._duplicateNameCounters.get(object.name);
-    if (duplicateNameCount !== undefined) {
-      duplicateNameCount++;
-      this._duplicateNameCounters.set(object.name, duplicateNameCount);
-      object.name += "_" + duplicateNameCount;
-    } else {
-      this._duplicateNameCounters.set(object.name, 0);
-    }
-
     object.userData._saveParent = true;
     object.traverse(child => {
+      let cacheName = child.name;
+
+      const match = child.name.match(/(.*)_\d$/);
+
+      if (match) {
+        cacheName = match[1];
+      }
+
+      let duplicateNameCount = this._duplicateNameCounters.get(cacheName);
+
+      if (duplicateNameCount !== undefined) {
+        duplicateNameCount++;
+        this._duplicateNameCounters.set(cacheName, duplicateNameCount);
+        child.name = cacheName + "_" + duplicateNameCount;
+      } else {
+        this._duplicateNameCounters.set(cacheName, 0);
+      }
+
       if (child.material !== undefined) this.addMaterial(child.material);
       this.addHelper(child, object);
     });
