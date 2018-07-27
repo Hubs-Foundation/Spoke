@@ -13,7 +13,7 @@ import AddObjectCommand from "../../editor/commands/AddObjectCommand";
 import MoveObjectCommand from "../../editor/commands/MoveObjectCommand";
 import THREE from "../../vendor/three";
 import SceneReferenceComponent from "../../editor/components/SceneReferenceComponent";
-import { last } from "../../utils";
+import { last, getSrcObject } from "../../utils";
 import SnackBar from "../SnackBar";
 import ReactTooltip from "react-tooltip";
 
@@ -117,7 +117,8 @@ class HierarchyPanelContainer extends Component {
   };
 
   onEditPrefab = (object, refComponent) => {
-    this.props.editor.editScenePrefab(object, refComponent.getProperty("src"));
+    const path = getSrcObject(refComponent.getProperty("src")).path;
+    this.props.editor.editScenePrefab(object, path);
   };
 
   onDeleteSelected = e => {

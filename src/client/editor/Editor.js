@@ -10,7 +10,7 @@ import SceneReferenceComponent from "./components/SceneReferenceComponent";
 import { loadScene, loadSerializedScene, serializeScene, exportScene } from "./SceneLoader";
 import DirectionalLightComponent from "./components/DirectionalLightComponent";
 import AmbientLightComponent from "./components/AmbientLightComponent";
-import { last } from "../utils";
+import { last, getSrcObject } from "../utils";
 
 /**
  * @author mrdoob / http://mrdoob.com/
@@ -585,6 +585,7 @@ export default class Editor {
       result = component.updateProperty(propertyName, value);
 
       if (componentName === SceneReferenceComponent.componentName && propertyName === "src") {
+        result = component.updateProperty(propertyName, getSrcObject(value));
         this._removeChildren(object);
         this._loadSceneReference(value.path, object)
           .then(() => {
