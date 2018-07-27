@@ -27,18 +27,19 @@ function PropertyGroup(props) {
   const renderSaveButtons = () => {
     if (!saveable) return;
     const srcStatus = {
-      class: src.isValid ? styles.src : styles.invalidSrc,
-      tip: src.isValid ? null : "Cannot find the file.",
-      type: src.isValid ? null : "error"
+      class: src && src.isValid ? styles.src : styles.invalidSrc,
+      tip: src && src.isValid ? null : "Cannot find the file.",
+      type: src && src.isValid ? null : "error"
     };
+    const path = src && src.path ? src.path : "";
     return (
       <div>
         <span className={srcStatus.class} data-tip={srcStatus.tip} data-type={srcStatus.type}>
-          {src.path && project.getRelativeURI(src.path)}
+          {path && project.getRelativeURI(path)}
           <ReactTooltip />
         </span>
         <div className={styles.saveButtons}>
-          {src.path && <Button onClick={saveHandler}>Save</Button>}
+          {path && <Button onClick={saveHandler}>Save</Button>}
           <Button onClick={saveAsHandler}>Save As...</Button>
           <Button onClick={loadHandler}>Load...</Button>
         </div>
