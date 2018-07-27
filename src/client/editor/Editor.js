@@ -95,6 +95,8 @@ export default class Editor {
     this.helpers = initialSceneInfo.helpers;
     this.objects = initialSceneInfo.objects;
 
+    this._prefabBeingEdited = null;
+
     this.signals.sceneGraphChanged.add(() => {
       this.sceneInfo.modified = true;
       this.signals.sceneModified.dispatch();
@@ -164,13 +166,26 @@ export default class Editor {
   //
 
   popScene() {
+    const poppedUri = this.sceneInfo.uri;
+
+    this.deselect();
+
     this.scenes.pop();
+
     this.sceneInfo = last(this.scenes);
     this.scene = this.sceneInfo.scene;
     this.helperScene = this.sceneInfo.helperScene;
     this.helpers = this.sceneInfo.helpers;
     this.objects = this.sceneInfo.objects;
-    this.deselect();
+
+    if (poppedUri) {
+      const sceneRefComponentName = SceneReferenceComponent.componentName;
+      this.updateComponentProperty(this._prefabBeingEdited, sceneRefComponentName, "src", poppedUri);
+      this._prefabBeingEdited.name = last(poppedUri.split("/"));
+    }
+
+    this._prefabBeingEdited = null;
+
     this.signals.sceneSet.dispatch();
   }
 
@@ -178,7 +193,8 @@ export default class Editor {
     this.sceneInfo.uri = uri;
   }
 
-  editScenePrefab(uri) {
+  editScenePrefab(object, uri) {
+    this._prefabBeingEdited = object;
     this._loadScene(uri, true);
   }
 
@@ -351,7 +367,7 @@ export default class Editor {
     object.traverse(child => {
       let cacheName = child.name;
 
-      const match = child.name.match(/(.*)_\d$/);
+      const match = child.name.match(/(.*)_\d+$/);
 
       if (match) {
         cacheName = match[1];
@@ -406,8 +422,6 @@ export default class Editor {
       this.removeHelper(child);
       this._removeSceneRefDependency(child);
     });
-
-    this._addedNames.delete(object.name);
 
     this.signals.objectRemoved.dispatch(object);
     this.signals.sceneGraphChanged.dispatch();
