@@ -1,5 +1,5 @@
 import THREE from "../vendor/three";
-import { Components, saveableComponentNames } from "./components";
+import { Components } from "./components";
 import SceneReferenceComponent from "./components/SceneReferenceComponent";
 import ConflictHandler from "./ConflictHandler";
 import StandardMaterialComponent from "../editor/components/StandardMaterialComponent";

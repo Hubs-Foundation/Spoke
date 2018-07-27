@@ -196,14 +196,15 @@ class HierarchyPanelContainer extends Component {
 
   renderHierarchyNodeMenu = props => {
     const node = props.trigger;
-    const refComponent =
-      node && this.props.editor.getComponent(node.object, SceneReferenceComponent.componentName);
+    const refComponent = node && this.props.editor.getComponent(node.object, SceneReferenceComponent.componentName);
     const hasParent = node && node.object.parent;
     return (
       <ContextMenu id="hierarchy-node-menu">
         <MenuItem onClick={this.onAddNode}>Add Node</MenuItem>
         {hasParent && <MenuItem onClick={this.onDuplicateNode}>Duplicate</MenuItem>}
-        {refComponent && <MenuItem onClick={this.onEditPrefab.bind(null, node.object, refComponent)}>Edit Prefab</MenuItem>}
+        {refComponent && (
+          <MenuItem onClick={this.onEditPrefab.bind(null, node.object, refComponent)}>Edit Prefab</MenuItem>
+        )}
         {hasParent && <MenuItem onClick={this.onDeleteNode}>Delete</MenuItem>}
       </ContextMenu>
     );
