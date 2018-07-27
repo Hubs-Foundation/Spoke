@@ -21,13 +21,6 @@ export default class BaseComponent {
     this.props[propertyName] = value;
   }
 
-  updateResourceValidation(target, value) {
-    const resourcesValidation = !this._object.resourcesValidation ? {} : this._object.resourcesValidation;
-    resourcesValidation[target] = value;
-    //this.updateProperty("_resourcesValidation", resourcesValidation);
-    this._object.resourcesValidation = resourcesValidation;
-  }
-
   static getComponent(node) {
     if (!node.userData._components) return null;
 
