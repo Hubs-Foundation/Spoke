@@ -2,6 +2,7 @@ import SaveableComponent from "./SaveableComponent";
 import { types, getFilePath } from "./utils";
 import THREE from "../../vendor/three";
 import envMapURL from "../../assets/envmap.jpg";
+import { getSrcObject } from "../../utils";
 
 const imageFilters = [".jpg", ".png"];
 const textureLoader = new THREE.TextureLoader();
@@ -136,6 +137,11 @@ export default class StandardMaterialComponent extends SaveableComponent {
 
   static inflate(node, _props) {
     const component = this._getOrCreateComponent(node, _props, node.material || null);
+    component.props.baseColorTexture = getSrcObject(component.props.baseColorTexture);
+    component.props.normalTexture = getSrcObject(component.props.normalTexture);
+    component.props.metallicRoughnessTexture = getSrcObject(component.props.metallicRoughnessTexture);
+    component.props.emissiveTexture = getSrcObject(component.props.emissiveTexture);
+    component.props.occlusionTexture = getSrcObject(component.props.occlusionTexture);
     if (node.material) {
       node.material.envMap = envMap;
       node.material.needsUpdate = true;

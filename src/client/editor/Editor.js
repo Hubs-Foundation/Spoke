@@ -562,9 +562,8 @@ export default class Editor {
       result = component.updateProperty(propertyName, value);
 
       if (componentName === SceneReferenceComponent.componentName && propertyName === "src") {
-        result = component.updateProperty(propertyName, { path: value, isValid: true });
         this._removeChildren(object);
-        this._loadSceneReference(value, object)
+        this._loadSceneReference(value.path, object)
           .then(() => {
             this.deselect();
             this.select(object);
