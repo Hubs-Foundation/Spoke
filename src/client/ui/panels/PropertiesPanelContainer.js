@@ -125,7 +125,7 @@ class PropertiesPanelContainer extends Component {
         src => {
           component.src = src;
           component.shouldSave = true;
-          this.props.project.writeJSON(component.src, component.props);
+          this.props.project.writeJSON(component.src.path, component.props);
           component.modified = false;
           this.props.editor.signals.objectChanged.dispatch(this.state.object);
         },
@@ -137,7 +137,7 @@ class PropertiesPanelContainer extends Component {
         }
       );
     } else {
-      this.props.project.writeJSON(component.src, component.props);
+      this.props.project.writeJSON(component.src.path, component.props);
       component.modified = false;
       this.props.editor.signals.objectChanged.dispatch(this.state.object);
     }
@@ -149,7 +149,7 @@ class PropertiesPanelContainer extends Component {
         component.src = src;
         component.shouldSave = true;
         component.modified = false;
-        component.constructor.inflate(this.state.object, await this.props.project.readJSON(component.src));
+        component.constructor.inflate(this.state.object, await this.props.project.readJSON(component.src.path));
         this.props.editor.signals.objectChanged.dispatch(this.state.object);
       },
       {
@@ -164,8 +164,12 @@ class PropertiesPanelContainer extends Component {
     switch (prop.type) {
       case types.number:
         return { min: prop.min, max: prop.max };
-      case types.file:
-        return { openFileDialog: this.props.openFileDialog, filters: prop.filters };
+      case types.file: {
+        return {
+          openFileDialog: this.props.openFileDialog,
+          filters: prop.filters
+        };
+      }
       default:
         null;
     }

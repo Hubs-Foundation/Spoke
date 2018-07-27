@@ -10,7 +10,7 @@ import SceneReferenceComponent from "./components/SceneReferenceComponent";
 import { loadScene, loadSerializedScene, serializeScene, exportScene } from "./SceneLoader";
 import DirectionalLightComponent from "./components/DirectionalLightComponent";
 import AmbientLightComponent from "./components/AmbientLightComponent";
-import { last } from "../utils";
+import { last, getSrcObject } from "../utils";
 
 /**
  * @author mrdoob / http://mrdoob.com/
@@ -325,7 +325,7 @@ export default class Editor {
     const sceneRefComponent = this.getComponent(object, SceneReferenceComponent.componentName);
 
     if (sceneRefComponent) {
-      const dependencies = this.fileDependencies.get(sceneRefComponent.getProperty("src"));
+      const dependencies = this.fileDependencies.get(sceneRefComponent.getProperty("src").path);
 
       if (dependencies) {
         dependencies.delete(object);
@@ -500,7 +500,13 @@ export default class Editor {
       component = this.components.get(componentName).inflate(object, props);
 
       if (componentName === SceneReferenceComponent.componentName && props && props.src) {
-        this._loadSceneReference(props.src, object);
+        this._loadSceneReference(props.src.path, object)
+          .then(() => {
+            this._updateResourceValidation(object, component, "src", true);
+          })
+          .catch(() => {
+            this._updateResourceValidation(object, component, "src", false);
+          });
       }
     } else {
       component = {
@@ -579,14 +585,17 @@ export default class Editor {
       result = component.updateProperty(propertyName, value);
 
       if (componentName === SceneReferenceComponent.componentName && propertyName === "src") {
+        result = component.updateProperty(propertyName, getSrcObject(value));
         this._removeChildren(object);
-        this._loadSceneReference(value, object)
+        this._loadSceneReference(component.props.src.path, object)
           .then(() => {
             this.deselect();
             this.select(object);
+            this._updateResourceValidation(object, component, propertyName, true);
           })
           .catch(() => {
             // TODO Show warning on property when this fails.
+            this._updateResourceValidation(object, component, propertyName, false);
           });
       }
     } else {
@@ -597,6 +606,11 @@ export default class Editor {
   }
 
   //
+  _updateResourceValidation(object, component, res, value) {
+    //component.updateResourceValidation(res, value);
+    component.props.src.isValid = value;
+    this.signals.objectChanged.dispatch(object);
+  }
 
   getObjectMaterial(object, slot) {
     let material = object.material;

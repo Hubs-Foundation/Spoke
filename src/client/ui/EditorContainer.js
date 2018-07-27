@@ -16,6 +16,7 @@ import AssetExplorerPanelContainer from "./panels/AssetExplorerPanelContainer";
 import { withProject } from "./contexts/ProjectContext";
 import { withEditor } from "./contexts/EditorContext";
 import { DialogContextProvider } from "./contexts/DialogContext";
+import { OptionDialog } from "./dialogs/OptionDialog";
 import styles from "../common.scss";
 
 class EditorContainer extends Component {
@@ -225,7 +226,7 @@ class EditorContainer extends Component {
           onCancel: this.onCloseModal,
           onConfirm: filePath => {
             this.setState({ openModal: null });
-            callback(filePath);
+            callback({ path: filePath, isValid: true });
           },
           ...props
         }
@@ -367,9 +368,38 @@ class EditorContainer extends Component {
     if (this.props.editor.sceneInfo.uri === uri) return;
     if (!this.confirmSceneChange()) return;
 
-    this.props.editor.openRootScene(uri).catch(e => {
-      console.error(e);
-    });
+    this.props.editor
+      .openRootScene(uri)
+      .then(scene => {
+        document.title = `Hubs Editor - ${scene.name}`;
+      })
+      .catch(e => {
+        this.setState({
+          openModal: {
+            component: OptionDialog,
+            shouldCloseOnOverlayClick: false,
+            props: {
+              title: "Error",
+              message: `${e.message}:
+              ${e.url}.
+               Please make sure the file exists and then press "Resolved" to reload the scene.`,
+              options: [
+                {
+                  label: "Resolved",
+                  onClick: () => {
+                    this.setState({ openModal: null });
+                    this.onOpenScene(uri);
+                  }
+                }
+              ],
+              cancelLabel: "Cancel",
+              onCancel: () => {
+                this.setState({ openModal: null });
+              }
+            }
+          }
+        });
+      });
   };
 
   renderPanel = (panelId, path) => {
