@@ -4,10 +4,10 @@ export function last(arr) {
 }
 
 export function getSrcObject(src) {
-  if (src instanceof Object) {
+  if (src instanceof Object || typeof src === "object") {
     return src;
   }
-  if (src instanceof String) {
+  if (src instanceof String || typeof src === "string") {
     return {
       path: src,
       isValid: true
