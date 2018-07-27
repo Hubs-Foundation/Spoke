@@ -17,7 +17,7 @@ import PanelToolbar from "./PanelToolbar";
 import { withProject } from "./contexts/ProjectContext";
 import { withEditor } from "./contexts/EditorContext";
 import { DialogContextProvider } from "./contexts/DialogContext";
-import SystemMessageModalContainer from "./modals/SystemMessageModalContainer";
+import { OptionDialog } from "./dialogs/OptionDialog";
 import styles from "../common.scss";
 
 class EditorContainer extends Component {
@@ -149,11 +149,6 @@ class EditorContainer extends Component {
         delete: this.onDelete,
         save: this.onSave,
         saveAs: this.onSaveAs
-      },
-      systemMessage: {
-        messageType: null,
-        isOpen: false,
-        onRequestClose: null
       }
     };
   }
@@ -381,28 +376,28 @@ class EditorContainer extends Component {
       })
       .catch(e => {
         this.setState({
-          systemMessage: {
-            messageType: "error",
-            messageContent: [e],
-            isOpen: true,
-            onRequestClose: () => {
-              this.setState({ systemMessage: null });
-            },
-            actions: [
-              {
-                name: "Cancel",
-                method: () => {
-                  this.setState({ systemMessage: null });
+          openModal: {
+            component: OptionDialog,
+            shouldCloseOnOverlayClick: false,
+            props: {
+              title: "Error",
+              message: `${e.message}:
+              ${e.url}.
+               Please make sure the file exists and then press "Resolved" to reload the scene.`,
+              options: [
+                {
+                  label: "Resolved",
+                  onClick: () => {
+                    this.setState({ openModal: null });
+                    this.onOpenScene(uri);
+                  }
                 }
-              },
-              {
-                name: "Resolved",
-                method: () => {
-                  this.onOpenScene(uri);
-                  this.setState({ systemMessage: null });
-                }
+              ],
+              cancelLabel: "Cancel",
+              onCancel: () => {
+                this.setState({ openModal: null });
               }
-            ]
+            }
           }
         });
       });
@@ -419,7 +414,7 @@ class EditorContainer extends Component {
   };
 
   render() {
-    const { openModal, menus, systemMessage } = this.state;
+    const { openModal, menus } = this.state;
 
     const { initialPanels } = this.props;
 
@@ -444,7 +439,6 @@ class EditorContainer extends Component {
             >
               {openModal && <openModal.component {...openModal.props} />}
             </Modal>
-            <SystemMessageModalContainer {...systemMessage} />
           </DialogContextProvider>
         </HotKeys>
       </DragDropContextProvider>
