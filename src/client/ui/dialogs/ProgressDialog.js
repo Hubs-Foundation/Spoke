@@ -1,12 +1,12 @@
 import React from "react";
 import PropTypes from "prop-types";
-import styles from "./ProgressDialog.scss";
+import styles from "./dialog.scss";
 import Button from "../Button";
 import Header from "../Header";
 
 export default function ProgressDialog({ title, message, cancelable, onCancel, cancelLabel, hideDialog }) {
   return (
-    <div className={styles.progressDialog}>
+    <div className={styles.dialogContainer}>
       <Header title={title} />
       <div className={styles.content}>{message}</div>
       {cancelable && (

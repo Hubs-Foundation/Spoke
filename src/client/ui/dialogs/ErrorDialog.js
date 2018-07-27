@@ -1,12 +1,12 @@
 import React from "react";
 import PropTypes from "prop-types";
-import styles from "./ErrorDialog.scss";
+import styles from "./dialog.scss";
 import Button from "../Button";
 import Header from "../Header";
 
 export default function ErrorDialog({ title, message, confirmLabel, hideDialog }) {
   return (
-    <div className={styles.errorDialog}>
+    <div className={styles.dialogContainer}>
       <Header title={title} />
       <div className={styles.content}>{message}</div>
       <div className={styles.bottom}>

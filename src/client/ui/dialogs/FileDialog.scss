@@ -1,9 +1,3 @@
-:local(.fileDialog) {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-}
-
 :local(.content) {
   display: flex;
   flex: 1;
@@ -26,21 +20,6 @@
   display: flex;
   flex: 1;
   overflow-y: auto;
-}
-
-:local(.bottom) {
-  margin: 8px 0;
-  display: flex;
-  flex-direction: row;
-  justify-content: flex-end;
-
-   > * {
-    margin-right: 8px;
-
-    &:first-child {
-      margin-left: 8px;
-    }
-  }
 }
 
 :local(.fileNameLabel) {

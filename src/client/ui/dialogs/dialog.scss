@@ -1,13 +1,24 @@
-:local(.errorDialog) {
+@import "../../theme.scss";
+
+:local(.dialogContainer) {
   display: flex;
   flex-direction: column;
   flex: 1;
+  background-color: $panel;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 14px;
+  color: $text;
+  max-width: 800px;
+  margin: 100px;
 }
 
 :local(.content) {
   display: flex;
   flex: 1;
   flex-direction: row;
+  // This forces firefox to give the contents a proper height.
+  overflow: hidden;
+  padding: 8px;
 }
 
 :local(.bottom) {

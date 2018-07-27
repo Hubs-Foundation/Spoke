@@ -5,6 +5,7 @@ import "../../vendor/react-ui-tree/index.scss";
 import classNames from "classnames";
 import { withProject } from "../contexts/ProjectContext";
 import IconGrid from "../IconGrid";
+import dialogStyles from "./dialog.scss";
 import styles from "./FileDialog.scss";
 import DraggableFile from "../DraggableFile";
 import { ContextMenu, MenuItem, ContextMenuTrigger } from "react-contextmenu";
@@ -246,7 +247,7 @@ class FileDialog extends Component {
     const selectedFile = this.state.selectedFile;
 
     return (
-      <div className={styles.fileDialog}>
+      <div className={dialogStyles.dialogContainer}>
         <Header title={this.props.title} />
         <div className={styles.content}>
           <div className={styles.leftColumn}>
@@ -305,7 +306,7 @@ class FileDialog extends Component {
             <MenuItem onClick={this.onNewFolder}>New Folder</MenuItem>
           </ContextMenu>
         </div>
-        <div className={styles.bottom}>
+        <div className={dialogStyles.bottom}>
           <div className={styles.fileNameLabel}>File Name:</div>
           <StringInput value={this.state.fileName} onChange={this.onChangeFileName} />
           <Button onClick={this.props.onCancel || this.props.hideDialog}>Cancel</Button>
