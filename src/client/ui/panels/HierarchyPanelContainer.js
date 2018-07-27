@@ -86,7 +86,7 @@ class HierarchyPanelContainer extends Component {
     this.props.editor.execute(new MoveObjectCommand(object, newParent.object, newBefore));
   };
 
-  onMouseUpNode = (e, node) => {
+  onMouseDownNode = (e, node) => {
     if (this.clicked === node.object) {
       this.props.editor.focusById(node.object.id);
       return;
@@ -116,11 +116,12 @@ class HierarchyPanelContainer extends Component {
     this.props.editor.duplicateObject(node.object);
   };
 
-  onEditPrefab = refComponent => {
-    this.props.editor.editScenePrefab(refComponent.getProperty("src"));
+  onEditPrefab = (object, refComponent) => {
+    this.props.editor.editScenePrefab(object, refComponent.getProperty("src"));
   };
 
-  onDeleteSelected = () => {
+  onDeleteSelected = e => {
+    e.preventDefault();
     this.props.editor.deleteSelectedObject();
   };
 
@@ -160,8 +161,7 @@ class HierarchyPanelContainer extends Component {
           "warning-root": node.object.userData._isDuplicateRoot ? node.object.userData._duplicate : false,
           disabled: isMissingChild || isDuplicateChild
         })}
-        onMouseUp={disableEditing ? null : e => this.onMouseUpNode(e, node)}
-        onMouseDown={disableEditing ? e => e.stopPropagation() : null}
+        onMouseDown={disableEditing ? e => e.stopPropagation() : e => this.onMouseDownNode(e, node)}
       >
         <ContextMenuTrigger
           attributes={{ className: styles.treeNode }}
@@ -195,14 +195,17 @@ class HierarchyPanelContainer extends Component {
   };
 
   renderHierarchyNodeMenu = props => {
-    const refComponent =
-      props.trigger && this.props.editor.getComponent(props.trigger.object, SceneReferenceComponent.componentName);
+    const node = props.trigger;
+    const refComponent = node && this.props.editor.getComponent(node.object, SceneReferenceComponent.componentName);
+    const hasParent = node && node.object.parent;
     return (
       <ContextMenu id="hierarchy-node-menu">
         <MenuItem onClick={this.onAddNode}>Add Node</MenuItem>
-        <MenuItem onClick={this.onDuplicateNode}>Duplicate</MenuItem>
-        {refComponent && <MenuItem onClick={this.onEditPrefab.bind(null, refComponent)}>Edit Prefab</MenuItem>}
-        <MenuItem onClick={this.onDeleteNode}>Delete</MenuItem>
+        {hasParent && <MenuItem onClick={this.onDuplicateNode}>Duplicate</MenuItem>}
+        {refComponent && (
+          <MenuItem onClick={this.onEditPrefab.bind(null, node.object, refComponent)}>Edit Prefab</MenuItem>
+        )}
+        {hasParent && <MenuItem onClick={this.onDeleteNode}>Delete</MenuItem>}
       </ContextMenu>
     );
   };

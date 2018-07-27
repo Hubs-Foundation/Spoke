@@ -138,6 +138,8 @@ class PropertiesPanelContainer extends Component {
       );
     } else {
       this.props.project.writeJSON(component.src.path, component.props);
+      component.modified = false;
+      this.props.editor.signals.objectChanged.dispatch(this.state.object);
     }
   };
 
@@ -223,6 +225,7 @@ class PropertiesPanelContainer extends Component {
             return <PropertyGroup name={getDisplayName(component.name)} key={component.name} />;
           }
 
+          const saveable = component instanceof SaveableComponent;
           return (
             <PropertyGroup
               name={getDisplayName(component.name)}
@@ -230,13 +233,14 @@ class PropertiesPanelContainer extends Component {
               canRemove={componentDefinition.canRemove}
               removeHandler={this.onRemoveComponent.bind(this, component.name)}
               src={component.src}
-              saveable={component instanceof SaveableComponent}
+              saveable={saveable}
+              modified={component.modified}
               saveHandler={this.onSaveComponent.bind(this, component, false)}
               saveAsHandler={this.onSaveComponent.bind(this, component, true)}
               loadHandler={this.onLoadComponent.bind(this, component)}
             >
               {componentDefinition.schema.map(prop => (
-                <InputGroup name={getDisplayName(prop.name)} key={prop.name}>
+                <InputGroup name={getDisplayName(prop.name)} key={prop.name} disabled={saveable && !component.src}>
                   {componentTypeMappings.get(prop.type)(
                     component.props[prop.name],
                     this.onChangeComponent.bind(null, component, prop.name),

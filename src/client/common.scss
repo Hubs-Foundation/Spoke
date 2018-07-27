@@ -16,3 +16,8 @@
   -ms-user-select: none;
   user-select: none;
 }
+
+:local(.disabled) {
+  pointer-events: none;
+  opacity: 0.3;
+}

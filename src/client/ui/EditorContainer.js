@@ -13,7 +13,6 @@ import ViewportPanelToolbarContainer from "./panels/ViewportPanelToolbarContaine
 import HierarchyPanelContainer from "./panels/HierarchyPanelContainer";
 import PropertiesPanelContainer from "./panels/PropertiesPanelContainer";
 import AssetExplorerPanelContainer from "./panels/AssetExplorerPanelContainer";
-import PanelToolbar from "./PanelToolbar";
 import { withProject } from "./contexts/ProjectContext";
 import { withEditor } from "./contexts/EditorContext";
 import { DialogContextProvider } from "./contexts/DialogContext";
@@ -57,7 +56,7 @@ class EditorContainer extends Component {
           component: HierarchyPanelContainer,
           windowProps: {
             title: "Hierarchy",
-            toolbarControls: PanelToolbar,
+            toolbarControls: [],
             draggable: false
           }
         },
@@ -74,7 +73,7 @@ class EditorContainer extends Component {
           props: { openFileDialog: this.openFileDialog },
           windowProps: {
             title: "Properties",
-            toolbarControls: PanelToolbar,
+            toolbarControls: [],
             draggable: false
           }
         },
@@ -82,7 +81,7 @@ class EditorContainer extends Component {
           component: AssetExplorerPanelContainer,
           windowProps: {
             title: "Asset Explorer",
-            toolbarControls: PanelToolbar,
+            toolbarControls: [],
             draggable: false
           }
         }
