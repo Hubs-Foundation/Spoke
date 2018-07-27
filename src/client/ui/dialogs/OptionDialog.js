@@ -36,7 +36,7 @@ OptionDialog.propTypes = {
   ),
   cancelLabel: PropTypes.string,
   onCancel: PropTypes.func,
-  hideDialog: PropTypes.func
+  hideDialog: PropTypes.func.isRequired
 };
 
 OptionDialog.defaultProps = {

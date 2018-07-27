@@ -5,7 +5,7 @@ import "../../vendor/react-ui-tree/index.scss";
 import classNames from "classnames";
 import { withProject } from "../contexts/ProjectContext";
 import IconGrid from "../IconGrid";
-import styles from "./FileDialogModalContainer.scss";
+import styles from "./FileDialog.scss";
 import DraggableFile from "../DraggableFile";
 import { ContextMenu, MenuItem, ContextMenuTrigger } from "react-contextmenu";
 import Button from "../Button";
@@ -45,7 +45,7 @@ function getSelectedDirectory(tree, uri) {
   return null;
 }
 
-class FileDialogContainer extends Component {
+class FileDialog extends Component {
   static propTypes = {
     title: PropTypes.string,
     defaultFileName: PropTypes.string,
@@ -54,7 +54,8 @@ class FileDialogContainer extends Component {
     filters: PropTypes.arrayOf(PropTypes.string),
     extension: PropTypes.string,
     onConfirm: PropTypes.func,
-    onCancel: PropTypes.func
+    onCancel: PropTypes.func,
+    hideDialog: PropTypes.func.isRequired
   };
 
   static defaultProps = {
@@ -245,7 +246,7 @@ class FileDialogContainer extends Component {
     const selectedFile = this.state.selectedFile;
 
     return (
-      <div className={styles.fileDialogModalContainer}>
+      <div className={styles.fileDialog}>
         <Header title={this.props.title} />
         <div className={styles.content}>
           <div className={styles.leftColumn}>
@@ -307,7 +308,7 @@ class FileDialogContainer extends Component {
         <div className={styles.bottom}>
           <div className={styles.fileNameLabel}>File Name:</div>
           <StringInput value={this.state.fileName} onChange={this.onChangeFileName} />
-          <Button onClick={this.props.onCancel}>Cancel</Button>
+          <Button onClick={this.props.onCancel || this.props.hideDialog}>Cancel</Button>
           <Button onClick={this.onConfirm}>{this.props.confirmButtonLabel}</Button>
         </div>
       </div>
@@ -315,4 +316,4 @@ class FileDialogContainer extends Component {
   }
 }
 
-export default withProject(FileDialogContainer);
+export default withProject(FileDialog);

@@ -1,69 +1,14 @@
-import React, { Component } from "react";
-import PropTypes from "prop-types";
-import Modal from "react-modal";
+import React from "react";
 
 const DialogContext = React.createContext({
-  component: null,
-  props: {},
   showDialog: () => {},
   hideDialog: () => {}
 });
 
-export class DialogContextProvider extends Component {
-  static propTypes = {
-    children: PropTypes.node
-  };
+export const DialogContextProvider = DialogContext.Provider;
 
-  showDialog = (component, props = {}) => {
-    this.setState({
-      component,
-      props
-    });
-  };
-
-  hideDialog = () => {
-    this.setState({
-      component: null,
-      props: {}
-    });
-  };
-
-  state = {
-    component: null,
-    props: {},
-    showDialog: this.showDialog,
-    hideDialog: this.hideDialog
-  };
-
-  render() {
-    const { component: DialogComponent, props, hideDialog: onClose } = this.state;
-
-    return (
-      <DialogContext.Provider value={this.state}>
-        {this.props.children}
-        <Modal
-          ariaHideApp={false}
-          isOpen={!!DialogComponent}
-          onRequestClose={this.hideDialog}
-          shouldCloseOnOverlayClick={true}
-          className="Modal"
-          overlayClassName="Overlay"
-        >
-          {DialogComponent && <DialogComponent {...props} onClose={onClose} />}
-        </Modal>
-      </DialogContext.Provider>
-    );
-  }
-}
-
-export function withDialog(WrappedComponent) {
+export function withDialog(DialogComponent) {
   return function DialogContextComponent(props) {
-    return (
-      <DialogContext.Consumer>
-        {({ showDialog, hideDialog }) => (
-          <WrappedComponent {...props} showDialog={showDialog} hideDialog={hideDialog} />
-        )}
-      </DialogContext.Consumer>
-    );
+    return <DialogContext.Consumer>{context => <DialogComponent {...props} {...context} />}</DialogContext.Consumer>;
   };
 }

@@ -7,7 +7,6 @@ import { HotKeys } from "react-hotkeys";
 import Modal from "react-modal";
 import { MosaicWithoutDragDropContext } from "react-mosaic-component";
 import MenuBarContainer from "./menus/MenuBarContainer";
-import FileDialogModalContainer from "./modals/FileDialogModalContainer";
 import ViewportPanelContainer from "./panels/ViewportPanelContainer";
 import ViewportPanelToolbarContainer from "./panels/ViewportPanelToolbarContainer";
 import HierarchyPanelContainer from "./panels/HierarchyPanelContainer";
@@ -18,6 +17,9 @@ import { withProject } from "./contexts/ProjectContext";
 import { withEditor } from "./contexts/EditorContext";
 import { DialogContextProvider } from "./contexts/DialogContext";
 import styles from "../common.scss";
+import FileDialog from "./dialogs/FileDialog";
+import ProgressDialog from "./dialogs/ProgressDialog";
+import ErrorDialog from "./dialogs/ErrorDialog";
 
 class EditorContainer extends Component {
   static defaultProps = {
@@ -70,7 +72,6 @@ class EditorContainer extends Component {
         },
         properties: {
           component: PropertiesPanelContainer,
-          props: { openFileDialog: this.openFileDialog },
           windowProps: {
             title: "Properties",
             toolbarControls: PanelToolbar,
@@ -86,6 +87,8 @@ class EditorContainer extends Component {
           }
         }
       },
+      DialogComponent: null,
+      dialogProps: {},
       openModal: null,
       keyMap: {
         translateTool: "w",
@@ -194,6 +197,20 @@ class EditorContainer extends Component {
     this.props.editor.signals.windowResize.dispatch();
   };
 
+  showDialog = (DialogComponent, dialogProps = {}) => {
+    this.setState({
+      DialogComponent,
+      dialogProps
+    });
+  };
+
+  hideDialog = () => {
+    this.setState({
+      DialogComponent: null,
+      dialogProps: {}
+    });
+  };
+
   onCloseModal = () => {
     this.setState({
       openModal: null
@@ -217,31 +234,13 @@ class EditorContainer extends Component {
     }
   };
 
-  openFileDialog = (callback, props) => {
-    this.setState({
-      openModal: {
-        component: FileDialogModalContainer,
-        shouldCloseOnOverlayClick: true,
-        props: {
-          onCancel: this.onCloseModal,
-          onConfirm: filePath => {
-            this.setState({ openModal: null });
-            callback(filePath);
-          },
-          ...props
-        }
-      }
-    });
-  };
-
   openSaveAsDialog(onSave) {
-    this.openFileDialog(onSave, {
+    this.showDialog(FileDialog, {
       title: "Save scene as...",
       filters: [".scene"],
       extension: ".scene",
       confirmButtonLabel: "Save",
-      onConfirm: onSave,
-      onCancel: this.onCloseModal
+      onConfirm: onSave
     });
   }
 
@@ -261,6 +260,11 @@ class EditorContainer extends Component {
   };
 
   serializeAndSaveScene = async sceneURI => {
+    this.showDialog(ProgressDialog, {
+      title: "Saving Scene",
+      message: "Saving scene..."
+    });
+
     try {
       const serializedScene = this.props.editor.serializeScene(sceneURI);
       this.props.editor.ignoreNextSceneFileChange = true;
@@ -285,61 +289,73 @@ class EditorContainer extends Component {
       this.onSceneModified();
       this.setState({ openModal: null });
     } catch (e) {
-      throw e;
+      this.showDialog(ErrorDialog, {
+        title: "Error Saving Scene",
+        message: e.message
+      });
+      console.error(e);
     }
+
+    this.hideDialog();
   };
 
   onOpenExportModal = e => {
     e.preventDefault();
 
-    this.setState({
-      openModal: {
-        component: FileDialogModalContainer,
-        shouldCloseOnOverlayClick: true,
-        props: {
-          title: "Select the output directory",
-          confirmButtonLabel: "Export scene",
-          directory: true,
-          onConfirm: this.onExport,
-          onCancel: this.onCloseModal
-        }
-      }
+    this.showDialog(FileDialog, {
+      title: "Select the output directory",
+      confirmButtonLabel: "Export scene",
+      directory: true,
+      onConfirm: this.onExport
     });
   };
 
   onExport = async outputPath => {
-    // Export current editor scene using THREE.GLTFExporter
-    const { json, buffers, images } = await this.props.editor.exportScene();
+    this.showDialog(ProgressDialog, {
+      title: "Exporting Scene",
+      message: "Exporting scene..."
+    });
 
-    // Ensure the output directory exists
-    await this.props.project.mkdir(outputPath);
+    try {
+      // Export current editor scene using THREE.GLTFExporter
+      const { json, buffers, images } = await this.props.editor.exportScene();
 
-    // Write the .gltf file
-    const scene = this.props.editor.scene;
-    const gltfPath = outputPath + "/" + scene.name + ".gltf";
-    await this.props.project.writeJSON(gltfPath, json);
+      // Ensure the output directory exists
+      await this.props.project.mkdir(outputPath);
 
-    // Write .bin files
-    for (const [index, buffer] of buffers.entries()) {
-      if (buffer !== undefined) {
-        const bufferName = json.buffers[index].uri;
-        await this.props.project.writeBlob(outputPath + "/" + bufferName, buffer);
+      // Write the .gltf file
+      const scene = this.props.editor.scene;
+      const gltfPath = outputPath + "/" + scene.name + ".gltf";
+      await this.props.project.writeJSON(gltfPath, json);
+
+      // Write .bin files
+      for (const [index, buffer] of buffers.entries()) {
+        if (buffer !== undefined) {
+          const bufferName = json.buffers[index].uri;
+          await this.props.project.writeBlob(outputPath + "/" + bufferName, buffer);
+        }
       }
+
+      // Write image files
+      for (const [index, image] of images.entries()) {
+        if (image !== undefined) {
+          const imageName = json.images[index].uri;
+          await this.props.project.writeBlob(outputPath + "/" + imageName, image);
+        }
+      }
+
+      // Run optimizations on .gltf and overwrite any existing files
+      await this.props.project.optimizeScene(gltfPath, gltfPath);
+    } catch (e) {
+      this.showDialog(ErrorDialog, {
+        title: "Error Exporting Scene",
+        message: e.message
+      });
+
+      console.error(e);
     }
 
-    // Write image files
-    for (const [index, image] of images.entries()) {
-      if (image !== undefined) {
-        const imageName = json.images[index].uri;
-        await this.props.project.writeBlob(outputPath + "/" + imageName, image);
-      }
-    }
-
-    // Run optimizations on .gltf and overwrite any existing files
-    await this.props.project.optimizeScene(gltfPath, gltfPath);
-
-    // Close modal
-    this.setState({ openModal: null });
+    this.hideDialog();
   };
 
   onSceneModified = () => {
@@ -368,9 +384,22 @@ class EditorContainer extends Component {
     if (this.props.editor.sceneInfo.uri === uri) return;
     if (!this.confirmSceneChange()) return;
 
-    this.props.editor.openRootScene(uri).catch(e => {
-      console.error(e);
+    this.showDialog(ProgressDialog, {
+      title: "Opening Scene",
+      message: "Opening scene..."
     });
+
+    this.props.editor
+      .openRootScene(uri)
+      .then(() => {
+        this.hideDialog();
+      })
+      .catch(e => {
+        this.showDialog(ErrorDialog, {
+          title: "Error Opening Scene",
+          message: e.message
+        });
+      });
   };
 
   renderPanel = (panelId, path) => {
@@ -384,14 +413,16 @@ class EditorContainer extends Component {
   };
 
   render() {
-    const { openModal, menus } = this.state;
+    const { openModal, menus, DialogComponent, dialogProps } = this.state;
 
     const { initialPanels } = this.props;
+
+    const dialogContext = { showDialog: this.showDialog, hideDialog: this.hideDialog };
 
     return (
       <DragDropContextProvider backend={HTML5Backend}>
         <HotKeys keyMap={this.state.keyMap} handlers={this.state.globalHotKeyHandlers} className={styles.flexColumn}>
-          <DialogContextProvider>
+          <DialogContextProvider value={dialogContext}>
             <MenuBarContainer menus={menus} />
             <MosaicWithoutDragDropContext
               className="mosaic-theme"
@@ -408,6 +439,16 @@ class EditorContainer extends Component {
               overlayClassName="Overlay"
             >
               {openModal && <openModal.component {...openModal.props} />}
+            </Modal>
+            <Modal
+              ariaHideApp={false}
+              isOpen={!!DialogComponent}
+              onRequestClose={this.hideDialog}
+              shouldCloseOnOverlayClick={true}
+              className="Modal"
+              overlayClassName="Overlay"
+            >
+              {DialogComponent && <DialogComponent {...dialogProps} hideDialog={this.hideDialog} />}
             </Modal>
           </DialogContextProvider>
         </HotKeys>
