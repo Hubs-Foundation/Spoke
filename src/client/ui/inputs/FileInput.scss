@@ -16,8 +16,7 @@
 }
 
 :local(.invalidPath) {
-  border: 2px solid $red;
-  border-radius: 2px;
+  outline: 2px solid $red;
   color: $red;
   width: 100%;
   display: flex;
