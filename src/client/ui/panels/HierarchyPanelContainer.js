@@ -40,7 +40,9 @@ function updateCollapseStatus(node) {
   }
   node.object.userData._collapsed = node.collapsed;
   if (node.children) {
-    node.children.forEach(child => updateCollapseStatus(child));
+    for (const child of node.children) {
+      updateCollapseStatus(child);
+    }
   }
 }
 
