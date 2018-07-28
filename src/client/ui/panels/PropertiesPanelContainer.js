@@ -22,12 +22,14 @@ import { withEditor } from "../contexts/EditorContext";
 import { withProject } from "../contexts/ProjectContext";
 import { OptionDialog } from "../dialogs/OptionDialog";
 import { withDialog } from "../contexts/DialogContext";
+import FileDialog from "../dialogs/FileDialog";
+import ErrorDialog from "../dialogs/ErrorDialog";
+import ProgressDialog from "../dialogs/ProgressDialog";
 
 class PropertiesPanelContainer extends Component {
   static propTypes = {
     editor: PropTypes.object,
     project: PropTypes.object,
-    openFileDialog: PropTypes.func,
     showDialog: PropTypes.func.isRequired,
     hideDialog: PropTypes.func.isRequired
   };
@@ -119,43 +121,88 @@ class PropertiesPanelContainer extends Component {
     this.props.editor.execute(new RemoveComponentCommand(this.state.object, componentName));
   };
 
-  onSaveComponent = (component, saveAs) => {
+  onSaveComponent = async (component, saveAs) => {
     if (saveAs || !component.src) {
-      this.props.openFileDialog(
-        src => {
-          component.src = src;
-          component.shouldSave = true;
-          this.props.project.writeJSON(component.src, component.props);
-          component.modified = false;
-          this.props.editor.signals.objectChanged.dispatch(this.state.object);
-        },
-        {
-          filters: [component.fileExtension],
-          extension: component.fileExtension,
-          title: "Save material as...",
-          confirmButtonLabel: "Save"
+      this.props.showDialog(FileDialog, {
+        filters: [component.fileExtension],
+        extension: component.fileExtension,
+        title: "Save material as...",
+        confirmButtonLabel: "Save",
+        onConfirm: async src => {
+          let saved = false;
+
+          try {
+            setTimeout(() => {
+              if (saved) return;
+              this.showDialog(ProgressDialog, {
+                title: "Saving Material",
+                message: "Saving material..."
+              });
+            }, 100);
+
+            component.src = src;
+            component.shouldSave = true;
+            await this.props.project.writeJSON(component.src, component.props);
+            component.modified = false;
+            this.props.editor.signals.objectChanged.dispatch(this.state.object);
+            this.hideDialog();
+          } catch (e) {
+            this.showDialog(ErrorDialog, {
+              title: "Error saving material",
+              message: e.message
+            });
+          } finally {
+            saved = true;
+          }
         }
-      );
+      });
     } else {
-      this.props.project.writeJSON(component.src, component.props);
+      try {
+        await this.props.project.writeJSON(component.src, component.props);
+      } catch (e) {
+        console.error(e);
+        this.showDialog(ErrorDialog, {
+          title: "Error Saving Material",
+          message: e.message || "There was an error when saving the material."
+        });
+      }
     }
   };
 
   onLoadComponent = component => {
-    this.props.openFileDialog(
-      async src => {
-        component.src = src;
-        component.shouldSave = true;
-        component.modified = false;
-        component.constructor.inflate(this.state.object, await this.props.project.readJSON(component.src));
-        this.props.editor.signals.objectChanged.dispatch(this.state.object);
-      },
-      {
-        filters: [component.fileExtension],
-        title: "Load material...",
-        confirmButtonLabel: "Load"
+    this.props.showDialog(FileDialog, {
+      filters: [component.fileExtension],
+      title: "Load material...",
+      confirmButtonLabel: "Load",
+      onConfirm: async src => {
+        let loaded = false;
+
+        try {
+          setTimeout(() => {
+            if (loaded) return;
+            this.showDialog(ProgressDialog, {
+              title: "Loading Material",
+              message: "Loading material..."
+            });
+          }, 100);
+
+          component.src = src;
+          component.shouldSave = true;
+          component.modified = false;
+          component.constructor.inflate(this.state.object, await this.props.project.readJSON(component.src));
+          this.props.editor.signals.objectChanged.dispatch(this.state.object);
+          this.hideDialog();
+        } catch (e) {
+          console.error(e);
+          this.showDialog(ErrorDialog, {
+            title: "Error Loading Material",
+            message: e.message || "There was an error when loading the material."
+          });
+        } finally {
+          loaded = true;
+        }
       }
-    );
+    });
   };
 
   getExtras(prop) {
@@ -163,7 +210,7 @@ class PropertiesPanelContainer extends Component {
       case types.number:
         return { min: prop.min, max: prop.max };
       case types.file:
-        return { openFileDialog: this.props.openFileDialog, filters: prop.filters };
+        return { filters: prop.filters };
       default:
         null;
     }

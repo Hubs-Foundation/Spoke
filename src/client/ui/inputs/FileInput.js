@@ -3,16 +3,28 @@ import PropTypes from "prop-types";
 
 import styles from "./FileInput.scss";
 import Button from "../Button";
+import FileDialog from "../dialogs/FileDialog";
 import { withProject } from "../contexts/ProjectContext";
+import { withDialog } from "../contexts/DialogContext";
 
-function FileInput({ value, onChange, openFileDialog, filters, project }) {
+function FileInput({ value, onChange, showDialog, hideDialog, filters, project }) {
+  const onClick = () => {
+    showDialog(FileDialog, {
+      filters,
+      onConfirm: src => {
+        onChange(src);
+        hideDialog();
+      }
+    });
+  };
+
   return (
     <div className={styles.fileInput}>
       <input
         value={(value && project.getRelativeURI(value)) || ""}
         onChange={e => onChange(project.getAbsoluteURI(e.target.value))}
       />
-      <Button onClick={() => openFileDialog(onChange, { filters })}>...</Button>
+      <Button onClick={onClick}>...</Button>
     </div>
   );
 }
@@ -20,9 +32,10 @@ function FileInput({ value, onChange, openFileDialog, filters, project }) {
 FileInput.propTypes = {
   value: PropTypes.string,
   onChange: PropTypes.func,
-  openFileDialog: PropTypes.func,
+  showDialog: PropTypes.func.isRequired,
+  hideDialog: PropTypes.func.isRequired,
   filters: PropTypes.arrayOf(PropTypes.string),
-  project: PropTypes.object
+  project: PropTypes.object.isRequired
 };
 
 FileInput.defaultProps = {
@@ -30,4 +43,4 @@ FileInput.defaultProps = {
   onChange: () => {}
 };
 
-export default withProject(FileInput);
+export default withProject(withDialog(FileInput));

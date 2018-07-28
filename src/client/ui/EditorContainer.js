@@ -218,10 +218,18 @@ class EditorContainer extends Component {
   };
 
   onUndo = () => {
+    if (this.state.DialogComponent !== null) {
+      return;
+    }
+
     this.props.editor.undo();
   };
 
   onRedo = () => {
+    if (this.state.DialogComponent !== null) {
+      return;
+    }
+
     this.props.editor.redo();
   };
 
@@ -247,6 +255,10 @@ class EditorContainer extends Component {
   onSave = async e => {
     e.preventDefault();
 
+    if (this.state.DialogComponent !== null) {
+      return;
+    }
+
     if (!this.props.editor.sceneInfo.uri || this.props.editor.sceneInfo.uri.endsWith(".gltf")) {
       this.openSaveAsDialog(this.serializeAndSaveScene);
     } else {
@@ -256,16 +268,28 @@ class EditorContainer extends Component {
 
   onSaveAs = e => {
     e.preventDefault();
+
+    if (this.state.DialogComponent !== null) {
+      return;
+    }
+
     this.openSaveAsDialog(this.serializeAndSaveScene);
   };
 
   serializeAndSaveScene = async sceneURI => {
-    this.showDialog(ProgressDialog, {
-      title: "Saving Scene",
-      message: "Saving scene..."
-    });
+    let saved = false;
+
+    this.hideDialog();
 
     try {
+      setTimeout(() => {
+        if (saved) return;
+        this.showDialog(ProgressDialog, {
+          title: "Saving Scene",
+          message: "Saving scene..."
+        });
+      }, 100);
+
       const serializedScene = this.props.editor.serializeScene(sceneURI);
       this.props.editor.ignoreNextSceneFileChange = true;
       await this.props.project.writeJSON(sceneURI, serializedScene);
@@ -287,16 +311,16 @@ class EditorContainer extends Component {
       this.props.editor.setSceneURI(sceneURI);
       this.props.editor.sceneInfo.modified = false;
       this.onSceneModified();
-      this.setState({ openModal: null });
+      this.hideDialog();
     } catch (e) {
+      console.error(e);
       this.showDialog(ErrorDialog, {
         title: "Error Saving Scene",
         message: e.message
       });
-      console.error(e);
+    } finally {
+      saved = true;
     }
-
-    this.hideDialog();
   };
 
   onOpenExportModal = e => {
@@ -306,56 +330,61 @@ class EditorContainer extends Component {
       title: "Select the output directory",
       confirmButtonLabel: "Export scene",
       directory: true,
-      onConfirm: this.onExport
-    });
-  };
+      onConfirm: async outputPath => {
+        let exported = false;
 
-  onExport = async outputPath => {
-    this.showDialog(ProgressDialog, {
-      title: "Exporting Scene",
-      message: "Exporting scene..."
-    });
+        this.hideDialog();
 
-    try {
-      // Export current editor scene using THREE.GLTFExporter
-      const { json, buffers, images } = await this.props.editor.exportScene();
+        try {
+          setTimeout(() => {
+            if (exported) return;
+            this.showDialog(ProgressDialog, {
+              title: "Exporting Scene",
+              message: "Exporting scene..."
+            });
+          }, 100);
 
-      // Ensure the output directory exists
-      await this.props.project.mkdir(outputPath);
+          // Export current editor scene using THREE.GLTFExporter
+          const { json, buffers, images } = await this.props.editor.exportScene();
 
-      // Write the .gltf file
-      const scene = this.props.editor.scene;
-      const gltfPath = outputPath + "/" + scene.name + ".gltf";
-      await this.props.project.writeJSON(gltfPath, json);
+          // Ensure the output directory exists
+          await this.props.project.mkdir(outputPath);
 
-      // Write .bin files
-      for (const [index, buffer] of buffers.entries()) {
-        if (buffer !== undefined) {
-          const bufferName = json.buffers[index].uri;
-          await this.props.project.writeBlob(outputPath + "/" + bufferName, buffer);
+          // Write the .gltf file
+          const scene = this.props.editor.scene;
+          const gltfPath = outputPath + "/" + scene.name + ".gltf";
+          await this.props.project.writeJSON(gltfPath, json);
+
+          // Write .bin files
+          for (const [index, buffer] of buffers.entries()) {
+            if (buffer !== undefined) {
+              const bufferName = json.buffers[index].uri;
+              await this.props.project.writeBlob(outputPath + "/" + bufferName, buffer);
+            }
+          }
+
+          // Write image files
+          for (const [index, image] of images.entries()) {
+            if (image !== undefined) {
+              const imageName = json.images[index].uri;
+              await this.props.project.writeBlob(outputPath + "/" + imageName, image);
+            }
+          }
+
+          // Run optimizations on .gltf and overwrite any existing files
+          await this.props.project.optimizeScene(gltfPath, gltfPath);
+          this.hideDialog();
+        } catch (e) {
+          console.error(e);
+          this.showDialog(ErrorDialog, {
+            title: "Error Exporting Scene",
+            message: e.message
+          });
+        } finally {
+          exported = true;
         }
       }
-
-      // Write image files
-      for (const [index, image] of images.entries()) {
-        if (image !== undefined) {
-          const imageName = json.images[index].uri;
-          await this.props.project.writeBlob(outputPath + "/" + imageName, image);
-        }
-      }
-
-      // Run optimizations on .gltf and overwrite any existing files
-      await this.props.project.optimizeScene(gltfPath, gltfPath);
-    } catch (e) {
-      this.showDialog(ErrorDialog, {
-        title: "Error Exporting Scene",
-        message: e.message
-      });
-
-      console.error(e);
-    }
-
-    this.hideDialog();
+    });
   };
 
   onSceneModified = () => {
@@ -380,26 +409,32 @@ class EditorContainer extends Component {
     this.props.editor.loadNewScene();
   };
 
-  onOpenScene = uri => {
+  onOpenScene = async uri => {
     if (this.props.editor.sceneInfo.uri === uri) return;
     if (!this.confirmSceneChange()) return;
 
-    this.showDialog(ProgressDialog, {
-      title: "Opening Scene",
-      message: "Opening scene..."
-    });
+    let opened = false;
 
-    this.props.editor
-      .openRootScene(uri)
-      .then(() => {
-        this.hideDialog();
-      })
-      .catch(e => {
-        this.showDialog(ErrorDialog, {
-          title: "Error Opening Scene",
-          message: e.message
+    try {
+      setTimeout(() => {
+        if (opened) return;
+        this.showDialog(ProgressDialog, {
+          title: "Opening Scene",
+          message: "Opening scene..."
         });
+      }, 100);
+
+      await this.props.editor.openRootScene(uri);
+      this.hideDialog();
+    } catch (e) {
+      console.error(e);
+      this.showDialog(ErrorDialog, {
+        title: "Error Opening Scene",
+        message: e.message
       });
+    } finally {
+      opened = true;
+    }
   };
 
   renderPanel = (panelId, path) => {
