@@ -4,6 +4,8 @@ import styles from "./dialog.scss";
 import Button from "../Button";
 import Header from "../Header";
 
+export const PROGRESS_DIALOG_DELAY = 500;
+
 export default function ProgressDialog({ title, message, cancelable, onCancel, cancelLabel, hideDialog }) {
   return (
     <div className={styles.dialogContainer}>

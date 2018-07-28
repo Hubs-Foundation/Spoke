@@ -24,7 +24,7 @@ import { OptionDialog } from "../dialogs/OptionDialog";
 import { withDialog } from "../contexts/DialogContext";
 import FileDialog from "../dialogs/FileDialog";
 import ErrorDialog from "../dialogs/ErrorDialog";
-import ProgressDialog from "../dialogs/ProgressDialog";
+import ProgressDialog, { PROGRESS_DIALOG_DELAY } from "../dialogs/ProgressDialog";
 
 class PropertiesPanelContainer extends Component {
   static propTypes = {
@@ -138,7 +138,7 @@ class PropertiesPanelContainer extends Component {
                 title: "Saving Material",
                 message: "Saving material..."
               });
-            }, 100);
+            }, PROGRESS_DIALOG_DELAY);
 
             component.src = src;
             component.shouldSave = true;
@@ -184,7 +184,7 @@ class PropertiesPanelContainer extends Component {
               title: "Loading Material",
               message: "Loading material..."
             });
-          }, 100);
+          }, PROGRESS_DIALOG_DELAY);
 
           component.src = src;
           component.shouldSave = true;

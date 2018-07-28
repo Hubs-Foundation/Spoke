@@ -18,7 +18,7 @@ import { withEditor } from "./contexts/EditorContext";
 import { DialogContextProvider } from "./contexts/DialogContext";
 import styles from "../common.scss";
 import FileDialog from "./dialogs/FileDialog";
-import ProgressDialog from "./dialogs/ProgressDialog";
+import ProgressDialog, { PROGRESS_DIALOG_DELAY } from "./dialogs/ProgressDialog";
 import ErrorDialog from "./dialogs/ErrorDialog";
 
 class EditorContainer extends Component {
@@ -288,7 +288,7 @@ class EditorContainer extends Component {
           title: "Saving Scene",
           message: "Saving scene..."
         });
-      }, 100);
+      }, PROGRESS_DIALOG_DELAY);
 
       const serializedScene = this.props.editor.serializeScene(sceneURI);
       this.props.editor.ignoreNextSceneFileChange = true;
@@ -342,7 +342,7 @@ class EditorContainer extends Component {
               title: "Exporting Scene",
               message: "Exporting scene..."
             });
-          }, 100);
+          }, PROGRESS_DIALOG_DELAY);
 
           // Export current editor scene using THREE.GLTFExporter
           const { json, buffers, images } = await this.props.editor.exportScene();
@@ -422,7 +422,7 @@ class EditorContainer extends Component {
           title: "Opening Scene",
           message: "Opening scene..."
         });
-      }, 100);
+      }, PROGRESS_DIALOG_DELAY);
 
       await this.props.editor.openRootScene(uri);
       this.hideDialog();
