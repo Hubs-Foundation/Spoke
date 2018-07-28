@@ -262,27 +262,40 @@ class EditorContainer extends Component {
 
   serializeAndSaveScene = async sceneURI => {
     try {
-      const serializedScene = this.props.editor.serializeScene(sceneURI);
-      this.props.editor.ignoreNextSceneFileChange = true;
-      await this.props.project.writeJSON(sceneURI, serializedScene);
+      const { project, editor } = this.props;
+
+      const serializedScene = editor.serializeScene(sceneURI);
+
+      editor.ignoreNextSceneFileChange = true;
+
+      await project.writeJSON(sceneURI, serializedScene);
+
+      const sceneUserData = editor.scene.userData;
+
       // check whether there is an inherited gltf
       // if yes => read gltf, write updated names back the file from conflicthandler
-      const filePath = this.props.editor.scene.userData._inherits;
+      const filePath = sceneUserData._inherits;
       if (filePath && filePath.endsWith(".gltf")) {
-        const conflictHandler = this.props.editor.scene.userData._conflictHandler;
+        const conflictHandler = sceneUserData._conflictHandler;
         if (conflictHandler && conflictHandler.isUpdateNeeded()) {
-          const originalGLTF = await this.props.project.readJSON(filePath);
+          const originalGLTF = await project.readJSON(filePath);
           const nodes = originalGLTF.nodes;
           if (nodes) {
             conflictHandler.updateNodeNames(nodes);
-            await this.props.project.writeJSON(filePath, originalGLTF);
+            await project.writeJSON(filePath, originalGLTF);
           }
         }
       }
 
-      this.props.editor.setSceneURI(sceneURI);
-      this.props.editor.sceneInfo.modified = false;
+      if (editor.sceneInfo.uri.endsWith(".gltf")) {
+        sceneUserData._ancestors = [editor.sceneInfo.uri];
+      }
+
+      editor.setSceneURI(sceneURI);
+      editor.sceneInfo.modified = false;
       this.onSceneModified();
+      editor.signals.sceneGraphChanged.dispatch();
+
       this.setState({ openModal: null });
     } catch (e) {
       throw e;
