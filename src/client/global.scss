@@ -21,17 +21,10 @@ html, body, #app {
 :global {
   .Modal {
     position: absolute;
-    top: 40px;
-    left: 40px;
-    right: 40px;
-    bottom: 40px;
-    background-color: $panel;
     display: flex;
     flex: 1;
-    font-family: Arial, Helvetica, sans-serif;
-    font-size: 14px;
-    color: $text;
     outline: none;
+    max-height: 100%;
   }
 
   .Overlay {
@@ -40,6 +33,9 @@ html, body, #app {
     left: 0;
     right: 0;
     bottom: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     background-color: rgba(0, 0, 0, 0.5);
   }
 

@@ -36,9 +36,9 @@ function PropertyGroup(props) {
 
     return (
       <div>
-        {src && (
+        {src.path && (
           <span className={srcStatus.class} data-tip={srcStatus.tip} data-type={srcStatus.type}>
-            {src.path && project.getRelativeURI(src.path)}
+            {project.getRelativeURI(src.path)}
             <ReactTooltip />
           </span>
         )}
@@ -51,7 +51,7 @@ function PropertyGroup(props) {
     );
   };
 
-  const showSaveInfo = saveable && !src;
+  const showSaveInfo = saveable && !src.path;
 
   return (
     <div className={styles.propertyGroup}>

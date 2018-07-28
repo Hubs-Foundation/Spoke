@@ -17,12 +17,7 @@ const componentTypeMappings = new Map([
   [types.vector, (value, onChange) => <Vector3Input value={value} onChange={onChange} />],
   [types.euler, (value, onChange) => <EulerInput value={value} onChange={onChange} />],
   [types.boolean, (value, onChange) => <BooleanInput value={value} onChange={onChange} />],
-  [
-    types.file,
-    (fileObj, onChange, { openFileDialog, filters }) => (
-      <FileInput {...{ fileObj, onChange, openFileDialog, filters }} />
-    )
-  ]
+  [types.file, (value, onChange, { filters }) => <FileInput {...{ value, onChange, filters }} />]
 ]);
 
 export default componentTypeMappings;

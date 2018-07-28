@@ -1,12 +1,12 @@
 import React from "react";
 import PropTypes from "prop-types";
-import styles from "./OptionDialog.scss";
+import styles from "./dialog.scss";
 import Button from "../Button";
 import Header from "../Header";
 
 export function OptionDialog({ title, message, options, cancelLabel, onCancel, hideDialog }) {
   return (
-    <div className={styles.optionDialog}>
+    <div className={styles.dialogContainer}>
       <Header title={title} />
       <div className={styles.content}>{message}</div>
       <div className={styles.bottom}>
@@ -36,7 +36,7 @@ OptionDialog.propTypes = {
   ),
   cancelLabel: PropTypes.string,
   onCancel: PropTypes.func,
-  hideDialog: PropTypes.func
+  hideDialog: PropTypes.func.isRequired
 };
 
 OptionDialog.defaultProps = {

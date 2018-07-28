@@ -10,7 +10,7 @@ const envMap = new THREE.TextureLoader().load(envMapURL);
 envMap.mapping = THREE.EquirectangularReflectionMapping;
 envMap.magFilter = THREE.LinearFilter;
 envMap.minFilter = THREE.LinearMipMapLinearFilter;
-const defaultSrc = { path: "", isValid: true };
+const defaultSrc = { path: null, isValid: true };
 export default class StandardMaterialComponent extends SaveableComponent {
   static componentName = "standard-material";
 
@@ -89,20 +89,20 @@ export default class StandardMaterialComponent extends SaveableComponent {
         this._object.side = value ? THREE.DoubleSide : THREE.FrontSide;
         break;
       case "baseColorTexture":
-        this._updateTexture(propertyName, "map", value, true);
+        this._updateTexture(propertyName, "map", value.path, true);
         break;
       case "normalTexture":
-        this._updateTexture(propertyName, "normalMap", value);
+        this._updateTexture(propertyName, "normalMap", value.path);
         break;
       case "metallicRoughnessTexture":
-        this._updateTexture(propertyName, "roughnessMap", value);
-        this._updateTexture(propertyName, "metalnessMap", value);
+        this._updateTexture(propertyName, "roughnessMap", value.path);
+        this._updateTexture(propertyName, "metalnessMap", value.path);
         break;
       case "emissiveTexture":
-        this._updateTexture(propertyName, "emissiveMap", value, true);
+        this._updateTexture(propertyName, "emissiveMap", value.path, true);
         break;
       case "occlusionTexture":
-        this._updateTexture(propertyName, "aoMap", value);
+        this._updateTexture(propertyName, "aoMap", value.path);
         break;
       default:
         this._object[propertyName] = value;

@@ -22,12 +22,14 @@ import { withEditor } from "../contexts/EditorContext";
 import { withProject } from "../contexts/ProjectContext";
 import { OptionDialog } from "../dialogs/OptionDialog";
 import { withDialog } from "../contexts/DialogContext";
+import FileDialog from "../dialogs/FileDialog";
+import ErrorDialog from "../dialogs/ErrorDialog";
+import ProgressDialog, { PROGRESS_DIALOG_DELAY } from "../dialogs/ProgressDialog";
 
 class PropertiesPanelContainer extends Component {
   static propTypes = {
     editor: PropTypes.object,
     project: PropTypes.object,
-    openFileDialog: PropTypes.func,
     showDialog: PropTypes.func.isRequired,
     hideDialog: PropTypes.func.isRequired
   };
@@ -119,57 +121,98 @@ class PropertiesPanelContainer extends Component {
     this.props.editor.execute(new RemoveComponentCommand(this.state.object, componentName));
   };
 
-  onSaveComponent = (component, saveAs) => {
-    if (saveAs || !component.src) {
-      this.props.openFileDialog(
-        src => {
-          component.src = src;
-          component.shouldSave = true;
-          this.props.project.writeJSON(component.src.path, component.props);
-          component.modified = false;
-          this.props.editor.signals.objectChanged.dispatch(this.state.object);
-        },
-        {
-          filters: [component.fileExtension],
-          extension: component.fileExtension,
-          title: "Save material as...",
-          confirmButtonLabel: "Save"
+  onSaveComponent = async (component, saveAs) => {
+    if (saveAs || !component.src.path) {
+      this.props.showDialog(FileDialog, {
+        filters: [component.fileExtension],
+        extension: component.fileExtension,
+        title: "Save material as...",
+        confirmButtonLabel: "Save",
+        onConfirm: async src => {
+          let saved = false;
+
+          try {
+            setTimeout(() => {
+              if (saved) return;
+              this.props.showDialog(ProgressDialog, {
+                title: "Saving Material",
+                message: "Saving material..."
+              });
+            }, PROGRESS_DIALOG_DELAY);
+
+            component.src.path = src;
+            component.shouldSave = true;
+            await this.props.project.writeJSON(component.src.path, component.props);
+            component.modified = false;
+            this.props.editor.signals.objectChanged.dispatch(this.state.object);
+            this.props.hideDialog();
+          } catch (e) {
+            this.props.showDialog(ErrorDialog, {
+              title: "Error saving material",
+              message: e.message || "There was an error when saving the material."
+            });
+          } finally {
+            saved = true;
+          }
         }
-      );
+      });
     } else {
-      this.props.project.writeJSON(component.src.path, component.props);
-      component.modified = false;
-      this.props.editor.signals.objectChanged.dispatch(this.state.object);
+      try {
+        await this.props.project.writeJSON(component.src.path, component.props);
+        component.modified = false;
+        this.props.editor.signals.objectChanged.dispatch(this.state.object);
+      } catch (e) {
+        console.error(e);
+        this.props.showDialog(ErrorDialog, {
+          title: "Error Saving Material",
+          message: e.message || "There was an error when saving the material."
+        });
+      }
     }
   };
 
   onLoadComponent = component => {
-    this.props.openFileDialog(
-      async src => {
-        component.src = src;
-        component.shouldSave = true;
-        component.modified = false;
-        component.constructor.inflate(this.state.object, await this.props.project.readJSON(component.src.path));
-        this.props.editor.signals.objectChanged.dispatch(this.state.object);
-      },
-      {
-        filters: [component.fileExtension],
-        title: "Load material...",
-        confirmButtonLabel: "Load"
+    this.props.showDialog(FileDialog, {
+      filters: [component.fileExtension],
+      title: "Load material...",
+      confirmButtonLabel: "Load",
+      onConfirm: async src => {
+        let loaded = false;
+
+        try {
+          setTimeout(() => {
+            if (loaded) return;
+            this.props.showDialog(ProgressDialog, {
+              title: "Loading Material",
+              message: "Loading material..."
+            });
+          }, PROGRESS_DIALOG_DELAY);
+
+          component.src.path = src;
+          component.shouldSave = true;
+          component.modified = false;
+          component.constructor.inflate(this.state.object, await this.props.project.readJSON(component.src.path));
+          this.props.editor.signals.objectChanged.dispatch(this.state.object);
+          this.props.hideDialog();
+        } catch (e) {
+          console.error(e);
+          this.props.showDialog(ErrorDialog, {
+            title: "Error Loading Material",
+            message: e.message || "There was an error when loading the material."
+          });
+        } finally {
+          loaded = true;
+        }
       }
-    );
+    });
   };
 
   getExtras(prop) {
     switch (prop.type) {
       case types.number:
         return { min: prop.min, max: prop.max };
-      case types.file: {
-        return {
-          openFileDialog: this.props.openFileDialog,
-          filters: prop.filters
-        };
-      }
+      case types.file:
+        return { filters: prop.filters };
       default:
         null;
     }
@@ -240,7 +283,7 @@ class PropertiesPanelContainer extends Component {
               loadHandler={this.onLoadComponent.bind(this, component)}
             >
               {componentDefinition.schema.map(prop => (
-                <InputGroup name={getDisplayName(prop.name)} key={prop.name} disabled={saveable && !component.src}>
+                <InputGroup name={getDisplayName(prop.name)} key={prop.name} disabled={saveable && !component.src.path}>
                   {componentTypeMappings.get(prop.type)(
                     component.props[prop.name],
                     this.onChangeComponent.bind(null, component, prop.name),
