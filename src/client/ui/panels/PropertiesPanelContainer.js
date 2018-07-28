@@ -134,7 +134,7 @@ class PropertiesPanelContainer extends Component {
           try {
             setTimeout(() => {
               if (saved) return;
-              this.showDialog(ProgressDialog, {
+              this.props.showDialog(ProgressDialog, {
                 title: "Saving Material",
                 message: "Saving material..."
               });
@@ -145,9 +145,9 @@ class PropertiesPanelContainer extends Component {
             await this.props.project.writeJSON(component.src, component.props);
             component.modified = false;
             this.props.editor.signals.objectChanged.dispatch(this.state.object);
-            this.hideDialog();
+            this.props.hideDialog();
           } catch (e) {
-            this.showDialog(ErrorDialog, {
+            this.props.showDialog(ErrorDialog, {
               title: "Error saving material",
               message: e.message
             });
@@ -161,7 +161,7 @@ class PropertiesPanelContainer extends Component {
         await this.props.project.writeJSON(component.src, component.props);
       } catch (e) {
         console.error(e);
-        this.showDialog(ErrorDialog, {
+        this.props.showDialog(ErrorDialog, {
           title: "Error Saving Material",
           message: e.message || "There was an error when saving the material."
         });
@@ -180,7 +180,7 @@ class PropertiesPanelContainer extends Component {
         try {
           setTimeout(() => {
             if (loaded) return;
-            this.showDialog(ProgressDialog, {
+            this.props.showDialog(ProgressDialog, {
               title: "Loading Material",
               message: "Loading material..."
             });
@@ -191,10 +191,10 @@ class PropertiesPanelContainer extends Component {
           component.modified = false;
           component.constructor.inflate(this.state.object, await this.props.project.readJSON(component.src));
           this.props.editor.signals.objectChanged.dispatch(this.state.object);
-          this.hideDialog();
+          this.props.hideDialog();
         } catch (e) {
           console.error(e);
-          this.showDialog(ErrorDialog, {
+          this.props.showDialog(ErrorDialog, {
             title: "Error Loading Material",
             message: e.message || "There was an error when loading the material."
           });
