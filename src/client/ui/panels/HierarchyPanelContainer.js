@@ -20,14 +20,30 @@ import ReactTooltip from "react-tooltip";
 function createNodeHierarchy(object) {
   const node = {
     object,
-    collapsed: false
+    collapsed: object.userData._collapsed ? object.userData._collapsed : false
   };
+
+  if (!node.object.userData._collapsed) {
+    node.object.userData._collapsed = node.collapsed;
+  }
 
   if (object.children.length !== 0) {
     node.children = object.children.filter(({ userData }) => !userData._dontShowInHierarchy).map(createNodeHierarchy);
   }
 
   return node;
+}
+
+function updateCollapseStatus(node) {
+  if (!node) {
+    return;
+  }
+  node.object.userData._collapsed = node.collapsed;
+  if (node.children) {
+    for (const child of node.children) {
+      updateCollapseStatus(child);
+    }
+  }
 }
 
 function collectNodeMenuProps({ node }) {
@@ -65,6 +81,7 @@ class HierarchyPanelContainer extends Component {
   onChange = (tree, parent, node) => {
     if (!node) {
       // parent and node are null when expanding/collapsing the tree.
+      updateCollapseStatus(tree);
       return;
     }
 
