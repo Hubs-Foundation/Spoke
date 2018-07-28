@@ -316,7 +316,7 @@ class EditorContainer extends Component {
       console.error(e);
       this.showDialog(ErrorDialog, {
         title: "Error Saving Scene",
-        message: e.message
+        message: e.message || "There was an error when saving the scene."
       });
     } finally {
       saved = true;
@@ -378,7 +378,7 @@ class EditorContainer extends Component {
           console.error(e);
           this.showDialog(ErrorDialog, {
             title: "Error Exporting Scene",
-            message: e.message
+            message: e.message || "There was an error when exporting the scene."
           });
         } finally {
           exported = true;
@@ -430,7 +430,7 @@ class EditorContainer extends Component {
       console.error(e);
       this.showDialog(ErrorDialog, {
         title: "Error Opening Scene",
-        message: e.message
+        message: e.message || "There was an error when opening the scene."
       });
     } finally {
       opened = true;

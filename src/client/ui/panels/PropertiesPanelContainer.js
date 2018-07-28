@@ -149,7 +149,7 @@ class PropertiesPanelContainer extends Component {
           } catch (e) {
             this.props.showDialog(ErrorDialog, {
               title: "Error saving material",
-              message: e.message
+              message: e.message || "There was an error when saving the material."
             });
           } finally {
             saved = true;
