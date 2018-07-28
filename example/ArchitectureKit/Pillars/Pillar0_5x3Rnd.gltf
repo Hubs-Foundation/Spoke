@@ -16,11 +16,11 @@
             "children": [
                 1
             ],
-            "name": "PIllar0_5x3Rnd"
+            "name": "Pillar0_5x3Rnd"
         },
         {
             "mesh": 0,
-            "name": "PIllar0_5x3RndShape"
+            "name": "Pillar0_5x3RndShape"
         }
     ],
     "meshes": [
@@ -38,7 +38,7 @@
                     "material": 0
                 }
             ],
-            "name": "PIllar0_5x3RndShape"
+            "name": "Pillar0_5x3RndShape"
         }
     ],
     "accessors": [
@@ -161,10 +161,10 @@
     ],
     "images": [
         {
-            "uri": "ArchMods_Base_Color.jpg"
+            "uri": "../Textures/ArchMods_Base_Color.jpg"
         },
         {
-            "uri": "ArchMods_Occlusion.jpg"
+            "uri": "../Textures/ArchMods_Occlusion.jpg"
         }
     ],
     "samplers": [
@@ -207,7 +207,7 @@
     "buffers": [
         {
             "byteLength": 1824,
-            "uri": "PIllar0_5x3Rnd0.bin"
+            "uri": "Pillar0_5x3Rnd0.bin"
         }
     ]
 }

@@ -161,10 +161,10 @@
     ],
     "images": [
         {
-            "uri": "ArchMods_Base_Color.jpg"
+            "uri": "../Textures/ArchMods_Base_Color.jpg"
         },
         {
-            "uri": "ArchMods_Occlusion.jpg"
+            "uri": "../Textures/ArchMods_Occlusion.jpg"
         }
     ],
     "samplers": [
