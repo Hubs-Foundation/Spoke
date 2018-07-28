@@ -8,14 +8,14 @@ import FileDialog from "../dialogs/FileDialog";
 import { withProject } from "../contexts/ProjectContext";
 import { withDialog } from "../contexts/DialogContext";
 
-function FileInput({ fileObj, onChange, showDialog, hideDialog, filters, project }) {
-  const { path, isValid } = fileObj;
+function FileInput({ value, onChange, showDialog, hideDialog, filters, project }) {
+  const { path, isValid } = value;
   const inputStyles = `${styles.fileInput} ${isValid ? "" : styles.invalidPath}`;
   const onClick = () => {
     showDialog(FileDialog, {
       filters,
       onConfirm: src => {
-        onChange(src);
+        onChange({ path: src, isValid: true });
         hideDialog();
       }
     });
@@ -34,7 +34,7 @@ function FileInput({ fileObj, onChange, showDialog, hideDialog, filters, project
 }
 
 FileInput.propTypes = {
-  fileObj: PropTypes.object,
+  value: PropTypes.object,
   onChange: PropTypes.func,
   showDialog: PropTypes.func.isRequired,
   hideDialog: PropTypes.func.isRequired,
@@ -43,8 +43,8 @@ FileInput.propTypes = {
 };
 
 FileInput.defaultProps = {
-  fileObj: {
-    path: "",
+  value: {
+    path: null,
     isValid: true
   },
   onChange: () => {}

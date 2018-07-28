@@ -4,6 +4,8 @@
   flex-direction: row;
   // This forces firefox to give the contents a proper height.
   overflow: hidden;
+  min-width: 800px;
+  min-height: 400px;
 }
 
 :local(.leftColumn) {

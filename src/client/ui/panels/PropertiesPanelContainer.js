@@ -122,7 +122,7 @@ class PropertiesPanelContainer extends Component {
   };
 
   onSaveComponent = async (component, saveAs) => {
-    if (saveAs || !component.src) {
+    if (saveAs || !component.src.path) {
       this.props.showDialog(FileDialog, {
         filters: [component.fileExtension],
         extension: component.fileExtension,
@@ -140,7 +140,7 @@ class PropertiesPanelContainer extends Component {
               });
             }, PROGRESS_DIALOG_DELAY);
 
-            component.src = src;
+            component.src.path = src;
             component.shouldSave = true;
             await this.props.project.writeJSON(component.src.path, component.props);
             component.modified = false;
@@ -188,7 +188,7 @@ class PropertiesPanelContainer extends Component {
             });
           }, PROGRESS_DIALOG_DELAY);
 
-          component.src = src;
+          component.src.path = src;
           component.shouldSave = true;
           component.modified = false;
           component.constructor.inflate(this.state.object, await this.props.project.readJSON(component.src.path));
@@ -283,7 +283,7 @@ class PropertiesPanelContainer extends Component {
               loadHandler={this.onLoadComponent.bind(this, component)}
             >
               {componentDefinition.schema.map(prop => (
-                <InputGroup name={getDisplayName(prop.name)} key={prop.name} disabled={saveable && !component.src}>
+                <InputGroup name={getDisplayName(prop.name)} key={prop.name} disabled={saveable && !component.src.path}>
                   {componentTypeMappings.get(prop.type)(
                     component.props[prop.name],
                     this.onChangeComponent.bind(null, component, prop.name),
