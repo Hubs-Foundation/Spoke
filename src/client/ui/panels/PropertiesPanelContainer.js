@@ -15,7 +15,7 @@ import AddComponentCommand from "../../editor/commands/AddComponentCommand";
 import SetComponentPropertyCommand from "../../editor/commands/SetComponentPropertyCommand";
 import RemoveComponentCommand from "../../editor/commands/RemoveComponentCommand";
 
-import { getDisplayName, types } from "../../editor/components";
+import { types } from "../../editor/components";
 import SaveableComponent from "../../editor/components/SaveableComponent";
 
 import { withEditor } from "../contexts/EditorContext";
@@ -25,6 +25,18 @@ import { withDialog } from "../contexts/DialogContext";
 import FileDialog from "../dialogs/FileDialog";
 import ErrorDialog from "../dialogs/ErrorDialog";
 import ProgressDialog, { PROGRESS_DIALOG_DELAY } from "../dialogs/ProgressDialog";
+
+export function getDisplayName(name) {
+  if (name.includes("-")) {
+    return name
+      .split("-")
+      .map(([f, ...rest]) => f.toUpperCase() + rest.join(""))
+      .join(" ");
+  } else {
+    const displayName = name.replace(/[A-Z]/g, " $&");
+    return displayName[0].toUpperCase() + displayName.substr(1);
+  }
+}
 
 class PropertiesPanelContainer extends Component {
   static propTypes = {
@@ -122,7 +134,7 @@ class PropertiesPanelContainer extends Component {
   };
 
   onSaveComponent = async (component, saveAs) => {
-    if (saveAs || !component.src.path) {
+    if (saveAs || !component.src) {
       this.props.showDialog(FileDialog, {
         filters: [component.fileExtension],
         extension: component.fileExtension,
@@ -140,9 +152,10 @@ class PropertiesPanelContainer extends Component {
               });
             }, PROGRESS_DIALOG_DELAY);
 
-            component.src.path = src;
+            component.src = src;
+            component.srcIsValid = true;
             component.shouldSave = true;
-            await this.props.project.writeJSON(component.src.path, component.props);
+            await this.props.project.writeJSON(component.src, component.props);
             component.modified = false;
             this.props.editor.signals.objectChanged.dispatch(this.state.object);
             this.props.hideDialog();
@@ -158,7 +171,7 @@ class PropertiesPanelContainer extends Component {
       });
     } else {
       try {
-        await this.props.project.writeJSON(component.src.path, component.props);
+        await this.props.project.writeJSON(component.src, component.props);
         component.modified = false;
         this.props.editor.signals.objectChanged.dispatch(this.state.object);
       } catch (e) {
@@ -188,10 +201,11 @@ class PropertiesPanelContainer extends Component {
             });
           }, PROGRESS_DIALOG_DELAY);
 
-          component.src.path = src;
+          component.src = src;
+          component.srcIsValid = true;
           component.shouldSave = true;
           component.modified = false;
-          component.constructor.inflate(this.state.object, await this.props.project.readJSON(component.src.path));
+          component.constructor.inflate(this.state.object, await this.props.project.readJSON(component.src));
           this.props.editor.signals.objectChanged.dispatch(this.state.object);
           this.props.hideDialog();
         } catch (e) {
@@ -276,6 +290,7 @@ class PropertiesPanelContainer extends Component {
               canRemove={componentDefinition.canRemove}
               removeHandler={this.onRemoveComponent.bind(this, component.name)}
               src={component.src}
+              srcIsValid={component.srcIsValid}
               saveable={saveable}
               modified={component.modified}
               saveHandler={this.onSaveComponent.bind(this, component, false)}
@@ -283,9 +298,10 @@ class PropertiesPanelContainer extends Component {
               loadHandler={this.onLoadComponent.bind(this, component)}
             >
               {componentDefinition.schema.map(prop => (
-                <InputGroup name={getDisplayName(prop.name)} key={prop.name} disabled={saveable && !component.src.path}>
+                <InputGroup name={getDisplayName(prop.name)} key={prop.name} disabled={saveable && !component.src}>
                   {componentTypeMappings.get(prop.type)(
                     component.props[prop.name],
+                    component.propValidation[prop.name],
                     this.onChangeComponent.bind(null, component, prop.name),
                     this.getExtras(prop)
                   )}

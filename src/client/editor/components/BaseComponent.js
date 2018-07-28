@@ -1,4 +1,10 @@
-import { getDefaultsFromSchema } from "./utils";
+export function getDefaultsFromSchema(schema) {
+  const defaults = {};
+  schema.forEach(prop => {
+    defaults[prop.name] = prop.default;
+  });
+  return defaults;
+}
 
 export default class BaseComponent {
   static canAdd = true;
@@ -9,6 +15,7 @@ export default class BaseComponent {
     this.name = this.constructor.componentName;
     this.schema = this.constructor.schema;
     this.props = {};
+    this.propValidation = {};
     this.shouldSave = false;
     Object.defineProperty(this, "_object", { enumerable: false, value: object === undefined ? node : object });
   }

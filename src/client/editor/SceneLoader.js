@@ -5,7 +5,6 @@ import ConflictHandler from "./ConflictHandler";
 import StandardMaterialComponent from "../editor/components/StandardMaterialComponent";
 import ShadowComponent from "./components/ShadowComponent";
 import SceneLoaderError from "./SceneLoaderError";
-import { getSrcObject } from "../utils";
 
 export function absoluteToRelativeURL(from, to) {
   if (from === to) return to;
@@ -384,10 +383,10 @@ function resolveRelativeURLs(entities, absoluteSceneURL) {
     if (entityComponents) {
       for (const component of entityComponents) {
         if (component.name === SceneReferenceComponent.componentName) {
-          component.props.src.path = new URL(component.props.src.path, absoluteSceneURL).href;
+          component.props.src = new URL(component.props.src, absoluteSceneURL).href;
         } else if (component.src) {
           // SaveableComponent
-          component.src.path = new URL(component.src.path, absoluteSceneURL).href;
+          component.src = new URL(component.src, absoluteSceneURL).href;
         }
       }
     }
@@ -402,10 +401,10 @@ function convertAbsoluteURLs(entities, sceneURL) {
     if (entityComponents) {
       for (const component of entityComponents) {
         if (component.name === SceneReferenceComponent.componentName) {
-          component.props.src.path = absoluteToRelativeURL(sceneURL, component.props.src.path);
+          component.props.src = absoluteToRelativeURL(sceneURL, component.props.src);
         } else if (component.src) {
           // SaveableComponent
-          component.src.path = absoluteToRelativeURL(sceneURL, component.src.path);
+          component.src = absoluteToRelativeURL(sceneURL, component.src);
         }
       }
     }
@@ -499,17 +498,15 @@ export async function loadSerializedScene(sceneDef, baseURI, addComponent, isRoo
           const { props } = componentDef;
           if (componentDef.src) {
             // Process SaveableComponent
-            componentDef.src = getSrcObject(componentDef.src);
-            const resp = await fetch(componentDef.src.path);
+            componentDef.src = componentDef.src;
+            const resp = await fetch(componentDef.src);
             let json = {};
             if (resp.ok) {
               json = await resp.json();
             }
             const component = addComponent(entityObj, componentDef.name, json, !isRoot);
-            component.src = {
-              path: componentDef.src.path,
-              isValid: resp.ok
-            };
+            component.src = componentDef.src;
+            component.srcIsValid = resp.ok;
           } else {
             addComponent(entityObj, componentDef.name, props, !isRoot);
           }

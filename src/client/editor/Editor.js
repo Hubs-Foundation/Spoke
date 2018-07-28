@@ -10,7 +10,7 @@ import SceneReferenceComponent from "./components/SceneReferenceComponent";
 import { loadScene, loadSerializedScene, serializeScene, exportScene } from "./SceneLoader";
 import DirectionalLightComponent from "./components/DirectionalLightComponent";
 import AmbientLightComponent from "./components/AmbientLightComponent";
-import { last, getSrcObject } from "../utils";
+import { last } from "../utils";
 
 /**
  * @author mrdoob / http://mrdoob.com/
@@ -325,7 +325,7 @@ export default class Editor {
     const sceneRefComponent = this.getComponent(object, SceneReferenceComponent.componentName);
 
     if (sceneRefComponent) {
-      const dependencies = this.fileDependencies.get(sceneRefComponent.getProperty("src").path);
+      const dependencies = this.fileDependencies.get(sceneRefComponent.getProperty("src"));
 
       if (dependencies) {
         dependencies.delete(object);
@@ -500,12 +500,18 @@ export default class Editor {
       component = this.components.get(componentName).inflate(object, props);
 
       if (componentName === SceneReferenceComponent.componentName && props && props.src) {
-        this._loadSceneReference(props.src.path, object)
+        this._loadSceneReference(props.src, object)
           .then(() => {
-            this._updateResourceValidation(object, component, "src", true);
+            if (component.propValidation.src !== true) {
+              component.propValidation.src = true;
+              this.signals.objectChanged.dispatch(object);
+            }
           })
           .catch(() => {
-            this._updateResourceValidation(object, component, "src", false);
+            if (component.propValidation.src !== false) {
+              component.propValidation.src = false;
+              this.signals.objectChanged.dispatch(object);
+            }
           });
       }
     } else {
@@ -585,17 +591,22 @@ export default class Editor {
       result = component.updateProperty(propertyName, value);
 
       if (componentName === SceneReferenceComponent.componentName && propertyName === "src") {
-        result = component.updateProperty(propertyName, getSrcObject(value));
+        result = component.updateProperty(propertyName, value);
         this._removeChildren(object);
-        this._loadSceneReference(component.props.src.path, object)
+        this._loadSceneReference(component.props.src, object)
           .then(() => {
             this.deselect();
             this.select(object);
-            this._updateResourceValidation(object, component, propertyName, true);
+            if (component.propValidation.src !== true) {
+              component.propValidation.src = true;
+              this.signals.objectChanged.dispatch(object);
+            }
           })
           .catch(() => {
-            // TODO Show warning on property when this fails.
-            this._updateResourceValidation(object, component, propertyName, false);
+            if (component.propValidation.src !== false) {
+              component.propValidation.src = false;
+              this.signals.objectChanged.dispatch(object);
+            }
           });
       }
     } else {
@@ -606,11 +617,6 @@ export default class Editor {
   }
 
   //
-  _updateResourceValidation(object, component, res, value) {
-    //component.updateResourceValidation(res, value);
-    component.props.src.isValid = value;
-    this.signals.objectChanged.dispatch(object);
-  }
 
   getObjectMaterial(object, slot) {
     let material = object.material;

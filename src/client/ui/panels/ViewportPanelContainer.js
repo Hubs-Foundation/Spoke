@@ -37,12 +37,7 @@ class ViewportPanelContainer extends Component {
       const object = new THREE.Object3D();
       object.name = file.name;
       this.props.editor.addObject(object);
-      this.props.editor.addComponent(object, "scene-reference", {
-        src: {
-          path: file.uri,
-          isValid: true
-        }
-      });
+      this.props.editor.addComponent(object, "scene-reference", { src: file.uri });
     }
   };
 

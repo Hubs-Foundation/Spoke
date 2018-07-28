@@ -8,23 +8,22 @@ import FileDialog from "../dialogs/FileDialog";
 import { withProject } from "../contexts/ProjectContext";
 import { withDialog } from "../contexts/DialogContext";
 
-function FileInput({ value, onChange, showDialog, hideDialog, filters, project }) {
-  const { path, isValid } = value;
+function FileInput({ value, isValid, onChange, showDialog, hideDialog, filters, project }) {
   const inputStyles = `${styles.fileInput} ${isValid ? "" : styles.invalidPath}`;
   const onClick = () => {
     showDialog(FileDialog, {
       filters,
       onConfirm: src => {
-        onChange({ path: src, isValid: true });
+        onChange(src);
         hideDialog();
       }
     });
   };
 
   return (
-    <div className={inputStyles} data-tip={isValid ? "" : "Cannot find the file"} data-type={isValid ? "" : "error"}>
+    <div className={inputStyles} data-tip={isValid ? "" : "File does not exist"} data-type={isValid ? "" : "error"}>
       <input
-        value={(path && project.getRelativeURI(path)) || ""}
+        value={(value && project.getRelativeURI(value)) || ""}
         onChange={e => onChange(project.getAbsoluteURI(e.target.value))}
       />
       {isValid ? null : <ReactTooltip />}
@@ -34,7 +33,8 @@ function FileInput({ value, onChange, showDialog, hideDialog, filters, project }
 }
 
 FileInput.propTypes = {
-  value: PropTypes.object,
+  value: PropTypes.string,
+  isValid: PropTypes.bool,
   onChange: PropTypes.func,
   showDialog: PropTypes.func.isRequired,
   hideDialog: PropTypes.func.isRequired,
@@ -43,10 +43,8 @@ FileInput.propTypes = {
 };
 
 FileInput.defaultProps = {
-  value: {
-    path: null,
-    isValid: true
-  },
+  value: null,
+  isValid: true,
   onChange: () => {}
 };
 

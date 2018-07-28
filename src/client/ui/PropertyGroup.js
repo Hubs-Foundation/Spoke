@@ -1,5 +1,6 @@
 import React from "react";
 import PropTypes from "prop-types";
+import classNames from "classnames";
 
 import Button from "./Button";
 import styles from "./PropertyGroup.scss";
@@ -13,6 +14,7 @@ function PropertyGroup(props) {
     canRemove,
     removeHandler,
     src,
+    srcIsValid,
     saveable,
     modified,
     saveHandler,
@@ -29,21 +31,22 @@ function PropertyGroup(props) {
   const renderSaveButtons = () => {
     if (!saveable) return;
     const srcStatus = {
-      class: src && src.isValid ? styles.src : styles.invalidSrc,
-      tip: src && src.isValid ? null : "Cannot find the file.",
-      type: src && src.isValid ? null : "error"
+      classNames: [styles.src, src && srcIsValid ? null : styles.invalidSrc],
+      tip: src && srcIsValid ? null : "File does not exist",
+      type: src && srcIsValid ? null : "error"
     };
 
     return (
       <div>
-        {src.path && (
-          <span className={srcStatus.class} data-tip={srcStatus.tip} data-type={srcStatus.type}>
-            {project.getRelativeURI(src.path)}
+        {src && (
+          <span className={classNames(srcStatus.classNames)} data-tip={srcStatus.tip} data-type={srcStatus.type}>
+            {project.getRelativeURI(src)}
+            {modified && "*"}
             <ReactTooltip />
           </span>
         )}
         <div className={styles.saveButtons}>
-          {src && src.path && <Button onClick={saveHandler}>Save</Button>}
+          {src && <Button onClick={saveHandler}>Save</Button>}
           <Button onClick={saveAsHandler}>Save As...</Button>
           <Button onClick={loadHandler}>Load...</Button>
         </div>
@@ -51,7 +54,7 @@ function PropertyGroup(props) {
     );
   };
 
-  const showSaveInfo = saveable && !src.path;
+  const showSaveInfo = saveable && !src;
 
   return (
     <div className={styles.propertyGroup}>
@@ -75,7 +78,8 @@ PropertyGroup.propTypes = {
   name: PropTypes.string,
   canRemove: PropTypes.bool,
   removeHandler: PropTypes.func,
-  src: PropTypes.object,
+  src: PropTypes.string,
+  srcIsValid: PropTypes.bool,
   saveable: PropTypes.bool,
   modified: PropTypes.bool,
   saveHandler: PropTypes.func,

@@ -441,7 +441,6 @@ class EditorContainer extends Component {
       await this.props.editor.openRootScene(uri);
       this.hideDialog();
     } catch (e) {
-      console.error(e);
       this.setState({
         openModal: {
           component: OptionDialog,
@@ -463,7 +462,7 @@ class EditorContainer extends Component {
               }
             ],
             cancelLabel: "Cancel",
-            onCancel: () => {
+            hideDialog: () => {
               this.setState({ openModal: null });
             }
           }
