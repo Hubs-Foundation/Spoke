@@ -1,17 +1,17 @@
 {
   "entities": {
-    "Floor2x2OS.gltf": {
+    "Child": {
       "parent": "Scene",
-      "index": 3,
+      "index": 2,
       "components": [
         {
           "name": "scene-reference",
           "props": {
-            "src": "./ArchitectureKit/Floor2x2OS.gltf"
+            "src": "./child.scene"
           }
         }
       ]
     }
   },
-  "inherits": "./root.scene"
+  "inherits": "./variant-one.scene"
 }
