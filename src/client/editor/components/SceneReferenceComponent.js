@@ -6,5 +6,7 @@ export default class SceneReferenceComponent extends BaseComponent {
 
   static dontExportProps = true;
 
-  static schema = [{ name: "src", type: types.file, filters: [".scene", ".gltf"], default: "" }];
+  static schema = [
+    { name: "src", type: types.file, filters: [".scene", ".gltf"], default: { path: "", isValid: true } }
+  ];
 }

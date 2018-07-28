@@ -142,7 +142,7 @@ class PropertiesPanelContainer extends Component {
 
             component.src = src;
             component.shouldSave = true;
-            await this.props.project.writeJSON(component.src, component.props);
+            await this.props.project.writeJSON(component.src.path, component.props);
             component.modified = false;
             this.props.editor.signals.objectChanged.dispatch(this.state.object);
             this.props.hideDialog();
@@ -158,7 +158,9 @@ class PropertiesPanelContainer extends Component {
       });
     } else {
       try {
-        await this.props.project.writeJSON(component.src, component.props);
+        await this.props.project.writeJSON(component.src.path, component.props);
+        component.modified = false;
+        this.props.editor.signals.objectChanged.dispatch(this.state.object);
       } catch (e) {
         console.error(e);
         this.props.showDialog(ErrorDialog, {
@@ -189,7 +191,7 @@ class PropertiesPanelContainer extends Component {
           component.src = src;
           component.shouldSave = true;
           component.modified = false;
-          component.constructor.inflate(this.state.object, await this.props.project.readJSON(component.src));
+          component.constructor.inflate(this.state.object, await this.props.project.readJSON(component.src.path));
           this.props.editor.signals.objectChanged.dispatch(this.state.object);
           this.props.hideDialog();
         } catch (e) {
@@ -266,6 +268,7 @@ class PropertiesPanelContainer extends Component {
             return <PropertyGroup name={getDisplayName(component.name)} key={component.name} />;
           }
 
+          const saveable = component instanceof SaveableComponent;
           return (
             <PropertyGroup
               name={getDisplayName(component.name)}
@@ -273,13 +276,14 @@ class PropertiesPanelContainer extends Component {
               canRemove={componentDefinition.canRemove}
               removeHandler={this.onRemoveComponent.bind(this, component.name)}
               src={component.src}
-              saveable={component instanceof SaveableComponent}
+              saveable={saveable}
+              modified={component.modified}
               saveHandler={this.onSaveComponent.bind(this, component, false)}
               saveAsHandler={this.onSaveComponent.bind(this, component, true)}
               loadHandler={this.onLoadComponent.bind(this, component)}
             >
               {componentDefinition.schema.map(prop => (
-                <InputGroup name={getDisplayName(prop.name)} key={prop.name}>
+                <InputGroup name={getDisplayName(prop.name)} key={prop.name} disabled={saveable && !component.src}>
                   {componentTypeMappings.get(prop.type)(
                     component.props[prop.name],
                     this.onChangeComponent.bind(null, component, prop.name),

@@ -12,6 +12,7 @@
   ],
   "scripts": {
     "dev": "cross-env NODE_ENV=development node ./bin/hubs-editor --https ./example",
+    "dev:http": "cross-env NODE_ENV=development node ./bin/hubs-editor ./example",
     "dev:nopath": "cross-env NODE_ENV=development node ./bin/hubs-editor",
     "build": "concurrently \"npm run build:server\" \"npm run build:client\"",
     "build:server": "babel src/server/ -d lib/server/",

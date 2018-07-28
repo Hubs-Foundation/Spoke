@@ -12,10 +12,10 @@ import ViewportPanelToolbarContainer from "./panels/ViewportPanelToolbarContaine
 import HierarchyPanelContainer from "./panels/HierarchyPanelContainer";
 import PropertiesPanelContainer from "./panels/PropertiesPanelContainer";
 import AssetExplorerPanelContainer from "./panels/AssetExplorerPanelContainer";
-import PanelToolbar from "./PanelToolbar";
 import { withProject } from "./contexts/ProjectContext";
 import { withEditor } from "./contexts/EditorContext";
 import { DialogContextProvider } from "./contexts/DialogContext";
+import { OptionDialog } from "./dialogs/OptionDialog";
 import styles from "../common.scss";
 import FileDialog from "./dialogs/FileDialog";
 import ProgressDialog, { PROGRESS_DIALOG_DELAY } from "./dialogs/ProgressDialog";
@@ -58,7 +58,7 @@ class EditorContainer extends Component {
           component: HierarchyPanelContainer,
           windowProps: {
             title: "Hierarchy",
-            toolbarControls: PanelToolbar,
+            toolbarControls: [],
             draggable: false
           }
         },
@@ -74,7 +74,7 @@ class EditorContainer extends Component {
           component: PropertiesPanelContainer,
           windowProps: {
             title: "Properties",
-            toolbarControls: PanelToolbar,
+            toolbarControls: [],
             draggable: false
           }
         },
@@ -82,7 +82,7 @@ class EditorContainer extends Component {
           component: AssetExplorerPanelContainer,
           windowProps: {
             title: "Asset Explorer",
-            toolbarControls: PanelToolbar,
+            toolbarControls: [],
             draggable: false
           }
         }
@@ -290,28 +290,42 @@ class EditorContainer extends Component {
         });
       }, PROGRESS_DIALOG_DELAY);
 
-      const serializedScene = this.props.editor.serializeScene(sceneURI);
-      this.props.editor.ignoreNextSceneFileChange = true;
-      await this.props.project.writeJSON(sceneURI, serializedScene);
+      const { project, editor } = this.props;
+
+      const serializedScene = editor.serializeScene(sceneURI);
+
+      editor.ignoreNextSceneFileChange = true;
+
+      await project.writeJSON(sceneURI, serializedScene);
+
+      const sceneUserData = editor.scene.userData;
+
       // check whether there is an inherited gltf
       // if yes => read gltf, write updated names back the file from conflicthandler
-      const filePath = this.props.editor.scene.userData._inherits;
+      const filePath = sceneUserData._inherits;
       if (filePath && filePath.endsWith(".gltf")) {
-        const conflictHandler = this.props.editor.scene.userData._conflictHandler;
+        const conflictHandler = sceneUserData._conflictHandler;
         if (conflictHandler && conflictHandler.isUpdateNeeded()) {
-          const originalGLTF = await this.props.project.readJSON(filePath);
+          const originalGLTF = await project.readJSON(filePath);
           const nodes = originalGLTF.nodes;
           if (nodes) {
             conflictHandler.updateNodeNames(nodes);
-            await this.props.project.writeJSON(filePath, originalGLTF);
+            await project.writeJSON(filePath, originalGLTF);
           }
         }
       }
 
-      this.props.editor.setSceneURI(sceneURI);
-      this.props.editor.sceneInfo.modified = false;
+      if (editor.sceneInfo.uri.endsWith(".gltf")) {
+        sceneUserData._ancestors = [editor.sceneInfo.uri];
+      }
+
+      editor.setSceneURI(sceneURI);
+      editor.sceneInfo.modified = false;
       this.onSceneModified();
+
       this.hideDialog();
+
+      editor.signals.sceneGraphChanged.dispatch();
     } catch (e) {
       console.error(e);
       this.showDialog(ErrorDialog, {
@@ -428,9 +442,32 @@ class EditorContainer extends Component {
       this.hideDialog();
     } catch (e) {
       console.error(e);
-      this.showDialog(ErrorDialog, {
-        title: "Error Opening Scene",
-        message: e.message || "There was an error when opening the scene."
+      this.setState({
+        openModal: {
+          component: OptionDialog,
+          shouldCloseOnOverlayClick: false,
+          props: {
+            title: "Error Opening Scene",
+            message: `
+              ${e.message}:
+              ${e.url}.
+              Please make sure the file exists and then press "Resolved" to reload the scene.
+            `,
+            options: [
+              {
+                label: "Resolved",
+                onClick: () => {
+                  this.setState({ openModal: null });
+                  this.onOpenScene(uri);
+                }
+              }
+            ],
+            cancelLabel: "Cancel",
+            onCancel: () => {
+              this.setState({ openModal: null });
+            }
+          }
+        }
       });
     } finally {
       opened = true;

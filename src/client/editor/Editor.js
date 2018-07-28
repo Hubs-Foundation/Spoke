@@ -10,7 +10,7 @@ import SceneReferenceComponent from "./components/SceneReferenceComponent";
 import { loadScene, loadSerializedScene, serializeScene, exportScene } from "./SceneLoader";
 import DirectionalLightComponent from "./components/DirectionalLightComponent";
 import AmbientLightComponent from "./components/AmbientLightComponent";
-import { last } from "../utils";
+import { last, getSrcObject } from "../utils";
 
 /**
  * @author mrdoob / http://mrdoob.com/
@@ -95,6 +95,8 @@ export default class Editor {
     this.helpers = initialSceneInfo.helpers;
     this.objects = initialSceneInfo.objects;
 
+    this._prefabBeingEdited = null;
+
     this.signals.sceneGraphChanged.add(() => {
       this.sceneInfo.modified = true;
       this.signals.sceneModified.dispatch();
@@ -164,13 +166,26 @@ export default class Editor {
   //
 
   popScene() {
+    const poppedUri = this.sceneInfo.uri;
+
+    this.deselect();
+
     this.scenes.pop();
+
     this.sceneInfo = last(this.scenes);
     this.scene = this.sceneInfo.scene;
     this.helperScene = this.sceneInfo.helperScene;
     this.helpers = this.sceneInfo.helpers;
     this.objects = this.sceneInfo.objects;
-    this.deselect();
+
+    if (poppedUri) {
+      const sceneRefComponentName = SceneReferenceComponent.componentName;
+      this.updateComponentProperty(this._prefabBeingEdited, sceneRefComponentName, "src", poppedUri);
+      this._prefabBeingEdited.name = last(poppedUri.split("/"));
+    }
+
+    this._prefabBeingEdited = null;
+
     this.signals.sceneSet.dispatch();
   }
 
@@ -178,7 +193,8 @@ export default class Editor {
     this.sceneInfo.uri = uri;
   }
 
-  editScenePrefab(uri) {
+  editScenePrefab(object, uri) {
+    this._prefabBeingEdited = object;
     this._loadScene(uri, true);
   }
 
@@ -309,7 +325,7 @@ export default class Editor {
     const sceneRefComponent = this.getComponent(object, SceneReferenceComponent.componentName);
 
     if (sceneRefComponent) {
-      const dependencies = this.fileDependencies.get(sceneRefComponent.getProperty("src"));
+      const dependencies = this.fileDependencies.get(sceneRefComponent.getProperty("src").path);
 
       if (dependencies) {
         dependencies.delete(object);
@@ -347,17 +363,26 @@ export default class Editor {
   addObject(object, parent) {
     this.addComponent(object, "transform");
 
-    let duplicateNameCount = this._duplicateNameCounters.get(object.name);
-    if (duplicateNameCount !== undefined) {
-      duplicateNameCount++;
-      this._duplicateNameCounters.set(object.name, duplicateNameCount);
-      object.name += "_" + duplicateNameCount;
-    } else {
-      this._duplicateNameCounters.set(object.name, 0);
-    }
-
     object.userData._saveParent = true;
     object.traverse(child => {
+      let cacheName = child.name;
+
+      const match = child.name.match(/(.*)_\d+$/);
+
+      if (match) {
+        cacheName = match[1];
+      }
+
+      let duplicateNameCount = this._duplicateNameCounters.get(cacheName);
+
+      if (duplicateNameCount !== undefined) {
+        duplicateNameCount++;
+        this._duplicateNameCounters.set(cacheName, duplicateNameCount);
+        child.name = cacheName + "_" + duplicateNameCount;
+      } else {
+        this._duplicateNameCounters.set(cacheName, 0);
+      }
+
       if (child.material !== undefined) this.addMaterial(child.material);
       this.addHelper(child, object);
     });
@@ -397,8 +422,6 @@ export default class Editor {
       this.removeHelper(child);
       this._removeSceneRefDependency(child);
     });
-
-    this._addedNames.delete(object.name);
 
     this.signals.objectRemoved.dispatch(object);
     this.signals.sceneGraphChanged.dispatch();
@@ -477,7 +500,13 @@ export default class Editor {
       component = this.components.get(componentName).inflate(object, props);
 
       if (componentName === SceneReferenceComponent.componentName && props && props.src) {
-        this._loadSceneReference(props.src, object);
+        this._loadSceneReference(props.src.path, object)
+          .then(() => {
+            this._updateResourceValidation(object, component, "src", true);
+          })
+          .catch(() => {
+            this._updateResourceValidation(object, component, "src", false);
+          });
       }
     } else {
       component = {
@@ -556,14 +585,17 @@ export default class Editor {
       result = component.updateProperty(propertyName, value);
 
       if (componentName === SceneReferenceComponent.componentName && propertyName === "src") {
+        result = component.updateProperty(propertyName, getSrcObject(value));
         this._removeChildren(object);
-        this._loadSceneReference(value, object)
+        this._loadSceneReference(component.props.src.path, object)
           .then(() => {
             this.deselect();
             this.select(object);
+            this._updateResourceValidation(object, component, propertyName, true);
           })
           .catch(() => {
             // TODO Show warning on property when this fails.
+            this._updateResourceValidation(object, component, propertyName, false);
           });
       }
     } else {
@@ -574,6 +606,11 @@ export default class Editor {
   }
 
   //
+  _updateResourceValidation(object, component, res, value) {
+    //component.updateResourceValidation(res, value);
+    component.props.src.isValid = value;
+    this.signals.objectChanged.dispatch(object);
+  }
 
   getObjectMaterial(object, slot) {
     let material = object.material;

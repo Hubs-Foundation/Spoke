@@ -13,21 +13,37 @@ import AddObjectCommand from "../../editor/commands/AddObjectCommand";
 import MoveObjectCommand from "../../editor/commands/MoveObjectCommand";
 import THREE from "../../vendor/three";
 import SceneReferenceComponent from "../../editor/components/SceneReferenceComponent";
-import { last } from "../../utils";
+import { last, getSrcObject } from "../../utils";
 import SnackBar from "../SnackBar";
 import ReactTooltip from "react-tooltip";
 
 function createNodeHierarchy(object) {
   const node = {
     object,
-    collapsed: false
+    collapsed: object.userData._collapsed ? object.userData._collapsed : false
   };
+
+  if (!node.object.userData._collapsed) {
+    node.object.userData._collapsed = node.collapsed;
+  }
 
   if (object.children.length !== 0) {
     node.children = object.children.filter(({ userData }) => !userData._dontShowInHierarchy).map(createNodeHierarchy);
   }
 
   return node;
+}
+
+function updateCollapseStatus(node) {
+  if (!node) {
+    return;
+  }
+  node.object.userData._collapsed = node.collapsed;
+  if (node.children) {
+    for (const child of node.children) {
+      updateCollapseStatus(child);
+    }
+  }
 }
 
 function collectNodeMenuProps({ node }) {
@@ -65,6 +81,7 @@ class HierarchyPanelContainer extends Component {
   onChange = (tree, parent, node) => {
     if (!node) {
       // parent and node are null when expanding/collapsing the tree.
+      updateCollapseStatus(tree);
       return;
     }
 
@@ -116,8 +133,9 @@ class HierarchyPanelContainer extends Component {
     this.props.editor.duplicateObject(node.object);
   };
 
-  onEditPrefab = refComponent => {
-    this.props.editor.editScenePrefab(refComponent.getProperty("src"));
+  onEditPrefab = (object, refComponent) => {
+    const path = getSrcObject(refComponent.getProperty("src")).path;
+    this.props.editor.editScenePrefab(object, path);
   };
 
   onDeleteSelected = e => {
@@ -195,14 +213,16 @@ class HierarchyPanelContainer extends Component {
   };
 
   renderHierarchyNodeMenu = props => {
-    const refComponent =
-      props.trigger && this.props.editor.getComponent(props.trigger.object, SceneReferenceComponent.componentName);
-    const hasParent = props.trigger && props.trigger.object.parent;
+    const node = props.trigger;
+    const refComponent = node && this.props.editor.getComponent(node.object, SceneReferenceComponent.componentName);
+    const hasParent = node && node.object.parent;
     return (
       <ContextMenu id="hierarchy-node-menu">
         <MenuItem onClick={this.onAddNode}>Add Node</MenuItem>
         {hasParent && <MenuItem onClick={this.onDuplicateNode}>Duplicate</MenuItem>}
-        {refComponent && <MenuItem onClick={this.onEditPrefab.bind(null, refComponent)}>Edit Prefab</MenuItem>}
+        {refComponent && (
+          <MenuItem onClick={this.onEditPrefab.bind(null, node.object, refComponent)}>Edit Prefab</MenuItem>
+        )}
         {hasParent && <MenuItem onClick={this.onDeleteNode}>Delete</MenuItem>}
       </ContextMenu>
     );
