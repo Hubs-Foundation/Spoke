@@ -165,10 +165,10 @@
     ],
     "images": [
         {
-            "uri": "../../ArchitectureKit/ArchMods_Base_Color.jpg"
+            "uri": "../../ArchitectureKit/Textures/ArchMods_Base_Color.jpg"
         },
         {
-            "uri": "../../ArchitectureKit/ArchMods_Occlusion.jpg"
+            "uri": "../../ArchitectureKit/Textures/ArchMods_Occlusion.jpg"
         }
     ],
     "samplers": [
@@ -211,7 +211,7 @@
     "buffers": [
         {
             "byteLength": 1824,
-            "uri": "../../ArchitectureKit/Pillar1x3Rnd0.bin"
+            "uri": "../../ArchitectureKit/Pillars/Pillar1x3Rnd0.bin"
         }
     ]
 }

@@ -7,7 +7,7 @@
         {
           "name": "scene-reference",
           "props": {
-            "src": "../../ArchitectureKit/Floor2x2OS.gltf"
+            "src": "../../ArchitectureKit/Floors/Floor2x2OS.gltf"
           }
         }
       ]
