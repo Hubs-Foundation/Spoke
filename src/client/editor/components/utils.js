@@ -6,4 +6,3 @@ export const types = {
   boolean: Symbol("boolean"),
   file: Symbol("file")
 };
-
