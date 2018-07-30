@@ -27,7 +27,9 @@
     "lint": "eslint ./src"
   },
   "lint-staged": {
-    "*.js": ["eslint"]
+    "*.js": [
+      "eslint"
+    ]
   },
   "dependencies": {
     "@robertlong/react-ui-tree": "github:robertlong/react-ui-tree#dev",
