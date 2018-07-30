@@ -10,6 +10,10 @@
     "public/",
     "LICENSE"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MozillaReality/spoke.git"
+  },
   "scripts": {
     "dev": "cross-env NODE_ENV=development node ./bin/spoke --https ./example",
     "dev:http": "cross-env NODE_ENV=development node ./bin/spoke ./example",
