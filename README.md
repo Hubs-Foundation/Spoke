@@ -12,7 +12,7 @@ npm install -g spoke-test-cli
 npm run dev
 ```
 
-Then open http://localhost:9090.
+Then open https://localhost:9090.
 
 ## Credits
 
