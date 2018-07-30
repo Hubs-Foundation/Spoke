@@ -132,15 +132,15 @@ class EditorContainer extends Component {
           items: [
             {
               name: "Getting Started",
-              action: () => window.open("https://github.com/MozillaReality/hubs-editor/wiki/Getting-Started")
+              action: () => window.open("https://github.com/MozillaReality/spoke/wiki/Getting-Started")
             },
             {
               name: "Tutorials",
-              action: () => window.open("https://github.com/MozillaReality/hubs-editor/wiki/Tutorials")
+              action: () => window.open("https://github.com/MozillaReality/spoke/wiki/Tutorials")
             },
             {
               name: "Keyboard Shortcuts",
-              action: () => window.open("https://github.com/MozillaReality/hubs-editor/wiki/Keyboard-Shortcuts")
+              action: () => window.open("https://github.com/MozillaReality/spoke/wiki/Keyboard-Shortcuts")
             }
           ]
         }
@@ -403,7 +403,7 @@ class EditorContainer extends Component {
 
   onSceneModified = () => {
     const modified = this.props.editor.sceneModified() ? "*" : "";
-    document.title = `Hubs Editor - ${this.props.editor.scene.name}${modified}`;
+    document.title = `Spoke - ${this.props.editor.scene.name}${modified}`;
   };
 
   confirmSceneChange = () => {

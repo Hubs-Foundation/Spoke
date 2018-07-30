@@ -1,8 +1,8 @@
 {
-  "name": "hubs-editor",
+  "name": "spoke-cli",
   "license": "MPL-2.0",
   "version": "0.1.0",
-  "bin": "bin/hubs-editor",
+  "bin": "bin/spoke",
   "main": "lib/server/index.js",
   "files": [
     "bin/",
@@ -11,9 +11,9 @@
     "LICENSE"
   ],
   "scripts": {
-    "dev": "cross-env NODE_ENV=development node ./bin/hubs-editor --https ./example",
-    "dev:http": "cross-env NODE_ENV=development node ./bin/hubs-editor ./example",
-    "dev:nopath": "cross-env NODE_ENV=development node ./bin/hubs-editor",
+    "dev": "cross-env NODE_ENV=development node ./bin/spoke --https ./example",
+    "dev:http": "cross-env NODE_ENV=development node ./bin/spoke ./example",
+    "dev:nopath": "cross-env NODE_ENV=development node ./bin/spoke",
     "build": "concurrently \"npm run build:server\" \"npm run build:client\"",
     "build:server": "babel src/server/ -d lib/server/",
     "build:client": "webpack --mode production",
@@ -28,8 +28,7 @@
     "eventemitter3": "^3.1.0",
     "fast-deep-equal": "^2.0.1",
     "fs-extra": "^6.0.1",
-    "gltf-bundle": "^0.10.0",
-    "gltf-unlit-generator": "^0.3.0",
+    "gltf-unlit-generator": "^0.5.0",
     "koa": "^2.5.1",
     "koa-body": "^4.0.3",
     "koa-mount": "^3.0.0",

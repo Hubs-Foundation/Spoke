@@ -1,12 +1,9 @@
-# Hubs Editor
+# Spoke
 
 ## Installation
 
 ```
-git clone https://github.com/MozillaReality/hubs-editor.git
-cd hubs-editor
-npm install
-cargo install gltf_unlit_generator
+npm install -g spoke
 ```
 
 ## Development
