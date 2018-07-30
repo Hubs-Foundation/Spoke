@@ -2,7 +2,9 @@
   "name": "spoke-test-cli",
   "license": "MPL-2.0",
   "version": "0.1.1",
-  "bin": "bin/spoke",
+  "bin": {
+    "spoke": "bin/spoke"
+  },
   "main": "lib/server/index.js",
   "files": [
     "bin/",

@@ -6,6 +6,15 @@
 npm install -g spoke-test-cli
 ```
 
+## Usage
+
+```
+cd my-project
+spoke
+```
+
+Open https://localhost:9090 in your browser.
+
 ## Development
 
 ```
