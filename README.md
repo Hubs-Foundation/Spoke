@@ -21,7 +21,7 @@ Open https://localhost:9090 in your browser.
 npm run dev
 ```
 
-Then open http://localhost:9090.
+Then open https://localhost:9090.
 
 ## Credits
 
