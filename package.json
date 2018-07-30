@@ -21,9 +21,13 @@
     "build": "concurrently \"npm run build:server\" \"npm run build:client\"",
     "build:server": "babel src/server/ -d lib/server/",
     "build:client": "webpack --mode production",
-    "release": "np",
-    "test": "ava",
+    "precommit": "lint-staged",
+    "version": "npm run build",
+    "release": "np --no-yarn",
     "lint": "eslint ./src"
+  },
+  "lint-staged": {
+    "*.js": ["eslint"]
   },
   "dependencies": {
     "@robertlong/react-ui-tree": "github:robertlong/react-ui-tree#dev",
@@ -79,7 +83,9 @@
     "eslint-plugin-react": "^7.8.2",
     "file-loader": "^1.1.11",
     "html-webpack-plugin": "^3.2.0",
+    "husky": "^0.14.3",
     "koa-webpack": "^5.0.2",
+    "lint-staged": "^7.2.0",
     "node-sass": "^4.9.1",
     "np": "^3.0.4",
     "prettier": "^1.13.4",
