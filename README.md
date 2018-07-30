@@ -3,7 +3,7 @@
 ## Installation
 
 ```
-npm install -g spoke
+npm install -g spoke-test-cli
 ```
 
 ## Development
