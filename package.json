@@ -21,6 +21,7 @@
     "build": "concurrently \"npm run build:server\" \"npm run build:client\"",
     "build:server": "babel src/server/ -d lib/server/",
     "build:client": "webpack --mode production",
+    "release": "np",
     "test": "ava",
     "lint": "eslint ./src"
   },
@@ -80,6 +81,7 @@
     "html-webpack-plugin": "^3.2.0",
     "koa-webpack": "^5.0.2",
     "node-sass": "^4.9.1",
+    "np": "^3.0.4",
     "prettier": "^1.13.4",
     "sass-loader": "^7.0.1",
     "style-loader": "^0.21.0",
