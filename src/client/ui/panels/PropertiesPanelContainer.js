@@ -7,7 +7,6 @@ import styles from "./PropertiesPanelContainer.scss";
 import PropertyGroup from "../PropertyGroup";
 import InputGroup from "../InputGroup";
 import StringInput from "../inputs/StringInput";
-import BooleanInput from "../inputs/BooleanInput";
 import componentTypeMappings from "../inputs/componentTypeMappings";
 
 import SetValueCommand from "../../editor/commands/SetValueCommand";
@@ -17,10 +16,10 @@ import RemoveComponentCommand from "../../editor/commands/RemoveComponentCommand
 
 import { types } from "../../editor/components";
 import SaveableComponent from "../../editor/components/SaveableComponent";
+import { StaticMode, computeStaticMode, getStaticMode, setStaticMode } from "../../editor/StaticMode";
 
 import { withEditor } from "../contexts/EditorContext";
 import { withProject } from "../contexts/ProjectContext";
-import { OptionDialog } from "../dialogs/OptionDialog";
 import { withDialog } from "../contexts/DialogContext";
 import FileDialog from "../dialogs/FileDialog";
 import ErrorDialog from "../dialogs/ErrorDialog";
@@ -84,38 +83,10 @@ class PropertiesPanelContainer extends Component {
     this.props.editor.execute(new SetValueCommand(this.state.object, "name", e.target.value));
   };
 
-  onUpdateStatic = value => {
+  onUpdateStatic = ({ value }) => {
     const object = this.state.object;
-
-    if (object.children.length > 0) {
-      this.props.showDialog(OptionDialog, {
-        title: "Set Static",
-        message: "Do you wish to set this object's children's static flag as well?",
-        options: [
-          {
-            label: "Set object static flag",
-            onClick: () => {
-              object.userData._static = value;
-              this.props.editor.signals.objectChanged.dispatch(this.state.object);
-              this.props.hideDialog();
-            }
-          },
-          {
-            label: "Set object and children static flag",
-            onClick: () => {
-              object.traverse(child => {
-                child.userData._static = value;
-              });
-              this.props.editor.signals.objectChanged.dispatch(this.state.object);
-              this.props.hideDialog();
-            }
-          }
-        ]
-      });
-    } else {
-      object.userData._static = value;
-      this.props.editor.signals.objectChanged.dispatch(this.state.object);
-    }
+    setStaticMode(object, value);
+    this.props.editor.signals.objectChanged.dispatch(object);
   };
 
   onAddComponent = ({ value }) => {
@@ -256,15 +227,40 @@ class PropertiesPanelContainer extends Component {
       }
     }
 
+    const staticMode = getStaticMode(object) || StaticMode.Inherits;
+    const parentComputedStaticMode = computeStaticMode(object.parent);
+    const staticModeOptions = [
+      {
+        value: StaticMode.Dynamic,
+        label: "Dynamic"
+      },
+      {
+        value: StaticMode.Static,
+        label: "Static"
+      },
+      {
+        value: StaticMode.Inherits,
+        label: `Inherits (${parentComputedStaticMode})`
+      }
+    ];
+
     return (
       <div className={styles.propertiesPanelContainer}>
         <PropertyGroup name="Node" canRemove={false}>
           <InputGroup name="Name">
             <StringInput value={object.name} onChange={this.onUpdateName} />
           </InputGroup>
-          <InputGroup name="Static">
-            <BooleanInput value={object.userData._static || false} onChange={this.onUpdateStatic} />
-          </InputGroup>
+          {object.parent !== null && (
+            <InputGroup name="Static">
+              <Select
+                className={styles.staticSelect}
+                value={staticMode}
+                options={staticModeOptions}
+                clearable={false}
+                onChange={this.onUpdateStatic}
+              />
+            </InputGroup>
+          )}
           <div className={styles.addComponentContainer}>
             <Select
               placeholder="Add a component..."
