@@ -11,7 +11,9 @@ import { loadScene, loadSerializedScene, serializeScene, exportScene } from "./S
 import DirectionalLightComponent from "./components/DirectionalLightComponent";
 import AmbientLightComponent from "./components/AmbientLightComponent";
 import { last } from "../utils";
+import { debounce } from "throttle-debounce";
 
+const INPUT_DEBOUNCE_THRESHOLD = 500;
 /**
  * @author mrdoob / http://mrdoob.com/
  */
@@ -130,6 +132,7 @@ export default class Editor {
     this.fileDependencies = new Map();
 
     this._duplicateNameCounters = new Map();
+    this._updateObjectNameDebounced = debounce(INPUT_DEBOUNCE_THRESHOLD, this._updateObjectNameDebounced);
 
     this.ignoreNextSceneFileChange = false;
     this.signals.fileChanged.add(this.onFileChanged);
@@ -365,24 +368,7 @@ export default class Editor {
 
     object.userData._saveParent = true;
     object.traverse(child => {
-      let cacheName = child.name;
-
-      const match = child.name.match(/(.*)_\d+$/);
-
-      if (match) {
-        cacheName = match[1];
-      }
-
-      let duplicateNameCount = this._duplicateNameCounters.get(cacheName);
-
-      if (duplicateNameCount !== undefined) {
-        duplicateNameCount++;
-        this._duplicateNameCounters.set(cacheName, duplicateNameCount);
-        child.name = cacheName + "_" + duplicateNameCount;
-      } else {
-        this._duplicateNameCounters.set(cacheName, 0);
-      }
-
+      child.name = this._duplicateNameCheck(child.name);
       if (child.material !== undefined) this.addMaterial(child.material);
       this.addHelper(child, object);
     });
@@ -395,6 +381,58 @@ export default class Editor {
 
     this.signals.objectAdded.dispatch(object);
     this.signals.sceneGraphChanged.dispatch();
+  }
+
+  _getNameWithoutIndex(name) {
+    let cacheName = name;
+    const match = name.match(/(.*)_\d+$/);
+    if (match) {
+      cacheName = match[1];
+    }
+    return cacheName;
+  }
+
+  _duplicateNameCheck(name) {
+    const cacheName = this._getNameWithoutIndex(name);
+
+    const duplicateNameSet = new Set(this._duplicateNameCounters.keys());
+    const objectNameSet = new Set();
+
+    // check names in the scene right now
+    this.scene.traverse(child => {
+      const childName = this._getNameWithoutIndex(child.name);
+      objectNameSet.add(childName);
+    });
+    const difference = new Set([...duplicateNameSet].filter(x => !objectNameSet.has(x)));
+
+    // update the _duplicateNameCounters
+    if (difference) {
+      for (const key of difference.keys()) {
+        this._duplicateNameCounters.delete(key);
+      }
+    }
+
+    let duplicateNameCount = this._duplicateNameCounters.get(cacheName);
+
+    if (duplicateNameCount !== undefined) {
+      duplicateNameCount++;
+      this._duplicateNameCounters.set(cacheName, duplicateNameCount);
+      return cacheName + "_" + duplicateNameCount;
+    } else {
+      this._duplicateNameCounters.set(cacheName, 0);
+    }
+    return cacheName;
+  }
+
+  _updateObjectNameDebounced(object, value) {
+    object.name = this._duplicateNameCheck(value);
+  }
+
+  updateObjectAttribute(object, attributeName, value) {
+    object[attributeName] = value;
+    if (attributeName === "name") {
+      this._updateObjectNameDebounced(object, value);
+    }
   }
 
   moveObject(object, parent, before) {
