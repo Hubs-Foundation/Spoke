@@ -5,6 +5,7 @@ import ConflictHandler from "./ConflictHandler";
 import StandardMaterialComponent from "../editor/components/StandardMaterialComponent";
 import ShadowComponent from "./components/ShadowComponent";
 import SceneLoaderError from "./SceneLoaderError";
+import { gltfCache } from "./caches";
 
 export function absoluteToRelativeURL(from, to) {
   if (from === to) return to;
@@ -45,22 +46,18 @@ export function absoluteToRelativeURL(from, to) {
 }
 
 function loadGLTF(url) {
-  return new Promise((resolve, reject) => {
-    new THREE.GLTFLoader().load(
-      url,
-      ({ scene }) => {
-        if (scene === undefined) {
-          return reject(`Error loading: ${url}. glTF file has no default scene.`);
-        }
-
-        resolve(scene);
-      },
-      undefined,
-      e => {
-        reject(new SceneLoaderError("Error loading GLTF", url, e));
+  return gltfCache
+    .get(url)
+    .then(({ scene }) => {
+      if (scene === undefined) {
+        throw new Error(`Error loading: ${url}. glTF file has no default scene.`);
       }
-    );
-  });
+      return scene;
+    })
+    .catch(e => {
+      console.error(e);
+      throw new SceneLoaderError("Error loading GLTF", url, e);
+    });
 }
 
 function shallowEquals(objA, objB) {

@@ -11,6 +11,7 @@ import { loadScene, loadSerializedScene, serializeScene, exportScene } from "./S
 import DirectionalLightComponent from "./components/DirectionalLightComponent";
 import AmbientLightComponent from "./components/AmbientLightComponent";
 import { last } from "../utils";
+import { textureCache, gltfCache } from "./caches";
 
 /**
  * @author mrdoob / http://mrdoob.com/
@@ -145,6 +146,8 @@ export default class Editor {
   }
 
   onFileChanged = uri => {
+    textureCache.evict(uri);
+    gltfCache.evict(uri);
     if (uri === this.sceneInfo.uri && this.ignoreNextSceneFileChange) {
       this.ignoreNextSceneFileChange = false;
       return;
@@ -213,6 +216,11 @@ export default class Editor {
     this.objects = [];
   }
 
+  _clearCaches() {
+    textureCache.disposeAndClear();
+    gltfCache.disposeAndClear();
+  }
+
   _setSceneInfo(scene, uri) {
     this.sceneInfo = {
       uri: uri,
@@ -230,6 +238,8 @@ export default class Editor {
 
     this._resetHelpers();
 
+    this._clearCaches();
+
     const scene = new THREE.Scene();
     scene.name = "Scene";
 
@@ -245,6 +255,7 @@ export default class Editor {
 
   openRootScene(uri) {
     this.scenes = [];
+    this._clearCaches();
     return this._loadScene(uri);
   }
 

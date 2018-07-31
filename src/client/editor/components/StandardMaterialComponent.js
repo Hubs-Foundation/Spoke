@@ -2,15 +2,20 @@ import SaveableComponent from "./SaveableComponent";
 import { types } from "./utils";
 import THREE from "../../vendor/three";
 import envMapURL from "../../assets/envmap.jpg";
+import { textureCache } from "../caches";
 
-export function getFilePath(texture) {
+function getURLPath(url) {
+  const href = window.location.href;
+  return new URL(url, href.substring(0, href.length - 1)).pathname;
+}
+
+function getTextureSrc(texture) {
   if (!texture) return null;
   if (!texture.image) return null;
-  return texture.image.src;
+  return getURLPath(texture.image.src);
 }
 
 const imageFilters = [".jpg", ".png"];
-const textureLoader = new THREE.TextureLoader();
 const envMap = new THREE.TextureLoader().load(envMapURL);
 envMap.mapping = THREE.EquirectangularReflectionMapping;
 envMap.magFilter = THREE.LinearFilter;
@@ -43,27 +48,30 @@ export default class StandardMaterialComponent extends SaveableComponent {
     super(node, object, ".material");
   }
 
-  _updateTexture(propertyName, map, url, sRGB) {
+  async _updateTexture(propertyName, map, url, sRGB) {
     if (!url) {
       this._object[map] = null;
       return;
     }
 
-    if (url === getFilePath(this._object[map])) return;
+    const urlPath = getURLPath(url);
+    if (urlPath === getTextureSrc(this._object[map])) return;
 
-    const texture = textureLoader.load(url, () => {}, null, () => {
+    try {
+      const texture = await textureCache.get(urlPath);
+      if (sRGB) {
+        texture.encoding = THREE.sRGBEncoding;
+      }
+      // Defaults in glTF spec
+      texture.flipY = false;
+      texture.wrapS = THREE.RepeatWrapping;
+      texture.wrapT = THREE.RepeatWrapping;
+      this._object[map] = texture;
+    } catch (e) {
       this._object[map] = null;
       this._object.needsUpdate = true;
       this.propValidation[propertyName] = false;
-    });
-    if (sRGB) {
-      texture.encoding = THREE.sRGBEncoding;
     }
-    // Defaults in glTF spec
-    texture.flipY = false;
-    texture.wrapS = THREE.RepeatWrapping;
-    texture.wrapT = THREE.RepeatWrapping;
-    this._object[map] = texture;
   }
 
   updateProperty(propertyName, value) {
@@ -117,11 +125,11 @@ export default class StandardMaterialComponent extends SaveableComponent {
       roughness: node.material.roughness,
       alphaCutoff: node.material.alphaTest,
       doubleSided: node.material.side === THREE.DoubleSide,
-      baseColorTexture: getFilePath(map),
-      normalTexture: getFilePath(normalMap),
-      metallicRoughnessTexture: getFilePath(roughnessMap),
-      emissiveTexture: getFilePath(emissiveMap),
-      occlusionTexture: getFilePath(aoMap)
+      baseColorTexture: getTextureSrc(map),
+      normalTexture: getTextureSrc(normalMap),
+      metallicRoughnessTexture: getTextureSrc(roughnessMap),
+      emissiveTexture: getTextureSrc(emissiveMap),
+      occlusionTexture: getTextureSrc(aoMap)
     };
   }
 
