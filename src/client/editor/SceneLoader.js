@@ -6,6 +6,10 @@ import StandardMaterialComponent from "../editor/components/StandardMaterialComp
 import ShadowComponent from "./components/ShadowComponent";
 import SceneLoaderError from "./SceneLoaderError";
 import { gltfCache } from "./caches";
+import DirectionalLightComponent from "./components/DirectionalLightComponent";
+import AmbientLightComponent from "./components/AmbientLightComponent";
+
+const defaultLightComponentNames = [DirectionalLightComponent.componentName, AmbientLightComponent.componentName];
 
 export function absoluteToRelativeURL(from, to) {
   if (from === to) return to;
@@ -548,6 +552,11 @@ export async function loadScene(uri, addComponent, isRoot = true, ancestors) {
 
   if (isRoot) {
     ancestors = [];
+  }
+
+  if (!isRoot) {
+    const root = sceneDef.entities[sceneDef.root];
+    root.components = root.components.filter(component => !defaultLightComponentNames.includes(component.name));
   }
 
   scene = await loadSerializedScene(sceneDef, uri, addComponent, isRoot, ancestors);
