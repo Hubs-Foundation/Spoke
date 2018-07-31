@@ -315,7 +315,7 @@ class EditorContainer extends Component {
         }
       }
 
-      if (editor.sceneInfo.uri.endsWith(".gltf")) {
+      if (editor.sceneInfo.uri && editor.sceneInfo.uri.endsWith(".gltf")) {
         sceneUserData._ancestors = [editor.sceneInfo.uri];
       }
 
