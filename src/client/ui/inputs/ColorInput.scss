@@ -2,6 +2,7 @@
 
 :local(.colorInput){
   display: flex;
+  position: relative;
   :local(.block) {
     display: flex;
     align-items: center;
@@ -23,7 +24,7 @@
     :local(.cover) {
       position: fixed;
       top: 0px;
-      right: 0px;
+      right: 20px;
       bottom: 0px;
       left: 0px;
     }
