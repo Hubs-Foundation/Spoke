@@ -7,5 +7,5 @@ export default function TabNavigation({ children }) {
 }
 
 TabNavigation.propTypes = {
-  children: PropTypes.arrayOf(PropTypes.element)
+  children: PropTypes.node
 };

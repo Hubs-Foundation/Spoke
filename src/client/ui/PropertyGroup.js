@@ -85,7 +85,7 @@ PropertyGroup.propTypes = {
   saveHandler: PropTypes.func,
   saveAsHandler: PropTypes.func,
   loadHandler: PropTypes.func,
-  children: PropTypes.arrayOf(PropTypes.element),
+  children: PropTypes.node,
   project: PropTypes.object
 };
 
