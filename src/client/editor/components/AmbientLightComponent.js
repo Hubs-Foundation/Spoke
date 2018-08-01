@@ -1,3 +1,4 @@
+import THREE from "../../vendor/three";
 import BaseComponent from "./BaseComponent";
 import { types } from "./utils";
 
