@@ -97,19 +97,22 @@ export default class Editor {
     this.objects = initialSceneInfo.objects;
 
     this._prefabBeingEdited = null;
+    this._ignoreSceneModification = false;
 
     this.signals.sceneGraphChanged.add(() => {
+      if (this._ignoreSceneModification) return;
+      console.log("BPDEBUG sceneGraphChanged");
+      // console.log(new Error().stack.split("\n").filter(line => !/^(step|_asyncTo|promise|invoke)/.test(line)).join("\n"));
+      // console.trace();
       this.sceneInfo.modified = true;
       this.signals.sceneModified.dispatch();
     });
 
     this.signals.objectChanged.add(() => {
+      if (this._ignoreSceneModification) return;
+      console.log("BPDEBUG objectChanged");
+      // console.trace();
       this.sceneInfo.modified = true;
-      this.signals.sceneModified.dispatch();
-    });
-
-    this.signals.sceneSet.add(() => {
-      this.sceneInfo.modified = false;
       this.signals.sceneModified.dispatch();
     });
 
@@ -256,7 +259,14 @@ export default class Editor {
   openRootScene(uri) {
     this.scenes = [];
     this._clearCaches();
-    return this._loadScene(uri);
+    console.log("BPDEBUG loading root scene");
+    this._ignoreSceneModification = true;
+    const scene = this._loadScene(uri).then(scene => {
+      this._ignoreSceneModification = false;
+      console.log("BPDEBUG done loading root scene");
+      return scene;
+    });
+    return scene;
   }
 
   _setScene(scene) {
@@ -316,7 +326,7 @@ export default class Editor {
     scene.userData._sceneReference = uri;
 
     scene.traverse(child => {
-      Object.defineProperty(child.userData, "_selectionRoot", { value: parent, enumerable: false });
+      Object.defineProperty(child.userData, "_selectionRoot", { value: parent, configurable: true, enumerable: false });
     });
 
     this.signals.objectAdded.dispatch(scene);
@@ -504,26 +514,30 @@ export default class Editor {
     this.components.set(componentName, componentClass);
   }
 
-  addComponent = (object, componentName, props, skipSave) => {
+  addComponent = async (object, componentName, props, skipSave) => {
     let component;
 
     if (this.components.has(componentName)) {
       component = this.components.get(componentName).inflate(object, props);
 
       if (componentName === SceneReferenceComponent.componentName && props && props.src) {
-        this._loadSceneReference(props.src, object)
+        console.log("BPDEBUG addComponent _loadSceneReference", props.src);
+        const scene = this._loadSceneReference(props.src, object)
           .then(() => {
+            console.log("BPDEBUG _loadSceneReference success!");
             if (component.propValidation.src !== true) {
               component.propValidation.src = true;
               this.signals.objectChanged.dispatch(object);
             }
           })
-          .catch(() => {
+          .catch(e => {
+            console.log("BPDEBUG _loadSceneReference failed!", e);
             if (component.propValidation.src !== false) {
               component.propValidation.src = false;
               this.signals.objectChanged.dispatch(object);
             }
           });
+        await scene;
       }
     } else {
       component = {
@@ -719,7 +733,11 @@ export default class Editor {
       if (child.userData._inflated) continue;
       const childClone = this._cloneAndInflate(child, root);
       clone.add(childClone);
-      Object.defineProperty(childClone.userData, "_selectionRoot", { value: root, enumerable: false });
+      Object.defineProperty(childClone.userData, "_selectionRoot", {
+        value: root,
+        configurable: true,
+        enumerable: false
+      });
     }
     return clone;
   }

@@ -300,26 +300,33 @@ export async function exportScene(scene) {
   return chunks;
 }
 
-function inflateGLTFComponents(scene, addComponent) {
+async function inflateGLTFComponents(scene, addComponent) {
+  const traversal = [];
   scene.traverse(object => {
-    const extensions = object.userData.gltfExtensions;
-    if (extensions !== undefined) {
-      for (const extensionName in extensions) {
-        addComponent(object, extensionName, extensions[extensionName], true);
-      }
-    }
+    traversal.push(
+      new Promise(async resolve => {
+        const extensions = object.userData.gltfExtensions;
+        if (extensions !== undefined) {
+          for (const extensionName in extensions) {
+            await addComponent(object, extensionName, extensions[extensionName], true);
+          }
+        }
 
-    if (object instanceof THREE.Mesh) {
-      addComponent(object, "mesh", null, true);
+        if (object instanceof THREE.Mesh) {
+          await addComponent(object, "mesh", null, true);
 
-      const shadowProps = object.userData.components ? object.userData.components.shadow : null;
-      addComponent(object, "shadow", shadowProps, true);
+          const shadowProps = object.userData.components ? object.userData.components.shadow : null;
+          await addComponent(object, "shadow", shadowProps, true);
 
-      if (object.material instanceof THREE.MeshStandardMaterial) {
-        addComponent(object, "standard-material", null, true);
-      }
-    }
+          if (object.material instanceof THREE.MeshStandardMaterial) {
+            await addComponent(object, "standard-material", null, true);
+          }
+        }
+        resolve();
+      })
+    );
   });
+  await Promise.all(traversal);
 }
 
 function addChildAtIndex(parent, child, index) {
@@ -464,6 +471,7 @@ export async function loadSerializedScene(sceneDef, baseURI, addComponent, isRoo
     // Sort entities by insertion order (uses parent and index to determine order).
     const sortedEntities = sortEntities(entities);
 
+    const entityComponentPromises = [];
     for (const entityName of sortedEntities) {
       const entity = entities[entityName];
 
@@ -520,11 +528,14 @@ export async function loadSerializedScene(sceneDef, baseURI, addComponent, isRoo
             if (resp.ok) {
               json = await resp.json();
             }
-            const component = addComponent(entityObj, componentDef.name, json, !isRoot);
-            component.src = componentDef.src;
-            component.srcIsValid = resp.ok;
+            entityComponentPromises.push(
+              addComponent(entityObj, componentDef.name, json, !isRoot).then(component => {
+                component.src = componentDef.src;
+                component.srcIsValid = resp.ok;
+              })
+            );
           } else {
-            addComponent(entityObj, componentDef.name, props, !isRoot);
+            entityComponentPromises.push(addComponent(entityObj, componentDef.name, props, !isRoot));
           }
         }
       }
@@ -537,6 +548,7 @@ export async function loadSerializedScene(sceneDef, baseURI, addComponent, isRoo
         }
       }
     }
+    await Promise.all(entityComponentPromises);
   }
 
   return scene;
@@ -561,7 +573,7 @@ export async function loadScene(uri, addComponent, isRoot = true, ancestors) {
     scene.userData._conflictHandler = new ConflictHandler();
     scene.userData._conflictHandler.findDuplicates(scene, 0, 0);
     scene.userData._conflictHandler.updateAllDuplicateStatus(scene);
-    inflateGLTFComponents(scene, addComponent);
+    await inflateGLTFComponents(scene, addComponent);
 
     return scene;
   }
@@ -577,6 +589,7 @@ export async function loadScene(uri, addComponent, isRoot = true, ancestors) {
     ancestors = [];
   }
 
+  console.log("BPDEBUG loadScene", url, isRoot);
   if (!isRoot) {
     const root = sceneDef.entities[sceneDef.root];
     if (root && root.components) {
