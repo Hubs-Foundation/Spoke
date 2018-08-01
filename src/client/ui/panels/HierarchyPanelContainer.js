@@ -71,7 +71,6 @@ class HierarchyPanelContainer extends Component {
     this.doubleClickTimeout = null;
 
     const editor = this.props.editor;
-    editor.signals.editorCleared.add(this.rebuildNodeHierarchy);
     editor.signals.sceneSet.add(this.rebuildNodeHierarchy);
     editor.signals.sceneGraphChanged.add(this.rebuildNodeHierarchy);
     editor.signals.objectChanged.add(this.rebuildNodeHierarchy);
@@ -253,7 +252,7 @@ class HierarchyPanelContainer extends Component {
     return (
       <div className={styles.hierarchyRoot}>
         {this.props.editor.scenes.map((sceneInfo, i) => {
-          const name = sceneInfo.uri ? last(sceneInfo.uri.split("/")) : "---";
+          const name = sceneInfo.uri ? last(sceneInfo.uri.split("/")) : "<unsaved>";
           const ancestors = sceneInfo.scene.userData._ancestors;
           return (
             <div key={name}>

@@ -30,8 +30,6 @@ export default class Editor {
       popScene: new Signal(),
       extendScene: new Signal(),
 
-      editorCleared: new Signal(),
-
       savingStarted: new Signal(),
       savingFinished: new Signal(),
 
@@ -111,9 +109,6 @@ export default class Editor {
       this.signals.sceneModified.dispatch();
     });
 
-    this.materials = {};
-    this.textures = {};
-
     // TODO: Support multiple viewports
     this.viewports = [];
 
@@ -183,7 +178,9 @@ export default class Editor {
       const previousURI = this.getComponentProperty(this._prefabBeingEdited, sceneRefComponentName, "src");
       this.updateComponentProperty(this._prefabBeingEdited, sceneRefComponentName, "src", poppedURI);
       if (previousURI.endsWith(".gltf")) {
-        this._prefabBeingEdited.name = last(poppedURI.split("/"));
+        const name = last(poppedURI.split("/"));
+        this._prefabBeingEdited.name = name;
+        this._duplicateNameCounters.set(name, this._duplicateNameCounters.get(name) || 0);
       }
     }
 
@@ -409,6 +406,7 @@ export default class Editor {
     this.addComponent(object, "transform");
 
     object.userData._saveParent = true;
+
     object.traverse(child => {
       let cacheName = child.name;
 
@@ -428,7 +426,6 @@ export default class Editor {
         this._duplicateNameCounters.set(cacheName, 0);
       }
 
-      if (child.material !== undefined) this.addMaterial(child.material);
       this.addHelper(child, object);
     });
 
@@ -470,10 +467,6 @@ export default class Editor {
 
     this.signals.objectRemoved.dispatch(object);
     this.signals.sceneGraphChanged.dispatch();
-  }
-
-  addMaterial(material) {
-    this.materials[material.uuid] = material;
   }
 
   //
@@ -772,28 +765,6 @@ export default class Editor {
       return true;
     }
     return false;
-  }
-
-  clear() {
-    this.history.clear();
-
-    this.camera.copy(this.DEFAULT_CAMERA);
-    this.scene.fog = null;
-
-    this.scene.traverse(this.removeHelper.bind(this));
-
-    const objects = this.scene.children;
-
-    while (objects.length > 0) {
-      this.removeObject(objects[0]);
-    }
-
-    this.materials = {};
-    this.textures = {};
-
-    this.deselect();
-
-    this.signals.editorCleared.dispatch();
   }
 
   objectByUuid(uuid) {

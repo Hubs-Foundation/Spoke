@@ -41,9 +41,6 @@ export default class RemoveObjectCommand extends Command {
     const scope = this.editor;
 
     this.object.traverse(function(child) {
-      if (child.geometry !== undefined) scope.addGeometry(child.geometry);
-      if (child.material !== undefined) scope.addMaterial(child.material);
-
       scope.addHelper(child);
     });
 
