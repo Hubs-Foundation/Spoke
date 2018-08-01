@@ -20,6 +20,8 @@ function collectFileMenuProps({ file }) {
 function getFileContextMenuId(file) {
   if (file.isDirectory) {
     return "directory-menu-default";
+  } else if ([".gltf", ".scene"].includes(file.ext)) {
+    return "file-menu-extend";
   } else {
     return "file-menu-default";
   }
@@ -188,6 +190,10 @@ class AssetExplorerPanelContainer extends Component {
     document.body.removeChild(textArea);
   };
 
+  onExtend = () => {
+    //TODO: inherits gltf or .scene file
+  };
+
   renderNode = node => {
     return (
       <div
@@ -265,6 +271,12 @@ class AssetExplorerPanelContainer extends Component {
           <MenuItem>Open File</MenuItem>
           <MenuItem>Delete File</MenuItem>
           <MenuItem onClick={this.onCopyURL}>Copy URL</MenuItem>
+        </ContextMenu>
+        <ContextMenu id="file-menu-extend">
+          <MenuItem>Open File</MenuItem>
+          <MenuItem>Delete File</MenuItem>
+          <MenuItem onClick={this.onCopyURL}>Copy URL</MenuItem>
+          <MenuItem onClick={this.onExtend}>Extend</MenuItem>
         </ContextMenu>
         <ContextMenu id="current-directory-menu-default">
           <MenuItem onClick={this.onNewFolder}>New Folder</MenuItem>
