@@ -37,7 +37,7 @@ export default class DirectionalLightComponent extends BaseComponent {
 
   static async inflate(node, _props) {
     const light = new THREE.DirectionalLight();
-    const component = this._getOrCreateComponent(node, _props, light);
+    const component = await this._getOrCreateComponent(node, _props, light);
     node.add(light);
     return component;
   }
