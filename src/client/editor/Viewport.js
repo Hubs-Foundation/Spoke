@@ -250,6 +250,7 @@ export default class Viewport {
     });
 
     signals.sceneSet.add(() => {
+      renderer.dispose();
       editor.helperScene.add(grid);
       editor.helperScene.add(selectionBox);
       editor.helperScene.add(this._transformControls);
