@@ -301,32 +301,27 @@ export async function exportScene(scene) {
 }
 
 async function inflateGLTFComponents(scene, addComponent) {
-  const traversal = [];
-  scene.traverse(object => {
-    traversal.push(
-      new Promise(async resolve => {
-        const extensions = object.userData.gltfExtensions;
-        if (extensions !== undefined) {
-          for (const extensionName in extensions) {
-            await addComponent(object, extensionName, extensions[extensionName], true);
-          }
-        }
+  const addComponentPromises = [];
+  scene.traverse(async object => {
+    const extensions = object.userData.gltfExtensions;
+    if (extensions !== undefined) {
+      for (const extensionName in extensions) {
+        addComponentPromises.push(addComponent(object, extensionName, extensions[extensionName], true));
+      }
+    }
 
-        if (object instanceof THREE.Mesh) {
-          await addComponent(object, "mesh", null, true);
+    if (object instanceof THREE.Mesh) {
+      addComponentPromises.push(addComponent(object, "mesh", null, true));
 
-          const shadowProps = object.userData.components ? object.userData.components.shadow : null;
-          await addComponent(object, "shadow", shadowProps, true);
+      const shadowProps = object.userData.components ? object.userData.components.shadow : null;
+      addComponentPromises.push(addComponent(object, "shadow", shadowProps, true));
 
-          if (object.material instanceof THREE.MeshStandardMaterial) {
-            await addComponent(object, "standard-material", null, true);
-          }
-        }
-        resolve();
-      })
-    );
+      if (object.material instanceof THREE.MeshStandardMaterial) {
+        addComponentPromises.push(addComponent(object, "standard-material", null, true));
+      }
+    }
   });
-  await Promise.all(traversal);
+  await Promise.all(addComponentPromises);
 }
 
 function addChildAtIndex(parent, child, index) {
