@@ -40,7 +40,7 @@ export default class TransformComponent extends BaseComponent {
         const rotation = this._object.rotation;
         this._props.position = this._object.position;
         this._props.rotation.x = rotation.x;
-        this._props.rotation.y = rotation.z;
+        this._props.rotation.y = rotation.y;
         this._props.rotation.z = rotation.z;
         this._props.scale = this._object.scale;
         return this._props;
