@@ -253,7 +253,7 @@ class HierarchyPanelContainer extends Component {
     return (
       <div className={styles.hierarchyRoot}>
         {this.props.editor.scenes.map((sceneInfo, i) => {
-          const name = sceneInfo.uri ? last(sceneInfo.uri.split("/")) : "---";
+          const name = sceneInfo.uri ? last(sceneInfo.uri.split("/")) : "<unsaved>";
           const ancestors = sceneInfo.scene.userData._ancestors;
           return (
             <div key={name}>
