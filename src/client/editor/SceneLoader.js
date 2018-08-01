@@ -579,7 +579,9 @@ export async function loadScene(uri, addComponent, isRoot = true, ancestors) {
 
   if (!isRoot) {
     const root = sceneDef.entities[sceneDef.root];
-    root.components = root.components.filter(component => !defaultLightComponentNames.includes(component.name));
+    if (root && root.components) {
+      root.components = root.components.filter(component => !defaultLightComponentNames.includes(component.name));
+    }
   }
 
   scene = await loadSerializedScene(sceneDef, uri, addComponent, isRoot, ancestors);
