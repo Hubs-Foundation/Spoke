@@ -517,7 +517,7 @@ export default class Editor {
       component = await this.components.get(componentName).inflate(object, props);
 
       if (componentName === SceneReferenceComponent.componentName && props && props.src) {
-        const scene = this._loadSceneReference(props.src, object)
+        await this._loadSceneReference(props.src, object)
           .then(() => {
             if (component.propValidation.src !== true) {
               component.propValidation.src = true;
@@ -531,7 +531,6 @@ export default class Editor {
               this.signals.objectChanged.dispatch(object);
             }
           });
-        await scene;
       }
     } else {
       component = {
