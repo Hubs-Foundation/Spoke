@@ -190,8 +190,16 @@ class AssetExplorerPanelContainer extends Component {
     document.body.removeChild(textArea);
   };
 
-  onExtend = () => {
-    //TODO: inherits gltf or .scene file
+  onExtend = (e, file) => {
+    if (!file) {
+      return;
+    }
+    if (file.ext === ".gltf") {
+      this.props.editor.signals.openScene.dispatch(file.uri);
+    } else {
+      this.props.editor.extendScene(file.uri);
+    }
+    return;
   };
 
   renderNode = node => {

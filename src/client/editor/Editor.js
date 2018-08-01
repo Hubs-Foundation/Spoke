@@ -369,6 +369,26 @@ export default class Editor {
     return exportScene(this.scene);
   }
 
+  async extendScene(inheritedURI) {
+    const extendSceneDef = {
+      entities: {},
+      inherits: inheritedURI
+    };
+
+    this.deselect();
+    this._resetHelpers();
+    const ancestors = [];
+    const scene = await loadSerializedScene(extendSceneDef, inheritedURI, this.addComponent, true, ancestors);
+
+    scene.userData._ancestors = ancestors;
+
+    this._setSceneInfo(scene, null);
+    this.scenes = [this.sceneInfo];
+    this._setSceneDefaults(scene);
+    this._setScene(scene);
+    this._addDependency(null, scene);
+    return scene;
+  }
   //
 
   addObject(object, parent) {
