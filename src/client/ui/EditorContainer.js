@@ -429,14 +429,12 @@ class EditorContainer extends Component {
   onOpenScene = async uri => {
     if (this.props.editor.sceneInfo.uri === uri) return;
     if (!this.confirmSceneChange()) return;
-    const action = "openRootScene";
-    this._tryLoadSceneFromURI(uri, action, this.onOpenScene);
+    this._tryLoadSceneFromURI(uri, this.props.editor.openRootScene.bind(this.props.editor), this.onOpenScene);
   };
 
   onExtendScene = async uri => {
     if (!this.confirmSceneChange()) return;
-    const action = "extendScene";
-    this._tryLoadSceneFromURI(uri, action, this.onExtendScene);
+    this._tryLoadSceneFromURI(uri, this.props.editor.extendScene.bind(this.props.editor), this.onExtendScene);
   };
 
   _tryLoadSceneFromURI = async (uri, action, reload) => {
@@ -450,7 +448,7 @@ class EditorContainer extends Component {
           message: "Opening scene..."
         });
       }, PROGRESS_DIALOG_DELAY);
-      await this.props.editor[action](uri);
+      await action(uri);
       this.hideDialog();
     } catch (e) {
       this.setState({
