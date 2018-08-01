@@ -29,7 +29,7 @@ export default class SkyboxComponent extends BaseComponent {
     this._object.material.uniforms.sunPosition.value.set(x, y, z).normalize();
   }
 
-  updateProperty(propertyName, value) {
+  async updateProperty(propertyName, value) {
     super.updateProperty(propertyName, value);
     const uniforms = this._object.material.uniforms;
     switch (propertyName) {
@@ -44,9 +44,9 @@ export default class SkyboxComponent extends BaseComponent {
     }
   }
 
-  static inflate(node, _props) {
+  static async inflate(node, _props) {
     const sky = new THREE.Sky();
-    const component = this._getOrCreateComponent(node, _props, sky);
+    const component = await this._getOrCreateComponent(node, _props, sky);
     node.add(sky);
     return component;
   }

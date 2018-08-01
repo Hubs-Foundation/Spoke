@@ -26,7 +26,8 @@ export default class BaseComponent {
     return this.props[propertyName];
   }
 
-  updateProperty(propertyName, value) {
+  // updateProperty is intentionally async here since subclasses may want to await.
+  async updateProperty(propertyName, value) {
     this.props[propertyName] = value;
   }
 
@@ -40,7 +41,7 @@ export default class BaseComponent {
     return {};
   }
 
-  static _getOrCreateComponent(node, props, object) {
+  static async _getOrCreateComponent(node, props, object) {
     props = { ...getDefaultsFromSchema(this.schema), ...this._propsFromObject(node), ...props };
     if (!node.userData._components) {
       node.userData._components = [];
@@ -58,16 +59,19 @@ export default class BaseComponent {
       object.userData._dontExport = true;
     }
 
+    const propertyUpdatePromises = [];
     for (const key in props) {
       if (props.hasOwnProperty(key)) {
-        component.updateProperty(key, props[key]);
+        propertyUpdatePromises.push(component.updateProperty(key, props[key]));
       }
     }
+    await Promise.all(propertyUpdatePromises);
 
     return component;
   }
 
-  static inflate(node, props) {
+  // inflate is intentionally async here since subclasses may want to await.
+  static async inflate(node, props) {
     return this._getOrCreateComponent(node, props);
   }
 

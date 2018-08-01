@@ -48,7 +48,7 @@ export default class TransformComponent extends BaseComponent {
     });
   }
 
-  updateProperty(propertyName, value) {
+  async updateProperty(propertyName, value) {
     this._object[propertyName].set(value.x, value.y, value.z);
   }
 }
