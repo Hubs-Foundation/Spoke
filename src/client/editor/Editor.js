@@ -165,7 +165,7 @@ export default class Editor {
   //
 
   popScene() {
-    const poppedUri = this.sceneInfo.uri;
+    const poppedURI = this.sceneInfo.uri;
 
     this.deselect();
 
@@ -177,10 +177,13 @@ export default class Editor {
     this.helpers = this.sceneInfo.helpers;
     this.objects = this.sceneInfo.objects;
 
-    if (poppedUri) {
+    if (poppedURI) {
       const sceneRefComponentName = SceneReferenceComponent.componentName;
-      this.updateComponentProperty(this._prefabBeingEdited, sceneRefComponentName, "src", poppedUri);
-      this._prefabBeingEdited.name = last(poppedUri.split("/"));
+      const previousURI = this.getComponentProperty(this._prefabBeingEdited, sceneRefComponentName, "src");
+      this.updateComponentProperty(this._prefabBeingEdited, sceneRefComponentName, "src", poppedURI);
+      if (previousURI.endsWith(".gltf")) {
+        this._prefabBeingEdited.name = last(poppedURI.split("/"));
+      }
     }
 
     this._prefabBeingEdited = null;

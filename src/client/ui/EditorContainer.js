@@ -315,6 +315,7 @@ class EditorContainer extends Component {
         }
       }
 
+      // If the previous URI was a gltf, update the ancestors, since we are now dealing with a .scene file.
       if (editor.sceneInfo.uri && editor.sceneInfo.uri.endsWith(".gltf")) {
         sceneUserData._ancestors = [editor.sceneInfo.uri];
       }
