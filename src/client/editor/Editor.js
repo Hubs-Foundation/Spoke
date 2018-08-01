@@ -221,6 +221,7 @@ export default class Editor {
     this.sceneInfo = {
       uri: uri,
       scene: scene,
+      modified: false,
       helperScene: this.helperScene,
       helpers: this.helpers,
       objects: this.objects
@@ -245,6 +246,8 @@ export default class Editor {
     this._setSceneDefaults(scene);
 
     this._setScene(scene);
+
+    this.signals.sceneModified.dispatch();
 
     return scene;
   }
@@ -305,6 +308,8 @@ export default class Editor {
     this._setScene(scene);
 
     this._addDependency(uri, scene);
+
+    this.signals.sceneModified.dispatch();
 
     return scene;
   }
