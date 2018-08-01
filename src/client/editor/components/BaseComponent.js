@@ -70,6 +70,7 @@ export default class BaseComponent {
     return component;
   }
 
+  // inflate is intentionally async here since subclasses may want to await.
   static async inflate(node, props) {
     return this._getOrCreateComponent(node, props);
   }
