@@ -78,6 +78,25 @@ export default async function startServer(options) {
   const projectPath = path.resolve(opts.projectPath);
   const projectDirName = path.basename(projectPath);
 
+  await fs.ensureDir(projectPath);
+
+  const projectFilePath = path.join(projectPath, "spoke-project.json");
+
+  if (!fs.existsSync(projectFilePath)) {
+    await fs.writeJSON(projectFilePath, {});
+  }
+
+  if (opts.copyDefaultAssets) {
+    const exampleDirPath = path.join(__dirname, "..", "..", "example");
+    const defaultAssetDirectories = ["ArchitectureKit", "Parthenon"];
+
+    for (const assetDir of defaultAssetDirectories) {
+      const src = path.join(exampleDirPath, assetDir);
+      const dest = path.join(projectPath, assetDir);
+      await fs.copy(src, dest);
+    }
+  }
+
   const app = new Koa();
 
   let server;

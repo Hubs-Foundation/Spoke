@@ -10,6 +10,8 @@
     "bin/",
     "lib/",
     "public/",
+    "example/ArchitectureKit",
+    "example/Parthenon",
     "LICENSE"
   ],
   "repository": {
@@ -17,7 +19,7 @@
     "url": "https://github.com/MozillaReality/spoke.git"
   },
   "scripts": {
-    "dev": "cross-env NODE_ENV=development node ./bin/spoke --https ./example",
+    "dev": "cross-env NODE_ENV=development node ./bin/spoke --https --no-open ./example",
     "dev:http": "cross-env NODE_ENV=development node ./bin/spoke ./example",
     "dev:nopath": "cross-env NODE_ENV=development node ./bin/spoke",
     "build": "concurrently \"npm run build:server\" \"npm run build:client\"",

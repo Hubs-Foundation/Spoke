@@ -2,14 +2,17 @@
 const commander = require("commander");
 const opn = require("opn");
 const pkg = require("../package.json");
+const fs = require("fs");
+const path = require("path");
+const readline = require("readline");
 
 commander.version(pkg.version);
 
 commander.usage("[options] <projectDir>");
 
-commander.option("-o, --open", "Open browser");
+commander.option("-O, --no-open", "Disable opening browser.");
 commander.option("-p, --port <port>", "Web server port. Defaults to 9090", 9090);
-commander.option("-s, --https", "Use HTTPS");
+commander.option("-s, --https", "Use HTTPS.");
 
 commander.parse(process.argv);
 
@@ -23,22 +26,45 @@ if (process.env.NODE_ENV === "development") {
 }
 
 const projectPath = commander.args.length > 0 ? commander.args[0] : process.cwd();
+const projectFilePath = path.join(projectPath, "spoke-project.json");
 
-console.log(`Starting ${pkg.name} server...`);
-console.log(`Serving project directory: ${projectPath}`);
-
-startServer({
-  projectPath,
-  port: commander.port,
-  https: commander.https
-})
-  .then(() => {
-    console.log(`Server listening on port ${commander.port}`);
-
-    if (commander.open) {
-      opn(`http://localhost:${commander.port}`);
-    }
-  })
-  .catch(error => {
-    console.error(error);
+if (!fs.existsSync(projectFilePath)) {
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
   });
+
+  rl.question("Creating new Spoke project. Would you like to add a the default assets? (Y/n)", answer => {
+    const formattedAnswer = answer.trim().toLowerCase();
+    const copyDefaultAssets = formattedAnswer === "y" || formattedAnswer === "";
+
+    rl.close();
+
+    run(copyDefaultAssets);
+  });
+} else {
+  run(false);
+}
+
+function run(copyDefaultAssets) {
+  console.log(`Starting ${pkg.name} server...`);
+  console.log(`Serving project directory: ${projectPath}`);
+
+  startServer({
+    projectPath,
+    copyDefaultAssets,
+    port: commander.port,
+    https: commander.https
+  })
+    .then(() => {
+      console.log(`Server listening on port ${commander.port}`);
+
+      if (commander.open) {
+        const protocol = commander.https ? "https" : "http";
+        opn(`${protocol}://localhost:${commander.port}`);
+      }
+    })
+    .catch(error => {
+      console.error(error);
+    });
+}
