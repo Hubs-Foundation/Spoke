@@ -177,7 +177,9 @@ export default class Editor {
       const previousURI = this.getComponentProperty(this._prefabBeingEdited, sceneRefComponentName, "src");
       this.updateComponentProperty(this._prefabBeingEdited, sceneRefComponentName, "src", poppedURI);
       if (previousURI.endsWith(".gltf")) {
-        this._prefabBeingEdited.name = last(poppedURI.split("/"));
+        const name = last(poppedURI.split("/"));
+        this._prefabBeingEdited.name = name;
+        this._duplicateNameCounters.set(name, this._duplicateNameCounters.get(name) || 0);
       }
     }
 
