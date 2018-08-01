@@ -29,8 +29,6 @@ export default class Editor {
       openScene: new Signal(),
       popScene: new Signal(),
 
-      editorCleared: new Signal(),
-
       savingStarted: new Signal(),
       savingFinished: new Signal(),
 
@@ -109,9 +107,6 @@ export default class Editor {
       this.sceneInfo.modified = true;
       this.signals.sceneModified.dispatch();
     });
-
-    this.materials = {};
-    this.textures = {};
 
     // TODO: Support multiple viewports
     this.viewports = [];
@@ -384,6 +379,7 @@ export default class Editor {
     this.addComponent(object, "transform");
 
     object.userData._saveParent = true;
+
     object.traverse(child => {
       let cacheName = child.name;
 
@@ -403,7 +399,6 @@ export default class Editor {
         this._duplicateNameCounters.set(cacheName, 0);
       }
 
-      if (child.material !== undefined) this.addMaterial(child.material);
       this.addHelper(child, object);
     });
 
@@ -445,10 +440,6 @@ export default class Editor {
 
     this.signals.objectRemoved.dispatch(object);
     this.signals.sceneGraphChanged.dispatch();
-  }
-
-  addMaterial(material) {
-    this.materials[material.uuid] = material;
   }
 
   //
@@ -747,28 +738,6 @@ export default class Editor {
       return true;
     }
     return false;
-  }
-
-  clear() {
-    this.history.clear();
-
-    this.camera.copy(this.DEFAULT_CAMERA);
-    this.scene.fog = null;
-
-    this.scene.traverse(this.removeHelper.bind(this));
-
-    const objects = this.scene.children;
-
-    while (objects.length > 0) {
-      this.removeObject(objects[0]);
-    }
-
-    this.materials = {};
-    this.textures = {};
-
-    this.deselect();
-
-    this.signals.editorCleared.dispatch();
   }
 
   objectByUuid(uuid) {

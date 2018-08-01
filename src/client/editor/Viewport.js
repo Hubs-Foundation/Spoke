@@ -234,11 +234,6 @@ export default class Viewport {
 
     // signals
 
-    signals.editorCleared.add(function() {
-      controls.center.set(0, 0, 0);
-      render();
-    });
-
     signals.transformModeChanged.add(mode => {
       this._transformControls.setMode(mode);
     });
