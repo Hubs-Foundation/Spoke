@@ -82,8 +82,10 @@ function shallowEquals(objA, objB) {
 }
 
 function hasExtrasOrExtensions(obj) {
-  for (const key in obj.userData) {
-    if (!key.startsWith("_")) {
+  const userData = obj.userData;
+
+  for (const key in userData) {
+    if (userData.hasOwnProperty(key) && !key.startsWith("_")) {
       return true;
     }
   }
@@ -95,7 +97,7 @@ function removeEditorData(scene) {
   scene.traverse(({ userData }) => {
     // Remove editor data.
     for (const key in userData) {
-      if (key.startsWith("_")) {
+      if (userData.hasOwnProperty(key) && key.startsWith("_")) {
         delete userData[key];
       }
     }
