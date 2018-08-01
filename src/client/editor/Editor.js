@@ -28,6 +28,7 @@ export default class Editor {
     this.signals = {
       openScene: new Signal(),
       popScene: new Signal(),
+      extendScene: new Signal(),
 
       editorCleared: new Signal(),
 
@@ -385,17 +386,21 @@ export default class Editor {
     };
 
     this.deselect();
+    this._deleteSceneDependencies();
     this._resetHelpers();
+    this._clearCaches();
+
     const ancestors = [];
     const scene = await loadSerializedScene(extendSceneDef, inheritedURI, this.addComponent, true, ancestors);
-
-    scene.userData._ancestors = ancestors;
 
     this._setSceneInfo(scene, null);
     this.scenes = [this.sceneInfo];
     this._setSceneDefaults(scene);
     this._setScene(scene);
-    this._addDependency(null, scene);
+    this._addDependency(inheritedURI, scene);
+
+    this.signals.sceneModified.dispatch();
+
     return scene;
   }
   //

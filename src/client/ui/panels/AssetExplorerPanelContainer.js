@@ -197,7 +197,7 @@ class AssetExplorerPanelContainer extends Component {
     if (file.ext === ".gltf") {
       this.props.editor.signals.openScene.dispatch(file.uri);
     } else {
-      this.props.editor.extendScene(file.uri);
+      this.props.editor.signals.extendScene.dispatch(file.uri);
     }
     return;
   };
