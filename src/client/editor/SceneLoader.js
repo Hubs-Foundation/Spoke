@@ -585,7 +585,8 @@ export async function loadScene(uri, addComponent, isRoot = true, ancestors) {
   }
 
   if (!isRoot) {
-    const sceneRoot = sceneDef.entities[sceneDef.root];
+    // Remove default light components from a referenced scene root.
+    const sceneRoot = sceneDef.root && sceneDef.entities[sceneDef.root];
     if (sceneRoot && sceneRoot.components) {
       sceneRoot.components = sceneRoot.components.filter(
         component => !defaultLightComponentNames.includes(component.name)
