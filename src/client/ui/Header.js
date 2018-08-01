@@ -13,5 +13,5 @@ export default function Header({ title, children }) {
 
 Header.propTypes = {
   title: PropTypes.string,
-  children: PropTypes.arrayOf(PropTypes.element)
+  children: PropTypes.node
 };

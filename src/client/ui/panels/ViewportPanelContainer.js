@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import PropTypes from "prop-types";
 import { HotKeys } from "react-hotkeys";
 
+import THREE from "../../vendor/three";
 import Viewport from "../Viewport";
 import { withEditor } from "../contexts/EditorContext";
 import styles from "./ViewportPanelContainer.scss";

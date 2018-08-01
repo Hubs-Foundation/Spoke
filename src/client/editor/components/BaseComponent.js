@@ -1,3 +1,5 @@
+import THREE from "../../vendor/three";
+
 export function getDefaultsFromSchema(schema) {
   const defaults = {};
   schema.forEach(prop => {
