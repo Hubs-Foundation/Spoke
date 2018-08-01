@@ -28,6 +28,7 @@ export default class Editor {
     this.signals = {
       openScene: new Signal(),
       popScene: new Signal(),
+      extendScene: new Signal(),
 
       savingStarted: new Signal(),
       savingFinished: new Signal(),
@@ -375,6 +376,30 @@ export default class Editor {
     return exportScene(this.scene);
   }
 
+  async extendScene(inheritedURI) {
+    const extendSceneDef = {
+      entities: {},
+      inherits: inheritedURI
+    };
+
+    this.deselect();
+    this._deleteSceneDependencies();
+    this._resetHelpers();
+    this._clearCaches();
+
+    const ancestors = [];
+    const scene = await loadSerializedScene(extendSceneDef, inheritedURI, this.addComponent, true, ancestors);
+
+    this._setSceneInfo(scene, null);
+    this.scenes = [this.sceneInfo];
+    this._setSceneDefaults(scene);
+    this._setScene(scene);
+    this._addDependency(inheritedURI, scene);
+
+    this.signals.sceneModified.dispatch();
+
+    return scene;
+  }
   //
 
   addObject(object, parent) {

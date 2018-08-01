@@ -159,6 +159,7 @@ class EditorContainer extends Component {
     this.props.editor.signals.windowResize.dispatch();
     this.props.editor.signals.popScene.add(this.onPopScene);
     this.props.editor.signals.openScene.add(this.onOpenScene);
+    this.props.editor.signals.extendScene.add(this.onExtendScene);
     this.props.editor.signals.sceneModified.add(this.onSceneModified);
     this.props.project.addListener("change", path => {
       this.props.editor.signals.fileChanged.dispatch(path);
@@ -428,7 +429,15 @@ class EditorContainer extends Component {
   onOpenScene = async uri => {
     if (this.props.editor.sceneInfo.uri === uri) return;
     if (!this.confirmSceneChange()) return;
+    this._tryLoadSceneFromURI(uri, this.props.editor.openRootScene.bind(this.props.editor), this.onOpenScene);
+  };
 
+  onExtendScene = async uri => {
+    if (!this.confirmSceneChange()) return;
+    this._tryLoadSceneFromURI(uri, this.props.editor.extendScene.bind(this.props.editor), this.onExtendScene);
+  };
+
+  _tryLoadSceneFromURI = async (uri, action, reload) => {
     let opened = false;
 
     try {
@@ -439,8 +448,7 @@ class EditorContainer extends Component {
           message: "Opening scene..."
         });
       }, PROGRESS_DIALOG_DELAY);
-
-      await this.props.editor.openRootScene(uri);
+      await action(uri);
       this.hideDialog();
     } catch (e) {
       this.setState({
@@ -459,7 +467,7 @@ class EditorContainer extends Component {
                 label: "Resolved",
                 onClick: () => {
                   this.setState({ openModal: null });
-                  this.onOpenScene(uri);
+                  reload(uri);
                 }
               }
             ],
