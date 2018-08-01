@@ -1,3 +1,4 @@
+import THREE from "../../vendor/three";
 import BaseComponent from "./BaseComponent";
 import { types } from "./utils";
 
@@ -9,8 +10,8 @@ export default class AmbientLightComponent extends BaseComponent {
     { name: "intensity", type: types.number, default: 1, min: 0 }
   ];
 
-  updateProperty(propertyName, value) {
-    super.updateProperty(propertyName, value);
+  async updateProperty(propertyName, value) {
+    await super.updateProperty(propertyName, value);
     switch (propertyName) {
       case "color":
         this._object.color.set(value);
@@ -20,9 +21,9 @@ export default class AmbientLightComponent extends BaseComponent {
     }
   }
 
-  static inflate(node, props) {
+  static async inflate(node, props) {
     const light = new THREE.AmbientLight();
-    const component = this._getOrCreateComponent(node, props, light);
+    const component = await this._getOrCreateComponent(node, props, light);
     node.add(light);
     return component;
   }

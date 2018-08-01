@@ -5,7 +5,19 @@ import ConflictHandler from "./ConflictHandler";
 import StandardMaterialComponent from "../editor/components/StandardMaterialComponent";
 import ShadowComponent from "./components/ShadowComponent";
 import SceneLoaderError from "./SceneLoaderError";
+import {
+  computeAndSetStaticModes,
+  isStatic,
+  getStaticMode,
+  setStaticMode,
+  getOriginalStaticMode,
+  setOriginalStaticMode
+} from "./StaticMode";
 import { gltfCache } from "./caches";
+import DirectionalLightComponent from "./components/DirectionalLightComponent";
+import AmbientLightComponent from "./components/AmbientLightComponent";
+
+const defaultLightComponentNames = [DirectionalLightComponent.componentName, AmbientLightComponent.componentName];
 
 export function absoluteToRelativeURL(from, to) {
   if (from === to) return to;
@@ -70,12 +82,27 @@ function shallowEquals(objA, objB) {
   return true;
 }
 
-function isEmptyObject(obj) {
-  for (const key in obj) {
-    return false;
+function hasExtrasOrExtensions(obj) {
+  const userData = obj.userData;
+
+  for (const key in userData) {
+    if (userData.hasOwnProperty(key) && !key.startsWith("_")) {
+      return true;
+    }
   }
 
-  return true;
+  return false;
+}
+
+function removeEditorData(scene) {
+  scene.traverse(({ userData }) => {
+    // Remove editor data.
+    for (const key in userData) {
+      if (userData.hasOwnProperty(key) && key.startsWith("_")) {
+        delete userData[key];
+      }
+    }
+  });
 }
 
 function removeUnusedObjects(object) {
@@ -91,8 +118,8 @@ function removeUnusedObjects(object) {
     canBeRemoved &&
     (object.constructor === THREE.Object3D || object.constructor === THREE.Scene) &&
     object.children.length === 0 &&
-    object.isStatic &&
-    isEmptyObject(object.userData);
+    isStatic(object) &&
+    !hasExtrasOrExtensions(object);
 
   if (canBeRemoved && shouldRemove) {
     object.parent.remove(object);
@@ -105,6 +132,8 @@ function removeUnusedObjects(object) {
 export async function exportScene(scene) {
   const clonedScene = scene.clone();
 
+  computeAndSetStaticModes(clonedScene);
+
   const meshesToCombine = [];
 
   // First pass at scene optimization.
@@ -113,7 +142,7 @@ export async function exportScene(scene) {
     const curShadowComponent = ShadowComponent.getComponent(object);
     const curMaterialComponent = StandardMaterialComponent.getComponent(object);
 
-    if (object.userData._static && curShadowComponent && curMaterialComponent) {
+    if (isStatic(object) && curShadowComponent && curMaterialComponent) {
       let foundMaterial = false;
 
       for (const { shadowComponent, materialComponent, meshes } of meshesToCombine) {
@@ -203,17 +232,6 @@ export async function exportScene(scene) {
       }
     }
 
-    if (userData._static) {
-      object.isStatic = true;
-    }
-
-    // Remove editor data.
-    for (const key in userData) {
-      if (key.startsWith("_")) {
-        delete userData[key];
-      }
-    }
-
     // Add shadow component to meshes with non-default values.
     if (object.isMesh && (object.castShadow || object.receiveShadow)) {
       if (!object.userData.components) {
@@ -228,6 +246,7 @@ export async function exportScene(scene) {
   });
 
   removeUnusedObjects(clonedScene);
+  removeEditorData(clonedScene);
 
   // TODO: export animations
   const chunks = await new Promise((resolve, reject) => {
@@ -281,26 +300,28 @@ export async function exportScene(scene) {
   return chunks;
 }
 
-function inflateGLTFComponents(scene, addComponent) {
-  scene.traverse(object => {
+async function inflateGLTFComponents(scene, addComponent) {
+  const addComponentPromises = [];
+  scene.traverse(async object => {
     const extensions = object.userData.gltfExtensions;
     if (extensions !== undefined) {
       for (const extensionName in extensions) {
-        addComponent(object, extensionName, extensions[extensionName], true);
+        addComponentPromises.push(addComponent(object, extensionName, extensions[extensionName], true));
       }
     }
 
     if (object instanceof THREE.Mesh) {
-      addComponent(object, "mesh", null, true);
+      addComponentPromises.push(addComponent(object, "mesh", null, true));
 
       const shadowProps = object.userData.components ? object.userData.components.shadow : null;
-      addComponent(object, "shadow", shadowProps, true);
+      addComponentPromises.push(addComponent(object, "shadow", shadowProps, true));
 
       if (object.material instanceof THREE.MeshStandardMaterial) {
-        addComponent(object, "standard-material", null, true);
+        addComponentPromises.push(addComponent(object, "standard-material", null, true));
       }
     }
   });
+  await Promise.all(addComponentPromises);
 }
 
 function addChildAtIndex(parent, child, index) {
@@ -445,6 +466,7 @@ export async function loadSerializedScene(sceneDef, baseURI, addComponent, isRoo
     // Sort entities by insertion order (uses parent and index to determine order).
     const sortedEntities = sortEntities(entities);
 
+    const entityComponentPromises = [];
     for (const entityName of sortedEntities) {
       const entity = entities[entityName];
 
@@ -501,15 +523,27 @@ export async function loadSerializedScene(sceneDef, baseURI, addComponent, isRoo
             if (resp.ok) {
               json = await resp.json();
             }
-            const component = addComponent(entityObj, componentDef.name, json, !isRoot);
-            component.src = componentDef.src;
-            component.srcIsValid = resp.ok;
+            entityComponentPromises.push(
+              addComponent(entityObj, componentDef.name, json, !isRoot).then(component => {
+                component.src = componentDef.src;
+                component.srcIsValid = resp.ok;
+              })
+            );
           } else {
-            addComponent(entityObj, componentDef.name, props, !isRoot);
+            entityComponentPromises.push(addComponent(entityObj, componentDef.name, props, !isRoot));
           }
         }
       }
+
+      if (entity.staticMode !== undefined) {
+        setStaticMode(entityObj, entity.staticMode);
+
+        if (isRoot) {
+          setOriginalStaticMode(entityObj, entity.staticMode);
+        }
+      }
     }
+    await Promise.all(entityComponentPromises);
   }
 
   return scene;
@@ -534,7 +568,7 @@ export async function loadScene(uri, addComponent, isRoot = true, ancestors) {
     scene.userData._conflictHandler = new ConflictHandler();
     scene.userData._conflictHandler.findDuplicates(scene, 0, 0);
     scene.userData._conflictHandler.updateAllDuplicateStatus(scene);
-    inflateGLTFComponents(scene, addComponent);
+    await inflateGLTFComponents(scene, addComponent);
 
     return scene;
   }
@@ -548,6 +582,15 @@ export async function loadScene(uri, addComponent, isRoot = true, ancestors) {
 
   if (isRoot) {
     ancestors = [];
+  }
+
+  if (!isRoot) {
+    const sceneRoot = sceneDef.entities[sceneDef.root];
+    if (sceneRoot && sceneRoot.components) {
+      sceneRoot.components = sceneRoot.components.filter(
+        component => !defaultLightComponentNames.includes(component.name)
+      );
+    }
   }
 
   scene = await loadSerializedScene(sceneDef, uri, addComponent, isRoot, ancestors);
@@ -565,6 +608,7 @@ export function serializeScene(scene, scenePath) {
     let parent;
     let index;
     let components;
+    let staticMode;
 
     // Serialize the parent and index if _saveParent is set.
     if (entityObject.userData._saveParent) {
@@ -605,12 +649,20 @@ export function serializeScene(scene, scenePath) {
       }
     }
 
+    const curStaticMode = getStaticMode(entityObject);
+    const originalStaticMode = getOriginalStaticMode(entityObject);
+
+    if (curStaticMode !== originalStaticMode) {
+      staticMode = curStaticMode;
+    }
+
     const saveEntity = entityObject.userData._saveEntity;
 
-    if (parent !== undefined || components !== undefined || saveEntity) {
+    if (parent !== undefined || components !== undefined || staticMode !== undefined || saveEntity) {
       entities[entityObject.name] = {
         parent,
         index,
+        staticMode,
         components
       };
     }

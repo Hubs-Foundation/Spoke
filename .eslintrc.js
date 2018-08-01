@@ -5,9 +5,6 @@ module.exports = {
     es6: true,
     node: true
   },
-  globals: {
-    THREE: true
-  },
   plugins: ["prettier", "react"],
   rules: {
     "prettier/prettier": "error",

@@ -18,8 +18,9 @@ export default class AddComponentCommand extends Command {
   }
 
   execute() {
-    this.editor.addComponent(this.object, this.componentName);
-    this.editor.signals.objectChanged.dispatch(this.object);
+    this.editor.addComponent(this.object, this.componentName).then(() => {
+      this.editor.signals.objectChanged.dispatch(this.object);
+    });
   }
 
   undo() {

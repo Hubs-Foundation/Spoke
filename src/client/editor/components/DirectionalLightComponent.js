@@ -17,8 +17,8 @@ export default class DirectionalLightComponent extends BaseComponent {
 
   static _tempEuler = new THREE.Euler(0, 0, 0, "YXZ");
 
-  updateProperty(propertyName, value) {
-    super.updateProperty(propertyName, value);
+  async updateProperty(propertyName, value) {
+    await super.updateProperty(propertyName, value);
     const { _tempEuler } = DirectionalLightComponent;
     switch (propertyName) {
       case "color":
@@ -35,9 +35,9 @@ export default class DirectionalLightComponent extends BaseComponent {
     }
   }
 
-  static inflate(node, _props) {
+  static async inflate(node, _props) {
     const light = new THREE.DirectionalLight();
-    const component = this._getOrCreateComponent(node, _props, light);
+    const component = await this._getOrCreateComponent(node, _props, light);
     node.add(light);
     return component;
   }

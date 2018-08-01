@@ -13,8 +13,8 @@ export default class ShadowComponent extends BaseComponent {
     { name: "receiveShadow", type: types.boolean, default: true }
   ];
 
-  updateProperty(propertyName, value) {
-    super.updateProperty(propertyName, value);
+  async updateProperty(propertyName, value) {
+    await super.updateProperty(propertyName, value);
     this._object[propertyName] = value;
 
     if (this._object.material) {

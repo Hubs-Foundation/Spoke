@@ -98,18 +98,15 @@ export default class Editor {
 
     this._prefabBeingEdited = null;
 
+    this._ignoreSceneModification = false;
     this.signals.sceneGraphChanged.add(() => {
+      if (this._ignoreSceneModification) return;
       this.sceneInfo.modified = true;
       this.signals.sceneModified.dispatch();
     });
-
     this.signals.objectChanged.add(() => {
+      if (this._ignoreSceneModification) return;
       this.sceneInfo.modified = true;
-      this.signals.sceneModified.dispatch();
-    });
-
-    this.signals.sceneSet.add(() => {
-      this.sceneInfo.modified = false;
       this.signals.sceneModified.dispatch();
     });
 
@@ -122,7 +119,6 @@ export default class Editor {
     this.selected = null;
 
     this.components = new Map();
-
     for (const componentClass of Components) {
       this.registerComponent(componentClass);
     }
@@ -225,6 +221,7 @@ export default class Editor {
     this.sceneInfo = {
       uri: uri,
       scene: scene,
+      modified: false,
       helperScene: this.helperScene,
       helpers: this.helpers,
       objects: this.objects
@@ -250,13 +247,20 @@ export default class Editor {
 
     this._setScene(scene);
 
+    this.signals.sceneModified.dispatch();
+
     return scene;
   }
 
   openRootScene(uri) {
     this.scenes = [];
     this._clearCaches();
-    return this._loadScene(uri);
+    this._ignoreSceneModification = true;
+    const scene = this._loadScene(uri).then(scene => {
+      this._ignoreSceneModification = false;
+      return scene;
+    });
+    return scene;
   }
 
   _setScene(scene) {
@@ -271,13 +275,13 @@ export default class Editor {
     return this.sceneInfo.modified;
   }
 
-  _setSceneDefaults(scene, skipSave) {
+  async _setSceneDefaults(scene, skipSave) {
     scene.background = new THREE.Color(0xaaaaaa);
     if (!this.getComponent(scene, AmbientLightComponent.componentName)) {
-      this.addComponent(scene, AmbientLightComponent.componentName, null, skipSave);
+      await this.addComponent(scene, AmbientLightComponent.componentName, null, skipSave);
     }
     if (!this.getComponent(scene, DirectionalLightComponent.componentName)) {
-      this.addComponent(scene, DirectionalLightComponent.componentName, null, skipSave);
+      await this.addComponent(scene, DirectionalLightComponent.componentName, null, skipSave);
     }
   }
 
@@ -299,11 +303,13 @@ export default class Editor {
     this._setSceneInfo(scene, uri);
     this.scenes.push(this.sceneInfo);
 
-    this._setSceneDefaults(scene, skipSaveDefaults);
+    await this._setSceneDefaults(scene, skipSaveDefaults);
 
     this._setScene(scene);
 
     this._addDependency(uri, scene);
+
+    this.signals.sceneModified.dispatch();
 
     return scene;
   }
@@ -316,7 +322,7 @@ export default class Editor {
     scene.userData._sceneReference = uri;
 
     scene.traverse(child => {
-      Object.defineProperty(child.userData, "_selectionRoot", { value: parent, enumerable: false });
+      Object.defineProperty(child.userData, "_selectionRoot", { value: parent, configurable: true, enumerable: false });
     });
 
     this.signals.objectAdded.dispatch(scene);
@@ -354,7 +360,7 @@ export default class Editor {
     const sceneInfo = this.scenes.find(sceneInfo => sceneInfo.uri === sceneURI);
     sceneInfo.scene = scene;
 
-    this._setSceneDefaults(scene);
+    await this._setSceneDefaults(scene);
 
     this._setScene(scene);
 
@@ -524,21 +530,22 @@ export default class Editor {
     this.components.set(componentName, componentClass);
   }
 
-  addComponent = (object, componentName, props, skipSave) => {
+  addComponent = async (object, componentName, props, skipSave) => {
     let component;
 
     if (this.components.has(componentName)) {
-      component = this.components.get(componentName).inflate(object, props);
+      component = await this.components.get(componentName).inflate(object, props);
 
       if (componentName === SceneReferenceComponent.componentName && props && props.src) {
-        this._loadSceneReference(props.src, object)
+        await this._loadSceneReference(props.src, object)
           .then(() => {
             if (component.propValidation.src !== true) {
               component.propValidation.src = true;
               this.signals.objectChanged.dispatch(object);
             }
           })
-          .catch(() => {
+          .catch(e => {
+            console.error("Failed to loadSceneReference", e);
             if (component.propValidation.src !== false) {
               component.propValidation.src = false;
               this.signals.objectChanged.dispatch(object);
@@ -616,13 +623,9 @@ export default class Editor {
   updateComponentProperty(object, componentName, propertyName, value) {
     const component = this.getComponent(object, componentName);
 
-    let result;
-
     if (this.components.has(componentName)) {
-      result = component.updateProperty(propertyName, value);
-
       if (componentName === SceneReferenceComponent.componentName && propertyName === "src") {
-        result = component.updateProperty(propertyName, value);
+        component.updateProperty(propertyName, value);
         this._removeChildren(object);
         this._loadSceneReference(component.props.src, object)
           .then(() => {
@@ -639,12 +642,14 @@ export default class Editor {
               this.signals.objectChanged.dispatch(object);
             }
           });
+      } else {
+        component.updateProperty(propertyName, value).then(() => {
+          this.signals.objectChanged.dispatch(object);
+        });
       }
     } else {
-      result = component[propertyName] = value;
+      component[propertyName] = value;
     }
-
-    return result;
   }
 
   //
@@ -739,7 +744,11 @@ export default class Editor {
       if (child.userData._inflated) continue;
       const childClone = this._cloneAndInflate(child, root);
       clone.add(childClone);
-      Object.defineProperty(childClone.userData, "_selectionRoot", { value: root, enumerable: false });
+      Object.defineProperty(childClone.userData, "_selectionRoot", {
+        value: root,
+        configurable: true,
+        enumerable: false
+      });
     }
     return clone;
   }

@@ -1,4 +1,3 @@
-import THREE from "../../vendor/three";
 import Command from "../Command";
 
 /**
@@ -47,23 +46,5 @@ export default class SetRotationCommand extends Command {
 
   update(command) {
     this.newRotation.copy(command.newRotation);
-  }
-
-  toJSON() {
-    const output = super.toJSON();
-
-    output.objectUuid = this.object.uuid;
-    output.oldRotation = this.oldRotation.toArray();
-    output.newRotation = this.newRotation.toArray();
-
-    return output;
-  }
-
-  fromJSON(json) {
-    super.fromJSON(json);
-
-    this.object = this.editor.objectByUuid(json.objectUuid);
-    this.oldRotation = new THREE.Euler().fromArray(json.oldRotation);
-    this.newRotation = new THREE.Euler().fromArray(json.newRotation);
   }
 }

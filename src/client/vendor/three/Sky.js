@@ -13,6 +13,7 @@
  *
  * Three.js integration by zz85 http://twitter.com/blurspline
  */
+/* global THREE */
 
 THREE.Sky = function() {
   const shader = THREE.Sky.SkyShader;

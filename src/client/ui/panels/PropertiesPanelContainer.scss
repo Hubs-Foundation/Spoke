@@ -14,6 +14,11 @@
   height: 100%;
 }
 
+:local(.staticSelect) {
+  text-align: left;
+  width: 200px;
+}
+
 :local(.addComponentContainer) {
   display: flex;
   flex-direction: row;

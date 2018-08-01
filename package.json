@@ -1,7 +1,7 @@
 {
   "name": "spoke-test-cli",
   "license": "MPL-2.0",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "bin": {
     "spoke": "bin/spoke"
   },
@@ -10,6 +10,8 @@
     "bin/",
     "lib/",
     "public/",
+    "example/ArchitectureKit",
+    "example/Parthenon",
     "LICENSE"
   ],
   "repository": {
@@ -17,8 +19,8 @@
     "url": "https://github.com/MozillaReality/spoke.git"
   },
   "scripts": {
-    "dev": "cross-env NODE_ENV=development node ./bin/spoke --https ./example",
-    "dev:http": "cross-env NODE_ENV=development node ./bin/spoke ./example",
+    "dev": "cross-env NODE_ENV=development node ./bin/spoke --https --no-open ./example",
+    "dev:http": "cross-env NODE_ENV=development node ./bin/spoke --no-open ./example",
     "dev:nopath": "cross-env NODE_ENV=development node ./bin/spoke",
     "build": "concurrently \"npm run build:server\" \"npm run build:client\"",
     "build:server": "babel src/server/ -d lib/server/",

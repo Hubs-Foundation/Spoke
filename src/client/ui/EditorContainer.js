@@ -320,12 +320,13 @@ class EditorContainer extends Component {
       }
 
       editor.setSceneURI(sceneURI);
+
+      editor.signals.sceneGraphChanged.dispatch();
+
       editor.sceneInfo.modified = false;
       this.onSceneModified();
 
       this.hideDialog();
-
-      editor.signals.sceneGraphChanged.dispatch();
     } catch (e) {
       console.error(e);
       this.showDialog(ErrorDialog, {
