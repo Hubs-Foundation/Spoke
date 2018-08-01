@@ -10,9 +10,9 @@ commander.version(pkg.version);
 
 commander.usage("[options] <projectDir>");
 
-commander.option("-o, --open", "Open browser");
+commander.option("-O, --no-open", "Disable opening browser.");
 commander.option("-p, --port <port>", "Web server port. Defaults to 9090", 9090);
-commander.option("-s, --https", "Use HTTPS");
+commander.option("-s, --https", "Use HTTPS.");
 
 commander.parse(process.argv);
 
@@ -34,8 +34,9 @@ if (!fs.existsSync(projectFilePath)) {
     output: process.stdout
   });
 
-  rl.question("Creating new Spoke project. Would you like to add a the default assets? (y/n)", answer => {
-    const copyDefaultAssets = answer.toLowerCase() === "y";
+  rl.question("Creating new Spoke project. Would you like to add a the default assets? (Y/n)", answer => {
+    const formattedAnswer = answer.trim().toLowerCase();
+    const copyDefaultAssets = formattedAnswer === "y" || formattedAnswer === "";
 
     rl.close();
 
@@ -59,7 +60,8 @@ function run(copyDefaultAssets) {
       console.log(`Server listening on port ${commander.port}`);
 
       if (commander.open) {
-        opn(`http://localhost:${commander.port}`);
+        const protocol = commander.https ? "https" : "http";
+        opn(`${protocol}://localhost:${commander.port}`);
       }
     })
     .catch(error => {
