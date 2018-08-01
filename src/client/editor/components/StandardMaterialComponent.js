@@ -135,11 +135,6 @@ export default class StandardMaterialComponent extends SaveableComponent {
 
   static async inflate(node, _props) {
     const component = await this._getOrCreateComponent(node, _props, node.material || null);
-    component.props.baseColorTexture = component.props.baseColorTexture;
-    component.props.normalTexture = component.props.normalTexture;
-    component.props.metallicRoughnessTexture = component.props.metallicRoughnessTexture;
-    component.props.emissiveTexture = component.props.emissiveTexture;
-    component.props.occlusionTexture = component.props.occlusionTexture;
     if (node.material) {
       node.material.envMap = envMap;
       node.material.needsUpdate = true;
