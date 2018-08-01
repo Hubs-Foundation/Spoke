@@ -176,7 +176,7 @@ class PropertiesPanelContainer extends Component {
           component.srcIsValid = true;
           component.shouldSave = true;
           component.modified = false;
-          component.constructor.inflate(this.state.object, await this.props.project.readJSON(component.src));
+          await component.constructor.inflate(this.state.object, await this.props.project.readJSON(component.src));
           this.props.editor.signals.objectChanged.dispatch(this.state.object);
           this.props.hideDialog();
         } catch (e) {

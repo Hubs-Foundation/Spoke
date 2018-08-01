@@ -97,21 +97,15 @@ export default class Editor {
     this.objects = initialSceneInfo.objects;
 
     this._prefabBeingEdited = null;
-    this._ignoreSceneModification = false;
 
+    this._ignoreSceneModification = false;
     this.signals.sceneGraphChanged.add(() => {
       if (this._ignoreSceneModification) return;
-      console.log("BPDEBUG sceneGraphChanged");
-      // console.log(new Error().stack.split("\n").filter(line => !/^(step|_asyncTo|promise|invoke)/.test(line)).join("\n"));
-      // console.trace();
       this.sceneInfo.modified = true;
       this.signals.sceneModified.dispatch();
     });
-
     this.signals.objectChanged.add(() => {
       if (this._ignoreSceneModification) return;
-      console.log("BPDEBUG objectChanged");
-      // console.trace();
       this.sceneInfo.modified = true;
       this.signals.sceneModified.dispatch();
     });
@@ -125,7 +119,6 @@ export default class Editor {
     this.selected = null;
 
     this.components = new Map();
-
     for (const componentClass of Components) {
       this.registerComponent(componentClass);
     }
@@ -259,11 +252,9 @@ export default class Editor {
   openRootScene(uri) {
     this.scenes = [];
     this._clearCaches();
-    console.log("BPDEBUG loading root scene");
     this._ignoreSceneModification = true;
     const scene = this._loadScene(uri).then(scene => {
       this._ignoreSceneModification = false;
-      console.log("BPDEBUG done loading root scene");
       return scene;
     });
     return scene;
@@ -281,13 +272,13 @@ export default class Editor {
     return this.sceneInfo.modified;
   }
 
-  _setSceneDefaults(scene, skipSave) {
+  async _setSceneDefaults(scene, skipSave) {
     scene.background = new THREE.Color(0xaaaaaa);
     if (!this.getComponent(scene, AmbientLightComponent.componentName)) {
-      this.addComponent(scene, AmbientLightComponent.componentName, null, skipSave);
+      await this.addComponent(scene, AmbientLightComponent.componentName, null, skipSave);
     }
     if (!this.getComponent(scene, DirectionalLightComponent.componentName)) {
-      this.addComponent(scene, DirectionalLightComponent.componentName, null, skipSave);
+      await this.addComponent(scene, DirectionalLightComponent.componentName, null, skipSave);
     }
   }
 
@@ -309,7 +300,7 @@ export default class Editor {
     this._setSceneInfo(scene, uri);
     this.scenes.push(this.sceneInfo);
 
-    this._setSceneDefaults(scene, skipSaveDefaults);
+    await this._setSceneDefaults(scene, skipSaveDefaults);
 
     this._setScene(scene);
 
@@ -364,7 +355,7 @@ export default class Editor {
     const sceneInfo = this.scenes.find(sceneInfo => sceneInfo.uri === sceneURI);
     sceneInfo.scene = scene;
 
-    this._setSceneDefaults(scene);
+    await this._setSceneDefaults(scene);
 
     this._setScene(scene);
 
@@ -518,20 +509,18 @@ export default class Editor {
     let component;
 
     if (this.components.has(componentName)) {
-      component = this.components.get(componentName).inflate(object, props);
+      component = await this.components.get(componentName).inflate(object, props);
 
       if (componentName === SceneReferenceComponent.componentName && props && props.src) {
-        console.log("BPDEBUG addComponent _loadSceneReference", props.src);
         const scene = this._loadSceneReference(props.src, object)
           .then(() => {
-            console.log("BPDEBUG _loadSceneReference success!");
             if (component.propValidation.src !== true) {
               component.propValidation.src = true;
               this.signals.objectChanged.dispatch(object);
             }
           })
           .catch(e => {
-            console.log("BPDEBUG _loadSceneReference failed!", e);
+            console.error("Failed to loadSceneReference", e);
             if (component.propValidation.src !== false) {
               component.propValidation.src = false;
               this.signals.objectChanged.dispatch(object);
@@ -610,13 +599,9 @@ export default class Editor {
   updateComponentProperty(object, componentName, propertyName, value) {
     const component = this.getComponent(object, componentName);
 
-    let result;
-
     if (this.components.has(componentName)) {
-      result = component.updateProperty(propertyName, value);
-
       if (componentName === SceneReferenceComponent.componentName && propertyName === "src") {
-        result = component.updateProperty(propertyName, value);
+        component.updateProperty(propertyName, value);
         this._removeChildren(object);
         this._loadSceneReference(component.props.src, object)
           .then(() => {
@@ -633,12 +618,14 @@ export default class Editor {
               this.signals.objectChanged.dispatch(object);
             }
           });
+      } else {
+        component.updateProperty(propertyName, value).then(() => {
+          this.signals.objectChanged.dispatch(object);
+        });
       }
     } else {
-      result = component[propertyName] = value;
+      component[propertyName] = value;
     }
-
-    return result;
   }
 
   //

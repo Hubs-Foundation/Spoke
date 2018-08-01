@@ -589,11 +589,12 @@ export async function loadScene(uri, addComponent, isRoot = true, ancestors) {
     ancestors = [];
   }
 
-  console.log("BPDEBUG loadScene", url, isRoot);
   if (!isRoot) {
-    const root = sceneDef.entities[sceneDef.root];
-    if (root && root.components) {
-      root.components = root.components.filter(component => !defaultLightComponentNames.includes(component.name));
+    const sceneRoot = sceneDef.entities[sceneDef.root];
+    if (sceneRoot && sceneRoot.components) {
+      sceneRoot.components = sceneRoot.components.filter(
+        component => !defaultLightComponentNames.includes(component.name)
+      );
     }
   }
 

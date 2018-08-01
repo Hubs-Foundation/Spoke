@@ -74,8 +74,8 @@ export default class StandardMaterialComponent extends SaveableComponent {
     }
   }
 
-  updateProperty(propertyName, value) {
-    super.updateProperty(propertyName, value);
+  async updateProperty(propertyName, value) {
+    await super.updateProperty(propertyName, value);
     if (!this._object) return;
     switch (propertyName) {
       case "color":
@@ -94,20 +94,20 @@ export default class StandardMaterialComponent extends SaveableComponent {
         this._object.side = value ? THREE.DoubleSide : THREE.FrontSide;
         break;
       case "baseColorTexture":
-        this._updateTexture(propertyName, "map", value, true);
+        await this._updateTexture(propertyName, "map", value, true);
         break;
       case "normalTexture":
-        this._updateTexture(propertyName, "normalMap", value);
+        await this._updateTexture(propertyName, "normalMap", value);
         break;
       case "metallicRoughnessTexture":
-        this._updateTexture(propertyName, "roughnessMap", value);
-        this._updateTexture(propertyName, "metalnessMap", value);
+        await this._updateTexture(propertyName, "roughnessMap", value);
+        await this._updateTexture(propertyName, "metalnessMap", value);
         break;
       case "emissiveTexture":
-        this._updateTexture(propertyName, "emissiveMap", value, true);
+        await this._updateTexture(propertyName, "emissiveMap", value, true);
         break;
       case "occlusionTexture":
-        this._updateTexture(propertyName, "aoMap", value);
+        await this._updateTexture(propertyName, "aoMap", value);
         break;
       default:
         this._object[propertyName] = value;
@@ -133,8 +133,8 @@ export default class StandardMaterialComponent extends SaveableComponent {
     };
   }
 
-  static inflate(node, _props) {
-    const component = this._getOrCreateComponent(node, _props, node.material || null);
+  static async inflate(node, _props) {
+    const component = await this._getOrCreateComponent(node, _props, node.material || null);
     component.props.baseColorTexture = component.props.baseColorTexture;
     component.props.normalTexture = component.props.normalTexture;
     component.props.metallicRoughnessTexture = component.props.metallicRoughnessTexture;

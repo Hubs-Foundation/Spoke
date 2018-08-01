@@ -11,8 +11,8 @@ export default class PointLightComponent extends BaseComponent {
     { name: "castShadow", type: types.boolean, default: true }
   ];
 
-  updateProperty(propertyName, value) {
-    super.updateProperty(propertyName, value);
+  async updateProperty(propertyName, value) {
+    await super.updateProperty(propertyName, value);
     switch (propertyName) {
       case "color":
         this._object.color.set(value);
@@ -22,9 +22,9 @@ export default class PointLightComponent extends BaseComponent {
     }
   }
 
-  static inflate(node, _props) {
+  static async inflate(node, _props) {
     const light = new THREE.PointLight();
-    const component = this._getOrCreateComponent(node, _props, light);
+    const component = await this._getOrCreateComponent(node, _props, light);
     node.add(light);
     return component;
   }
