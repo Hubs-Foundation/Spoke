@@ -39,6 +39,7 @@ class ViewportPanelContainer extends Component {
       object.name = file.name;
       this.props.editor.addObject(object);
       this.props.editor.addComponent(object, "scene-reference", { src: file.uri });
+      this.props.editor.select(object);
     }
   };
 
