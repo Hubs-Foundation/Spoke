@@ -161,6 +161,7 @@ class EditorContainer extends Component {
     this.props.editor.signals.openScene.add(this.onOpenScene);
     this.props.editor.signals.extendScene.add(this.onExtendScene);
     this.props.editor.signals.sceneModified.add(this.onSceneModified);
+    this.props.editor.signals.sceneErrorOccurred.add(this.onSceneErrorOccurred);
     this.props.project.addListener("change", path => {
       this.props.editor.signals.fileChanged.dispatch(path);
     });
@@ -480,6 +481,41 @@ class EditorContainer extends Component {
       });
     } finally {
       opened = true;
+    }
+  };
+
+  onSceneErrorOccurred = error => {
+    if (error) {
+      // missing/duplicate node names in the importing file
+      this.showDialog(OptionDialog, {
+        title: "Resolve Node Conflicts",
+        message:
+          "We've found duplicate and/or missing node names in this file.\nWould you like to fix all conflicts?\n*This will modify the original file.",
+        options: [
+          {
+            label: "okay",
+            onClick: () => {
+              this.setState({ openModal: null });
+              // execute the renaming process
+            }
+          }
+        ],
+        cancelLabel: "cancel",
+        onCancel: () => {
+          this.setState({ openModal: null });
+        }
+      });
+    } else {
+      // duplicate name
+      this.showDialog(ErrorDialog, {
+        title: "Name in Use",
+        message: "Node name is already in use. Please choose another.",
+        confirmLabel: "Okay",
+        hideDialog: () => {
+          this.setState({ openModal: null });
+          // show the old name to the object
+        }
+      });
     }
   };
 
