@@ -39,14 +39,25 @@ function createTreePath(node, layer, index, nodes) {
   }
 }
 
+function getNameWithoutIndex(name) {
+  let cacheName = name;
+  const match = name.match(/(.*)_\d+$/);
+  if (match) {
+    cacheName = match[1];
+  }
+  return cacheName;
+}
+
 export default class ConflictHandler {
-  constructor() {
+  constructor(scene) {
     this._conflicts = {
       missing: false,
       duplicate: false
     };
+    this._scene = scene;
     this._duplicateList = {};
     this._updatedNodes = {};
+    this._duplicateNameCounters = new Map();
   }
 
   findDuplicates = (node, layer, index) => {
@@ -55,6 +66,7 @@ export default class ConflictHandler {
     } else {
       node.userData._path = [0];
     }
+    node.userData._debounced = false;
 
     if (node.name.length === 0) {
       // unnamed node
@@ -62,10 +74,7 @@ export default class ConflictHandler {
     }
 
     const name = node.name;
-    this._duplicateList[name] = name in this._duplicateList ? this._duplicateList[name] + 1 : 1;
-    if (this._duplicateList[name] > 1) {
-      this.setDuplicateStatus(true);
-    }
+    this.addToDuplicateNameCounters(name);
 
     if (node.children) {
       node.children.forEach((child, i) => {
@@ -102,6 +111,17 @@ export default class ConflictHandler {
       child.userData._duplicate = this.getDuplicateByName(child.name);
       child.userData._isDuplicateRoot = child.userData._duplicate;
     });
+  };
+
+  updateDuplicateStatus = () => {
+    if (!this._scene) {
+      return;
+    }
+    for (const value of this._duplicateNameCounters.values()) {
+      if (value > 0) {
+        this.setDuplicateStatus(true);
+      }
+    }
   };
 
   updateNodesMissingStatus = scene => {
@@ -179,5 +199,42 @@ export default class ConflictHandler {
 
   isUpdateNeeded = () => {
     return Object.keys(this._updatedNodes).length > 0;
+  };
+
+  isUniquieObjectName = name => {
+    return !this._duplicateNameCounters.has(name);
+  };
+
+  updateDuplicateNameCounters = () => {
+    const tempNameSet = new Set();
+    this._scene.traverse(child => {
+      const name = getNameWithoutIndex(child.name);
+      tempNameSet.add(name);
+    });
+
+    const duplicateNameSet = new Set(this._duplicateNameCounters.keys());
+    const difference = new Set([...duplicateNameSet].filter(x => !tempNameSet.has(x)));
+
+    if (difference) {
+      for (const name of difference.keys()) {
+        this._duplicateNameCounters.delete(name);
+      }
+    }
+  };
+
+  addToDuplicateNameCounters = name => {
+    const cacheName = getNameWithoutIndex(name);
+    if (this.isUniquieObjectName(cacheName)) {
+      this._duplicateNameCounters.set(cacheName, 0);
+    } else {
+      const n = this._duplicateNameCounters.get(cacheName) + 1;
+      this._duplicateNameCounters.set(cacheName, n);
+      return cacheName + "_" + n;
+    }
+    return cacheName;
+  };
+
+  resetDuplicateNameCounters = () => {
+    this._duplicateNameCounters = new Map();
   };
 }

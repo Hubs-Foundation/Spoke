@@ -12,7 +12,9 @@ import DirectionalLightComponent from "./components/DirectionalLightComponent";
 import AmbientLightComponent from "./components/AmbientLightComponent";
 import { last } from "../utils";
 import { textureCache, gltfCache } from "./caches";
+import { debounce } from "throttle-debounce";
 
+const INPUT_DEBOUNCE_THRESHOLD = 500;
 /**
  * @author mrdoob / http://mrdoob.com/
  */
@@ -68,7 +70,9 @@ export default class Editor {
       showGridChanged: new Signal(),
       historyChanged: new Signal(),
 
-      fileChanged: new Signal()
+      fileChanged: new Signal(),
+
+      sceneErrorOccurred: new Signal()
     };
 
     this.history = new History(this);
@@ -122,7 +126,8 @@ export default class Editor {
     // Map from URI -> Set of Object3Ds
     this.fileDependencies = new Map();
 
-    this._duplicateNameCounters = new Map();
+    //this._duplicateNameCounters = new Map();
+    this._updateObjectNameDebounced = debounce(INPUT_DEBOUNCE_THRESHOLD, this._updateObjectNameDebounced);
 
     this.ignoreNextSceneFileChange = false;
     this.signals.fileChanged.add(this.onFileChanged);
@@ -300,6 +305,9 @@ export default class Editor {
     this._resetHelpers();
 
     const scene = await loadScene(uri, this.addComponent, true);
+    if (scene.userData._conflictHandler.getConflictInfo._duplicate) {
+      //
+    }
 
     this._setSceneInfo(scene, uri);
     this.scenes.push(this.sceneInfo);
@@ -408,23 +416,7 @@ export default class Editor {
     object.userData._saveParent = true;
 
     object.traverse(child => {
-      let cacheName = child.name;
-
-      const match = child.name.match(/(.*)_\d+$/);
-
-      if (match) {
-        cacheName = match[1];
-      }
-
-      let duplicateNameCount = this._duplicateNameCounters.get(cacheName);
-
-      if (duplicateNameCount !== undefined) {
-        duplicateNameCount++;
-        this._duplicateNameCounters.set(cacheName, duplicateNameCount);
-        child.name = cacheName + "_" + duplicateNameCount;
-      } else {
-        this._duplicateNameCounters.set(cacheName, 0);
-      }
+      child.name = this.scene.userData._conflictHandler.addToDuplicateNameCounters(child.name);
 
       this.addHelper(child, object);
     });
@@ -437,6 +429,38 @@ export default class Editor {
 
     this.signals.objectAdded.dispatch(object);
     this.signals.sceneGraphChanged.dispatch();
+  }
+
+  updateObject(object, attributeName, value) {
+    if (attributeName === "name") {
+      if (object.userData._debounced) {
+        object[attributeName] = value;
+      }
+      this._updateObjectNameDebounced(object, value);
+    } else {
+      object[attributeName] = value;
+    }
+  }
+
+  _updateObjectNameDebounced(object, value) {
+    if (!object.userData._debounced) {
+      object.userData._originalName = value;
+      object.userData._debounced = true;
+    }
+    const handler = this.scene.userData._conflictHandler;
+    handler.updateDuplicateNameCounters();
+    if (handler.isUniquieObjectName(value)) {
+      object.name = value;
+      handler.addToDuplicateNameCounters(value);
+    } else {
+      // trigger error message: error naming
+      if (object.userData._debounced) {
+        object.name = object.userData._originalName;
+        delete object.userData._originalName;
+        object.userData._debounced = false;
+      }
+      this.signals.sceneErrorOccurred.dispatch();
+    }
   }
 
   moveObject(object, parent, before) {
