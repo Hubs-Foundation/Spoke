@@ -126,7 +126,6 @@ export default class Editor {
     // Map from URI -> Set of Object3Ds
     this.fileDependencies = new Map();
 
-    //this._duplicateNameCounters = new Map();
     this._updateObjectNameDebounced = debounce(INPUT_DEBOUNCE_THRESHOLD, this._updateObjectNameDebounced);
 
     this.ignoreNextSceneFileChange = false;
@@ -306,7 +305,7 @@ export default class Editor {
 
     const scene = await loadScene(uri, this.addComponent, true);
     if (scene.userData._conflictHandler.getConflictInfo._duplicate) {
-      //
+      // importing error
     }
 
     this._setSceneInfo(scene, uri);
@@ -433,9 +432,11 @@ export default class Editor {
 
   updateObject(object, attributeName, value) {
     if (attributeName === "name") {
-      if (object.userData._debounced) {
-        object[attributeName] = value;
+      if (!object.userData._debounced) {
+        object.userData._debounced = true;
+        object.userData._originalName = object.name;
       }
+      object[attributeName] = value;
       this._updateObjectNameDebounced(object, value);
     } else {
       object[attributeName] = value;
@@ -443,24 +444,18 @@ export default class Editor {
   }
 
   _updateObjectNameDebounced(object, value) {
-    if (!object.userData._debounced) {
-      object.userData._originalName = value;
-      object.userData._debounced = true;
-    }
     const handler = this.scene.userData._conflictHandler;
     handler.updateDuplicateNameCounters();
     if (handler.isUniquieObjectName(value)) {
       object.name = value;
       handler.addToDuplicateNameCounters(value);
     } else {
-      // trigger error message: error naming
-      if (object.userData._debounced) {
-        object.name = object.userData._originalName;
-        delete object.userData._originalName;
-        object.userData._debounced = false;
-      }
+      object.name = object.userData._originalName;
+      delete object.userData._originalName;
+      this.signals.objectChanged.dispatch(object);
       this.signals.sceneErrorOccurred.dispatch();
     }
+    object.userData._debounced = false;
   }
 
   moveObject(object, parent, before) {

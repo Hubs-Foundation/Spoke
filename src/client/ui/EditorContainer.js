@@ -20,6 +20,7 @@ import styles from "../common.scss";
 import FileDialog from "./dialogs/FileDialog";
 import ProgressDialog, { PROGRESS_DIALOG_DELAY } from "./dialogs/ProgressDialog";
 import ErrorDialog from "./dialogs/ErrorDialog";
+import SceneLoaderError from "../editor/SceneLoaderError";
 
 class EditorContainer extends Component {
   static defaultProps = {
@@ -485,7 +486,7 @@ class EditorContainer extends Component {
   };
 
   onSceneErrorOccurred = error => {
-    if (error) {
+    if (error instanceof SceneLoaderError) {
       // missing/duplicate node names in the importing file
       this.showDialog(OptionDialog, {
         title: "Resolve Node Conflicts",
