@@ -27,12 +27,12 @@ export default class SetValueCommand extends Command {
   }
 
   execute() {
-    this.object[this.attributeName] = this.newValue;
+    this.editor.updateObject(this.object, this.attributeName, this.newValue);
     this.editor.signals.objectChanged.dispatch(this.object);
   }
 
   undo() {
-    this.object[this.attributeName] = this.oldValue;
+    this.editor.updateObject(this.object, this.attributeName, this.oldValue);
     this.editor.signals.objectChanged.dispatch(this.object);
   }
 
