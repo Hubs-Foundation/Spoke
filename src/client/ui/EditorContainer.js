@@ -525,7 +525,7 @@ class EditorContainer extends Component {
               ariaHideApp={false}
               isOpen={!!DialogComponent}
               onRequestClose={this.hideDialog}
-              shouldCloseOnOverlayClick={true}
+              shouldCloseOnOverlayClick={false}
               className="Modal"
               overlayClassName="Overlay"
             >
