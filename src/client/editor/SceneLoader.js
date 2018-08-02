@@ -454,9 +454,9 @@ export async function loadSerializedScene(sceneDef, baseURI, addComponent, isRoo
 
   // init scene conflict status
   if (!scene.userData._conflictHandler) {
-    scene.userData._conflictHandler = new ConflictHandler();
-    scene.userData._conflictHandler.findDuplicates(scene, 0, 0);
-    scene.userData._conflictHandler.updateAllDuplicateStatus(scene);
+    scene.userData._conflictHandler = new ConflictHandler(scene);
+    //scene.userData._conflictHandler.findDuplicates(scene, 0, 0);
+    //scene.userData._conflictHandler.updateAllDuplicateStatus(scene);
   }
 
   if (entities) {
@@ -545,7 +545,7 @@ export async function loadSerializedScene(sceneDef, baseURI, addComponent, isRoo
     }
     await Promise.all(entityComponentPromises);
   }
-
+  scene.userData._conflictHandler.findDuplicates(scene, 0, 0);
   return scene;
 }
 
@@ -565,9 +565,9 @@ export async function loadScene(uri, addComponent, isRoot = true, ancestors) {
       scene.name = "Scene";
     }
 
-    scene.userData._conflictHandler = new ConflictHandler();
+    scene.userData._conflictHandler = new ConflictHandler(scene);
     scene.userData._conflictHandler.findDuplicates(scene, 0, 0);
-    scene.userData._conflictHandler.updateAllDuplicateStatus(scene);
+    //scene.userData._conflictHandler.updateAllDuplicateStatus(scene);
     await inflateGLTFComponents(scene, addComponent);
 
     return scene;
