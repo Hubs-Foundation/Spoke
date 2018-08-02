@@ -13,7 +13,7 @@ import FileDropTarget from "../FileDropTarget";
 class ViewportPanelContainer extends Component {
   static propTypes = {
     editor: PropTypes.object,
-    showDialog: PropTypes.object
+    showDialog: PropTypes.func
   };
 
   constructor(props) {
