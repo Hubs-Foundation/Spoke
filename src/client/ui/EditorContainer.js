@@ -161,7 +161,7 @@ class EditorContainer extends Component {
     this.props.editor.signals.openScene.add(this.onOpenScene);
     this.props.editor.signals.extendScene.add(this.onExtendScene);
     this.props.editor.signals.sceneModified.add(this.onSceneModified);
-    //this.props.editor.signals.sceneErrorOccurred.add(this.onSceneErrorOccurred);
+    this.props.editor.signals.sceneErrorOccurred.add(this.onSceneErrorOccurred);
     this.props.project.addListener("change", path => {
       this.props.editor.signals.fileChanged.dispatch(path);
     });
@@ -475,7 +475,7 @@ class EditorContainer extends Component {
 
   onSceneErrorOccurred = (error, uri, reload) => {
     if (error.type === "import") {
-      // missing/duplicate node names in the importing file
+      // empty/duplicate node names in the importing file
       this.setState({
         openModal: {
           component: OptionDialog,

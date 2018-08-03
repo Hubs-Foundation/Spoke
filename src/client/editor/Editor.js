@@ -460,7 +460,9 @@ export default class Editor {
       object.name = object.userData._originalName;
       delete object.userData._originalName;
       this.signals.objectChanged.dispatch(object);
-      this.signals.sceneErrorOccurred.dispatch(new ConflictError("rename error", "rename", handler));
+      this.signals.sceneErrorOccurred.dispatch(
+        new ConflictError("rename error", "rename", this.sceneInfo.uri, handler)
+      );
     }
     object.userData._debounced = false;
   }
