@@ -556,7 +556,6 @@ export async function loadScene(uri, addComponent, isRoot = true, ancestors) {
   const url = new URL(uri, window.location).href;
 
   if (url.endsWith(".gltf")) {
-    console.log(`load gltf`);
     scene = await loadGLTF(url);
 
     if (isRoot) {

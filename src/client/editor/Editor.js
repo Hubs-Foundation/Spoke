@@ -176,7 +176,7 @@ export default class Editor {
 
     this.sceneInfo = last(this.scenes);
     this.scene = this.sceneInfo.scene;
-    //this._conflictHandler = this.scene.userData._conflictHandler;
+    this._conflictHandler = this.scene.userData._conflictHandler;
     this.helperScene = this.sceneInfo.helperScene;
     this.helpers = this.sceneInfo.helpers;
     this.objects = this.sceneInfo.objects;
@@ -274,6 +274,10 @@ export default class Editor {
 
   _setScene(scene) {
     this.scene = scene;
+    this._conflictHandler = new ConflictHandler();
+    if (this.userData && this.userData._conflictHandler) {
+      this._conflictHandler = this.scene.userData._conflictHandler;
+    }
     this.scene.traverse(object => {
       this.signals.objectAdded.dispatch(object);
     });

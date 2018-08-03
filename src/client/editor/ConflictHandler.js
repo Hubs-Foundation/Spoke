@@ -124,7 +124,6 @@ export default class ConflictHandler {
 
   _updateDuplicateStatus = () => {
     for (const value of this._duplicateNameCounters.values()) {
-      console.log(`value: ${value}`);
       if (value > 0) {
         this.setDuplicateStatus(true);
         break;
