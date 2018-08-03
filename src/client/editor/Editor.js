@@ -310,15 +310,6 @@ export default class Editor {
     const scene = await loadScene(uri, this.addComponent, true);
     this._conflictHandler = scene.userData._conflictHandler;
 
-    // console.log(`status: ${this._conflictHandler.getDuplicateStatus()}`);
-    // if (this._conflictHandler.getDuplicateStatus()) {
-    //   // import error, we'd like to resolve those.
-    //   this.signals.sceneErrorOccurred.dispatch(
-    //     new ConflictError("duplicate name", "import", uri, this._conflictHandler)
-    //   );
-    //   return;
-    // }
-
     this._setSceneInfo(scene, uri);
     this.scenes.push(this.sceneInfo);
 

@@ -556,6 +556,7 @@ export async function loadScene(uri, addComponent, isRoot = true, ancestors) {
   const url = new URL(uri, window.location).href;
 
   if (url.endsWith(".gltf")) {
+    console.log(`load gltf`);
     scene = await loadGLTF(url);
 
     if (isRoot) {
@@ -568,7 +569,7 @@ export async function loadScene(uri, addComponent, isRoot = true, ancestors) {
 
     scene.userData._conflictHandler = new ConflictHandler();
     scene.userData._conflictHandler.findDuplicates(scene, 0, 0);
-    if (scene.userData._conflictHandler.getDuplicateStatus()) {
+    if (scene.userData._conflictHandler.getDuplicateStatus() || scene.userData._conflictHandler.getMissingStatus()) {
       const error = new ConflictError("gltf naming conflicts", "import", url, scene.userData._conflictHandler);
       throw error;
     }

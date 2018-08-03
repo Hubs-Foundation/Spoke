@@ -489,8 +489,9 @@ class EditorContainer extends Component {
                 label: "okay",
                 onClick: () => {
                   this.setState({ openModal: null });
-                  this._overwriteConflictsInSource(error.uri, error.handler);
-                  reload(uri);
+                  this._overwriteConflictsInSource(error.uri, error.handler, () => {
+                    reload(uri);
+                  });
                 }
               }
             ],
@@ -502,7 +503,7 @@ class EditorContainer extends Component {
         }
       });
     } else {
-      // duplicate name
+      // renaming
       this.showDialog(ErrorDialog, {
         title: "Name in Use",
         message: "Node name is already in use. Please choose another.",
@@ -511,16 +512,15 @@ class EditorContainer extends Component {
     }
   };
 
-  _overwriteConflictsInSource = async (uri, conflictHandler) => {
+  _overwriteConflictsInSource = async (uri, conflictHandler, callback) => {
     const { project } = this.props;
-    if (conflictHandler.getDuplicateStatus()) {
-      if (uri && uri.endsWith(".gltf")) {
-        const originalGLTF = await project.readJSON(uri);
-        const nodes = originalGLTF.nodes;
-        if (nodes) {
-          conflictHandler.updateNodeNames(nodes);
-          await project.writeJSON(uri, originalGLTF);
-        }
+    if (uri && uri.endsWith(".gltf")) {
+      const originalGLTF = await project.readJSON(uri);
+      const nodes = originalGLTF.nodes;
+      if (nodes) {
+        conflictHandler.updateNodeNames(nodes);
+        await project.writeJSON(uri, originalGLTF);
+        callback();
       }
     }
   };

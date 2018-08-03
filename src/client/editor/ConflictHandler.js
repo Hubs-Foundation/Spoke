@@ -68,6 +68,7 @@ export default class ConflictHandler {
 
     if (node.name.length === 0) {
       // unnamed node
+      this.setMissingStatus(true);
       this._generateTempName(node);
     }
 
@@ -103,6 +104,10 @@ export default class ConflictHandler {
     return this._conflicts.duplicate;
   };
 
+  getMissingStatus = () => {
+    return this._conflicts.missing;
+  };
+
   getConflictInfo = () => {
     return this._conflicts;
   };
@@ -119,6 +124,7 @@ export default class ConflictHandler {
 
   _updateDuplicateStatus = () => {
     for (const value of this._duplicateNameCounters.values()) {
+      console.log(`value: ${value}`);
       if (value > 0) {
         this.setDuplicateStatus(true);
         break;
@@ -166,7 +172,7 @@ export default class ConflictHandler {
   _generateTempName = node => {
     const hashPath = this._hashTreePath(node.userData._path);
     node.name = "node_" + hashPath;
-    this._updatedNodes[hashPath] = node.name;
+    this._updatedNodes.set(hashPath, node.name);
   };
 
   _hashTreePath = path => {
