@@ -13,6 +13,8 @@ import AmbientLightComponent from "./components/AmbientLightComponent";
 import { last } from "../utils";
 import { textureCache, gltfCache } from "./caches";
 import { debounce } from "throttle-debounce";
+import ConflictError from "./ConflictError";
+import ConflictHandler from "./ConflictHandler";
 
 const INPUT_DEBOUNCE_THRESHOLD = 500;
 /**
@@ -127,7 +129,8 @@ export default class Editor {
     this.fileDependencies = new Map();
 
     this._updateObjectNameDebounced = debounce(INPUT_DEBOUNCE_THRESHOLD, this._updateObjectNameDebounced);
-
+    this._conflictHandler = new ConflictHandler();
+    this.scene.userData._conflictHandler = this._conflictHandler;
     this.ignoreNextSceneFileChange = false;
     this.signals.fileChanged.add(this.onFileChanged);
   }
@@ -173,6 +176,7 @@ export default class Editor {
 
     this.sceneInfo = last(this.scenes);
     this.scene = this.sceneInfo.scene;
+    //this._conflictHandler = this.scene.userData._conflictHandler;
     this.helperScene = this.sceneInfo.helperScene;
     this.helpers = this.sceneInfo.helpers;
     this.objects = this.sceneInfo.objects;
@@ -184,7 +188,7 @@ export default class Editor {
       if (previousURI.endsWith(".gltf")) {
         const name = last(poppedURI.split("/"));
         this._prefabBeingEdited.name = name;
-        this._duplicateNameCounters.set(name, this._duplicateNameCounters.get(name) || 0);
+        this._conflictHandler.addToDuplicateNameCounters(name);
       }
     }
 
@@ -304,9 +308,16 @@ export default class Editor {
     this._resetHelpers();
 
     const scene = await loadScene(uri, this.addComponent, true);
-    if (scene.userData._conflictHandler.getConflictInfo._duplicate) {
-      // importing error
-    }
+    this._conflictHandler = scene.userData._conflictHandler;
+
+    // console.log(`status: ${this._conflictHandler.getDuplicateStatus()}`);
+    // if (this._conflictHandler.getDuplicateStatus()) {
+    //   // import error, we'd like to resolve those.
+    //   this.signals.sceneErrorOccurred.dispatch(
+    //     new ConflictError("duplicate name", "import", uri, this._conflictHandler)
+    //   );
+    //   return;
+    // }
 
     this._setSceneInfo(scene, uri);
     this.scenes.push(this.sceneInfo);
@@ -328,6 +339,12 @@ export default class Editor {
     const scene = await loadScene(uri, this.addComponent, false);
     scene.userData._dontShowInHierarchy = true;
     scene.userData._sceneReference = uri;
+
+    const conflictHandler = scene.userData._conflictHandler;
+    if (conflictHandler.getDuplicateStatus()) {
+      // auto resolve scene conflicts
+      conflictHandler.resolveConflicts();
+    }
 
     scene.traverse(child => {
       Object.defineProperty(child.userData, "_selectionRoot", { value: parent, configurable: true, enumerable: false });
@@ -415,8 +432,7 @@ export default class Editor {
     object.userData._saveParent = true;
 
     object.traverse(child => {
-      child.name = this.scene.userData._conflictHandler.addToDuplicateNameCounters(child.name);
-
+      child.name = this._conflictHandler.addToDuplicateNameCounters(child.name);
       this.addHelper(child, object);
     });
 
@@ -444,8 +460,8 @@ export default class Editor {
   }
 
   _updateObjectNameDebounced(object, value) {
-    const handler = this.scene.userData._conflictHandler;
-    handler.updateDuplicateNameCounters();
+    const handler = this._conflictHandler;
+    handler.updateDuplicateNameCounters(this.scene);
     if (handler.isUniquieObjectName(value)) {
       object.name = value;
       handler.addToDuplicateNameCounters(value);
@@ -453,7 +469,7 @@ export default class Editor {
       object.name = object.userData._originalName;
       delete object.userData._originalName;
       this.signals.objectChanged.dispatch(object);
-      this.signals.sceneErrorOccurred.dispatch();
+      this.signals.sceneErrorOccurred.dispatch(new ConflictError("rename error", "rename", handler));
     }
     object.userData._debounced = false;
   }

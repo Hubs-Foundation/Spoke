@@ -5,6 +5,7 @@ import ConflictHandler from "./ConflictHandler";
 import StandardMaterialComponent from "../editor/components/StandardMaterialComponent";
 import ShadowComponent from "./components/ShadowComponent";
 import SceneLoaderError from "./SceneLoaderError";
+import ConflictError from "./ConflictError";
 import {
   computeAndSetStaticModes,
   isStatic,
@@ -68,7 +69,7 @@ function loadGLTF(url) {
     })
     .catch(e => {
       console.error(e);
-      throw new SceneLoaderError("Error loading GLTF", url, e);
+      throw new SceneLoaderError("Error loading GLTF", url, "damaged", e);
     });
 }
 
@@ -454,8 +455,8 @@ export async function loadSerializedScene(sceneDef, baseURI, addComponent, isRoo
 
   // init scene conflict status
   if (!scene.userData._conflictHandler) {
-    scene.userData._conflictHandler = new ConflictHandler(scene);
-    //scene.userData._conflictHandler.findDuplicates(scene, 0, 0);
+    scene.userData._conflictHandler = new ConflictHandler();
+    scene.userData._conflictHandler.findDuplicates(scene, 0, 0);
     //scene.userData._conflictHandler.updateAllDuplicateStatus(scene);
   }
 
@@ -545,7 +546,7 @@ export async function loadSerializedScene(sceneDef, baseURI, addComponent, isRoo
     }
     await Promise.all(entityComponentPromises);
   }
-  scene.userData._conflictHandler.findDuplicates(scene, 0, 0);
+
   return scene;
 }
 
@@ -565,9 +566,13 @@ export async function loadScene(uri, addComponent, isRoot = true, ancestors) {
       scene.name = "Scene";
     }
 
-    scene.userData._conflictHandler = new ConflictHandler(scene);
+    scene.userData._conflictHandler = new ConflictHandler();
     scene.userData._conflictHandler.findDuplicates(scene, 0, 0);
-    //scene.userData._conflictHandler.updateAllDuplicateStatus(scene);
+    if (scene.userData._conflictHandler.getDuplicateStatus()) {
+      const error = new ConflictError("gltf naming conflicts", "import", url, scene.userData._conflictHandler);
+      throw error;
+    }
+
     await inflateGLTFComponents(scene, addComponent);
 
     return scene;
@@ -575,7 +580,7 @@ export async function loadScene(uri, addComponent, isRoot = true, ancestors) {
 
   const sceneResponse = await fetch(url);
   if (!sceneResponse.ok) {
-    const error = SceneLoaderError("Error loading .scene", url, null);
+    const error = SceneLoaderError("Error loading .scene", url, "damaged", null);
     throw error;
   }
   const sceneDef = await sceneResponse.json();

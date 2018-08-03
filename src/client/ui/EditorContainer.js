@@ -20,7 +20,6 @@ import styles from "../common.scss";
 import FileDialog from "./dialogs/FileDialog";
 import ProgressDialog, { PROGRESS_DIALOG_DELAY } from "./dialogs/ProgressDialog";
 import ErrorDialog from "./dialogs/ErrorDialog";
-import SceneLoaderError from "../editor/SceneLoaderError";
 
 class EditorContainer extends Component {
   static defaultProps = {
@@ -162,7 +161,7 @@ class EditorContainer extends Component {
     this.props.editor.signals.openScene.add(this.onOpenScene);
     this.props.editor.signals.extendScene.add(this.onExtendScene);
     this.props.editor.signals.sceneModified.add(this.onSceneModified);
-    this.props.editor.signals.sceneErrorOccurred.add(this.onSceneErrorOccurred);
+    //this.props.editor.signals.sceneErrorOccurred.add(this.onSceneErrorOccurred);
     this.props.project.addListener("change", path => {
       this.props.editor.signals.fileChanged.dispatch(path);
     });
@@ -303,21 +302,6 @@ class EditorContainer extends Component {
 
       const sceneUserData = editor.scene.userData;
 
-      // check whether there is an inherited gltf
-      // if yes => read gltf, write updated names back the file from conflicthandler
-      const filePath = sceneUserData._inherits;
-      if (filePath && filePath.endsWith(".gltf")) {
-        const conflictHandler = sceneUserData._conflictHandler;
-        if (conflictHandler && conflictHandler.isUpdateNeeded()) {
-          const originalGLTF = await project.readJSON(filePath);
-          const nodes = originalGLTF.nodes;
-          if (nodes) {
-            conflictHandler.updateNodeNames(nodes);
-            await project.writeJSON(filePath, originalGLTF);
-          }
-        }
-      }
-
       // If the previous URI was a gltf, update the ancestors, since we are now dealing with a .scene file.
       if (editor.sceneInfo.uri && editor.sceneInfo.uri.endsWith(".gltf")) {
         sceneUserData._ancestors = [editor.sceneInfo.uri];
@@ -453,57 +437,68 @@ class EditorContainer extends Component {
       await action(uri);
       this.hideDialog();
     } catch (e) {
-      this.setState({
-        openModal: {
-          component: OptionDialog,
-          shouldCloseOnOverlayClick: false,
-          props: {
-            title: "Error Opening Scene",
-            message: `
-              ${e.message}:
-              ${e.url}.
-              Please make sure the file exists and then press "Resolved" to reload the scene.
-            `,
-            options: [
-              {
-                label: "Resolved",
-                onClick: () => {
-                  this.setState({ openModal: null });
-                  reload(uri);
+      if (e.name === "ConflictError") {
+        this.onSceneErrorOccurred(e, uri, reload);
+      } else {
+        this.setState({
+          openModal: {
+            component: OptionDialog,
+            shouldCloseOnOverlayClick: false,
+            props: {
+              title: "Error Opening Scene",
+              message: `
+                ${e.message}:
+                ${e.url}.
+                Please make sure the file exists and then press "Resolved" to reload the scene.
+              `,
+              options: [
+                {
+                  label: "Resolved",
+                  onClick: () => {
+                    this.setState({ openModal: null });
+                    reload(uri);
+                  }
                 }
+              ],
+              cancelLabel: "Cancel",
+              hideDialog: () => {
+                this.setState({ openModal: null });
               }
-            ],
-            cancelLabel: "Cancel",
-            hideDialog: () => {
-              this.setState({ openModal: null });
             }
           }
-        }
-      });
+        });
+      }
     } finally {
       opened = true;
     }
   };
 
-  onSceneErrorOccurred = error => {
-    if (error instanceof SceneLoaderError) {
+  onSceneErrorOccurred = (error, uri, reload) => {
+    if (error.type === "import") {
       // missing/duplicate node names in the importing file
-      this.showDialog(OptionDialog, {
-        title: "Resolve Node Conflicts",
-        message:
-          "We've found duplicate and/or missing node names in this file.\nWould you like to fix all conflicts?\n*This will modify the original file.",
-        options: [
-          {
-            label: "okay",
-            onClick: () => {
+      this.setState({
+        openModal: {
+          component: OptionDialog,
+          shouldCloseOnOverlayClick: false,
+          props: {
+            title: "Resolve Node Conflicts",
+            message:
+              "We've found duplicate and/or missing node names in this file.\nWould you like to fix all conflicts?\n*This will modify the original file.",
+            options: [
+              {
+                label: "okay",
+                onClick: () => {
+                  this.setState({ openModal: null });
+                  this._overwriteConflictsInSource(error.uri, error.handler);
+                  reload(uri);
+                }
+              }
+            ],
+            cancelLabel: "cancel",
+            hideDialog: () => {
               this.setState({ openModal: null });
-              // execute the renaming process
             }
           }
-        ],
-        cancelLabel: "cancel",
-        onCancel: () => {
-          this.setState({ openModal: null });
         }
       });
     } else {
@@ -511,12 +506,22 @@ class EditorContainer extends Component {
       this.showDialog(ErrorDialog, {
         title: "Name in Use",
         message: "Node name is already in use. Please choose another.",
-        confirmLabel: "Okay",
-        hideDialog: () => {
-          this.setState({ openModal: null });
-          // show the old name to the object
-        }
+        confirmLabel: "Okay"
       });
+    }
+  };
+
+  _overwriteConflictsInSource = async (uri, conflictHandler) => {
+    const { project } = this.props;
+    if (conflictHandler.getDuplicateStatus()) {
+      if (uri && uri.endsWith(".gltf")) {
+        const originalGLTF = await project.readJSON(uri);
+        const nodes = originalGLTF.nodes;
+        if (nodes) {
+          conflictHandler.updateNodeNames(nodes);
+          await project.writeJSON(uri, originalGLTF);
+        }
+      }
     }
   };
 

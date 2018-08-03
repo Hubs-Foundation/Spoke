@@ -49,14 +49,12 @@ function getNameWithoutIndex(name) {
 }
 
 export default class ConflictHandler {
-  constructor(scene) {
+  constructor() {
     this._conflicts = {
       missing: false,
       duplicate: false
     };
-    this._scene = scene;
-    this._duplicateList = {};
-    this._updatedNodes = {};
+    this._updatedNodes = new Map();
     this._duplicateNameCounters = new Map();
   }
 
@@ -74,7 +72,15 @@ export default class ConflictHandler {
     }
 
     const name = node.name;
-    this.addToDuplicateNameCounters(name);
+
+    if (this._duplicateNameCounters.has(name)) {
+      const n = this._duplicateNameCounters.get(name) + 1;
+      this._duplicateNameCounters.set(name, n);
+      node.userData._resolvedName = name + "_" + n;
+      this._updatedNodes.set(this._hashTreePath(node.userData._path), node.userData._resolvedName);
+    } else {
+      this._duplicateNameCounters.set(name, 0);
+    }
 
     if (node.children) {
       node.children.forEach((child, i) => {
@@ -92,11 +98,9 @@ export default class ConflictHandler {
     this._conflicts.missing = newStatus;
   };
 
-  getDuplicateByName = name => {
-    if (!(name in this._duplicateList)) {
-      return false;
-    }
-    return this._duplicateList[name] > 1;
+  getDuplicateStatus = () => {
+    this._updateDuplicateStatus();
+    return this._conflicts.duplicate;
   };
 
   getConflictInfo = () => {
@@ -113,13 +117,11 @@ export default class ConflictHandler {
     });
   };
 
-  updateDuplicateStatus = () => {
-    if (!this._scene) {
-      return;
-    }
+  _updateDuplicateStatus = () => {
     for (const value of this._duplicateNameCounters.values()) {
       if (value > 0) {
         this.setDuplicateStatus(true);
+        break;
       }
     }
   };
@@ -180,19 +182,19 @@ export default class ConflictHandler {
     this._updatedNodes[originalPath] = newName;
   };
 
-  getUpdatedNodeName = path => {
+  getUpdatedNodeName = (path, oldName) => {
     const hashPath = this._hashTreePath(path);
-    if (!(hashPath in this._updatedNodes)) {
-      return;
+    if (!this._updatedNodes.has(hashPath)) {
+      return oldName;
     }
-    return this._updatedNodes[hashPath];
+    return this._updatedNodes.get(hashPath);
   };
 
   updateNodeNames = nodes => {
     const nodeTree = nodesToTree(nodes);
 
     for (const node of nodeTree) {
-      node.name = this.getUpdatedNodeName(node.userData._path);
+      node.name = this.getUpdatedNodeName(node.userData._path, node.name);
       delete node.userData;
     }
   };
@@ -205,9 +207,9 @@ export default class ConflictHandler {
     return !this._duplicateNameCounters.has(name);
   };
 
-  updateDuplicateNameCounters = () => {
+  updateDuplicateNameCounters = scene => {
     const tempNameSet = new Set();
-    this._scene.traverse(child => {
+    scene.traverse(child => {
       const name = getNameWithoutIndex(child.name);
       tempNameSet.add(name);
     });
@@ -234,7 +236,12 @@ export default class ConflictHandler {
     return cacheName;
   };
 
-  resetDuplicateNameCounters = () => {
-    this._duplicateNameCounters = new Map();
+  resolveConflicts = scene => {
+    scene.traverse(child => {
+      if (!this.isUniquieObjectName(child.name) && child.userData._resolvedName) {
+        child.name = child.userData._resolvedName;
+        delete child.userData._resolvedName;
+      }
+    });
   };
 }
