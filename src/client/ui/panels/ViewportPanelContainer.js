@@ -5,12 +5,15 @@ import { HotKeys } from "react-hotkeys";
 import THREE from "../../vendor/three";
 import Viewport from "../Viewport";
 import { withEditor } from "../contexts/EditorContext";
+import { withDialog } from "../contexts/DialogContext";
+import ErrorDialog from "../dialogs/ErrorDialog";
 import styles from "./ViewportPanelContainer.scss";
 import FileDropTarget from "../FileDropTarget";
 
 class ViewportPanelContainer extends Component {
   static propTypes = {
-    editor: PropTypes.object
+    editor: PropTypes.object,
+    showDialog: PropTypes.func
   };
 
   constructor(props) {
@@ -35,10 +38,19 @@ class ViewportPanelContainer extends Component {
 
   onDropFile = file => {
     if (file.ext === ".gltf" || file.ext === ".scene") {
+      if (file.uri === this.props.editor.sceneInfo.uri) {
+        this.props.showDialog(ErrorDialog, {
+          title: "Error adding prefab.",
+          message: "Scene cannot be added to itself."
+        });
+        return;
+      }
+
       const object = new THREE.Object3D();
       object.name = file.name;
       this.props.editor.addObject(object);
       this.props.editor.addComponent(object, "scene-reference", { src: file.uri });
+      this.props.editor.select(object);
     }
   };
 
@@ -76,4 +88,4 @@ class ViewportPanelContainer extends Component {
   }
 }
 
-export default withEditor(ViewportPanelContainer);
+export default withEditor(withDialog(ViewportPanelContainer));

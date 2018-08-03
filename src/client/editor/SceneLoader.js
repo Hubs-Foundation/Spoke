@@ -176,8 +176,6 @@ export async function exportScene(scene) {
   });
 
   // Combine meshes and add to scene.
-  const invMatrix = new THREE.Matrix4();
-
   for (const { meshes } of meshesToCombine) {
     if (meshes.length > 1) {
       const bufferGeometries = [];
@@ -185,8 +183,7 @@ export async function exportScene(scene) {
       for (const mesh of meshes) {
         // Clone buffer geometry in case it is re-used across meshes with different materials.
         const clonedBufferGeometry = mesh.geometry.clone();
-        invMatrix.getInverse(mesh.matrixWorld);
-        clonedBufferGeometry.applyMatrix(invMatrix);
+        clonedBufferGeometry.applyMatrix(mesh.matrixWorld);
         bufferGeometries.push(clonedBufferGeometry);
       }
 

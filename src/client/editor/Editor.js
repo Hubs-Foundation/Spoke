@@ -567,9 +567,13 @@ export default class Editor {
     let component;
 
     if (this.components.has(componentName)) {
-      component = await this.components.get(componentName).inflate(object, props);
-
       if (componentName === SceneReferenceComponent.componentName && props && props.src) {
+        if (props.src === this.sceneInfo.uri) {
+          throw new Error("Cannot add circular scene reference");
+        }
+
+        component = await this.components.get(componentName).inflate(object, props);
+
         await this._loadSceneReference(props.src, object)
           .then(() => {
             if (component.propValidation.src !== true) {
@@ -584,6 +588,8 @@ export default class Editor {
               this.signals.objectChanged.dispatch(object);
             }
           });
+      } else {
+        component = await this.components.get(componentName).inflate(object, props);
       }
     } else {
       component = {
