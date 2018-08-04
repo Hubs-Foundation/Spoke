@@ -16,6 +16,8 @@ export default class Viewport {
       antialias: true
     });
 
+    render.gammaOutput = true;
+    renderer.physicallyCorrectLights = true;
     renderer.shadowMap.enabled = true;
     renderer.autoClear = false;
     renderer.autoUpdateScene = false;
