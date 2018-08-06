@@ -1,0 +1,1 @@
+{"entities":{"red floor":{"components":[{"name":"standard-material","src":"/api/files/prefabs/fred.material"}]}},"inherits":"../ArchitectureKit/Floor2x4OS.gltf"}

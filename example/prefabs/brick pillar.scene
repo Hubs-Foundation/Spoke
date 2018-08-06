@@ -1,0 +1,1 @@
+{"entities":{"Scene":{"components":[{"name":"ambient-light","props":{"color":"white","intensity":1}},{"name":"directional-light","props":{"color":"white","intensity":1,"castShadow":true,"elevation":63,"azimuth":245}}]},"Pillar0_5x4_5RndShape":{"components":[{"name":"standard-material","src":"../materials/brick.material"}]}},"inherits":"../ArchitectureKit/Pillar0_5x4_5Rnd.gltf"}
