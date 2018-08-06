@@ -18,7 +18,6 @@ export default class Viewport {
 
     renderer.gammaOutput = true;
     renderer.gammaFactor = 2.2;
-    renderer.toneMappingExposure = 1;
     renderer.physicallyCorrectLights = true;
     renderer.shadowMap.enabled = true;
     renderer.autoClear = false;
