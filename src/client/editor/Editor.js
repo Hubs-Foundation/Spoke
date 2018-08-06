@@ -131,9 +131,6 @@ export default class Editor {
   createViewport(canvas) {
     const viewport = new Viewport(this, canvas);
     this.viewports.push(viewport);
-    // This is odd, but since Viewport manages intersection objects, and since _setSceneDefaults adds components to
-    // the scene, we need to set sceneDefaults after the viewport has been created.
-    this._setSceneDefaults(this.scene);
     return viewport;
   }
 
@@ -195,7 +192,7 @@ export default class Editor {
 
   editScenePrefab(object, uri) {
     this._prefabBeingEdited = object;
-    this._loadScene(uri, true);
+    this._loadScene(uri);
   }
 
   _deleteSceneDependencies() {
@@ -244,8 +241,6 @@ export default class Editor {
     this._setSceneInfo(scene, null);
     this.scenes = [this.sceneInfo];
 
-    this._setSceneDefaults(scene);
-
     this._setScene(scene);
 
     this.signals.sceneModified.dispatch();
@@ -266,24 +261,58 @@ export default class Editor {
 
   _setScene(scene) {
     this.scene = scene;
+
+    this._resetDefaultLights();
+
     this.scene.traverse(object => {
       this.signals.objectAdded.dispatch(object);
     });
+
     this.signals.sceneSet.dispatch();
+  }
+
+  _resetDefaultLights() {
+    let hasDirectionalLight = false;
+    let hasAmbientLight = false;
+
+    let defaultAmbientLight = this.scene.getObjectByName("_defaultAmbientLight");
+    let defaultDirectionalLight = this.scene.getObjectByName("_defaultDirectionalLight");
+
+    this.scene.traverse(node => {
+      if (node.type === "AmbientLight") {
+        hasAmbientLight = true;
+      }
+
+      if (node.type === "DirectionalLight") {
+        hasDirectionalLight = true;
+      }
+    });
+
+    if (!hasAmbientLight && !defaultAmbientLight) {
+      defaultAmbientLight = new THREE.AmbientLight();
+      defaultAmbientLight.name = "_defaultAmbientLight";
+      defaultAmbientLight.userData._dontExport = true;
+      defaultAmbientLight.userData._dontShowInHierarchy = true;
+      defaultAmbientLight.position.set(0, 0, 0);
+      this.scene.add(defaultAmbientLight);
+    } else if (hasAmbientLight && defaultAmbientLight) {
+      this.scene.remove(defaultAmbientLight);
+    }
+
+    if (!hasAmbientLight && !defaultDirectionalLight) {
+      defaultDirectionalLight = new THREE.DirectionalLight();
+      defaultDirectionalLight.name = "_defaultDirectionalLight";
+      defaultDirectionalLight.userData._dontExport = true;
+      defaultDirectionalLight.userData._dontShowInHierarchy = true;
+      defaultDirectionalLight.position.set(5, 10, 7.5);
+      this.scene.add(defaultDirectionalLight);
+    } else if (hasDirectionalLight && defaultDirectionalLight) {
+      this.scene.remove(defaultDirectionalLight);
+    }
   }
 
   sceneModified() {
     return this.sceneInfo.modified;
-  }
-
-  async _setSceneDefaults(scene, skipSave) {
-    scene.background = new THREE.Color(0xaaaaaa);
-    if (!this.getComponent(scene, AmbientLightComponent.componentName)) {
-      await this.addComponent(scene, AmbientLightComponent.componentName, null, skipSave);
-    }
-    if (!this.getComponent(scene, DirectionalLightComponent.componentName)) {
-      await this.addComponent(scene, DirectionalLightComponent.componentName, null, skipSave);
-    }
   }
 
   _addDependency(uri, obj) {
@@ -292,7 +321,7 @@ export default class Editor {
     this.fileDependencies.set(uri, uriDependencies);
   }
 
-  async _loadScene(uri, skipSaveDefaults) {
+  async _loadScene(uri) {
     this.deselect();
 
     this._deleteSceneDependencies();
@@ -303,8 +332,6 @@ export default class Editor {
 
     this._setSceneInfo(scene, uri);
     this.scenes.push(this.sceneInfo);
-
-    await this._setSceneDefaults(scene, skipSaveDefaults);
 
     this._setScene(scene);
 
@@ -361,8 +388,6 @@ export default class Editor {
     const sceneInfo = this.scenes.find(sceneInfo => sceneInfo.uri === sceneURI);
     sceneInfo.scene = scene;
 
-    await this._setSceneDefaults(scene);
-
     this._setScene(scene);
 
     return scene;
@@ -392,7 +417,6 @@ export default class Editor {
 
     this._setSceneInfo(scene, null);
     this.scenes = [this.sceneInfo];
-    this._setSceneDefaults(scene);
     this._setScene(scene);
     this._addDependency(inheritedURI, scene);
 
@@ -476,7 +500,7 @@ export default class Editor {
     const material = new THREE.MeshBasicMaterial({ color: 0xff0000, visible: false });
 
     return function(object, selectionRoot) {
-      if (this.helpers[object.id]) return;
+      if (this.helpers[selectionRoot.id]) return;
       let helper;
 
       if (object instanceof THREE.Camera) {
@@ -535,6 +559,13 @@ export default class Editor {
     let component;
 
     if (this.components.has(componentName)) {
+      if (
+        componentName === AmbientLightComponent.componentName ||
+        componentName === DirectionalLightComponent.componentName
+      ) {
+        this._resetDefaultLights();
+      }
+
       if (componentName === SceneReferenceComponent.componentName && props && props.src) {
         if (props.src === this.sceneInfo.uri) {
           throw new Error("Cannot add circular scene reference");
@@ -583,6 +614,13 @@ export default class Editor {
 
   removeComponent(object, componentName) {
     if (this.components.has(componentName)) {
+      if (
+        componentName === AmbientLightComponent.componentName ||
+        componentName === DirectionalLightComponent.componentName
+      ) {
+        this._resetDefaultLights();
+      }
+
       if (componentName === SceneReferenceComponent.componentName) {
         this._removeSceneRefDependency(object);
       }
