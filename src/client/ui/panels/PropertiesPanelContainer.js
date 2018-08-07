@@ -195,7 +195,7 @@ class PropertiesPanelContainer extends Component {
   getExtras(prop) {
     switch (prop.type) {
       case types.number:
-        return { min: prop.min, max: prop.max };
+        return { min: prop.min, max: prop.max, parse: prop.parse, format: prop.format };
       case types.file:
         return { filters: prop.filters };
       default:

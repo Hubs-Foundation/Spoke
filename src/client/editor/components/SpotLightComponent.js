@@ -1,9 +1,10 @@
 import THREE from "../../vendor/three";
 import BaseComponent from "./BaseComponent";
 import { types } from "./utils";
+const { degToRad, radToDeg } = THREE.Math;
 
-export default class PointLightComponent extends BaseComponent {
-  static componentName = "point-light";
+export default class SpotLightComponent extends BaseComponent {
+  static componentName = "spot-light";
 
   static type = "light";
 
@@ -11,6 +12,15 @@ export default class PointLightComponent extends BaseComponent {
     { name: "color", type: types.color, default: "white" },
     { name: "intensity", type: types.number, default: 1 },
     { name: "range", type: types.number, default: 0 },
+    { name: "innerConeAngle", type: types.number, default: 0, min: 0, format: radToDeg, parse: degToRad },
+    {
+      name: "outerConeAngle",
+      type: types.number,
+      default: Math.PI / 4.0, // default in radians
+      min: 1, // min in degrees (applied after format)
+      format: radToDeg,
+      parse: degToRad
+    },
     { name: "castShadow", type: types.boolean, default: true }
   ];
 
@@ -21,16 +31,24 @@ export default class PointLightComponent extends BaseComponent {
         this._object.color.set(value);
         break;
       case "range":
-        this._object.distance.set(value);
+        this._object.distance = value;
         break;
+      case "innerConeAngle":
+      case "outerConeAngle": {
+        this._object.angle = this.props.outerConeAngle;
+        this._object.penumbra = 1.0 - this.props.innerConeAngle / this.props.outerConeAngle;
+        break;
+      }
       default:
         this._object[propertyName] = value;
     }
   }
 
   static async inflate(node, _props) {
-    const light = new THREE.PointLight();
+    const light = new THREE.SpotLight();
     light.decay = 2;
+    light.target.position.set(0, 0, 1);
+    light.add(light.target);
     const component = await this._getOrCreateComponent(node, _props, light);
     node.add(light);
     return component;

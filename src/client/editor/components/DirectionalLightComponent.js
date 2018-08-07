@@ -5,13 +5,13 @@ import { types } from "./utils";
 export default class DirectionalLightComponent extends BaseComponent {
   static componentName = "directional-light";
 
+  static type = "light";
+
   static schema = [
     { name: "color", type: types.color, default: "white" },
     { name: "intensity", type: types.number, default: 1, min: 0 },
     { name: "castShadow", type: types.boolean, default: true }
   ];
-
-  static _tempEuler = new THREE.Euler(0, 0, 0, "YXZ");
 
   async updateProperty(propertyName, value) {
     await super.updateProperty(propertyName, value);

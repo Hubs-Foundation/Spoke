@@ -8,8 +8,6 @@ import AddObjectCommand from "./commands/AddObjectCommand";
 import { Components } from "./components";
 import SceneReferenceComponent from "./components/SceneReferenceComponent";
 import { loadScene, loadSerializedScene, serializeScene, exportScene } from "./SceneLoader";
-import DirectionalLightComponent from "./components/DirectionalLightComponent";
-import AmbientLightComponent from "./components/AmbientLightComponent";
 import { last } from "../utils";
 import { textureCache, gltfCache } from "./caches";
 
@@ -126,6 +124,8 @@ export default class Editor {
 
     this.ignoreNextSceneFileChange = false;
     this.signals.fileChanged.add(this.onFileChanged);
+
+    this._resetDefaultLights();
   }
 
   createViewport(canvas) {
@@ -279,12 +279,13 @@ export default class Editor {
     let defaultDirectionalLight = this.scene.getObjectByName("_defaultDirectionalLight");
 
     this.scene.traverse(node => {
-      if (node.type === "AmbientLight") {
+      if (node.type === "AmbientLight" || node.type === "HemisphereLight") {
         hasAmbientLight = true;
       }
 
-      if (node.type === "DirectionalLight") {
+      if (node.type === "DirectionalLight" || node.type === "PointLight" || node.type === "SpotLight") {
         hasDirectionalLight = true;
+        console.log("has directional light", node);
       }
     });
 
@@ -293,13 +294,15 @@ export default class Editor {
       defaultAmbientLight.name = "_defaultAmbientLight";
       defaultAmbientLight.userData._dontExport = true;
       defaultAmbientLight.userData._dontShowInHierarchy = true;
-      defaultAmbientLight.position.set(0, 0, 0);
       this.scene.add(defaultAmbientLight);
     } else if (hasAmbientLight && defaultAmbientLight) {
       this.scene.remove(defaultAmbientLight);
     }
 
-    if (!hasAmbientLight && !defaultDirectionalLight) {
+    console.log({ hasDirectionalLight, defaultDirectionalLight });
+
+    if (!hasDirectionalLight && !defaultDirectionalLight) {
+      console.log("adding directional light");
       defaultDirectionalLight = new THREE.DirectionalLight();
       defaultDirectionalLight.name = "_defaultDirectionalLight";
       defaultDirectionalLight.userData._dontExport = true;
@@ -556,68 +559,70 @@ export default class Editor {
   }
 
   addComponent = async (object, componentName, props, skipSave) => {
-    let component;
+    try {
+      const componentClass = this.components.get(componentName);
+      let component;
 
-    if (this.components.has(componentName)) {
-      if (
-        componentName === AmbientLightComponent.componentName ||
-        componentName === DirectionalLightComponent.componentName
-      ) {
-        this._resetDefaultLights();
-      }
-
-      if (componentName === SceneReferenceComponent.componentName && props && props.src) {
-        if (props.src === this.sceneInfo.uri) {
-          throw new Error("Cannot add circular scene reference");
+      if (componentClass) {
+        if (componentClass.type === "light") {
+          this._resetDefaultLights();
         }
 
-        component = await this.components.get(componentName).inflate(object, props);
+        if (componentName === SceneReferenceComponent.componentName && props && props.src) {
+          if (props.src === this.sceneInfo.uri) {
+            throw new Error("Cannot add circular scene reference");
+          }
 
-        await this._loadSceneReference(props.src, object)
-          .then(() => {
-            if (component.propValidation.src !== true) {
-              component.propValidation.src = true;
-              this.signals.objectChanged.dispatch(object);
-            }
-          })
-          .catch(e => {
-            console.error("Failed to loadSceneReference", e);
-            if (component.propValidation.src !== false) {
-              component.propValidation.src = false;
-              this.signals.objectChanged.dispatch(object);
-            }
-          });
+          component = await this.components.get(componentName).inflate(object, props);
+
+          await this._loadSceneReference(props.src, object)
+            .then(() => {
+              if (component.propValidation.src !== true) {
+                component.propValidation.src = true;
+                this.signals.objectChanged.dispatch(object);
+              }
+            })
+            .catch(e => {
+              console.error("Failed to loadSceneReference", e);
+              if (component.propValidation.src !== false) {
+                component.propValidation.src = false;
+                this.signals.objectChanged.dispatch(object);
+              }
+            });
+        } else {
+          component = await this.components.get(componentName).inflate(object, props);
+        }
       } else {
-        component = await this.components.get(componentName).inflate(object, props);
-      }
-    } else {
-      component = {
-        name: componentName,
-        props
-      };
+        component = {
+          name: componentName,
+          props
+        };
 
-      if (object.userData._components === undefined) {
-        object.userData._components = [];
+        if (object.userData._components === undefined) {
+          object.userData._components = [];
+        }
+
+        object.userData._components.push(component);
       }
 
-      object.userData._components.push(component);
+      component.shouldSave = !skipSave;
+
+      object.traverse(child => {
+        this.addHelper(child, object);
+      });
+
+      return component;
+    } catch (e) {
+      console.error("Error adding component", e);
+      throw e;
     }
-
-    component.shouldSave = !skipSave;
-
-    object.traverse(child => {
-      this.addHelper(child, object);
-    });
-
-    return component;
   };
 
   removeComponent(object, componentName) {
-    if (this.components.has(componentName)) {
-      if (
-        componentName === AmbientLightComponent.componentName ||
-        componentName === DirectionalLightComponent.componentName
-      ) {
+    const componentClass = this.components.get(componentName);
+
+    if (componentClass) {
+      if (componentClass.type === "light") {
         this._resetDefaultLights();
       }
 
@@ -625,7 +630,7 @@ export default class Editor {
         this._removeSceneRefDependency(object);
       }
 
-      this.components.get(componentName).deflate(object);
+      componentClass.deflate(object);
     } else {
       if (object.userData._components === undefined) {
         return;
