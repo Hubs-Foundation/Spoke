@@ -1,3 +1,5 @@
+@import "../../theme.scss";
+
 :local(.content) {
   display: flex;
   flex: 1;
@@ -9,19 +11,21 @@
 }
 
 :local(.leftColumn) {
-  margin: 8px;
+  padding: 8px 0 8px 8px;
   display: flex;
   width: 200px;
   height: 100%;
   overflow: auto;
-  border-right: 1px solid rgba(0, 0, 0, 0.5);
+  border-right: 1px solid $border;
+  background-color: $panel2;
 }
 
 :local(.rightColumn) {
-  margin: 8px;
+  padding: 8px;
   display: flex;
   flex: 1;
   overflow-y: auto;
+  background-color: $panel;
 }
 
 :local(.fileNameLabel) {

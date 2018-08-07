@@ -23,6 +23,7 @@
   flex-direction: column;
   overflow: hidden;
   box-shadow: 0 0 1px fade(black, 20%);
+  border-radius: 4px;
 
   $toolbar-height: 30px;
   .mosaic-window-toolbar {
@@ -47,6 +48,7 @@
     white-space: nowrap;
     overflow: hidden;
     min-height: 18px;
+    background-color: $panel;
   }
 
   .mosaic-window-controls {

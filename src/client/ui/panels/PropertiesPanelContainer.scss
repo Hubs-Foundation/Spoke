@@ -1,4 +1,5 @@
 @import "../../common";
+@import "../../theme";
 
 :local(.propertiesPanelContainer) {
   @include no-select;
@@ -20,15 +21,16 @@
 }
 
 :local(.addComponentContainer) {
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  margin-top: 16px !important;
+  margin-top: 12px !important;
 }
 
 :local(.addComponentSelect) {
-  display: flex;
-  flex: 1;
-  margin-right: 8px;
-  max-width: 300px;
+  width: 100%;
+
+  & > div {
+    background-color: $blue;
+    text-align: center;
+    border-radius: 0;
+    border: none;
+  }
 }

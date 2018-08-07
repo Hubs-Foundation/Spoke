@@ -1,18 +1,20 @@
 @import "../../theme";
 
-:local(.fileInput), :local(.fileInput input) {
-  display: flex;
-  width: 100%;
-  color: $text;
-  background-color: $input-background;
-  border: none;
-  padding-left: 6px;
-  font-size: 14px;
-  height: 24px;
-}
 :local(.fileInput) {
-  background: none;
-  padding: 0;
+  display: flex;
+  background: $input-background;
+  width: 100%;
+  height: 24px;
+  border: 1px solid $border;
+  border-radius: 4px;
+}
+
+:local(.fileInput input) {
+  background: $input-background;
+  color: $text;
+  border: none;
+  border-radius: 4px;
+  margin-left: 4px;
 }
 
 :local(.invalidPath) {
@@ -29,4 +31,5 @@
 
 :local(.inputButton) {
   display: inline-block;
+  height: 24px;
 }

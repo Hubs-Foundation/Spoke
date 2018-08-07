@@ -1,6 +1,9 @@
+@import "../theme";
+
 :local(.inputGroup) {
   display: flex;
   flex-direction: row;
+  padding: 0 8px;
 
   &:local(.disabled) {
     pointer-events: none;
@@ -10,20 +13,18 @@
   :local(.label) {
     display: flex;
     align-items: center;
-    padding-right: 8px;
     width: 100%;
-    text-align: right;
+    justify-content: space-between;
   }
 
   :local(.name) {
     display: block;
-    flex: 1;
+    color: $text2;
   }
 
   :local(.content) {
     display: flex;
     flex-direction: row;
-    margin-left: 4px;
-    flex: 2.4;
+    margin-left: 16px;
   }
 }

@@ -3,7 +3,8 @@
 :local(.button) {
   display: flex;
   border: none;
-  background: $selected;
+  border-radius: 4px;
+  background: $blue;
   color: $text;
   white-space: nowrap;
 }

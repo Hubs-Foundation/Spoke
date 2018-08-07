@@ -8,7 +8,8 @@
     align-items: center;
     padding: 5px;
     background: $input-background;
-    border-radius: 1px;
+    border-radius: 4px 0px 0px 4px;
+    border: 1px solid $border;
     box-shadow: '0 0 0 1px rgba(0, 0, 0, .1)';
     cursor: pointer;
     :local(.color) {
@@ -34,8 +35,9 @@
     border: none;
     color: $text;
     background-color: $input-background;
+    border-radius: 0px 4px 4px 0px;
+    border: 1px solid $border;
     padding-left: 6px;
-    font-size: 14px;
     height: 24px;
     width: 10em;
   }

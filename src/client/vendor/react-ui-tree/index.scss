@@ -10,7 +10,6 @@
     position: relative;
     overflow-y: auto;
     overflow-x: hidden;
-    padding-right: 3px;
     height: 100%;
   }
 
@@ -46,9 +45,11 @@
       margin-left: 6px;
       -webkit-touch-callout: none;
       @include no-select;
+      color: $text2;
 
       &.is-active {
         background-color: $selected;
+        color: $selected-text;
       }
 
       &.conflict {
@@ -72,7 +73,8 @@
       position: absolute;
       left: 0;
       cursor: pointer;
-      font-size: 22px;
+      font-size: 16px;
+      color: #fff;
     }
 
     .caret-right:before {
