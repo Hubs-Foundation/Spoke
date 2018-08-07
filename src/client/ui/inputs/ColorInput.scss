@@ -10,7 +10,6 @@
     background: $input-background;
     border-radius: 4px 0px 0px 4px;
     border: 1px solid $border;
-    box-shadow: '0 0 0 1px rgba(0, 0, 0, .1)';
     cursor: pointer;
     :local(.color) {
       width: 36px;
@@ -22,6 +21,7 @@
   :local(.popover) {
     position: absolute;
     z-index: 2;
+    box-shadow: $shadow-30;
     :local(.cover) {
       position: fixed;
       top: 0px;

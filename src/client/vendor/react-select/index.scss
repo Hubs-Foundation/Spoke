@@ -32,7 +32,7 @@ $select-padding-horizontal:         10px !default;
 // menu options
 $select-menu-zindex:                1000 !default;
 $select-menu-max-height:            200px !default;
-$select-menu-box-shadow:            $select-input-hover-box-shadow !default;
+$select-menu-box-shadow:            $shadow-30 !default;
 
 $select-option-color:               lighten($select-text-color, 20%) !default;
 $select-option-bg:                  $select-input-bg !default;
@@ -51,9 +51,9 @@ $select-clear-hover-color:          #D0021B !default; // red
 $select-clear-width:                ($select-input-internal-height / 2) !default;
 
 // arrow indicator
-$select-arrow-color:                #fff !default;
-$select-arrow-color-hover:          #666 !default;
-$select-arrow-width:                5px !default;
+$select-arrow-color:                $text !default;
+$select-arrow-color-hover:          $text2 !default;
+$select-arrow-width:                4px !default;
 
 // loading indicator
 $select-loading-size:               16px !default;
