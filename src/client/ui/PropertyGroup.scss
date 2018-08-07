@@ -12,10 +12,10 @@
     display: flex;
     flex-direction: row;
     align-items: left;
-    padding: 6px 8px;
     background-color: $panel;
     font-weight: bold;
     color: $text2;
+    padding: 0 8px;
     :last-child {
       margin-left: auto;
     }
@@ -28,7 +28,6 @@
 
     & > * {
       margin-top: 8px;
-
     }
   }
 
