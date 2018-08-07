@@ -285,7 +285,6 @@ export default class Editor {
 
       if (node.type === "DirectionalLight" || node.type === "PointLight" || node.type === "SpotLight") {
         hasDirectionalLight = true;
-        console.log("has directional light", node);
       }
     });
 
@@ -299,10 +298,7 @@ export default class Editor {
       this.scene.remove(defaultAmbientLight);
     }
 
-    console.log({ hasDirectionalLight, defaultDirectionalLight });
-
     if (!hasDirectionalLight && !defaultDirectionalLight) {
-      console.log("adding directional light");
       defaultDirectionalLight = new THREE.DirectionalLight();
       defaultDirectionalLight.name = "_defaultDirectionalLight";
       defaultDirectionalLight.userData._dontExport = true;
