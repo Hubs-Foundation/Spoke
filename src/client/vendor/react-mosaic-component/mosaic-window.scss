@@ -15,7 +15,6 @@
  * limitations under the License@mixin 
  */
 @import './mixins';
-@import url(https://use.fontawesome.com/releases/v5.2.0/css/all.css);
 
 
 .mosaic-window,
@@ -51,13 +50,6 @@
     overflow: hidden;
     min-height: 18px;
     background-color: $panel;
-  }
-
-  .mosaic-window-title:before {
-    font-family: "Font Awesome 5 Free";
-    font-weight: 900;
-    padding-right: 8px;
-    content: "\f1b2";
   }
 
   .mosaic-window-controls {

@@ -36,6 +36,7 @@
     ]
   },
   "dependencies": {
+    "@fortawesome/fontawesome-free": "^5.2.0",
     "@robertlong/react-ui-tree": "github:robertlong/react-ui-tree#dev",
     "chokidar": "^2.0.4",
     "classnames": "^2.2.5",
