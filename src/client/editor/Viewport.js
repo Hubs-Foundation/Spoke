@@ -254,6 +254,7 @@ export default class Viewport {
       editor.helperScene.add(grid);
       editor.helperScene.add(selectionBox);
       editor.helperScene.add(this._transformControls);
+      editor.scene.background = new THREE.Color(0xaaaaaa);
       render();
     });
 
