@@ -8,7 +8,7 @@
   padding-bottom: 12px;
   border-bottom: 1px solid $border;
 
-  :local(.name) {
+  :local(.header) {
     display: flex;
     flex-direction: row;
     align-items: left;
