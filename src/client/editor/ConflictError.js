@@ -1,9 +1,12 @@
 export default class ConflictError extends Error {
+  __proto__: Error;
+
   constructor(message, type, uri, handler) {
+    const trueProto = new.target.prototype;
     super(message);
-    this.name = "ConflictError";
     this.type = type;
     this.uri = uri;
     this.handler = handler;
+    Object.setPrototypeOf(this, trueProto);
   }
 }
