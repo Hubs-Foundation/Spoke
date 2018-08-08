@@ -246,12 +246,17 @@ class PropertiesPanelContainer extends Component {
 
     return (
       <div className={styles.propertiesPanelContainer}>
-        <PropertyGroup className={styles.propertiesHeader} canRemove={false}>
-          <InputGroup className={styles.propertiesHeaderName} name="Name">
+        <PropertyGroup
+          className={styles.propertiesHeader}
+          headerClassName={styles.propertiesHeaderTitle}
+          contentClassName={styles.propertiesHeaderContent}
+          canRemove={false}
+        >
+          <InputGroup name="Name">
             <StringInput value={object.name} onChange={this.onUpdateName} />
           </InputGroup>
           {object.parent !== null && (
-            <InputGroup className={styles.propertiesHeaderBatch} name="Static">
+            <InputGroup name="Static">
               <Select
                 className={styles.staticSelect}
                 value={staticMode}

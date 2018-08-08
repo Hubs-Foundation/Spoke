@@ -12,20 +12,22 @@
   background-color: $panel2;
   border: none !important;
   padding-bottom: 0 !important;
-  flex-flow: row wrap !important;
 }
 
-:local(.propertiesHeader .name) {
+:local(.propertiesHeaderTitle) {
   padding: 0 !important;
 }
 
-:local(.propertiesHeaderName){
-
+:local(.propertiesHeaderContent) {
+  width: 100% !important;
+  flex-flow: row wrap !important;
 }
 
-:local(.propertiesHeaderBatch){
-  
+:local(.propertiesHeaderContent .InputGroup) {
+  flex: 1;
+  padding: 0 0 0 8px;
 }
+
 
 :local(.noNodeSelected) {
   display: flex;
@@ -41,6 +43,7 @@
 
 :local(.addComponentContainer) {
   margin-top: 12px !important;
+  width: 100%;
 }
 
 :local(.addComponentSelect) {
