@@ -246,7 +246,12 @@ class PropertiesPanelContainer extends Component {
 
     return (
       <div className={styles.propertiesPanelContainer}>
-        <PropertyGroup name="Node" canRemove={false}>
+        <PropertyGroup
+          className={styles.propertiesHeader}
+          headerClassName={styles.propertiesHeaderTitle}
+          contentClassName={styles.propertiesHeaderContent}
+          canRemove={false}
+        >
           <InputGroup name="Name">
             <StringInput value={object.name} onChange={this.onUpdateName} />
           </InputGroup>

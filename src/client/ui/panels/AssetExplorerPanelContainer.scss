@@ -1,3 +1,5 @@
+@import "../../theme";
+
 :local(.assetExplorerPanelContainer) {
   display: flex;
   flex-direction: row;
@@ -5,12 +7,12 @@
 }
 
 :local(.leftColumn) {
-  padding: 8px;
   display: flex;
   width: 200px;
   height: 100%;
   overflow: auto;
-  border-right: 1px solid rgba(0, 0, 0, 0.5);
+  background-color: $panel2;
+  padding-left: 8px;
 }
 
 :local(.rightColumn) {

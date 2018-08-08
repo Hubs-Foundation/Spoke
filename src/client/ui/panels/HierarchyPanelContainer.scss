@@ -8,24 +8,29 @@
   position: relative;
   display: flex;
   flex-direction: column;
+  color: $text2;
 }
 
-:local(.breadCrumb),:local(.ancestor) {
-  display: block;
+:local(.breadCrumbBar) {
+  display: flex;
   width: 100%;
+  background-color: $panel2;
+}  
+
+:local(.breadCrumb),:local(.ancestor) {
+  padding: 8px;
   border: none;
-  padding: 4px;
-  border-top: 1px solid $border;
-  color: #737373;
-  text-align: center;
-  font-size: 14px;
+  border-right: 1px solid $border;
+  font-size: 12px;
 }
 :local(button.breadCrumb) {
   cursor: pointer;
   color: $text;
-  background: $header;
+  background-color: $panel2;
+  
   &[disabled] {
     cursor: auto;
+    color: $text2;
   }
 }
 
@@ -34,6 +39,7 @@
   outline: none;
   flex: 1;
   overflow: hidden;
+  margin-left: 8px;
 }
 :local(.treeNode) {
   padding: 4px 5px;
