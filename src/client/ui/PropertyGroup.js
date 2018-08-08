@@ -57,8 +57,8 @@ function PropertyGroup(props) {
   const showSaveInfo = saveable && !src;
 
   return (
-    <div className={styles.propertyGroup}>
-      <div className={styles.name}>
+    <div className={classNames(styles.propertyGroup, props.className)}>
+      <div className={classNames(styles.header, props.headerClassName)}>
         {name}
         {renderRemoveButton()}
       </div>
@@ -69,7 +69,7 @@ function PropertyGroup(props) {
           <span className={styles.text}>You must save this component or load a saved file in order to edit it.</span>
         </div>
       )}
-      <div className={styles.content}>{children}</div>
+      <div className={classNames(styles.content, props.contentClassName)}>{children}</div>
     </div>
   );
 }
@@ -77,6 +77,9 @@ function PropertyGroup(props) {
 PropertyGroup.propTypes = {
   name: PropTypes.string,
   canRemove: PropTypes.bool,
+  className: PropTypes.string,
+  headerClassName: PropTypes.string,
+  contentClassName: PropTypes.string,
   removeHandler: PropTypes.func,
   src: PropTypes.string,
   srcIsValid: PropTypes.bool,

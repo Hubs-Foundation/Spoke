@@ -8,8 +8,6 @@ import AddObjectCommand from "./commands/AddObjectCommand";
 import { Components } from "./components";
 import SceneReferenceComponent from "./components/SceneReferenceComponent";
 import { loadScene, loadSerializedScene, serializeScene, exportScene } from "./SceneLoader";
-import DirectionalLightComponent from "./components/DirectionalLightComponent";
-import AmbientLightComponent from "./components/AmbientLightComponent";
 import { last } from "../utils";
 import { textureCache, gltfCache } from "./caches";
 import ConflictHandler from "./ConflictHandler";
@@ -129,14 +127,13 @@ export default class Editor {
     this.scene.userData._conflictHandler = this._conflictHandler;
     this.ignoreNextSceneFileChange = false;
     this.signals.fileChanged.add(this.onFileChanged);
+
+    this._resetDefaultLights();
   }
 
   createViewport(canvas) {
     const viewport = new Viewport(this, canvas);
     this.viewports.push(viewport);
-    // This is odd, but since Viewport manages intersection objects, and since _setSceneDefaults adds components to
-    // the scene, we need to set sceneDefaults after the viewport has been created.
-    this._setSceneDefaults(this.scene);
     return viewport;
   }
 
@@ -199,7 +196,7 @@ export default class Editor {
 
   editScenePrefab(object, uri) {
     this._prefabBeingEdited = object;
-    this._loadScene(uri, true);
+    this._loadScene(uri);
   }
 
   _deleteSceneDependencies() {
@@ -248,8 +245,6 @@ export default class Editor {
     this._setSceneInfo(scene, null);
     this.scenes = [this.sceneInfo];
 
-    this._setSceneDefaults(scene);
-
     this._setScene(scene);
 
     this.signals.sceneModified.dispatch();
@@ -270,6 +265,7 @@ export default class Editor {
 
   _setScene(scene) {
     this.scene = scene;
+    this._resetDefaultLights();
     if (this.scene.userData && this.scene.userData._conflictHandler) {
       this._conflictHandler = this.scene.userData._conflictHandler;
     } else if (!this._conflictHandler) {
@@ -278,21 +274,51 @@ export default class Editor {
     this.scene.traverse(object => {
       this.signals.objectAdded.dispatch(object);
     });
+
     this.signals.sceneSet.dispatch();
+  }
+
+  _resetDefaultLights() {
+    let hasDirectionalLight = false;
+    let hasAmbientLight = false;
+
+    let defaultAmbientLight = this.scene.getObjectByName("_defaultAmbientLight");
+    let defaultDirectionalLight = this.scene.getObjectByName("_defaultDirectionalLight");
+
+    this.scene.traverse(node => {
+      if (node.type === "AmbientLight" || node.type === "HemisphereLight") {
+        hasAmbientLight = true;
+      }
+
+      if (node.type === "DirectionalLight" || node.type === "PointLight" || node.type === "SpotLight") {
+        hasDirectionalLight = true;
+      }
+    });
+
+    if (!hasAmbientLight && !defaultAmbientLight) {
+      defaultAmbientLight = new THREE.AmbientLight();
+      defaultAmbientLight.name = "_defaultAmbientLight";
+      defaultAmbientLight.userData._dontExport = true;
+      defaultAmbientLight.userData._dontShowInHierarchy = true;
+      this.scene.add(defaultAmbientLight);
+    } else if (hasAmbientLight && defaultAmbientLight) {
+      this.scene.remove(defaultAmbientLight);
+    }
+
+    if (!hasDirectionalLight && !defaultDirectionalLight) {
+      defaultDirectionalLight = new THREE.DirectionalLight();
+      defaultDirectionalLight.name = "_defaultDirectionalLight";
+      defaultDirectionalLight.userData._dontExport = true;
+      defaultDirectionalLight.userData._dontShowInHierarchy = true;
+      defaultDirectionalLight.position.set(5, 10, 7.5);
+      this.scene.add(defaultDirectionalLight);
+    } else if (hasDirectionalLight && defaultDirectionalLight) {
+      this.scene.remove(defaultDirectionalLight);
+    }
   }
 
   sceneModified() {
     return this.sceneInfo.modified;
-  }
-
-  async _setSceneDefaults(scene, skipSave) {
-    scene.background = new THREE.Color(0xaaaaaa);
-    if (!this.getComponent(scene, AmbientLightComponent.componentName)) {
-      await this.addComponent(scene, AmbientLightComponent.componentName, null, skipSave);
-    }
-    if (!this.getComponent(scene, DirectionalLightComponent.componentName)) {
-      await this.addComponent(scene, DirectionalLightComponent.componentName, null, skipSave);
-    }
   }
 
   _addDependency(uri, obj) {
@@ -301,7 +327,7 @@ export default class Editor {
     this.fileDependencies.set(uri, uriDependencies);
   }
 
-  async _loadScene(uri, skipSaveDefaults) {
+  async _loadScene(uri) {
     this.deselect();
 
     this._deleteSceneDependencies();
@@ -313,8 +339,6 @@ export default class Editor {
 
     this._setSceneInfo(scene, uri);
     this.scenes.push(this.sceneInfo);
-
-    await this._setSceneDefaults(scene, skipSaveDefaults);
 
     this._setScene(scene);
 
@@ -377,8 +401,6 @@ export default class Editor {
     const sceneInfo = this.scenes.find(sceneInfo => sceneInfo.uri === sceneURI);
     sceneInfo.scene = scene;
 
-    await this._setSceneDefaults(scene);
-
     this._setScene(scene);
 
     return scene;
@@ -408,7 +430,6 @@ export default class Editor {
 
     this._setSceneInfo(scene, null);
     this.scenes = [this.sceneInfo];
-    this._setSceneDefaults(scene);
     this._setScene(scene);
     this._addDependency(inheritedURI, scene);
 
@@ -475,7 +496,7 @@ export default class Editor {
     const material = new THREE.MeshBasicMaterial({ color: 0xff0000, visible: false });
 
     return function(object, selectionRoot) {
-      if (this.helpers[object.id]) return;
+      if (this.helpers[selectionRoot.id]) return;
       let helper;
 
       if (object instanceof THREE.Camera) {
@@ -531,62 +552,78 @@ export default class Editor {
   }
 
   addComponent = async (object, componentName, props, skipSave) => {
-    let component;
+    try {
+      const componentClass = this.components.get(componentName);
+      let component;
 
-    if (this.components.has(componentName)) {
-      if (componentName === SceneReferenceComponent.componentName && props && props.src) {
-        if (props.src === this.sceneInfo.uri) {
-          throw new Error("Cannot add circular scene reference");
+      if (componentClass) {
+        if (componentClass.type === "light") {
+          this._resetDefaultLights();
         }
 
-        component = await this.components.get(componentName).inflate(object, props);
+        if (componentName === SceneReferenceComponent.componentName && props && props.src) {
+          if (props.src === this.sceneInfo.uri) {
+            throw new Error("Cannot add circular scene reference");
+          }
 
-        await this._loadSceneReference(props.src, object)
-          .then(() => {
-            if (component.propValidation.src !== true) {
-              component.propValidation.src = true;
-              this.signals.objectChanged.dispatch(object);
-            }
-          })
-          .catch(e => {
-            console.error("Failed to loadSceneReference", e);
-            if (component.propValidation.src !== false) {
-              component.propValidation.src = false;
-              this.signals.objectChanged.dispatch(object);
-            }
-          });
+          component = await this.components.get(componentName).inflate(object, props);
+
+          await this._loadSceneReference(props.src, object)
+            .then(() => {
+              if (component.propValidation.src !== true) {
+                component.propValidation.src = true;
+                this.signals.objectChanged.dispatch(object);
+              }
+            })
+            .catch(e => {
+              console.error("Failed to loadSceneReference", e);
+              if (component.propValidation.src !== false) {
+                component.propValidation.src = false;
+                this.signals.objectChanged.dispatch(object);
+              }
+            });
+        } else {
+          component = await this.components.get(componentName).inflate(object, props);
+        }
       } else {
-        component = await this.components.get(componentName).inflate(object, props);
-      }
-    } else {
-      component = {
-        name: componentName,
-        props
-      };
+        component = {
+          name: componentName,
+          props
+        };
 
-      if (object.userData._components === undefined) {
-        object.userData._components = [];
+        if (object.userData._components === undefined) {
+          object.userData._components = [];
+        }
+
+        object.userData._components.push(component);
       }
 
-      object.userData._components.push(component);
+      component.shouldSave = !skipSave;
+
+      object.traverse(child => {
+        this.addHelper(child, object);
+      });
+
+      return component;
+    } catch (e) {
+      console.error("Error adding component", e);
+      throw e;
     }
-
-    component.shouldSave = !skipSave;
-
-    object.traverse(child => {
-      this.addHelper(child, object);
-    });
-
-    return component;
   };
 
   removeComponent(object, componentName) {
-    if (this.components.has(componentName)) {
+    const componentClass = this.components.get(componentName);
+
+    if (componentClass) {
+      if (componentClass.type === "light") {
+        this._resetDefaultLights();
+      }
+
       if (componentName === SceneReferenceComponent.componentName) {
         this._removeSceneRefDependency(object);
       }
 
-      this.components.get(componentName).deflate(object);
+      componentClass.deflate(object);
     } else {
       if (object.userData._components === undefined) {
         return;

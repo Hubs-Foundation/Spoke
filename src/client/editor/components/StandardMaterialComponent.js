@@ -1,7 +1,6 @@
 import SaveableComponent from "./SaveableComponent";
 import { types } from "./utils";
 import THREE from "../../vendor/three";
-import envMapURL from "../../assets/envmap.jpg";
 import { textureCache } from "../caches";
 
 function getURLPath(url) {
@@ -16,10 +15,23 @@ function getTextureSrc(texture) {
 }
 
 const imageFilters = [".jpg", ".png"];
-const envMap = new THREE.TextureLoader().load(envMapURL);
-envMap.mapping = THREE.EquirectangularReflectionMapping;
-envMap.magFilter = THREE.LinearFilter;
-envMap.minFilter = THREE.LinearMipMapLinearFilter;
+
+import cubeMapPosX from "../../assets/cubemap/posx.jpg";
+import cubeMapNegX from "../../assets/cubemap/negx.jpg";
+import cubeMapPosY from "../../assets/cubemap/posy.jpg";
+import cubeMapNegY from "../../assets/cubemap/negx.jpg";
+import cubeMapPosZ from "../../assets/cubemap/posz.jpg";
+import cubeMapNegZ from "../../assets/cubemap/negz.jpg";
+
+async function loadEnvMap() {
+  const urls = [cubeMapPosX, cubeMapNegX, cubeMapPosY, cubeMapNegY, cubeMapPosZ, cubeMapNegZ];
+  const texture = await new THREE.CubeTextureLoader().load(urls);
+  texture.format = THREE.RGBFormat;
+  return texture;
+}
+
+let cachedEnvMap = null;
+
 export default class StandardMaterialComponent extends SaveableComponent {
   static componentName = "standard-material";
 
@@ -136,7 +148,11 @@ export default class StandardMaterialComponent extends SaveableComponent {
   static async inflate(node, _props) {
     const component = await this._getOrCreateComponent(node, _props, node.material || null);
     if (node.material) {
-      node.material.envMap = envMap;
+      if (!cachedEnvMap) {
+        cachedEnvMap = loadEnvMap();
+      }
+
+      node.material.envMap = await cachedEnvMap;
       node.material.needsUpdate = true;
     }
     return component;
