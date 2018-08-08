@@ -454,7 +454,6 @@ export async function loadSerializedScene(sceneDef, baseURI, addComponent, isRoo
   if (!scene.userData._conflictHandler) {
     scene.userData._conflictHandler = new ConflictHandler();
     scene.userData._conflictHandler.findDuplicates(scene, 0, 0);
-    //scene.userData._conflictHandler.updateAllDuplicateStatus(scene);
   }
 
   if (entities) {
@@ -543,7 +542,7 @@ export async function loadSerializedScene(sceneDef, baseURI, addComponent, isRoo
     }
     await Promise.all(entityComponentPromises);
   }
-
+  scene.userData._conflictHandler.findDuplicates(scene, 0, 0);
   return scene;
 }
 
@@ -577,7 +576,7 @@ export async function loadScene(uri, addComponent, isRoot = true, ancestors) {
 
   const sceneResponse = await fetch(url);
   if (!sceneResponse.ok) {
-    const error = SceneLoaderError("Error loading .scene", url, "damaged", null);
+    const error = new SceneLoaderError("Error loading .scene", url, "damaged", null);
     throw error;
   }
   const sceneDef = await sceneResponse.json();
