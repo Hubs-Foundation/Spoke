@@ -21,7 +21,7 @@ export default class PointLightComponent extends BaseComponent {
         this._object.color.set(value);
         break;
       case "range":
-        this._object.distance.set(value);
+        this._object.distance = value;
         break;
       default:
         this._object[propertyName] = value;
