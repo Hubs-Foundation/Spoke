@@ -23,12 +23,6 @@
   flex-flow: row wrap !important;
 }
 
-:local(.propertiesHeaderContent .InputGroup) {
-  flex: 1;
-  padding: 0 0 0 8px;
-}
-
-
 :local(.noNodeSelected) {
   display: flex;
   justify-content: center;
@@ -38,7 +32,7 @@
 
 :local(.staticSelect) {
   text-align: left;
-  width: 128px;
+  width: 100%;
 }
 
 :local(.addComponentContainer) {
