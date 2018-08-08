@@ -56,3 +56,14 @@
     border: none;
   }
 }
+
+:local(.propertiesPanelContainer input[role="combobox"]) {
+  color: $text;
+  padding: 2px 0 0 0;
+  width: 100% !important;
+}
+
+:local(.addComponentSelect input[role="combobox"]) {
+  padding: 2px 0 0 4px !important;
+  text-align: center;
+}
