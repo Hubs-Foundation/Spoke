@@ -1,5 +1,16 @@
 @import "../../common";
 @import "../../theme";
+@import "../../icons";
+
+:global {
+  .propertiesPanel {
+    .mosaic-window-title:before {
+      @extend .fas;
+      content: fa-content($fa-var-cube);
+      padding-right: 8px;
+    }
+  }
+}
 
 :local(.propertiesPanelContainer) {
   @include no-select;

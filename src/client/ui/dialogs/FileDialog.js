@@ -248,7 +248,7 @@ class FileDialog extends Component {
 
     return (
       <div className={dialogStyles.dialogContainer}>
-        <Header title={this.props.title} />
+        <Header icon="fa-folder" title={this.props.title} />
         <div className={styles.content}>
           <div className={styles.leftColumn}>
             <Tree
