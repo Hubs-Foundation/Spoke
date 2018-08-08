@@ -20,6 +20,7 @@ import styles from "../common.scss";
 import FileDialog from "./dialogs/FileDialog";
 import ProgressDialog, { PROGRESS_DIALOG_DELAY } from "./dialogs/ProgressDialog";
 import ErrorDialog from "./dialogs/ErrorDialog";
+import ConflictError from "../editor/ConflictError";
 
 class EditorContainer extends Component {
   static defaultProps = {
@@ -437,7 +438,7 @@ class EditorContainer extends Component {
       await action(uri);
       this.hideDialog();
     } catch (e) {
-      if (e.name === "ConflictError") {
+      if (e instanceof ConflictError) {
         this.onSceneErrorOccurred(e, uri, reload);
       } else {
         this.setState({
@@ -486,7 +487,7 @@ class EditorContainer extends Component {
               "We've found duplicate and/or missing node names in this file.\nWould you like to fix all conflicts?\n*This will modify the original file.",
             options: [
               {
-                label: "okay",
+                label: "Okay",
                 onClick: () => {
                   this.setState({ openModal: null });
                   this._overwriteConflictsInSource(error.uri, error.handler, () => {
@@ -495,14 +496,14 @@ class EditorContainer extends Component {
                 }
               }
             ],
-            cancelLabel: "cancel",
+            cancelLabel: "Cancel",
             hideDialog: () => {
               this.setState({ openModal: null });
             }
           }
         }
       });
-    } else {
+    } else if (error.type === "rename") {
       // renaming
       this.showDialog(ErrorDialog, {
         title: "Name in Use",
