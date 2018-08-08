@@ -10,6 +10,7 @@ import SceneReferenceComponent from "./components/SceneReferenceComponent";
 import { loadScene, loadSerializedScene, serializeScene, exportScene } from "./SceneLoader";
 import { last } from "../utils";
 import { textureCache, gltfCache } from "./caches";
+import ConflictHandler from "./ConflictHandler";
 
 /**
  * @author mrdoob / http://mrdoob.com/
@@ -59,7 +60,9 @@ export default class Editor {
 
       historyChanged: new Signal(),
 
-      fileChanged: new Signal()
+      fileChanged: new Signal(),
+
+      sceneErrorOccurred: new Signal()
     };
 
     this.history = new History(this);
@@ -113,8 +116,8 @@ export default class Editor {
     // Map from URI -> Set of Object3Ds
     this.fileDependencies = new Map();
 
-    this._duplicateNameCounters = new Map();
-
+    this._conflictHandler = new ConflictHandler();
+    this.scene.userData._conflictHandler = this._conflictHandler;
     this.ignoreNextSceneFileChange = false;
     this.signals.fileChanged.add(this.onFileChanged);
 
@@ -159,6 +162,7 @@ export default class Editor {
 
     this.sceneInfo = last(this.scenes);
     this.scene = this.sceneInfo.scene;
+    this._conflictHandler = this.scene.userData._conflictHandler;
     this.helperScene = this.sceneInfo.helperScene;
     this.helpers = this.sceneInfo.helpers;
     this.objects = this.sceneInfo.objects;
@@ -169,8 +173,8 @@ export default class Editor {
       this.updateComponentProperty(this._prefabBeingEdited, sceneRefComponentName, "src", poppedURI);
       if (previousURI.endsWith(".gltf")) {
         const name = last(poppedURI.split("/"));
-        this._prefabBeingEdited.name = name;
-        this._duplicateNameCounters.set(name, this._duplicateNameCounters.get(name) || 0);
+        const displayName = this._conflictHandler.addToDuplicateNameCounters(name);
+        this._prefabBeingEdited.name = displayName;
       }
     }
 
@@ -254,9 +258,12 @@ export default class Editor {
 
   _setScene(scene) {
     this.scene = scene;
-
     this._resetDefaultLights();
-
+    if (this.scene.userData && this.scene.userData._conflictHandler) {
+      this._conflictHandler = this.scene.userData._conflictHandler;
+    } else if (!this._conflictHandler) {
+      this._conflictHandler = new ConflictHandler();
+    }
     this.scene.traverse(object => {
       this.signals.objectAdded.dispatch(object);
     });
@@ -321,6 +328,7 @@ export default class Editor {
     this._resetHelpers();
 
     const scene = await loadScene(uri, this.addComponent, true);
+    this._conflictHandler = scene.userData._conflictHandler;
 
     this._setSceneInfo(scene, uri);
     this.scenes.push(this.sceneInfo);
@@ -340,6 +348,12 @@ export default class Editor {
     const scene = await loadScene(uri, this.addComponent, false);
     scene.userData._dontShowInHierarchy = true;
     scene.userData._sceneReference = uri;
+
+    const conflictHandler = scene.userData._conflictHandler;
+    if (conflictHandler.getDuplicateStatus()) {
+      // auto resolve scene conflicts
+      conflictHandler.resolveConflicts(scene);
+    }
 
     scene.traverse(child => {
       Object.defineProperty(child.userData, "_selectionRoot", { value: parent, configurable: true, enumerable: false });
@@ -424,24 +438,7 @@ export default class Editor {
     object.userData._saveParent = true;
 
     object.traverse(child => {
-      let cacheName = child.name;
-
-      const match = child.name.match(/(.*)_\d+$/);
-
-      if (match) {
-        cacheName = match[1];
-      }
-
-      let duplicateNameCount = this._duplicateNameCounters.get(cacheName);
-
-      if (duplicateNameCount !== undefined) {
-        duplicateNameCount++;
-        this._duplicateNameCounters.set(cacheName, duplicateNameCount);
-        child.name = cacheName + "_" + duplicateNameCount;
-      } else {
-        this._duplicateNameCounters.set(cacheName, 0);
-      }
-
+      child.name = this._conflictHandler.addToDuplicateNameCounters(child.name);
       this.addHelper(child, object);
     });
 
@@ -759,6 +756,7 @@ export default class Editor {
 
   deleteObject(object) {
     this.execute(new RemoveObjectCommand(object));
+    this._conflictHandler.updateDuplicateNameCounters(this.scene);
   }
 
   deleteSelectedObject() {
