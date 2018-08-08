@@ -14,10 +14,6 @@ import {
   setOriginalStaticMode
 } from "./StaticMode";
 import { gltfCache } from "./caches";
-import DirectionalLightComponent from "./components/DirectionalLightComponent";
-import AmbientLightComponent from "./components/AmbientLightComponent";
-
-const defaultLightComponentNames = [DirectionalLightComponent.componentName, AmbientLightComponent.componentName];
 
 export function absoluteToRelativeURL(from, to) {
   if (from === to) return to;
@@ -310,7 +306,9 @@ async function inflateGLTFComponents(scene, addComponent) {
     if (object instanceof THREE.Mesh) {
       addComponentPromises.push(addComponent(object, "mesh", null, true));
 
-      const shadowProps = object.userData.components ? object.userData.components.shadow : null;
+      const shadowProps = object.userData.components
+        ? object.userData.components.shadow
+        : { castShadow: true, receiveShadow: true };
       addComponentPromises.push(addComponent(object, "shadow", shadowProps, true));
 
       if (object.material instanceof THREE.MeshStandardMaterial) {
@@ -579,16 +577,6 @@ export async function loadScene(uri, addComponent, isRoot = true, ancestors) {
 
   if (isRoot) {
     ancestors = [];
-  }
-
-  if (!isRoot) {
-    // Remove default light components from a referenced scene root.
-    const sceneRoot = sceneDef.root && sceneDef.entities[sceneDef.root];
-    if (sceneRoot && sceneRoot.components) {
-      sceneRoot.components = sceneRoot.components.filter(
-        component => !defaultLightComponentNames.includes(component.name)
-      );
-    }
   }
 
   scene = await loadSerializedScene(sceneDef, uri, addComponent, isRoot, ancestors);

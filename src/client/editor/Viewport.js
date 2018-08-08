@@ -16,13 +16,16 @@ export default class Viewport {
       antialias: true
     });
 
-    render.gammaOutput = true;
+    renderer.gammaOutput = true;
+    renderer.gammaFactor = 2.2;
     renderer.physicallyCorrectLights = true;
     renderer.shadowMap.enabled = true;
     renderer.autoClear = false;
     renderer.autoUpdateScene = false;
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setSize(canvas.parentElement.offsetWidth, canvas.parentElement.offsetHeight);
+
+    editor.scene.background = new THREE.Color(0xaaaaaa);
 
     const camera = editor.camera;
 

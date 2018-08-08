@@ -8,6 +8,25 @@
   overflow-y: auto;
 }
 
+:local(.propertiesHeader) {
+  background-color: $panel2;
+  border: none !important;
+  padding-bottom: 0 !important;
+  flex-flow: row wrap !important;
+}
+
+:local(.propertiesHeader .name) {
+  padding: 0 !important;
+}
+
+:local(.propertiesHeaderName){
+
+}
+
+:local(.propertiesHeaderBatch){
+  
+}
+
 :local(.noNodeSelected) {
   display: flex;
   justify-content: center;

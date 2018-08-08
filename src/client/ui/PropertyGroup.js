@@ -57,7 +57,7 @@ function PropertyGroup(props) {
   const showSaveInfo = saveable && !src;
 
   return (
-    <div className={styles.propertyGroup}>
+    <div className={classNames(styles.propertyGroup, props.className)}>
       <div className={styles.name}>
         {name}
         {renderRemoveButton()}
@@ -77,6 +77,7 @@ function PropertyGroup(props) {
 PropertyGroup.propTypes = {
   name: PropTypes.string,
   canRemove: PropTypes.bool,
+  className: PropTypes.string,
   removeHandler: PropTypes.func,
   src: PropTypes.string,
   srcIsValid: PropTypes.bool,

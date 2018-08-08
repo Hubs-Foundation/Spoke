@@ -17,6 +17,10 @@
   margin-left: 4px;
 }
 
+:local(.fileInput button) {
+  border-radius: 0 4px 4px 0px;
+}
+
 :local(.invalidPath) {
   outline: 2px solid $red;
   color: $red;

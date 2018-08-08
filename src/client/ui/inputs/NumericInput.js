@@ -23,6 +23,8 @@ export default class NumericInput extends React.Component {
     bigStep: PropTypes.number,
     min: PropTypes.number,
     max: PropTypes.number,
+    format: PropTypes.func,
+    parse: PropTypes.func,
     onChange: PropTypes.func
   };
 
@@ -34,11 +36,24 @@ export default class NumericInput extends React.Component {
 
   constructor(props) {
     super(props);
+
+    const initialValue = this.formatValue(props.value);
+
     this.state = {
-      value: props.value.toString(),
+      value: initialValue.toString(),
       step: props.mediumStep
     };
-    this.lastValidValue = this.props.value;
+    this.lastValidValue = initialValue;
+  }
+
+  formatValue(value) {
+    const format = this.props.format;
+    return format ? format(value) : value;
+  }
+
+  parseValue(value) {
+    const parse = this.props.parse;
+    return parse ? parse(value) : value;
   }
 
   getStepForEvent(e) {
@@ -66,7 +81,8 @@ export default class NumericInput extends React.Component {
   setValidValue(value) {
     value = this.clamp(round(value));
     this.lastValidValue = value;
-    this.props.onChange(value);
+    const parsedValue = this.parseValue(value);
+    this.props.onChange(parsedValue);
   }
 
   onKeyDown = e => {
@@ -123,7 +139,8 @@ export default class NumericInput extends React.Component {
   };
 
   onMouseMove = e => {
-    this.setValidValue(this.props.value + (e.movementX / 100) * this.state.step);
+    const value = this.formatValue(this.props.value);
+    this.setValidValue(value + (e.movementX / 100) * this.state.step);
   };
 
   cleanUpListeners = () => {
@@ -136,7 +153,8 @@ export default class NumericInput extends React.Component {
 
   validate = () => {
     this.setState({ value: this.lastValidValue.toString() });
-    this.props.onChange(this.lastValidValue);
+    const parsedValue = this.parseValue(this.lastValidValue);
+    this.props.onChange(parsedValue);
   };
 
   setValue(value) {
@@ -156,10 +174,11 @@ export default class NumericInput extends React.Component {
   }
 
   componentDidUpdate(prevProps) {
-    const valueChanged = this.props.value !== prevProps.value;
-    const stateIsNotLikeNewVal = parseFloat(this.state.value.trim()) !== this.props.value;
+    const value = this.formatValue(this.props.value);
+    const valueChanged = value !== this.formatValue(prevProps.value);
+    const stateIsNotLikeNewVal = parseFloat(this.state.value.trim()) !== value;
     if (valueChanged && stateIsNotLikeNewVal) {
-      this.setState({ value: round(this.props.value).toString() });
+      this.setState({ value: round(value).toString() });
     }
   }
 

@@ -195,7 +195,7 @@ class PropertiesPanelContainer extends Component {
   getExtras(prop) {
     switch (prop.type) {
       case types.number:
-        return { min: prop.min, max: prop.max };
+        return { min: prop.min, max: prop.max, parse: prop.parse, format: prop.format };
       case types.file:
         return { filters: prop.filters };
       default:
@@ -246,12 +246,12 @@ class PropertiesPanelContainer extends Component {
 
     return (
       <div className={styles.propertiesPanelContainer}>
-        <PropertyGroup canRemove={false}>
-          <InputGroup name="Name">
+        <PropertyGroup className={styles.propertiesHeader} canRemove={false}>
+          <InputGroup className={styles.propertiesHeaderName} name="Name">
             <StringInput value={object.name} onChange={this.onUpdateName} />
           </InputGroup>
           {object.parent !== null && (
-            <InputGroup name="Static">
+            <InputGroup className={styles.propertiesHeaderBatch} name="Static">
               <Select
                 className={styles.staticSelect}
                 value={staticMode}
