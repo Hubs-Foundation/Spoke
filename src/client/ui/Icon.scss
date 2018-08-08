@@ -4,15 +4,12 @@
   display: flex;
   flex-grow: 0;
   flex-wrap: nowrap;
-  flex-direction: row;
+  flex-direction: column;
   padding: 25px;
   align-items: center;
   width: 180px;
   height: 180px;
-
-  &:local(.selected) {
-    background-color: $selected;
-  }
+  color: $text2;
 
   :local(.image) {
     width: 150px;
@@ -31,8 +28,10 @@
 
 :local(.small) {
   padding: 8px;
-  width: 160px;
-  height: 50px;
+  margin: 4px;
+  width: 100px;
+  height: auto;
+  border-radius: 4px;
 
   :local(.image) {
     margin: 0 4px;
@@ -42,10 +41,11 @@
 
   :local(.name), :local(.type) {
     margin-top: 2px;
-    font-size: 11px;
+    text-align: center
   }
 
-  :local(.type) {
-    color: $deemphasized;
+  &:local(.selected) {
+    background-color: $selected;
+    color: $selected-text;
   }
 }

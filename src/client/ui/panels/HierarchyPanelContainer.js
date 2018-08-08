@@ -251,27 +251,29 @@ class HierarchyPanelContainer extends Component {
   render() {
     return (
       <div className={styles.hierarchyRoot}>
-        {this.props.editor.scenes.map((sceneInfo, i) => {
-          const name = sceneInfo.uri ? last(sceneInfo.uri.split("/")) : "<unsaved>";
-          const ancestors = sceneInfo.scene.userData._ancestors;
-          return (
-            <div key={name}>
-              {ancestors &&
-                ancestors.map((ancestor, i) => (
-                  <div className={styles.ancestor} key={`ancestor_${i}`}>
-                    {last(ancestor.split("/"))}
-                  </div>
-                ))}
-              <button
-                className={styles.breadCrumb}
-                disabled={i !== this.props.editor.scenes.length - 2}
-                onClick={this.popScene}
-              >
-                {name}
-              </button>
-            </div>
-          );
-        })}
+        <div className={styles.breadCrumbBar}>
+          {this.props.editor.scenes.map((sceneInfo, i) => {
+            const name = sceneInfo.uri ? last(sceneInfo.uri.split("/")) : "<unsaved>";
+            const ancestors = sceneInfo.scene.userData._ancestors;
+            return (
+              <div key={name}>
+                {ancestors &&
+                  ancestors.map((ancestor, i) => (
+                    <div className={styles.ancestor} key={`ancestor_${i}`}>
+                      {last(ancestor.split("/"))}
+                    </div>
+                  ))}
+                <button
+                  className={styles.breadCrumb}
+                  disabled={i !== this.props.editor.scenes.length - 2}
+                  onClick={this.popScene}
+                >
+                  {name}
+                </button>
+              </div>
+            );
+          })}
+        </div>
         <HotKeys className={styles.tree} handlers={this.state.hierarchyHotKeyHandlers}>
           <Tree
             paddingLeft={8}

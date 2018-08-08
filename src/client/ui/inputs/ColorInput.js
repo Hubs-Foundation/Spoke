@@ -33,7 +33,13 @@ export default class ColorInput extends Component {
     return (
       <div className={styles.popover}>
         <div className={styles.cover} onClick={this.handleClose} />
-        <SketchPicker color={this.props.value} disableAlpha={true} onChange={color => this.props.onChange(color.hex)} />
+        <div className={styles.colorPicker}>
+          <SketchPicker
+            color={this.props.value}
+            disableAlpha={true}
+            onChange={color => this.props.onChange(color.hex)}
+          />
+        </div>
       </div>
     );
   };

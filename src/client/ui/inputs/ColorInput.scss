@@ -6,10 +6,12 @@
   :local(.block) {
     display: flex;
     align-items: center;
-    padding: 5px;
+    padding: 4px;
     background: $input-background;
-    border-radius: 1px;
-    box-shadow: '0 0 0 1px rgba(0, 0, 0, .1)';
+    border-radius: 4px 0px 0px 4px;
+    border-left: 1px solid $border;
+    border-top: 1px solid $border;
+    border-bottom: 1px solid $border;
     cursor: pointer;
     :local(.color) {
       width: 36px;
@@ -21,12 +23,15 @@
   :local(.popover) {
     position: absolute;
     z-index: 2;
+    box-shadow: $shadow-30;
+    right: 0;
+    top: 28px;
     :local(.cover) {
       position: fixed;
-      top: 0px;
-      right: 20px;
-      bottom: 0px;
-      left: 0px;
+      left: 0;
+      right: 0;
+      top: 0;
+      bottom: 0;
     }
   }
 
@@ -34,9 +39,11 @@
     border: none;
     color: $text;
     background-color: $input-background;
+    border-radius: 0px 4px 4px 0px;
+    border: 1px solid $border;
+    padding: 0;
     padding-left: 6px;
-    font-size: 14px;
-    height: 24px;
-    width: 10em;
+    height: 22px;
+    width: 80px;
   }
 }

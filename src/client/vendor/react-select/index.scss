@@ -19,9 +19,9 @@ $select-input-border-radius:        4px !default;
 $select-input-border-focus:         $blue !default; // blue
 $select-input-box-shadow-focus:     inset 0 1px 2px rgba(0, 0, 0, 0.1), 0 0 5px -1px fade($select-input-border-focus, 50%) !default;
 $select-input-border-width:         1px !default;
-$select-input-height:               36px !default;
+$select-input-height:               24px !default;
 $select-input-internal-height:      ($select-input-height - ($select-input-border-width * 2)) !default;
-$select-input-placeholder:          #aaa !default;
+$select-input-placeholder:          $text !default;
 $select-text-color:                 $text !default;
 $select-link-hover-color:           $select-input-border-focus !default;
 $select-input-hover-box-shadow:     0 1px 0 rgba(0, 0, 0, 0.06) !default;
@@ -32,7 +32,7 @@ $select-padding-horizontal:         10px !default;
 // menu options
 $select-menu-zindex:                1000 !default;
 $select-menu-max-height:            200px !default;
-$select-menu-box-shadow:            $select-input-hover-box-shadow !default;
+$select-menu-box-shadow:            $shadow-30 !default;
 
 $select-option-color:               lighten($select-text-color, 20%) !default;
 $select-option-bg:                  $select-input-bg !default;
@@ -51,9 +51,9 @@ $select-clear-hover-color:          #D0021B !default; // red
 $select-clear-width:                ($select-input-internal-height / 2) !default;
 
 // arrow indicator
-$select-arrow-color:                #999 !default;
-$select-arrow-color-hover:          #666 !default;
-$select-arrow-width:                5px !default;
+$select-arrow-color:                $text !default;
+$select-arrow-color-hover:          $text2 !default;
+$select-arrow-width:                4px !default;
 
 // loading indicator
 $select-loading-size:               16px !default;
