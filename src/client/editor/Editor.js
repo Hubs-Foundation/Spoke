@@ -39,13 +39,9 @@ export default class Editor {
       spaceChanged: new Signal(),
       viewportInitialized: new Signal(),
 
-      sceneBackgroundChanged: new Signal(),
-      sceneFogChanged: new Signal(),
       sceneGraphChanged: new Signal(),
       sceneSet: new Signal(),
       sceneModified: new Signal(),
-
-      cameraChanged: new Signal(),
 
       geometryChanged: new Signal(),
 
@@ -59,11 +55,8 @@ export default class Editor {
       helperAdded: new Signal(),
       helperRemoved: new Signal(),
 
-      materialChanged: new Signal(),
-
       windowResize: new Signal(),
 
-      showGridChanged: new Signal(),
       historyChanged: new Signal(),
 
       fileChanged: new Signal()

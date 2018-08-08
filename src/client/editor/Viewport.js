@@ -62,7 +62,11 @@ export default class Viewport {
 
       renderer.render(editor.scene, camera);
       renderer.render(editor.helperScene, camera);
+
+      requestAnimationFrame(render);
     }
+
+    requestAnimationFrame(render);
 
     this._transformControls = new THREE.TransformControls(camera, canvas);
     this._transformControls.addEventListener("change", () => {
@@ -77,8 +81,6 @@ export default class Viewport {
 
         signals.transformChanged.dispatch(object);
       }
-
-      render();
     });
 
     this.snapEnabled = false;
@@ -126,8 +128,6 @@ export default class Viewport {
         } else {
           editor.select(null);
         }
-
-        render();
       }
     }
 
@@ -194,7 +194,6 @@ export default class Viewport {
     const controls = new THREE.EditorControls(camera, canvas);
     controls.addEventListener("change", () => {
       this._transformControls.update();
-      signals.cameraChanged.dispatch(camera);
     });
 
     this._transformControls.addEventListener("mouseDown", () => {
@@ -255,15 +254,6 @@ export default class Viewport {
       editor.helperScene.add(selectionBox);
       editor.helperScene.add(this._transformControls);
       editor.scene.background = new THREE.Color(0xaaaaaa);
-      render();
-    });
-
-    signals.sceneGraphChanged.add(function() {
-      render();
-    });
-
-    signals.cameraChanged.add(function() {
-      render();
     });
 
     signals.objectSelected.add(object => {
@@ -280,8 +270,6 @@ export default class Viewport {
 
         this._transformControls.attach(object);
       }
-
-      render();
     });
 
     signals.objectFocused.add(function(object) {
@@ -292,8 +280,6 @@ export default class Viewport {
       if (object !== undefined) {
         selectionBox.setFromObject(object);
       }
-
-      render();
     });
 
     signals.objectAdded.add(function(object) {
@@ -315,8 +301,6 @@ export default class Viewport {
       if (editor.helpers[object.id] !== undefined) {
         editor.helpers[object.id].update();
       }
-
-      render();
     });
 
     signals.objectRemoved.add(function(object) {
@@ -334,55 +318,7 @@ export default class Viewport {
       editor.objects.splice(editor.objects.indexOf(object.getObjectByName("picker")), 1);
     });
 
-    signals.materialChanged.add(function() {
-      render();
-    });
-
-    // fog
-
-    signals.sceneBackgroundChanged.add(function(backgroundColor) {
-      editor.scene.background.setHex(backgroundColor);
-
-      render();
-    });
-
-    let currentFogType = null;
-
-    signals.sceneFogChanged.add(function(fogType, fogColor, fogNear, fogFar, fogDensity) {
-      const scene = editor.scene;
-      if (currentFogType !== fogType) {
-        switch (fogType) {
-          case "None":
-            scene.fog = null;
-            break;
-          case "Fog":
-            scene.fog = new THREE.Fog();
-            break;
-          case "FogExp2":
-            scene.fog = new THREE.FogExp2();
-            break;
-        }
-
-        currentFogType = fogType;
-      }
-
-      if (scene.fog instanceof THREE.Fog) {
-        scene.fog.color.setHex(fogColor);
-        scene.fog.near = fogNear;
-        scene.fog.far = fogFar;
-      } else if (scene.fog instanceof THREE.FogExp2) {
-        scene.fog.color.setHex(fogColor);
-        scene.fog.density = fogDensity;
-      }
-
-      render();
-    });
-
-    //
-
     signals.windowResize.add(function() {
-      // TODO: Move this out?
-
       editor.DEFAULT_CAMERA.aspect = canvas.parentElement.offsetWidth / canvas.parentElement.offsetHeight;
       editor.DEFAULT_CAMERA.updateProjectionMatrix();
 
@@ -390,13 +326,6 @@ export default class Viewport {
       camera.updateProjectionMatrix();
 
       renderer.setSize(canvas.parentElement.offsetWidth, canvas.parentElement.offsetHeight);
-
-      render();
-    });
-
-    signals.showGridChanged.add(function(showGrid) {
-      grid.visible = showGrid;
-      render();
     });
 
     signals.viewportInitialized.dispatch(this);
