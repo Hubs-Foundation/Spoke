@@ -1,0 +1,29 @@
+@import "../../theme";
+
+:local(.hide) {
+  display: none;
+}
+
+@mixin basic {
+  border-width: 0.8px;
+  border-style: solid;
+  box-sizing: border-box;
+  border-radius: 2px;
+}
+
+input[type="checkbox"] + span {
+  @include basic;
+  color: $input-background;
+  border-color: $border;
+}
+
+input[type="checkbox"]:checked + span {
+  @include basic;
+  color: $selected;
+  border-color: $white;
+}
+
+input[type="checkbox"]:hover + span {
+  @include basic;
+  border-color: $selected;
+}
