@@ -321,7 +321,7 @@ class PropertiesPanelContainer extends Component {
           )}
           <div className={styles.addComponentContainer}>
             <Select
-              placeholder="Add a component..."
+              placeholder="+ Add a component"
               className={styles.addComponentSelect}
               options={componentOptions}
               onChange={this.onAddComponent}
