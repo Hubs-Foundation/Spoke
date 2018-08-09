@@ -6,7 +6,7 @@
   .propertiesPanel {
     .mosaic-window-title:before {
       @extend .fas;
-      content: fa-content($fa-var-cube);
+      content: fa-content($fa-var-sliders-h);
       padding-right: 8px;
     }
   }

@@ -1,1 +1,0 @@
-{"entities":{"LanternPole_Lantern":{"components":[{"name":"point-light","props":{"color":"#f5a623","intensity":5.8,"range":10.12,"castShadow":true}}]}},"inherits":"./test-scenes/materials/lantern/Lantern.gltf"}

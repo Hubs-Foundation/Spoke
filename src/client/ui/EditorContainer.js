@@ -82,9 +82,9 @@ class EditorContainer extends Component {
           }
         },
         assetExplorer: {
-          className: "assetExplorerPanel",
           component: AssetExplorerPanelContainer,
           windowProps: {
+            className: "assetExplorerPanel",
             title: "Asset Explorer",
             toolbarControls: [],
             draggable: false

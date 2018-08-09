@@ -1,4 +1,15 @@
 @import "../../theme";
+@import "../../icons";
+
+:global {
+  .assetExplorerPanel {
+    .mosaic-window-title:before {
+      @extend .fas;
+      content: fa-content($fa-var-list-alt);
+      padding-right: 8px;
+    }
+  }
+}
 
 :local(.assetExplorerPanelContainer) {
   display: flex;
