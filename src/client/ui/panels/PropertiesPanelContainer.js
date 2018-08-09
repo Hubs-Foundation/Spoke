@@ -192,7 +192,7 @@ class PropertiesPanelContainer extends Component {
     });
   };
 
-  _renderObjectComponent = (component, className, headerClassName, contentClassName) => {
+  _renderObjectComponent = (component, className, headerClassName, contentClassName, useDefault = true) => {
     if (!component) return null;
     const componentDefinition = this.props.editor.components.get(component.name);
 
@@ -217,6 +217,7 @@ class PropertiesPanelContainer extends Component {
         className={className}
         headerClassName={headerClassName}
         contentClassName={contentClassName}
+        useDefault={useDefault}
       >
         {componentDefinition.schema.map(prop => (
           <InputGroup name={getDisplayName(prop.name)} key={prop.name} disabled={saveable && !component.src}>
@@ -315,7 +316,8 @@ class PropertiesPanelContainer extends Component {
             objectTransform,
             styles.propertiesHeader,
             styles.propertiesHeader,
-            styles.propertiesHeaderContent
+            styles.propertiesHeaderContent,
+            false
           )}
           <div className={styles.addComponentContainer}>
             <Select
