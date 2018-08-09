@@ -75,8 +75,10 @@ export default class Viewport {
       if (object !== undefined) {
         selectionBox.setFromObject(object);
 
-        if (editor.helpers[object.id] !== undefined) {
-          editor.helpers[object.id].update();
+        const helper = editor.helpers[object.id];
+
+        if (helper !== undefined) {
+          helper.update();
         }
 
         signals.transformChanged.dispatch(object);
@@ -192,9 +194,6 @@ export default class Viewport {
     // otherwise controls.enabled doesn't work.
 
     const controls = new THREE.EditorControls(camera, canvas);
-    controls.addEventListener("change", () => {
-      this._transformControls.update();
-    });
 
     this._transformControls.addEventListener("mouseDown", () => {
       const object = this._transformControls.object;
@@ -291,7 +290,6 @@ export default class Viewport {
     signals.objectChanged.add(object => {
       if (editor.selected === object) {
         selectionBox.setFromObject(object);
-        this._transformControls.update();
       }
 
       if (object instanceof THREE.PerspectiveCamera) {
