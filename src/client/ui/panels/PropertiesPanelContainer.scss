@@ -29,9 +29,8 @@
   padding: 0 !important;
 }
 
-:local(.propertiesHeaderContent) {
-  width: 100% !important;
-  flex-flow: row wrap !important;
+:local(.propertiesPanelTopBar) {
+  display: flex;
 }
 
 :local(.noNodeSelected) {

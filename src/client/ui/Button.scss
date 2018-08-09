@@ -7,4 +7,18 @@
   background: $blue;
   color: $text;
   white-space: nowrap;
+  min-height: 24px;
+  font-size: 12px;
+  font-family: Lato;
+  padding-top: 1px;
+  text-align: center;
+  cursor: pointer;
+
+  &:hover {
+    background-color: $blue-hover;
+  }
+
+  &:active {
+    background-color: $blue-pressed;
+  }
 }

@@ -32,6 +32,11 @@
   width: 100px;
   height: auto;
   border-radius: 4px;
+  cursor: pointer;
+
+  &:hover {
+    background-color: $hover;
+  }
 
   :local(.image) {
     margin: 0 4px;

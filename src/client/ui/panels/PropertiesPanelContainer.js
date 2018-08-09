@@ -298,20 +298,22 @@ class PropertiesPanelContainer extends Component {
           contentClassName={styles.propertiesHeaderContent}
           canRemove={false}
         >
-          <InputGroup name="Name">
-            <StringInput value={object.name} onChange={this.onUpdateName} />
-          </InputGroup>
-          {object.parent !== null && (
-            <InputGroup name="Static">
-              <Select
-                className={styles.staticSelect}
-                value={staticMode}
-                options={staticModeOptions}
-                clearable={false}
-                onChange={this.onUpdateStatic}
-              />
+          <div className={styles.propertiesPanelTopBar}>
+            <InputGroup name="Name">
+              <StringInput value={object.name} onChange={this.onUpdateName} />
             </InputGroup>
-          )}
+            {object.parent !== null && (
+              <InputGroup name="Static">
+                <Select
+                  className={styles.staticSelect}
+                  value={staticMode}
+                  options={staticModeOptions}
+                  clearable={false}
+                  onChange={this.onUpdateStatic}
+                />
+              </InputGroup>
+            )}
+          </div>
           {this._renderObjectComponent(
             objectTransform,
             styles.propertiesHeader,

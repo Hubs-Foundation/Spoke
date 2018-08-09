@@ -11,5 +11,13 @@
   padding-left: 8px;
   font-size: 12px;
   height: 22px;
+
+  &:hover {
+    border-color: $blue-hover;
+  }
+
+  &:focus {
+    border-color: $blue;
+  }
 }
 
