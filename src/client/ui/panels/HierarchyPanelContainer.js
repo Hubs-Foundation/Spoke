@@ -1,12 +1,14 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
 import { HotKeys } from "react-hotkeys";
+import FileDropTarget from "../FileDropTarget";
 import Tree from "@robertlong/react-ui-tree";
 import classNames from "classnames";
 import { ContextMenu, MenuItem, ContextMenuTrigger, connectMenu } from "react-contextmenu";
 
 import styles from "./HierarchyPanelContainer.scss";
 import { withEditor } from "../contexts/EditorContext";
+import { withDialog } from "../contexts/DialogContext";
 import "../../vendor/react-ui-tree/index.scss";
 import "../../vendor/react-contextmenu/index.scss";
 import AddObjectCommand from "../../editor/commands/AddObjectCommand";
@@ -16,6 +18,8 @@ import SceneReferenceComponent from "../../editor/components/SceneReferenceCompo
 import { last } from "../../utils";
 import SnackBar from "../SnackBar";
 import ReactTooltip from "react-tooltip";
+import ErrorDialog from "../dialogs/ErrorDialog";
+import { StaticMode, setStaticMode } from "../../editor/StaticMode";
 
 function createNodeHierarchy(object) {
   const node = {
@@ -53,7 +57,8 @@ function collectNodeMenuProps({ node }) {
 class HierarchyPanelContainer extends Component {
   static propTypes = {
     path: PropTypes.array,
-    editor: PropTypes.object
+    editor: PropTypes.object,
+    showDialog: PropTypes.func
   };
 
   constructor(props) {
@@ -76,6 +81,25 @@ class HierarchyPanelContainer extends Component {
     editor.signals.objectChanged.add(this.rebuildNodeHierarchy);
     editor.signals.objectSelected.add(this.rebuildNodeHierarchy);
   }
+
+  onDropFile = file => {
+    if (file.ext === ".gltf" || file.ext === ".scene") {
+      if (file.uri === this.props.editor.sceneInfo.uri) {
+        this.props.showDialog(ErrorDialog, {
+          title: "Error adding prefab.",
+          message: "Scene cannot be added to itself."
+        });
+        return;
+      }
+
+      const object = new THREE.Object3D();
+      object.name = file.name;
+      setStaticMode(object, StaticMode.Static);
+      this.props.editor.addObject(object);
+      this.props.editor.addComponent(object, "scene-reference", { src: file.uri });
+      this.props.editor.select(object);
+    }
+  };
 
   onChange = (tree, parent, node) => {
     if (!node) {
@@ -274,21 +298,23 @@ class HierarchyPanelContainer extends Component {
             );
           })}
         </div>
-        <HotKeys className={styles.tree} handlers={this.state.hierarchyHotKeyHandlers}>
-          <Tree
-            paddingLeft={8}
-            isNodeCollapsed={false}
-            draggable={true}
-            tree={this.state.tree}
-            renderNode={this.renderNode}
-            onChange={this.onChange}
-          />
-          <this.HierarchyNodeMenu />
-        </HotKeys>
+        <FileDropTarget onDropFile={this.onDropFile}>
+          <HotKeys className={styles.tree} handlers={this.state.hierarchyHotKeyHandlers}>
+            <Tree
+              paddingLeft={8}
+              isNodeCollapsed={false}
+              draggable={true}
+              tree={this.state.tree}
+              renderNode={this.renderNode}
+              onChange={this.onChange}
+            />
+            <this.HierarchyNodeMenu />
+          </HotKeys>
+        </FileDropTarget>
         {this.renderWarnings()}
       </div>
     );
   }
 }
 
-export default withEditor(HierarchyPanelContainer);
+export default withEditor(withDialog(HierarchyPanelContainer));
