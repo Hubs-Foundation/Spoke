@@ -25,6 +25,10 @@ import FileDialog from "../dialogs/FileDialog";
 import ErrorDialog from "../dialogs/ErrorDialog";
 import ProgressDialog, { PROGRESS_DIALOG_DELAY } from "../dialogs/ProgressDialog";
 
+import { debounce } from "throttle-debounce";
+import ConflictError from "../../editor/ConflictError";
+const INPUT_DEBOUNCE_THRESHOLD = 500;
+
 export function getDisplayName(name) {
   if (name.includes("-")) {
     return name
@@ -51,6 +55,8 @@ class PropertiesPanelContainer extends Component {
     this.state = {
       object: null
     };
+
+    this._updateObjectNameDebounced = debounce(INPUT_DEBOUNCE_THRESHOLD, this._updateObjectNameDebounced);
   }
 
   componentDidMount() {
@@ -80,7 +86,33 @@ class PropertiesPanelContainer extends Component {
   };
 
   onUpdateName = e => {
-    this.props.editor.execute(new SetValueCommand(this.state.object, "name", e.target.value));
+    const object = this.state.object;
+    if (!object.userData._debounced) {
+      object.userData._originalName = object.name;
+      object.userData._debounced = true;
+    }
+    object.name = e.target.value;
+    this.setState({ object: object });
+    this._updateObjectNameDebounced(object, e.target.value);
+  };
+
+  _updateObjectNameDebounced = (object, value) => {
+    const handler = this.props.editor._conflictHandler;
+
+    if (handler.isUniqueObjectName(value)) {
+      object.name = value;
+      handler.addToDuplicateNameCounters(value);
+      this.props.editor.execute(new SetValueCommand(object, "name", value));
+    } else {
+      object.name = object.userData._originalName;
+      delete object.userData._originalName;
+      this.props.editor.signals.objectChanged.dispatch(object);
+      this.props.editor.signals.sceneErrorOccurred.dispatch(
+        new ConflictError("rename error", "rename", this.props.editor.sceneInfo.uri, handler)
+      );
+    }
+
+    object.userData._debounced = false;
   };
 
   onUpdateStatic = ({ value }) => {
@@ -236,7 +268,7 @@ class PropertiesPanelContainer extends Component {
   getExtras(prop) {
     switch (prop.type) {
       case types.number:
-        return { min: prop.min, max: prop.max, parse: prop.parse, format: prop.format };
+        return { min: prop.min, max: prop.max, parse: prop.parse, format: prop.format, step: prop.step };
       case types.file:
         return { filters: prop.filters };
       default:

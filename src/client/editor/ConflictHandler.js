@@ -1,3 +1,4 @@
+const namePattern = new RegExp("(.*)_d+$");
 function nodesToTree(nodes) {
   if (!nodes) {
     return;
@@ -39,14 +40,23 @@ function createTreePath(node, layer, index, nodes) {
   }
 }
 
+function getNameWithoutIndex(name) {
+  let cacheName = name;
+  const match = namePattern.exec(name);
+  if (match) {
+    cacheName = match[1];
+  }
+  return cacheName;
+}
+
 export default class ConflictHandler {
   constructor() {
     this._conflicts = {
       missing: false,
       duplicate: false
     };
-    this._duplicateList = {};
-    this._updatedNodes = {};
+    this._updatedNodes = new Map();
+    this._duplicateNameCounters = new Map();
   }
 
   findDuplicates = (node, layer, index) => {
@@ -55,16 +65,30 @@ export default class ConflictHandler {
     } else {
       node.userData._path = [0];
     }
+    node.userData._debounced = false;
 
     if (node.name.length === 0) {
       // unnamed node
+      this.setMissingStatus(true);
       this._generateTempName(node);
     }
 
     const name = node.name;
-    this._duplicateList[name] = name in this._duplicateList ? this._duplicateList[name] + 1 : 1;
-    if (this._duplicateList[name] > 1) {
-      this.setDuplicateStatus(true);
+
+    if (this._duplicateNameCounters.has(name)) {
+      const n = this._duplicateNameCounters.get(name) + 1;
+      this._duplicateNameCounters.set(name, n);
+      node.userData._resolvedName = name + "_" + n;
+      this._updatedNodes.set(this._hashTreePath(node.userData._path), node.userData._resolvedName);
+    } else {
+      this._duplicateNameCounters.set(name, 0);
+      const cacheName = getNameWithoutIndex(name);
+      if (name !== cacheName) {
+        if (!this.isUniqueObjectName(cacheName)) {
+          const n = this._duplicateNameCounters.get(cacheName) + 1;
+          this._duplicateNameCounters.set(cacheName, n);
+        }
+      }
     }
 
     if (node.children) {
@@ -83,11 +107,13 @@ export default class ConflictHandler {
     this._conflicts.missing = newStatus;
   };
 
-  getDuplicateByName = name => {
-    if (!(name in this._duplicateList)) {
-      return false;
-    }
-    return this._duplicateList[name] > 1;
+  getDuplicateStatus = () => {
+    this._updateDuplicateStatus();
+    return this._conflicts.duplicate;
+  };
+
+  getMissingStatus = () => {
+    return this._conflicts.missing;
   };
 
   getConflictInfo = () => {
@@ -102,6 +128,15 @@ export default class ConflictHandler {
       child.userData._duplicate = this.getDuplicateByName(child.name);
       child.userData._isDuplicateRoot = child.userData._duplicate;
     });
+  };
+
+  _updateDuplicateStatus = () => {
+    for (const value of this._duplicateNameCounters.values()) {
+      if (value > 0) {
+        this.setDuplicateStatus(true);
+        break;
+      }
+    }
   };
 
   updateNodesMissingStatus = scene => {
@@ -144,7 +179,7 @@ export default class ConflictHandler {
   _generateTempName = node => {
     const hashPath = this._hashTreePath(node.userData._path);
     node.name = "node_" + hashPath;
-    this._updatedNodes[hashPath] = node.name;
+    this._updatedNodes.set(hashPath, node.name);
   };
 
   _hashTreePath = path => {
@@ -160,24 +195,70 @@ export default class ConflictHandler {
     this._updatedNodes[originalPath] = newName;
   };
 
-  getUpdatedNodeName = path => {
+  getUpdatedNodeName = (path, oldName) => {
     const hashPath = this._hashTreePath(path);
-    if (!(hashPath in this._updatedNodes)) {
-      return;
+    if (!this._updatedNodes.has(hashPath)) {
+      return oldName;
     }
-    return this._updatedNodes[hashPath];
+    return this._updatedNodes.get(hashPath);
   };
 
   updateNodeNames = nodes => {
     const nodeTree = nodesToTree(nodes);
 
     for (const node of nodeTree) {
-      node.name = this.getUpdatedNodeName(node.userData._path);
+      node.name = this.getUpdatedNodeName(node.userData._path, node.name);
       delete node.userData;
     }
   };
 
   isUpdateNeeded = () => {
     return Object.keys(this._updatedNodes).length > 0;
+  };
+
+  isUniqueObjectName = name => {
+    return !this._duplicateNameCounters.has(name);
+  };
+
+  updateDuplicateNameCounters = scene => {
+    const tempNameSet = new Set();
+    scene.traverse(child => {
+      tempNameSet.add(child.name);
+    });
+
+    const duplicateNames = Array.from(this._duplicateNameCounters.keys());
+    const difference = duplicateNames.filter(x => !tempNameSet.has(x));
+
+    if (difference.length > 0) {
+      for (const name of difference) {
+        this._duplicateNameCounters.delete(name);
+      }
+    }
+  };
+
+  addToDuplicateNameCounters = name => {
+    if (this.isUniqueObjectName(name)) {
+      this._duplicateNameCounters.set(name, 0);
+    } else {
+      let n = this._duplicateNameCounters.get(name) + 1;
+      let newName = name + "_" + n;
+      while (!this.isUniqueObjectName(newName)) {
+        n += 1;
+        newName = name + "_" + n;
+      }
+      this._duplicateNameCounters.set(name, n);
+      this._duplicateNameCounters.set(newName, 0);
+      return newName;
+    }
+    return name;
+  };
+
+  resolveConflicts = scene => {
+    scene.traverse(child => {
+      if (!this.isUniqueObjectName(child.name) && child.userData._resolvedName) {
+        child.name = child.userData._resolvedName;
+        delete child.userData._resolvedName;
+      }
+    });
   };
 }
