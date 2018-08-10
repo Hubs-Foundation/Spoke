@@ -441,32 +441,23 @@ class EditorContainer extends Component {
       if (e instanceof ConflictError) {
         this.onSceneErrorOccurred(e, uri, reload);
       } else {
-        this.setState({
-          openModal: {
-            component: OptionDialog,
-            shouldCloseOnOverlayClick: false,
-            props: {
-              title: "Error Opening Scene",
-              message: `
+        this.showDialog(OptionDialog, {
+          title: "Error Opening Scene",
+          message: `
                 ${e.message}:
                 ${e.url}.
                 Please make sure the file exists and then press "Resolved" to reload the scene.
               `,
-              options: [
-                {
-                  label: "Resolved",
-                  onClick: () => {
-                    this.setState({ openModal: null });
-                    reload(uri);
-                  }
-                }
-              ],
-              cancelLabel: "Cancel",
-              hideDialog: () => {
-                this.setState({ openModal: null });
+          options: [
+            {
+              label: "Resolved",
+              onClick: () => {
+                this.hideDialog();
+                reload(uri);
               }
             }
-          }
+          ],
+          cancelLabel: "Cancel"
         });
       }
     } finally {
@@ -477,31 +468,22 @@ class EditorContainer extends Component {
   onSceneErrorOccurred = (error, uri, reload) => {
     if (error.type === "import") {
       // empty/duplicate node names in the importing file
-      this.setState({
-        openModal: {
-          component: OptionDialog,
-          shouldCloseOnOverlayClick: false,
-          props: {
-            title: "Resolve Node Conflicts",
-            message:
-              "We've found duplicate and/or missing node names in this file.\nWould you like to fix all conflicts?\n*This will modify the original file.",
-            options: [
-              {
-                label: "Okay",
-                onClick: () => {
-                  this.setState({ openModal: null });
-                  this._overwriteConflictsInSource(error.uri, error.handler, () => {
-                    reload(uri);
-                  });
-                }
-              }
-            ],
-            cancelLabel: "Cancel",
-            hideDialog: () => {
-              this.setState({ openModal: null });
+      this.showDialog(OptionDialog, {
+        title: "Resolve Node Conflicts",
+        message:
+          "We've found duplicate and/or missing node names in this file.\nWould you like to fix all conflicts?\n*This will modify the original file.",
+        options: [
+          {
+            label: "Okay",
+            onClick: () => {
+              this.hideDialog();
+              this._overwriteConflictsInSource(error.uri, error.handler, () => {
+                reload(uri);
+              });
             }
           }
-        }
+        ],
+        cancelLabel: "Cancel"
       });
     } else if (error.type === "rename") {
       // renaming
