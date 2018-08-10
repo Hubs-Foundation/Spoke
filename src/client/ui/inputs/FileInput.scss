@@ -1,4 +1,5 @@
 @import "../../theme";
+@import "../../icons";
 
 :local(.fileInput) {
   display: flex;
@@ -26,6 +27,23 @@
 
 :local(.fileInput button) {
   border-radius: 0 4px 4px 0px;
+  background: $input-background;
+  color: $text;
+
+  &:hover {
+    background: $blue;
+    color: $white;
+  }
+
+  &:active {
+    background: $blue-pressed;
+    color: $white;
+  }
+  
+  &:before {
+    @extend .fas;
+    content: fa-content($fa-var-ellipsis-h);
+  }
 }
 
 :local(.invalidPath) {
