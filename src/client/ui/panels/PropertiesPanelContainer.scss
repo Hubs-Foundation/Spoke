@@ -31,6 +31,12 @@
 
 :local(.propertiesPanelTopBar) {
   display: flex;
+  flex-flow: row wrap;
+  align-items: flex-start;
+
+  & > div {
+    margin-bottom: 8px;
+  }
 }
 
 :local(.noNodeSelected) {

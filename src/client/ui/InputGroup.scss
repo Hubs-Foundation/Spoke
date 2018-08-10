@@ -4,6 +4,7 @@
   display: flex;
   flex-direction: row;
   padding: 0 8px;
+  flex: 1;
 
   &:local(.disabled) {
     pointer-events: none;
@@ -15,6 +16,7 @@
     align-items: center;
     width: 100%;
     justify-content: space-between;
+    flex-flow: row wrap;
   }
 
   :local(.name) {
@@ -25,6 +27,6 @@
   :local(.content) {
     display: flex;
     flex-direction: row;
-    margin-left: 16px;
+    width: 224px;
   }
 }
