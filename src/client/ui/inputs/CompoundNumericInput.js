@@ -5,8 +5,7 @@ import NumericInput from "./NumericInput";
 import styles from "./CompoundNumericInput.scss";
 
 export default function CompoundNumericInput({ value, onChange, ...extras }) {
-  const { min, max } = extras;
-  const step = max && min ? (max - min) / 10 : 0.1;
+  const { min, max, step } = extras;
   return (
     <div className={styles.compound}>
       <Slider className={styles.slider} min={min} max={max} value={value} step={step} onChange={onChange} />
@@ -19,7 +18,8 @@ CompoundNumericInput.defaultProps = {
   value: 0,
   onChange: () => {},
   min: 0,
-  max: 1
+  max: 1,
+  step: 0.1
 };
 
 CompoundNumericInput.propTypes = {
