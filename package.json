@@ -21,7 +21,7 @@
   "scripts": {
     "dev": "cross-env NODE_ENV=development node ./bin/spoke --https --no-open ./example",
     "dev:http": "cross-env NODE_ENV=development node ./bin/spoke --no-open ./example",
-    "dev:nopath": "cross-env NODE_ENV=development node ./bin/spoke",
+    "open": "cross-env NODE_ENV=development node ./bin/spoke --https",
     "build": "concurrently \"npm run build:server\" \"npm run build:client\"",
     "build:server": "babel src/server/ -d lib/server/",
     "build:client": "webpack --mode production",
