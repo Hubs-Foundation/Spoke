@@ -1,7 +1,7 @@
 {
   "name": "spoke-test-cli",
   "license": "MPL-2.0",
-  "version": "0.1.6",
+  "version": "0.2.0",
   "bin": {
     "spoke": "bin/spoke"
   },
@@ -21,7 +21,7 @@
   "scripts": {
     "dev": "cross-env NODE_ENV=development node ./bin/spoke --https --no-open ./example",
     "dev:http": "cross-env NODE_ENV=development node ./bin/spoke --no-open ./example",
-    "dev:nopath": "cross-env NODE_ENV=development node ./bin/spoke",
+    "open": "cross-env NODE_ENV=development node ./bin/spoke --https",
     "build": "concurrently \"npm run build:server\" \"npm run build:client\"",
     "build:server": "babel src/server/ -d lib/server/",
     "build:client": "webpack --mode production",

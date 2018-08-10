@@ -11,6 +11,8 @@ import { loadScene, loadSerializedScene, serializeScene, exportScene } from "./S
 import { last } from "../utils";
 import { textureCache, gltfCache } from "./caches";
 import ConflictHandler from "./ConflictHandler";
+import SpokeDirectionalLightHelper from "./helpers/SpokeDirectionalLightHelper";
+import SpokeHemisphereLightHelper from "./helpers/SpokeHemisphereLightHelper";
 
 /**
  * @author mrdoob / http://mrdoob.com/
@@ -497,11 +499,11 @@ export default class Editor {
       } else if (object instanceof THREE.PointLight) {
         helper = new THREE.PointLightHelper(object, 1);
       } else if (object instanceof THREE.DirectionalLight) {
-        helper = new THREE.DirectionalLightHelper(object, 1);
+        helper = new SpokeDirectionalLightHelper(object, 1);
       } else if (object instanceof THREE.SpotLight) {
         helper = new THREE.SpotLightHelper(object, 1);
       } else if (object instanceof THREE.HemisphereLight) {
-        helper = new THREE.HemisphereLightHelper(object, 1);
+        helper = new SpokeHemisphereLightHelper(object, 1);
       } else if (object instanceof THREE.SkinnedMesh) {
         helper = new THREE.SkeletonHelper(object);
       } else {

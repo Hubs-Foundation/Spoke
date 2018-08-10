@@ -1,4 +1,10 @@
-# Spoke
+# Spoke (alpha)
+
+Easily create custom 3D environments for [Mozilla Hubs](https://hubs.mozilla.com).
+
+## Getting Started
+
+New to Spoke? Check out the [Getting Started Guide](https://github.com/MozillaReality/Spoke/wiki/Getting-Started)
 
 ## Installation
 

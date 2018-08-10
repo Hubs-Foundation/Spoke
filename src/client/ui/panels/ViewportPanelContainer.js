@@ -9,6 +9,7 @@ import { withDialog } from "../contexts/DialogContext";
 import ErrorDialog from "../dialogs/ErrorDialog";
 import styles from "./ViewportPanelContainer.scss";
 import FileDropTarget from "../FileDropTarget";
+import { StaticMode, setStaticMode } from "../../editor/StaticMode";
 
 class ViewportPanelContainer extends Component {
   static propTypes = {
@@ -48,6 +49,7 @@ class ViewportPanelContainer extends Component {
 
       const object = new THREE.Object3D();
       object.name = file.name;
+      setStaticMode(object, StaticMode.Static);
       this.props.editor.addObject(object);
       this.props.editor.addComponent(object, "scene-reference", { src: file.uri });
       this.props.editor.select(object);
