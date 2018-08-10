@@ -23,6 +23,7 @@
     white-space: nowrap;
     overflow: hidden;
     width: 100px;
+    text-align: center
   }
 }
 
@@ -44,9 +45,10 @@
     height: 50px;
   }
 
-  :local(.name), :local(.type) {
-    margin-top: 2px;
-    text-align: center
+  :local(.type) {
+    text-align: center;
+    margin-top: 4px;
+    opacity: 0.6;
   }
 
   &:local(.selected) {

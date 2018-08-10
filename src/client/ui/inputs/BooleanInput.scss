@@ -5,25 +5,28 @@
 }
 
 @mixin basic {
-  border-width: 0.8px;
-  border-style: solid;
-  box-sizing: border-box;
+  width: 13px;
+  height: 13px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   border-radius: 2px;
+  cursor: pointer;
 }
 
 input[type="checkbox"] + span {
   @include basic;
   color: $input-background;
-  border-color: $border;
+  background-color: $border;
 }
 
 input[type="checkbox"]:checked + span {
   @include basic;
-  color: $selected;
-  border-color: $white;
+  color: $blue;
+  background-color: $white;
 }
 
 input[type="checkbox"]:hover + span {
   @include basic;
-  border-color: $selected;
+  background-color: $blue-hover;
 }
