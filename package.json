@@ -63,6 +63,7 @@
     "react-modal": "^3.4.4",
     "react-mosaic-component": "^1.1.1",
     "react-select": "^1.2.1",
+    "react-toggle": "^4.0.2",
     "react-tooltip": "^3.6.1",
     "selfsigned": "^1.10.3",
     "signals": "^1.0.0",
