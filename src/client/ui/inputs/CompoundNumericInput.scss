@@ -8,7 +8,7 @@ $prefixClass: rc-slider;
 }
 
 .#{$prefixClass} {
-  width: 120px !important;
+  width: 150px !important;
   height: 1px;
   margin-right: 26px;
   position: relative;
@@ -23,7 +23,7 @@ $prefixClass: rc-slider;
 
   &-rail {
     position: absolute;
-    width: 112%;
+    width: 110%;
     height: 2px;
     background-color: $border;
     border-radius: 2px;

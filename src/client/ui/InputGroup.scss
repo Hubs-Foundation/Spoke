@@ -5,6 +5,7 @@
   flex-direction: row;
   padding: 0 8px;
   flex: 1;
+  min-height: 24px;
 
   &:local(.disabled) {
     pointer-events: none;
@@ -22,6 +23,8 @@
   :local(.name) {
     display: block;
     color: $text2;
+    width: 100px;
+    padding-bottom: 2px;
   }
 
   :local(.content) {
