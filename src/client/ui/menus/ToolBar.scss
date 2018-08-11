@@ -1,0 +1,15 @@
+@import "../../theme";
+
+:local(.toolbar) {
+  display: flex;
+  flex-direction: row;
+  height: 32px;
+  background-color: #4D535B;
+
+  :local(.toolbtns) {
+    width: auto;
+    height: inherit;
+    display: flex;
+    flex-direction: row;
+  }
+}

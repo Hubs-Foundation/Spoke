@@ -1,0 +1,20 @@
+@import "../../theme";
+
+:local(.toolbtn) {
+  width: 32px;
+  height: 32px;
+  border: none;
+  color: $white;
+  > i {
+    width: 12px;
+    height: 12px;
+  }
+}
+
+:local(.selected) {
+  background-color: $blue;
+}
+
+:local(.unselected) {
+  background-color: #4D535B;
+}
