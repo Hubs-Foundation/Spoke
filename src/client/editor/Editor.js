@@ -329,7 +329,7 @@ export default class Editor {
 
     this._resetHelpers();
 
-    const scene = await loadScene(uri, this.addComponent, true);
+    const scene = await loadScene(uri, this.addComponent, this.components, true);
     this._conflictHandler = scene.userData._conflictHandler;
 
     this._setSceneInfo(scene, uri);
@@ -347,7 +347,7 @@ export default class Editor {
   async _loadSceneReference(uri, parent) {
     this._removeSceneRefDependency(parent);
 
-    const scene = await loadScene(uri, this.addComponent, false);
+    const scene = await loadScene(uri, this.addComponent, this.components, false);
     scene.userData._dontShowInHierarchy = true;
     scene.userData._sceneReference = uri;
 
@@ -391,7 +391,7 @@ export default class Editor {
 
     const sceneURI = this.sceneInfo.uri;
     const sceneDef = serializeScene(this.scene, sceneURI);
-    const scene = await loadSerializedScene(sceneDef, sceneURI, this.addComponent, true);
+    const scene = await loadSerializedScene(sceneDef, sceneURI, this.addComponent, this.components, true);
 
     const sceneInfo = this.scenes.find(sceneInfo => sceneInfo.uri === sceneURI);
     sceneInfo.scene = scene;
@@ -421,7 +421,14 @@ export default class Editor {
     this._clearCaches();
 
     const ancestors = [];
-    const scene = await loadSerializedScene(extendSceneDef, inheritedURI, this.addComponent, true, ancestors);
+    const scene = await loadSerializedScene(
+      extendSceneDef,
+      inheritedURI,
+      this.addComponent,
+      this.components,
+      true,
+      ancestors
+    );
 
     this._setSceneInfo(scene, null);
     this.scenes = [this.sceneInfo];

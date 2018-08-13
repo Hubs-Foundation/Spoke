@@ -17,6 +17,7 @@ import RemoveComponentCommand from "../../editor/commands/RemoveComponentCommand
 import { types } from "../../editor/components";
 import SaveableComponent from "../../editor/components/SaveableComponent";
 import { StaticMode, computeStaticMode, getStaticMode, setStaticMode } from "../../editor/StaticMode";
+import { serializeFileProps, resolveFileProps } from "../../editor/SceneLoader";
 
 import { withEditor } from "../contexts/EditorContext";
 import { withProject } from "../contexts/ProjectContext";
@@ -146,6 +147,8 @@ class PropertiesPanelContainer extends Component {
         onConfirm: async src => {
           let saved = false;
 
+          const props = serializeFileProps(component, component.props, src);
+
           try {
             setTimeout(() => {
               if (saved) return;
@@ -158,7 +161,7 @@ class PropertiesPanelContainer extends Component {
             component.src = src;
             component.srcIsValid = true;
             component.shouldSave = true;
-            await this.props.project.writeJSON(component.src, component.props);
+            await this.props.project.writeJSON(component.src, props);
             component.modified = false;
             this.props.editor.signals.objectChanged.dispatch(this.state.object);
             this.props.hideDialog();
@@ -174,7 +177,8 @@ class PropertiesPanelContainer extends Component {
       });
     } else {
       try {
-        await this.props.project.writeJSON(component.src, component.props);
+        const props = serializeFileProps(component, component.props, component.src);
+        await this.props.project.writeJSON(component.src, props);
         component.modified = false;
         this.props.editor.signals.objectChanged.dispatch(this.state.object);
       } catch (e) {
@@ -208,7 +212,12 @@ class PropertiesPanelContainer extends Component {
           component.srcIsValid = true;
           component.shouldSave = true;
           component.modified = false;
-          await component.constructor.inflate(this.state.object, await this.props.project.readJSON(component.src));
+
+          const absoluteAssetURL = new URL(component.src, window.location).href;
+          let props = await this.props.project.readJSON(component.src);
+          props = resolveFileProps(component, props, absoluteAssetURL);
+
+          await component.constructor.inflate(this.state.object, props);
           this.props.editor.signals.objectChanged.dispatch(this.state.object);
           this.props.hideDialog();
         } catch (e) {
