@@ -37,9 +37,9 @@ $select-menu-box-shadow:            $shadow-30 !default;
 $select-option-color:               lighten($select-text-color, 20%) !default;
 $select-option-bg:                  $select-input-bg !default;
 $select-option-focused-color:       $select-text-color !default;
-$select-option-focused-bg:          $selected !default; // pale blue
+$select-option-focused-bg:          $hover !default;
 $select-option-selected-color:      $select-text-color !default;
-$select-option-selected-bg:         $selected !default; // lightest blue
+$select-option-selected-bg:         $selected !default;
 $select-option-disabled-color:      lighten($select-text-color, 60%) !default;
 
 $select-noresults-color:            lighten($select-text-color, 40%) !default;
