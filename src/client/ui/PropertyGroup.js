@@ -58,7 +58,12 @@ function PropertyGroup(props) {
 
   return (
     <div className={classNames(styles.propertyGroup, props.className)}>
-      <div className={classNames(styles.header, props.headerClassName)}>
+      <div
+        className={classNames(
+          { [`${styles.header}`]: props.useDefault, [`${styles.lightHeader}`]: !props.useDefault },
+          props.headerClassName
+        )}
+      >
         {name}
         {renderRemoveButton()}
       </div>
@@ -89,7 +94,8 @@ PropertyGroup.propTypes = {
   saveAsHandler: PropTypes.func,
   loadHandler: PropTypes.func,
   children: PropTypes.node,
-  project: PropTypes.object
+  project: PropTypes.object,
+  useDefault: PropTypes.bool
 };
 
 export default withProject(PropertyGroup);

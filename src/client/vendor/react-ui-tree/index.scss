@@ -1,5 +1,6 @@
 @import "../../common";
 @import "../../theme";
+@import "../../icons";
 
 :global {
   .f-no-select {
@@ -46,6 +47,13 @@
       -webkit-touch-callout: none;
       @include no-select;
       color: $text2;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+
+      &:hover {
+        background-color: $hover;
+      }
 
       &.is-active {
         background-color: $selected;

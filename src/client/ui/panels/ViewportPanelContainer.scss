@@ -1,3 +1,15 @@
+@import "../../icons";
+
+:global {
+  .viewportPanel {
+    .mosaic-window-title:before {
+      @extend .fas;
+      content: fa-content($fa-var-window-maximize);
+      padding-right: 8px;
+    }
+  }
+}
+
 :local(.viewportPanelContainer) {
   display: flex;
   flex: 1;

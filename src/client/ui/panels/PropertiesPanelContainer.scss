@@ -1,5 +1,16 @@
 @import "../../common";
 @import "../../theme";
+@import "../../icons";
+
+:global {
+  .propertiesPanel {
+    .mosaic-window-title:before {
+      @extend .fas;
+      content: fa-content($fa-var-sliders-h);
+      padding-right: 8px;
+    }
+  }
+}
 
 :local(.propertiesPanelContainer) {
   @include no-select;
@@ -18,16 +29,15 @@
   padding: 0 !important;
 }
 
-:local(.propertiesHeaderContent) {
-  width: 100% !important;
-  flex-flow: row wrap !important;
-}
+:local(.propertiesPanelTopBar) {
+  display: flex;
+  flex-flow: row wrap;
+  align-items: flex-start;
 
-:local(.propertiesHeaderContent .InputGroup) {
-  flex: 1;
-  padding: 0 0 0 8px;
+  & > div {
+    margin-bottom: 8px;
+  }
 }
-
 
 :local(.noNodeSelected) {
   display: flex;
@@ -38,7 +48,7 @@
 
 :local(.staticSelect) {
   text-align: left;
-  width: 128px;
+  width: 100%;
 }
 
 :local(.addComponentContainer) {
@@ -51,8 +61,24 @@
 
   & > div {
     background-color: $blue;
-    text-align: center;
+    // text-align: center;
     border-radius: 0;
     border: none;
+    cursor: pointer;
+
+    &:hover {
+      background-color: $blue-hover;
+    }
   }
 }
+
+:local(.propertiesPanelContainer input[role="combobox"]) {
+  color: $text;
+  // padding: 2px 0 0 0;
+  // width: 100% !important;
+}
+
+// :local(.addComponentSelect input[role="combobox"]) {
+//   padding: 2px 0 0 4px !important;
+//   text-align: center;
+// }

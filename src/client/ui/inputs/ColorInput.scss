@@ -3,6 +3,8 @@
 :local(.colorInput){
   display: flex;
   position: relative;
+  width: 132px;
+
   :local(.block) {
     display: flex;
     align-items: center;
@@ -13,6 +15,9 @@
     border-top: 1px solid $border;
     border-bottom: 1px solid $border;
     cursor: pointer;
+
+
+
     :local(.color) {
       width: 36px;
       height: 14px;
@@ -44,6 +49,27 @@
     padding: 0;
     padding-left: 6px;
     height: 22px;
-    width: 80px;
+    width: 100%;
   }
+
+  &:hover {
+    :local(.block) {
+      border-color: $blue-hover;
+    }
+
+    :local(.colorInput) input {
+      border-color: $blue-hover;
+    }
+  }
+
+  &:focus {
+    :local(.block) {
+      border-color: $blue;
+    }
+
+    :local(.colorInput) input {
+      border-color: $blue;
+    }
+  }
+
 }

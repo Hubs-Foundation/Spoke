@@ -58,6 +58,7 @@ class EditorContainer extends Component {
         hierarchy: {
           component: HierarchyPanelContainer,
           windowProps: {
+            className: "hierarchyPanel",
             title: "Hierarchy",
             toolbarControls: [],
             draggable: false
@@ -66,6 +67,7 @@ class EditorContainer extends Component {
         viewport: {
           component: ViewportPanelContainer,
           windowProps: {
+            className: "viewportPanel",
             title: "Viewport",
             toolbarControls: ViewportPanelToolbarContainer(),
             draggable: false
@@ -74,6 +76,7 @@ class EditorContainer extends Component {
         properties: {
           component: PropertiesPanelContainer,
           windowProps: {
+            className: "propertiesPanel",
             title: "Properties",
             toolbarControls: [],
             draggable: false
@@ -82,6 +85,7 @@ class EditorContainer extends Component {
         assetExplorer: {
           component: AssetExplorerPanelContainer,
           windowProps: {
+            className: "assetExplorerPanel",
             title: "Asset Explorer",
             toolbarControls: [],
             draggable: false

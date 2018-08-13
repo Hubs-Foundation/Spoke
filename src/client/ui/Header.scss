@@ -4,11 +4,15 @@
   justify-content: space-between;
   padding: 0 8px;
   font-size: 12px;
-  height: 24px;
   overflow: hidden;
+  min-height: 24px;
 
   > * {
     display: flex;
     align-items: center;
   }
+}
+
+:local(.icon) {
+  padding-right: 8px;
 }

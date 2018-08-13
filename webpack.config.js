@@ -20,14 +20,8 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /\.(png|jpg|gif|svg)$/,
-        include: path.join(__dirname, "src", "client"),
-        use: [
-          {
-            loader: "file-loader",
-            options: {}
-          }
-        ]
+        test: /\.(png|jpg|jpeg|gif|svg|woff|woff2|ttf|eot)(\?.*$|$)/,
+        use: "file-loader"
       },
       {
         test: /\.css$/,

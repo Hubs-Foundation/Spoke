@@ -8,9 +8,9 @@ $prefixClass: rc-slider;
 }
 
 .#{$prefixClass} {
-  width: 132px !important;
-  height: 8px;
-  margin-right: 20px;
+  width: 150px !important;
+  height: 1px;
+  margin-right: 26px;
   position: relative;
   border-radius: 2px;
 
@@ -23,7 +23,7 @@ $prefixClass: rc-slider;
 
   &-rail {
     position: absolute;
-    width: 100%;
+    width: 110%;
     height: 2px;
     background-color: $border;
     border-radius: 2px;
@@ -31,13 +31,10 @@ $prefixClass: rc-slider;
 
   &-handle {
     position: absolute;
-    margin-left: -7px;
-    margin-top: -5px;
-    width: 8px;
-    height: 8px;
+    margin-top: -7px;
+    width: 12px;
+    height: 12px;
     cursor: pointer;
-    cursor: -webkit-grab;
-    cursor: grab;
     border-radius: 50%;
     border: solid 2px $white;
     background-color: $border;
@@ -51,7 +48,6 @@ $prefixClass: rc-slider;
     &:active {
       border:  2px solid $blue;
       background-color: $white;
-      cursor: grabbing;
     }
   }
 

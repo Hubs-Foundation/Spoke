@@ -233,6 +233,47 @@ class PropertiesPanelContainer extends Component {
     });
   };
 
+  _renderObjectComponent = (component, className, headerClassName, contentClassName, useDefault = true) => {
+    if (!component) return null;
+    const componentDefinition = this.props.editor.components.get(component.name);
+
+    if (componentDefinition === undefined) {
+      return <PropertyGroup name={getDisplayName(component.name)} key={component.name} />;
+    }
+
+    const saveable = component instanceof SaveableComponent;
+    return (
+      <PropertyGroup
+        name={getDisplayName(component.name)}
+        key={component.name}
+        canRemove={componentDefinition.canRemove}
+        removeHandler={this.onRemoveComponent.bind(this, component.name)}
+        src={component.src}
+        srcIsValid={component.srcIsValid}
+        saveable={saveable}
+        modified={component.modified}
+        saveHandler={this.onSaveComponent.bind(this, component, false)}
+        saveAsHandler={this.onSaveComponent.bind(this, component, true)}
+        loadHandler={this.onLoadComponent.bind(this, component)}
+        className={className}
+        headerClassName={headerClassName}
+        contentClassName={contentClassName}
+        useDefault={useDefault}
+      >
+        {componentDefinition.schema.map(prop => (
+          <InputGroup name={getDisplayName(prop.name)} key={prop.name} disabled={saveable && !component.src}>
+            {componentTypeMappings.get(prop.type)(
+              component.props[prop.name],
+              component.propValidation[prop.name],
+              this.onChangeComponent.bind(null, component, prop.name),
+              this.getExtras(prop)
+            )}
+          </InputGroup>
+        ))}
+      </PropertyGroup>
+    );
+  };
+
   getExtras(prop) {
     switch (prop.type) {
       case types.number:
@@ -255,7 +296,12 @@ class PropertiesPanelContainer extends Component {
       );
     }
 
-    const objectComponents = object.userData._components || [];
+    const objectComponents = object.userData._components
+      ? object.userData._components.filter(x => x.name !== "transform")
+      : [];
+    const objectTransform = object.userData._components
+      ? object.userData._components.find(x => x.name === "transform")
+      : null;
 
     const componentOptions = [];
 
@@ -293,23 +339,32 @@ class PropertiesPanelContainer extends Component {
           contentClassName={styles.propertiesHeaderContent}
           canRemove={false}
         >
-          <InputGroup name="Name">
-            <StringInput value={object.name} onChange={this.onUpdateName} />
-          </InputGroup>
-          {object.parent !== null && (
-            <InputGroup name="Static">
-              <Select
-                className={styles.staticSelect}
-                value={staticMode}
-                options={staticModeOptions}
-                clearable={false}
-                onChange={this.onUpdateStatic}
-              />
+          <div className={styles.propertiesPanelTopBar}>
+            <InputGroup name="Name">
+              <StringInput value={object.name} onChange={this.onUpdateName} />
             </InputGroup>
+            {object.parent !== null && (
+              <InputGroup name="Static">
+                <Select
+                  className={styles.staticSelect}
+                  value={staticMode}
+                  options={staticModeOptions}
+                  clearable={false}
+                  onChange={this.onUpdateStatic}
+                />
+              </InputGroup>
+            )}
+          </div>
+          {this._renderObjectComponent(
+            objectTransform,
+            styles.propertiesHeader,
+            styles.propertiesHeader,
+            styles.propertiesHeaderContent,
+            false
           )}
           <div className={styles.addComponentContainer}>
             <Select
-              placeholder="Add a component..."
+              placeholder="+ Add a component"
               className={styles.addComponentSelect}
               options={componentOptions}
               onChange={this.onAddComponent}
@@ -318,39 +373,7 @@ class PropertiesPanelContainer extends Component {
         </PropertyGroup>
         {objectComponents.map(component => {
           // Generate property groups for each component and property editors for each property.
-          const componentDefinition = this.props.editor.components.get(component.name);
-
-          if (componentDefinition === undefined) {
-            return <PropertyGroup name={getDisplayName(component.name)} key={component.name} />;
-          }
-
-          const saveable = component instanceof SaveableComponent;
-          return (
-            <PropertyGroup
-              name={getDisplayName(component.name)}
-              key={component.name}
-              canRemove={componentDefinition.canRemove}
-              removeHandler={this.onRemoveComponent.bind(this, component.name)}
-              src={component.src}
-              srcIsValid={component.srcIsValid}
-              saveable={saveable}
-              modified={component.modified}
-              saveHandler={this.onSaveComponent.bind(this, component, false)}
-              saveAsHandler={this.onSaveComponent.bind(this, component, true)}
-              loadHandler={this.onLoadComponent.bind(this, component)}
-            >
-              {componentDefinition.schema.map(prop => (
-                <InputGroup name={getDisplayName(prop.name)} key={prop.name} disabled={saveable && !component.src}>
-                  {componentTypeMappings.get(prop.type)(
-                    component.props[prop.name],
-                    component.propValidation[prop.name],
-                    this.onChangeComponent.bind(null, component, prop.name),
-                    this.getExtras(prop)
-                  )}
-                </InputGroup>
-              ))}
-            </PropertyGroup>
-          );
+          return this._renderObjectComponent(component);
         })}
       </div>
     );

@@ -1,5 +1,26 @@
 @import "../../common";
 @import "../../theme";
+@import "../../icons";
+
+:global {
+  .hierarchyPanel {
+    .mosaic-window-title:before {
+      @extend .fas;
+      content: fa-content($fa-var-project-diagram);
+      padding-right: 8px;
+    }
+  }
+}
+
+:global {
+  .hierarchyPanel {
+    .node:before {
+      @extend .fas;
+      content: fa-content($fa-var-cube);
+      padding: 0 8px;
+    }
+  }
+}
 
 :local(.hierarchyRoot) {
   @include no-select;
@@ -18,11 +39,13 @@
 }  
 
 :local(.breadCrumb),:local(.ancestor) {
-  padding: 8px;
+  padding-top: 4px;
+  padding-bottom: 5px;
   border: none;
-  border-right: 1px solid $border;
+  border-left: 1px solid $border;
   font-size: 12px;
 }
+
 :local(button.breadCrumb) {
   cursor: pointer;
   color: $text;
@@ -42,7 +65,7 @@
   margin-left: 8px;
 }
 :local(.treeNode) {
-  padding: 4px 5px;
+  padding: 4px 0;
 }
 
 :local(.conflictDisplay) {

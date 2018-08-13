@@ -27,7 +27,7 @@ function FileInput({ value, isValid, onChange, showDialog, hideDialog, filters, 
         onChange={e => onChange(project.getAbsoluteURI(e.target.value))}
       />
       {isValid ? null : <ReactTooltip />}
-      <Button onClick={onClick}>...</Button>
+      <Button onClick={onClick} />
     </div>
   );
 }

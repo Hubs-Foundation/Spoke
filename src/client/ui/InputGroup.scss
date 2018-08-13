@@ -4,6 +4,8 @@
   display: flex;
   flex-direction: row;
   padding: 0 8px;
+  flex: 1;
+  min-height: 24px;
 
   &:local(.disabled) {
     pointer-events: none;
@@ -15,16 +17,19 @@
     align-items: center;
     width: 100%;
     justify-content: space-between;
+    flex-flow: row wrap;
   }
 
   :local(.name) {
     display: block;
     color: $text2;
+    width: 40%;
+    padding-bottom: 2px;
   }
 
   :local(.content) {
     display: flex;
     flex-direction: row;
-    margin-left: 16px;
+    width: 224px;
   }
 }
