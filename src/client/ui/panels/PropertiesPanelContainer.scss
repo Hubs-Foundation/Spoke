@@ -61,19 +61,24 @@
 
   & > div {
     background-color: $blue;
-    text-align: center;
+    // text-align: center;
     border-radius: 0;
     border: none;
+    cursor: pointer;
+
+    &:hover {
+      background-color: $blue-hover;
+    }
   }
 }
 
 :local(.propertiesPanelContainer input[role="combobox"]) {
   color: $text;
-  padding: 2px 0 0 0;
-  width: 100% !important;
+  // padding: 2px 0 0 0;
+  // width: 100% !important;
 }
 
-:local(.addComponentSelect input[role="combobox"]) {
-  padding: 2px 0 0 4px !important;
-  text-align: center;
-}
+// :local(.addComponentSelect input[role="combobox"]) {
+//   padding: 2px 0 0 4px !important;
+//   text-align: center;
+// }
