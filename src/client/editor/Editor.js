@@ -18,7 +18,9 @@ import SpokeHemisphereLightHelper from "./helpers/SpokeHemisphereLightHelper";
  * @author mrdoob / http://mrdoob.com/
  */
 export default class Editor {
-  constructor() {
+  constructor(project) {
+    this.project = project;
+
     this.DEFAULT_CAMERA = new THREE.PerspectiveCamera(50, 1, 0.01, 1000);
     this.DEFAULT_CAMERA.name = "Camera";
     this.DEFAULT_CAMERA.position.set(0, 5, 10);
@@ -66,6 +68,10 @@ export default class Editor {
 
       sceneErrorOccurred: new Signal()
     };
+
+    this.project.addListener("change", path => {
+      this.signals.fileChanged.dispatch(path);
+    });
 
     this.history = new History(this);
 
@@ -400,8 +406,37 @@ export default class Editor {
     return serializeScene(this.scene, sceneURI || this.sceneInfo.uri);
   }
 
-  exportScene() {
-    return exportScene(this.scene);
+  async exportScene(outputPath) {
+    const scene = this.scene;
+
+    // Export current editor scene using THREE.GLTFExporter
+    const { json, buffers, images } = await exportScene(scene);
+
+    // Ensure the output directory exists
+    await this.props.project.mkdir(outputPath);
+
+    // Write the .gltf file
+    const gltfPath = outputPath + "/" + scene.name + ".gltf";
+    await this.props.project.writeJSON(gltfPath, json);
+
+    // Write .bin files
+    for (const [index, buffer] of buffers.entries()) {
+      if (buffer !== undefined) {
+        const bufferName = json.buffers[index].uri;
+        await this.props.project.writeBlob(outputPath + "/" + bufferName, buffer);
+      }
+    }
+
+    // Write image files
+    for (const [index, image] of images.entries()) {
+      if (image !== undefined) {
+        const imageName = json.images[index].uri;
+        await this.props.project.writeBlob(outputPath + "/" + imageName, image);
+      }
+    }
+
+    // Run optimizations on .gltf and overwrite any existing files
+    await this.props.project.optimizeScene(gltfPath, gltfPath);
   }
 
   async extendScene(inheritedURI) {

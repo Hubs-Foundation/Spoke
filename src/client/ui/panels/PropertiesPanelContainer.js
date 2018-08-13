@@ -20,7 +20,6 @@ import { StaticMode, computeStaticMode, getStaticMode, setStaticMode } from "../
 import { serializeFileProps, resolveFileProps } from "../../editor/SceneLoader";
 
 import { withEditor } from "../contexts/EditorContext";
-import { withProject } from "../contexts/ProjectContext";
 import { withDialog } from "../contexts/DialogContext";
 import FileDialog from "../dialogs/FileDialog";
 import ErrorDialog from "../dialogs/ErrorDialog";
@@ -45,7 +44,6 @@ export function getDisplayName(name) {
 class PropertiesPanelContainer extends Component {
   static propTypes = {
     editor: PropTypes.object,
-    project: PropTypes.object,
     showDialog: PropTypes.func.isRequired,
     hideDialog: PropTypes.func.isRequired
   };
@@ -161,7 +159,7 @@ class PropertiesPanelContainer extends Component {
             component.src = src;
             component.srcIsValid = true;
             component.shouldSave = true;
-            await this.props.project.writeJSON(component.src, props);
+            await this.props.editor.project.writeJSON(component.src, props);
             component.modified = false;
             this.props.editor.signals.objectChanged.dispatch(this.state.object);
             this.props.hideDialog();
@@ -178,7 +176,7 @@ class PropertiesPanelContainer extends Component {
     } else {
       try {
         const props = serializeFileProps(component, component.props, component.src);
-        await this.props.project.writeJSON(component.src, props);
+        await this.props.editor.project.writeJSON(component.src, props);
         component.modified = false;
         this.props.editor.signals.objectChanged.dispatch(this.state.object);
       } catch (e) {
@@ -214,7 +212,7 @@ class PropertiesPanelContainer extends Component {
           component.modified = false;
 
           const absoluteAssetURL = new URL(component.src, window.location).href;
-          let props = await this.props.project.readJSON(component.src);
+          let props = await this.props.editor.project.readJSON(component.src);
           props = resolveFileProps(component, props, absoluteAssetURL);
 
           await component.constructor.inflate(this.state.object, props);
@@ -380,4 +378,4 @@ class PropertiesPanelContainer extends Component {
   }
 }
 
-export default withProject(withEditor(withDialog(PropertiesPanelContainer)));
+export default withEditor(withDialog(PropertiesPanelContainer));
