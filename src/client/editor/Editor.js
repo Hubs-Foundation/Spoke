@@ -402,8 +402,25 @@ export default class Editor {
     return scene;
   }
 
-  serializeScene(sceneURI) {
-    return serializeScene(this.scene, sceneURI || this.sceneInfo.uri);
+  async saveScene(sceneURI) {
+    const serializedScene = serializeScene(this.scene, sceneURI || this.sceneInfo.uri);
+
+    this.ignoreNextSceneFileChange = true;
+
+    await this.project.writeJSON(sceneURI, serializedScene);
+
+    const sceneUserData = this.scene.userData;
+
+    // If the previous URI was a gltf, update the ancestors, since we are now dealing with a .scene file.
+    if (this.sceneInfo.uri && this.sceneInfo.uri.endsWith(".gltf")) {
+      sceneUserData._ancestors = [this.sceneInfo.uri];
+    }
+
+    this.setSceneURI(sceneURI);
+
+    this.signals.sceneGraphChanged.dispatch();
+
+    this.sceneInfo.modified = false;
   }
 
   async exportScene(outputPath) {

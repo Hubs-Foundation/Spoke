@@ -282,26 +282,8 @@ class EditorContainer extends Component {
         });
       }, PROGRESS_DIALOG_DELAY);
 
-      const editor = this.props.editor;
+      await this.props.editor.saveScene(sceneURI);
 
-      const serializedScene = editor.serializeScene(sceneURI);
-
-      editor.ignoreNextSceneFileChange = true;
-
-      await editor.project.writeJSON(sceneURI, serializedScene);
-
-      const sceneUserData = editor.scene.userData;
-
-      // If the previous URI was a gltf, update the ancestors, since we are now dealing with a .scene file.
-      if (editor.sceneInfo.uri && editor.sceneInfo.uri.endsWith(".gltf")) {
-        sceneUserData._ancestors = [editor.sceneInfo.uri];
-      }
-
-      editor.setSceneURI(sceneURI);
-
-      editor.signals.sceneGraphChanged.dispatch();
-
-      editor.sceneInfo.modified = false;
       this.onSceneModified();
 
       this.hideDialog();
