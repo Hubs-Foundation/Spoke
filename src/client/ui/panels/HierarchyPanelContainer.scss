@@ -39,11 +39,13 @@
 }  
 
 :local(.breadCrumb),:local(.ancestor) {
-  padding: 8px;
+  padding-top: 4px;
+  padding-bottom: 5px;
   border: none;
-  border-right: 1px solid $border;
+  border-left: 1px solid $border;
   font-size: 12px;
 }
+
 :local(button.breadCrumb) {
   cursor: pointer;
   color: $text;
