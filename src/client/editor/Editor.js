@@ -79,7 +79,6 @@ export default class Editor {
       scene: new THREE.Scene(),
       helperScene: new THREE.Scene(),
       helpers: {},
-      objects: [],
       modified: false
     };
     initialSceneInfo.scene.name = "Scene";
@@ -89,7 +88,6 @@ export default class Editor {
     this.sceneInfo = initialSceneInfo;
     this.helperScene = initialSceneInfo.helperScene;
     this.helpers = initialSceneInfo.helpers;
-    this.objects = initialSceneInfo.objects;
 
     this._prefabBeingEdited = null;
 
@@ -167,7 +165,6 @@ export default class Editor {
     this._conflictHandler = this.scene.userData._conflictHandler;
     this.helperScene = this.sceneInfo.helperScene;
     this.helpers = this.sceneInfo.helpers;
-    this.objects = this.sceneInfo.objects;
 
     if (poppedURI) {
       const sceneRefComponentName = SceneReferenceComponent.componentName;
@@ -206,7 +203,6 @@ export default class Editor {
     // as it receives signals while the scene is loading.
     this.helperScene = new THREE.Scene();
     this.helpers = {};
-    this.objects = [];
   }
 
   _clearCaches() {
@@ -220,8 +216,7 @@ export default class Editor {
       scene: scene,
       modified: false,
       helperScene: this.helperScene,
-      helpers: this.helpers,
-      objects: this.objects
+      helpers: this.helpers
     };
   }
 
