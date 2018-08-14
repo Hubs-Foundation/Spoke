@@ -1,16 +1,32 @@
 import signals from "signals";
 
-import THREE from "../vendor/three";
+import THREE from "./three";
 import History from "./History";
 import Viewport from "./Viewport";
 import RemoveObjectCommand from "./commands/RemoveObjectCommand";
 import AddObjectCommand from "./commands/AddObjectCommand";
+import AddComponentCommand from "./commands/AddComponentCommand";
+import SetValueCommand from "./commands/SetValueCommand";
+import RemoveComponentCommand from "./commands/RemoveComponentCommand";
+import SetComponentPropertyCommand from "./commands/SetComponentPropertyCommand";
+import MoveObjectCommand from "./commands/MoveObjectCommand";
+import { setStaticMode, StaticModes, getStaticMode, computeStaticMode } from "./StaticMode";
 import { Components } from "./components";
+import { types } from "./components/utils";
 import SceneReferenceComponent from "./components/SceneReferenceComponent";
-import { loadScene, loadSerializedScene, serializeScene, exportScene } from "./SceneLoader";
+import SaveableComponent from "./components/SaveableComponent";
+import {
+  loadScene,
+  loadSerializedScene,
+  serializeScene,
+  exportScene,
+  serializeFileProps,
+  resolveFileProps
+} from "./SceneLoader";
 import { last } from "../utils";
 import { textureCache, gltfCache } from "./caches";
 import ConflictHandler from "./ConflictHandler";
+import ConflictError from "./ConflictError";
 import SpokeDirectionalLightHelper from "./helpers/SpokeDirectionalLightHelper";
 import SpokeHemisphereLightHelper from "./helpers/SpokeHemisphereLightHelper";
 
@@ -18,7 +34,9 @@ import SpokeHemisphereLightHelper from "./helpers/SpokeHemisphereLightHelper";
  * @author mrdoob / http://mrdoob.com/
  */
 export default class Editor {
-  constructor() {
+  constructor(project) {
+    this.project = project;
+
     this.DEFAULT_CAMERA = new THREE.PerspectiveCamera(50, 1, 0.01, 1000);
     this.DEFAULT_CAMERA.name = "Camera";
     this.DEFAULT_CAMERA.position.set(0, 5, 10);
@@ -66,6 +84,10 @@ export default class Editor {
 
       sceneErrorOccurred: new Signal()
     };
+
+    this.project.addListener("change", path => {
+      this.signals.fileChanged.dispatch(path);
+    });
 
     this.history = new History(this);
 
@@ -122,6 +144,9 @@ export default class Editor {
     this.signals.fileChanged.add(this.onFileChanged);
 
     this._resetDefaultLights();
+
+    this.ComponentPropTypes = types;
+    this.StaticModes = StaticModes;
   }
 
   createViewport(canvas) {
@@ -324,7 +349,7 @@ export default class Editor {
 
     this._resetHelpers();
 
-    const scene = await loadScene(uri, this.addComponent, this.components, true);
+    const scene = await loadScene(uri, this._addComponent, this.components, true);
     this._conflictHandler = scene.userData._conflictHandler;
 
     this._setSceneInfo(scene, uri);
@@ -342,7 +367,7 @@ export default class Editor {
   async _loadSceneReference(uri, parent) {
     this._removeSceneRefDependency(parent);
 
-    const scene = await loadScene(uri, this.addComponent, this.components, false);
+    const scene = await loadScene(uri, this._addComponent, this.components, false);
     scene.userData._dontShowInHierarchy = true;
     scene.userData._sceneReference = uri;
 
@@ -386,7 +411,7 @@ export default class Editor {
 
     const sceneURI = this.sceneInfo.uri;
     const sceneDef = serializeScene(this.scene, sceneURI);
-    const scene = await loadSerializedScene(sceneDef, sceneURI, this.addComponent, this.components, true);
+    const scene = await loadSerializedScene(sceneDef, sceneURI, this._addComponent, this.components, true);
 
     const sceneInfo = this.scenes.find(sceneInfo => sceneInfo.uri === sceneURI);
     sceneInfo.scene = scene;
@@ -396,12 +421,58 @@ export default class Editor {
     return scene;
   }
 
-  serializeScene(sceneURI) {
-    return serializeScene(this.scene, sceneURI || this.sceneInfo.uri);
+  async saveScene(sceneURI) {
+    const serializedScene = serializeScene(this.scene, sceneURI || this.sceneInfo.uri);
+
+    this.ignoreNextSceneFileChange = true;
+
+    await this.project.writeJSON(sceneURI, serializedScene);
+
+    const sceneUserData = this.scene.userData;
+
+    // If the previous URI was a gltf, update the ancestors, since we are now dealing with a .scene file.
+    if (this.sceneInfo.uri && this.sceneInfo.uri.endsWith(".gltf")) {
+      sceneUserData._ancestors = [this.sceneInfo.uri];
+    }
+
+    this.setSceneURI(sceneURI);
+
+    this.signals.sceneGraphChanged.dispatch();
+
+    this.sceneInfo.modified = false;
   }
 
-  exportScene() {
-    return exportScene(this.scene);
+  async exportScene(outputPath) {
+    const scene = this.scene;
+
+    // Export current editor scene using THREE.GLTFExporter
+    const { json, buffers, images } = await exportScene(scene);
+
+    // Ensure the output directory exists
+    await this.project.mkdir(outputPath);
+
+    // Write the .gltf file
+    const gltfPath = outputPath + "/" + scene.name + ".gltf";
+    await this.project.writeJSON(gltfPath, json);
+
+    // Write .bin files
+    for (const [index, buffer] of buffers.entries()) {
+      if (buffer !== undefined) {
+        const bufferName = json.buffers[index].uri;
+        await this.project.writeBlob(outputPath + "/" + bufferName, buffer);
+      }
+    }
+
+    // Write image files
+    for (const [index, image] of images.entries()) {
+      if (image !== undefined) {
+        const imageName = json.images[index].uri;
+        await this.project.writeBlob(outputPath + "/" + imageName, image);
+      }
+    }
+
+    // Run optimizations on .gltf and overwrite any existing files
+    await this.project.optimizeScene(gltfPath, gltfPath);
   }
 
   async extendScene(inheritedURI) {
@@ -419,7 +490,7 @@ export default class Editor {
     const scene = await loadSerializedScene(
       extendSceneDef,
       inheritedURI,
-      this.addComponent,
+      this._addComponent,
       this.components,
       true,
       ancestors
@@ -436,8 +507,23 @@ export default class Editor {
   }
   //
 
+  addSceneReferenceNode(name, url) {
+    const object = new THREE.Object3D();
+    object.name = name;
+    setStaticMode(object, StaticModes.Static);
+    this.addObject(object);
+    this._addComponent(object, "scene-reference", { src: url });
+    this.select(object);
+  }
+
+  createNode(name, parent) {
+    const object = new THREE.Object3D();
+    object.name = name;
+    this.execute(new AddObjectCommand(object, parent));
+  }
+
   addObject(object, parent) {
-    this.addComponent(object, "transform");
+    this._addComponent(object, "transform");
 
     object.userData._saveParent = true;
 
@@ -457,21 +543,7 @@ export default class Editor {
   }
 
   moveObject(object, parent, before) {
-    if (parent === undefined) {
-      parent = this.scene;
-    }
-
-    parent.add(object);
-
-    // sort children array
-
-    if (before !== undefined) {
-      const index = parent.children.indexOf(before);
-      parent.children.splice(index, 0, object);
-      parent.children.pop();
-    }
-
-    this.signals.sceneGraphChanged.dispatch();
+    this.execute(new MoveObjectCommand(object, parent, before));
   }
 
   removeObject(object) {
@@ -548,7 +620,11 @@ export default class Editor {
     this.components.set(componentName, componentClass);
   }
 
-  addComponent = async (object, componentName, props, skipSave) => {
+  addComponent(object, componentName) {
+    this.execute(new AddComponentCommand(object, componentName));
+  }
+
+  _addComponent = async (object, componentName, props, skipSave) => {
     try {
       const componentClass = this.components.get(componentName);
       let component;
@@ -609,6 +685,10 @@ export default class Editor {
   };
 
   removeComponent(object, componentName) {
+    this.execute(new RemoveComponentCommand(object, componentName));
+  }
+
+  _removeComponent(object, componentName) {
     const componentClass = this.components.get(componentName);
 
     if (componentClass) {
@@ -660,6 +740,16 @@ export default class Editor {
     this.signals.sceneGraphChanged.dispatch();
   }
 
+  setComponentProperty(object, componentName, propertyName, value) {
+    this.execute(new SetComponentPropertyCommand(object, componentName, propertyName, value));
+
+    const component = this.getComponent(object, componentName);
+
+    if (component instanceof SaveableComponent) {
+      component.modified = true;
+    }
+  }
+
   updateComponentProperty(object, componentName, propertyName, value) {
     const component = this.getComponent(object, componentName);
 
@@ -690,6 +780,120 @@ export default class Editor {
     } else {
       component[propertyName] = value;
     }
+  }
+
+  async loadComponent(object, componentName, src) {
+    const component = this.getComponent(object, componentName);
+    component.src = src;
+    component.srcIsValid = true;
+    component.shouldSave = true;
+    component.modified = false;
+
+    const absoluteAssetURL = new URL(component.src, window.location).href;
+    let props = await this.props.editor.project.readJSON(component.src);
+    props = resolveFileProps(component, props, absoluteAssetURL);
+
+    await component.constructor.inflate(this.state.object, props);
+    this.props.editor.signals.objectChanged.dispatch(this.state.object);
+  }
+
+  async saveComponent(object, componentName) {
+    const component = this.getComponent(object, componentName);
+    const props = serializeFileProps(component, component.props, component.src);
+    await this.project.writeJSON(component.src, props);
+    component.modified = false;
+    this.signals.objectChanged.dispatch(object);
+  }
+
+  async saveComponentAs(object, componentName, src) {
+    const component = this.getComponent(object, componentName);
+    component.src = src;
+    component.srcIsValid = true;
+    component.shouldSave = true;
+    await this.project.writeJSON(component.src, component.props);
+    component.modified = false;
+    this.signals.objectChanged.dispatch(object);
+  }
+
+  setTransformMode(mode) {
+    this.signals.transformModeChanged.dispatch(mode);
+  }
+
+  setStaticMode(object, mode) {
+    setStaticMode(object, mode);
+    this.signals.objectChanged.dispatch(object);
+  }
+
+  getStaticMode(object) {
+    return getStaticMode(object);
+  }
+
+  computeStaticMode(object) {
+    return computeStaticMode(object);
+  }
+
+  setObjectName(object, value) {
+    const handler = this._conflictHandler;
+
+    if (handler.isUniqueObjectName(value)) {
+      object.name = value;
+      handler.addToDuplicateNameCounters(value);
+      this.execute(new SetValueCommand(object, "name", value));
+    } else {
+      this.signals.objectChanged.dispatch(object);
+      this.signals.sceneErrorOccurred.dispatch(
+        new ConflictError("rename error", "rename", this.sceneInfo.uri, handler)
+      );
+    }
+  }
+
+  setHidden(object, value) {
+    return (object.userData._dontShowInHierarchy = value);
+  }
+
+  isHidden(object) {
+    return !!object.userData._dontShowInHierarchy;
+  }
+
+  setCollapsed(object, value) {
+    return (object.userData._collapsed = value);
+  }
+
+  isCollapsed(object) {
+    return !!object.userData._collapsed;
+  }
+
+  getNodeHierarchy() {
+    const scene = this.scene;
+    const handler = scene.userData._conflictHandler;
+
+    if (handler) {
+      const list = handler.checkResolvedMissingRoot(scene);
+
+      for (const item of list) {
+        this.removeObject(item);
+      }
+
+      handler.updateNodesMissingStatus(scene);
+      handler.updateNodesDuplicateStatus(scene);
+    }
+
+    function buildNode(object) {
+      const collapsed = this.isCollapsed(object);
+
+      const node = {
+        object,
+        collapsed
+      };
+
+      if (object.children.length !== 0) {
+        node.children = object.children.filter(child => !this.isHidden(child)).map(child => buildNode(child));
+      }
+
+      return node;
+    }
+
+    return buildNode(scene);
   }
 
   //
@@ -777,7 +981,7 @@ export default class Editor {
       clone.userData._components = [];
 
       for (const component of object.userData._components) {
-        this.addComponent(clone, component.name, component.props);
+        this._addComponent(clone, component.name, component.props);
       }
     }
     if (!root) root = clone;

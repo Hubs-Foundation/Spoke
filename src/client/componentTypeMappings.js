@@ -1,11 +1,11 @@
 import React from "react";
-import { types } from "../../editor/components";
-import Vector3Input from "./Vector3Input";
-import EulerInput from "./EulerInput";
-import ColorInput from "./ColorInput";
-import FileInput from "./FileInput";
-import BooleanInput from "./BooleanInput";
-import CompoundNumericInput from "./CompoundNumericInput";
+import { types } from "./editor/components";
+import Vector3Input from "./ui/inputs/Vector3Input";
+import EulerInput from "./ui/inputs//EulerInput";
+import ColorInput from "./ui/inputs//ColorInput";
+import FileInput from "./ui/inputs/FileInput";
+import BooleanInput from "./ui/inputs/BooleanInput";
+import CompoundNumericInput from "./ui/inputs/CompoundNumericInput";
 
 /* eslint react/display-name: 0 */
 const componentTypeMappings = new Map([

@@ -1,4 +1,4 @@
-import THREE from "../vendor/three";
+import THREE from "./three";
 import { Components } from "./components";
 import { types } from "./components/utils";
 import ConflictHandler from "./ConflictHandler";

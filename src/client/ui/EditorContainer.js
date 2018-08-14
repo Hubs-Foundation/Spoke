@@ -12,15 +12,13 @@ import ViewportPanelToolbarContainer from "./panels/ViewportPanelToolbarContaine
 import HierarchyPanelContainer from "./panels/HierarchyPanelContainer";
 import PropertiesPanelContainer from "./panels/PropertiesPanelContainer";
 import AssetExplorerPanelContainer from "./panels/AssetExplorerPanelContainer";
-import { withProject } from "./contexts/ProjectContext";
-import { withEditor } from "./contexts/EditorContext";
+import { EditorContextProvider } from "./contexts/EditorContext";
 import { DialogContextProvider } from "./contexts/DialogContext";
 import { OptionDialog } from "./dialogs/OptionDialog";
 import styles from "../common.scss";
 import FileDialog from "./dialogs/FileDialog";
 import ProgressDialog, { PROGRESS_DIALOG_DELAY } from "./dialogs/ProgressDialog";
 import ErrorDialog from "./dialogs/ErrorDialog";
-import ConflictError from "../editor/ConflictError";
 
 class EditorContainer extends Component {
   static defaultProps = {
@@ -44,8 +42,7 @@ class EditorContainer extends Component {
 
   static propTypes = {
     initialPanels: PropTypes.object,
-    editor: PropTypes.object,
-    project: PropTypes.object
+    editor: PropTypes.object
   };
 
   constructor(props) {
@@ -128,7 +125,7 @@ class EditorContainer extends Component {
             },
             {
               name: "Open Project Directory",
-              action: () => this.props.project.openFile(this.props.project.projectDirectoryPath)
+              action: () => this.props.editor.project.openProjectDirectory()
             }
           ]
         },
@@ -167,9 +164,6 @@ class EditorContainer extends Component {
     this.props.editor.signals.extendScene.add(this.onExtendScene);
     this.props.editor.signals.sceneModified.add(this.onSceneModified);
     this.props.editor.signals.sceneErrorOccurred.add(this.onSceneErrorOccurred);
-    this.props.project.addListener("change", path => {
-      this.props.editor.signals.fileChanged.dispatch(path);
-    });
 
     window.onbeforeunload = e => {
       if (!this.props.editor.sceneModified()) {
@@ -182,17 +176,7 @@ class EditorContainer extends Component {
     };
   }
 
-  componentDidUpdate(prevProps) {
-    if (this.props.project !== prevProps.project && prevProps.project) {
-      prevProps.project.close();
-    }
-  }
-
   componentWillUnmount() {
-    if (this.props.project) {
-      this.props.project.close();
-    }
-
     window.removeEventListener("resize", this.onWindowResize, false);
   }
 
@@ -297,26 +281,8 @@ class EditorContainer extends Component {
         });
       }, PROGRESS_DIALOG_DELAY);
 
-      const { project, editor } = this.props;
+      await this.props.editor.saveScene(sceneURI);
 
-      const serializedScene = editor.serializeScene(sceneURI);
-
-      editor.ignoreNextSceneFileChange = true;
-
-      await project.writeJSON(sceneURI, serializedScene);
-
-      const sceneUserData = editor.scene.userData;
-
-      // If the previous URI was a gltf, update the ancestors, since we are now dealing with a .scene file.
-      if (editor.sceneInfo.uri && editor.sceneInfo.uri.endsWith(".gltf")) {
-        sceneUserData._ancestors = [editor.sceneInfo.uri];
-      }
-
-      editor.setSceneURI(sceneURI);
-
-      editor.signals.sceneGraphChanged.dispatch();
-
-      editor.sceneInfo.modified = false;
       this.onSceneModified();
 
       this.hideDialog();
@@ -352,35 +318,8 @@ class EditorContainer extends Component {
             });
           }, PROGRESS_DIALOG_DELAY);
 
-          // Export current editor scene using THREE.GLTFExporter
-          const { json, buffers, images } = await this.props.editor.exportScene();
+          await this.props.editor.exportScene(outputPath);
 
-          // Ensure the output directory exists
-          await this.props.project.mkdir(outputPath);
-
-          // Write the .gltf file
-          const scene = this.props.editor.scene;
-          const gltfPath = outputPath + "/" + scene.name + ".gltf";
-          await this.props.project.writeJSON(gltfPath, json);
-
-          // Write .bin files
-          for (const [index, buffer] of buffers.entries()) {
-            if (buffer !== undefined) {
-              const bufferName = json.buffers[index].uri;
-              await this.props.project.writeBlob(outputPath + "/" + bufferName, buffer);
-            }
-          }
-
-          // Write image files
-          for (const [index, image] of images.entries()) {
-            if (image !== undefined) {
-              const imageName = json.images[index].uri;
-              await this.props.project.writeBlob(outputPath + "/" + imageName, image);
-            }
-          }
-
-          // Run optimizations on .gltf and overwrite any existing files
-          await this.props.project.optimizeScene(gltfPath, gltfPath);
           this.hideDialog();
         } catch (e) {
           console.error(e);
@@ -442,7 +381,7 @@ class EditorContainer extends Component {
       await action(uri);
       this.hideDialog();
     } catch (e) {
-      if (e instanceof ConflictError) {
+      if (e.type === "import" || e.type === "rename") {
         this.onSceneErrorOccurred(e, uri, reload);
       } else {
         this.showDialog(OptionDialog, {
@@ -500,7 +439,7 @@ class EditorContainer extends Component {
   };
 
   _overwriteConflictsInSource = async (uri, conflictHandler, callback) => {
-    const { project } = this.props;
+    const project = this.props.editor.project;
     if (uri && uri.endsWith(".gltf")) {
       const originalGLTF = await project.readJSON(uri);
       const nodes = originalGLTF.nodes;
@@ -525,46 +464,48 @@ class EditorContainer extends Component {
   render() {
     const { openModal, menus, DialogComponent, dialogProps } = this.state;
 
-    const { initialPanels } = this.props;
+    const { initialPanels, editor } = this.props;
 
     const dialogContext = { showDialog: this.showDialog, hideDialog: this.hideDialog };
 
     return (
       <DragDropContextProvider backend={HTML5Backend}>
         <HotKeys keyMap={this.state.keyMap} handlers={this.state.globalHotKeyHandlers} className={styles.flexColumn}>
-          <DialogContextProvider value={dialogContext}>
-            <MenuBarContainer menus={menus} />
-            <MosaicWithoutDragDropContext
-              className="mosaic-theme"
-              renderTile={this.renderPanel}
-              initialValue={initialPanels}
-              onChange={this.onPanelChange}
-            />
-            <Modal
-              ariaHideApp={false}
-              isOpen={!!openModal}
-              onRequestClose={this.onCloseModal}
-              shouldCloseOnOverlayClick={openModal && openModal.shouldCloseOnOverlayClick}
-              className="Modal"
-              overlayClassName="Overlay"
-            >
-              {openModal && <openModal.component {...openModal.props} />}
-            </Modal>
-            <Modal
-              ariaHideApp={false}
-              isOpen={!!DialogComponent}
-              onRequestClose={this.hideDialog}
-              shouldCloseOnOverlayClick={false}
-              className="Modal"
-              overlayClassName="Overlay"
-            >
-              {DialogComponent && <DialogComponent {...dialogProps} hideDialog={this.hideDialog} />}
-            </Modal>
-          </DialogContextProvider>
+          <EditorContextProvider value={editor}>
+            <DialogContextProvider value={dialogContext}>
+              <MenuBarContainer menus={menus} />
+              <MosaicWithoutDragDropContext
+                className="mosaic-theme"
+                renderTile={this.renderPanel}
+                initialValue={initialPanels}
+                onChange={this.onPanelChange}
+              />
+              <Modal
+                ariaHideApp={false}
+                isOpen={!!openModal}
+                onRequestClose={this.onCloseModal}
+                shouldCloseOnOverlayClick={openModal && openModal.shouldCloseOnOverlayClick}
+                className="Modal"
+                overlayClassName="Overlay"
+              >
+                {openModal && <openModal.component {...openModal.props} />}
+              </Modal>
+              <Modal
+                ariaHideApp={false}
+                isOpen={!!DialogComponent}
+                onRequestClose={this.hideDialog}
+                shouldCloseOnOverlayClick={false}
+                className="Modal"
+                overlayClassName="Overlay"
+              >
+                {DialogComponent && <DialogComponent {...dialogProps} hideDialog={this.hideDialog} />}
+              </Modal>
+            </DialogContextProvider>
+          </EditorContextProvider>
         </HotKeys>
       </DragDropContextProvider>
     );
   }
 }
 
-export default withProject(withEditor(EditorContainer));
+export default EditorContainer;

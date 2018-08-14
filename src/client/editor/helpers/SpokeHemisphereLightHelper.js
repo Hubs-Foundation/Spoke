@@ -1,4 +1,4 @@
-import THREE from "../../vendor/three";
+import THREE from "../three";
 
 export default class SpokeHemisphereLightHelper extends THREE.Object3D {
   constructor(light, size, color) {

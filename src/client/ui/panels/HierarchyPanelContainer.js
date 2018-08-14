@@ -5,50 +5,15 @@ import FileDropTarget from "../FileDropTarget";
 import Tree from "@robertlong/react-ui-tree";
 import classNames from "classnames";
 import { ContextMenu, MenuItem, ContextMenuTrigger, connectMenu } from "react-contextmenu";
-
 import styles from "./HierarchyPanelContainer.scss";
 import { withEditor } from "../contexts/EditorContext";
 import { withDialog } from "../contexts/DialogContext";
 import "../../vendor/react-ui-tree/index.scss";
 import "../../vendor/react-contextmenu/index.scss";
-import AddObjectCommand from "../../editor/commands/AddObjectCommand";
-import MoveObjectCommand from "../../editor/commands/MoveObjectCommand";
-import THREE from "../../vendor/three";
-import SceneReferenceComponent from "../../editor/components/SceneReferenceComponent";
 import { last } from "../../utils";
 import SnackBar from "../SnackBar";
 import ReactTooltip from "react-tooltip";
 import ErrorDialog from "../dialogs/ErrorDialog";
-import { StaticMode, setStaticMode } from "../../editor/StaticMode";
-
-function createNodeHierarchy(object) {
-  const node = {
-    object,
-    collapsed: object.userData._collapsed ? object.userData._collapsed : false
-  };
-
-  if (!node.object.userData._collapsed) {
-    node.object.userData._collapsed = node.collapsed;
-  }
-
-  if (object.children.length !== 0) {
-    node.children = object.children.filter(({ userData }) => !userData._dontShowInHierarchy).map(createNodeHierarchy);
-  }
-
-  return node;
-}
-
-function updateCollapseStatus(node) {
-  if (!node) {
-    return;
-  }
-  node.object.userData._collapsed = node.collapsed;
-  if (node.children) {
-    for (const child of node.children) {
-      updateCollapseStatus(child);
-    }
-  }
-}
 
 function collectNodeMenuProps({ node }) {
   return node;
@@ -65,7 +30,7 @@ class HierarchyPanelContainer extends Component {
     super(props);
 
     this.state = {
-      tree: createNodeHierarchy(props.editor.scene),
+      tree: this.props.editor.getNodeHierarchy(),
       hierarchyHotKeyHandlers: {
         delete: this.onDeleteSelected,
         duplicate: this.onDuplicateSelected
@@ -92,19 +57,15 @@ class HierarchyPanelContainer extends Component {
         return;
       }
 
-      const object = new THREE.Object3D();
-      object.name = file.name;
-      setStaticMode(object, StaticMode.Static);
-      this.props.editor.addObject(object);
-      this.props.editor.addComponent(object, "scene-reference", { src: file.uri });
-      this.props.editor.select(object);
+      this.props.editor.addSceneReferenceNode(file.name, file.uri);
     }
   };
 
   onChange = (tree, parent, node) => {
     if (!node) {
       // parent and node are null when expanding/collapsing the tree.
-      updateCollapseStatus(tree);
+      const collapsed = this.props.editor.isCollapsed(tree.object);
+      this.props.editor.setCollapsed(tree.object, !collapsed);
       return;
     }
 
@@ -123,7 +84,7 @@ class HierarchyPanelContainer extends Component {
       }
     }
 
-    this.props.editor.execute(new MoveObjectCommand(object, newParent.object, newBefore));
+    this.props.editor.moveObject(object, newParent.object, newBefore);
   };
 
   onMouseDownNode = (e, node) => {
@@ -142,9 +103,7 @@ class HierarchyPanelContainer extends Component {
   };
 
   onAddNode = (e, node) => {
-    const object = new THREE.Object3D();
-    object.name = "New_Node";
-    this.props.editor.execute(new AddObjectCommand(object, node.object));
+    this.props.editor.createNode("New_Node", node.object);
   };
 
   onDuplicateSelected = () => {
@@ -170,21 +129,13 @@ class HierarchyPanelContainer extends Component {
     this.props.editor.deleteObject(node.object);
   };
 
-  rebuildNodeHierarchy = () => {
-    const handler = this.props.editor.scene.userData._conflictHandler;
-    if (handler) {
-      const list = handler.checkResolvedMissingRoot(this.props.editor.scene);
-      if (list.length > 0) {
-        list.forEach(resolvedMissingRoot => {
-          this.props.editor.removeObject(resolvedMissingRoot);
-        });
-      }
-      handler.updateNodesMissingStatus(this.props.editor.scene);
-      handler.updateNodesDuplicateStatus(this.props.editor.scene);
-    }
+  onClickBreadCrumb = () => {
+    this.props.editor.signals.popScene.dispatch();
+  };
 
+  rebuildNodeHierarchy = () => {
     this.setState({
-      tree: createNodeHierarchy(this.props.editor.scene)
+      tree: this.props.editor.getNodeHierarchy()
     });
   };
 
@@ -237,7 +188,7 @@ class HierarchyPanelContainer extends Component {
 
   renderHierarchyNodeMenu = props => {
     const node = props.trigger;
-    const refComponent = node && this.props.editor.getComponent(node.object, SceneReferenceComponent.componentName);
+    const refComponent = node && this.props.editor.getComponent(node.object, "scene-reference");
     const hasParent = node && node.object.parent;
     return (
       <ContextMenu id="hierarchy-node-menu">
@@ -257,10 +208,6 @@ class HierarchyPanelContainer extends Component {
   };
 
   HierarchyNodeMenu = connectMenu("hierarchy-node-menu")(this.renderHierarchyNodeMenu);
-
-  popScene = () => {
-    this.props.editor.signals.popScene.dispatch();
-  };
 
   renderWarnings = () => {
     const handler = this.props.editor.scene.userData._conflictHandler;
@@ -295,7 +242,7 @@ class HierarchyPanelContainer extends Component {
                 <button
                   className={styles.breadCrumb}
                   disabled={i !== this.props.editor.scenes.length - 2}
-                  onClick={this.popScene}
+                  onClick={this.onClickBreadCrumb}
                 >
                   {name}
                 </button>

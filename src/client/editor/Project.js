@@ -93,6 +93,10 @@ export default class Project extends EventEmitter {
     return json;
   }
 
+  async openProjectDirectory() {
+    return this.openFile(this.projectDirectoryPath);
+  }
+
   _onWebsocketMessage = event => {
     const json = JSON.parse(event.data);
 

@@ -17,13 +17,13 @@ export default class RemoveComponentCommand extends Command {
   }
 
   execute() {
-    this.editor.removeComponent(this.object, this.componentName);
+    this.editor._removeComponent(this.object, this.componentName);
     this.editor.removeHelper(this.object);
     this.editor.signals.objectChanged.dispatch(this.object);
   }
 
   undo() {
-    this.editor.addComponent(this.object, this.componentName).then(() => {
+    this.editor._addComponent(this.object, this.componentName).then(() => {
       this.editor.signals.objectChanged.dispatch(this.object);
     });
   }
