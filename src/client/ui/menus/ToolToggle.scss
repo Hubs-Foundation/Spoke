@@ -1,0 +1,59 @@
+@import "../../theme";
+
+:local(.wrapper) {
+  display: flex;
+  flex-direction: row;
+  align-items: baseline;
+}
+
+:local(.toggleSwitch) {
+  margin: 0px 16px;
+
+  &.react-toggle--checked &.react-toggle-track {
+    background-color: $panel;
+  }
+
+  &.react-toggle--checked:hover:not(.react-toggle--disabled) .react-toggle-track {
+    background-color: $panel;
+  }
+
+  > .react-toggle-track {
+    background-color: $panel;
+  }
+
+  > .react-toggle-thumb {
+    background-color: $blue;
+  }
+}
+
+:local(.toggleOnOff) {
+
+  margin: 0px 16px;
+  &.react-toggle--checked &.react-toggle-track {
+    background-color: $panel;
+  }
+
+  &.react-toggle--checked:hover:not(.react-toggle--disabled) .react-toggle-track {
+    background-color: $panel;
+  }
+
+  &.react-toggle-x:hover:not(.react-toggle--disabled) .react-toggle-track {
+    color: $panel;
+  }
+
+  > .react-toggle-track {
+    background-color: $panel;
+  }
+
+  > .react-toggle-track .react-toggle-track-check{
+    color: #4D535B;
+  }
+
+  &.react-toggle--checked .react-toggle-thumb {
+    background-color: #4D535B;
+  }
+
+  > .react-toggle-thumb {
+    background-color: $blue;
+  }
+}
