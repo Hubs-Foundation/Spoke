@@ -10,25 +10,33 @@ import SetValueCommand from "./commands/SetValueCommand";
 import RemoveComponentCommand from "./commands/RemoveComponentCommand";
 import SetComponentPropertyCommand from "./commands/SetComponentPropertyCommand";
 import MoveObjectCommand from "./commands/MoveObjectCommand";
-import { setStaticMode, StaticModes, getStaticMode, computeStaticMode } from "./StaticMode";
+import {
+  isStatic,
+  setStaticMode,
+  StaticModes,
+  getStaticMode,
+  computeStaticMode,
+  computeAndSetStaticModes,
+  getOriginalStaticMode,
+  setOriginalStaticMode
+} from "./StaticMode";
 import { Components } from "./components";
 import { types } from "./components/utils";
 import SceneReferenceComponent from "./components/SceneReferenceComponent";
 import SaveableComponent from "./components/SaveableComponent";
-import {
-  loadScene,
-  loadSerializedScene,
-  serializeScene,
-  exportScene,
-  serializeFileProps,
-  resolveFileProps
-} from "./SceneLoader";
 import { last } from "../utils";
 import { textureCache, gltfCache } from "./caches";
 import ConflictHandler from "./ConflictHandler";
 import ConflictError from "./ConflictError";
 import SpokeDirectionalLightHelper from "./helpers/SpokeDirectionalLightHelper";
 import SpokeHemisphereLightHelper from "./helpers/SpokeHemisphereLightHelper";
+import absoluteToRelativeURL from "./utils/absoluteToRelativeURL";
+import StandardMaterialComponent from "../editor/components/StandardMaterialComponent";
+import ShadowComponent from "./components/ShadowComponent";
+import shallowEquals from "./utils/shallowEquals";
+import addChildAtIndex from "./utils/addChildAtIndex";
+import SceneLoaderError from "./SceneLoaderError";
+import sortEntities from "./utils/sortEntities";
 
 /**
  * @author mrdoob / http://mrdoob.com/
@@ -213,7 +221,7 @@ export default class Editor {
 
   editScenePrefab(object, uri) {
     this._prefabBeingEdited = object;
-    this._loadScene(uri);
+    this._loadSceneFromURL(uri);
   }
 
   _deleteSceneDependencies() {
@@ -271,7 +279,7 @@ export default class Editor {
     this.scenes = [];
     this._clearCaches();
     this._ignoreSceneModification = true;
-    const scene = this._loadScene(uri).then(scene => {
+    const scene = this._loadSceneFromURL(uri).then(scene => {
       this._ignoreSceneModification = false;
       return scene;
     });
@@ -342,14 +350,14 @@ export default class Editor {
     this.fileDependencies.set(uri, uriDependencies);
   }
 
-  async _loadScene(uri) {
+  async _loadSceneFromURL(uri) {
     this.deselect();
 
     this._deleteSceneDependencies();
 
     this._resetHelpers();
 
-    const scene = await loadScene(uri, this._addComponent, this.components, true);
+    const scene = await this._loadScene(uri, true);
     this._conflictHandler = scene.userData._conflictHandler;
 
     this._setSceneInfo(scene, uri);
@@ -364,10 +372,227 @@ export default class Editor {
     return scene;
   }
 
+  _loadGLTF(url) {
+    return gltfCache
+      .get(url)
+      .then(({ scene }) => {
+        if (scene === undefined) {
+          throw new Error(`Error loading: ${url}. glTF file has no default scene.`);
+        }
+        return scene;
+      })
+      .catch(e => {
+        console.error(e);
+        throw new SceneLoaderError("Error loading GLTF", url, "damaged", e);
+      });
+  }
+
+  async _loadScene(uri, isRoot = true, ancestors) {
+    let scene;
+
+    const url = new URL(uri, window.location).href;
+
+    if (url.endsWith(".gltf")) {
+      scene = await this._loadGLTF(url);
+
+      if (isRoot) {
+        scene.userData._inherits = url;
+      }
+
+      if (!scene.name) {
+        scene.name = "Scene";
+      }
+
+      scene.userData._conflictHandler = new ConflictHandler();
+      scene.userData._conflictHandler.findDuplicates(scene, 0, 0);
+      if (scene.userData._conflictHandler.getDuplicateStatus() || scene.userData._conflictHandler.getMissingStatus()) {
+        const error = new ConflictError("gltf naming conflicts", "import", url, scene.userData._conflictHandler);
+        throw error;
+      }
+
+      // Inflate components
+      const addComponentPromises = [];
+
+      scene.traverse(async object => {
+        const extensions = object.userData.gltfExtensions;
+        if (extensions !== undefined) {
+          for (const extensionName in extensions) {
+            addComponentPromises.push(this._addComponent(object, extensionName, extensions[extensionName], true));
+          }
+        }
+
+        if (object instanceof THREE.Mesh) {
+          addComponentPromises.push(this._addComponent(object, "mesh", null, true));
+
+          const shadowProps = object.userData.components
+            ? object.userData.components.shadow
+            : { castShadow: true, receiveShadow: true };
+          addComponentPromises.push(this._addComponent(object, "shadow", shadowProps, true));
+
+          if (object.material instanceof THREE.MeshStandardMaterial) {
+            addComponentPromises.push(this._addComponent(object, "standard-material", null, true));
+          }
+        }
+      });
+
+      await Promise.all(addComponentPromises);
+
+      return scene;
+    }
+
+    const sceneResponse = await fetch(url);
+    if (!sceneResponse.ok) {
+      const error = new SceneLoaderError("Error loading .scene", url, "damaged", null);
+      throw error;
+    }
+    const sceneDef = await sceneResponse.json();
+
+    if (isRoot) {
+      ancestors = [];
+    }
+
+    scene = await this._loadSerializedScene(sceneDef, uri, isRoot, ancestors);
+
+    scene.userData._ancestors = ancestors;
+
+    return scene;
+  }
+
+  _resolveFileProps(component, props, basePath) {
+    const clonedProps = Object.assign({}, props);
+
+    for (const { name, type } of component.schema) {
+      if (type === types.file && props[name]) {
+        props[name] = new URL(props[name], basePath).href;
+      }
+    }
+
+    return clonedProps;
+  }
+
+  async _loadSerializedScene(sceneDef, baseURI, isRoot = true, ancestors) {
+    let scene;
+
+    const { inherits, root, entities } = sceneDef;
+
+    const absoluteBaseURL = new URL(baseURI, window.location);
+    if (inherits) {
+      const inheritedSceneURL = new URL(inherits, absoluteBaseURL).href;
+      scene = await this._loadScene(inheritedSceneURL, false, ancestors);
+
+      if (ancestors) {
+        ancestors.push(inheritedSceneURL);
+      }
+      if (isRoot) {
+        scene.userData._inherits = inheritedSceneURL;
+      }
+    } else if (root) {
+      scene = new THREE.Scene();
+      scene.name = root;
+    } else {
+      throw new Error("Invalid Scene: Scene does not inherit from another scene or have a root entity.");
+    }
+
+    // init scene conflict status
+    if (!scene.userData._conflictHandler) {
+      scene.userData._conflictHandler = new ConflictHandler();
+      scene.userData._conflictHandler.findDuplicates(scene, 0, 0);
+    }
+
+    if (entities) {
+      // Sort entities by insertion order (uses parent and index to determine order).
+      const sortedEntities = sortEntities(entities);
+
+      const entityComponentPromises = [];
+      for (const entityName of sortedEntities) {
+        const entity = entities[entityName];
+
+        // Find or create the entity's Object3D
+        let entityObj = scene.getObjectByName(entityName);
+
+        if (entityObj === undefined) {
+          entityObj = new THREE.Object3D();
+          entityObj.name = entityName;
+        }
+
+        // Entities defined in the root scene should be saved.
+        if (isRoot) {
+          entityObj.userData._saveEntity = true;
+        }
+
+        // Attach the entity to its parent.
+        // An entity doesn't have a parent defined if the entity is loaded in an inherited scene.
+        if (entity.parent) {
+          let parentObject = scene.getObjectByName(entity.parent);
+          if (!parentObject) {
+            // parent node got renamed or deleted
+            parentObject = new THREE.Object3D();
+            parentObject.name = entity.parent;
+            parentObject.userData._isMissingRoot = true;
+            parentObject.userData._missing = true;
+            scene.userData._conflictHandler.setMissingStatus(true);
+            scene.add(parentObject);
+          } else {
+            if (!parentObject.userData._missing) {
+              parentObject.userData._isMissingRoot = false;
+              parentObject.userData._missing = false;
+            }
+          }
+
+          entityObj.userData._missing = parentObject.userData._missing;
+          entityObj.userData._duplicate = parentObject.userData._duplicate;
+          addChildAtIndex(parentObject, entityObj, entity.index);
+          // Parents defined in the root scene should be saved.
+          if (isRoot) {
+            entityObj.userData._saveParent = true;
+          }
+        }
+
+        // Inflate the entity's components.
+        if (Array.isArray(entity.components)) {
+          for (const componentDef of entity.components) {
+            const { props } = componentDef;
+            if (componentDef.src) {
+              // Process SaveableComponent
+              componentDef.src = new URL(componentDef.src, absoluteBaseURL.href);
+              const resp = await fetch(componentDef.src);
+              let json = {};
+              if (resp.ok) {
+                json = await resp.json();
+              }
+
+              const props = this._resolveFileProps(this.components.get(componentDef.name), json, componentDef.src);
+
+              entityComponentPromises.push(
+                this._addComponent(entityObj, componentDef.name, props, !isRoot).then(component => {
+                  component.src = componentDef.src;
+                  component.srcIsValid = resp.ok;
+                })
+              );
+            } else {
+              entityComponentPromises.push(this._addComponent(entityObj, componentDef.name, props, !isRoot));
+            }
+          }
+        }
+
+        if (entity.staticMode !== undefined) {
+          setStaticMode(entityObj, entity.staticMode);
+
+          if (isRoot) {
+            setOriginalStaticMode(entityObj, entity.staticMode);
+          }
+        }
+      }
+      await Promise.all(entityComponentPromises);
+    }
+    scene.userData._conflictHandler.findDuplicates(scene, 0, 0);
+    return scene;
+  }
+
   async _loadSceneReference(uri, parent) {
     this._removeSceneRefDependency(parent);
 
-    const scene = await loadScene(uri, this._addComponent, this.components, false);
+    const scene = await this._loadScene(uri, false);
     scene.userData._dontShowInHierarchy = true;
     scene.userData._sceneReference = uri;
 
@@ -410,8 +635,8 @@ export default class Editor {
     this._resetHelpers();
 
     const sceneURI = this.sceneInfo.uri;
-    const sceneDef = serializeScene(this.scene, sceneURI);
-    const scene = await loadSerializedScene(sceneDef, sceneURI, this._addComponent, this.components, true);
+    const sceneDef = this._serializeScene(this.scene, sceneURI);
+    const scene = await this._loadSerializedScene(sceneDef, sceneURI, true);
 
     const sceneInfo = this.scenes.find(sceneInfo => sceneInfo.uri === sceneURI);
     sceneInfo.scene = scene;
@@ -422,7 +647,7 @@ export default class Editor {
   }
 
   async saveScene(sceneURI) {
-    const serializedScene = serializeScene(this.scene, sceneURI || this.sceneInfo.uri);
+    const serializedScene = this._serializeScene(this.scene, sceneURI || this.sceneInfo.uri);
 
     this.ignoreNextSceneFileChange = true;
 
@@ -442,11 +667,303 @@ export default class Editor {
     this.sceneInfo.modified = false;
   }
 
+  _serializeScene(scene, scenePath) {
+    scene = scene.clone();
+    const entities = {};
+
+    scene.traverse(entityObject => {
+      let parent;
+      let index;
+      let components;
+      let staticMode;
+
+      // Serialize the parent and index if _saveParent is set.
+      if (entityObject.userData._saveParent) {
+        parent = entityObject.parent.name;
+
+        const parentIndex = entityObject.parent.children.indexOf(entityObject);
+
+        if (parentIndex === -1) {
+          throw new Error("Entity not found in parent.");
+        }
+
+        index = parentIndex;
+      }
+
+      // Serialize all components with shouldSave set.
+      const entityComponents = entityObject.userData._components;
+
+      if (Array.isArray(entityComponents)) {
+        for (const component of entityComponents) {
+          if (component.shouldSave) {
+            if (components === undefined) {
+              components = [];
+            }
+
+            if (component.src) {
+              // Serialize SaveableComponent
+              const src = absoluteToRelativeURL(scenePath, component.src);
+
+              components.push({
+                name: component.name,
+                src
+              });
+            } else {
+              const props = component.serialize(scenePath);
+
+              components.push({
+                name: component.name,
+                props
+              });
+            }
+          }
+        }
+      }
+
+      const curStaticMode = getStaticMode(entityObject);
+      const originalStaticMode = getOriginalStaticMode(entityObject);
+
+      if (curStaticMode !== originalStaticMode) {
+        staticMode = curStaticMode;
+      }
+
+      const saveEntity = entityObject.userData._saveEntity;
+
+      if (parent !== undefined || components !== undefined || staticMode !== undefined || saveEntity) {
+        entities[entityObject.name] = {
+          parent,
+          index,
+          staticMode,
+          components
+        };
+      }
+    });
+
+    const serializedScene = {
+      entities
+    };
+
+    if (scene.userData._inherits) {
+      serializedScene.inherits = absoluteToRelativeURL(scenePath, scene.userData._inherits);
+    } else {
+      serializedScene.root = scene.name;
+    }
+
+    return serializedScene;
+  }
+
   async exportScene(outputPath) {
     const scene = this.scene;
+    const clonedScene = scene.clone();
+
+    computeAndSetStaticModes(clonedScene);
+
+    const meshesToCombine = [];
+
+    // First pass at scene optimization.
+    clonedScene.traverse(object => {
+      // Mark objects with meshes for merging
+      const curShadowComponent = ShadowComponent.getComponent(object);
+      const curMaterialComponent = StandardMaterialComponent.getComponent(object);
+
+      if (isStatic(object) && curShadowComponent && curMaterialComponent) {
+        let foundMaterial = false;
+
+        for (const { shadowComponent, materialComponent, meshes } of meshesToCombine) {
+          if (
+            shallowEquals(materialComponent.props, curMaterialComponent.props) &&
+            shallowEquals(shadowComponent.props, curShadowComponent.props)
+          ) {
+            meshes.push(object);
+            foundMaterial = true;
+            break;
+          }
+        }
+
+        if (!foundMaterial) {
+          meshesToCombine.push({
+            shadowComponent: curShadowComponent,
+            materialComponent: curMaterialComponent,
+            meshes: [object]
+          });
+        }
+      }
+
+      // Remove objects marked as _dontExport
+      for (const child of object.children) {
+        if (child.userData._dontExport) {
+          object.remove(child);
+          return;
+        }
+      }
+    });
+
+    // Combine meshes and add to scene.
+    for (const { meshes } of meshesToCombine) {
+      if (meshes.length > 1) {
+        const bufferGeometries = [];
+
+        for (const mesh of meshes) {
+          // Clone buffer geometry in case it is re-used across meshes with different materials.
+          const clonedBufferGeometry = mesh.geometry.clone();
+          clonedBufferGeometry.applyMatrix(mesh.matrixWorld);
+          bufferGeometries.push(clonedBufferGeometry);
+        }
+
+        const originalMesh = meshes[0];
+
+        const combinedGeometry = THREE.BufferGeometryUtils.mergeBufferGeometries(bufferGeometries);
+        delete combinedGeometry.userData.mergedUserData;
+        const combinedMesh = new THREE.Mesh(combinedGeometry, originalMesh.material);
+        combinedMesh.name = "CombinedMesh";
+        combinedMesh.receiveShadow = originalMesh.receiveShadow;
+        combinedMesh.castShadow = originalMesh.castShadow;
+
+        clonedScene.add(combinedMesh);
+
+        for (const mesh of meshes) {
+          const meshIndex = mesh.parent.children.indexOf(mesh);
+          const parent = mesh.parent;
+          mesh.parent.remove(mesh);
+          const replacementObj = new THREE.Object3D();
+          replacementObj.copy(mesh);
+          replacementObj.children = mesh.children;
+
+          addChildAtIndex(parent, replacementObj, meshIndex);
+        }
+      }
+    }
+
+    const componentsToExport = Components.filter(c => !c.dontExportProps).map(component => component.componentName);
+
+    // Second pass at scene optimization.
+    clonedScene.traverse(object => {
+      const userData = object.userData;
+
+      // Move component data to userData.components
+      if (userData._components) {
+        for (const component of userData._components) {
+          if (componentsToExport.includes(component.name)) {
+            if (userData.components === undefined) {
+              userData.components = {};
+            }
+
+            userData.components[component.name] = component.props;
+          }
+        }
+      }
+
+      // Add shadow component to meshes with non-default values.
+      if (object.isMesh && (object.castShadow || object.receiveShadow)) {
+        if (!object.userData.components) {
+          object.userData.components = {};
+        }
+
+        object.userData.components.shadow = {
+          castShadow: object.castShadow,
+          receiveShadow: object.receiveShadow
+        };
+      }
+    });
+
+    function hasExtrasOrExtensions(object) {
+      const userData = object.userData;
+
+      for (const key in userData) {
+        if (userData.hasOwnProperty(key) && !key.startsWith("_")) {
+          return true;
+        }
+      }
+
+      return false;
+    }
+
+    function removeUnusedObjects(object) {
+      let canBeRemoved = !!object.parent;
+
+      for (const child of object.children.slice(0)) {
+        if (!removeUnusedObjects(child)) {
+          canBeRemoved = false;
+        }
+      }
+
+      const shouldRemove =
+        canBeRemoved &&
+        (object.constructor === THREE.Object3D || object.constructor === THREE.Scene) &&
+        object.children.length === 0 &&
+        isStatic(object) &&
+        !hasExtrasOrExtensions(object);
+
+      if (canBeRemoved && shouldRemove) {
+        object.parent.remove(object);
+        return true;
+      }
+
+      return false;
+    }
+
+    removeUnusedObjects(clonedScene);
+
+    scene.traverse(({ userData }) => {
+      // Remove editor data.
+      for (const key in userData) {
+        if (userData.hasOwnProperty(key) && key.startsWith("_")) {
+          delete userData[key];
+        }
+      }
+    });
+
+    // TODO: export animations
+    const chunks = await new Promise((resolve, reject) => {
+      new THREE.GLTFExporter().parseChunks(clonedScene, resolve, reject, {
+        mode: "gltf",
+        onlyVisible: false
+      });
+    });
+
+    const bufferDefs = chunks.json.buffers;
+
+    if (bufferDefs && bufferDefs.length > 0 && bufferDefs[0].uri === undefined) {
+      bufferDefs[0].uri = clonedScene.name + ".bin";
+    }
+
+    // De-duplicate images.
+
+    const imageDefs = chunks.json.images;
+
+    if (imageDefs && imageDefs.length > 0) {
+      // Map containing imageProp -> newIndex
+      const uniqueImageProps = new Map();
+      // Map containing oldIndex -> newIndex
+      const imageIndexMap = new Map();
+      // Array containing unique imageDefs
+      const uniqueImageDefs = [];
+      // Array containing unique image blobs
+      const uniqueImages = [];
+
+      for (const [index, imageDef] of imageDefs.entries()) {
+        const imageProp = imageDef.uri === undefined ? imageDef.bufferView : imageDef.uri;
+        let newIndex = uniqueImageProps.get(imageProp);
+
+        if (newIndex === undefined) {
+          newIndex = uniqueImageDefs.push(imageDef) - 1;
+          uniqueImageProps.set(imageProp, newIndex);
+          uniqueImages.push(chunks.images[index]);
+        }
+
+        imageIndexMap.set(index, newIndex);
+      }
+
+      chunks.json.images = uniqueImageDefs;
+      chunks.images = uniqueImages;
+
+      for (const textureDef of chunks.json.textures) {
+        textureDef.source = imageIndexMap.get(textureDef.source);
+      }
+    }
 
     // Export current editor scene using THREE.GLTFExporter
-    const { json, buffers, images } = await exportScene(scene);
+    const { json, buffers, images } = chunks;
 
     // Ensure the output directory exists
     await this.project.mkdir(outputPath);
@@ -487,14 +1004,7 @@ export default class Editor {
     this._clearCaches();
 
     const ancestors = [];
-    const scene = await loadSerializedScene(
-      extendSceneDef,
-      inheritedURI,
-      this._addComponent,
-      this.components,
-      true,
-      ancestors
-    );
+    const scene = await this._loadSerializedScene(extendSceneDef, inheritedURI, true, ancestors);
 
     this._setSceneInfo(scene, null);
     this.scenes = [this.sceneInfo];
@@ -791,7 +1301,7 @@ export default class Editor {
 
     const absoluteAssetURL = new URL(component.src, window.location).href;
     let props = await this.props.editor.project.readJSON(component.src);
-    props = resolveFileProps(component, props, absoluteAssetURL);
+    props = this._resolveFileProps(component, props, absoluteAssetURL);
 
     await component.constructor.inflate(this.state.object, props);
     this.props.editor.signals.objectChanged.dispatch(this.state.object);
@@ -799,7 +1309,7 @@ export default class Editor {
 
   async saveComponent(object, componentName) {
     const component = this.getComponent(object, componentName);
-    const props = serializeFileProps(component, component.props, component.src);
+    const props = component.serialize(component.src);
     await this.project.writeJSON(component.src, props);
     component.modified = false;
     this.signals.objectChanged.dispatch(object);
@@ -878,7 +1388,7 @@ export default class Editor {
       handler.updateNodesDuplicateStatus(scene);
     }
 
-    function buildNode(object) {
+    const buildNode = object => {
       const collapsed = this.isCollapsed(object);
 
       const node = {
@@ -891,7 +1401,7 @@ export default class Editor {
       }
 
       return node;
-    }
+    };
 
     return buildNode(scene);
   }

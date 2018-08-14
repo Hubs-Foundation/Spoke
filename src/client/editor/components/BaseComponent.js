@@ -1,4 +1,6 @@
 import THREE from "../three";
+import { types } from "./utils";
+import { absoluteToRelativeURL } from "../utils/absoluteToRelativeURL";
 
 export function getDefaultsFromSchema(schema) {
   const defaults = {};
@@ -29,6 +31,18 @@ export default class BaseComponent {
   // updateProperty is intentionally async here since subclasses may want to await.
   async updateProperty(propertyName, value) {
     this.props[propertyName] = value;
+  }
+
+  serialize(basePath) {
+    const clonedProps = Object.assign({}, this.props);
+
+    for (const { name, type } of this.schema) {
+      if (type === types.file) {
+        clonedProps[name] = absoluteToRelativeURL(basePath, clonedProps[name]);
+      }
+    }
+
+    return clonedProps;
   }
 
   static getComponent(node) {
