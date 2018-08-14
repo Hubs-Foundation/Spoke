@@ -1,4 +1,4 @@
-import THREE from "../vendor/three";
+import THREE from "./three";
 import SetPositionCommand from "./commands/SetPositionCommand";
 import SetRotationCommand from "./commands/SetRotationCommand";
 import SetScaleCommand from "./commands/SetScaleCommand";
@@ -75,8 +75,10 @@ export default class Viewport {
       if (object !== undefined) {
         selectionBox.setFromObject(object);
 
-        if (editor.helpers[object.id] !== undefined) {
-          editor.helpers[object.id].update();
+        const helper = editor.helpers[object.id];
+
+        if (helper !== undefined) {
+          helper.update();
         }
 
         signals.transformChanged.dispatch(object);
@@ -95,12 +97,12 @@ export default class Viewport {
 
     // events
 
-    function getIntersects(point, objects) {
+    function getIntersects(point, scene) {
       mouse.set(point.x * 2 - 1, -(point.y * 2) + 1);
 
       raycaster.setFromCamera(mouse, camera);
 
-      return raycaster.intersectObjects(objects);
+      return raycaster.intersectObject(scene, true);
     }
 
     const onDownPosition = new THREE.Vector2();
@@ -114,20 +116,21 @@ export default class Viewport {
 
     function handleClick() {
       if (onDownPosition.distanceTo(onUpPosition) === 0) {
-        const intersects = getIntersects(onUpPosition, editor.objects);
+        const results = getIntersects(onUpPosition, editor.scene);
 
-        if (intersects.length > 0) {
-          const object = intersects[0].object;
+        let selection = null;
 
+        for (const { object } of results) {
           if (object.userData._selectionRoot !== undefined) {
-            // helper
-            editor.select(object.userData._selectionRoot);
+            selection = object.userData._selectionRoot;
+            break;
           } else {
             editor.select(object);
+            break;
           }
-        } else {
-          editor.select(null);
         }
+
+        editor.select(selection);
       }
     }
 
@@ -175,7 +178,7 @@ export default class Viewport {
       const array = getMousePosition(canvas, event.clientX, event.clientY);
       onDoubleClickPosition.fromArray(array);
 
-      const intersects = getIntersects(onDoubleClickPosition, editor.objects);
+      const intersects = getIntersects(onDoubleClickPosition, editor.scene);
 
       if (intersects.length > 0) {
         const intersect = intersects[0];
@@ -192,9 +195,6 @@ export default class Viewport {
     // otherwise controls.enabled doesn't work.
 
     const controls = new THREE.EditorControls(camera, canvas);
-    controls.addEventListener("change", () => {
-      this._transformControls.update();
-    });
 
     this._transformControls.addEventListener("mouseDown", () => {
       const object = this._transformControls.object;
@@ -283,16 +283,9 @@ export default class Viewport {
       }
     });
 
-    signals.objectAdded.add(function(object) {
-      object.traverse(function(child) {
-        editor.objects.push(child);
-      });
-    });
-
     signals.objectChanged.add(object => {
       if (editor.selected === object) {
         selectionBox.setFromObject(object);
-        this._transformControls.update();
       }
 
       if (object instanceof THREE.PerspectiveCamera) {
@@ -302,21 +295,6 @@ export default class Viewport {
       if (editor.helpers[object.id] !== undefined) {
         editor.helpers[object.id].update();
       }
-    });
-
-    signals.objectRemoved.add(function(object) {
-      editor.objects.splice(editor.objects.indexOf(object), 1);
-      object.traverse(function(child) {
-        editor.objects.splice(editor.objects.indexOf(child), 1);
-      });
-    });
-
-    signals.helperAdded.add(function(object) {
-      editor.objects.push(object.getObjectByName("picker"));
-    });
-
-    signals.helperRemoved.add(function(object) {
-      editor.objects.splice(editor.objects.indexOf(object.getObjectByName("picker")), 1);
     });
 
     signals.windowResize.add(function() {

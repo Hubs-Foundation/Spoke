@@ -1,4 +1,4 @@
-import THREE from "../../vendor/three";
+import THREE from "../three";
 import BaseComponent from "./BaseComponent";
 import { types } from "./utils";
 
@@ -29,6 +29,7 @@ export default class HemisphereLightComponent extends BaseComponent {
 
   static async inflate(node, props) {
     const light = new THREE.HemisphereLight();
+    light.position.set(0, 0, 0);
     const component = await this._getOrCreateComponent(node, props, light);
     node.add(light);
     return component;

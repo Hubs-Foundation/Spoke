@@ -5,7 +5,7 @@ import classNames from "classnames";
 import Button from "./Button";
 import styles from "./PropertyGroup.scss";
 import infoIcon from "../assets/info-icon.svg";
-import { withProject } from "./contexts/ProjectContext";
+import { withEditor } from "./contexts/EditorContext";
 import ReactTooltip from "react-tooltip";
 
 function PropertyGroup(props) {
@@ -21,7 +21,7 @@ function PropertyGroup(props) {
     saveAsHandler,
     loadHandler,
     children,
-    project
+    editor
   } = props;
   const renderRemoveButton = () => {
     if (!canRemove) return;
@@ -40,7 +40,7 @@ function PropertyGroup(props) {
       <div>
         {src && (
           <span className={classNames(srcStatus.classNames)} data-tip={srcStatus.tip} data-type={srcStatus.type}>
-            {project.getRelativeURI(src)}
+            {editor.project.getRelativeURI(src)}
             {modified && "*"}
             <ReactTooltip />
           </span>
@@ -94,8 +94,8 @@ PropertyGroup.propTypes = {
   saveAsHandler: PropTypes.func,
   loadHandler: PropTypes.func,
   children: PropTypes.node,
-  project: PropTypes.object,
-  useDefault: PropTypes.bool
+  useDefault: PropTypes.bool,
+  editor: PropTypes.object
 };
 
-export default withProject(PropertyGroup);
+export default withEditor(PropertyGroup);

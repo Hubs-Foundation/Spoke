@@ -1,25 +1,13 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
 import Select from "react-select";
-
 import "../../vendor/react-select/index.scss";
 import styles from "./PropertiesPanelContainer.scss";
 import PropertyGroup from "../PropertyGroup";
 import InputGroup from "../InputGroup";
 import StringInput from "../inputs/StringInput";
-import componentTypeMappings from "../inputs/componentTypeMappings";
-
-import SetValueCommand from "../../editor/commands/SetValueCommand";
-import AddComponentCommand from "../../editor/commands/AddComponentCommand";
-import SetComponentPropertyCommand from "../../editor/commands/SetComponentPropertyCommand";
-import RemoveComponentCommand from "../../editor/commands/RemoveComponentCommand";
-
-import { types } from "../../editor/components";
-import SaveableComponent from "../../editor/components/SaveableComponent";
-import { StaticMode, computeStaticMode, getStaticMode, setStaticMode } from "../../editor/StaticMode";
-
+import componentTypeMappings from "../../componentTypeMappings";
 import { withEditor } from "../contexts/EditorContext";
-import { withProject } from "../contexts/ProjectContext";
 import { withDialog } from "../contexts/DialogContext";
 import FileDialog from "../dialogs/FileDialog";
 import ErrorDialog from "../dialogs/ErrorDialog";
@@ -40,7 +28,6 @@ export function getDisplayName(name) {
 class PropertiesPanelContainer extends Component {
   static propTypes = {
     editor: PropTypes.object,
-    project: PropTypes.object,
     showDialog: PropTypes.func.isRequired,
     hideDialog: PropTypes.func.isRequired
   };
@@ -49,7 +36,8 @@ class PropertiesPanelContainer extends Component {
     super(props);
 
     this.state = {
-      object: null
+      object: null,
+      name: null
     };
   }
 
@@ -67,41 +55,45 @@ class PropertiesPanelContainer extends Component {
 
   onObjectSelected = object => {
     this.setState({
-      object
+      object,
+      name: object.name
     });
   };
 
   onObjectChanged = object => {
     if (this.state.object === object) {
       this.setState({
-        object
+        object,
+        name: object.name
       });
     }
   };
 
   onUpdateName = e => {
-    this.props.editor.execute(new SetValueCommand(this.state.object, "name", e.target.value));
+    this.setState({
+      name: e.target.value
+    });
+  };
+
+  onBlurName = () => {
+    this.props.editor.setObjectName(this.state.object, this.state.name);
   };
 
   onUpdateStatic = ({ value }) => {
     const object = this.state.object;
-    setStaticMode(object, value);
-    this.props.editor.signals.objectChanged.dispatch(object);
+    this.props.editor.setStaticMode(object, value);
   };
 
   onAddComponent = ({ value }) => {
-    this.props.editor.execute(new AddComponentCommand(this.state.object, value));
+    this.props.editor.addComponent(this.state.object, value);
   };
 
   onChangeComponent = (component, propertyName, value) => {
-    if (component instanceof SaveableComponent) {
-      component.modified = true;
-    }
-    this.props.editor.execute(new SetComponentPropertyCommand(this.state.object, component.name, propertyName, value));
+    this.props.editor.setComponentProperty(this.state.object, component.name, propertyName, value);
   };
 
   onRemoveComponent = componentName => {
-    this.props.editor.execute(new RemoveComponentCommand(this.state.object, componentName));
+    this.props.editor.removeComponent(this.state.object, componentName);
   };
 
   onSaveComponent = async (component, saveAs) => {
@@ -123,12 +115,8 @@ class PropertiesPanelContainer extends Component {
               });
             }, PROGRESS_DIALOG_DELAY);
 
-            component.src = src;
-            component.srcIsValid = true;
-            component.shouldSave = true;
-            await this.props.project.writeJSON(component.src, component.props);
-            component.modified = false;
-            this.props.editor.signals.objectChanged.dispatch(this.state.object);
+            await this.props.editor.saveComponentAs(this.state.object, component.name, src);
+
             this.props.hideDialog();
           } catch (e) {
             this.props.showDialog(ErrorDialog, {
@@ -142,9 +130,7 @@ class PropertiesPanelContainer extends Component {
       });
     } else {
       try {
-        await this.props.project.writeJSON(component.src, component.props);
-        component.modified = false;
-        this.props.editor.signals.objectChanged.dispatch(this.state.object);
+        await this.props.editor.saveComponent(this.state.object, component.name);
       } catch (e) {
         console.error(e);
         this.props.showDialog(ErrorDialog, {
@@ -172,12 +158,8 @@ class PropertiesPanelContainer extends Component {
             });
           }, PROGRESS_DIALOG_DELAY);
 
-          component.src = src;
-          component.srcIsValid = true;
-          component.shouldSave = true;
-          component.modified = false;
-          await component.constructor.inflate(this.state.object, await this.props.project.readJSON(component.src));
-          this.props.editor.signals.objectChanged.dispatch(this.state.object);
+          await this.props.editor.loadComponent(this.state.object, component.name, src);
+
           this.props.hideDialog();
         } catch (e) {
           console.error(e);
@@ -200,7 +182,7 @@ class PropertiesPanelContainer extends Component {
       return <PropertyGroup name={getDisplayName(component.name)} key={component.name} />;
     }
 
-    const saveable = component instanceof SaveableComponent;
+    const saveable = component.isSaveable;
     return (
       <PropertyGroup
         name={getDisplayName(component.name)}
@@ -234,10 +216,11 @@ class PropertiesPanelContainer extends Component {
   };
 
   getExtras(prop) {
+    const ComponentPropTypes = this.props.editor.ComponentPropTypes;
     switch (prop.type) {
-      case types.number:
-        return { min: prop.min, max: prop.max, parse: prop.parse, format: prop.format };
-      case types.file:
+      case ComponentPropTypes.number:
+        return { min: prop.min, max: prop.max, parse: prop.parse, format: prop.format, step: prop.step };
+      case ComponentPropTypes.file:
         return { filters: prop.filters };
       default:
         null;
@@ -246,6 +229,7 @@ class PropertiesPanelContainer extends Component {
 
   render() {
     const object = this.state.object;
+    const StaticModes = this.props.editor.StaticModes;
 
     if (!object) {
       return (
@@ -273,19 +257,19 @@ class PropertiesPanelContainer extends Component {
       }
     }
 
-    const staticMode = getStaticMode(object) || StaticMode.Inherits;
-    const parentComputedStaticMode = computeStaticMode(object.parent);
+    const staticMode = this.props.editor.getStaticMode(object) || StaticModes.Inherits;
+    const parentComputedStaticMode = this.props.editor.computeStaticMode(object.parent);
     const staticModeOptions = [
       {
-        value: StaticMode.Dynamic,
+        value: StaticModes.Dynamic,
         label: "Dynamic"
       },
       {
-        value: StaticMode.Static,
+        value: StaticModes.Static,
         label: "Static"
       },
       {
-        value: StaticMode.Inherits,
+        value: StaticModes.Inherits,
         label: `Inherits (${parentComputedStaticMode})`
       }
     ];
@@ -299,11 +283,11 @@ class PropertiesPanelContainer extends Component {
           canRemove={false}
         >
           <div className={styles.propertiesPanelTopBar}>
-            <InputGroup name="Name">
-              <StringInput value={object.name} onChange={this.onUpdateName} />
+            <InputGroup className={styles.topBarName} name="Name">
+              <StringInput value={this.state.name} onChange={this.onUpdateName} onBlur={this.onBlurName} />
             </InputGroup>
             {object.parent !== null && (
-              <InputGroup name="Static">
+              <InputGroup className={styles.topBarStatic} name="Static">
                 <Select
                   className={styles.staticSelect}
                   value={staticMode}
@@ -339,4 +323,4 @@ class PropertiesPanelContainer extends Component {
   }
 }
 
-export default withProject(withEditor(withDialog(PropertiesPanelContainer)));
+export default withEditor(withDialog(PropertiesPanelContainer));

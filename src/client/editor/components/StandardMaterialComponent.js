@@ -1,6 +1,6 @@
 import SaveableComponent from "./SaveableComponent";
 import { types } from "./utils";
-import THREE from "../../vendor/three";
+import THREE from "../three";
 import { textureCache } from "../caches";
 
 function getURLPath(url) {

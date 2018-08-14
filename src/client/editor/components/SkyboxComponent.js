@@ -1,6 +1,6 @@
 import BaseComponent from "./BaseComponent";
 import { types } from "./utils";
-import THREE from "../../vendor/three";
+import THREE from "../three";
 
 export default class SkyboxComponent extends BaseComponent {
   static componentName = "skybox";

@@ -1,9 +1,8 @@
 import React from "react";
-import Editor from "../../editor/Editor";
 
-const editor = new Editor();
-window.editor = editor;
-const EditorContext = React.createContext(editor);
+const EditorContext = React.createContext(null);
+
+export const EditorContextProvider = EditorContext.Provider;
 
 export function withEditor(Component) {
   return function EditorContextComponent(props) {

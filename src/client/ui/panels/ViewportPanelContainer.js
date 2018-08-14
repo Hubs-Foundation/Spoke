@@ -1,8 +1,6 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
 import { HotKeys } from "react-hotkeys";
-
-import THREE from "../../vendor/three";
 import Viewport from "../Viewport";
 import { withEditor } from "../contexts/EditorContext";
 import { withDialog } from "../contexts/DialogContext";
@@ -46,24 +44,20 @@ class ViewportPanelContainer extends Component {
         return;
       }
 
-      const object = new THREE.Object3D();
-      object.name = file.name;
-      this.props.editor.addObject(object);
-      this.props.editor.addComponent(object, "scene-reference", { src: file.uri });
-      this.props.editor.select(object);
+      this.props.editor.addSceneReferenceNode(file.name, file.uri);
     }
   };
 
   onTranslateTool = () => {
-    this.props.editor.signals.transformModeChanged.dispatch("translate");
+    this.props.editor.setTransformMode("translate");
   };
 
   onRotateTool = () => {
-    this.props.editor.signals.transformModeChanged.dispatch("rotate");
+    this.props.editor.setTransformMode("rotate");
   };
 
   onScaleTool = () => {
-    this.props.editor.signals.transformModeChanged.dispatch("scale");
+    this.props.editor.setTransformMode("scale");
   };
 
   onDuplicate = e => {

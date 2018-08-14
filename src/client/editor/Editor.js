@@ -1,21 +1,42 @@
 import signals from "signals";
 
-import THREE from "../vendor/three";
+import THREE from "./three";
 import History from "./History";
 import Viewport from "./Viewport";
 import RemoveObjectCommand from "./commands/RemoveObjectCommand";
 import AddObjectCommand from "./commands/AddObjectCommand";
+import AddComponentCommand from "./commands/AddComponentCommand";
+import SetValueCommand from "./commands/SetValueCommand";
+import RemoveComponentCommand from "./commands/RemoveComponentCommand";
+import SetComponentPropertyCommand from "./commands/SetComponentPropertyCommand";
+import MoveObjectCommand from "./commands/MoveObjectCommand";
+import { setStaticMode, StaticModes, getStaticMode, computeStaticMode } from "./StaticMode";
 import { Components } from "./components";
+import { types } from "./components/utils";
 import SceneReferenceComponent from "./components/SceneReferenceComponent";
-import { loadScene, loadSerializedScene, serializeScene, exportScene } from "./SceneLoader";
+import SaveableComponent from "./components/SaveableComponent";
+import {
+  loadScene,
+  loadSerializedScene,
+  serializeScene,
+  exportScene,
+  serializeFileProps,
+  resolveFileProps
+} from "./SceneLoader";
 import { last } from "../utils";
 import { textureCache, gltfCache } from "./caches";
+import ConflictHandler from "./ConflictHandler";
+import ConflictError from "./ConflictError";
+import SpokeDirectionalLightHelper from "./helpers/SpokeDirectionalLightHelper";
+import SpokeHemisphereLightHelper from "./helpers/SpokeHemisphereLightHelper";
 
 /**
  * @author mrdoob / http://mrdoob.com/
  */
 export default class Editor {
-  constructor() {
+  constructor(project) {
+    this.project = project;
+
     this.DEFAULT_CAMERA = new THREE.PerspectiveCamera(50, 1, 0.01, 1000);
     this.DEFAULT_CAMERA.name = "Camera";
     this.DEFAULT_CAMERA.position.set(0, 5, 10);
@@ -60,8 +81,14 @@ export default class Editor {
 
       historyChanged: new Signal(),
 
-      fileChanged: new Signal()
+      fileChanged: new Signal(),
+
+      sceneErrorOccurred: new Signal()
     };
+
+    this.project.addListener("change", path => {
+      this.signals.fileChanged.dispatch(path);
+    });
 
     this.history = new History(this);
 
@@ -75,7 +102,6 @@ export default class Editor {
       scene: new THREE.Scene(),
       helperScene: new THREE.Scene(),
       helpers: {},
-      objects: [],
       modified: false
     };
     initialSceneInfo.scene.name = "Scene";
@@ -85,7 +111,6 @@ export default class Editor {
     this.sceneInfo = initialSceneInfo;
     this.helperScene = initialSceneInfo.helperScene;
     this.helpers = initialSceneInfo.helpers;
-    this.objects = initialSceneInfo.objects;
 
     this._prefabBeingEdited = null;
 
@@ -113,12 +138,15 @@ export default class Editor {
     // Map from URI -> Set of Object3Ds
     this.fileDependencies = new Map();
 
-    this._duplicateNameCounters = new Map();
-
+    this._conflictHandler = new ConflictHandler();
+    this.scene.userData._conflictHandler = this._conflictHandler;
     this.ignoreNextSceneFileChange = false;
     this.signals.fileChanged.add(this.onFileChanged);
 
     this._resetDefaultLights();
+
+    this.ComponentPropTypes = types;
+    this.StaticModes = StaticModes;
   }
 
   createViewport(canvas) {
@@ -159,9 +187,9 @@ export default class Editor {
 
     this.sceneInfo = last(this.scenes);
     this.scene = this.sceneInfo.scene;
+    this._conflictHandler = this.scene.userData._conflictHandler;
     this.helperScene = this.sceneInfo.helperScene;
     this.helpers = this.sceneInfo.helpers;
-    this.objects = this.sceneInfo.objects;
 
     if (poppedURI) {
       const sceneRefComponentName = SceneReferenceComponent.componentName;
@@ -169,8 +197,8 @@ export default class Editor {
       this.updateComponentProperty(this._prefabBeingEdited, sceneRefComponentName, "src", poppedURI);
       if (previousURI.endsWith(".gltf")) {
         const name = last(poppedURI.split("/"));
-        this._prefabBeingEdited.name = name;
-        this._duplicateNameCounters.set(name, this._duplicateNameCounters.get(name) || 0);
+        const displayName = this._conflictHandler.addToDuplicateNameCounters(name);
+        this._prefabBeingEdited.name = displayName;
       }
     }
 
@@ -200,7 +228,6 @@ export default class Editor {
     // as it receives signals while the scene is loading.
     this.helperScene = new THREE.Scene();
     this.helpers = {};
-    this.objects = [];
   }
 
   _clearCaches() {
@@ -214,8 +241,7 @@ export default class Editor {
       scene: scene,
       modified: false,
       helperScene: this.helperScene,
-      helpers: this.helpers,
-      objects: this.objects
+      helpers: this.helpers
     };
   }
 
@@ -254,9 +280,12 @@ export default class Editor {
 
   _setScene(scene) {
     this.scene = scene;
-
     this._resetDefaultLights();
-
+    if (this.scene.userData && this.scene.userData._conflictHandler) {
+      this._conflictHandler = this.scene.userData._conflictHandler;
+    } else if (!this._conflictHandler) {
+      this._conflictHandler = new ConflictHandler();
+    }
     this.scene.traverse(object => {
       this.signals.objectAdded.dispatch(object);
     });
@@ -320,7 +349,8 @@ export default class Editor {
 
     this._resetHelpers();
 
-    const scene = await loadScene(uri, this.addComponent, true);
+    const scene = await loadScene(uri, this._addComponent, this.components, true);
+    this._conflictHandler = scene.userData._conflictHandler;
 
     this._setSceneInfo(scene, uri);
     this.scenes.push(this.sceneInfo);
@@ -337,9 +367,15 @@ export default class Editor {
   async _loadSceneReference(uri, parent) {
     this._removeSceneRefDependency(parent);
 
-    const scene = await loadScene(uri, this.addComponent, false);
+    const scene = await loadScene(uri, this._addComponent, this.components, false);
     scene.userData._dontShowInHierarchy = true;
     scene.userData._sceneReference = uri;
+
+    const conflictHandler = scene.userData._conflictHandler;
+    if (conflictHandler.getDuplicateStatus()) {
+      // auto resolve scene conflicts
+      conflictHandler.resolveConflicts(scene);
+    }
 
     scene.traverse(child => {
       Object.defineProperty(child.userData, "_selectionRoot", { value: parent, configurable: true, enumerable: false });
@@ -375,7 +411,7 @@ export default class Editor {
 
     const sceneURI = this.sceneInfo.uri;
     const sceneDef = serializeScene(this.scene, sceneURI);
-    const scene = await loadSerializedScene(sceneDef, sceneURI, this.addComponent, true);
+    const scene = await loadSerializedScene(sceneDef, sceneURI, this._addComponent, this.components, true);
 
     const sceneInfo = this.scenes.find(sceneInfo => sceneInfo.uri === sceneURI);
     sceneInfo.scene = scene;
@@ -385,12 +421,58 @@ export default class Editor {
     return scene;
   }
 
-  serializeScene(sceneURI) {
-    return serializeScene(this.scene, sceneURI || this.sceneInfo.uri);
+  async saveScene(sceneURI) {
+    const serializedScene = serializeScene(this.scene, sceneURI || this.sceneInfo.uri);
+
+    this.ignoreNextSceneFileChange = true;
+
+    await this.project.writeJSON(sceneURI, serializedScene);
+
+    const sceneUserData = this.scene.userData;
+
+    // If the previous URI was a gltf, update the ancestors, since we are now dealing with a .scene file.
+    if (this.sceneInfo.uri && this.sceneInfo.uri.endsWith(".gltf")) {
+      sceneUserData._ancestors = [this.sceneInfo.uri];
+    }
+
+    this.setSceneURI(sceneURI);
+
+    this.signals.sceneGraphChanged.dispatch();
+
+    this.sceneInfo.modified = false;
   }
 
-  exportScene() {
-    return exportScene(this.scene);
+  async exportScene(outputPath) {
+    const scene = this.scene;
+
+    // Export current editor scene using THREE.GLTFExporter
+    const { json, buffers, images } = await exportScene(scene);
+
+    // Ensure the output directory exists
+    await this.project.mkdir(outputPath);
+
+    // Write the .gltf file
+    const gltfPath = outputPath + "/" + scene.name + ".gltf";
+    await this.project.writeJSON(gltfPath, json);
+
+    // Write .bin files
+    for (const [index, buffer] of buffers.entries()) {
+      if (buffer !== undefined) {
+        const bufferName = json.buffers[index].uri;
+        await this.project.writeBlob(outputPath + "/" + bufferName, buffer);
+      }
+    }
+
+    // Write image files
+    for (const [index, image] of images.entries()) {
+      if (image !== undefined) {
+        const imageName = json.images[index].uri;
+        await this.project.writeBlob(outputPath + "/" + imageName, image);
+      }
+    }
+
+    // Run optimizations on .gltf and overwrite any existing files
+    await this.project.optimizeScene(gltfPath, gltfPath);
   }
 
   async extendScene(inheritedURI) {
@@ -405,7 +487,14 @@ export default class Editor {
     this._clearCaches();
 
     const ancestors = [];
-    const scene = await loadSerializedScene(extendSceneDef, inheritedURI, this.addComponent, true, ancestors);
+    const scene = await loadSerializedScene(
+      extendSceneDef,
+      inheritedURI,
+      this._addComponent,
+      this.components,
+      true,
+      ancestors
+    );
 
     this._setSceneInfo(scene, null);
     this.scenes = [this.sceneInfo];
@@ -418,30 +507,28 @@ export default class Editor {
   }
   //
 
+  addSceneReferenceNode(name, url) {
+    const object = new THREE.Object3D();
+    object.name = name;
+    setStaticMode(object, StaticModes.Static);
+    this.addObject(object);
+    this._addComponent(object, "scene-reference", { src: url });
+    this.select(object);
+  }
+
+  createNode(name, parent) {
+    const object = new THREE.Object3D();
+    object.name = name;
+    this.execute(new AddObjectCommand(object, parent));
+  }
+
   addObject(object, parent) {
-    this.addComponent(object, "transform");
+    this._addComponent(object, "transform");
 
     object.userData._saveParent = true;
 
     object.traverse(child => {
-      let cacheName = child.name;
-
-      const match = child.name.match(/(.*)_\d+$/);
-
-      if (match) {
-        cacheName = match[1];
-      }
-
-      let duplicateNameCount = this._duplicateNameCounters.get(cacheName);
-
-      if (duplicateNameCount !== undefined) {
-        duplicateNameCount++;
-        this._duplicateNameCounters.set(cacheName, duplicateNameCount);
-        child.name = cacheName + "_" + duplicateNameCount;
-      } else {
-        this._duplicateNameCounters.set(cacheName, 0);
-      }
-
+      child.name = this._conflictHandler.addToDuplicateNameCounters(child.name);
       this.addHelper(child, object);
     });
 
@@ -456,21 +543,7 @@ export default class Editor {
   }
 
   moveObject(object, parent, before) {
-    if (parent === undefined) {
-      parent = this.scene;
-    }
-
-    parent.add(object);
-
-    // sort children array
-
-    if (before !== undefined) {
-      const index = parent.children.indexOf(before);
-      parent.children.splice(index, 0, object);
-      parent.children.pop();
-    }
-
-    this.signals.sceneGraphChanged.dispatch();
+    this.execute(new MoveObjectCommand(object, parent, before));
   }
 
   removeObject(object) {
@@ -500,11 +573,11 @@ export default class Editor {
       } else if (object instanceof THREE.PointLight) {
         helper = new THREE.PointLightHelper(object, 1);
       } else if (object instanceof THREE.DirectionalLight) {
-        helper = new THREE.DirectionalLightHelper(object, 1);
+        helper = new SpokeDirectionalLightHelper(object, 1);
       } else if (object instanceof THREE.SpotLight) {
         helper = new THREE.SpotLightHelper(object, 1);
       } else if (object instanceof THREE.HemisphereLight) {
-        helper = new THREE.HemisphereLightHelper(object, 1);
+        helper = new SpokeHemisphereLightHelper(object, 1);
       } else if (object instanceof THREE.SkinnedMesh) {
         helper = new THREE.SkeletonHelper(object);
       } else {
@@ -547,7 +620,11 @@ export default class Editor {
     this.components.set(componentName, componentClass);
   }
 
-  addComponent = async (object, componentName, props, skipSave) => {
+  addComponent(object, componentName) {
+    this.execute(new AddComponentCommand(object, componentName));
+  }
+
+  _addComponent = async (object, componentName, props, skipSave) => {
     try {
       const componentClass = this.components.get(componentName);
       let component;
@@ -608,6 +685,10 @@ export default class Editor {
   };
 
   removeComponent(object, componentName) {
+    this.execute(new RemoveComponentCommand(object, componentName));
+  }
+
+  _removeComponent(object, componentName) {
     const componentClass = this.components.get(componentName);
 
     if (componentClass) {
@@ -659,6 +740,16 @@ export default class Editor {
     this.signals.sceneGraphChanged.dispatch();
   }
 
+  setComponentProperty(object, componentName, propertyName, value) {
+    this.execute(new SetComponentPropertyCommand(object, componentName, propertyName, value));
+
+    const component = this.getComponent(object, componentName);
+
+    if (component instanceof SaveableComponent) {
+      component.modified = true;
+    }
+  }
+
   updateComponentProperty(object, componentName, propertyName, value) {
     const component = this.getComponent(object, componentName);
 
@@ -689,6 +780,120 @@ export default class Editor {
     } else {
       component[propertyName] = value;
     }
+  }
+
+  async loadComponent(object, componentName, src) {
+    const component = this.getComponent(object, componentName);
+    component.src = src;
+    component.srcIsValid = true;
+    component.shouldSave = true;
+    component.modified = false;
+
+    const absoluteAssetURL = new URL(component.src, window.location).href;
+    let props = await this.props.editor.project.readJSON(component.src);
+    props = resolveFileProps(component, props, absoluteAssetURL);
+
+    await component.constructor.inflate(this.state.object, props);
+    this.props.editor.signals.objectChanged.dispatch(this.state.object);
+  }
+
+  async saveComponent(object, componentName) {
+    const component = this.getComponent(object, componentName);
+    const props = serializeFileProps(component, component.props, component.src);
+    await this.project.writeJSON(component.src, props);
+    component.modified = false;
+    this.signals.objectChanged.dispatch(object);
+  }
+
+  async saveComponentAs(object, componentName, src) {
+    const component = this.getComponent(object, componentName);
+    component.src = src;
+    component.srcIsValid = true;
+    component.shouldSave = true;
+    await this.project.writeJSON(component.src, component.props);
+    component.modified = false;
+    this.signals.objectChanged.dispatch(object);
+  }
+
+  setTransformMode(mode) {
+    this.signals.transformModeChanged.dispatch(mode);
+  }
+
+  setStaticMode(object, mode) {
+    setStaticMode(object, mode);
+    this.signals.objectChanged.dispatch(object);
+  }
+
+  getStaticMode(object) {
+    return getStaticMode(object);
+  }
+
+  computeStaticMode(object) {
+    return computeStaticMode(object);
+  }
+
+  setObjectName(object, value) {
+    const handler = this._conflictHandler;
+
+    if (handler.isUniqueObjectName(value)) {
+      object.name = value;
+      handler.addToDuplicateNameCounters(value);
+      this.execute(new SetValueCommand(object, "name", value));
+    } else {
+      this.signals.objectChanged.dispatch(object);
+      this.signals.sceneErrorOccurred.dispatch(
+        new ConflictError("rename error", "rename", this.sceneInfo.uri, handler)
+      );
+    }
+  }
+
+  setHidden(object, value) {
+    return (object.userData._dontShowInHierarchy = value);
+  }
+
+  isHidden(object) {
+    return !!object.userData._dontShowInHierarchy;
+  }
+
+  setCollapsed(object, value) {
+    return (object.userData._collapsed = value);
+  }
+
+  isCollapsed(object) {
+    return !!object.userData._collapsed;
+  }
+
+  getNodeHierarchy() {
+    const scene = this.scene;
+    const handler = scene.userData._conflictHandler;
+
+    if (handler) {
+      const list = handler.checkResolvedMissingRoot(scene);
+
+      for (const item of list) {
+        this.removeObject(item);
+      }
+
+      handler.updateNodesMissingStatus(scene);
+      handler.updateNodesDuplicateStatus(scene);
+    }
+
+    const buildNode = object => {
+      const collapsed = this.isCollapsed(object);
+
+      const node = {
+        object,
+        collapsed
+      };
+
+      if (object.children.length !== 0) {
+        node.children = object.children.filter(child => !this.isHidden(child)).map(child => buildNode(child));
+      }
+
+      return node;
+    };
+
+    return buildNode(scene);
   }
 
   //
@@ -759,6 +964,7 @@ export default class Editor {
 
   deleteObject(object) {
     this.execute(new RemoveObjectCommand(object));
+    this._conflictHandler.updateDuplicateNameCounters(this.scene);
   }
 
   deleteSelectedObject() {
@@ -775,7 +981,7 @@ export default class Editor {
       clone.userData._components = [];
 
       for (const component of object.userData._components) {
-        this.addComponent(clone, component.name, component.props);
+        this._addComponent(clone, component.name, component.props);
       }
     }
     if (!root) root = clone;

@@ -25,9 +25,12 @@
   border: 0;
   cursor: pointer;
   line-height: 24px;
-  padding: 4px 12px;
+  padding: 4px 8px;
   text-align: inherit;
   white-space: nowrap;
+  display: flex;
+  justify-content: space-between;
+  color: $text;
 }
 
 .react-contextmenu-item.react-contextmenu-item--active,
@@ -46,14 +49,13 @@
 }
 
 .react-contextmenu-item--divider {
-  border-bottom: 1px solid rgba(0,0,0,.15);
+  border-bottom: 1px solid $border;
   cursor: inherit;
-  margin-bottom: 3px;
-  padding: 2px 0;
+  margin: 4px 0;
+  height: 1px;
+  padding: 0;
 }
 .react-contextmenu-item--divider:hover {
-  background-color: transparent;
-  border-color: rgba(0,0,0,.15);
 }
 
 .react-contextmenu-item.react-contextmenu-submenu {

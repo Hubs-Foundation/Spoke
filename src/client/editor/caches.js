@@ -1,4 +1,4 @@
-import THREE from "../vendor/three";
+import THREE from "./three";
 
 const textureLoader = new THREE.TextureLoader();
 

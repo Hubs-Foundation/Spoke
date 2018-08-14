@@ -1,6 +1,7 @@
 @import "../../common";
 @import "../../theme";
 @import "../../icons";
+@import "../InputGroup";
 
 :global {
   .propertiesPanel {
@@ -39,6 +40,20 @@
   }
 }
 
+:local(.topBarName) {
+  label {
+    width: auto !important;
+    padding-right: 8px;
+  }
+}
+
+:local(.topBarStatic) {
+  label {
+    width: auto !important;
+    padding-right: 8px;
+  }
+}
+
 :local(.noNodeSelected) {
   display: flex;
   justify-content: center;
@@ -61,19 +76,17 @@
 
   & > div {
     background-color: $blue;
-    text-align: center;
+    // text-align: center;
     border-radius: 0;
     border: none;
+    cursor: pointer;
+
+    &:hover {
+      background-color: $blue-hover;
+    }
   }
 }
 
 :local(.propertiesPanelContainer input[role="combobox"]) {
   color: $text;
-  padding: 2px 0 0 0;
-  width: 100% !important;
-}
-
-:local(.addComponentSelect input[role="combobox"]) {
-  padding: 2px 0 0 4px !important;
-  text-align: center;
 }

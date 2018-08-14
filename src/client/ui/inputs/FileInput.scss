@@ -6,7 +6,9 @@
   background: $input-background;
   height: 24px;
   border: 1px solid $border;
-  border-radius: 6px;
+  border-radius: 4px;
+  width: 100%;
+  justify-content: space-between;
 
   &:hover {
     border-color: $blue-hover;
@@ -23,15 +25,16 @@
   border: none;
   border-radius: 4px;
   margin-left: 4px;
+  width: calc(100% - 38px);
 }
 
 :local(.fileInput button) {
-  border-radius: 0 4px 4px 0px;
+  border-radius: 0 2px 2px 0px;
   background: $input-background;
   color: $text;
 
   &:hover {
-    background: $blue;
+    background: $blue-hover;
     color: $white;
   }
 
@@ -39,7 +42,7 @@
     background: $blue-pressed;
     color: $white;
   }
-  
+
   &:before {
     @extend .fas;
     content: fa-content($fa-var-ellipsis-h);
@@ -47,7 +50,7 @@
 }
 
 :local(.invalidPath) {
-  outline: 2px solid $red;
+  border: 1px solid $red;
   color: $red;
   width: 100%;
   display: flex;

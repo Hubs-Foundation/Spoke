@@ -1,6 +1,8 @@
 import BaseComponent from "./BaseComponent";
 
 export default class SaveableComponent extends BaseComponent {
+  isSaveable = true;
+
   src = null;
 
   srcIsValid = true;

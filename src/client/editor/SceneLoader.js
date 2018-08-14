@@ -1,10 +1,11 @@
-import THREE from "../vendor/three";
+import THREE from "./three";
 import { Components } from "./components";
-import SceneReferenceComponent from "./components/SceneReferenceComponent";
+import { types } from "./components/utils";
 import ConflictHandler from "./ConflictHandler";
 import StandardMaterialComponent from "../editor/components/StandardMaterialComponent";
 import ShadowComponent from "./components/ShadowComponent";
 import SceneLoaderError from "./SceneLoaderError";
+import ConflictError from "./ConflictError";
 import {
   computeAndSetStaticModes,
   isStatic,
@@ -16,6 +17,8 @@ import {
 import { gltfCache } from "./caches";
 
 export function absoluteToRelativeURL(from, to) {
+  if (to === null) return null;
+
   if (from === to) return to;
 
   const fromURL = new URL(from, window.location);
@@ -64,7 +67,7 @@ function loadGLTF(url) {
     })
     .catch(e => {
       console.error(e);
-      throw new SceneLoaderError("Error loading GLTF", url, e);
+      throw new SceneLoaderError("Error loading GLTF", url, "damaged", e);
     });
 }
 
@@ -388,43 +391,31 @@ function sortEntities(entitiesObj) {
   return sortedEntityNames;
 }
 
-function resolveRelativeURLs(entities, absoluteSceneURL) {
-  for (const entityId in entities) {
-    const entity = entities[entityId];
-    const entityComponents = entity.components;
+function resolveFileProps(component, props, basePath) {
+  const clonedProps = Object.assign({}, props);
 
-    if (entityComponents) {
-      for (const component of entityComponents) {
-        if (component.name === SceneReferenceComponent.componentName) {
-          component.props.src = new URL(component.props.src, absoluteSceneURL).href;
-        } else if (component.src) {
-          // SaveableComponent
-          component.src = new URL(component.src, absoluteSceneURL).href;
-        }
-      }
+  for (const { name, type } of component.schema) {
+    if (type === types.file && props[name]) {
+      props[name] = new URL(props[name], basePath).href;
     }
   }
+
+  return clonedProps;
 }
 
-function convertAbsoluteURLs(entities, sceneURL) {
-  for (const entityId in entities) {
-    const entity = entities[entityId];
-    const entityComponents = entity.components;
+export function serializeFileProps(component, props, basePath) {
+  const clonedProps = Object.assign({}, props);
 
-    if (entityComponents) {
-      for (const component of entityComponents) {
-        if (component.name === SceneReferenceComponent.componentName) {
-          component.props.src = absoluteToRelativeURL(sceneURL, component.props.src);
-        } else if (component.src) {
-          // SaveableComponent
-          component.src = absoluteToRelativeURL(sceneURL, component.src);
-        }
-      }
+  for (const { name, type } of component.schema) {
+    if (type === types.file) {
+      clonedProps[name] = absoluteToRelativeURL(basePath, clonedProps[name]);
     }
   }
+
+  return clonedProps;
 }
 
-export async function loadSerializedScene(sceneDef, baseURI, addComponent, isRoot = true, ancestors) {
+export async function loadSerializedScene(sceneDef, baseURI, addComponent, components, isRoot = true, ancestors) {
   let scene;
 
   const { inherits, root, entities } = sceneDef;
@@ -432,7 +423,7 @@ export async function loadSerializedScene(sceneDef, baseURI, addComponent, isRoo
   const absoluteBaseURL = new URL(baseURI, window.location);
   if (inherits) {
     const inheritedSceneURL = new URL(inherits, absoluteBaseURL).href;
-    scene = await loadScene(inheritedSceneURL, addComponent, false, ancestors);
+    scene = await loadScene(inheritedSceneURL, addComponent, components, false, ancestors);
 
     if (ancestors) {
       ancestors.push(inheritedSceneURL);
@@ -451,13 +442,9 @@ export async function loadSerializedScene(sceneDef, baseURI, addComponent, isRoo
   if (!scene.userData._conflictHandler) {
     scene.userData._conflictHandler = new ConflictHandler();
     scene.userData._conflictHandler.findDuplicates(scene, 0, 0);
-    scene.userData._conflictHandler.updateAllDuplicateStatus(scene);
   }
 
   if (entities) {
-    // Convert any relative URLs in the scene to absolute URLs so that other code does not need to know about the scene path.
-    resolveRelativeURLs(entities, absoluteBaseURL.href);
-
     // Sort entities by insertion order (uses parent and index to determine order).
     const sortedEntities = sortEntities(entities);
 
@@ -512,14 +499,17 @@ export async function loadSerializedScene(sceneDef, baseURI, addComponent, isRoo
           const { props } = componentDef;
           if (componentDef.src) {
             // Process SaveableComponent
-            componentDef.src = componentDef.src;
+            componentDef.src = new URL(componentDef.src, absoluteBaseURL.href);
             const resp = await fetch(componentDef.src);
             let json = {};
             if (resp.ok) {
               json = await resp.json();
             }
+
+            const props = resolveFileProps(components.get(componentDef.name), json, componentDef.src);
+
             entityComponentPromises.push(
-              addComponent(entityObj, componentDef.name, json, !isRoot).then(component => {
+              addComponent(entityObj, componentDef.name, props, !isRoot).then(component => {
                 component.src = componentDef.src;
                 component.srcIsValid = resp.ok;
               })
@@ -540,11 +530,11 @@ export async function loadSerializedScene(sceneDef, baseURI, addComponent, isRoo
     }
     await Promise.all(entityComponentPromises);
   }
-
+  scene.userData._conflictHandler.findDuplicates(scene, 0, 0);
   return scene;
 }
 
-export async function loadScene(uri, addComponent, isRoot = true, ancestors) {
+export async function loadScene(uri, addComponent, components, isRoot = true, ancestors) {
   let scene;
 
   const url = new URL(uri, window.location).href;
@@ -562,7 +552,11 @@ export async function loadScene(uri, addComponent, isRoot = true, ancestors) {
 
     scene.userData._conflictHandler = new ConflictHandler();
     scene.userData._conflictHandler.findDuplicates(scene, 0, 0);
-    scene.userData._conflictHandler.updateAllDuplicateStatus(scene);
+    if (scene.userData._conflictHandler.getDuplicateStatus() || scene.userData._conflictHandler.getMissingStatus()) {
+      const error = new ConflictError("gltf naming conflicts", "import", url, scene.userData._conflictHandler);
+      throw error;
+    }
+
     await inflateGLTFComponents(scene, addComponent);
 
     return scene;
@@ -570,7 +564,7 @@ export async function loadScene(uri, addComponent, isRoot = true, ancestors) {
 
   const sceneResponse = await fetch(url);
   if (!sceneResponse.ok) {
-    const error = SceneLoaderError("Error loading .scene", url, null);
+    const error = new SceneLoaderError("Error loading .scene", url, "damaged", null);
     throw error;
   }
   const sceneDef = await sceneResponse.json();
@@ -579,7 +573,7 @@ export async function loadScene(uri, addComponent, isRoot = true, ancestors) {
     ancestors = [];
   }
 
-  scene = await loadSerializedScene(sceneDef, uri, addComponent, isRoot, ancestors);
+  scene = await loadSerializedScene(sceneDef, uri, addComponent, components, isRoot, ancestors);
 
   scene.userData._ancestors = ancestors;
 
@@ -621,14 +615,18 @@ export function serializeScene(scene, scenePath) {
 
           if (component.src) {
             // Serialize SaveableComponent
+            const src = absoluteToRelativeURL(scenePath, component.src);
+
             components.push({
               name: component.name,
-              src: component.src
+              src
             });
           } else {
+            const props = serializeFileProps(component, component.props, scenePath);
+
             components.push({
               name: component.name,
-              props: component.props
+              props
             });
           }
         }
@@ -653,8 +651,6 @@ export function serializeScene(scene, scenePath) {
       };
     }
   });
-
-  convertAbsoluteURLs(entities, scenePath);
 
   const serializedScene = {
     entities

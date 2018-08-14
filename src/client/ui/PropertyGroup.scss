@@ -1,4 +1,5 @@
 @import "../theme";
+@import "../icons";
 
 :local(.propertyGroup) {
   display: flex;
@@ -44,12 +45,16 @@
   }
 
   :local(.src) {
+    padding-left: 8px;
+    color: #5d646c;
+    margin-bottom: 12px;
     display: block;
-    text-align: center;
-    margin: 0.5em;
-    margin-bottom: 0.7em;
-    padding: 0.2em;
-    background: $selected;
+
+    &:before {
+      @extend .fas;
+      content: fa-content($fa-var-adjust);
+      padding-right: 6px;
+    }
   }
 
   :local(.invalidSrc) {
