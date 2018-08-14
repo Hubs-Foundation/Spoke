@@ -3,7 +3,6 @@ import PropTypes from "prop-types";
 import Tree from "@robertlong/react-ui-tree";
 import "../../vendor/react-ui-tree/index.scss";
 import classNames from "classnames";
-import { withProject } from "../contexts/ProjectContext";
 import { withEditor } from "../contexts/EditorContext";
 import IconGrid from "../IconGrid";
 import Icon from "../Icon";
@@ -47,7 +46,6 @@ function getSelectedDirectory(tree, uri) {
 
 class AssetExplorerPanelContainer extends Component {
   static propTypes = {
-    project: PropTypes.any,
     editor: PropTypes.any
   };
 
@@ -77,27 +75,27 @@ class AssetExplorerPanelContainer extends Component {
   };
 
   componentDidMount() {
-    if (this.props.project !== null) {
-      this.props.project.watch().then(tree => {
+    if (this.props.editor.project !== null) {
+      this.props.editor.project.watch().then(tree => {
         this.setState({ tree });
       });
 
-      this.props.project.addListener("projectHierarchyChanged", this.onHierarchyChanged);
+      this.props.editor.project.addListener("projectHierarchyChanged", this.onHierarchyChanged);
     }
   }
 
   componentDidUpdate(prevProps) {
-    if (this.props.project !== prevProps.project) {
-      if (prevProps.project !== null) {
-        prevProps.project.removeListener("projectHierarchyChanged", this.onHierarchyChanged);
+    if (this.props.editor.project !== prevProps.editor.project) {
+      if (prevProps.editor.project !== null) {
+        prevProps.editor.project.removeListener("projectHierarchyChanged", this.onHierarchyChanged);
       }
 
-      if (this.props.project !== null) {
-        this.props.project.watch().then(tree => {
+      if (this.props.editor.project !== null) {
+        this.props.editor.project.watch().then(tree => {
           this.setState({ tree });
         });
 
-        this.props.project.addListener("projectHierarchyChanged", this.onHierarchyChanged);
+        this.props.editor.project.addListener("projectHierarchyChanged", this.onHierarchyChanged);
       }
     }
   }
@@ -121,7 +119,7 @@ class AssetExplorerPanelContainer extends Component {
         return;
       }
 
-      this.props.project.openFile(file.uri);
+      this.props.editor.project.openFile(file.uri);
       return;
     }
 
@@ -165,7 +163,7 @@ class AssetExplorerPanelContainer extends Component {
       return;
     }
 
-    this.props.project.mkdir(directoryURI + "/" + folderName);
+    this.props.editor.project.mkdir(directoryURI + "/" + folderName);
 
     this.setState({
       newFolderActive: false,
@@ -294,4 +292,4 @@ class AssetExplorerPanelContainer extends Component {
   }
 }
 
-export default withProject(withEditor(AssetExplorerPanelContainer));
+export default withEditor(AssetExplorerPanelContainer);

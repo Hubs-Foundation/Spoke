@@ -1,13 +1,13 @@
 import React, { Component } from "react";
 import Header from "../Header";
 import NativeFileInput from "../inputs/NativeFileInput";
-import { withProject } from "../contexts/ProjectContext";
+import { withEditor } from "../contexts/EditorContext";
 import PropTypes from "prop-types";
 
 class ExportModalContainer extends Component {
   static propTypes = {
     sceneURI: PropTypes.string,
-    project: PropTypes.any,
+    editor: PropTypes.any,
     onCloseModal: PropTypes.func
   };
 
@@ -15,7 +15,7 @@ class ExportModalContainer extends Component {
     super(props);
 
     this.state = {
-      dir: props.project.uri
+      dir: props.editor.project.uri
     };
   }
 
@@ -30,7 +30,7 @@ class ExportModalContainer extends Component {
 
   onSubmit = async e => {
     e.preventDefault();
-    await this.props.project.export(this.props.sceneURI, this.state.dir);
+    await this.props.editor.project.export(this.props.sceneURI, this.state.dir);
     this.props.onCloseModal();
   };
 
@@ -52,4 +52,4 @@ class ExportModalContainer extends Component {
   }
 }
 
-export default withProject(ExportModalContainer);
+export default withEditor(ExportModalContainer);

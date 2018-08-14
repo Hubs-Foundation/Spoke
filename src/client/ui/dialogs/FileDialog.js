@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import Tree from "@robertlong/react-ui-tree";
 import "../../vendor/react-ui-tree/index.scss";
 import classNames from "classnames";
-import { withProject } from "../contexts/ProjectContext";
+import { withEditor } from "../contexts/EditorContext";
 import IconGrid from "../IconGrid";
 import dialogStyles from "./dialog.scss";
 import styles from "./FileDialog.scss";
@@ -50,7 +50,7 @@ class FileDialog extends Component {
   static propTypes = {
     title: PropTypes.string,
     defaultFileName: PropTypes.string,
-    project: PropTypes.any,
+    editor: PropTypes.any,
     confirmButtonLabel: PropTypes.string,
     filters: PropTypes.arrayOf(PropTypes.string),
     extension: PropTypes.string,
@@ -92,27 +92,27 @@ class FileDialog extends Component {
   };
 
   componentDidMount() {
-    if (this.props.project !== null) {
-      this.props.project.watch().then(tree => {
+    if (this.props.editor.project !== null) {
+      this.props.editor.project.watch().then(tree => {
         this.setState({ tree });
       });
 
-      this.props.project.addListener("changed", this.onHierarchyChanged);
+      this.props.editor.project.addListener("changed", this.onHierarchyChanged);
     }
   }
 
   componentDidUpdate(prevProps) {
-    if (this.props.project !== prevProps.project) {
-      if (prevProps.project !== null) {
-        prevProps.project.removeListener("changed", this.onHierarchyChanged);
+    if (this.props.editor.project !== prevProps.editor.project) {
+      if (prevProps.editor.project !== null) {
+        prevProps.editor.project.removeListener("changed", this.onHierarchyChanged);
       }
 
-      if (this.props.project !== null) {
-        this.props.project.watch().then(tree => {
+      if (this.props.editor.project !== null) {
+        this.props.editor.project.watch().then(tree => {
           this.setState({ tree });
         });
 
-        this.props.project.addListener("changed", this.onHierarchyChanged);
+        this.props.editor.project.addListener("changed", this.onHierarchyChanged);
       }
     }
   }
@@ -183,7 +183,7 @@ class FileDialog extends Component {
       return;
     }
 
-    this.props.project.mkdir(directoryURI + "/" + folderName);
+    this.props.editor.project.mkdir(directoryURI + "/" + folderName);
 
     this.setState({
       newFolderActive: false,
@@ -317,4 +317,4 @@ class FileDialog extends Component {
   }
 }
 
-export default withProject(FileDialog);
+export default withEditor(FileDialog);

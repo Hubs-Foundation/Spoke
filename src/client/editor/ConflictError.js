@@ -1,6 +1,4 @@
 export default class ConflictError extends Error {
-  __proto__: Error;
-
   constructor(message, type, uri, handler) {
     const trueProto = new.target.prototype;
     super(message);

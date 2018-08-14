@@ -5,10 +5,11 @@ import ReactTooltip from "react-tooltip";
 import styles from "./FileInput.scss";
 import Button from "../Button";
 import FileDialog from "../dialogs/FileDialog";
-import { withProject } from "../contexts/ProjectContext";
+import { withEditor } from "../contexts/EditorContext";
 import { withDialog } from "../contexts/DialogContext";
 
-function FileInput({ value, isValid, onChange, showDialog, hideDialog, filters, project }) {
+function FileInput({ value, isValid, onChange, showDialog, hideDialog, filters, editor }) {
+  const project = editor.project;
   const inputStyles = `${styles.fileInput} ${isValid ? "" : styles.invalidPath}`;
   const onClick = () => {
     showDialog(FileDialog, {
@@ -39,7 +40,7 @@ FileInput.propTypes = {
   showDialog: PropTypes.func.isRequired,
   hideDialog: PropTypes.func.isRequired,
   filters: PropTypes.arrayOf(PropTypes.string),
-  project: PropTypes.object.isRequired
+  editor: PropTypes.object.isRequired
 };
 
 FileInput.defaultProps = {
@@ -48,4 +49,4 @@ FileInput.defaultProps = {
   onChange: () => {}
 };
 
-export default withProject(withDialog(FileInput));
+export default withEditor(withDialog(FileInput));

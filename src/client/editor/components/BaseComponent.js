@@ -1,4 +1,4 @@
-import THREE from "../../vendor/three";
+import THREE from "../three";
 
 export function getDefaultsFromSchema(schema) {
   const defaults = {};

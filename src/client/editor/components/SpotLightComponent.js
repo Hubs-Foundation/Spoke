@@ -1,4 +1,4 @@
-import THREE from "../../vendor/three";
+import THREE from "../three";
 import BaseComponent from "./BaseComponent";
 import { types } from "./utils";
 const { degToRad, radToDeg } = THREE.Math;

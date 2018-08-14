@@ -65,7 +65,6 @@ export default class ConflictHandler {
     } else {
       node.userData._path = [0];
     }
-    node.userData._debounced = false;
 
     if (node.name.length === 0) {
       // unnamed node
