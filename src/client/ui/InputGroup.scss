@@ -23,13 +23,13 @@
   :local(.name) {
     display: block;
     color: $text2;
-    width: 40%;
+    width: 42%;
     padding-bottom: 2px;
   }
 
   :local(.content) {
     display: flex;
     flex-direction: row;
-    width: 224px;
+    flex: 1;
   }
 }

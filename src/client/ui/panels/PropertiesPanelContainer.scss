@@ -1,6 +1,7 @@
 @import "../../common";
 @import "../../theme";
 @import "../../icons";
+@import "../InputGroup";
 
 :global {
   .propertiesPanel {
@@ -72,13 +73,20 @@
   }
 }
 
-:local(.propertiesPanelContainer input[role="combobox"]) {
-  color: $text;
-  // padding: 2px 0 0 0;
-  // width: 100% !important;
+:global {
+  .propertiesPanelTopBar {
+    .inputGroup {
+      .name{
+        width: auto;
+        padding-right: 8px;
+      }
+      .content{
+        flex: 1;
+      }
+    }
+  }
 }
 
-// :local(.addComponentSelect input[role="combobox"]) {
-//   padding: 2px 0 0 4px !important;
-//   text-align: center;
-// }
+:local(.propertiesPanelContainer input[role="combobox"]) {
+  color: $text;
+}

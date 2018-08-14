@@ -5,12 +5,13 @@ $prefixClass: rc-slider;
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
+  width: 100%;
 }
 
 .#{$prefixClass} {
-  width: 150px !important;
+  width: 100% !important;
   height: 1px;
-  margin-right: 26px;
+  margin-right: 28px;
   position: relative;
   border-radius: 2px;
 
@@ -23,7 +24,7 @@ $prefixClass: rc-slider;
 
   &-rail {
     position: absolute;
-    width: 110%;
+    width: calc(100% + 16px);
     height: 2px;
     background-color: $border;
     border-radius: 2px;

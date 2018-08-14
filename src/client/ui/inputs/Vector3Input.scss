@@ -4,6 +4,8 @@
   display: flex;
   flex-direction: row;
   flex: 1 1 auto;
+  width: 70%;
+  justify-content: flex-end;
 }
 
 :local(.label) {
