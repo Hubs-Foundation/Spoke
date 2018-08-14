@@ -11,7 +11,6 @@ import { withEditor } from "../contexts/EditorContext";
 import { withDialog } from "../contexts/DialogContext";
 import "../../vendor/react-ui-tree/index.scss";
 import "../../vendor/react-contextmenu/index.scss";
-import SceneReferenceComponent from "../../editor/components/SceneReferenceComponent";
 import { last } from "../../utils";
 import SnackBar from "../SnackBar";
 import ReactTooltip from "react-tooltip";
@@ -226,7 +225,7 @@ class HierarchyPanelContainer extends Component {
 
   renderHierarchyNodeMenu = props => {
     const node = props.trigger;
-    const refComponent = node && this.props.editor.getComponent(node.object, SceneReferenceComponent.componentName);
+    const refComponent = node && this.props.editor.getComponent(node.object, "scene-reference");
     const hasParent = node && node.object.parent;
     return (
       <ContextMenu id="hierarchy-node-menu">

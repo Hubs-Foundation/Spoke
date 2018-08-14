@@ -19,7 +19,6 @@ import styles from "../common.scss";
 import FileDialog from "./dialogs/FileDialog";
 import ProgressDialog, { PROGRESS_DIALOG_DELAY } from "./dialogs/ProgressDialog";
 import ErrorDialog from "./dialogs/ErrorDialog";
-import ConflictError from "../editor/ConflictError";
 
 class EditorContainer extends Component {
   static defaultProps = {
@@ -382,7 +381,7 @@ class EditorContainer extends Component {
       await action(uri);
       this.hideDialog();
     } catch (e) {
-      if (e instanceof ConflictError) {
+      if (e.type === "import" || e.type === "rename") {
         this.onSceneErrorOccurred(e, uri, reload);
       } else {
         this.showDialog(OptionDialog, {

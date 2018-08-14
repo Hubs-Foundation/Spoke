@@ -1,6 +1,6 @@
 import signals from "signals";
 
-import THREE from "../vendor/three";
+import THREE from "./three";
 import History from "./History";
 import Viewport from "./Viewport";
 import RemoveObjectCommand from "./commands/RemoveObjectCommand";
@@ -10,8 +10,9 @@ import SetValueCommand from "./commands/SetValueCommand";
 import RemoveComponentCommand from "./commands/RemoveComponentCommand";
 import SetComponentPropertyCommand from "./commands/SetComponentPropertyCommand";
 import MoveObjectCommand from "./commands/MoveObjectCommand";
-import { setStaticMode, StaticMode, getStaticMode, computeStaticMode } from "./StaticMode";
+import { setStaticMode, StaticModes, getStaticMode, computeStaticMode } from "./StaticMode";
 import { Components } from "./components";
+import { types } from "./components/utils";
 import SceneReferenceComponent from "./components/SceneReferenceComponent";
 import SaveableComponent from "./components/SaveableComponent";
 import {
@@ -143,6 +144,9 @@ export default class Editor {
     this.signals.fileChanged.add(this.onFileChanged);
 
     this._resetDefaultLights();
+
+    this.ComponentPropTypes = types;
+    this.StaticModes = StaticModes;
   }
 
   createViewport(canvas) {
@@ -506,7 +510,7 @@ export default class Editor {
   addSceneReferenceNode(name, url) {
     const object = new THREE.Object3D();
     object.name = name;
-    setStaticMode(object, StaticMode.Static);
+    setStaticMode(object, StaticModes.Static);
     this.addObject(object);
     this._addComponent(object, "scene-reference", { src: url });
     this.select(object);

@@ -7,8 +7,6 @@ import PropertyGroup from "../PropertyGroup";
 import InputGroup from "../InputGroup";
 import StringInput from "../inputs/StringInput";
 import componentTypeMappings from "../../componentTypeMappings";
-import { types } from "../../editor/components";
-import { StaticMode } from "../../editor/StaticMode";
 import { withEditor } from "../contexts/EditorContext";
 import { withDialog } from "../contexts/DialogContext";
 import FileDialog from "../dialogs/FileDialog";
@@ -218,10 +216,11 @@ class PropertiesPanelContainer extends Component {
   };
 
   getExtras(prop) {
+    const ComponentPropTypes = this.props.editor.ComponentPropTypes;
     switch (prop.type) {
-      case types.number:
+      case ComponentPropTypes.number:
         return { min: prop.min, max: prop.max, parse: prop.parse, format: prop.format, step: prop.step };
-      case types.file:
+      case ComponentPropTypes.file:
         return { filters: prop.filters };
       default:
         null;
@@ -230,6 +229,7 @@ class PropertiesPanelContainer extends Component {
 
   render() {
     const object = this.state.object;
+    const StaticModes = this.props.editor.StaticModes;
 
     if (!object) {
       return (
@@ -257,19 +257,19 @@ class PropertiesPanelContainer extends Component {
       }
     }
 
-    const staticMode = this.props.editor.getStaticMode(object) || StaticMode.Inherits;
+    const staticMode = this.props.editor.getStaticMode(object) || StaticModes.Inherits;
     const parentComputedStaticMode = this.props.editor.computeStaticMode(object.parent);
     const staticModeOptions = [
       {
-        value: StaticMode.Dynamic,
+        value: StaticModes.Dynamic,
         label: "Dynamic"
       },
       {
-        value: StaticMode.Static,
+        value: StaticModes.Static,
         label: "Static"
       },
       {
-        value: StaticMode.Inherits,
+        value: StaticModes.Inherits,
         label: `Inherits (${parentComputedStaticMode})`
       }
     ];
