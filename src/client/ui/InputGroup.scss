@@ -7,27 +7,19 @@
   flex: 1;
   min-height: 24px;
 
-  &:local(.disabled) {
+  &.disabled {
     pointer-events: none;
     opacity: 0.3;
   }
 
-  :local(.label) {
-    display: flex;
-    align-items: center;
-    width: 100%;
-    justify-content: space-between;
-    flex-flow: row wrap;
-  }
-
-  :local(.name) {
+  label {
     display: block;
     color: $text2;
     width: 40%;
     padding-bottom: 2px;
   }
 
-  :local(.content) {
+  .content {
     display: flex;
     flex-direction: row;
     width: 224px;
