@@ -12,4 +12,11 @@
     display: flex;
     flex-direction: row;
   }
+
+  :local(.tooltoggles) {
+    width: auto;
+    height: inherit;
+    display: flex;
+    flex-direction: row;
+  }
 }
