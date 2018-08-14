@@ -11,15 +11,11 @@ import { withEditor } from "../contexts/EditorContext";
 import { withDialog } from "../contexts/DialogContext";
 import "../../vendor/react-ui-tree/index.scss";
 import "../../vendor/react-contextmenu/index.scss";
-import AddObjectCommand from "../../editor/commands/AddObjectCommand";
-import MoveObjectCommand from "../../editor/commands/MoveObjectCommand";
-import THREE from "../../vendor/three";
 import SceneReferenceComponent from "../../editor/components/SceneReferenceComponent";
 import { last } from "../../utils";
 import SnackBar from "../SnackBar";
 import ReactTooltip from "react-tooltip";
 import ErrorDialog from "../dialogs/ErrorDialog";
-import { StaticMode, setStaticMode } from "../../editor/StaticMode";
 
 function createNodeHierarchy(object) {
   const node = {
@@ -92,12 +88,7 @@ class HierarchyPanelContainer extends Component {
         return;
       }
 
-      const object = new THREE.Object3D();
-      object.name = file.name;
-      setStaticMode(object, StaticMode.Static);
-      this.props.editor.addObject(object);
-      this.props.editor.addComponent(object, "scene-reference", { src: file.uri });
-      this.props.editor.select(object);
+      this.props.editor.addSceneReferenceNode(file.name, file.uri);
     }
   };
 
@@ -123,7 +114,7 @@ class HierarchyPanelContainer extends Component {
       }
     }
 
-    this.props.editor.execute(new MoveObjectCommand(object, newParent.object, newBefore));
+    this.props.editor.moveObject(object, newParent.object, newBefore);
   };
 
   onMouseDownNode = (e, node) => {
@@ -142,9 +133,7 @@ class HierarchyPanelContainer extends Component {
   };
 
   onAddNode = (e, node) => {
-    const object = new THREE.Object3D();
-    object.name = "New_Node";
-    this.props.editor.execute(new AddObjectCommand(object, node.object));
+    this.props.editor.createNode("New_Node", node.object);
   };
 
   onDuplicateSelected = () => {

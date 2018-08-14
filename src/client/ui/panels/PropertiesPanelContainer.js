@@ -1,33 +1,19 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
 import Select from "react-select";
-
 import "../../vendor/react-select/index.scss";
 import styles from "./PropertiesPanelContainer.scss";
 import PropertyGroup from "../PropertyGroup";
 import InputGroup from "../InputGroup";
 import StringInput from "../inputs/StringInput";
-import componentTypeMappings from "../inputs/componentTypeMappings";
-
-import SetValueCommand from "../../editor/commands/SetValueCommand";
-import AddComponentCommand from "../../editor/commands/AddComponentCommand";
-import SetComponentPropertyCommand from "../../editor/commands/SetComponentPropertyCommand";
-import RemoveComponentCommand from "../../editor/commands/RemoveComponentCommand";
-
+import componentTypeMappings from "../../componentTypeMappings";
 import { types } from "../../editor/components";
-import SaveableComponent from "../../editor/components/SaveableComponent";
-import { StaticMode, computeStaticMode, getStaticMode, setStaticMode } from "../../editor/StaticMode";
-import { serializeFileProps, resolveFileProps } from "../../editor/SceneLoader";
-
+import { StaticMode } from "../../editor/StaticMode";
 import { withEditor } from "../contexts/EditorContext";
 import { withDialog } from "../contexts/DialogContext";
 import FileDialog from "../dialogs/FileDialog";
 import ErrorDialog from "../dialogs/ErrorDialog";
 import ProgressDialog, { PROGRESS_DIALOG_DELAY } from "../dialogs/ProgressDialog";
-
-import { debounce } from "throttle-debounce";
-import ConflictError from "../../editor/ConflictError";
-const INPUT_DEBOUNCE_THRESHOLD = 500;
 
 export function getDisplayName(name) {
   if (name.includes("-")) {
@@ -52,10 +38,9 @@ class PropertiesPanelContainer extends Component {
     super(props);
 
     this.state = {
-      object: null
+      object: null,
+      name: null
     };
-
-    this._updateObjectNameDebounced = debounce(INPUT_DEBOUNCE_THRESHOLD, this._updateObjectNameDebounced);
   }
 
   componentDidMount() {
@@ -72,67 +57,45 @@ class PropertiesPanelContainer extends Component {
 
   onObjectSelected = object => {
     this.setState({
-      object
+      object,
+      name: object.name
     });
   };
 
   onObjectChanged = object => {
     if (this.state.object === object) {
       this.setState({
-        object
+        object,
+        name: object.name
       });
     }
   };
 
   onUpdateName = e => {
-    const object = this.state.object;
-    if (!object.userData._debounced) {
-      object.userData._originalName = object.name;
-      object.userData._debounced = true;
-    }
-    object.name = e.target.value;
-    this.setState({ object: object });
-    this._updateObjectNameDebounced(object, e.target.value);
+    this.setState({
+      name: e.target.value
+    });
   };
 
-  _updateObjectNameDebounced = (object, value) => {
-    const handler = this.props.editor._conflictHandler;
-
-    if (handler.isUniqueObjectName(value)) {
-      object.name = value;
-      handler.addToDuplicateNameCounters(value);
-      this.props.editor.execute(new SetValueCommand(object, "name", value));
-    } else {
-      object.name = object.userData._originalName;
-      delete object.userData._originalName;
-      this.props.editor.signals.objectChanged.dispatch(object);
-      this.props.editor.signals.sceneErrorOccurred.dispatch(
-        new ConflictError("rename error", "rename", this.props.editor.sceneInfo.uri, handler)
-      );
-    }
-
-    object.userData._debounced = false;
+  onBlurName = () => {
+    this.props.editor.setObjectName(this.state.object, this.state.name);
   };
 
   onUpdateStatic = ({ value }) => {
     const object = this.state.object;
-    setStaticMode(object, value);
-    this.props.editor.signals.objectChanged.dispatch(object);
+    this.props.editor.setStaticMode(object, value);
   };
 
   onAddComponent = ({ value }) => {
-    this.props.editor.execute(new AddComponentCommand(this.state.object, value));
+    this.props.editor.addComponent(this.state.object, value);
   };
 
   onChangeComponent = (component, propertyName, value) => {
-    if (component instanceof SaveableComponent) {
-      component.modified = true;
-    }
-    this.props.editor.execute(new SetComponentPropertyCommand(this.state.object, component.name, propertyName, value));
+    this.props.editor.setComponentProperty(this.state.object, component.name, propertyName, value);
   };
 
   onRemoveComponent = componentName => {
-    this.props.editor.execute(new RemoveComponentCommand(this.state.object, componentName));
+    this.props.editor.removeComponent(this.state.object, componentName);
   };
 
   onSaveComponent = async (component, saveAs) => {
@@ -145,8 +108,6 @@ class PropertiesPanelContainer extends Component {
         onConfirm: async src => {
           let saved = false;
 
-          const props = serializeFileProps(component, component.props, src);
-
           try {
             setTimeout(() => {
               if (saved) return;
@@ -156,12 +117,8 @@ class PropertiesPanelContainer extends Component {
               });
             }, PROGRESS_DIALOG_DELAY);
 
-            component.src = src;
-            component.srcIsValid = true;
-            component.shouldSave = true;
-            await this.props.editor.project.writeJSON(component.src, props);
-            component.modified = false;
-            this.props.editor.signals.objectChanged.dispatch(this.state.object);
+            await this.props.editor.saveComponentAs(this.state.object, component.name, src);
+
             this.props.hideDialog();
           } catch (e) {
             this.props.showDialog(ErrorDialog, {
@@ -175,10 +132,7 @@ class PropertiesPanelContainer extends Component {
       });
     } else {
       try {
-        const props = serializeFileProps(component, component.props, component.src);
-        await this.props.editor.project.writeJSON(component.src, props);
-        component.modified = false;
-        this.props.editor.signals.objectChanged.dispatch(this.state.object);
+        await this.props.editor.saveComponent(this.state.object, component.name);
       } catch (e) {
         console.error(e);
         this.props.showDialog(ErrorDialog, {
@@ -206,17 +160,8 @@ class PropertiesPanelContainer extends Component {
             });
           }, PROGRESS_DIALOG_DELAY);
 
-          component.src = src;
-          component.srcIsValid = true;
-          component.shouldSave = true;
-          component.modified = false;
+          await this.props.editor.loadComponent(this.state.object, component.name, src);
 
-          const absoluteAssetURL = new URL(component.src, window.location).href;
-          let props = await this.props.editor.project.readJSON(component.src);
-          props = resolveFileProps(component, props, absoluteAssetURL);
-
-          await component.constructor.inflate(this.state.object, props);
-          this.props.editor.signals.objectChanged.dispatch(this.state.object);
           this.props.hideDialog();
         } catch (e) {
           console.error(e);
@@ -239,7 +184,7 @@ class PropertiesPanelContainer extends Component {
       return <PropertyGroup name={getDisplayName(component.name)} key={component.name} />;
     }
 
-    const saveable = component instanceof SaveableComponent;
+    const saveable = component.isSaveable;
     return (
       <PropertyGroup
         name={getDisplayName(component.name)}
@@ -312,8 +257,8 @@ class PropertiesPanelContainer extends Component {
       }
     }
 
-    const staticMode = getStaticMode(object) || StaticMode.Inherits;
-    const parentComputedStaticMode = computeStaticMode(object.parent);
+    const staticMode = this.props.editor.getStaticMode(object) || StaticMode.Inherits;
+    const parentComputedStaticMode = this.props.editor.computeStaticMode(object.parent);
     const staticModeOptions = [
       {
         value: StaticMode.Dynamic,
@@ -339,7 +284,7 @@ class PropertiesPanelContainer extends Component {
         >
           <div className={styles.propertiesPanelTopBar}>
             <InputGroup name="Name">
-              <StringInput value={object.name} onChange={this.onUpdateName} />
+              <StringInput value={this.state.name} onChange={this.onUpdateName} onBlur={this.onBlurName} />
             </InputGroup>
             {object.parent !== null && (
               <InputGroup name="Static">
