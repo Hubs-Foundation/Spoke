@@ -283,11 +283,11 @@ class PropertiesPanelContainer extends Component {
           canRemove={false}
         >
           <div className={styles.propertiesPanelTopBar}>
-            <InputGroup name="Name">
+            <InputGroup className={styles.topBarName} name="Name">
               <StringInput value={this.state.name} onChange={this.onUpdateName} onBlur={this.onBlurName} />
             </InputGroup>
             {object.parent !== null && (
-              <InputGroup name="Static">
+              <InputGroup className={styles.topBarStatic} name="Static">
                 <Select
                   className={styles.staticSelect}
                   value={staticMode}

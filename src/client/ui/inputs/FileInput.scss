@@ -25,7 +25,7 @@
   border: none;
   border-radius: 4px;
   margin-left: 4px;
-  width: 85%;
+  width: calc(100% - 38px);
 }
 
 :local(.fileInput button) {

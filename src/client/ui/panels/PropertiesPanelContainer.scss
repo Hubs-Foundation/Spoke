@@ -40,6 +40,20 @@
   }
 }
 
+:local(.topBarName) {
+  label {
+    width: auto !important;
+    padding-right: 8px;
+  }
+}
+
+:local(.topBarStatic) {
+  label {
+    width: auto !important;
+    padding-right: 8px;
+  }
+}
+
 :local(.noNodeSelected) {
   display: flex;
   justify-content: center;
@@ -69,20 +83,6 @@
 
     &:hover {
       background-color: $blue-hover;
-    }
-  }
-}
-
-:global {
-  .propertiesPanelTopBar {
-    .inputGroup {
-      .name{
-        width: auto;
-        padding-right: 8px;
-      }
-      .content{
-        flex: 1;
-      }
     }
   }
 }
