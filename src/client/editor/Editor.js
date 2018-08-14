@@ -847,6 +847,55 @@ export default class Editor {
     }
   }
 
+  setHidden(object, value) {
+    return (object.userData._dontShowInHierarchy = value);
+  }
+
+  isHidden(object) {
+    return !!object.userData._dontShowInHierarchy;
+  }
+
+  setCollapsed(object, value) {
+    return (object.userData._collapsed = value);
+  }
+
+  isCollapsed(object) {
+    return !!object.userData._collapsed;
+  }
+
+  getNodeHierarchy() {
+    const scene = this.scene;
+    const handler = scene.userData._conflictHandler;
+
+    if (handler) {
+      const list = handler.checkResolvedMissingRoot(scene);
+
+      for (const item of list) {
+        this.removeObject(item);
+      }
+
+      handler.updateNodesMissingStatus(scene);
+      handler.updateNodesDuplicateStatus(scene);
+    }
+
+    function buildNode(object) {
+      const collapsed = this.isCollapsed(object);
+
+      const node = {
+        object,
+        collapsed
+      };
+
+      if (object.children.length !== 0) {
+        node.children = object.children.filter(child => !this.isHidden(child)).map(child => buildNode(child));
+      }
+
+      return node;
+    }
+
+    return buildNode(scene);
+  }
+
   //
 
   getObjectMaterial(object, slot) {
