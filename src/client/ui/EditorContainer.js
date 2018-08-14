@@ -8,7 +8,6 @@ import Modal from "react-modal";
 import { MosaicWithoutDragDropContext } from "react-mosaic-component";
 import ToolBar from "./menus/ToolBar";
 import ViewportPanelContainer from "./panels/ViewportPanelContainer";
-import ViewportPanelToolbarContainer from "./panels/ViewportPanelToolbarContainer";
 import HierarchyPanelContainer from "./panels/HierarchyPanelContainer";
 import PropertiesPanelContainer from "./panels/PropertiesPanelContainer";
 import AssetExplorerPanelContainer from "./panels/AssetExplorerPanelContainer";
@@ -68,7 +67,7 @@ class EditorContainer extends Component {
           windowProps: {
             className: "viewportPanel",
             title: "Viewport",
-            toolbarControls: ViewportPanelToolbarContainer(),
+            toolbarControls: [],
             draggable: false
           }
         },
@@ -147,33 +146,6 @@ class EditorContainer extends Component {
               action: () => window.open("https://github.com/MozillaReality/spoke/wiki/Keyboard-Shortcuts")
             }
           ]
-        }
-      ],
-      toolButtons: [
-        {
-          name: "menu",
-          selected: false,
-          onClick: () => console.log(`clicked menu`)
-        },
-        {
-          name: "selection",
-          selected: false,
-          onClick: () => this.onSelectionSelected()
-        },
-        {
-          name: "move",
-          selected: false,
-          onClick: () => console.log(`clicked position`)
-        },
-        {
-          name: "rotate",
-          selected: false,
-          onClick: () => console.log(`clicked rotation`)
-        },
-        {
-          name: "scale",
-          selected: false,
-          onClick: () => console.log(`clicked scale`)
         }
       ],
       globalHotKeyHandlers: {
@@ -514,31 +486,6 @@ class EditorContainer extends Component {
     }
   };
 
-  onMenuSelected = () => {
-    //todo
-  };
-
-  onSelectionSelected = () => {
-    const btns = this.state.toolButtons;
-    const btn = btns.find(x => x.name === "selection");
-    btn.selected = true;
-    this.setState({
-      toolButtons: btns
-    });
-  };
-
-  onMoveSelected = () => {
-    //todo
-  };
-
-  onRotateSelected = () => {
-    //todo
-  };
-
-  onScaleSelected = () => {
-    //todo
-  };
-
   renderPanel = (panelId, path) => {
     const panel = this.state.registeredPanels[panelId];
 
@@ -550,7 +497,7 @@ class EditorContainer extends Component {
   };
 
   render() {
-    const { openModal, menus, DialogComponent, dialogProps, toolButtons } = this.state;
+    const { openModal, menus, DialogComponent, dialogProps } = this.state;
 
     const { initialPanels } = this.props;
 
@@ -560,7 +507,7 @@ class EditorContainer extends Component {
       <DragDropContextProvider backend={HTML5Backend}>
         <HotKeys keyMap={this.state.keyMap} handlers={this.state.globalHotKeyHandlers} className={styles.flexColumn}>
           <DialogContextProvider value={dialogContext}>
-            <ToolBar menus={menus} toolButtons={toolButtons} />
+            <ToolBar menus={menus} editor={this.props.editor} />
             <MosaicWithoutDragDropContext
               className="mosaic-theme"
               renderTile={this.renderPanel}
