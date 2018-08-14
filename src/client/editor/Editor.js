@@ -878,7 +878,7 @@ export default class Editor {
       handler.updateNodesDuplicateStatus(scene);
     }
 
-    function buildNode(object) {
+    const buildNode = object => {
       const collapsed = this.isCollapsed(object);
 
       const node = {
@@ -891,7 +891,7 @@ export default class Editor {
       }
 
       return node;
-    }
+    };
 
     return buildNode(scene);
   }
