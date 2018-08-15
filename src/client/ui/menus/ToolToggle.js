@@ -36,7 +36,7 @@ export default class ToolToggle extends Component {
     const children = this.props.children;
     if (!this.props.children) {
       return (
-        <div>
+        <div className={styles.toggleText}>
           <span>{this.state.title}</span>
         </div>
       );

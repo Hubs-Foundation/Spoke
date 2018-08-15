@@ -3,8 +3,8 @@
 :local(.toolbar) {
   display: flex;
   flex-direction: row;
-  height: 32px;
-  background-color: #4D535B;
+  height: 40px;
+  background-color: $toolbar;
 
   :local(.toolbtns) {
     width: auto;
@@ -18,5 +18,7 @@
     height: inherit;
     display: flex;
     flex-direction: row;
+    background-color: $toolbar2;
+    align-items: center;
   }
 }

@@ -3,7 +3,11 @@
 :local(.wrapper) {
   display: flex;
   flex-direction: row;
-  align-items: baseline;
+  align-items: center;
+}
+
+:local(.toggleText){
+  width: 36px;
 }
 
 :local(.toggleSwitch) {
@@ -23,6 +27,7 @@
 
   > .react-toggle-thumb {
     background-color: $blue;
+    border: none;
   }
 }
 
@@ -46,14 +51,15 @@
   }
 
   > .react-toggle-track .react-toggle-track-check{
-    color: #4D535B;
+    color: $border;
   }
 
   &.react-toggle--checked .react-toggle-thumb {
-    background-color: #4D535B;
+    background-color: $border;
   }
 
   > .react-toggle-thumb {
     background-color: $blue;
+    border: none;
   }
 }

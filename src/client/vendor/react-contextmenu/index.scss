@@ -39,6 +39,7 @@
   background-color: $selected;
   border-color: transparent;
   text-decoration: none;
+  width: calc(100% - 16px);
 }
 
 .react-contextmenu-item.react-contextmenu-item--disabled,

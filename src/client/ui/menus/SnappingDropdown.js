@@ -65,12 +65,12 @@ export default class SnappingDropdown extends React.Component {
         {this.state.listOpen && (
           <ul className={styles.list}>
             <li className={styles.listItem} key={1}>
-              <InputGroup name={"Move"}>
+              <InputGroup className={styles.snappingInput} name={"Move"}>
                 <NumericInput value={snapMoveValue} onChange={value => this.setSnapValue("translate", value)} />
               </InputGroup>
             </li>
             <li className={styles.listItem} key={4}>
-              <InputGroup name={"Rotate"}>
+              <InputGroup className={styles.snappingInput} name={"Rotate"}>
                 <NumericInput value={snapRotateValue} onChange={value => this.setSnapValue("rotate", value)} />
               </InputGroup>
             </li>
