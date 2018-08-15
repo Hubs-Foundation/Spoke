@@ -35,6 +35,7 @@
     width: 160px;
     position: absolute;
     top: 18px;
+    box-shadow: $shadow-30;
     :local(.listItem) {
       margin: 4px 0px;
       display: inline-block;

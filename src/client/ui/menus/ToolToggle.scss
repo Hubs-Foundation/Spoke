@@ -18,11 +18,21 @@
   }
 
   &.react-toggle--checked:hover:not(.react-toggle--disabled) .react-toggle-track {
-    background-color: $panel;
+    background-color: $background;
   }
 
   > .react-toggle-track {
     background-color: $panel;
+
+    > .react-toggle-track-check {
+      height: 12px;
+      width: 12px;
+    }
+  
+    > .react-toggle-track-x {
+      height: 12px;
+      width: 12px;
+    }
   }
 
   > .react-toggle-thumb {
@@ -39,7 +49,7 @@
   }
 
   &.react-toggle--checked:hover:not(.react-toggle--disabled) .react-toggle-track {
-    background-color: $panel;
+    background-color: $background;
   }
 
   &.react-toggle-x:hover:not(.react-toggle--disabled) .react-toggle-track {
@@ -48,6 +58,16 @@
 
   > .react-toggle-track {
     background-color: $panel;
+
+    > .react-toggle-track-check {
+      height: 12px;
+      width: 12px;
+    }
+  
+    > .react-toggle-track-x {
+      height: 12px;
+      width: 12px;
+    }
   }
 
   > .react-toggle-track .react-toggle-track-check{
