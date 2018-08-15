@@ -307,12 +307,7 @@ class PropertiesPanelContainer extends Component {
             false
           )}
           <div className={styles.addComponentContainer}>
-            <AddComponentDropdown
-              placeholder="Add a component"
-              className={styles.addComponentSelect}
-              options={componentOptions}
-              onChange={this.onAddComponent}
-            />
+            <AddComponentDropdown options={componentOptions} onChange={this.onAddComponent} />
           </div>
         </PropertyGroup>
         {objectComponents.map(component => {

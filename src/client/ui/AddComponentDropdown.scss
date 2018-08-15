@@ -1,0 +1,15 @@
+@import "../theme";
+
+:local(.container) {
+  max-width: 220px;
+  min-width: 124px;
+  height: 32px;
+  border-radius: 4px;
+}
+
+:local(.selectContainer) {
+  width: 100%;
+  height: 32px;
+  padding: 5px;
+  background-color: $red;
+}
