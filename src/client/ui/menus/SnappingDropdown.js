@@ -55,7 +55,6 @@ export default class SnappingDropdown extends React.Component {
 
   render() {
     const { snapMoveValue, snapRotateValue } = this.state;
-    console.log(`v: ${this.state.snapMoveValue}`);
     return (
       <div className={classNames(styles.wrapper)}>
         <div className={styles.header} onClick={() => this.toggleList()}>
