@@ -309,7 +309,9 @@ class FileDialog extends Component {
         <div className={dialogStyles.bottom}>
           <div className={styles.fileNameLabel}>File Name:</div>
           <StringInput value={this.state.fileName} onChange={this.onChangeFileName} />
-          <Button onClick={this.props.onCancel || this.props.hideDialog}>Cancel</Button>
+          <Button onClick={this.props.onCancel || this.props.hideDialog} className={styles.cancel}>
+            Cancel
+          </Button>
           <Button onClick={this.onConfirm}>{this.props.confirmButtonLabel}</Button>
         </div>
       </div>

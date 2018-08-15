@@ -8,6 +8,7 @@
   overflow: hidden;
   min-width: 800px;
   min-height: 464px;
+  max-height: 720px;
 }
 
 :local(.leftColumn) {
@@ -36,5 +37,13 @@
 }
 
 :local(.node) {
-  padding: 4px 5px;
+  padding: 6px 4px;
+}
+
+:local(.cancel) {
+  background: $panel2;
+
+  &:hover {
+     background-color: $panel;
+   }
 }

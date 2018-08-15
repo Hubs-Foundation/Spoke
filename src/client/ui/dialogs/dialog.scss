@@ -37,6 +37,12 @@
 
     &:first-child {
       margin-left: 8px;
+      color: $text2;
     }
+  }
+
+  button {
+    min-width: 84px;
+    justify-content: center;
   }
 }

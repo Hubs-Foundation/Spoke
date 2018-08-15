@@ -301,7 +301,7 @@ class EditorContainer extends Component {
 
     this.showDialog(FileDialog, {
       title: "Select the output directory",
-      confirmButtonLabel: "Export scene",
+      confirmButtonLabel: "Export Scene",
       directory: true,
       onConfirm: async outputPath => {
         let exported = false;
