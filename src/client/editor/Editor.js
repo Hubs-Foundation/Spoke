@@ -679,7 +679,6 @@ export default class Editor {
   }
 
   _serializeScene(scene, scenePath) {
-    scene = scene.clone();
     const entities = {};
 
     scene.traverse(entityObject => {
@@ -720,17 +719,11 @@ export default class Editor {
                 src
               });
             } else if (component.serialize) {
-              // TODO: every component should have serialize but userdata is not cloned correctly
               const props = component.serialize(scenePath);
 
               components.push({
                 name: component.name,
                 props
-              });
-            } else {
-              components.push({
-                name: component.name,
-                props: component.props
               });
             }
           }

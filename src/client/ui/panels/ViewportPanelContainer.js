@@ -37,7 +37,7 @@ class ViewportPanelContainer extends Component {
     this.props.editor.createViewport(this.canvasRef.current);
   }
 
-  onDropFile = item => {
+  onDropFile = async item => {
     if (item.file) {
       const file = item.file;
 
@@ -51,7 +51,11 @@ class ViewportPanelContainer extends Component {
           });
         }
       } else if (file.ext === ".gltf" || file.ext === ".glb") {
-        this.props.sceneActions.onCreatePrefabFromGLTF(file.uri);
+        const prefabPath = await this.props.sceneActions.onCreatePrefabFromGLTF(file.uri);
+
+        if (prefabPath) {
+          this.props.editor.addSceneReferenceNode(file.name, prefabPath);
+        }
       }
     }
   };

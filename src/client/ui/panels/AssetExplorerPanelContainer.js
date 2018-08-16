@@ -24,7 +24,7 @@ function getFileContextMenuId(file) {
     return "directory-menu-default";
   } else if (file.ext === ".scene") {
     return "file-menu-extend";
-  } else if (file.ext === "gltf" || file.ext === ".glb") {
+  } else if (file.ext === ".gltf" || file.ext === ".glb") {
     return "file-menu-gltf";
   } else {
     return "file-menu-default";
@@ -114,7 +114,7 @@ class AssetExplorerPanelContainer extends Component {
     });
   };
 
-  onClickFile = (e, file) => {
+  onClickFile = async (e, file) => {
     if (this.state.singleClickedFile && file.uri === this.state.singleClickedFile.uri) {
       // Handle double click
       if (file.isDirectory) {
@@ -123,10 +123,15 @@ class AssetExplorerPanelContainer extends Component {
       }
 
       if (file.ext === ".scene") {
-        this.props.sceneActions.onOpenScene(file.uri);
+        await this.props.sceneActions.onOpenScene(file.uri);
         return;
       } else if (file.ext === ".gltf" || file.ext === ".glb") {
-        this.props.sceneActions.onCreatePrefabFromGLTF(file.uri);
+        const prefabPath = await this.props.sceneActions.onCreatePrefabFromGLTF(file.uri);
+
+        if (prefabPath) {
+          this.props.sceneActions.onOpenScene(prefabPath);
+        }
+        return;
       }
 
       this.props.editor.project.openFile(file.uri);
@@ -205,7 +210,13 @@ class AssetExplorerPanelContainer extends Component {
 
   onExtendScene = (e, file) => this.props.sceneActions.onExtendScene(file.uri);
 
-  onCreatePrefabFromGLTF = (e, file) => this.props.sceneActions.onCreatePrefabFromGLTF(file.uri);
+  onCreatePrefabFromGLTF = async (e, file) => {
+    const prefabPath = await this.props.sceneActions.onCreatePrefabFromGLTF(file.uri);
+
+    if (prefabPath) {
+      this.props.sceneActions.onOpenScene(prefabPath);
+    }
+  };
 
   renderNode = node => {
     return (

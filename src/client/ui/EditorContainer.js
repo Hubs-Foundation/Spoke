@@ -462,6 +462,8 @@ class EditorContainer extends Component {
         confirmButtonLabel: "Create Prefab"
       });
 
+      if (!outputPath) return null;
+
       this.showDialog(ProgressDialog, {
         title: "Creating Prefab",
         message: "Creating prefab..."
@@ -471,7 +473,7 @@ class EditorContainer extends Component {
 
       this.hideDialog();
 
-      return true;
+      return outputPath;
     } catch (e) {
       if (e instanceof ConflictError) {
         const result = await this.waitForConfirm({
@@ -480,7 +482,7 @@ class EditorContainer extends Component {
             "We've found duplicate and/or missing node names in this file.\nWould you like to fix all conflicts?\n*This will modify the original file."
         });
 
-        if (!result) return false;
+        if (!result) return null;
 
         if (await this.props.editor.fixConflictError(e)) {
           return this.onCreatePrefabFromGLTF(gltfPath);
@@ -494,7 +496,7 @@ class EditorContainer extends Component {
         message: e.message || "There was an error when creating the prefab."
       });
 
-      return false;
+      return null;
     }
   };
 

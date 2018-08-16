@@ -50,7 +50,7 @@ class HierarchyPanelContainer extends Component {
     editor.signals.objectSelected.add(this.rebuildNodeHierarchy);
   }
 
-  onDropFile = item => {
+  onDropFile = async item => {
     if (item.file) {
       const file = item.file;
 
@@ -58,13 +58,19 @@ class HierarchyPanelContainer extends Component {
         try {
           this.props.editor.addSceneReferenceNode(file.name, file.uri);
         } catch (e) {
+          console.error(e);
+
           this.props.showDialog(ErrorDialog, {
             title: "Error adding prefab.",
-            message: e.message
+            message: e.message || "Error adding prefab."
           });
         }
       } else if (file.ext === ".gltf" || file.ext === ".glb") {
-        this.props.sceneActions.onCreatePrefabFromGLTF(file.uri);
+        const prefabPath = await this.props.sceneActions.onCreatePrefabFromGLTF(file.uri);
+
+        if (prefabPath) {
+          this.props.editor.addSceneReferenceNode(file.name, prefabPath);
+        }
       }
     }
   };
