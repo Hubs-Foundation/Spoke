@@ -474,8 +474,8 @@ export default class Editor {
     const clonedProps = Object.assign({}, props);
 
     for (const { name, type } of component.schema) {
-      if (type === types.file && props[name]) {
-        props[name] = new URL(props[name], basePath).href;
+      if (type === types.file && clonedProps[name]) {
+        clonedProps[name] = new URL(clonedProps[name], basePath).href;
       }
     }
 
@@ -563,7 +563,6 @@ export default class Editor {
         // Inflate the entity's components.
         if (Array.isArray(entity.components)) {
           for (const componentDef of entity.components) {
-            const { props } = componentDef;
             if (componentDef.src) {
               // Process SaveableComponent
               componentDef.src = new URL(componentDef.src, absoluteBaseURL.href).href;
@@ -582,6 +581,12 @@ export default class Editor {
                 })
               );
             } else {
+              const props = this._resolveFileProps(
+                this.components.get(componentDef.name),
+                componentDef.props,
+                absoluteBaseURL.href
+              );
+
               entityComponentPromises.push(this._addComponent(entityObj, componentDef.name, props, !isRoot));
             }
           }
@@ -615,6 +620,7 @@ export default class Editor {
     }
 
     scene.traverse(child => {
+      child.userData._dontSerialize = true;
       Object.defineProperty(child.userData, "_selectionRoot", { value: parent, configurable: true, enumerable: false });
     });
 
@@ -687,6 +693,10 @@ export default class Editor {
       let index;
       let components;
       let staticMode;
+
+      if (entityObject.userData._dontSerialize) {
+        return;
+      }
 
       // Serialize the parent and index if _saveParent is set.
       if (entityObject.userData._saveParent) {
@@ -915,7 +925,7 @@ export default class Editor {
 
     removeUnusedObjects(clonedScene);
 
-    scene.traverse(({ userData }) => {
+    clonedScene.traverse(({ userData }) => {
       // Remove editor data.
       for (const key in userData) {
         if (userData.hasOwnProperty(key) && key.startsWith("_")) {

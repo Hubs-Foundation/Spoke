@@ -128,7 +128,6 @@ export default class StandardMaterialComponent extends SaveableComponent {
   static _propsFromObject(node) {
     if (!node.material) return null;
     const { map, normalMap, emissiveMap, roughnessMap, aoMap } = node.material;
-    console.log("src", getTextureSrc(map));
     return {
       color: node.material.color.getStyle(),
       emissiveFactor: node.material.emissive.getStyle(),
