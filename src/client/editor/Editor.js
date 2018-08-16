@@ -210,9 +210,10 @@ export default class Editor {
     this.sceneInfo.uri = uri;
   }
 
-  editScenePrefab(object, uri) {
+  async editScenePrefab(object, uri) {
     this._prefabBeingEdited = object;
-    this._loadSceneFromURL(uri);
+    const scene = await this._loadSceneFromURL(uri);
+    return scene;
   }
 
   _deleteSceneDependencies() {
@@ -266,14 +267,14 @@ export default class Editor {
     return scene;
   }
 
-  openScene(uri) {
+  async openScene(uri) {
     this.scenes = [];
     this._clearCaches();
     this._ignoreSceneModification = true;
-    const scene = this._loadSceneFromURL(uri).then(scene => {
-      this._ignoreSceneModification = false;
-      return scene;
-    });
+
+    const scene = await this._loadSceneFromURL(uri);
+    this._ignoreSceneModification = false;
+
     return scene;
   }
 

@@ -131,7 +131,7 @@ class HierarchyPanelContainer extends Component {
 
   onEditPrefab = (object, refComponent) => {
     const path = refComponent.getProperty("src");
-    this.props.editor.editScenePrefab(object, path);
+    this.props.sceneActions.onEditPrefab(object, path);
   };
 
   onDeleteSelected = e => {

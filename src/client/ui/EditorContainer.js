@@ -441,6 +441,25 @@ class EditorContainer extends Component {
     }
   };
 
+  onEditPrefab = async (object, path) => {
+    this.showDialog(ProgressDialog, {
+      title: "Opening Prefab",
+      message: "Opening prefab..."
+    });
+
+    try {
+      await this.props.editor.editScenePrefab(object, path);
+      this.hideDialog();
+    } catch (e) {
+      console.error(e);
+
+      this.showDialog(ErrorDialog, {
+        title: "Error opening prefab.",
+        message: e.message || "There was an error when opening the prefab."
+      });
+    }
+  };
+
   onPopScene = async () => {
     if (!(await this.confirmSceneChange())) return;
     this.props.editor.popScene();
@@ -534,6 +553,7 @@ class EditorContainer extends Component {
     onSaveSceneAsDialog: this.onSaveSceneAsDialog,
     onSaveScene: this.onSaveScene,
     onExtendScene: this.onExtendScene,
+    onEditPrefab: this.onEditPrefab,
     onPopScene: this.onPopScene,
     onCreatePrefabFromGLTF: this.onCreatePrefabFromGLTF,
     onExportSceneDialog: this.onExportSceneDialog
