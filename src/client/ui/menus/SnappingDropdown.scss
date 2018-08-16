@@ -32,19 +32,19 @@
     background-color: $background;
     border-radius: 4px;
     list-style-type: none;
-    width: 160px;
+    width: 200px;
     position: absolute;
     top: 18px;
     box-shadow: $shadow-30;
     :local(.listItem) {
-      margin: 4px 0px;
+      margin: 4px;
       display: inline-block;
       :local(.snappingInput) {
         label {
-          width: 50%;
+          width: 60%;
         }
         .content {
-          width: 50%;
+          width: 40%;
           input {
             width: 100%;
           }

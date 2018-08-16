@@ -117,23 +117,30 @@ export default class AddComponentDropdown extends Component {
       control: base => ({
         ...base,
         backgroundColor: this.state.isOpen ? "white" : "#006EFF",
-        minHeight: "20px",
-        maxWidth: "220px",
-        minWidth: "124px",
+        minHeight: this.state.isOpen ? "24px" : "32px",
+        minWidth: this.state.isOpen ? "220px" : "100%",
+        maxWidth: this.state.isOpen ? "220px" : "100%",
         border: 0,
-        margin: "6px auto",
-        padding: this.state.isOpen ? "0px 8px" : "0px",
-        display: "inline-block",
-        outline: "0"
+        padding: this.state.isOpen ? "0px 8px" : "6px",
+        display: "flex",
+        justifyContent: "center",
+        outline: "0",
+        cursor: "pointer"
       }),
       container: base => ({
         ...base,
-        height: "20px",
-        padding: this.state.isOpen ? "0px 8px" : "0px"
+        padding: this.state.isOpen ? "0px 8px" : "0px",
+        display: "flex",
+        height: "32px",
+        justifyContent: "center",
+        alignItems: "center",
+        flexDirection: "column",
+        alignContent: "space-between"
       }),
       valueContainer: base => ({
         ...base,
-        padding: "0px 8px"
+        padding: "0px",
+        justifyContent: "center"
       }),
       input: base => ({
         ...base,
@@ -142,19 +149,25 @@ export default class AddComponentDropdown extends Component {
       }),
       menu: () => ({
         maxWidth: "220px",
-        minWidth: "124px",
+        minWidth: "220px",
         textAlign: "left",
         display: "inline-block",
         borderCollapse: "separate",
         borderRadius: "4px",
-        border: "1px solid black"
+        border: "1px solid black",
+        position: "absolute",
+        right: "calc(50% - 110px)",
+        top: "32px",
+        boxShadow: "0px 4px 4px  rgba(0, 0, 0, 0.15)"
       }),
       menuList: () => ({
+        width: "100%",
         display: "inline-block"
       }),
       option: base => ({
         ...base,
-        backgroundColor: "black"
+        backgroundColor: "black",
+        cursor: "pointer"
       })
     };
   };
