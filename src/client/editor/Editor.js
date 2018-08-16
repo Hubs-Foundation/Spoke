@@ -53,13 +53,6 @@ export default class Editor {
     const Signal = signals.Signal;
 
     this.signals = {
-      openScene: new Signal(),
-      popScene: new Signal(),
-      extendScene: new Signal(),
-
-      savingStarted: new Signal(),
-      savingFinished: new Signal(),
-
       deleteSelectedObject: new Signal(),
 
       transformChanged: new Signal(),
@@ -88,9 +81,7 @@ export default class Editor {
 
       historyChanged: new Signal(),
 
-      fileChanged: new Signal(),
-
-      sceneErrorOccurred: new Signal()
+      fileChanged: new Signal()
     };
 
     this.project.addListener("change", path => {
@@ -275,7 +266,7 @@ export default class Editor {
     return scene;
   }
 
-  openRootScene(uri) {
+  openScene(uri) {
     this.scenes = [];
     this._clearCaches();
     this._ignoreSceneModification = true;
@@ -350,6 +341,31 @@ export default class Editor {
     this.fileDependencies.set(uri, uriDependencies);
   }
 
+  async createPrefabFromGLTF(gltfUrl, destUrl) {
+    // Load glTF and throw errors if there are conflicts
+    await this._loadGLTF(gltfUrl);
+
+    const prefabDef = {
+      entities: {},
+      inherits: gltfUrl
+    };
+
+    await this.project.writeJSON(destUrl, prefabDef);
+  }
+
+  async fixConflictError(error) {
+    if (error.type === "import") {
+      const originalGLTF = await this.project.readJSON(error.uri);
+
+      if (originalGLTF.nodes) {
+        error.handler.updateNodeNames(originalGLTF.nodes);
+        await this.project.writeJSON(error.uri, originalGLTF);
+      }
+
+      return true;
+    }
+  }
+
   async _loadSceneFromURL(uri) {
     this.deselect();
 
@@ -372,19 +388,25 @@ export default class Editor {
     return scene;
   }
 
-  _loadGLTF(url) {
-    return gltfCache
-      .get(url)
-      .then(({ scene }) => {
-        if (scene === undefined) {
-          throw new Error(`Error loading: ${url}. glTF file has no default scene.`);
-        }
-        return scene;
-      })
-      .catch(e => {
-        console.error(e);
-        throw new SceneLoaderError("Error loading GLTF", url, "damaged", e);
-      });
+  async _loadGLTF(url) {
+    const { scene } = await gltfCache.get(url);
+
+    if (scene === undefined) {
+      throw new Error(`Error loading: ${url}. glTF file has no default scene.`);
+    }
+
+    if (!scene.name) {
+      scene.name = "Scene";
+    }
+
+    scene.userData._conflictHandler = new ConflictHandler();
+    scene.userData._conflictHandler.findDuplicates(scene, 0, 0);
+
+    if (scene.userData._conflictHandler.getDuplicateStatus() || scene.userData._conflictHandler.getMissingStatus()) {
+      throw new ConflictError("gltf naming conflicts", "import", url, scene.userData._conflictHandler);
+    }
+
+    return scene;
   }
 
   async _loadScene(uri, isRoot = true, ancestors) {
@@ -397,17 +419,6 @@ export default class Editor {
 
       if (isRoot) {
         scene.userData._inherits = url;
-      }
-
-      if (!scene.name) {
-        scene.name = "Scene";
-      }
-
-      scene.userData._conflictHandler = new ConflictHandler();
-      scene.userData._conflictHandler.findDuplicates(scene, 0, 0);
-      if (scene.userData._conflictHandler.getDuplicateStatus() || scene.userData._conflictHandler.getMissingStatus()) {
-        const error = new ConflictError("gltf naming conflicts", "import", url, scene.userData._conflictHandler);
-        throw error;
       }
 
       // Inflate components
@@ -708,12 +719,18 @@ export default class Editor {
                 name: component.name,
                 src
               });
-            } else {
+            } else if (component.serialize) {
+              // TODO: every component should have serialize but userdata is not cloned correctly
               const props = component.serialize(scenePath);
 
               components.push({
                 name: component.name,
                 props
+              });
+            } else {
+              components.push({
+                name: component.name,
+                props: component.props
               });
             }
           }
@@ -1018,6 +1035,10 @@ export default class Editor {
   //
 
   addSceneReferenceNode(name, url) {
+    if (url === this.sceneInfo.uri) {
+      throw new Error("Scene cannot be added to itself.");
+    }
+
     const object = new THREE.Object3D();
     object.name = name;
     setStaticMode(object, StaticModes.Static);
@@ -1351,9 +1372,7 @@ export default class Editor {
       this.execute(new SetValueCommand(object, "name", value));
     } else {
       this.signals.objectChanged.dispatch(object);
-      this.signals.sceneErrorOccurred.dispatch(
-        new ConflictError("rename error", "rename", this.sceneInfo.uri, handler)
-      );
+      throw new ConflictError("rename error", "rename", this.sceneInfo.uri, handler);
     }
   }
 

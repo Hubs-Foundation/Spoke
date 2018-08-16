@@ -4,6 +4,8 @@ import Tree from "@robertlong/react-ui-tree";
 import "../../vendor/react-ui-tree/index.scss";
 import classNames from "classnames";
 import { withEditor } from "../contexts/EditorContext";
+import { withSceneActions } from "../contexts/SceneActionsContext";
+import { withDialog } from "../contexts/DialogContext";
 import IconGrid from "../IconGrid";
 import Icon from "../Icon";
 import iconStyles from "../Icon.scss";
@@ -11,6 +13,7 @@ import styles from "./AssetExplorerPanelContainer.scss";
 import DraggableFile from "../DraggableFile";
 import { ContextMenu, MenuItem, ContextMenuTrigger } from "react-contextmenu";
 import folderIcon from "../../assets/folder-icon.svg";
+import ErrorDialog from "../dialogs/ErrorDialog";
 
 function collectFileMenuProps({ file }) {
   return file;
@@ -19,8 +22,10 @@ function collectFileMenuProps({ file }) {
 function getFileContextMenuId(file) {
   if (file.isDirectory) {
     return "directory-menu-default";
-  } else if ([".gltf", ".scene"].includes(file.ext)) {
+  } else if (file.ext === ".scene") {
     return "file-menu-extend";
+  } else if (file.ext === "gltf" || file.ext === ".glb") {
+    return "file-menu-gltf";
   } else {
     return "file-menu-default";
   }
@@ -46,7 +51,10 @@ function getSelectedDirectory(tree, uri) {
 
 class AssetExplorerPanelContainer extends Component {
   static propTypes = {
-    editor: PropTypes.any
+    editor: PropTypes.object,
+    sceneActions: PropTypes.object,
+    showDialog: PropTypes.func,
+    hideDialog: PropTypes.func
   };
 
   constructor(props) {
@@ -114,9 +122,11 @@ class AssetExplorerPanelContainer extends Component {
         return;
       }
 
-      if (file.ext === ".gltf" || file.ext === ".scene") {
-        this.props.editor.signals.openScene.dispatch(file.uri);
+      if (file.ext === ".scene") {
+        this.props.sceneActions.onOpenScene(file.uri);
         return;
+      } else if (file.ext === ".gltf" || file.ext === ".glb") {
+        this.props.sceneActions.onCreatePrefabFromGLTF(file.uri);
       }
 
       this.props.editor.project.openFile(file.uri);
@@ -159,7 +169,10 @@ class AssetExplorerPanelContainer extends Component {
 
     // eslint-disable-next-line no-useless-escape
     if (!/^[0-9a-zA-Z\^\&\'\@\{\}\[\]\,\$\=\!\-\#\(\)\.\%\+\~\_ ]+$/.test(folderName)) {
-      alert('Invalid folder name. The following characters are not allowed:  / : * ? " < > |');
+      this.props.showDialog(ErrorDialog, {
+        title: "Error renaming folder.",
+        message: 'Invalid folder name. The following characters are not allowed:  / : * ? " < > |'
+      });
       return;
     }
 
@@ -188,17 +201,11 @@ class AssetExplorerPanelContainer extends Component {
     document.body.removeChild(textArea);
   };
 
-  onExtend = (e, file) => {
-    if (!file) {
-      return;
-    }
-    if (file.ext === ".gltf") {
-      this.props.editor.signals.openScene.dispatch(file.uri);
-    } else {
-      this.props.editor.signals.extendScene.dispatch(file.uri);
-    }
-    return;
-  };
+  onOpenScene = (e, file) => this.props.sceneActions.onOpenScene(file.uri);
+
+  onExtendScene = (e, file) => this.props.sceneActions.onExtendScene(file.uri);
+
+  onCreatePrefabFromGLTF = (e, file) => this.props.sceneActions.onCreatePrefabFromGLTF(file.uri);
 
   renderNode = node => {
     return (
@@ -279,10 +286,17 @@ class AssetExplorerPanelContainer extends Component {
           <MenuItem onClick={this.onCopyURL}>Copy URL</MenuItem>
         </ContextMenu>
         <ContextMenu id="file-menu-extend">
-          <MenuItem>Open File</MenuItem>
+          <MenuItem onCLick={this.onOpenScene}>Open File</MenuItem>
           <MenuItem>Delete File</MenuItem>
           <MenuItem onClick={this.onCopyURL}>Copy URL</MenuItem>
-          <MenuItem onClick={this.onExtend}>Extend</MenuItem>
+          <MenuItem onClick={this.onExtendScene}>Extend</MenuItem>
+        </ContextMenu>
+        <ContextMenu id="file-menu-gltf">
+          <MenuItem onClick={this.onCreatePrefabFromGLTF}>Create Prefab...</MenuItem>
+          <MenuItem>Duplicate</MenuItem>
+          <MenuItem>Rename</MenuItem>
+          <MenuItem onClick={this.onCopyURL}>Copy URL</MenuItem>
+          <MenuItem>Delete</MenuItem>
         </ContextMenu>
         <ContextMenu id="current-directory-menu-default">
           <MenuItem onClick={this.onNewFolder}>New Folder</MenuItem>
@@ -292,4 +306,4 @@ class AssetExplorerPanelContainer extends Component {
   }
 }
 
-export default withEditor(AssetExplorerPanelContainer);
+export default withEditor(withDialog(withSceneActions(AssetExplorerPanelContainer)));

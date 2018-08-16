@@ -4,6 +4,7 @@ import { HotKeys } from "react-hotkeys";
 import Viewport from "../Viewport";
 import { withEditor } from "../contexts/EditorContext";
 import { withDialog } from "../contexts/DialogContext";
+import { withSceneActions } from "../contexts/SceneActionsContext";
 import ErrorDialog from "../dialogs/ErrorDialog";
 import styles from "./ViewportPanelContainer.scss";
 import FileDropTarget from "../FileDropTarget";
@@ -11,7 +12,9 @@ import FileDropTarget from "../FileDropTarget";
 class ViewportPanelContainer extends Component {
   static propTypes = {
     editor: PropTypes.object,
-    showDialog: PropTypes.func
+    sceneActions: PropTypes.object,
+    showDialog: PropTypes.func,
+    hideDialog: PropTypes.func
   };
 
   constructor(props) {
@@ -34,17 +37,22 @@ class ViewportPanelContainer extends Component {
     this.props.editor.createViewport(this.canvasRef.current);
   }
 
-  onDropFile = file => {
-    if (file.ext === ".gltf" || file.ext === ".scene") {
-      if (file.uri === this.props.editor.sceneInfo.uri) {
-        this.props.showDialog(ErrorDialog, {
-          title: "Error adding prefab.",
-          message: "Scene cannot be added to itself."
-        });
-        return;
-      }
+  onDropFile = item => {
+    if (item.file) {
+      const file = item.file;
 
-      this.props.editor.addSceneReferenceNode(file.name, file.uri);
+      if (file.ext === ".scene") {
+        try {
+          this.props.editor.addSceneReferenceNode(file.name, file.uri);
+        } catch (e) {
+          this.props.showDialog(ErrorDialog, {
+            title: "Error adding prefab.",
+            message: e.message
+          });
+        }
+      } else if (file.ext === ".gltf" || file.ext === ".glb") {
+        this.props.sceneActions.onCreatePrefabFromGLTF(file.uri);
+      }
     }
   };
 
@@ -82,4 +90,4 @@ class ViewportPanelContainer extends Component {
   }
 }
 
-export default withEditor(withDialog(ViewportPanelContainer));
+export default withEditor(withDialog(withSceneActions(ViewportPanelContainer)));

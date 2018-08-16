@@ -56,7 +56,7 @@ class PropertiesPanelContainer extends Component {
   onObjectSelected = object => {
     this.setState({
       object,
-      name: object.name
+      name: object && object.name
     });
   };
 
