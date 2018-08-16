@@ -1,0 +1,17 @@
+@import "../theme";
+$prefix: "rc-select";
+
+.#{$prefix}__option {
+  background-color: $background;
+  & > span > i {
+    width: 12px;
+    height: 12px;
+    margin-right: 8px;
+  }
+}
+
+
+
+.#{$prefix}__option:hover {
+  background-color: $blue;
+}

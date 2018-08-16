@@ -12,6 +12,7 @@ import { withDialog } from "../contexts/DialogContext";
 import FileDialog from "../dialogs/FileDialog";
 import ErrorDialog from "../dialogs/ErrorDialog";
 import ProgressDialog, { PROGRESS_DIALOG_DELAY } from "../dialogs/ProgressDialog";
+import AddComponentDropdown from "../AddComponentDropdown";
 
 export function getDisplayName(name) {
   if (name.includes("-")) {
@@ -306,12 +307,7 @@ class PropertiesPanelContainer extends Component {
             false
           )}
           <div className={styles.addComponentContainer}>
-            <Select
-              placeholder="+ Add a component"
-              className={styles.addComponentSelect}
-              options={componentOptions}
-              onChange={this.onAddComponent}
-            />
+            <AddComponentDropdown options={componentOptions} onChange={this.onAddComponent} />
           </div>
         </PropertyGroup>
         {objectComponents.map(component => {
