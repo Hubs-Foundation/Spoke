@@ -144,7 +144,7 @@ class HierarchyPanelContainer extends Component {
   };
 
   onClickBreadCrumb = () => {
-    this.props.sceneActions.popScene();
+    this.props.sceneActions.onPopScene();
   };
 
   rebuildNodeHierarchy = () => {
