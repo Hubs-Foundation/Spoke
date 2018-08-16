@@ -8,6 +8,7 @@ import { ContextMenu, MenuItem, ContextMenuTrigger, connectMenu } from "react-co
 import styles from "./HierarchyPanelContainer.scss";
 import { withEditor } from "../contexts/EditorContext";
 import { withDialog } from "../contexts/DialogContext";
+import { withSceneActions } from "../contexts/SceneActionsContext";
 import "../../vendor/react-ui-tree/index.scss";
 import "../../vendor/react-contextmenu/index.scss";
 import { last } from "../../utils";
@@ -23,7 +24,9 @@ class HierarchyPanelContainer extends Component {
   static propTypes = {
     path: PropTypes.array,
     editor: PropTypes.object,
-    showDialog: PropTypes.func
+    sceneActions: PropTypes.object,
+    showDialog: PropTypes.func,
+    hideDialog: PropTypes.func
   };
 
   constructor(props) {
@@ -47,17 +50,28 @@ class HierarchyPanelContainer extends Component {
     editor.signals.objectSelected.add(this.rebuildNodeHierarchy);
   }
 
-  onDropFile = file => {
-    if (file.ext === ".gltf" || file.ext === ".scene") {
-      if (file.uri === this.props.editor.sceneInfo.uri) {
-        this.props.showDialog(ErrorDialog, {
-          title: "Error adding prefab.",
-          message: "Scene cannot be added to itself."
-        });
-        return;
-      }
+  onDropFile = async item => {
+    if (item.file) {
+      const file = item.file;
 
-      this.props.editor.addSceneReferenceNode(file.name, file.uri);
+      if (file.ext === ".scene") {
+        try {
+          this.props.editor.addSceneReferenceNode(file.name, file.uri);
+        } catch (e) {
+          console.error(e);
+
+          this.props.showDialog(ErrorDialog, {
+            title: "Error adding prefab.",
+            message: e.message || "Error adding prefab."
+          });
+        }
+      } else if (file.ext === ".gltf" || file.ext === ".glb") {
+        const prefabPath = await this.props.sceneActions.onCreatePrefabFromGLTF(file.uri);
+
+        if (prefabPath) {
+          this.props.editor.addSceneReferenceNode(file.name, prefabPath);
+        }
+      }
     }
   };
 
@@ -117,7 +131,7 @@ class HierarchyPanelContainer extends Component {
 
   onEditPrefab = (object, refComponent) => {
     const path = refComponent.getProperty("src");
-    this.props.editor.editScenePrefab(object, path);
+    this.props.sceneActions.onEditPrefab(object, path);
   };
 
   onDeleteSelected = e => {
@@ -130,7 +144,7 @@ class HierarchyPanelContainer extends Component {
   };
 
   onClickBreadCrumb = () => {
-    this.props.editor.signals.popScene.dispatch();
+    this.props.sceneActions.onPopScene();
   };
 
   rebuildNodeHierarchy = () => {
@@ -269,4 +283,4 @@ class HierarchyPanelContainer extends Component {
   }
 }
 
-export default withEditor(withDialog(HierarchyPanelContainer));
+export default withEditor(withDialog(withSceneActions(HierarchyPanelContainer)));

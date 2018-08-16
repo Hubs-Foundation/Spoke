@@ -3,15 +3,10 @@ import { types } from "./utils";
 import THREE from "../three";
 import { textureCache } from "../caches";
 
-function getURLPath(url) {
-  const href = window.location.href;
-  return new URL(url, href.substring(0, href.length - 1)).pathname;
-}
-
 function getTextureSrc(texture) {
   if (!texture) return null;
   if (!texture.image) return null;
-  return getURLPath(texture.image.src);
+  return new URL(texture.image.src, window.location).href;
 }
 
 const imageFilters = [".jpg", ".png"];
@@ -66,11 +61,8 @@ export default class StandardMaterialComponent extends SaveableComponent {
       return;
     }
 
-    const urlPath = getURLPath(url);
-    if (urlPath === getTextureSrc(this._object[map])) return;
-
     try {
-      const texture = await textureCache.get(urlPath);
+      const texture = await textureCache.get(url);
       if (sRGB) {
         texture.encoding = THREE.sRGBEncoding;
       }
@@ -80,6 +72,7 @@ export default class StandardMaterialComponent extends SaveableComponent {
       texture.wrapT = THREE.RepeatWrapping;
       this._object[map] = texture;
     } catch (e) {
+      console.error(e);
       this._object[map] = null;
       this._object.needsUpdate = true;
       this.propValidation[propertyName] = false;
