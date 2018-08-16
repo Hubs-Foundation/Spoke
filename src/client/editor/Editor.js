@@ -194,7 +194,7 @@ export default class Editor {
       const sceneRefComponentName = SceneReferenceComponent.componentName;
       const previousURI = this.getComponentProperty(this._prefabBeingEdited, sceneRefComponentName, "src");
       this.updateComponentProperty(this._prefabBeingEdited, sceneRefComponentName, "src", poppedURI);
-      if (previousURI.endsWith(".gltf")) {
+      if (previousURI.endsWith(".gltf") || previousURI.endsWith(".glb")) {
         const name = last(poppedURI.split("/"));
         const displayName = this._conflictHandler.addToDuplicateNameCounters(name);
         this._prefabBeingEdited.name = displayName;
@@ -415,7 +415,7 @@ export default class Editor {
 
     const url = new URL(uri, window.location).href;
 
-    if (url.endsWith(".gltf")) {
+    if (url.endsWith(".gltf") || url.endsWith(".glb")) {
       scene = await this._loadGLTF(url);
 
       if (isRoot) {
@@ -668,7 +668,7 @@ export default class Editor {
     const sceneUserData = this.scene.userData;
 
     // If the previous URI was a gltf, update the ancestors, since we are now dealing with a .scene file.
-    if (this.sceneInfo.uri && this.sceneInfo.uri.endsWith(".gltf")) {
+    if (this.sceneInfo.uri && (this.sceneInfo.uri.endsWith(".gltf") || this.sceneInfo.uri.endsWith(".glb"))) {
       sceneUserData._ancestors = [this.sceneInfo.uri];
     }
 
