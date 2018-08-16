@@ -2,7 +2,6 @@ import React, { Component } from "react";
 import Select, { components } from "react-select";
 import PropTypes from "prop-types";
 import classNames from "classnames";
-import styles from "./AddComponentDropdown.scss";
 import AmbientLightComponent from "../editor/components/AmbientLightComponent";
 import DirectionalLightComponent from "../editor/components/DirectionalLightComponent";
 import HemisphereLightComponent from "../editor/components/HemisphereLightComponent";
@@ -11,6 +10,7 @@ import SceneReferenceComponent from "../editor/components/SceneReferenceComponen
 import ShadowComponent from "../editor/components/ShadowComponent";
 import SpotLightComponent from "../editor/components/SpotLightComponent";
 import SkyboxComponent from "../editor/components/SkyboxComponent";
+import "./AddComponentDropdown.scss";
 
 const getIconByName = name => {
   switch (name) {
@@ -46,7 +46,7 @@ SelectContainer.propTypes = {
 const Placeholder = props => {
   const { menuIsOpen } = props.selectProps;
   const textStyle = menuIsOpen ? { color: "black" } : { color: "white" };
-  const iconStyle = menuIsOpen ? { color: "#B1B1B3" } : { color: "white" };
+  const iconStyle = menuIsOpen ? { color: "#B1B1B3", paddingRight: "4px" } : { color: "white", paddingRight: "4px" };
   const icon = menuIsOpen ? "fa-search" : "fa-plus";
   const text = props.children;
   return (
@@ -73,7 +73,7 @@ const Option = props => {
     <components.Option {...props}>
       <span>
         <i className={classNames("fas", icon)} />
-        {label}
+        <span>{label}</span>
       </span>
     </components.Option>
   );
@@ -100,9 +100,15 @@ export default class AddComponentDropdown extends Component {
     };
   }
 
-  toggleSelect = () => {
+  openSelectMenu = () => {
     this.setState({
-      isOpen: !this.state.isOpen
+      isOpen: true
+    });
+  };
+
+  closeSelectMEnu = () => {
+    this.setState({
+      isOpen: false
     });
   };
 
@@ -117,19 +123,34 @@ export default class AddComponentDropdown extends Component {
         border: 0,
         margin: "6px auto",
         padding: this.state.isOpen ? "0px 8px" : "0px",
-        display: "inline-block"
+        display: "inline-block",
+        outline: "0"
       }),
       container: base => ({
         ...base,
         height: "20px",
         padding: this.state.isOpen ? "0px 8px" : "0px"
       }),
+      valueContainer: base => ({
+        ...base,
+        padding: "0px 8px"
+      }),
+      input: base => ({
+        ...base,
+        margin: "0px",
+        outline: "0"
+      }),
       menu: () => ({
         maxWidth: "220px",
         minWidth: "124px",
+        textAlign: "left",
         display: "inline-block",
+        borderCollapse: "separate",
         borderRadius: "4px",
-        textAlign: "left"
+        border: "1px solid black"
+      }),
+      menuList: () => ({
+        display: "inline-block"
       }),
       option: base => ({
         ...base,
@@ -138,8 +159,16 @@ export default class AddComponentDropdown extends Component {
     };
   };
 
+  onChange = e => {
+    const { onChange } = this.props;
+    onChange(e);
+    this.setState({
+      isOpen: false
+    });
+  };
+
   render() {
-    const { options, className, onChange } = this.props;
+    const { options } = this.props;
     const text = this.state.isOpen ? "Search..." : "Add a component";
     return (
       <Select
@@ -154,9 +183,10 @@ export default class AddComponentDropdown extends Component {
         placeholder={text}
         classNamePrefix={this.state.isOpen ? "rc-select" : null}
         options={options}
-        onChange={onChange}
-        onMenuOpen={this.toggleSelect}
-        onMenuClose={this.toggleSelect}
+        onChange={this.onChange}
+        onMenuOpen={this.openSelectMenu}
+        onMenuClose={this.closeSelectMEnu}
+        value={null}
       />
     );
   }
