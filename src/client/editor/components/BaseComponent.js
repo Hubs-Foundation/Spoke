@@ -1,6 +1,6 @@
 import THREE from "../three";
 import { types } from "./utils";
-import { absoluteToRelativeURL } from "../utils/absoluteToRelativeURL";
+import absoluteToRelativeURL from "../utils/absoluteToRelativeURL";
 
 export function getDefaultsFromSchema(schema) {
   const defaults = {};
