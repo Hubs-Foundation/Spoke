@@ -565,7 +565,7 @@ export default class Editor {
             const { props } = componentDef;
             if (componentDef.src) {
               // Process SaveableComponent
-              componentDef.src = new URL(componentDef.src, absoluteBaseURL.href);
+              componentDef.src = new URL(componentDef.src, absoluteBaseURL.href).href;
               const resp = await fetch(componentDef.src);
               let json = {};
               if (resp.ok) {
