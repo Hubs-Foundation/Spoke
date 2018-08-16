@@ -61,14 +61,8 @@ export default class StandardMaterialComponent extends SaveableComponent {
       return;
     }
 
-    const { href, protocol } = new URL(url, window.location);
-
-    if (protocol === "blob:") {
-      return;
-    }
-
     try {
-      const texture = await textureCache.get(href);
+      const texture = await textureCache.get(url);
       if (sRGB) {
         texture.encoding = THREE.sRGBEncoding;
       }
@@ -78,6 +72,7 @@ export default class StandardMaterialComponent extends SaveableComponent {
       texture.wrapT = THREE.RepeatWrapping;
       this._object[map] = texture;
     } catch (e) {
+      console.error(e);
       this._object[map] = null;
       this._object.needsUpdate = true;
       this.propValidation[propertyName] = false;

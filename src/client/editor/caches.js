@@ -6,7 +6,8 @@ class Cache {
   _cache = new Map();
 
   evict(url) {
-    this._cache.delete(url);
+    const absoluteURL = new URL(url, window.location).href;
+    this._cache.delete(absoluteURL);
   }
 
   _clear() {
@@ -16,15 +17,16 @@ class Cache {
 
 class TextureCache extends Cache {
   get(url) {
-    if (!this._cache.has(url)) {
+    const absoluteURL = new URL(url, window.location).href;
+    if (!this._cache.has(absoluteURL)) {
       this._cache.set(
-        url,
+        absoluteURL,
         new Promise((resolve, reject) => {
-          textureLoader.load(url, resolve, null, reject);
+          textureLoader.load(absoluteURL, resolve, null, reject);
         })
       );
     }
-    return this._cache.get(url);
+    return this._cache.get(absoluteURL);
   }
 
   disposeAndClear() {
@@ -34,6 +36,8 @@ class TextureCache extends Cache {
     this._clear();
   }
 }
+
+export const textureCache = new TextureCache();
 
 function clonable(obj) {
   // Punting on skinned meshes for now because of https://github.com/mrdoob/three.js/pull/14494
@@ -48,22 +52,33 @@ function clonable(obj) {
 
 class GLTFCache extends Cache {
   get(url) {
-    if (!this._cache.has(url)) {
+    const absoluteURL = new URL(url, window.location).href;
+    if (!this._cache.has(absoluteURL)) {
       this._cache.set(
-        url,
+        absoluteURL,
         new Promise((resolve, reject) => {
           const loader = new THREE.GLTFLoader();
-          loader.load(url, resolve, null, reject);
+          loader.load(absoluteURL, resolve, null, reject);
         })
       );
     }
-    return this._cache.get(url).then(gltf => {
+    return this._cache.get(absoluteURL).then(gltf => {
       if (!clonable(gltf.scene)) return gltf;
       const clonedGLTF = { scene: gltf.scene.clone() };
       clonedGLTF.scene.traverse(obj => {
         if (!obj.material) return;
         if (obj.material.clone) {
           obj.material = obj.material.clone();
+
+          for (const key in obj.material) {
+            const prop = obj.material[key];
+            if (prop instanceof THREE.Texture) {
+              if (prop.image.src) {
+                const absoluteTextureURL = new URL(prop.image.src, window.location).href;
+                textureCache._cache.set(absoluteTextureURL, Promise.resolve(prop));
+              }
+            }
+          }
         } else if (obj.material.length) {
           obj.material = obj.material.map(mat => mat.clone());
         } else {
@@ -92,7 +107,5 @@ class GLTFCache extends Cache {
     this._clear();
   }
 }
-
-export const textureCache = new TextureCache();
 
 export const gltfCache = new GLTFCache();
