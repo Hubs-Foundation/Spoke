@@ -3,15 +3,10 @@ import { types } from "./utils";
 import THREE from "../three";
 import { textureCache } from "../caches";
 
-function getURLPath(url) {
-  const href = window.location.href;
-  return new URL(url, href.substring(0, href.length - 1)).pathname;
-}
-
 function getTextureSrc(texture) {
   if (!texture) return null;
   if (!texture.image) return null;
-  return getURLPath(texture.image.src);
+  return new URL(texture.image.src, window.location).href;
 }
 
 const imageFilters = [".jpg", ".png"];
@@ -66,11 +61,14 @@ export default class StandardMaterialComponent extends SaveableComponent {
       return;
     }
 
-    const urlPath = getURLPath(url);
-    if (urlPath === getTextureSrc(this._object[map])) return;
+    const { href, protocol } = new URL(url, window.location);
+
+    if (protocol === "blob:") {
+      return;
+    }
 
     try {
-      const texture = await textureCache.get(urlPath);
+      const texture = await textureCache.get(href);
       if (sRGB) {
         texture.encoding = THREE.sRGBEncoding;
       }

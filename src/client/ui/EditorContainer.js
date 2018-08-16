@@ -14,11 +14,13 @@ import PropertiesPanelContainer from "./panels/PropertiesPanelContainer";
 import AssetExplorerPanelContainer from "./panels/AssetExplorerPanelContainer";
 import { EditorContextProvider } from "./contexts/EditorContext";
 import { DialogContextProvider } from "./contexts/DialogContext";
-import { OptionDialog } from "./dialogs/OptionDialog";
+import { SceneActionsContextProvider } from "./contexts/SceneActionsContext";
+import ConfirmDialog from "./dialogs/ConfirmDialog";
 import styles from "../common.scss";
 import FileDialog from "./dialogs/FileDialog";
-import ProgressDialog, { PROGRESS_DIALOG_DELAY } from "./dialogs/ProgressDialog";
+import ProgressDialog from "./dialogs/ProgressDialog";
 import ErrorDialog from "./dialogs/ErrorDialog";
+import ConflictError from "../editor/ConflictError";
 
 class EditorContainer extends Component {
   static defaultProps = {
@@ -121,7 +123,7 @@ class EditorContainer extends Component {
             },
             {
               name: "Export Scene...",
-              action: e => this.onOpenExportModal(e)
+              action: e => this.onExportScene(e)
             },
             {
               name: "Open Project Directory",
@@ -159,11 +161,7 @@ class EditorContainer extends Component {
 
   componentDidMount() {
     this.props.editor.signals.windowResize.dispatch();
-    this.props.editor.signals.popScene.add(this.onPopScene);
-    this.props.editor.signals.openScene.add(this.onOpenScene);
-    this.props.editor.signals.extendScene.add(this.onExtendScene);
     this.props.editor.signals.sceneModified.add(this.onSceneModified);
-    this.props.editor.signals.sceneErrorOccurred.add(this.onSceneErrorOccurred);
 
     window.onbeforeunload = e => {
       if (!this.props.editor.sceneModified()) {
@@ -188,6 +186,10 @@ class EditorContainer extends Component {
     this.props.editor.signals.windowResize.dispatch();
   };
 
+  /**
+   *  Dialog Context
+   */
+
   showDialog = (DialogComponent, dialogProps = {}) => {
     this.setState({
       DialogComponent,
@@ -202,12 +204,20 @@ class EditorContainer extends Component {
     });
   };
 
+  dialogContext = {
+    showDialog: this.showDialog,
+    hideDialog: this.hideDialog
+  };
+
   onCloseModal = () => {
     this.setState({
       openModal: null
     });
   };
 
+  /**
+   *  Hotkey / Hamburger Menu Handlers
+   */
   onUndo = () => {
     if (this.state.DialogComponent !== null) {
       return;
@@ -233,104 +243,51 @@ class EditorContainer extends Component {
     }
   };
 
-  openSaveAsDialog(onSave) {
-    this.showDialog(FileDialog, {
-      title: "Save scene as...",
-      filters: [".scene"],
-      extension: ".scene",
-      confirmButtonLabel: "Save",
-      onConfirm: onSave
-    });
-  }
-
   onSave = async e => {
     e.preventDefault();
 
+    // Disable when dialog is shown.
     if (this.state.DialogComponent !== null) {
       return;
     }
 
-    if (!this.props.editor.sceneInfo.uri || this.props.editor.sceneInfo.uri.endsWith(".gltf")) {
-      this.openSaveAsDialog(this.serializeAndSaveScene);
+    if (this.props.editor.sceneInfo.uri) {
+      this.onSaveScene(this.props.editor.sceneInfo.uri);
     } else {
-      this.serializeAndSaveScene(this.props.editor.sceneInfo.uri);
+      this.onSaveSceneAsDialog();
     }
   };
 
   onSaveAs = e => {
     e.preventDefault();
 
+    // Disable when dialog is shown.
     if (this.state.DialogComponent !== null) {
       return;
     }
 
-    this.openSaveAsDialog(this.serializeAndSaveScene);
+    this.onSaveSceneAsDialog();
   };
 
-  serializeAndSaveScene = async sceneURI => {
-    let saved = false;
-
-    this.hideDialog();
-
-    try {
-      setTimeout(() => {
-        if (saved) return;
-        this.showDialog(ProgressDialog, {
-          title: "Saving Scene",
-          message: "Saving scene..."
-        });
-      }, PROGRESS_DIALOG_DELAY);
-
-      await this.props.editor.saveScene(sceneURI);
-
-      this.onSceneModified();
-
-      this.hideDialog();
-    } catch (e) {
-      console.error(e);
-      this.showDialog(ErrorDialog, {
-        title: "Error Saving Scene",
-        message: e.message || "There was an error when saving the scene."
-      });
-    } finally {
-      saved = true;
-    }
-  };
-
-  onOpenExportModal = e => {
+  onExportScene = e => {
     e.preventDefault();
 
-    this.showDialog(FileDialog, {
-      title: "Select the output directory",
-      confirmButtonLabel: "Export scene",
-      directory: true,
-      onConfirm: async outputPath => {
-        let exported = false;
+    // Disable when dialog is shown.
+    if (this.state.DialogComponent !== null) {
+      return;
+    }
 
-        this.hideDialog();
+    this.onExportSceneDialog();
+  };
 
-        try {
-          setTimeout(() => {
-            if (exported) return;
-            this.showDialog(ProgressDialog, {
-              title: "Exporting Scene",
-              message: "Exporting scene..."
-            });
-          }, PROGRESS_DIALOG_DELAY);
+  /**
+   * Scene Event Handlers
+   */
 
-          await this.props.editor.exportScene(outputPath);
-
-          this.hideDialog();
-        } catch (e) {
-          console.error(e);
-          this.showDialog(ErrorDialog, {
-            title: "Error Exporting Scene",
-            message: e.message || "There was an error when exporting the scene."
-          });
-        } finally {
-          exported = true;
-        }
-      }
+  onEditorError = e => {
+    this.showDialog(ErrorDialog, {
+      title: e.title || "Error",
+      message: e.message || "There was an unknown error."
     });
   };
 
@@ -339,116 +296,267 @@ class EditorContainer extends Component {
     document.title = `Spoke - ${this.props.editor.scene.name}${modified}`;
   };
 
-  confirmSceneChange = () => {
-    return (
-      !this.props.editor.sceneModified() ||
-      confirm("This scene has unsaved changes. Do you really want to really want to change scenes without saving?")
-    );
+  /**
+   *  Scene Actions
+   */
+
+  waitForFile(options) {
+    return new Promise(resolve => {
+      const props = Object.assign(
+        {
+          onConfirm: filePath => resolve(filePath),
+          onCancel: () => {
+            this.hideDialog();
+            resolve(null);
+          }
+        },
+        options
+      );
+
+      this.showDialog(FileDialog, props);
+    });
+  }
+
+  waitForConfirm(options) {
+    return new Promise(resolve => {
+      const props = Object.assign(
+        {
+          onConfirm: () => {
+            this.hideDialog();
+            resolve(true);
+          },
+          onCancel: () => {
+            this.hideDialog();
+            resolve(false);
+          }
+        },
+        options
+      );
+
+      this.showDialog(ConfirmDialog, props);
+    });
+  }
+
+  confirmSceneChange = async () => {
+    if (!this.props.editor.sceneModified()) {
+      return true;
+    }
+
+    return this.waitForConfirm({
+      title: "Are you sure you wish to change the scene?",
+      message: "This scene has unsaved changes. Do you really want to really want to change scenes without saving?"
+    });
   };
 
-  onPopScene = () => {
-    if (!this.confirmSceneChange()) return;
-    this.props.editor.popScene();
-  };
-
-  onNewScene = () => {
-    if (!this.confirmSceneChange()) return;
+  onNewScene = async () => {
+    if (!(await this.confirmSceneChange())) return;
     this.props.editor.loadNewScene();
+  };
+
+  onOpenSceneDialog = async () => {
+    const filePath = await this.waitForFile({
+      title: "Open scene...",
+      filters: [".scene"],
+      extension: ".scene",
+      confirmButtonLabel: "Open"
+    });
+
+    if (filePath === null) return;
+
+    await this.onOpenScene(filePath);
   };
 
   onOpenScene = async uri => {
     if (this.props.editor.sceneInfo.uri === uri) return;
     if (!this.confirmSceneChange()) return;
-    this._tryLoadSceneFromURI(uri, this.props.editor.openRootScene.bind(this.props.editor), this.onOpenScene);
+
+    this.showDialog(ProgressDialog, {
+      title: "Opening Scene",
+      message: "Opening scene..."
+    });
+
+    try {
+      await this.props.editor.openScene(uri);
+      this.hideDialog();
+    } catch (e) {
+      console.error(e);
+
+      this.showDialog(ErrorDialog, {
+        title: "Error opening scene.",
+        message: e.message || "There was an error when opening the scene."
+      });
+    }
+  };
+
+  onSaveSceneAsDialog = async () => {
+    const filePath = await this.waitForFile({
+      title: "Save scene as...",
+      filters: [".scene"],
+      extension: ".scene",
+      confirmButtonLabel: "Save"
+    });
+
+    if (filePath === null) return;
+
+    await this.onSaveScene(filePath);
+  };
+
+  onSaveScene = async sceneURI => {
+    this.showDialog(ProgressDialog, {
+      title: "Saving Scene",
+      message: "Saving scene..."
+    });
+
+    try {
+      await this.props.editor.saveScene(sceneURI);
+      this.hideDialog();
+    } catch (e) {
+      console.error(e);
+
+      this.showDialog(ErrorDialog, {
+        title: "Error Saving Scene",
+        message: e.message || "There was an error when saving the scene."
+      });
+    }
   };
 
   onExtendScene = async uri => {
-    if (!this.confirmSceneChange()) return;
-    this._tryLoadSceneFromURI(uri, this.props.editor.extendScene.bind(this.props.editor), this.onExtendScene);
-  };
+    if (!(await this.confirmSceneChange())) return;
 
-  _tryLoadSceneFromURI = async (uri, action, reload) => {
-    let opened = false;
+    this.showDialog(ProgressDialog, {
+      title: "Extending Prefab",
+      message: "Extending prefab..."
+    });
 
     try {
-      setTimeout(() => {
-        if (opened) return;
-        this.showDialog(ProgressDialog, {
-          title: "Opening Scene",
-          message: "Opening scene..."
-        });
-      }, PROGRESS_DIALOG_DELAY);
-      await action(uri);
+      await this.props.editor.extendScene(uri);
       this.hideDialog();
     } catch (e) {
-      if (e.type === "import" || e.type === "rename") {
-        this.onSceneErrorOccurred(e, uri, reload);
-      } else {
-        this.showDialog(OptionDialog, {
-          title: "Error Opening Scene",
-          message: `
-                ${e.message}:
-                ${e.url}.
-                Please make sure the file exists and then press "Resolved" to reload the scene.
-              `,
-          options: [
-            {
-              label: "Resolved",
-              onClick: () => {
-                this.hideDialog();
-                reload(uri);
-              }
-            }
-          ],
-          cancelLabel: "Cancel"
-        });
-      }
-    } finally {
-      opened = true;
-    }
-  };
+      console.error(e);
 
-  onSceneErrorOccurred = (error, uri, reload) => {
-    if (error.type === "import") {
-      // empty/duplicate node names in the importing file
-      this.showDialog(OptionDialog, {
-        title: "Resolve Node Conflicts",
-        message:
-          "We've found duplicate and/or missing node names in this file.\nWould you like to fix all conflicts?\n*This will modify the original file.",
-        options: [
-          {
-            label: "Okay",
-            onClick: () => {
-              this.hideDialog();
-              this._overwriteConflictsInSource(error.uri, error.handler, () => {
-                reload(uri);
-              });
-            }
-          }
-        ],
-        cancelLabel: "Cancel"
-      });
-    } else if (error.type === "rename") {
-      // renaming
       this.showDialog(ErrorDialog, {
-        title: "Name in Use",
-        message: "Node name is already in use. Please choose another.",
-        confirmLabel: "Okay"
+        title: "Error extending prefab.",
+        message: e.message || "There was an error when extending the prefab."
       });
     }
   };
 
-  _overwriteConflictsInSource = async (uri, conflictHandler, callback) => {
-    const project = this.props.editor.project;
-    if (uri && uri.endsWith(".gltf")) {
-      const originalGLTF = await project.readJSON(uri);
-      const nodes = originalGLTF.nodes;
-      if (nodes) {
-        conflictHandler.updateNodeNames(nodes);
-        await project.writeJSON(uri, originalGLTF);
-        callback();
-      }
+  onEditPrefab = async (object, path) => {
+    this.showDialog(ProgressDialog, {
+      title: "Opening Prefab",
+      message: "Opening prefab..."
+    });
+
+    try {
+      await this.props.editor.editScenePrefab(object, path);
+      this.hideDialog();
+    } catch (e) {
+      console.error(e);
+
+      this.showDialog(ErrorDialog, {
+        title: "Error opening prefab.",
+        message: e.message || "There was an error when opening the prefab."
+      });
     }
+  };
+
+  onPopScene = async () => {
+    if (!(await this.confirmSceneChange())) return;
+    this.props.editor.popScene();
+  };
+
+  onCreatePrefabFromGLTF = async gltfPath => {
+    try {
+      const defaultFileName = gltfPath
+        .split("/")
+        .pop()
+        .replace(".gltf", "")
+        .replace(".glb", "");
+
+      const outputPath = await this.waitForFile({
+        title: "Save prefab as...",
+        filters: [".scene"],
+        extension: ".scene",
+        defaultFileName,
+        confirmButtonLabel: "Create Prefab"
+      });
+
+      if (!outputPath) return null;
+
+      this.showDialog(ProgressDialog, {
+        title: "Creating Prefab",
+        message: "Creating prefab..."
+      });
+
+      await this.props.editor.createPrefabFromGLTF(gltfPath, outputPath);
+
+      this.hideDialog();
+
+      return outputPath;
+    } catch (e) {
+      if (e instanceof ConflictError) {
+        const result = await this.waitForConfirm({
+          title: "Resolve Node Conflicts",
+          message:
+            "We've found duplicate and/or missing node names in this file.\nWould you like to fix all conflicts?\n*This will modify the original file."
+        });
+
+        if (!result) return null;
+
+        if (await this.props.editor.fixConflictError(e)) {
+          return this.onCreatePrefabFromGLTF(gltfPath);
+        }
+      }
+
+      console.error(e);
+
+      this.showDialog(ErrorDialog, {
+        title: "Error Creating Prefab",
+        message: e.message || "There was an error when creating the prefab."
+      });
+
+      return null;
+    }
+  };
+
+  onExportSceneDialog = async () => {
+    const outputPath = await this.waitForFile({
+      title: "Select the output directory",
+      directory: true,
+      confirmButtonLabel: "Export scene"
+    });
+
+    if (outputPath === null) return;
+
+    this.showDialog(ProgressDialog, {
+      title: "Exporting Scene",
+      message: "Exporting scene..."
+    });
+
+    try {
+      await this.props.editor.exportScene(outputPath);
+      this.hideDialog();
+    } catch (e) {
+      console.error(e);
+
+      this.showDialog(ErrorDialog, {
+        title: "Error Exporting Scene",
+        message: e.message || "There was an error when exporting the scene."
+      });
+    }
+  };
+
+  sceneActionsContext = {
+    onNewScene: this.onNewScene,
+    onOpenSceneDialog: this.onOpenSceneDialog,
+    onOpenScene: this.onOpenScene,
+    onSaveSceneAsDialog: this.onSaveSceneAsDialog,
+    onSaveScene: this.onSaveScene,
+    onExtendScene: this.onExtendScene,
+    onEditPrefab: this.onEditPrefab,
+    onPopScene: this.onPopScene,
+    onCreatePrefabFromGLTF: this.onCreatePrefabFromGLTF,
+    onExportSceneDialog: this.onExportSceneDialog
   };
 
   renderPanel = (panelId, path) => {
@@ -466,40 +574,40 @@ class EditorContainer extends Component {
 
     const { initialPanels, editor } = this.props;
 
-    const dialogContext = { showDialog: this.showDialog, hideDialog: this.hideDialog };
-
     return (
       <DragDropContextProvider backend={HTML5Backend}>
         <HotKeys keyMap={this.state.keyMap} handlers={this.state.globalHotKeyHandlers} className={styles.flexColumn}>
           <EditorContextProvider value={editor}>
-            <DialogContextProvider value={dialogContext}>
-              <MenuBarContainer menus={menus} />
-              <MosaicWithoutDragDropContext
-                className="mosaic-theme"
-                renderTile={this.renderPanel}
-                initialValue={initialPanels}
-                onChange={this.onPanelChange}
-              />
-              <Modal
-                ariaHideApp={false}
-                isOpen={!!openModal}
-                onRequestClose={this.onCloseModal}
-                shouldCloseOnOverlayClick={openModal && openModal.shouldCloseOnOverlayClick}
-                className="Modal"
-                overlayClassName="Overlay"
-              >
-                {openModal && <openModal.component {...openModal.props} />}
-              </Modal>
-              <Modal
-                ariaHideApp={false}
-                isOpen={!!DialogComponent}
-                onRequestClose={this.hideDialog}
-                shouldCloseOnOverlayClick={false}
-                className="Modal"
-                overlayClassName="Overlay"
-              >
-                {DialogComponent && <DialogComponent {...dialogProps} hideDialog={this.hideDialog} />}
-              </Modal>
+            <DialogContextProvider value={this.dialogContext}>
+              <SceneActionsContextProvider value={this.sceneActionsContext}>
+                <MenuBarContainer menus={menus} />
+                <MosaicWithoutDragDropContext
+                  className="mosaic-theme"
+                  renderTile={this.renderPanel}
+                  initialValue={initialPanels}
+                  onChange={this.onPanelChange}
+                />
+                <Modal
+                  ariaHideApp={false}
+                  isOpen={!!openModal}
+                  onRequestClose={this.onCloseModal}
+                  shouldCloseOnOverlayClick={openModal && openModal.shouldCloseOnOverlayClick}
+                  className="Modal"
+                  overlayClassName="Overlay"
+                >
+                  {openModal && <openModal.component {...openModal.props} />}
+                </Modal>
+                <Modal
+                  ariaHideApp={false}
+                  isOpen={!!DialogComponent}
+                  onRequestClose={this.hideDialog}
+                  shouldCloseOnOverlayClick={false}
+                  className="Modal"
+                  overlayClassName="Overlay"
+                >
+                  {DialogComponent && <DialogComponent {...dialogProps} hideDialog={this.hideDialog} />}
+                </Modal>
+              </SceneActionsContextProvider>
             </DialogContextProvider>
           </EditorContextProvider>
         </HotKeys>

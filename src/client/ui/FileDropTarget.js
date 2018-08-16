@@ -1,6 +1,7 @@
 import React from "react";
 import PropTypes from "prop-types";
 import { DropTarget } from "react-dnd";
+import { NativeTypes } from "react-dnd-html5-backend";
 import styles from "./FileDropTarget.scss";
 
 function FileDropTarget({ connectDropTarget, children }) {
@@ -13,13 +14,13 @@ FileDropTarget.propTypes = {
 };
 
 export default DropTarget(
-  "file",
+  ["file", NativeTypes.FILE, NativeTypes.URL],
   {
     drop(props, monitor) {
       const item = monitor.getItem();
 
       if (props.onDropFile) {
-        props.onDropFile(item.file);
+        props.onDropFile(item);
       }
 
       return item;
