@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import Select, { components } from "react-select";
 import PropTypes from "prop-types";
 import classNames from "classnames";
-import styles from "./AddComponentDropdown";
+import styles from "./AddComponentDropdown.scss";
 import AmbientLightComponent from "../editor/components/AmbientLightComponent";
 import DirectionalLightComponent from "../editor/components/DirectionalLightComponent";
 import HemisphereLightComponent from "../editor/components/HemisphereLightComponent";
@@ -36,11 +36,7 @@ const getIconByName = name => {
 };
 
 const SelectContainer = ({ children, ...props }) => {
-  return (
-    <components.SelectContainer className={styles.selectContainer} {...props}>
-      {children}
-    </components.SelectContainer>
-  );
+  return <components.SelectContainer {...props}>{children}</components.SelectContainer>;
 };
 
 SelectContainer.propTypes = {
@@ -48,12 +44,15 @@ SelectContainer.propTypes = {
 };
 
 const Placeholder = props => {
-  const icon = props.selectProps.innerProps.placeholderIcon;
+  const { menuIsOpen } = props.selectProps;
+  const textStyle = menuIsOpen ? { color: "black" } : { color: "white" };
+  const iconStyle = menuIsOpen ? { color: "#B1B1B3" } : { color: "white" };
+  const icon = menuIsOpen ? "fa-search" : "fa-plus";
   const text = props.children;
   return (
     <components.Placeholder {...props}>
-      <span>
-        <i className={classNames("fas", icon)} />
+      <span style={textStyle}>
+        <i style={iconStyle} className={classNames("fas", icon)} />
         {text}
       </span>
     </components.Placeholder>
@@ -63,9 +62,7 @@ const Placeholder = props => {
 Placeholder.propTypes = {
   children: PropTypes.string,
   selectProps: PropTypes.shape({
-    innerProps: PropTypes.shape({
-      placeholderIcon: PropTypes.string
-    })
+    menuIsOpen: PropTypes.bool
   })
 };
 
@@ -109,6 +106,38 @@ export default class AddComponentDropdown extends Component {
     });
   };
 
+  getCustomStyles = () => {
+    return {
+      control: base => ({
+        ...base,
+        backgroundColor: this.state.isOpen ? "white" : "#006EFF",
+        minHeight: "20px",
+        maxWidth: "220px",
+        minWidth: "124px",
+        border: 0,
+        margin: "6px auto",
+        padding: this.state.isOpen ? "0px 8px" : "0px",
+        display: "inline-block"
+      }),
+      container: base => ({
+        ...base,
+        height: "20px",
+        padding: this.state.isOpen ? "0px 8px" : "0px"
+      }),
+      menu: () => ({
+        maxWidth: "220px",
+        minWidth: "124px",
+        display: "inline-block",
+        borderRadius: "4px",
+        textAlign: "left"
+      }),
+      option: base => ({
+        ...base,
+        backgroundColor: "black"
+      })
+    };
+  };
+
   render() {
     const { options, className, onChange } = this.props;
     const text = this.state.isOpen ? "Search..." : "Add a component";
@@ -121,13 +150,13 @@ export default class AddComponentDropdown extends Component {
           SelectContainer,
           Option
         }}
+        styles={this.getCustomStyles()}
         placeholder={text}
+        classNamePrefix={this.state.isOpen ? "rc-select" : null}
         options={options}
-        className={className}
         onChange={onChange}
         onMenuOpen={this.toggleSelect}
         onMenuClose={this.toggleSelect}
-        innerProps={{ placeholderIcon: this.state.isOpen ? "fa-search" : "fa-plus" }}
       />
     );
   }

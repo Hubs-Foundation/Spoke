@@ -54,22 +54,9 @@
 :local(.addComponentContainer) {
   margin-top: 12px !important;
   width: 100%;
-}
-
-:local(.addComponentSelect) {
-  width: 100%;
-
-  & > div {
-    background-color: $blue;
-    // text-align: center;
-    border-radius: 0;
-    border: none;
-    cursor: pointer;
-
-    &:hover {
-      background-color: $blue-hover;
-    }
-  }
+  height: 32px;
+  background-color: $blue;
+  text-align: center;
 }
 
 :local(.propertiesPanelContainer input[role="combobox"]) {
