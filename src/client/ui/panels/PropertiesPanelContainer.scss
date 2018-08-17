@@ -78,3 +78,7 @@
 :local(.propertiesPanelContainer input[role="combobox"]) {
   color: $text;
 }
+
+.static-select__option:hover {
+  background-color: $blue;
+}

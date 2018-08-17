@@ -275,6 +275,40 @@ class PropertiesPanelContainer extends Component {
       }
     ];
 
+    const staticStyle = {
+      control: base => ({
+        ...base,
+        backgroundColor: "black",
+        minHeight: "24px",
+        border: "1px solid #5D646C"
+      }),
+      input: base => ({
+        ...base,
+        margin: "0px"
+      }),
+      dropdownIndicator: base => ({
+        ...base,
+        padding: "0"
+      }),
+      placeholder: base => ({
+        ...base,
+        color: "white"
+      }),
+      menu: () => ({
+        borderRadius: "4px",
+        border: "1px solid black",
+        padding: "0"
+      }),
+      menuList: base => ({
+        ...base,
+        padding: "0"
+      }),
+      option: base => ({
+        ...base,
+        backgroundColor: "black"
+      })
+    };
+
     return (
       <div className={styles.propertiesPanelContainer}>
         <PropertyGroup
@@ -291,9 +325,12 @@ class PropertiesPanelContainer extends Component {
               <InputGroup className={styles.topBarStatic} name="Static">
                 <Select
                   className={styles.staticSelect}
+                  classNamePrefix={"static-select"}
+                  styles={staticStyle}
                   value={staticMode}
+                  components={{ IndicatorSeparator: () => null }}
                   options={staticModeOptions}
-                  clearable={false}
+                  isClearable={false}
                   onChange={this.onUpdateStatic}
                 />
               </InputGroup>
