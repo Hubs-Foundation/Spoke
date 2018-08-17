@@ -342,8 +342,8 @@ class EditorContainer extends Component {
     }
 
     return this.waitForConfirm({
-      title: "Are you sure you wish to change the scene?",
-      message: "This scene has unsaved changes. Do you really want to really want to change scenes without saving?"
+      title: "Unsaved Chages",
+      message: "This scene has unsaved changes. Are you sure you leave without saving?"
     });
   };
 
