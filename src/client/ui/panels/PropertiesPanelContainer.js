@@ -274,6 +274,7 @@ class PropertiesPanelContainer extends Component {
         label: `Inherits (${parentComputedStaticMode})`
       }
     ];
+    const staticModeLabel = staticModeOptions.filter(option => option.value === staticMode)[0].label;
 
     const staticStyle = {
       control: base => ({
@@ -309,6 +310,10 @@ class PropertiesPanelContainer extends Component {
       option: base => ({
         ...base,
         backgroundColor: "black"
+      }),
+      singleValue: base => ({
+        ...base,
+        color: "white"
       })
     };
 
@@ -330,7 +335,14 @@ class PropertiesPanelContainer extends Component {
                   className={styles.staticSelect}
                   classNamePrefix={"static-select"}
                   styles={staticStyle}
-                  value={staticMode}
+                  value={
+                    staticMode
+                      ? {
+                          value: staticMode,
+                          label: staticModeLabel
+                        }
+                      : null
+                  }
                   components={{ IndicatorSeparator: () => null }}
                   options={staticModeOptions}
                   isClearable={false}
