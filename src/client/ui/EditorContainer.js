@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
 import { DragDropContextProvider } from "react-dnd";
-import HTML5Backend from "react-dnd-html5-backend";
+import HTML5Backend from "@mozillareality/react-dnd-html5-backend";
 import { MosaicWindow } from "react-mosaic-component";
 import { HotKeys } from "react-hotkeys";
 import Modal from "react-modal";
@@ -546,6 +546,25 @@ class EditorContainer extends Component {
     }
   };
 
+  onWriteFiles = async (uploadPath, files) => {
+    this.showDialog(ProgressDialog, {
+      title: "Copying files",
+      message: "Copying files..."
+    });
+
+    try {
+      this.props.editor.project.writeFiles(uploadPath, files);
+      this.hideDialog();
+    } catch (e) {
+      console.error(e);
+
+      this.showDialog(ErrorDialog, {
+        title: "Error copying files",
+        message: e.message || "There was an error when copying the files to the project."
+      });
+    }
+  };
+
   sceneActionsContext = {
     onNewScene: this.onNewScene,
     onOpenSceneDialog: this.onOpenSceneDialog,
@@ -556,7 +575,8 @@ class EditorContainer extends Component {
     onEditPrefab: this.onEditPrefab,
     onPopScene: this.onPopScene,
     onCreatePrefabFromGLTF: this.onCreatePrefabFromGLTF,
-    onExportSceneDialog: this.onExportSceneDialog
+    onExportSceneDialog: this.onExportSceneDialog,
+    onWriteFiles: this.onWriteFiles
   };
 
   renderPanel = (panelId, path) => {

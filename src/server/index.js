@@ -207,7 +207,7 @@ export default async function startServer(options) {
     )
   );
 
-  router.post("/api/files/:filePath*", async ctx => {
+  router.post("/api/files/:filePath*", koaBody({ multipart: true, text: false }), async ctx => {
     const filePath = ctx.params.filePath ? path.resolve(projectPath, ctx.params.filePath) : projectPath;
 
     if (ctx.request.query.open) {
@@ -216,6 +216,11 @@ export default async function startServer(options) {
     } else if (ctx.request.query.mkdir) {
       // Make the directory at filePath if it doesn't already exist.
       await fs.ensureDir(filePath);
+    } else if (ctx.request.files) {
+      for (const file of Object.values(ctx.request.files)) {
+        const destPath = path.join(filePath, file.name);
+        await fs.move(file.path, destPath, { overwrite: true });
+      }
     } else {
       // If uploading as text body, write it to filePath using the stream API.
       const writeStream = fs.createWriteStream(filePath, { flags: "w" });

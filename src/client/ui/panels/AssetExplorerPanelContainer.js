@@ -14,6 +14,7 @@ import DraggableFile from "../DraggableFile";
 import { ContextMenu, MenuItem, ContextMenuTrigger } from "react-contextmenu";
 import folderIcon from "../../assets/folder-icon.svg";
 import ErrorDialog from "../dialogs/ErrorDialog";
+import NativeFileDropTarget from "../NativeFileDropTarget";
 
 function collectFileMenuProps({ file }) {
   return file;
@@ -218,6 +219,13 @@ class AssetExplorerPanelContainer extends Component {
     }
   };
 
+  onDropNativeFiles = async (filesPromise, target) => {
+    const files = await filesPromise;
+
+    const directoryPath = target ? target.uri : this.props.editor.project.projectDirectoryPath;
+    this.props.sceneActions.onWriteFiles(directoryPath, files);
+  };
+
   renderNode = node => {
     return (
       <div
@@ -253,40 +261,44 @@ class AssetExplorerPanelContainer extends Component {
             onChange={this.onChange}
           />
         </div>
-        <ContextMenuTrigger
-          attributes={{ className: styles.rightColumn }}
-          holdToDisplay={-1}
-          id="current-directory-menu-default"
-        >
-          <IconGrid>
-            {files.map(file => (
-              <ContextMenuTrigger
-                key={file.uri}
-                holdToDisplay={-1}
-                id={getFileContextMenuId(file)}
-                file={file}
-                collect={collectFileMenuProps}
-              >
-                <DraggableFile
+        <NativeFileDropTarget onDropNativeFiles={this.onDropNativeFiles}>
+          <ContextMenuTrigger
+            attributes={{ className: styles.rightColumn }}
+            holdToDisplay={-1}
+            id="current-directory-menu-default"
+          >
+            <IconGrid>
+              {files.map(file => (
+                <ContextMenuTrigger
+                  key={file.uri}
+                  holdToDisplay={-1}
+                  id={getFileContextMenuId(file)}
                   file={file}
-                  selected={selectedFile && selectedFile.uri === file.uri}
-                  onClick={this.onClickFile}
+                  collect={collectFileMenuProps}
+                >
+                  <NativeFileDropTarget onDropNativeFiles={this.onDropNativeFiles} target={file}>
+                    <DraggableFile
+                      file={file}
+                      selected={selectedFile && selectedFile.uri === file.uri}
+                      onClick={this.onClickFile}
+                    />
+                  </NativeFileDropTarget>
+                </ContextMenuTrigger>
+              ))}
+              {this.state.newFolderActive && (
+                <Icon
+                  rename
+                  src={folderIcon}
+                  className={iconStyles.small}
+                  name={this.state.newFolderName}
+                  onChange={this.onNewFolderChange}
+                  onCancel={this.onCancelNewFolder}
+                  onSubmit={this.onSubmitNewFolder}
                 />
-              </ContextMenuTrigger>
-            ))}
-            {this.state.newFolderActive && (
-              <Icon
-                rename
-                src={folderIcon}
-                className={iconStyles.small}
-                name={this.state.newFolderName}
-                onChange={this.onNewFolderChange}
-                onCancel={this.onCancelNewFolder}
-                onSubmit={this.onSubmitNewFolder}
-              />
-            )}
-          </IconGrid>
-        </ContextMenuTrigger>
+              )}
+            </IconGrid>
+          </ContextMenuTrigger>
+        </NativeFileDropTarget>
         <ContextMenu id="directory-menu-default">
           <MenuItem>Open Directory</MenuItem>
           <MenuItem>Delete Directory</MenuItem>
