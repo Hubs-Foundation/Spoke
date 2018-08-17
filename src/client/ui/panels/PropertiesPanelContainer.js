@@ -281,15 +281,17 @@ class PropertiesPanelContainer extends Component {
         ...base,
         backgroundColor: "black",
         minHeight: "24px",
-        border: "1px solid #5D646C"
+        border: "1px solid #5D646C",
+        cursor: "pointer"
       }),
       input: base => ({
         ...base,
-        margin: "0px"
+        margin: "0px",
+        color: "white"
       }),
       dropdownIndicator: base => ({
         ...base,
-        padding: "0"
+        padding: "0 4px 0 0"
       }),
       placeholder: base => ({
         ...base,
@@ -301,7 +303,9 @@ class PropertiesPanelContainer extends Component {
         border: "1px solid black",
         backgroundColor: "black",
         outline: "none",
-        padding: "0"
+        padding: "0",
+        position: "absolute",
+        top: "20px"
       }),
       menuList: base => ({
         ...base,
@@ -309,7 +313,8 @@ class PropertiesPanelContainer extends Component {
       }),
       option: base => ({
         ...base,
-        backgroundColor: "black"
+        backgroundColor: "black",
+        cursor: "pointer"
       }),
       singleValue: base => ({
         ...base,
