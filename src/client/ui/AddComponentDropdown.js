@@ -156,6 +156,7 @@ export default class AddComponentDropdown extends Component {
         borderRadius: "4px",
         border: "1px solid black",
         position: "absolute",
+        zIndex: 2,
         right: "calc(50% - 110px)",
         top: "32px",
         boxShadow: "0px 4px 4px  rgba(0, 0, 0, 0.15)"
