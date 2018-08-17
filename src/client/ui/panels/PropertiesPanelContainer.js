@@ -294,9 +294,12 @@ class PropertiesPanelContainer extends Component {
         ...base,
         color: "white"
       }),
-      menu: () => ({
+      menu: base => ({
+        ...base,
         borderRadius: "4px",
         border: "1px solid black",
+        backgroundColor: "black",
+        outline: "none",
         padding: "0"
       }),
       menuList: base => ({
