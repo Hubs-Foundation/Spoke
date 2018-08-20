@@ -21,6 +21,7 @@ import FileDialog from "./dialogs/FileDialog";
 import ProgressDialog from "./dialogs/ProgressDialog";
 import ErrorDialog from "./dialogs/ErrorDialog";
 import ConflictError from "../editor/ConflictError";
+import { getUrlDirname, getUrlFilename } from "../utils/url-path";
 
 class EditorContainer extends Component {
   static defaultProps = {
@@ -393,7 +394,8 @@ class EditorContainer extends Component {
       title: "Save scene as...",
       filters: [".scene"],
       extension: ".scene",
-      confirmButtonLabel: "Save"
+      confirmButtonLabel: "Save",
+      initialPath: this.props.editor.sceneInfo.uri
     });
 
     if (filePath === null) return;
@@ -467,18 +469,16 @@ class EditorContainer extends Component {
 
   onCreatePrefabFromGLTF = async gltfPath => {
     try {
-      const defaultFileName = gltfPath
-        .split("/")
-        .pop()
-        .replace(".gltf", "")
-        .replace(".glb", "");
+      const initialPath = getUrlDirname(gltfPath);
+      const defaultFileName = getUrlFilename(gltfPath);
 
       const outputPath = await this.waitForFile({
         title: "Save prefab as...",
         filters: [".scene"],
         extension: ".scene",
-        defaultFileName,
-        confirmButtonLabel: "Create Prefab"
+        confirmButtonLabel: "Create Prefab",
+        initialPath,
+        defaultFileName
       });
 
       if (!outputPath) return null;
