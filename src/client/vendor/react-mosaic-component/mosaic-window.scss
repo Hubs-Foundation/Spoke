@@ -12,7 +12,7 @@
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
- * limitations under the License@mixin 
+ * limitations under the License@mixin
  */
 @import './mixins';
 
@@ -69,7 +69,6 @@
     flex: 1;
     height: 0;
     background: white;
-    z-index: 1;
     overflow: hidden;
   }
 
@@ -112,7 +111,7 @@
     height: 100%;
     width: 100%;
     position: absolute;
-    z-index: 0;
+    z-index: -1;
     border: 1px solid black;
     max-height: 400px;
 

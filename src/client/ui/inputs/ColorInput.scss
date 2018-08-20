@@ -26,11 +26,9 @@
   }
 
   :local(.popover) {
-    position: absolute;
-    z-index: 2;
+    position: fixed;
+    z-index: 100;
     box-shadow: $shadow-30;
-    right: 0;
-    top: 28px;
     :local(.cover) {
       position: fixed;
       left: 0;
