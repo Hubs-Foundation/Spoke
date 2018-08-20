@@ -163,6 +163,7 @@ export default class AddComponentDropdown extends Component {
       }),
       menuList: () => ({
         width: "100%",
+        backgroundColor: "black",
         display: "inline-block"
       }),
       option: base => ({
