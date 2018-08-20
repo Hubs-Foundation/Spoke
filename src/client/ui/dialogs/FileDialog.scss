@@ -7,8 +7,7 @@
   // This forces firefox to give the contents a proper height.
   overflow: hidden;
   min-width: 800px;
-  min-height: 464px;
-  max-height: 720px;
+  height: 100%;
 }
 
 :local(.leftColumn) {
