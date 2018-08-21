@@ -58,7 +58,8 @@ class FileDialog extends Component {
     onConfirm: PropTypes.func,
     onCancel: PropTypes.func,
     hideDialog: PropTypes.func.isRequired,
-    initialPath: PropTypes.string
+    initialPath: PropTypes.string,
+    directory: PropTypes.bool
   };
 
   static defaultProps = {
@@ -121,6 +122,10 @@ class FileDialog extends Component {
     }
   }
 
+  componentWillUnmount() {
+    clearTimeout(this.doubleClickTimeout);
+  }
+
   onHierarchyChanged = tree => {
     this.setState({ tree });
   };
@@ -135,31 +140,38 @@ class FileDialog extends Component {
   };
 
   onClickIcon = (e, file) => {
-    const { filters } = this.props;
+    const { directory } = this.props;
     const { singleClickedFile } = this.state;
 
-    if (singleClickedFile && file.uri === singleClickedFile.uri && file.isDirectory) {
-      this.setState({
-        selectedDirectory: file.uri,
-        selectedFile: null
-      });
-      return;
+    if (!singleClickedFile) {
+      if (!directory && file.isDirectory) {
+        this.setState({
+          selectedFile: file,
+          singleClickedFile: file
+        });
+      } else {
+        this.setState({
+          selectedFile: file,
+          singleClickedFile: file,
+          fileName: getUrlFilename(file.uri)
+        });
+      }
+
+      clearTimeout(this.doubleClickTimeout);
+      this.doubleClickTimeout = setTimeout(() => {
+        this.setState({ singleClickedFile: null });
+      }, 500);
+    } else {
+      if (!file.isDirectory && !directory) {
+        this.props.onConfirm(file.uri);
+      } else if (file.isDirectory) {
+        this.setState({
+          singleClickedFile: null,
+          selectedFile: null,
+          selectedDirectory: file.uri
+        });
+      }
     }
-
-    if (filters && !filters.find(filter => file.ext === filter)) {
-      return;
-    }
-
-    this.setState({
-      singleClickedFile: file,
-      selectedFile: file,
-      fileName: getUrlFilename(file.uri)
-    });
-
-    clearTimeout(this.doubleClickTimeout);
-    this.doubleClickTimeout = setTimeout(() => {
-      this.setState({ singleClickedFile: null });
-    }, 500);
   };
 
   onNewFolder = e => {
@@ -209,25 +221,21 @@ class FileDialog extends Component {
   onConfirm = e => {
     e.preventDefault();
 
-    if (this.state.selectedFile) {
-      this.props.onConfirm(this.state.selectedFile.uri);
-    } else {
-      let fileName = this.state.fileName;
+    let fileName = this.state.fileName;
 
-      // eslint-disable-next-line no-useless-escape
-      if (!/^[0-9a-zA-Z\^\&\'\@\{\}\[\]\,\$\=\!\-\#\(\)\.\%\+\~\_ ]+$/.test(fileName)) {
-        alert('Invalid file name. The following characters are not allowed:  / : * ? " < > |');
-        return;
-      }
-
-      if (this.props.extension && !this.state.fileName.endsWith(this.props.extension)) {
-        fileName = fileName + this.props.extension;
-      }
-
-      const directoryURI = this.state.selectedDirectory || this.state.tree.uri;
-
-      this.props.onConfirm(directoryURI + "/" + fileName);
+    // eslint-disable-next-line no-useless-escape
+    if (!/^[0-9a-zA-Z\^\&\'\@\{\}\[\]\,\$\=\!\-\#\(\)\.\%\+\~\_ ]+$/.test(fileName)) {
+      alert('Invalid file name. The following characters are not allowed:  / : * ? " < > |');
+      return;
     }
+
+    if (this.props.extension && !this.state.fileName.endsWith(this.props.extension)) {
+      fileName = fileName + this.props.extension;
+    }
+
+    const directoryURI = this.state.selectedDirectory || this.state.tree.uri;
+
+    this.props.onConfirm(directoryURI + "/" + fileName);
   };
 
   renderNode = node => {
