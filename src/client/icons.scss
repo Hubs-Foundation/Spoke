@@ -21,14 +21,14 @@ $fa-font-path: "~@fortawesome/fontawesome-free/webfonts";
     }
   }
 
-  .icon-scene {
+  .icon-root {
     &:before {
       @include solidIcon;
       content: fa-content($fa-var-globe);
     }
   }
 
-  .icon-prefab {
+  .icon-scene {
     &:before {
       @include solidIcon;
       content: fa-content($fa-var-cubes);

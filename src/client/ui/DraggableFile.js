@@ -15,8 +15,7 @@ function DraggableFile({ file, selected, onClick, connectDragSource }) {
     }
     switch (ext) {
       case ".scene":
-        // prefab or scene file
-        return prefix + "prefab";
+        return prefix + "scene";
       case ".gltf":
       case ".glb":
         return prefix + "model";

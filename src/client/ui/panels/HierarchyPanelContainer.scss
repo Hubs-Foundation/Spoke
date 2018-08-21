@@ -12,39 +12,6 @@
   }
 }
 
-:global {
-  .hierarchyPanel {
-    @mixin solidIcon {
-      @extend .fas;
-      padding: 0 8px;
-    }
-
-    @mixin regularIcon {
-      @extend .far;
-      padding: 0 8px;
-    }
-
-    .icon-node {
-      &:before {
-        @include regularIcon;
-        content: fa-content($fa-var-circle);
-      }
-    }
-    .icon-scene {
-      &:before {
-        @include solidIcon;
-        content: fa-content($fa-var-globe);
-      }
-    }
-    .icon-prefab {
-      &:before {
-        @include solidIcon;
-        content: fa-content($fa-var-cubes);
-      }
-    }
-  }
-}
-
 :local(.hierarchyRoot) {
   @include no-select;
   outline: none;
