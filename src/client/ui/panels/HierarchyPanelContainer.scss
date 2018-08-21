@@ -14,10 +14,33 @@
 
 :global {
   .hierarchyPanel {
-    .node:before {
+    @mixin solidIcon {
       @extend .fas;
-      content: fa-content($fa-var-cube);
       padding: 0 8px;
+    }
+
+    @mixin regularIcon {
+      @extend .far;
+      padding: 0 8px;
+    }
+
+    .icon-regularNode {
+      &:before {
+        @include regularIcon;
+        content: fa-content($fa-var-circle);
+      }
+    }
+    .icon-sceneNode {
+      &:before {
+        @include solidIcon;
+        content: fa-content($fa-var-globe);
+      }
+    }
+    .icon-prefabNode {
+      &:before {
+        @include solidIcon;
+        content: fa-content($fa-var-cubes);
+      }
     }
   }
 }
@@ -36,7 +59,7 @@
   display: flex;
   width: 100%;
   background-color: $panel2;
-}  
+}
 
 :local(.breadCrumb),:local(.ancestor) {
   padding-top: 4px;
@@ -50,7 +73,7 @@
   cursor: pointer;
   color: $text;
   background-color: $panel2;
-  
+
   &[disabled] {
     cursor: auto;
     color: $text2;

@@ -161,14 +161,25 @@ class HierarchyPanelContainer extends Component {
     });
   };
 
+  getNodeType = node => {
+    if (!node.object.parent) {
+      return "sceneNode";
+    }
+    if (this.props.editor.getComponent(node.object, "scene-reference")) {
+      return "prefabNode";
+    }
+    return "regularNode";
+  };
+
   renderNode = node => {
     const isMissingChild = node.object.userData._missing && !node.object.userData._isMissingRoot;
     const isDuplicateChild = node.object.userData._duplicate && !node.object.userData._isDuplicateRoot;
     const disableEditing =
       node.object.userData._duplicate || node.object.userData._isDuplicateRoot || node.object.userData._isMissingRoot;
+    const nodeType = this.getNodeType(node);
     return (
       <div
-        className={classNames("node", {
+        className={classNames("node", nodeType, {
           "is-active": this.props.editor.selected && node.object.id === this.props.editor.selected.id,
           conflict: disableEditing,
           "error-root": node.object.userData._isMissingRoot ? node.object.userData._missing : false,
