@@ -9,21 +9,21 @@ import classNames from "classnames";
 function DraggableFile({ file, selected, onClick, connectDragSource }) {
   const getFileType = file => {
     const prefix = "icon-";
-    const ext = file.name.split(".").slice(-1)[0];
+    const ext = file.ext;
     if (file.isDirectory) {
       return prefix + "folder";
     }
     switch (ext) {
-      case "scene":
+      case ".scene":
         // prefab or scene file
         return prefix + "prefab";
-      case "gltf":
-      case "glb":
+      case ".gltf":
+      case ".glb":
         return prefix + "model";
-      case "material":
+      case ".material":
         return prefix + "material";
-      case "png":
-      case "jpg":
+      case ".png":
+      case ".jpg":
         return prefix + "file-image";
       default:
         return prefix + "file";
