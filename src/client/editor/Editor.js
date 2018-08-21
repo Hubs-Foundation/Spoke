@@ -58,6 +58,7 @@ export default class Editor {
       transformChanged: new Signal(),
       transformModeChanged: new Signal(),
       snapToggled: new Signal(),
+      snapValueChanged: new Signal(),
       spaceChanged: new Signal(),
       viewportInitialized: new Signal(),
 
@@ -126,7 +127,6 @@ export default class Editor {
 
     // TODO: Support multiple viewports
     this.viewports = [];
-
     this.selected = null;
 
     this.components = new Map();

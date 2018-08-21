@@ -7,7 +7,7 @@
   // This forces firefox to give the contents a proper height.
   overflow: hidden;
   min-width: 800px;
-  min-height: 464px;
+  height: 100%;
 }
 
 :local(.leftColumn) {
@@ -33,8 +33,17 @@
   flex-direction: column;
   white-space: nowrap;
   justify-content: center;
+  color: $text2;
 }
 
 :local(.node) {
-  padding: 4px 5px;
+  padding: 6px 4px;
+}
+
+:local(.cancel) {
+  background: $panel2;
+
+  &:hover {
+     background-color: $panel;
+   }
 }

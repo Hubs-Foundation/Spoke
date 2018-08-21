@@ -29,6 +29,8 @@ html, body, #app {
     flex: 1;
     outline: none;
     max-height: 100%;
+    box-shadow: $shadow-30;
+    margin-bottom: 10vh;
   }
 
   .Overlay {
@@ -69,7 +71,7 @@ html, body, #app {
 
     .mosaic-window-controls {
       align-items: center;
-      padding-right: 8px;
+      padding-right: 0px;
 
       .mosaic-default-control {
         &.pt-button {

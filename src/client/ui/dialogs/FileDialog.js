@@ -363,7 +363,9 @@ class FileDialog extends Component {
         <div className={dialogStyles.bottom}>
           <div className={styles.fileNameLabel}>File Name:</div>
           <StringInput value={fileName} ref={this.input} onChange={this.onChangeFileName} autoFocus />
-          <Button onClick={onCancel || hideDialog}>Cancel</Button>
+          <Button onClick={onCancel || hideDialog} className={styles.cancel}>
+            Cancel
+          </Button>
           <Button onClick={this.onConfirm}>{confirmButtonLabel}</Button>
         </div>
       </div>

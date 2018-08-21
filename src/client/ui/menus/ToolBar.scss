@@ -1,0 +1,24 @@
+@import "../../theme";
+
+:local(.toolbar) {
+  display: flex;
+  flex-direction: row;
+  height: 40px;
+  background-color: $toolbar;
+
+  :local(.toolbtns) {
+    width: auto;
+    height: inherit;
+    display: flex;
+    flex-direction: row;
+  }
+
+  :local(.tooltoggles) {
+    width: auto;
+    height: inherit;
+    display: flex;
+    flex-direction: row;
+    background-color: $toolbar2;
+    align-items: center;
+  }
+}

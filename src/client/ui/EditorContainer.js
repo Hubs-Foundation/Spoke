@@ -6,9 +6,8 @@ import { MosaicWindow } from "react-mosaic-component";
 import { HotKeys } from "react-hotkeys";
 import Modal from "react-modal";
 import { MosaicWithoutDragDropContext } from "react-mosaic-component";
-import MenuBarContainer from "./menus/MenuBarContainer";
+import ToolBar from "./menus/ToolBar";
 import ViewportPanelContainer from "./panels/ViewportPanelContainer";
-import ViewportPanelToolbarContainer from "./panels/ViewportPanelToolbarContainer";
 import HierarchyPanelContainer from "./panels/HierarchyPanelContainer";
 import PropertiesPanelContainer from "./panels/PropertiesPanelContainer";
 import AssetExplorerPanelContainer from "./panels/AssetExplorerPanelContainer";
@@ -69,7 +68,7 @@ class EditorContainer extends Component {
           windowProps: {
             className: "viewportPanel",
             title: "Viewport",
-            toolbarControls: ViewportPanelToolbarContainer(),
+            toolbarControls: [],
             draggable: false
           }
         },
@@ -344,8 +343,8 @@ class EditorContainer extends Component {
     }
 
     return this.waitForConfirm({
-      title: "Are you sure you wish to change the scene?",
-      message: "This scene has unsaved changes. Do you really want to really want to change scenes without saving?"
+      title: "Unsaved Chages",
+      message: "This scene has unsaved changes. Are you sure you leave without saving?"
     });
   };
 
@@ -601,7 +600,7 @@ class EditorContainer extends Component {
           <EditorContextProvider value={editor}>
             <DialogContextProvider value={this.dialogContext}>
               <SceneActionsContextProvider value={this.sceneActionsContext}>
-                <MenuBarContainer menus={menus} />
+                <ToolBar menus={menus} editor={editor} />
                 <MosaicWithoutDragDropContext
                   className="mosaic-theme"
                   renderTile={this.renderPanel}

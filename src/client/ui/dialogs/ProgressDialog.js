@@ -10,7 +10,14 @@ export default function ProgressDialog({ title, message, cancelable, onCancel, c
   return (
     <div className={styles.dialogContainer}>
       <Header title={title} />
-      <div className={styles.content}>{message}</div>
+      <div className={styles.progressContainer}>
+        <div className={styles.message}>{message}</div>
+        <div className={[styles.loadingBarContainer, styles.animate].join(" ")}>
+          <span>
+            <span />
+          </span>
+        </div>
+      </div>
       {cancelable && (
         <div className={styles.bottom}>
           <Button key="cancel" onClick={onCancel || hideDialog}>
