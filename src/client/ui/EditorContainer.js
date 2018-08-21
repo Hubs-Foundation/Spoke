@@ -523,6 +523,7 @@ class EditorContainer extends Component {
     const outputPath = await this.waitForFile({
       title: "Select the output directory",
       directory: true,
+      defaultFileName: this.props.editor.scene.name + "-Exported",
       confirmButtonLabel: "Export scene"
     });
 

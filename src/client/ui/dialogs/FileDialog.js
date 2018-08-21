@@ -248,8 +248,12 @@ class FileDialog extends Component {
     let fileName = this.state.fileName;
 
     // eslint-disable-next-line no-useless-escape
-    if (!/^[0-9a-zA-Z\^\&\'\@\{\}\[\]\,\$\=\!\-\#\(\)\.\%\+\~\_ ]+$/.test(fileName)) {
+    if (!/^[0-9a-zA-Z\^\&\'\@\{\}\[\]\,\$\=\!\-\#\(\)\.\%\+\~\_ ]*$/.test(fileName)) {
       alert('Invalid file name. The following characters are not allowed:  / : * ? " < > |');
+      return;
+    }
+
+    if (fileName.length === 0 && !this.props.directory) {
       return;
     }
 
@@ -259,7 +263,11 @@ class FileDialog extends Component {
 
     const directoryURI = this.state.selectedDirectory || this.state.tree.uri;
 
-    this.props.onConfirm(directoryURI + "/" + fileName);
+    if (fileName.length > 0) {
+      this.props.onConfirm(directoryURI + "/" + fileName);
+    } else {
+      this.props.onConfirm(directoryURI);
+    }
   };
 
   renderNode = node => {
