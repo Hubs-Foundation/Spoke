@@ -17,7 +17,7 @@ export default class ToolBar extends Component {
           onClick: e => this.onMenuSelected(e)
         },
         {
-          name: "move",
+          name: "translate",
           type: "fa-arrows-alt",
           onClick: () => this.onMoveSelected()
         },
@@ -57,8 +57,11 @@ export default class ToolBar extends Component {
           action: status => this.onSnappingChanged(status)
         }
       ],
-      toolButtonSelected: "select"
+      toolButtonSelected: "translate"
     };
+    props.editor.signals.transformModeChanged.add(mode => {
+      this._updateToolBarStatus(mode);
+    });
   }
 
   _updateToolBarStatus = selectedBtnName => {
@@ -68,7 +71,7 @@ export default class ToolBar extends Component {
   };
 
   onMenuSelected = e => {
-    const x = e.clientX;
+    const x = e.currentTarget.offsetWidth / 2;
     const y = e.currentTarget.offsetHeight;
     showMenu({
       position: { x, y },
@@ -86,17 +89,14 @@ export default class ToolBar extends Component {
 
   onMoveSelected = () => {
     this.props.editor.signals.transformModeChanged.dispatch("translate");
-    this._updateToolBarStatus("move");
   };
 
   onRotateSelected = () => {
     this.props.editor.signals.transformModeChanged.dispatch("rotate");
-    this._updateToolBarStatus("rotate");
   };
 
   onScaleSelected = () => {
     this.props.editor.signals.transformModeChanged.dispatch("scale");
-    this._updateToolBarStatus("scale");
   };
 
   onCoordinationChanged = newStatus => {

@@ -61,15 +61,15 @@ class ViewportPanelContainer extends Component {
   };
 
   onTranslateTool = () => {
-    this.props.editor.setTransformMode("translate");
+    this.props.editor.signals.transformModeChanged.dispatch("translate");
   };
 
   onRotateTool = () => {
-    this.props.editor.setTransformMode("rotate");
+    this.props.editor.signals.transformModeChanged.dispatch("rotate");
   };
 
   onScaleTool = () => {
-    this.props.editor.setTransformMode("scale");
+    this.props.editor.signals.transformModeChanged.dispatch("scale");
   };
 
   onDuplicate = e => {
