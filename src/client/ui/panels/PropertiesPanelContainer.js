@@ -96,13 +96,28 @@ class PropertiesPanelContainer extends Component {
     this.props.editor.removeComponent(this.state.object, componentName);
   };
 
+  getInitialComponentPath(component) {
+    const sceneURI = this.props.editor.sceneInfo.uri;
+
+    if (component.src) {
+      return component.src;
+    } else if (sceneURI) {
+      return this.props.editor.sceneInfo.uri;
+    }
+
+    return null;
+  }
+
   onSaveComponent = async (component, saveAs) => {
     if (saveAs || !component.src) {
+      const initialPath = this.getInitialComponentPath(component);
+
       this.props.showDialog(FileDialog, {
         filters: [component.fileExtension],
         extension: component.fileExtension,
         title: "Save material as...",
         confirmButtonLabel: "Save",
+        initialPath,
         onConfirm: async src => {
           let saved = false;
 
@@ -142,10 +157,14 @@ class PropertiesPanelContainer extends Component {
   };
 
   onLoadComponent = component => {
+    const initialPath = this.getInitialComponentPath(component);
+
     this.props.showDialog(FileDialog, {
       filters: [component.fileExtension],
       title: "Load material...",
       confirmButtonLabel: "Load",
+      initialPath,
+      defaultFileName: null,
       onConfirm: async src => {
         let loaded = false;
 

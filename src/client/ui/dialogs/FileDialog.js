@@ -15,6 +15,7 @@ import Header from "../Header";
 import Icon from "../Icon";
 import iconStyles from "../Icon.scss";
 import folderIcon from "../../assets/folder-icon.svg";
+import { getUrlDirname, getUrlFilename, getUrlExtname } from "../../utils/url-path";
 
 function collectFileMenuProps({ file }) {
   return file;
@@ -56,7 +57,9 @@ class FileDialog extends Component {
     extension: PropTypes.string,
     onConfirm: PropTypes.func,
     onCancel: PropTypes.func,
-    hideDialog: PropTypes.func.isRequired
+    hideDialog: PropTypes.func.isRequired,
+    initialPath: PropTypes.string,
+    directory: PropTypes.bool
   };
 
   static defaultProps = {
@@ -70,26 +73,30 @@ class FileDialog extends Component {
 
     this.clicked = null;
 
+    let selectedDirectory = null;
+    let selectedFile = null;
+    let fileName = props.defaultFileName;
+
+    if (props.initialPath) {
+      selectedDirectory = getUrlDirname(props.initialPath);
+      selectedFile = props.extension && getUrlExtname(props.initialPath) === props.extension ? props.initialPath : null;
+      fileName = props.defaultFileName !== "" ? props.defaultFileName : getUrlFilename(props.initialPath);
+    }
+
     this.state = {
       tree: {
         name: "New Project"
       },
-      selectedDirectory: null,
-      selectedFile: null,
+      selectedDirectory,
+      selectedFile,
+      fileName,
       singleClickedFile: null,
-      fileName: props.defaultFileName,
       newFolderActive: false,
       newFolderName: null
     };
-  }
 
-  onClickNode = (e, node) => {
-    if (node.isDirectory) {
-      this.setState({
-        selectedDirectory: node.uri
-      });
-    }
-  };
+    this.input = React.createRef();
+  }
 
   componentDidMount() {
     if (this.props.editor.project !== null) {
@@ -99,6 +106,11 @@ class FileDialog extends Component {
 
       this.props.editor.project.addListener("changed", this.onHierarchyChanged);
     }
+
+    // HACK: need to figure out what is stealing focus and why
+    setTimeout(() => {
+      this.input.current.focus();
+    });
   }
 
   componentDidUpdate(prevProps) {
@@ -117,41 +129,73 @@ class FileDialog extends Component {
     }
   }
 
+  componentWillUnmount() {
+    clearTimeout(this.doubleClickTimeout);
+  }
+
   onHierarchyChanged = tree => {
-    this.setState({
-      tree
-    });
+    this.setState({ tree });
   };
 
-  onClickFile = (e, file) => {
-    if (this.state.singleClickedFile && file.uri === this.state.singleClickedFile.uri) {
-      if (file.isDirectory) {
-        this.setState({ selectedDirectory: file.uri });
-        return;
-      }
-    }
-
-    if (this.props.filters) {
-      const matchingFilter = this.props.filters.find(filter => file.name.endsWith(filter));
-      if (!matchingFilter) {
+  onClickNode = (e, node) => {
+    if (node.isDirectory) {
+      if (this.props.directory) {
         this.setState({
-          singleClickedFile: file,
-          selectedFile: file
+          selectedDirectory: node.uri,
+          selectedFile: null,
+          fileName: ""
         });
-        return;
+      } else {
+        this.setState({
+          selectedDirectory: node.uri,
+          selectedFile: null
+        });
       }
     }
+  };
 
-    this.setState({
-      singleClickedFile: file,
-      selectedFile: file,
-      fileName: file.name
-    });
+  onClickIcon = (e, file) => {
+    const { directory } = this.props;
+    const { singleClickedFile } = this.state;
 
-    clearTimeout(this.doubleClickTimeout);
-    this.doubleClickTimeout = setTimeout(() => {
-      this.setState({ singleClickedFile: null });
-    }, 500);
+    if (!singleClickedFile) {
+      if (!directory && file.isDirectory) {
+        this.setState({
+          selectedFile: file,
+          singleClickedFile: file
+        });
+      } else {
+        this.setState({
+          selectedFile: file,
+          singleClickedFile: file,
+          fileName: getUrlFilename(file.uri) || ""
+        });
+      }
+
+      clearTimeout(this.doubleClickTimeout);
+      this.doubleClickTimeout = setTimeout(() => {
+        this.setState({ singleClickedFile: null });
+      }, 500);
+    } else {
+      if (!file.isDirectory && !directory) {
+        this.props.onConfirm(file.uri);
+      } else if (file.isDirectory) {
+        if (directory) {
+          this.setState({
+            singleClickedFile: null,
+            selectedFile: null,
+            fileName: "",
+            selectedDirectory: file.uri
+          });
+        } else {
+          this.setState({
+            singleClickedFile: null,
+            selectedFile: null,
+            selectedDirectory: file.uri
+          });
+        }
+      }
+    }
   };
 
   onNewFolder = e => {
@@ -201,24 +245,28 @@ class FileDialog extends Component {
   onConfirm = e => {
     e.preventDefault();
 
-    if (this.selectedFile) {
-      this.props.onConfirm(this.selectedFile.uri);
-    } else {
-      let fileName = this.state.fileName;
+    let fileName = this.state.fileName;
 
-      // eslint-disable-next-line no-useless-escape
-      if (!/^[0-9a-zA-Z\^\&\'\@\{\}\[\]\,\$\=\!\-\#\(\)\.\%\+\~\_ ]+$/.test(fileName)) {
-        alert('Invalid file name. The following characters are not allowed:  / : * ? " < > |');
-        return;
-      }
+    // eslint-disable-next-line no-useless-escape
+    if (!/^[0-9a-zA-Z\^\&\'\@\{\}\[\]\,\$\=\!\-\#\(\)\.\%\+\~\_ ]*$/.test(fileName)) {
+      alert('Invalid file name. The following characters are not allowed:  / : * ? " < > |');
+      return;
+    }
 
-      if (this.props.extension && !this.state.fileName.endsWith(this.props.extension)) {
-        fileName = fileName + this.props.extension;
-      }
+    if (fileName.length === 0 && !this.props.directory) {
+      return;
+    }
 
-      const directoryURI = this.state.selectedDirectory || this.state.tree.uri;
+    if (this.props.extension && !this.state.fileName.endsWith(this.props.extension)) {
+      fileName = fileName + this.props.extension;
+    }
 
+    const directoryURI = this.state.selectedDirectory || this.state.tree.uri;
+
+    if (fileName.length > 0) {
       this.props.onConfirm(directoryURI + "/" + fileName);
+    } else {
+      this.props.onConfirm(directoryURI);
     }
   };
 
@@ -239,23 +287,29 @@ class FileDialog extends Component {
   };
 
   render() {
-    const selectedDirectory = getSelectedDirectory(this.state.tree, this.state.selectedDirectory) || this.state.tree;
-    let files = selectedDirectory.files || [];
-    if (this.props.filters && this.props.filters.length) {
-      files = files.filter(file => file.isDirectory || this.props.filters.some(filter => file.name.endsWith(filter)));
+    const { filters, title, onCancel, hideDialog, confirmButtonLabel, directory } = this.props;
+    const { tree, selectedDirectory, selectedFile, fileName, newFolderActive, newFolderName } = this.state;
+
+    const activeDirectoryTree = getSelectedDirectory(tree, selectedDirectory);
+
+    let files = activeDirectoryTree && activeDirectoryTree.files ? activeDirectoryTree.files : [];
+
+    if (filters && filters.length) {
+      files = files.filter(file => file.isDirectory || filters.some(filter => file.ext === filter));
+    } else if (directory) {
+      files = files.filter(file => file.isDirectory);
     }
-    const selectedFile = this.state.selectedFile;
 
     return (
       <div className={dialogStyles.dialogContainer}>
-        <Header icon="fa-folder" title={this.props.title} />
+        <Header icon="fa-folder" title={title} />
         <div className={styles.content}>
           <div className={styles.leftColumn}>
             <Tree
               paddingLeft={8}
               isNodeCollapsed={false}
               draggable={false}
-              tree={this.state.tree}
+              tree={tree}
               renderNode={this.renderNode}
               onChange={this.onChange}
             />
@@ -277,16 +331,16 @@ class FileDialog extends Component {
                   <DraggableFile
                     file={file}
                     selected={selectedFile && selectedFile.uri === file.uri}
-                    onClick={this.onClickFile}
+                    onClick={this.onClickIcon}
                   />
                 </ContextMenuTrigger>
               ))}
-              {this.state.newFolderActive && (
+              {newFolderActive && (
                 <Icon
                   rename
                   src={folderIcon}
                   className={iconStyles.small}
-                  name={this.state.newFolderName}
+                  name={newFolderName}
                   onChange={this.onNewFolderChange}
                   onCancel={this.onCancelNewFolder}
                   onSubmit={this.onSubmitNewFolder}
@@ -308,9 +362,9 @@ class FileDialog extends Component {
         </div>
         <div className={dialogStyles.bottom}>
           <div className={styles.fileNameLabel}>File Name:</div>
-          <StringInput value={this.state.fileName} onChange={this.onChangeFileName} />
-          <Button onClick={this.props.onCancel || this.props.hideDialog}>Cancel</Button>
-          <Button onClick={this.onConfirm}>{this.props.confirmButtonLabel}</Button>
+          <StringInput value={fileName} ref={this.input} onChange={this.onChangeFileName} autoFocus />
+          <Button onClick={onCancel || hideDialog}>Cancel</Button>
+          <Button onClick={this.onConfirm}>{confirmButtonLabel}</Button>
         </div>
       </div>
     );
