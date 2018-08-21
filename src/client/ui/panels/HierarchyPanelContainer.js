@@ -226,8 +226,13 @@ class HierarchyPanelContainer extends Component {
     const hasParent = node && node.object.parent;
     return (
       <ContextMenu id="hierarchy-node-menu">
-        <MenuItem onClick={this.onAddNode}>Add Node</MenuItem>
-        {hasParent && <MenuItem onClick={this.onDuplicateNode}>Duplicate</MenuItem>}
+        <MenuItem onClick={this.onAddNode}>New Node</MenuItem>
+        {hasParent && <MenuItem divider />}
+        {hasParent && (
+          <MenuItem onClick={this.onDuplicateNode}>
+            Duplicate<div className={styles.menuHotkey}>⌘D</div>
+          </MenuItem>
+        )}
         {refComponent && (
           <MenuItem onClick={this.onEditPrefab.bind(null, node.object, refComponent)}>Edit Prefab</MenuItem>
         )}

@@ -12,6 +12,7 @@ import { withDialog } from "../contexts/DialogContext";
 import FileDialog from "../dialogs/FileDialog";
 import ErrorDialog from "../dialogs/ErrorDialog";
 import ProgressDialog, { PROGRESS_DIALOG_DELAY } from "../dialogs/ProgressDialog";
+import AddComponentDropdown from "../AddComponentDropdown";
 
 export function getDisplayName(name) {
   if (name.includes("-")) {
@@ -96,13 +97,28 @@ class PropertiesPanelContainer extends Component {
     this.props.editor.removeComponent(this.state.object, componentName);
   };
 
+  getInitialComponentPath(component) {
+    const sceneURI = this.props.editor.sceneInfo.uri;
+
+    if (component.src) {
+      return component.src;
+    } else if (sceneURI) {
+      return this.props.editor.sceneInfo.uri;
+    }
+
+    return null;
+  }
+
   onSaveComponent = async (component, saveAs) => {
     if (saveAs || !component.src) {
+      const initialPath = this.getInitialComponentPath(component);
+
       this.props.showDialog(FileDialog, {
         filters: [component.fileExtension],
         extension: component.fileExtension,
         title: "Save material as...",
         confirmButtonLabel: "Save",
+        initialPath,
         onConfirm: async src => {
           let saved = false;
 
@@ -142,10 +158,14 @@ class PropertiesPanelContainer extends Component {
   };
 
   onLoadComponent = component => {
+    const initialPath = this.getInitialComponentPath(component);
+
     this.props.showDialog(FileDialog, {
       filters: [component.fileExtension],
       title: "Load material...",
       confirmButtonLabel: "Load",
+      initialPath,
+      defaultFileName: null,
       onConfirm: async src => {
         let loaded = false;
 
@@ -273,6 +293,53 @@ class PropertiesPanelContainer extends Component {
         label: `Inherits (${parentComputedStaticMode})`
       }
     ];
+    const staticModeLabel = staticModeOptions.filter(option => option.value === staticMode)[0].label;
+
+    const staticStyle = {
+      control: base => ({
+        ...base,
+        backgroundColor: "black",
+        minHeight: "24px",
+        border: "1px solid #5D646C",
+        cursor: "pointer"
+      }),
+      input: base => ({
+        ...base,
+        margin: "0px",
+        color: "white"
+      }),
+      dropdownIndicator: base => ({
+        ...base,
+        padding: "0 4px 0 0"
+      }),
+      placeholder: base => ({
+        ...base,
+        color: "white"
+      }),
+      menu: base => ({
+        ...base,
+        borderRadius: "4px",
+        border: "1px solid black",
+        backgroundColor: "black",
+        outline: "none",
+        padding: "0",
+        position: "absolute",
+        top: "20px"
+      }),
+      menuList: base => ({
+        ...base,
+        padding: "0"
+      }),
+      option: base => ({
+        ...base,
+        backgroundColor: "black",
+        cursor: "pointer"
+      }),
+      singleValue: base => ({
+        ...base,
+        color: "white"
+      })
+    };
 
     return (
       <div className={styles.propertiesPanelContainer}>
@@ -283,16 +350,26 @@ class PropertiesPanelContainer extends Component {
           canRemove={false}
         >
           <div className={styles.propertiesPanelTopBar}>
-            <InputGroup name="Name">
+            <InputGroup className={styles.topBarName} name="Name">
               <StringInput value={this.state.name} onChange={this.onUpdateName} onBlur={this.onBlurName} />
             </InputGroup>
             {object.parent !== null && (
-              <InputGroup name="Static">
+              <InputGroup className={styles.topBarStatic} name="Static">
                 <Select
                   className={styles.staticSelect}
-                  value={staticMode}
+                  classNamePrefix={"static-select"}
+                  styles={staticStyle}
+                  value={
+                    staticMode
+                      ? {
+                          value: staticMode,
+                          label: staticModeLabel
+                        }
+                      : null
+                  }
+                  components={{ IndicatorSeparator: () => null }}
                   options={staticModeOptions}
-                  clearable={false}
+                  isClearable={false}
                   onChange={this.onUpdateStatic}
                 />
               </InputGroup>
@@ -306,12 +383,7 @@ class PropertiesPanelContainer extends Component {
             false
           )}
           <div className={styles.addComponentContainer}>
-            <Select
-              placeholder="+ Add a component"
-              className={styles.addComponentSelect}
-              options={componentOptions}
-              onChange={this.onAddComponent}
-            />
+            <AddComponentDropdown options={componentOptions} onChange={this.onAddComponent} />
           </div>
         </PropertyGroup>
         {objectComponents.map(component => {

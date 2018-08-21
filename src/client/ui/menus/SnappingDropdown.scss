@@ -1,0 +1,55 @@
+@import "../../theme";
+
+:local(.wrapper) {
+  width: 84px;
+  height: 16px;
+  position: relative;
+  z-index: 100;
+
+  :local(.header) {
+    display: flex;
+    flex-direction: row;
+    height: 16px;
+    width: 68px;
+    cursor: pointer;
+    &:hover {
+      color: $blue-hover;
+    }
+
+    :local(.headerTitle) {
+      margin: 0px 1px;
+      & + i {
+        text-align: center;
+        width: 12px;
+        height: 12px;
+        margin: 2px 4px;
+      }
+    }
+  }
+
+  :local(.list) {
+    padding: 4px 0px;
+    background-color: $background;
+    border-radius: 4px;
+    list-style-type: none;
+    width: 200px;
+    position: absolute;
+    top: 18px;
+    box-shadow: $shadow-30;
+    :local(.listItem) {
+      margin: 4px;
+      display: inline-block;
+      :local(.snappingInput) {
+        label {
+          width: 60%;
+        }
+        .content {
+          width: 40%;
+          input {
+            width: 100%;
+          }
+        }
+      }
+    }
+  }
+}

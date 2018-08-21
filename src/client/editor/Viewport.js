@@ -243,6 +243,7 @@ export default class Viewport {
     });
 
     signals.snapToggled.add(this.toggleSnap);
+    signals.snapValueChanged.add(this.setSnapValue);
 
     signals.spaceChanged.add(space => {
       this._transformControls.setSpace(space);
@@ -313,5 +314,21 @@ export default class Viewport {
     this.snapEnabled = enabled;
     this._transformControls.setTranslationSnap(enabled ? 1 : null);
     this._transformControls.setRotationSnap(enabled ? Math.PI / 4 : null);
+  };
+
+  setSnapValue = ({ type, value }) => {
+    switch (type) {
+      case "translate":
+        this._transformControls.setTranslationSnap(this.snapEnabled ? value : 1);
+        break;
+      case "rotate":
+        this._transformControls.setRotationSnap(this.snapEnabled ? value : Math.PI / 4);
+        break;
+      case "scale":
+        this._transformControls.setSize(this.snapEnabled ? value : 1);
+        break;
+      default:
+        break;
+    }
   };
 }

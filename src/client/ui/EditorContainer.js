@@ -6,9 +6,8 @@ import { MosaicWindow } from "react-mosaic-component";
 import { HotKeys } from "react-hotkeys";
 import Modal from "react-modal";
 import { MosaicWithoutDragDropContext } from "react-mosaic-component";
-import MenuBarContainer from "./menus/MenuBarContainer";
+import ToolBar from "./menus/ToolBar";
 import ViewportPanelContainer from "./panels/ViewportPanelContainer";
-import ViewportPanelToolbarContainer from "./panels/ViewportPanelToolbarContainer";
 import HierarchyPanelContainer from "./panels/HierarchyPanelContainer";
 import PropertiesPanelContainer from "./panels/PropertiesPanelContainer";
 import AssetExplorerPanelContainer from "./panels/AssetExplorerPanelContainer";
@@ -21,6 +20,7 @@ import FileDialog from "./dialogs/FileDialog";
 import ProgressDialog from "./dialogs/ProgressDialog";
 import ErrorDialog from "./dialogs/ErrorDialog";
 import ConflictError from "../editor/ConflictError";
+import { getUrlDirname, getUrlFilename } from "../utils/url-path";
 
 class EditorContainer extends Component {
   static defaultProps = {
@@ -68,7 +68,7 @@ class EditorContainer extends Component {
           windowProps: {
             className: "viewportPanel",
             title: "Viewport",
-            toolbarControls: ViewportPanelToolbarContainer(),
+            toolbarControls: [],
             draggable: false
           }
         },
@@ -343,8 +343,8 @@ class EditorContainer extends Component {
     }
 
     return this.waitForConfirm({
-      title: "Are you sure you wish to change the scene?",
-      message: "This scene has unsaved changes. Do you really want to really want to change scenes without saving?"
+      title: "Unsaved Chages",
+      message: "This scene has unsaved changes. Are you sure you leave without saving?"
     });
   };
 
@@ -393,7 +393,8 @@ class EditorContainer extends Component {
       title: "Save scene as...",
       filters: [".scene"],
       extension: ".scene",
-      confirmButtonLabel: "Save"
+      confirmButtonLabel: "Save",
+      initialPath: this.props.editor.sceneInfo.uri
     });
 
     if (filePath === null) return;
@@ -467,18 +468,16 @@ class EditorContainer extends Component {
 
   onCreatePrefabFromGLTF = async gltfPath => {
     try {
-      const defaultFileName = gltfPath
-        .split("/")
-        .pop()
-        .replace(".gltf", "")
-        .replace(".glb", "");
+      const initialPath = getUrlDirname(gltfPath);
+      const defaultFileName = getUrlFilename(gltfPath);
 
       const outputPath = await this.waitForFile({
         title: "Save prefab as...",
         filters: [".scene"],
         extension: ".scene",
-        defaultFileName,
-        confirmButtonLabel: "Create Prefab"
+        confirmButtonLabel: "Create Prefab",
+        initialPath,
+        defaultFileName
       });
 
       if (!outputPath) return null;
@@ -523,6 +522,7 @@ class EditorContainer extends Component {
     const outputPath = await this.waitForFile({
       title: "Select the output directory",
       directory: true,
+      defaultFileName: this.props.editor.scene.name + "-Exported",
       confirmButtonLabel: "Export scene"
     });
 
@@ -600,7 +600,7 @@ class EditorContainer extends Component {
           <EditorContextProvider value={editor}>
             <DialogContextProvider value={this.dialogContext}>
               <SceneActionsContextProvider value={this.sceneActionsContext}>
-                <MenuBarContainer menus={menus} />
+                <ToolBar menus={menus} editor={editor} />
                 <MosaicWithoutDragDropContext
                   className="mosaic-theme"
                   renderTile={this.renderPanel}
