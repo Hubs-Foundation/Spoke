@@ -3,10 +3,10 @@ import PropTypes from "prop-types";
 import styles from "./StringInput.scss";
 import classNames from "classnames";
 
-export default function StringInput(props) {
+const StringInput = React.forwardRef((props, ref) => {
   const fullClassName = classNames(styles.stringInput, props.className);
-  return <input type="text" {...props} className={fullClassName} />;
-}
+  return <input type="text" ref={ref} {...props} className={fullClassName} />;
+});
 
 StringInput.defaultProps = {
   value: "",
@@ -18,3 +18,5 @@ StringInput.propTypes = {
   value: PropTypes.string,
   onChange: PropTypes.func
 };
+
+export default StringInput;

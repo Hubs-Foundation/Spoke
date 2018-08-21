@@ -94,6 +94,8 @@ class FileDialog extends Component {
       newFolderActive: false,
       newFolderName: null
     };
+
+    this.input = React.createRef();
   }
 
   componentDidMount() {
@@ -104,6 +106,11 @@ class FileDialog extends Component {
 
       this.props.editor.project.addListener("changed", this.onHierarchyChanged);
     }
+
+    // HACK: need to figure out what is stealing focus and why
+    setTimeout(() => {
+      this.input.current.focus();
+    });
   }
 
   componentDidUpdate(prevProps) {
@@ -347,7 +354,7 @@ class FileDialog extends Component {
         </div>
         <div className={dialogStyles.bottom}>
           <div className={styles.fileNameLabel}>File Name:</div>
-          <StringInput value={fileName} onChange={this.onChangeFileName} />
+          <StringInput value={fileName} ref={this.input} onChange={this.onChangeFileName} autoFocus />
           <Button onClick={onCancel || hideDialog}>Cancel</Button>
           <Button onClick={this.onConfirm}>{confirmButtonLabel}</Button>
         </div>
