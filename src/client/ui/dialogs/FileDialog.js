@@ -132,10 +132,18 @@ class FileDialog extends Component {
 
   onClickNode = (e, node) => {
     if (node.isDirectory) {
-      this.setState({
-        selectedDirectory: node.uri,
-        selectedFile: null
-      });
+      if (this.props.directory) {
+        this.setState({
+          selectedDirectory: node.uri,
+          selectedFile: null,
+          fileName: ""
+        });
+      } else {
+        this.setState({
+          selectedDirectory: node.uri,
+          selectedFile: null
+        });
+      }
     }
   };
 
@@ -153,7 +161,7 @@ class FileDialog extends Component {
         this.setState({
           selectedFile: file,
           singleClickedFile: file,
-          fileName: getUrlFilename(file.uri)
+          fileName: getUrlFilename(file.uri) || ""
         });
       }
 
@@ -165,11 +173,20 @@ class FileDialog extends Component {
       if (!file.isDirectory && !directory) {
         this.props.onConfirm(file.uri);
       } else if (file.isDirectory) {
-        this.setState({
-          singleClickedFile: null,
-          selectedFile: null,
-          selectedDirectory: file.uri
-        });
+        if (directory) {
+          this.setState({
+            singleClickedFile: null,
+            selectedFile: null,
+            fileName: "",
+            selectedDirectory: file.uri
+          });
+        } else {
+          this.setState({
+            singleClickedFile: null,
+            selectedFile: null,
+            selectedDirectory: file.uri
+          });
+        }
       }
     }
   };
@@ -255,7 +272,7 @@ class FileDialog extends Component {
   };
 
   render() {
-    const { filters, title, onCancel, hideDialog, confirmButtonLabel } = this.props;
+    const { filters, title, onCancel, hideDialog, confirmButtonLabel, directory } = this.props;
     const { tree, selectedDirectory, selectedFile, fileName, newFolderActive, newFolderName } = this.state;
 
     const activeDirectoryTree = getSelectedDirectory(tree, selectedDirectory);
@@ -264,6 +281,8 @@ class FileDialog extends Component {
 
     if (filters && filters.length) {
       files = files.filter(file => file.isDirectory || filters.some(filter => file.ext === filter));
+    } else if (directory) {
+      files = files.filter(file => file.isDirectory);
     }
 
     return (

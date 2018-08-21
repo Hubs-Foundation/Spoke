@@ -5,7 +5,7 @@ import classNames from "classnames";
 
 export default function StringInput(props) {
   const fullClassName = classNames(styles.stringInput, props.className);
-  return <input {...props} className={fullClassName} />;
+  return <input type="text" {...props} className={fullClassName} />;
 }
 
 StringInput.defaultProps = {
