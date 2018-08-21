@@ -86,6 +86,10 @@ export default class Viewport {
     });
 
     this.snapEnabled = false;
+    this.snapTempValues = {
+      translationSnap: 1,
+      rotationSnap: Math.PI / 4
+    };
     this.toggleSnap(true);
 
     editor.helperScene.add(this._transformControls);
@@ -312,17 +316,17 @@ export default class Viewport {
 
   toggleSnap = enabled => {
     this.snapEnabled = enabled;
-    this._transformControls.setTranslationSnap(enabled ? 1 : null);
-    this._transformControls.setRotationSnap(enabled ? Math.PI / 4 : null);
+    this._transformControls.setTranslationSnap(enabled ? this.snapTempValues.translationSnap : null);
+    this._transformControls.setRotationSnap(enabled ? this.snapTempValues.rotationSnap : null);
   };
 
   setSnapValue = ({ type, value }) => {
     switch (type) {
       case "translate":
-        this._transformControls.setTranslationSnap(this.snapEnabled ? value : 1);
+        this.snapTempValues.translationSnap = value;
         break;
       case "rotate":
-        this._transformControls.setRotationSnap(this.snapEnabled ? value : Math.PI / 4);
+        this.snapTempValues.rotationSnap = value;
         break;
       case "scale":
         this._transformControls.setSize(this.snapEnabled ? value : 1);
