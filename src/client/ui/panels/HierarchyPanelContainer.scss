@@ -24,19 +24,19 @@
       padding: 0 8px;
     }
 
-    .icon-regularNode {
+    .icon-node {
       &:before {
         @include regularIcon;
         content: fa-content($fa-var-circle);
       }
     }
-    .icon-sceneNode {
+    .icon-scene {
       &:before {
         @include solidIcon;
         content: fa-content($fa-var-globe);
       }
     }
-    .icon-prefabNode {
+    .icon-prefab {
       &:before {
         @include solidIcon;
         content: fa-content($fa-var-cubes);

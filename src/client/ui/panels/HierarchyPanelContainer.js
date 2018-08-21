@@ -162,13 +162,14 @@ class HierarchyPanelContainer extends Component {
   };
 
   getNodeType = node => {
+    const prefix = "icon-";
     if (!node.object.parent) {
-      return "sceneNode";
+      return prefix + "scene";
     }
     if (this.props.editor.getComponent(node.object, "scene-reference")) {
-      return "prefabNode";
+      return prefix + "prefab";
     }
-    return "regularNode";
+    return prefix + "node";
   };
 
   renderNode = node => {
