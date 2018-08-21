@@ -14,6 +14,7 @@ function FileInput({ value, isValid, onChange, showDialog, hideDialog, filters, 
   const onClick = () => {
     showDialog(FileDialog, {
       filters,
+      initialPath: value,
       onConfirm: src => {
         onChange(src);
         hideDialog();

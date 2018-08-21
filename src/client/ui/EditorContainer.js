@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
 import { DragDropContextProvider } from "react-dnd";
-import HTML5Backend from "react-dnd-html5-backend";
+import HTML5Backend from "@mozillareality/react-dnd-html5-backend";
 import { MosaicWindow } from "react-mosaic-component";
 import { HotKeys } from "react-hotkeys";
 import Modal from "react-modal";
@@ -20,6 +20,7 @@ import FileDialog from "./dialogs/FileDialog";
 import ProgressDialog from "./dialogs/ProgressDialog";
 import ErrorDialog from "./dialogs/ErrorDialog";
 import ConflictError from "../editor/ConflictError";
+import { getUrlDirname, getUrlFilename } from "../utils/url-path";
 
 class EditorContainer extends Component {
   static defaultProps = {
@@ -392,7 +393,8 @@ class EditorContainer extends Component {
       title: "Save scene as...",
       filters: [".scene"],
       extension: ".scene",
-      confirmButtonLabel: "Save"
+      confirmButtonLabel: "Save",
+      initialPath: this.props.editor.sceneInfo.uri
     });
 
     if (filePath === null) return;
@@ -466,18 +468,16 @@ class EditorContainer extends Component {
 
   onCreatePrefabFromGLTF = async gltfPath => {
     try {
-      const defaultFileName = gltfPath
-        .split("/")
-        .pop()
-        .replace(".gltf", "")
-        .replace(".glb", "");
+      const initialPath = getUrlDirname(gltfPath);
+      const defaultFileName = getUrlFilename(gltfPath);
 
       const outputPath = await this.waitForFile({
         title: "Save prefab as...",
         filters: [".scene"],
         extension: ".scene",
-        defaultFileName,
-        confirmButtonLabel: "Create Prefab"
+        confirmButtonLabel: "Create Prefab",
+        initialPath,
+        defaultFileName
       });
 
       if (!outputPath) return null;
@@ -522,6 +522,7 @@ class EditorContainer extends Component {
     const outputPath = await this.waitForFile({
       title: "Select the output directory",
       directory: true,
+      defaultFileName: this.props.editor.scene.name + "-Exported",
       confirmButtonLabel: "Export scene"
     });
 
@@ -545,6 +546,25 @@ class EditorContainer extends Component {
     }
   };
 
+  onWriteFiles = async (uploadPath, files) => {
+    this.showDialog(ProgressDialog, {
+      title: "Copying files",
+      message: "Copying files..."
+    });
+
+    try {
+      this.props.editor.project.writeFiles(uploadPath, files);
+      this.hideDialog();
+    } catch (e) {
+      console.error(e);
+
+      this.showDialog(ErrorDialog, {
+        title: "Error copying files",
+        message: e.message || "There was an error when copying the files to the project."
+      });
+    }
+  };
+
   sceneActionsContext = {
     onNewScene: this.onNewScene,
     onOpenSceneDialog: this.onOpenSceneDialog,
@@ -555,7 +575,8 @@ class EditorContainer extends Component {
     onEditPrefab: this.onEditPrefab,
     onPopScene: this.onPopScene,
     onCreatePrefabFromGLTF: this.onCreatePrefabFromGLTF,
-    onExportSceneDialog: this.onExportSceneDialog
+    onExportSceneDialog: this.onExportSceneDialog,
+    onWriteFiles: this.onWriteFiles
   };
 
   renderPanel = (panelId, path) => {

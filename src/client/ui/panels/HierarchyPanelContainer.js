@@ -103,7 +103,15 @@ class HierarchyPanelContainer extends Component {
 
   onMouseDownNode = (e, node) => {
     if (this.clicked === node.object) {
-      this.props.editor.focusById(node.object.id);
+      const sceneRefComponent = this.props.editor.getComponent(node.object, "scene-reference");
+
+      if (sceneRefComponent) {
+        const src = sceneRefComponent.getProperty("src");
+        this.props.sceneActions.onEditPrefab(node.object, src);
+      } else {
+        this.props.editor.focusById(node.object.id);
+      }
+
       return;
     }
 

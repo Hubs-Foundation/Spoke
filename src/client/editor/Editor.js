@@ -1325,11 +1325,11 @@ export default class Editor {
     component.modified = false;
 
     const absoluteAssetURL = new URL(component.src, window.location).href;
-    let props = await this.props.editor.project.readJSON(component.src);
+    let props = await this.project.readJSON(component.src);
     props = this._resolveFileProps(component, props, absoluteAssetURL);
 
-    await component.constructor.inflate(this.state.object, props);
-    this.props.editor.signals.objectChanged.dispatch(this.state.object);
+    await component.constructor.inflate(object, props);
+    this.signals.objectChanged.dispatch(object);
   }
 
   async saveComponent(object, componentName) {

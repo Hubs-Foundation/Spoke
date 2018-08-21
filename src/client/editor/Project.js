@@ -75,6 +75,23 @@ export default class Project extends EventEmitter {
     return json;
   }
 
+  async writeFiles(relativePath, files) {
+    const formData = new FormData();
+
+    for (const [index, file] of files.entries()) {
+      formData.append("file" + index, file);
+    }
+
+    const res = await this.fetch(relativePath, {
+      method: "POST",
+      body: formData
+    });
+
+    const json = await res.json();
+
+    return json;
+  }
+
   async mkdir(relativePath) {
     const res = await this.fetch(relativePath + "?mkdir=true", { method: "POST" });
 
