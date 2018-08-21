@@ -4,7 +4,7 @@ import classNames from "classnames";
 import styles from "./Icon.scss";
 import StringInput from "./inputs/StringInput";
 
-export default function Icon({ name, src, selected, rename, onClick, onChange, onCancel, onSubmit, className }) {
+export default function Icon({ name, selected, rename, onClick, onChange, onCancel, onSubmit, className }) {
   const fullClassName = classNames(styles.icon, className, {
     [styles.selected]: selected
   });
@@ -12,7 +12,6 @@ export default function Icon({ name, src, selected, rename, onClick, onChange, o
 
   return (
     <div className={fullClassName} onMouseDown={onClick}>
-      <img className={styles.image} src={src} />
       {rename ? (
         <StringInput
           autoFocus={rename}
@@ -44,7 +43,6 @@ export default function Icon({ name, src, selected, rename, onClick, onChange, o
 
 Icon.propTypes = {
   name: PropTypes.string.isRequired,
-  src: PropTypes.string.isRequired,
   selected: PropTypes.bool,
   rename: PropTypes.bool,
   onClick: PropTypes.func,
