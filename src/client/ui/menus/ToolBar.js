@@ -17,11 +17,6 @@ export default class ToolBar extends Component {
           onClick: e => this.onMenuSelected(e)
         },
         {
-          name: "select",
-          type: "fa-mouse-pointer",
-          onClick: e => this.onSelectionSelected(e)
-        },
-        {
           name: "move",
           type: "fa-arrows-alt",
           onClick: () => this.onMoveSelected()
