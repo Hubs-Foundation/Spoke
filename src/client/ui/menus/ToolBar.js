@@ -32,37 +32,51 @@ export default class ToolBar extends Component {
           onClick: () => this.onScaleSelected()
         }
       ],
-      toolToggles: [
-        {
-          name: "coordination",
-          type: "toggle",
-          text: ["Global", "Local"],
-          isSwitch: true,
-          icons: {
-            checked: "fa-cube",
-            unchecked: "fa-globe"
-          },
-          action: status => this.onCoordinationChanged(status)
+      spaceToggle: {
+        name: "coordination",
+        type: "toggle",
+        text: ["Global", "Local"],
+        isSwitch: true,
+        isChecked: false,
+        icons: {
+          checked: "fa-cube",
+          unchecked: "fa-globe"
         },
-        {
-          name: "snap",
-          type: "toggle",
-          text: ["Snapping", "Snapping"],
-          children: <SnappingDropdown />,
-          isSwitch: false,
-          icons: {
-            checked: "fa-magnet",
-            unchecked: "fa-magnet"
-          },
-          action: status => this.onSnappingChanged(status)
-        }
-      ],
+        action: () => this.onCoordinationChanged()
+      },
+      snapToggle: {
+        name: "snap",
+        type: "toggle",
+        text: ["Snapping", "Snapping"],
+        children: <SnappingDropdown />,
+        isSwitch: false,
+        isChecked: false,
+        icons: {
+          checked: "fa-magnet",
+          unchecked: "fa-magnet"
+        },
+        action: () => this.onSnappingChanged()
+      },
       toolButtonSelected: "translate"
     };
     props.editor.signals.transformModeChanged.add(mode => {
       this._updateToolBarStatus(mode);
     });
+
+    props.editor.signals.spaceChanged.add(() => {
+      this._updateToggle(this.state.spaceToggle);
+    });
+
+    props.editor.signals.snapToggled.add(() => {
+      this._updateToggle(this.state.snapToggle);
+    });
   }
+
+  _updateToggle = toggle => {
+    const current = toggle;
+    current.isChecked = !current.isChecked;
+    this.setState({ current });
+  };
 
   _updateToolBarStatus = selectedBtnName => {
     this.setState({
@@ -71,7 +85,7 @@ export default class ToolBar extends Component {
   };
 
   onMenuSelected = e => {
-    const x = e.currentTarget.offsetWidth / 2;
+    const x = 0;
     const y = e.currentTarget.offsetHeight;
     showMenu({
       position: { x, y },
@@ -99,17 +113,12 @@ export default class ToolBar extends Component {
     this.props.editor.signals.transformModeChanged.dispatch("scale");
   };
 
-  onCoordinationChanged = newStatus => {
-    if (newStatus) {
-      // toggle true means we are switching to local
-      this.props.editor.signals.spaceChanged.dispatch("local");
-    } else {
-      this.props.editor.signals.spaceChanged.dispatch("world");
-    }
+  onCoordinationChanged = () => {
+    this.props.editor.signals.spaceChanged.dispatch();
   };
 
-  onSnappingChanged = newStatus => {
-    this.props.editor.signals.snapToggled.dispatch(newStatus);
+  onSnappingChanged = () => {
+    this.props.editor.signals.snapToggled.dispatch();
   };
 
   renderToolButtons = buttons => {
@@ -117,25 +126,6 @@ export default class ToolBar extends Component {
       const { onClick, name, type } = btn;
       const selected = btn.name === this.state.toolButtonSelected;
       return <ToolButton toolType={type} key={type} onClick={onClick} selected={selected} id={name} />;
-    });
-  };
-
-  renderToolToggles = toggles => {
-    return toggles.map(toggle => {
-      const { name, text, action, icons, isSwitch, children } = toggle;
-      return (
-        <ToolToggle
-          text={text}
-          key={name}
-          name={name}
-          action={action}
-          icons={icons}
-          isSwitch={isSwitch}
-          editor={this.props.editor}
-        >
-          {children}
-        </ToolToggle>
-      );
     });
   };
 
@@ -158,11 +148,36 @@ export default class ToolBar extends Component {
   };
 
   render() {
-    const { toolButtons, toolToggles } = this.state;
+    const { toolButtons, spaceToggle, snapToggle } = this.state;
     return (
       <div className={styles.toolbar}>
         <div className={styles.toolbtns}>{this.renderToolButtons(toolButtons)}</div>
-        <div className={styles.tooltoggles}>{this.renderToolToggles(toolToggles)}</div>
+        <div className={styles.tooltoggles}>
+          <ToolToggle
+            text={spaceToggle.text}
+            key={spaceToggle.name}
+            name={spaceToggle.name}
+            action={spaceToggle.action}
+            icons={spaceToggle.icons}
+            isSwitch={spaceToggle.isSwitch}
+            isChecked={spaceToggle.isChecked}
+            editor={this.props.editor}
+          >
+            {spaceToggle.children}
+          </ToolToggle>
+          <ToolToggle
+            text={snapToggle.text}
+            key={snapToggle.name}
+            name={snapToggle.name}
+            action={snapToggle.action}
+            icons={snapToggle.icons}
+            isSwitch={snapToggle.isSwitch}
+            isChecked={snapToggle.isChecked}
+            editor={this.props.editor}
+          >
+            {snapToggle.children}
+          </ToolToggle>
+        </div>
         <ContextMenu id="menu">
           {this.props.menus.map(menu => {
             return this.renderMenus(menu);

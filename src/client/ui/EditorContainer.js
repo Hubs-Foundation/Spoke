@@ -98,6 +98,8 @@ class EditorContainer extends Component {
         translateTool: "w",
         rotateTool: "e",
         scaleTool: "r",
+        spaceTool: "x",
+        snapTool: "t",
         delete: ["del", "backspace"],
         duplicate: ["ctrl+d", "command+d"],
         save: ["ctrl+s", "command+s"],

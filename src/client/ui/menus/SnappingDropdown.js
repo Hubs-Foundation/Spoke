@@ -46,8 +46,8 @@ export default class SnappingDropdown extends React.Component {
         this.setState({ snapMoveValue: value });
         break;
       case "rotate":
-        this.setState({ snapRotateValue: value });
-        v = value * DEG2RAD;
+        this.setState({ snapRotateValue: v });
+        v = v * DEG2RAD;
         break;
       default:
         break;
