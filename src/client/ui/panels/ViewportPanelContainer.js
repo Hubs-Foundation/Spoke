@@ -26,7 +26,9 @@ class ViewportPanelContainer extends Component {
         rotateTool: this.onRotateTool,
         scaleTool: this.onScaleTool,
         delete: this.onDelete,
-        duplicate: this.onDuplicate
+        duplicate: this.onDuplicate,
+        snapTool: this.onSnapTool,
+        spaceTool: this.onSpaceTool
       }
     };
 
@@ -61,15 +63,15 @@ class ViewportPanelContainer extends Component {
   };
 
   onTranslateTool = () => {
-    this.props.editor.setTransformMode("translate");
+    this.props.editor.signals.transformModeChanged.dispatch("translate");
   };
 
   onRotateTool = () => {
-    this.props.editor.setTransformMode("rotate");
+    this.props.editor.signals.transformModeChanged.dispatch("rotate");
   };
 
   onScaleTool = () => {
-    this.props.editor.setTransformMode("scale");
+    this.props.editor.signals.transformModeChanged.dispatch("scale");
   };
 
   onDuplicate = e => {
@@ -81,6 +83,14 @@ class ViewportPanelContainer extends Component {
   onDelete = e => {
     e.preventDefault();
     this.props.editor.deleteSelectedObject();
+  };
+
+  onSnapTool = () => {
+    this.props.editor.signals.snapToggled.dispatch();
+  };
+
+  onSpaceTool = () => {
+    this.props.editor.signals.spaceChanged.dispatch();
   };
 
   render() {
