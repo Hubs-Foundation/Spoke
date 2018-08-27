@@ -12,16 +12,6 @@
   }
 }
 
-:global {
-  .hierarchyPanel {
-    .node:before {
-      @extend .fas;
-      content: fa-content($fa-var-cube);
-      padding: 0 8px;
-    }
-  }
-}
-
 :local(.hierarchyRoot) {
   @include no-select;
   outline: none;
@@ -36,7 +26,7 @@
   display: flex;
   width: 100%;
   background-color: $panel2;
-}  
+}
 
 :local(.breadCrumb),:local(.ancestor) {
   padding-top: 4px;
@@ -50,7 +40,7 @@
   cursor: pointer;
   color: $text;
   background-color: $panel2;
-  
+
   &[disabled] {
     cursor: auto;
     color: $text2;
