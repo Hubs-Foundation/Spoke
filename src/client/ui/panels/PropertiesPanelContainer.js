@@ -81,6 +81,7 @@ class PropertiesPanelContainer extends Component {
   };
 
   onUpdateStatic = ({ value }) => {
+    if (!value) return;
     const object = this.state.object;
     this.props.editor.setStaticMode(object, value);
   };

@@ -180,6 +180,7 @@ export default class AddComponentDropdown extends Component {
   };
 
   onChange = e => {
+    if (!e.value) return;
     const { onChange } = this.props;
     onChange(e);
     this.setState({
