@@ -1,5 +1,5 @@
 {
-  "name": "spoke-test-cli",
+  "name": "spoke-cli",
   "license": "MPL-2.0",
   "version": "0.3.0",
   "bin": {
