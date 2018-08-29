@@ -11,7 +11,6 @@ import { withDialog } from "../contexts/DialogContext";
 import { withSceneActions } from "../contexts/SceneActionsContext";
 import "../../vendor/react-ui-tree/index.scss";
 import "../../vendor/react-contextmenu/index.scss";
-import { last } from "../../utils";
 import SnackBar from "../SnackBar";
 import ReactTooltip from "react-tooltip";
 import ErrorDialog from "../dialogs/ErrorDialog";
@@ -103,15 +102,7 @@ class HierarchyPanelContainer extends Component {
 
   onMouseDownNode = (e, node) => {
     if (this.clicked === node.object) {
-      const sceneRefComponent = this.props.editor.getComponent(node.object, "scene-reference");
-
-      if (sceneRefComponent) {
-        const src = sceneRefComponent.getProperty("src");
-        this.props.sceneActions.onEditPrefab(node.object, src);
-      } else {
-        this.props.editor.focusById(node.object.id);
-      }
-
+      this.props.editor.focusById(node.object.id);
       return;
     }
 
@@ -135,11 +126,6 @@ class HierarchyPanelContainer extends Component {
 
   onDuplicateNode = (e, node) => {
     this.props.editor.duplicateObject(node.object);
-  };
-
-  onEditPrefab = (object, refComponent) => {
-    const path = refComponent.getProperty("src");
-    this.props.sceneActions.onEditPrefab(object, path);
   };
 
   onDeleteSelected = e => {
@@ -166,7 +152,10 @@ class HierarchyPanelContainer extends Component {
     if (!node.object.parent) {
       return prefix + "root";
     }
-    if (this.props.editor.getComponent(node.object, "scene-reference")) {
+    if (
+      this.props.editor.getComponent(node.object, "scene-reference") ||
+      this.props.editor.getComponent(node.object, "gltf-model")
+    ) {
       return prefix + "scene";
     }
     return prefix + "node";
@@ -222,7 +211,6 @@ class HierarchyPanelContainer extends Component {
 
   renderHierarchyNodeMenu = props => {
     const node = props.trigger;
-    const refComponent = node && this.props.editor.getComponent(node.object, "scene-reference");
     const hasParent = node && node.object.parent;
     return (
       <ContextMenu id="hierarchy-node-menu">
@@ -230,11 +218,9 @@ class HierarchyPanelContainer extends Component {
         {hasParent && <MenuItem divider />}
         {hasParent && (
           <MenuItem onClick={this.onDuplicateNode}>
-            Duplicate<div className={styles.menuHotkey}>⌘D</div>
+            Duplicate
+            <div className={styles.menuHotkey}>⌘D</div>
           </MenuItem>
-        )}
-        {refComponent && (
-          <MenuItem onClick={this.onEditPrefab.bind(null, node.object, refComponent)}>Edit Prefab</MenuItem>
         )}
         {hasParent && <MenuItem onClick={this.onDeleteNode}>Delete</MenuItem>}
       </ContextMenu>
@@ -261,29 +247,6 @@ class HierarchyPanelContainer extends Component {
   render() {
     return (
       <div className={styles.hierarchyRoot}>
-        <div className={styles.breadCrumbBar}>
-          {this.props.editor.scenes.map((sceneInfo, i) => {
-            const name = sceneInfo.uri ? last(sceneInfo.uri.split("/")) : "Unsaved_Scene";
-            const ancestors = sceneInfo.scene.userData._ancestors;
-            return (
-              <div key={name}>
-                {ancestors &&
-                  ancestors.map((ancestor, i) => (
-                    <div className={styles.ancestor} key={`ancestor_${i}`}>
-                      {last(ancestor.split("/"))}
-                    </div>
-                  ))}
-                <button
-                  className={styles.breadCrumb}
-                  disabled={i !== this.props.editor.scenes.length - 2}
-                  onClick={this.onClickBreadCrumb}
-                >
-                  {name}
-                </button>
-              </div>
-            );
-          })}
-        </div>
         <FileDropTarget onDropFile={this.onDropFile}>
           <HotKeys className={styles.tree} handlers={this.state.hierarchyHotKeyHandlers}>
             <Tree

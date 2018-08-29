@@ -11,6 +11,7 @@ import ShadowComponent from "../editor/components/ShadowComponent";
 import SpotLightComponent from "../editor/components/SpotLightComponent";
 import SkyboxComponent from "../editor/components/SkyboxComponent";
 import "./AddComponentDropdown.scss";
+import GLTFModelComponent from "../editor/components/GLTFModelComponent";
 
 const getIconByName = name => {
   switch (name) {
@@ -25,6 +26,7 @@ const getIconByName = name => {
     case SpotLightComponent.componentName:
       return "fa-bullseye";
     case SceneReferenceComponent.componentName:
+    case GLTFModelComponent.componentName:
       return "fa-file-import";
     case ShadowComponent.componentName:
       return "fa-clone";
@@ -106,7 +108,7 @@ export default class AddComponentDropdown extends Component {
     });
   };
 
-  closeSelectMEnu = () => {
+  closeSelectMenu = () => {
     this.setState({
       isOpen: false
     });
@@ -200,7 +202,7 @@ export default class AddComponentDropdown extends Component {
         options={options}
         onChange={this.onChange}
         onMenuOpen={this.openSelectMenu}
-        onMenuClose={this.closeSelectMEnu}
+        onMenuClose={this.closeSelectMenu}
         value={null}
       />
     );

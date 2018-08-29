@@ -24,7 +24,7 @@ function getFileContextMenuId(file) {
   if (file.isDirectory) {
     return "directory-menu-default";
   } else if (file.ext === ".scene") {
-    return "file-menu-extend";
+    return "file-menu-scene";
   } else if (file.ext === ".gltf" || file.ext === ".glb") {
     return "file-menu-gltf";
   } else {
@@ -209,16 +209,6 @@ class AssetExplorerPanelContainer extends Component {
 
   onOpenScene = (e, file) => this.props.sceneActions.onOpenScene(file.uri);
 
-  onExtendScene = (e, file) => this.props.sceneActions.onExtendScene(file.uri);
-
-  onCreatePrefabFromGLTF = async (e, file) => {
-    const prefabPath = await this.props.sceneActions.onCreatePrefabFromGLTF(file.uri);
-
-    if (prefabPath) {
-      this.props.sceneActions.onOpenScene(prefabPath);
-    }
-  };
-
   onDropNativeFiles = async (filesPromise, target) => {
     const files = await filesPromise;
 
@@ -308,14 +298,12 @@ class AssetExplorerPanelContainer extends Component {
           <MenuItem>Delete File</MenuItem>
           <MenuItem onClick={this.onCopyURL}>Copy URL</MenuItem>
         </ContextMenu>
-        <ContextMenu id="file-menu-extend">
+        <ContextMenu id="file-menu-scene">
           <MenuItem onCLick={this.onOpenScene}>Open File</MenuItem>
           <MenuItem>Delete File</MenuItem>
           <MenuItem onClick={this.onCopyURL}>Copy URL</MenuItem>
-          <MenuItem onClick={this.onExtendScene}>Extend</MenuItem>
         </ContextMenu>
         <ContextMenu id="file-menu-gltf">
-          <MenuItem onClick={this.onCreatePrefabFromGLTF}>Create Prefab...</MenuItem>
           <MenuItem>Duplicate</MenuItem>
           <MenuItem>Rename</MenuItem>
           <MenuItem onClick={this.onCopyURL}>Copy URL</MenuItem>

@@ -19,7 +19,6 @@ export const Components = [
   HemisphereLightComponent,
   PointLightComponent,
   SpotLightComponent,
-  SceneReferenceComponent,
   GLTFModelComponent,
   MeshComponent,
   ShadowComponent,
