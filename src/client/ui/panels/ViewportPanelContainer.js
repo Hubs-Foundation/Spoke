@@ -43,20 +43,14 @@ class ViewportPanelContainer extends Component {
     if (item.file) {
       const file = item.file;
 
-      if (file.ext === ".scene") {
+      if (file.ext === ".gltf" || file.ext === ".glb") {
         try {
-          this.props.editor.addSceneReferenceNode(file.name, file.uri);
+          this.props.editor.addGLTFModelNode(file.name, file.uri);
         } catch (e) {
           this.props.showDialog(ErrorDialog, {
-            title: "Error adding prefab.",
+            title: "Error adding model.",
             message: e.message
           });
-        }
-      } else if (file.ext === ".gltf" || file.ext === ".glb") {
-        const prefabPath = await this.props.sceneActions.onCreatePrefabFromGLTF(file.uri);
-
-        if (prefabPath) {
-          this.props.editor.addSceneReferenceNode(file.name, prefabPath);
         }
       }
     }

@@ -37,6 +37,7 @@ import shallowEquals from "./utils/shallowEquals";
 import addChildAtIndex from "./utils/addChildAtIndex";
 import SceneLoaderError from "./SceneLoaderError";
 import sortEntities from "./utils/sortEntities";
+import GLTFModelComponent from "./components/GLTFModelComponent";
 
 /**
  * @author mrdoob / http://mrdoob.com/
@@ -1051,6 +1052,15 @@ export default class Editor {
     this.select(object);
   }
 
+  addGLTFModelNode(name, url) {
+    const object = new THREE.Object3D();
+    object.name = name;
+    setStaticMode(object, StaticModes.Static);
+    this.addObject(object);
+    this._addComponent(object, "gltf-model", { src: url });
+    this.select(object);
+  }
+
   createNode(name, parent) {
     const object = new THREE.Object3D();
     object.name = name;
@@ -1159,6 +1169,43 @@ export default class Editor {
     this.execute(new AddComponentCommand(object, componentName));
   }
 
+  async updateGLTFModelComponent(object) {
+    const component = GLTFModelComponent.getComponent(object);
+
+    try {
+      const scene = await this._loadGLTF(component.props.src);
+
+      scene.traverse(child => {
+        child.userData._dontSerialize = true;
+        this.setHidden(child, true);
+        Object.defineProperty(child.userData, "_selectionRoot", {
+          value: parent,
+          configurable: true,
+          enumerable: false
+        });
+      });
+
+      let existingGLTFScene = null;
+
+      for (const child of object.children) {
+        child.isScene = existingGLTFScene = child;
+      }
+
+      if (existingGLTFScene) {
+        object.remove(existingGLTFScene);
+      }
+
+      object.add(scene);
+    } catch (e) {
+      console.error("Failed to load glTF", e);
+
+      if (component.propValidation.src !== false) {
+        component.propValidation.src = false;
+        this.signals.objectChanged.dispatch(object);
+      }
+    }
+  }
+
   _addComponent = async (object, componentName, props, skipSave) => {
     try {
       const componentClass = this.components.get(componentName);
@@ -1167,6 +1214,11 @@ export default class Editor {
       if (componentClass) {
         if (componentClass.type === "light") {
           this._resetDefaultLights();
+        }
+
+        if (componentName === GLTFModelComponent.componentName && props && props.src) {
+          component = await this.components.get(componentName).inflate(object, props);
+          await this.updateGLTFModelComponent(object);
         }
 
         if (componentName === SceneReferenceComponent.componentName && props && props.src) {
@@ -1289,6 +1341,11 @@ export default class Editor {
     const component = this.getComponent(object, componentName);
 
     if (this.components.has(componentName)) {
+      if (componentName === GLTFModelComponent.componentName && propertyName === "src") {
+        component.updateProperty(propertyName, value);
+        this.updateGLTFModelComponent(object);
+      }
+
       if (componentName === SceneReferenceComponent.componentName && propertyName === "src") {
         component.updateProperty(propertyName, value);
         this._removeChildren(object);

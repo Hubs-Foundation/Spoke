@@ -4,6 +4,7 @@ import HemisphereLightComponent from "./HemisphereLightComponent";
 import PointLightComponent from "./PointLightComponent";
 import SpotLightComponent from "./SpotLightComponent";
 import SceneReferenceComponent from "./SceneReferenceComponent";
+import GLTFModelComponent from "./GLTFModelComponent";
 import MeshComponent from "./MeshComponent";
 import ShadowComponent from "./ShadowComponent";
 import SkyboxComponent from "./SkyboxComponent";
@@ -19,6 +20,7 @@ export const Components = [
   PointLightComponent,
   SpotLightComponent,
   SceneReferenceComponent,
+  GLTFModelComponent,
   MeshComponent,
   ShadowComponent,
   SkyboxComponent,
