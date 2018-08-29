@@ -167,27 +167,26 @@ class HierarchyPanelContainer extends Component {
     const disableEditing =
       node.object.userData._duplicate || node.object.userData._isDuplicateRoot || node.object.userData._isMissingRoot;
     const nodeType = this.getNodeType(node);
+    const onMouseDown = disableEditing ? e => e.stopPropagation() : e => this.onMouseDownNode(e, node);
     return (
-      <div
-        className={classNames("node", nodeType, {
-          "is-active": this.props.editor.selected && node.object.id === this.props.editor.selected.id,
-          conflict: disableEditing,
-          "error-root": node.object.userData._isMissingRoot ? node.object.userData._missing : false,
-          "warning-root": node.object.userData._isDuplicateRoot ? node.object.userData._duplicate : false,
-          disabled: isMissingChild || isDuplicateChild
-        })}
-        onMouseDown={disableEditing ? e => e.stopPropagation() : e => this.onMouseDownNode(e, node)}
+      <ContextMenuTrigger
+        attributes={{
+          className: classNames("node", nodeType, {
+            "is-active": this.props.editor.selected && node.object.id === this.props.editor.selected.id,
+            conflict: disableEditing,
+            "error-root": node.object.userData._isMissingRoot ? node.object.userData._missing : false,
+            "warning-root": node.object.userData._isDuplicateRoot ? node.object.userData._duplicate : false,
+            disabled: isMissingChild || isDuplicateChild
+          }),
+          onMouseDown
+        }}
+        holdToDisplay={-1}
+        id="hierarchy-node-menu"
+        node={node}
+        collect={collectNodeMenuProps}
       >
-        <ContextMenuTrigger
-          attributes={{ className: styles.treeNode }}
-          holdToDisplay={-1}
-          id="hierarchy-node-menu"
-          node={node}
-          collect={collectNodeMenuProps}
-        >
-          {this.renderNodeName(node)}
-        </ContextMenuTrigger>
-      </div>
+        <div className={styles.treeNode}>{this.renderNodeName(node)}</div>
+      </ContextMenuTrigger>
     );
   };
 
