@@ -10,6 +10,7 @@ import ShadowComponent from "./ShadowComponent";
 import SkyboxComponent from "./SkyboxComponent";
 import StandardMaterialComponent from "./StandardMaterialComponent";
 import TransformComponent from "./TransformComponent";
+import SpawnPointComponent from "./SpawnPointComponent";
 
 export * from "./utils";
 
@@ -24,6 +25,7 @@ export const Components = [
   MeshComponent,
   ShadowComponent,
   SkyboxComponent,
+  SpawnPointComponent,
   StandardMaterialComponent,
   TransformComponent
 ];

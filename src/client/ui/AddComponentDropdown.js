@@ -12,6 +12,7 @@ import SpotLightComponent from "../editor/components/SpotLightComponent";
 import SkyboxComponent from "../editor/components/SkyboxComponent";
 import "./AddComponentDropdown.scss";
 import GLTFModelComponent from "../editor/components/GLTFModelComponent";
+import SpawnPointComponent from "../editor/components/SpawnPointComponent";
 
 const getIconByName = name => {
   switch (name) {
@@ -32,6 +33,8 @@ const getIconByName = name => {
       return "fa-clone";
     case SkyboxComponent.componentName:
       return "fa-cloud";
+    case SpawnPointComponent.componentName:
+      return "fa-street-view";
     default:
       break;
   }
