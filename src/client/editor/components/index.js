@@ -10,6 +10,7 @@ import MeshComponent from "./MeshComponent";
 import NavMeshComponent from "./NavMeshComponent";
 import PointLightComponent from "./PointLightComponent";
 import SceneReferenceComponent from "./SceneReferenceComponent";
+import SceneShadowComponent from "./SceneShadowComponent";
 import ShadowComponent from "./ShadowComponent";
 import SkyboxComponent from "./SkyboxComponent";
 import SpawnPointComponent from "./SpawnPointComponent";
@@ -34,6 +35,7 @@ export const Components = [
   NavMeshComponent,
   PointLightComponent,
   SceneReferenceComponent,
+  SceneShadowComponent,
   ShadowComponent,
   SkyboxComponent,
   SpawnPointComponent,
