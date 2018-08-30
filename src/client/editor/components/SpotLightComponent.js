@@ -6,6 +6,8 @@ const { degToRad, radToDeg } = THREE.Math;
 export default class SpotLightComponent extends BaseComponent {
   static componentName = "spot-light";
 
+  static iconClassName = "fa-bullseye";
+
   static type = "light";
 
   static schema = [

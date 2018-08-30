@@ -7,6 +7,8 @@ export default class DirectionalLightComponent extends BaseComponent {
 
   static type = "light";
 
+  static iconClassName = "fa-bolt";
+
   static schema = [
     { name: "color", type: types.color, default: "white" },
     { name: "intensity", type: types.number, default: 1, min: 0 },

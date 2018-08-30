@@ -2,43 +2,7 @@ import React, { Component } from "react";
 import Select, { components } from "react-select";
 import PropTypes from "prop-types";
 import classNames from "classnames";
-import AmbientLightComponent from "../editor/components/AmbientLightComponent";
-import DirectionalLightComponent from "../editor/components/DirectionalLightComponent";
-import HemisphereLightComponent from "../editor/components/HemisphereLightComponent";
-import PointLightComponent from "../editor/components/PointLightComponent";
-import SceneReferenceComponent from "../editor/components/SceneReferenceComponent";
-import ShadowComponent from "../editor/components/ShadowComponent";
-import SpotLightComponent from "../editor/components/SpotLightComponent";
-import SkyboxComponent from "../editor/components/SkyboxComponent";
 import "./AddComponentDropdown.scss";
-import GLTFModelComponent from "../editor/components/GLTFModelComponent";
-import SpawnPointComponent from "../editor/components/SpawnPointComponent";
-
-const getIconByName = name => {
-  switch (name) {
-    case AmbientLightComponent.componentName:
-      return "fa-sun";
-    case DirectionalLightComponent.componentName:
-      return "fa-bolt";
-    case HemisphereLightComponent.componentName:
-      return "fa-certificate";
-    case PointLightComponent.componentName:
-      return "fa-lightbulb";
-    case SpotLightComponent.componentName:
-      return "fa-bullseye";
-    case SceneReferenceComponent.componentName:
-    case GLTFModelComponent.componentName:
-      return "fa-file-import";
-    case ShadowComponent.componentName:
-      return "fa-clone";
-    case SkyboxComponent.componentName:
-      return "fa-cloud";
-    case SpawnPointComponent.componentName:
-      return "fa-street-view";
-    default:
-      break;
-  }
-};
 
 const SelectContainer = ({ children, ...props }) => {
   return <components.SelectContainer {...props}>{children}</components.SelectContainer>;
@@ -72,12 +36,11 @@ Placeholder.propTypes = {
 };
 
 const Option = props => {
-  const { label, value } = props;
-  const icon = getIconByName(value);
+  const { label, iconClassName } = props.data;
   return (
     <components.Option {...props}>
       <span>
-        <i className={classNames("fas", icon)} />
+        <i className={classNames("fas", iconClassName)} />
         <span>{label}</span>
       </span>
     </components.Option>
@@ -86,7 +49,8 @@ const Option = props => {
 
 Option.propTypes = {
   label: PropTypes.string,
-  value: PropTypes.string
+  value: PropTypes.string,
+  data: PropTypes.object
 };
 
 const DropdownIndicator = () => {

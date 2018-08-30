@@ -37,18 +37,18 @@ export default class TransformComponent extends BaseComponent {
     // it reads them directly from the Object3D.
     Object.defineProperty(this, "props", {
       get: () => {
-        const rotation = this._object.rotation;
-        this._props.position = this._object.position;
+        const rotation = this._node.rotation;
+        this._props.position = this._node.position;
         this._props.rotation.x = rotation.x;
         this._props.rotation.y = rotation.y;
         this._props.rotation.z = rotation.z;
-        this._props.scale = this._object.scale;
+        this._props.scale = this._node.scale;
         return this._props;
       }
     });
   }
 
   async updateProperty(propertyName, value) {
-    this._object[propertyName].set(value.x, value.y, value.z);
+    this._node[propertyName].set(value.x, value.y, value.z);
   }
 }

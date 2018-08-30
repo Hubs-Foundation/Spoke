@@ -123,19 +123,17 @@ export default class Viewport {
       if (onDownPosition.distanceTo(onUpPosition) === 0) {
         const results = getIntersects(onUpPosition, editor.scene);
 
-        let selection = null;
+        if (results.length > 0) {
+          const { object } = results[0];
 
-        for (const { object } of results) {
           if (object.userData._selectionRoot !== undefined) {
-            selection = object.userData._selectionRoot;
-            break;
+            editor.select(object.userData._selectionRoot);
           } else {
             editor.select(object);
-            break;
           }
+        } else {
+          editor.deselect();
         }
-
-        editor.select(selection);
       }
     }
 

@@ -4,5 +4,6 @@ export const types = {
   vector: "vector",
   euler: "euler",
   boolean: "boolean",
-  file: "file"
+  file: "file",
+  string: "string"
 };

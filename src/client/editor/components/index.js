@@ -12,22 +12,28 @@ import StandardMaterialComponent from "./StandardMaterialComponent";
 import TransformComponent from "./TransformComponent";
 import SpawnPointComponent from "./SpawnPointComponent";
 import BoxColliderComponent from "./BoxColliderComponent";
+import MediaLoaderComponent from "./MediaLoaderComponent";
+import SuperSpawnerComponent from "./SuperSpawnerComponent";
+import HoverableComponent from "./HoverableComponent";
 
 export * from "./utils";
 
 export const Components = [
   AmbientLightComponent,
   DirectionalLightComponent,
-  HemisphereLightComponent,
-  PointLightComponent,
-  SpotLightComponent,
-  SceneReferenceComponent,
   GLTFModelComponent,
+  HemisphereLightComponent,
+  HoverableComponent,
+  MediaLoaderComponent,
   MeshComponent,
+  PointLightComponent,
+  SceneReferenceComponent,
   ShadowComponent,
   SkyboxComponent,
   SpawnPointComponent,
+  SpotLightComponent,
   StandardMaterialComponent,
-  TransformComponent,
-  BoxColliderComponent
+  BoxColliderComponent,
+  SuperSpawnerComponent,
+  TransformComponent
 ];

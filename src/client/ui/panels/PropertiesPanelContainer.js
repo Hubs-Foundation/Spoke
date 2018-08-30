@@ -70,10 +70,8 @@ class PropertiesPanelContainer extends Component {
     }
   };
 
-  onUpdateName = e => {
-    this.setState({
-      name: e.target.value
-    });
+  onUpdateName = name => {
+    this.setState({ name });
   };
 
   onBlurName = () => {
@@ -274,7 +272,8 @@ class PropertiesPanelContainer extends Component {
       if (componentClass.canAdd !== false && !objectComponents.find(c => c.name === name)) {
         componentOptions.push({
           value: name,
-          label: getDisplayName(name)
+          label: getDisplayName(name),
+          iconClassName: componentClass.iconClassName
         });
       }
     }

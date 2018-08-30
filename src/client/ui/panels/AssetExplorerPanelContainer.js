@@ -165,8 +165,8 @@ class AssetExplorerPanelContainer extends Component {
     });
   };
 
-  onNewFolderChange = e => {
-    this.setState({ newFolderName: e.target.value });
+  onNewFolderChange = newFolderName => {
+    this.setState({ newFolderName });
   };
 
   onSubmitNewFolder = () => {
