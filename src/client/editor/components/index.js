@@ -3,6 +3,7 @@ import DirectionalLightComponent from "./DirectionalLightComponent";
 import GLTFModelComponent from "./GLTFModelComponent";
 import HemisphereLightComponent from "./HemisphereLightComponent";
 import HoverableComponent from "./HoverableComponent";
+import InteractableComponent from "./InteractableComponent";
 import MediaLoaderComponent from "./MediaLoaderComponent";
 import MeshComponent from "./MeshComponent";
 import NavMeshComponent from "./NavMeshComponent";
@@ -15,6 +16,7 @@ import SpotLightComponent from "./SpotLightComponent";
 import StandardMaterialComponent from "./StandardMaterialComponent";
 import SuperSpawnerComponent from "./SuperSpawnerComponent";
 import TransformComponent from "./TransformComponent";
+import VisibleComponent from "./VisibleComponent";
 
 export * from "./utils";
 
@@ -24,6 +26,7 @@ export const Components = [
   GLTFModelComponent,
   HemisphereLightComponent,
   HoverableComponent,
+  InteractableComponent,
   MediaLoaderComponent,
   MeshComponent,
   NavMeshComponent,
@@ -35,5 +38,6 @@ export const Components = [
   SpotLightComponent,
   StandardMaterialComponent,
   SuperSpawnerComponent,
-  TransformComponent
+  TransformComponent,
+  VisibleComponent
 ];
