@@ -5,6 +5,8 @@ import { types } from "./utils";
 export default class HemisphereLightComponent extends BaseComponent {
   static componentName = "hemisphere-light";
 
+  static iconClassName = "fa-certificate";
+
   static type = "light";
 
   static schema = [

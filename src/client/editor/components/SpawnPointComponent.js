@@ -7,6 +7,8 @@ const spawnPointIcon = new THREE.TextureLoader().load(spawnPointIconUrl);
 export default class SpawnPointComponent extends BaseComponent {
   static componentName = "spawn-point";
 
+  static iconClassName = "fa-street-view";
+
   static schema = [];
 
   static async inflate(node, _props) {

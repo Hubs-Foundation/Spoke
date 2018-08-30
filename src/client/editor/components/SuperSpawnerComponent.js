@@ -4,6 +4,8 @@ import { types } from "./utils";
 export default class SuperSpawnerComponent extends BaseComponent {
   static componentName = "super-spawner";
 
+  static iconClassName = "fa-magic";
+
   static schema = [
     { name: "src", type: types.string, default: "" },
     { name: "useCustomSpawnPosition", type: types.boolean, default: false },

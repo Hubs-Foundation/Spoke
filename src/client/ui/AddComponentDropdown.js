@@ -2,52 +2,7 @@ import React, { Component } from "react";
 import Select, { components } from "react-select";
 import PropTypes from "prop-types";
 import classNames from "classnames";
-import AmbientLightComponent from "../editor/components/AmbientLightComponent";
-import DirectionalLightComponent from "../editor/components/DirectionalLightComponent";
-import HemisphereLightComponent from "../editor/components/HemisphereLightComponent";
-import PointLightComponent from "../editor/components/PointLightComponent";
-import SceneReferenceComponent from "../editor/components/SceneReferenceComponent";
-import ShadowComponent from "../editor/components/ShadowComponent";
-import SpotLightComponent from "../editor/components/SpotLightComponent";
-import SkyboxComponent from "../editor/components/SkyboxComponent";
 import "./AddComponentDropdown.scss";
-import GLTFModelComponent from "../editor/components/GLTFModelComponent";
-import SpawnPointComponent from "../editor/components/SpawnPointComponent";
-import MediaLoaderComponent from "../editor/components/MediaLoaderComponent";
-import SuperSpawnerComponent from "../editor/components/SuperSpawnerComponent";
-import HoverableComponent from "../editor/components/HoverableComponent";
-
-const getIconByName = name => {
-  switch (name) {
-    case AmbientLightComponent.componentName:
-      return "fa-sun";
-    case DirectionalLightComponent.componentName:
-      return "fa-bolt";
-    case HemisphereLightComponent.componentName:
-      return "fa-certificate";
-    case HoverableComponent.componentName:
-      return "fa-hand-pointer";
-    case PointLightComponent.componentName:
-      return "fa-lightbulb";
-    case SpotLightComponent.componentName:
-      return "fa-bullseye";
-    case SceneReferenceComponent.componentName:
-    case GLTFModelComponent.componentName:
-      return "fa-file-import";
-    case ShadowComponent.componentName:
-      return "fa-clone";
-    case SkyboxComponent.componentName:
-      return "fa-cloud";
-    case SpawnPointComponent.componentName:
-      return "fa-street-view";
-    case MediaLoaderComponent.componentName:
-      return "fa-cloud-download-alt";
-    case SuperSpawnerComponent.componentName:
-      return "fa-magic";
-    default:
-      break;
-  }
-};
 
 const SelectContainer = ({ children, ...props }) => {
   return <components.SelectContainer {...props}>{children}</components.SelectContainer>;
@@ -81,12 +36,11 @@ Placeholder.propTypes = {
 };
 
 const Option = props => {
-  const { label, value } = props;
-  const icon = getIconByName(value);
+  const { label, iconClassName } = props.data;
   return (
     <components.Option {...props}>
       <span>
-        <i className={classNames("fas", icon)} />
+        <i className={classNames("fas", iconClassName)} />
         <span>{label}</span>
       </span>
     </components.Option>

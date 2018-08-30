@@ -7,6 +7,8 @@ export default class AmbientLightComponent extends BaseComponent {
 
   static type = "light";
 
+  static iconClassName = "fa-sun";
+
   static schema = [
     { name: "color", type: types.color, default: "white" },
     { name: "intensity", type: types.number, default: 1 }

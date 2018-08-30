@@ -20,18 +20,18 @@ export * from "./utils";
 export const Components = [
   AmbientLightComponent,
   DirectionalLightComponent,
+  GLTFModelComponent,
   HemisphereLightComponent,
   HoverableComponent,
-  PointLightComponent,
-  SpotLightComponent,
-  SceneReferenceComponent,
-  GLTFModelComponent,
   MediaLoaderComponent,
   MeshComponent,
+  PointLightComponent,
+  SceneReferenceComponent,
   ShadowComponent,
   SkyboxComponent,
-  SuperSpawnerComponent,
   SpawnPointComponent,
+  SpotLightComponent,
   StandardMaterialComponent,
+  SuperSpawnerComponent,
   TransformComponent
 ];

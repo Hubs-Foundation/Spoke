@@ -271,7 +271,8 @@ class PropertiesPanelContainer extends Component {
       if (componentClass.canAdd !== false && !objectComponents.find(c => c.name === name)) {
         componentOptions.push({
           value: name,
-          label: getDisplayName(name)
+          label: getDisplayName(name),
+          iconClassName: componentClass.iconClassName
         });
       }
     }

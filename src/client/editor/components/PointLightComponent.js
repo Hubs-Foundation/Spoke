@@ -5,6 +5,8 @@ import { types } from "./utils";
 export default class PointLightComponent extends BaseComponent {
   static componentName = "point-light";
 
+  static iconClassName = "fa-lightbulb";
+
   static type = "light";
 
   static schema = [

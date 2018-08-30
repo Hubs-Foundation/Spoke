@@ -5,6 +5,8 @@ import THREE from "../three";
 export default class SkyboxComponent extends BaseComponent {
   static componentName = "skybox";
 
+  static iconClassName = "fa-cloud";
+
   static schema = [
     { name: "turbidity", type: types.number, default: 10 },
     { name: "rayleigh", type: types.number, default: 2 },
