@@ -6,8 +6,6 @@ export default class ShadowComponent extends BaseComponent {
 
   static iconClassName = "fa-clone";
 
-  static canRemove = false;
-
   static dontExportProps = true;
 
   static schema = [

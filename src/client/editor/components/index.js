@@ -1,31 +1,37 @@
 import AmbientLightComponent from "./AmbientLightComponent";
+import BoxColliderComponent from "./BoxColliderComponent";
 import DirectionalLightComponent from "./DirectionalLightComponent";
-import HemisphereLightComponent from "./HemisphereLightComponent";
-import PointLightComponent from "./PointLightComponent";
-import SpotLightComponent from "./SpotLightComponent";
-import SceneReferenceComponent from "./SceneReferenceComponent";
 import GLTFModelComponent from "./GLTFModelComponent";
+import HemisphereLightComponent from "./HemisphereLightComponent";
+import HoverableComponent from "./HoverableComponent";
+import InteractableComponent from "./InteractableComponent";
+import MediaLoaderComponent from "./MediaLoaderComponent";
 import MeshComponent from "./MeshComponent";
+import NavMeshComponent from "./NavMeshComponent";
+import PointLightComponent from "./PointLightComponent";
+import SceneReferenceComponent from "./SceneReferenceComponent";
 import ShadowComponent from "./ShadowComponent";
 import SkyboxComponent from "./SkyboxComponent";
-import StandardMaterialComponent from "./StandardMaterialComponent";
-import TransformComponent from "./TransformComponent";
 import SpawnPointComponent from "./SpawnPointComponent";
-import BoxColliderComponent from "./BoxColliderComponent";
-import MediaLoaderComponent from "./MediaLoaderComponent";
+import SpotLightComponent from "./SpotLightComponent";
+import StandardMaterialComponent from "./StandardMaterialComponent";
 import SuperSpawnerComponent from "./SuperSpawnerComponent";
-import HoverableComponent from "./HoverableComponent";
+import TransformComponent from "./TransformComponent";
+import VisibleComponent from "./VisibleComponent";
 
 export * from "./utils";
 
 export const Components = [
   AmbientLightComponent,
+  BoxColliderComponent,
   DirectionalLightComponent,
   GLTFModelComponent,
   HemisphereLightComponent,
   HoverableComponent,
+  InteractableComponent,
   MediaLoaderComponent,
   MeshComponent,
+  NavMeshComponent,
   PointLightComponent,
   SceneReferenceComponent,
   ShadowComponent,
@@ -33,7 +39,7 @@ export const Components = [
   SpawnPointComponent,
   SpotLightComponent,
   StandardMaterialComponent,
-  BoxColliderComponent,
   SuperSpawnerComponent,
-  TransformComponent
+  TransformComponent,
+  VisibleComponent
 ];

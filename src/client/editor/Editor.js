@@ -46,7 +46,7 @@ export default class Editor {
   constructor(project) {
     this.project = project;
 
-    this.DEFAULT_CAMERA = new THREE.PerspectiveCamera(50, 1, 0.01, 1000);
+    this.DEFAULT_CAMERA = new THREE.PerspectiveCamera(80, window.innerWidth / window.innerHeight, 0.005, 10000);
     this.DEFAULT_CAMERA.name = "Camera";
     this.DEFAULT_CAMERA.position.set(0, 5, 10);
     this.DEFAULT_CAMERA.lookAt(new THREE.Vector3());

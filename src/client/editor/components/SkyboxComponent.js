@@ -15,7 +15,7 @@ export default class SkyboxComponent extends BaseComponent {
     { name: "mieDirectionalG", type: types.number, default: 0.8 },
     { name: "inclination", type: types.number, default: 0 },
     { name: "azimuth", type: types.number, default: 0 },
-    { name: "distance", type: types.number, default: 8000 }
+    { name: "distance", type: types.number, default: 8000, min: 0, max: 10000 }
   ];
 
   _updateSunPosition() {
@@ -29,6 +29,7 @@ export default class SkyboxComponent extends BaseComponent {
     const z = distance * Math.sin(phi) * Math.cos(theta);
 
     this._object.material.uniforms.sunPosition.value.set(x, y, z).normalize();
+    this._object.scale.set(distance, distance, distance);
   }
 
   async updateProperty(propertyName, value) {
