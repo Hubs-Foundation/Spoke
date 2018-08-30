@@ -213,8 +213,8 @@ class FileDialog extends Component {
     });
   };
 
-  onNewFolderChange = e => {
-    this.setState({ newFolderName: e.target.value });
+  onNewFolderChange = newFolderName => {
+    this.setState({ newFolderName });
   };
 
   onSubmitNewFolder = () => {
@@ -235,10 +235,10 @@ class FileDialog extends Component {
     });
   };
 
-  onChangeFileName = e => {
+  onChangeFileName = fileName => {
     this.setState({
       selectedFile: null,
-      fileName: e.target.value
+      fileName
     });
   };
 

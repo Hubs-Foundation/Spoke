@@ -11,6 +11,8 @@ import SkyboxComponent from "./SkyboxComponent";
 import StandardMaterialComponent from "./StandardMaterialComponent";
 import TransformComponent from "./TransformComponent";
 import SpawnPointComponent from "./SpawnPointComponent";
+import MediaLoaderComponent from "./MediaLoaderComponent";
+import SuperSpawnerComponent from "./SuperSpawnerComponent";
 
 export * from "./utils";
 
@@ -22,9 +24,11 @@ export const Components = [
   SpotLightComponent,
   SceneReferenceComponent,
   GLTFModelComponent,
+  MediaLoaderComponent,
   MeshComponent,
   ShadowComponent,
   SkyboxComponent,
+  SuperSpawnerComponent,
   SpawnPointComponent,
   StandardMaterialComponent,
   TransformComponent

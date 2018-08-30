@@ -6,10 +6,12 @@ import ColorInput from "./ui/inputs//ColorInput";
 import FileInput from "./ui/inputs/FileInput";
 import BooleanInput from "./ui/inputs/BooleanInput";
 import CompoundNumericInput from "./ui/inputs/CompoundNumericInput";
+import StringInput from "./ui/inputs/StringInput";
 
 /* eslint react/display-name: 0 */
 const componentTypeMappings = new Map([
   [types.color, (value, isValid, onChange) => <ColorInput value={value} onChange={onChange} />],
+  [types.string, (value, isValid, onChange) => <StringInput value={value} onChange={onChange} />],
   [
     types.number,
     (value, isValid, onChange, extras) => <CompoundNumericInput value={value} onChange={onChange} {...extras} />

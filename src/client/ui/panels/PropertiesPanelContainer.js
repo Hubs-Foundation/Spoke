@@ -70,10 +70,8 @@ class PropertiesPanelContainer extends Component {
     }
   };
 
-  onUpdateName = e => {
-    this.setState({
-      name: e.target.value
-    });
+  onUpdateName = name => {
+    this.setState({ name });
   };
 
   onBlurName = () => {

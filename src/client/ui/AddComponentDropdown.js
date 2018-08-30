@@ -13,6 +13,8 @@ import SkyboxComponent from "../editor/components/SkyboxComponent";
 import "./AddComponentDropdown.scss";
 import GLTFModelComponent from "../editor/components/GLTFModelComponent";
 import SpawnPointComponent from "../editor/components/SpawnPointComponent";
+import MediaLoaderComponent from "../editor/components/MediaLoaderComponent";
+import SuperSpawnerComponent from "../editor/components/SuperSpawnerComponent";
 
 const getIconByName = name => {
   switch (name) {
@@ -35,6 +37,10 @@ const getIconByName = name => {
       return "fa-cloud";
     case SpawnPointComponent.componentName:
       return "fa-street-view";
+    case MediaLoaderComponent.componentName:
+      return "fa-cloud-download-alt";
+    case SuperSpawnerComponent.componentName:
+      return "fa-magic";
     default:
       break;
   }
