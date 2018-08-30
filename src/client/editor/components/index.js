@@ -1,4 +1,5 @@
 import AmbientLightComponent from "./AmbientLightComponent";
+import AnimationLoopComponent from "./AnimationLoopComponent";
 import BoxColliderComponent from "./BoxColliderComponent";
 import DirectionalLightComponent from "./DirectionalLightComponent";
 import GLTFModelComponent from "./GLTFModelComponent";
@@ -23,6 +24,7 @@ export * from "./utils";
 
 export const Components = [
   AmbientLightComponent,
+  AnimationLoopComponent,
   BoxColliderComponent,
   DirectionalLightComponent,
   GLTFModelComponent,
