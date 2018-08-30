@@ -245,6 +245,11 @@ class FileDialog extends Component {
   onConfirm = e => {
     e.preventDefault();
 
+    if (this.state.selectedFile) {
+      this.props.onConfirm(this.state.selectedFile.uri);
+      return;
+    }
+
     let fileName = this.state.fileName;
 
     // eslint-disable-next-line no-useless-escape

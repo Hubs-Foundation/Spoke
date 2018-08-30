@@ -17,10 +17,10 @@ export default class ShadowComponent extends BaseComponent {
 
   async updateProperty(propertyName, value) {
     await super.updateProperty(propertyName, value);
-    this._object[propertyName] = value;
+    this._node[propertyName] = value;
 
-    if (this._object.material) {
-      this._object.material.needsUpdate = true;
+    if (this._node.material) {
+      this._node.material.needsUpdate = true;
     }
   }
 

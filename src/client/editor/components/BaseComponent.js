@@ -21,7 +21,8 @@ export default class BaseComponent {
     this.props = {};
     this.propValidation = {};
     this.shouldSave = false;
-    Object.defineProperty(this, "_object", { enumerable: false, value: object === undefined ? node : object });
+    Object.defineProperty(this, "_node", { enumerable: false, value: node });
+    Object.defineProperty(this, "_object", { enumerable: false, writable: true, value: object });
   }
 
   getProperty(propertyName) {

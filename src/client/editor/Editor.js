@@ -1179,23 +1179,18 @@ export default class Editor {
         child.userData._dontSerialize = true;
         this.setHidden(child, true);
         Object.defineProperty(child.userData, "_selectionRoot", {
-          value: parent,
+          value: object,
           configurable: true,
           enumerable: false
         });
       });
 
-      let existingGLTFScene = null;
-
-      for (const child of object.children) {
-        child.isScene = existingGLTFScene = child;
-      }
-
-      if (existingGLTFScene) {
-        object.remove(existingGLTFScene);
+      if (component._object) {
+        object.remove(component._object);
       }
 
       object.add(scene);
+      component._object = scene;
     } catch (e) {
       console.error("Failed to load glTF", e);
 
@@ -1298,6 +1293,8 @@ export default class Editor {
         throw new Error(`Component "${componentName}" does not exist on ${object}`);
       }
       object.userData._components.splice(index, 1);
+
+      this.signals.objectChanged.dispatch(object);
     }
   }
 

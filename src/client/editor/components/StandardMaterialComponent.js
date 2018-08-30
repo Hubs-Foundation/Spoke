@@ -56,8 +56,10 @@ export default class StandardMaterialComponent extends SaveableComponent {
   }
 
   async _updateTexture(propertyName, map, url, sRGB) {
+    const material = this._node.material;
+
     if (!url) {
-      this._object[map] = null;
+      material[map] = null;
       return;
     }
 
@@ -70,33 +72,36 @@ export default class StandardMaterialComponent extends SaveableComponent {
       texture.flipY = false;
       texture.wrapS = THREE.RepeatWrapping;
       texture.wrapT = THREE.RepeatWrapping;
-      this._object[map] = texture;
+      material[map] = texture;
     } catch (e) {
       console.error(e);
-      this._object[map] = null;
-      this._object.needsUpdate = true;
+      material[map] = null;
+      material.needsUpdate = true;
       this.propValidation[propertyName] = false;
     }
   }
 
   async updateProperty(propertyName, value) {
     await super.updateProperty(propertyName, value);
-    if (!this._object) return;
+
+    const material = this._node.material;
+
+    if (!material) return;
     switch (propertyName) {
       case "color":
-        this._object.color.set(value);
+        material.color.set(value);
         break;
       case "emissiveFactor":
-        this._object.emissive.set(value);
+        material.emissive.set(value);
         break;
       case "metallic":
-        this._object.metalness = value;
+        material.metalness = value;
         break;
       case "alphaCutoff":
-        this._object.alphaTest = value;
+        material.alphaTest = value;
         break;
       case "doubleSided":
-        this._object.side = value ? THREE.DoubleSide : THREE.FrontSide;
+        material.side = value ? THREE.DoubleSide : THREE.FrontSide;
         break;
       case "baseColorTexture":
         await this._updateTexture(propertyName, "map", value, true);
@@ -115,9 +120,9 @@ export default class StandardMaterialComponent extends SaveableComponent {
         await this._updateTexture(propertyName, "aoMap", value);
         break;
       default:
-        this._object[propertyName] = value;
+        material[propertyName] = value;
     }
-    this._object.needsUpdate = true;
+    material.needsUpdate = true;
   }
 
   static _propsFromObject(node) {
@@ -139,7 +144,7 @@ export default class StandardMaterialComponent extends SaveableComponent {
   }
 
   static async inflate(node, _props) {
-    const component = await this._getOrCreateComponent(node, _props, node.material || null);
+    const component = await this._getOrCreateComponent(node, _props);
     if (node.material) {
       if (!cachedEnvMap) {
         cachedEnvMap = loadEnvMap();
