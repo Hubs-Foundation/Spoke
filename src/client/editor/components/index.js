@@ -13,6 +13,7 @@ import TransformComponent from "./TransformComponent";
 import SpawnPointComponent from "./SpawnPointComponent";
 import MediaLoaderComponent from "./MediaLoaderComponent";
 import SuperSpawnerComponent from "./SuperSpawnerComponent";
+import HoverableComponent from "./HoverableComponent";
 
 export * from "./utils";
 
@@ -20,6 +21,7 @@ export const Components = [
   AmbientLightComponent,
   DirectionalLightComponent,
   HemisphereLightComponent,
+  HoverableComponent,
   PointLightComponent,
   SpotLightComponent,
   SceneReferenceComponent,

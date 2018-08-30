@@ -15,6 +15,7 @@ import GLTFModelComponent from "../editor/components/GLTFModelComponent";
 import SpawnPointComponent from "../editor/components/SpawnPointComponent";
 import MediaLoaderComponent from "../editor/components/MediaLoaderComponent";
 import SuperSpawnerComponent from "../editor/components/SuperSpawnerComponent";
+import HoverableComponent from "../editor/components/HoverableComponent";
 
 const getIconByName = name => {
   switch (name) {
@@ -24,6 +25,8 @@ const getIconByName = name => {
       return "fa-bolt";
     case HemisphereLightComponent.componentName:
       return "fa-certificate";
+    case HoverableComponent.componentName:
+      return "fa-hand-pointer";
     case PointLightComponent.componentName:
       return "fa-lightbulb";
     case SpotLightComponent.componentName:
