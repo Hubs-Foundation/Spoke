@@ -1,10 +1,10 @@
-import AnimationLoopComponent from "./AnimationLoopComponent";
 import AmbientLightComponent from "./AmbientLightComponent";
 import DirectionalLightComponent from "./DirectionalLightComponent";
 import GLTFModelComponent from "./GLTFModelComponent";
 import HemisphereLightComponent from "./HemisphereLightComponent";
 import HoverableComponent from "./HoverableComponent";
 import InteractableComponent from "./InteractableComponent";
+import LoopAnimationComponent from "./LoopAnimationComponent";
 import MediaLoaderComponent from "./MediaLoaderComponent";
 import MeshComponent from "./MeshComponent";
 import NavMeshComponent from "./NavMeshComponent";
@@ -23,12 +23,12 @@ export * from "./utils";
 
 export const Components = [
   AmbientLightComponent,
-  AnimationLoopComponent,
   DirectionalLightComponent,
   GLTFModelComponent,
   HemisphereLightComponent,
   HoverableComponent,
   InteractableComponent,
+  LoopAnimationComponent,
   MediaLoaderComponent,
   MeshComponent,
   NavMeshComponent,
