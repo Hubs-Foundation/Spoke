@@ -38,7 +38,6 @@ import addChildAtIndex from "./utils/addChildAtIndex";
 import SceneLoaderError from "./SceneLoaderError";
 import sortEntities from "./utils/sortEntities";
 import GLTFModelComponent from "./components/GLTFModelComponent";
-import { BoxCollider } from "./components/BoxColliderComponent";
 
 /**
  * @author mrdoob / http://mrdoob.com/
@@ -1119,8 +1118,6 @@ export default class Editor {
         helper = new SpokeHemisphereLightHelper(object, 1);
       } else if (object instanceof THREE.SkinnedMesh) {
         helper = new THREE.SkeletonHelper(object);
-      } else if (object instanceof BoxCollider) {
-        helper = new THREE.BoxHelper(object, 0x00ff00);
       } else {
         // no helper for this object type
         return;

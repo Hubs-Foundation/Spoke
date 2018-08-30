@@ -1,14 +1,6 @@
 import THREE from "../three";
 import TransformComponent from "./TransformComponent";
 
-// BoxCollider exists because the editor needs something to create a helper for.
-export class BoxCollider extends THREE.Mesh {
-  constructor(geometry, material) {
-    super(geometry, material);
-    this.visible = false;
-  }
-}
-
 export default class BoxColliderComponent extends TransformComponent {
   static componentName = "box-collider";
 
@@ -26,13 +18,14 @@ export default class BoxColliderComponent extends TransformComponent {
   static dontExportProps = false;
 
   static async inflate(node, _props) {
-    const box = new BoxCollider(BoxColliderComponent._geometry);
+    const boxMesh = new THREE.Mesh(this._geometry, this._material);
+    boxMesh.userData._dontExport = true;
+    const box = new THREE.BoxHelper(boxMesh, 0x00ff00);
     box.userData._dontExport = true;
     box.userData._dontShowInHierarchy = true;
     box.userData._inflated = true;
     const component = await this._getOrCreateComponent(node, _props);
     node.add(box);
-    node.updateMatrixWorld(true);
     return component;
   }
 }
