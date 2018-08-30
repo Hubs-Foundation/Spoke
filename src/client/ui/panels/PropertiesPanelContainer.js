@@ -222,16 +222,17 @@ class PropertiesPanelContainer extends Component {
         contentClassName={contentClassName}
         useDefault={useDefault}
       >
-        {componentDefinition.schema.map(prop => (
-          <InputGroup name={getDisplayName(prop.name)} key={prop.name} disabled={saveable && !component.src}>
-            {componentTypeMappings.get(prop.type)(
-              component.props[prop.name],
-              component.propValidation[prop.name],
-              this.onChangeComponent.bind(null, component, prop.name),
-              this.getExtras(prop)
-            )}
-          </InputGroup>
-        ))}
+        {componentDefinition.showProps &&
+          componentDefinition.schema.map(prop => (
+            <InputGroup name={getDisplayName(prop.name)} key={prop.name} disabled={saveable && !component.src}>
+              {componentTypeMappings.get(prop.type)(
+                component.props[prop.name],
+                component.propValidation[prop.name],
+                this.onChangeComponent.bind(null, component, prop.name),
+                this.getExtras(prop)
+              )}
+            </InputGroup>
+          ))}
       </PropertyGroup>
     );
   };

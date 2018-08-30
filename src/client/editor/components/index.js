@@ -11,6 +11,7 @@ import SkyboxComponent from "./SkyboxComponent";
 import StandardMaterialComponent from "./StandardMaterialComponent";
 import TransformComponent from "./TransformComponent";
 import SpawnPointComponent from "./SpawnPointComponent";
+import BoxColliderComponent from "./BoxColliderComponent";
 
 export * from "./utils";
 
@@ -27,5 +28,6 @@ export const Components = [
   SkyboxComponent,
   SpawnPointComponent,
   StandardMaterialComponent,
-  TransformComponent
+  TransformComponent,
+  BoxColliderComponent
 ];
