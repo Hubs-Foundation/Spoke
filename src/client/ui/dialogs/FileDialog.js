@@ -156,6 +156,13 @@ class FileDialog extends Component {
     const { directory } = this.props;
     const { singleClickedFile } = this.state;
 
+    // Prevent double click on right click.
+    if (e.button !== 0) {
+      this.setState({ singleClickedFile: null });
+      clearTimeout(this.doubleClickTimeout);
+      return;
+    }
+
     if (!singleClickedFile) {
       if (!directory && file.isDirectory) {
         this.setState({

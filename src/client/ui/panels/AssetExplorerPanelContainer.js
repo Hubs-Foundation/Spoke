@@ -114,6 +114,13 @@ class AssetExplorerPanelContainer extends Component {
   };
 
   onClickFile = async (e, file) => {
+    // Prevent double click on right click.
+    if (e.button !== 0) {
+      this.setState({ singleClickedFile: null });
+      clearTimeout(this.doubleClickTimeout);
+      return;
+    }
+
     if (this.state.singleClickedFile && file.uri === this.state.singleClickedFile.uri) {
       // Handle double click
       if (file.isDirectory) {

@@ -31,10 +31,10 @@ class HierarchyPanelContainer extends Component {
     super(props);
 
     this.state = {
-      tree: this.props.editor.getNodeHierarchy()
+      tree: this.props.editor.getNodeHierarchy(),
+      singleClicked: null
     };
 
-    this.clicked = null;
     this.doubleClickTimeout = null;
 
     const editor = this.props.editor;
@@ -88,17 +88,24 @@ class HierarchyPanelContainer extends Component {
   };
 
   onMouseDownNode = (e, node) => {
-    if (this.clicked === node.object) {
+    // Prevent double click on right click.
+    if (e.button !== 0) {
+      this.setState({ singleClicked: null });
+      clearTimeout(this.doubleClickTimeout);
+      return;
+    }
+
+    if (this.state.singleClicked === node.object) {
       this.props.editor.focusById(node.object.id);
       return;
     }
 
     this.props.editor.selectById(node.object.id);
-    this.clicked = node.object;
+    this.setState({ singleClicked: node.object });
 
     clearTimeout(this.doubleClickTimeout);
     this.doubleClickTimeout = setTimeout(() => {
-      this.clicked = null;
+      this.setState({ singleClicked: null });
     }, 500);
   };
 
