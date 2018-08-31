@@ -25,8 +25,14 @@ export default class BoxColliderComponent extends TransformComponent {
     box.userData._dontExport = true;
     box.userData._dontShowInHierarchy = true;
     box.userData._inflated = true;
-    const component = await this._getOrCreateComponent(node, _props, box);
+    const component = await this._getOrCreateComponent(node, _props);
+    component._box = box;
     node.add(box);
     return component;
+  }
+
+  static deflate(node) {
+    node.remove(this.getComponent(node)._box);
+    super.deflate(node);
   }
 }
