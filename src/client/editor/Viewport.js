@@ -278,14 +278,10 @@ export default class Viewport {
       controls.focus(object);
     });
 
-    signals.geometryChanged.add(function(object) {
-      if (object !== undefined) {
-        selectionBox.setFromObject(object);
-      }
-    });
-
     signals.objectChanged.add(object => {
       if (editor.selected === object) {
+        box.setFromObject(object);
+        selectionBox.visible = !box.isEmpty();
         selectionBox.setFromObject(object);
       }
 

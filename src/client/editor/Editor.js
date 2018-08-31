@@ -67,8 +67,6 @@ export default class Editor {
       sceneSet: new Signal(),
       sceneModified: new Signal(),
 
-      geometryChanged: new Signal(),
-
       objectSelected: new Signal(),
       objectFocused: new Signal(),
 
@@ -1283,9 +1281,8 @@ export default class Editor {
         throw new Error(`Component "${componentName}" does not exist on ${object}`);
       }
       object.userData._components.splice(index, 1);
-
-      this.signals.objectChanged.dispatch(object);
     }
+    this.signals.objectChanged.dispatch(object);
   }
 
   getComponent(object, componentName) {
