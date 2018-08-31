@@ -1093,42 +1093,32 @@ export default class Editor {
 
   //
 
-  addHelper = (function() {
-    const geometry = new THREE.SphereBufferGeometry(2, 4, 2);
-    const material = new THREE.MeshBasicMaterial({ color: 0xff0000, visible: false });
+  addHelper(object, selectionRoot) {
+    if (this.helpers[selectionRoot.id]) return;
+    let helper;
 
-    return function(object, selectionRoot) {
-      if (this.helpers[selectionRoot.id]) return;
-      let helper;
+    if (object instanceof THREE.Camera) {
+      helper = new THREE.CameraHelper(object, 1);
+    } else if (object instanceof THREE.PointLight) {
+      helper = new THREE.PointLightHelper(object, 1);
+    } else if (object instanceof THREE.DirectionalLight && object.name !== "_defaultDirectionalLight") {
+      helper = new SpokeDirectionalLightHelper(object, 1);
+    } else if (object instanceof THREE.SpotLight) {
+      helper = new THREE.SpotLightHelper(object, 1);
+    } else if (object instanceof THREE.HemisphereLight) {
+      helper = new SpokeHemisphereLightHelper(object, 1);
+    } else if (object instanceof THREE.SkinnedMesh) {
+      helper = new THREE.SkeletonHelper(object);
+    } else {
+      // no helper for this object type
+      return;
+    }
 
-      if (object instanceof THREE.Camera) {
-        helper = new THREE.CameraHelper(object, 1);
-      } else if (object instanceof THREE.PointLight) {
-        helper = new THREE.PointLightHelper(object, 1);
-      } else if (object instanceof THREE.DirectionalLight && object.name !== "_defaultDirectionalLight") {
-        helper = new SpokeDirectionalLightHelper(object, 1);
-      } else if (object instanceof THREE.SpotLight) {
-        helper = new THREE.SpotLightHelper(object, 1);
-      } else if (object instanceof THREE.HemisphereLight) {
-        helper = new SpokeHemisphereLightHelper(object, 1);
-      } else if (object instanceof THREE.SkinnedMesh) {
-        helper = new THREE.SkeletonHelper(object);
-      } else {
-        // no helper for this object type
-        return;
-      }
+    this.helperScene.add(helper);
+    this.helpers[selectionRoot.id] = helper;
 
-      const picker = new THREE.Mesh(geometry, material);
-      picker.name = "picker";
-      picker.userData._selectionRoot = selectionRoot;
-      helper.add(picker);
-
-      this.helperScene.add(helper);
-      this.helpers[selectionRoot.id] = helper;
-
-      this.signals.helperAdded.dispatch(helper);
-    };
-  })();
+    this.signals.helperAdded.dispatch(helper);
+  }
 
   removeHelper(object) {
     if (this.helpers[object.id] !== undefined) {

@@ -1,6 +1,6 @@
 import THREE from "../three";
 import BaseComponent from "./BaseComponent";
-import { types } from "./utils";
+import { types, addPicker } from "./utils";
 
 export default class DirectionalLightComponent extends BaseComponent {
   static componentName = "directional-light";
@@ -31,8 +31,11 @@ export default class DirectionalLightComponent extends BaseComponent {
     light.position.set(0, 0, 0);
     light.target.position.set(0, 0, 1);
     light.add(light.target);
+    addPicker(light, node);
+
     const component = await this._getOrCreateComponent(node, _props, light);
     node.add(light);
+
     return component;
   }
 }

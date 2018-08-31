@@ -1,6 +1,6 @@
 import THREE from "../three";
 import BaseComponent from "./BaseComponent";
-import { types } from "./utils";
+import { types, addPicker } from "./utils";
 const { degToRad, radToDeg } = THREE.Math;
 
 export default class SpotLightComponent extends BaseComponent {
@@ -52,8 +52,11 @@ export default class SpotLightComponent extends BaseComponent {
     light.decay = 2;
     light.target.position.set(0, 0, 1);
     light.add(light.target);
+    addPicker(light, node);
+
     const component = await this._getOrCreateComponent(node, _props, light);
     node.add(light);
+
     return component;
   }
 }
