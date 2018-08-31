@@ -401,13 +401,6 @@ export default class Editor {
       scene.name = "Scene";
     }
 
-    scene.userData._conflictHandler = new ConflictHandler();
-    scene.userData._conflictHandler.findDuplicates(scene, 0, 0);
-
-    if (scene.userData._conflictHandler.getDuplicateStatus() || scene.userData._conflictHandler.getMissingStatus()) {
-      throw new ConflictError("gltf naming conflicts", "import", url, scene.userData._conflictHandler);
-    }
-
     return scene;
   }
 
