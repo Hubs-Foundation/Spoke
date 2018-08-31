@@ -126,13 +126,6 @@ class AssetExplorerPanelContainer extends Component {
       if (file.ext === ".scene") {
         await this.props.sceneActions.onOpenScene(file.uri);
         return;
-      } else if (file.ext === ".gltf" || file.ext === ".glb") {
-        const prefabPath = await this.props.sceneActions.onCreatePrefabFromGLTF(file.uri);
-
-        if (prefabPath) {
-          this.props.sceneActions.onOpenScene(prefabPath);
-        }
-        return;
       }
 
       this.props.editor.project.openFile(file.uri);
