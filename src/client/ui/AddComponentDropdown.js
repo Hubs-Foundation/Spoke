@@ -49,7 +49,8 @@ const Option = props => {
 
 Option.propTypes = {
   label: PropTypes.string,
-  value: PropTypes.string
+  value: PropTypes.string,
+  data: PropTypes.object
 };
 
 const DropdownIndicator = () => {

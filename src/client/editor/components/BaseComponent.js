@@ -15,6 +15,8 @@ export default class BaseComponent {
 
   static canRemove = true;
 
+  static showProps = true;
+
   constructor(node, object) {
     this.name = this.constructor.componentName;
     this.schema = this.constructor.schema;
