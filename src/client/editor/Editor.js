@@ -1105,7 +1105,7 @@ export default class Editor {
         helper = new THREE.CameraHelper(object, 1);
       } else if (object instanceof THREE.PointLight) {
         helper = new THREE.PointLightHelper(object, 1);
-      } else if (object instanceof THREE.DirectionalLight) {
+      } else if (object instanceof THREE.DirectionalLight && object.name !== "_defaultDirectionalLight") {
         helper = new SpokeDirectionalLightHelper(object, 1);
       } else if (object instanceof THREE.SpotLight) {
         helper = new THREE.SpotLightHelper(object, 1);
