@@ -1,6 +1,5 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
-import { HotKeys } from "react-hotkeys";
 import Viewport from "../Viewport";
 import { withEditor } from "../contexts/EditorContext";
 import { withDialog } from "../contexts/DialogContext";
@@ -19,18 +18,6 @@ class ViewportPanelContainer extends Component {
 
   constructor(props) {
     super(props);
-
-    this.state = {
-      viewportHotKeyHandlers: {
-        translateTool: this.onTranslateTool,
-        rotateTool: this.onRotateTool,
-        scaleTool: this.onScaleTool,
-        delete: this.onDelete,
-        duplicate: this.onDuplicate,
-        snapTool: this.onSnapTool,
-        spaceTool: this.onSpaceTool
-      }
-    };
 
     this.canvasRef = React.createRef();
   }
@@ -56,44 +43,13 @@ class ViewportPanelContainer extends Component {
     }
   };
 
-  onTranslateTool = () => {
-    this.props.editor.signals.transformModeChanged.dispatch("translate");
-  };
-
-  onRotateTool = () => {
-    this.props.editor.signals.transformModeChanged.dispatch("rotate");
-  };
-
-  onScaleTool = () => {
-    this.props.editor.signals.transformModeChanged.dispatch("scale");
-  };
-
-  onDuplicate = e => {
-    e.preventDefault();
-    this.props.editor.duplicateSelectedObject();
-    return false;
-  };
-
-  onDelete = e => {
-    e.preventDefault();
-    this.props.editor.deleteSelectedObject();
-  };
-
-  onSnapTool = () => {
-    this.props.editor.signals.snapToggled.dispatch();
-  };
-
-  onSpaceTool = () => {
-    this.props.editor.signals.spaceChanged.dispatch();
-  };
-
   render() {
     return (
-      <HotKeys handlers={this.state.viewportHotKeyHandlers} className={styles.viewportPanelContainer}>
+      <div className={styles.viewportPanelContainer}>
         <FileDropTarget onDropFile={this.onDropFile}>
           <Viewport ref={this.canvasRef} onDropFile={this.onDropFile} />
         </FileDropTarget>
-      </HotKeys>
+      </div>
     );
   }
 }

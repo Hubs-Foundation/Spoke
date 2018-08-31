@@ -22,6 +22,12 @@ import ErrorDialog from "./dialogs/ErrorDialog";
 import ConflictError from "../editor/ConflictError";
 import { getUrlDirname, getUrlFilename } from "../utils/url-path";
 
+function isInputSelected() {
+  const el = document.activeElement;
+  const nodeName = el.nodeName;
+  return el.isContentEditable || nodeName === "INPUT" || nodeName === "SELECT" || nodeName === "TEXTAREA";
+}
+
 class EditorContainer extends Component {
   static defaultProps = {
     initialPanels: {
@@ -156,7 +162,13 @@ class EditorContainer extends Component {
         redo: this.onRedo,
         delete: this.onDelete,
         save: this.onSave,
-        saveAs: this.onSaveAs
+        saveAs: this.onSaveAs,
+        translateTool: this.onTranslateTool,
+        rotateTool: this.onRotateTool,
+        scaleTool: this.onScaleTool,
+        duplicate: this.onDuplicate,
+        snapTool: this.onSnapTool,
+        spaceTool: this.onSpaceTool
       }
     };
   }
@@ -236,15 +248,6 @@ class EditorContainer extends Component {
     this.props.editor.redo();
   };
 
-  onDelete = e => {
-    const el = document.activeElement;
-    const nodeName = el.nodeName;
-    const isInput = el.isContentEditable || nodeName === "INPUT" || nodeName === "SELECT" || nodeName === "TEXTAREA";
-    if (!isInput) {
-      e.preventDefault();
-    }
-  };
-
   onSave = async e => {
     e.preventDefault();
 
@@ -280,6 +283,70 @@ class EditorContainer extends Component {
     }
 
     this.onExportSceneDialog();
+  };
+
+  onTranslateTool = e => {
+    if (isInputSelected()) {
+      return true;
+    }
+
+    e.preventDefault();
+    this.props.editor.signals.transformModeChanged.dispatch("translate");
+  };
+
+  onRotateTool = e => {
+    if (isInputSelected()) {
+      return true;
+    }
+
+    e.preventDefault();
+    this.props.editor.signals.transformModeChanged.dispatch("rotate");
+  };
+
+  onScaleTool = e => {
+    if (isInputSelected()) {
+      return true;
+    }
+
+    e.preventDefault();
+    this.props.editor.signals.transformModeChanged.dispatch("scale");
+  };
+
+  onDuplicate = e => {
+    if (isInputSelected()) {
+      return true;
+    }
+
+    e.preventDefault();
+    this.props.editor.duplicateSelectedObject();
+    return false;
+  };
+
+  onDelete = e => {
+    if (isInputSelected()) {
+      return true;
+    }
+
+    e.preventDefault();
+    this.props.editor.deleteSelectedObject();
+  };
+
+  onSnapTool = e => {
+    if (isInputSelected()) {
+      return true;
+    }
+
+    e.preventDefault();
+    this.props.editor.signals.snapToggled.dispatch();
+  };
+
+  onSpaceTool = e => {
+    if (isInputSelected()) {
+      return true;
+    }
+
+    e.preventDefault();
+    this.props.editor.signals.spaceChanged.dispatch();
   };
 
   /**

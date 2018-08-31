@@ -1,6 +1,5 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
-import { HotKeys } from "react-hotkeys";
 import FileDropTarget from "../FileDropTarget";
 import Tree from "@robertlong/react-ui-tree";
 import classNames from "classnames";
@@ -32,11 +31,7 @@ class HierarchyPanelContainer extends Component {
     super(props);
 
     this.state = {
-      tree: this.props.editor.getNodeHierarchy(),
-      hierarchyHotKeyHandlers: {
-        delete: this.onDeleteSelected,
-        duplicate: this.onDuplicateSelected
-      }
+      tree: this.props.editor.getNodeHierarchy()
     };
 
     this.clicked = null;
@@ -111,18 +106,8 @@ class HierarchyPanelContainer extends Component {
     this.props.editor.createNode("New_Node", node.object);
   };
 
-  onDuplicateSelected = () => {
-    this.props.editor.duplicateSelectedObject();
-    return false;
-  };
-
   onDuplicateNode = (e, node) => {
     this.props.editor.duplicateObject(node.object);
-  };
-
-  onDeleteSelected = e => {
-    e.preventDefault();
-    this.props.editor.deleteSelectedObject();
   };
 
   onDeleteNode = (e, node) => {
@@ -239,7 +224,7 @@ class HierarchyPanelContainer extends Component {
     return (
       <div className={styles.hierarchyRoot}>
         <FileDropTarget onDropFile={this.onDropFile}>
-          <HotKeys className={styles.tree} handlers={this.state.hierarchyHotKeyHandlers}>
+          <div className={styles.tree}>
             <Tree
               paddingLeft={8}
               isNodeCollapsed={false}
@@ -249,7 +234,7 @@ class HierarchyPanelContainer extends Component {
               onChange={this.onChange}
             />
             <this.HierarchyNodeMenu />
-          </HotKeys>
+          </div>
         </FileDropTarget>
         {this.renderWarnings()}
       </div>

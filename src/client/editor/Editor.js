@@ -1169,6 +1169,7 @@ export default class Editor {
 
       object.add(scene);
       component._object = scene;
+      this.signals.objectChanged.dispatch(object);
     } catch (e) {
       console.error("Failed to load glTF", e);
 
