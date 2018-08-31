@@ -20,6 +20,7 @@
   display: flex;
   flex-direction: column;
   color: $text2;
+  overflow: auto;
 }
 
 :local(.breadCrumbBar) {
