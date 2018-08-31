@@ -48,6 +48,7 @@ export default class SpotLightComponent extends BaseComponent {
 
   static async inflate(node, _props) {
     const light = new THREE.SpotLight();
+    light.position.set(0, 0, 0);
     light.decay = 2;
     light.target.position.set(0, 0, 1);
     light.add(light.target);
