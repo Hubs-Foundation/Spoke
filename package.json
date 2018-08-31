@@ -82,7 +82,7 @@
     "react-tooltip": "^3.6.1",
     "selfsigned": "^1.10.3",
     "signals": "^1.0.0",
-    "three": "github:mozillareality/three.js#023e0f6a8",
+    "three": "github:mozillareality/three.js#892c7c7f7",
     "throttle-debounce": "^2.0.1",
     "ws": "^5.2.0"
   },
