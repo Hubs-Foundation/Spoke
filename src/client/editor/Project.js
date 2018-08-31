@@ -157,21 +157,6 @@ export default class Project extends EventEmitter {
     return Promise.resolve(this);
   }
 
-  async optimizeScene(sceneURI, outputURI) {
-    const res = await this.fetch("/api/optimize", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        sceneURI,
-        outputURI
-      })
-    });
-
-    const json = await res.json();
-
-    return json;
-  }
-
   close() {
     this.ws.close();
     return Promise.resolve(this);

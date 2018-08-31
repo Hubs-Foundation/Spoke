@@ -12,8 +12,6 @@ import fs from "fs-extra";
 import chokidar from "chokidar";
 import debounce from "lodash.debounce";
 import opn from "opn";
-import { contentHashAndCopy } from "./gltf";
-import generateUnlitTextures from "gltf-unlit-generator";
 
 async function getProjectHierarchy(projectPath) {
   async function buildProjectNode(filePath, name, ext, isDirectory, uri) {
@@ -249,32 +247,6 @@ export default async function startServer(options) {
     }
 
     ctx.body = { success: true };
-  });
-
-  router.post("/api/optimize", koaBody(), async ctx => {
-    if (!ctx.request.body || !ctx.request.body.sceneURI || !ctx.request.body.outputURI) {
-      return ctx.throw(400, "Invalid request");
-    }
-
-    const { sceneURI, outputURI } = ctx.request.body;
-
-    const scenePath = path.resolve(projectPath, sceneURI.replace("/api/files/", ""));
-    const sceneDirPath = path.dirname(scenePath);
-    const outputPath = path.resolve(projectPath, outputURI.replace("/api/files/", ""));
-    const outputDirPath = path.dirname(outputPath);
-
-    await generateUnlitTextures(scenePath, outputDirPath);
-
-    const json = await fs.readJSON(outputPath);
-
-    json.images = await contentHashAndCopy(json.images, sceneDirPath, outputDirPath, true);
-    json.buffers = await contentHashAndCopy(json.buffers, sceneDirPath, outputDirPath, true);
-
-    await fs.writeJSON(outputPath, json);
-
-    ctx.body = {
-      success: true
-    };
   });
 
   app.use(router.routes());

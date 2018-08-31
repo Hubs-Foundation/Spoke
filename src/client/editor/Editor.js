@@ -1009,9 +1009,6 @@ export default class Editor {
         await this.project.writeBlob(outputPath + "/" + imageName, image);
       }
     }
-
-    // Run optimizations on .gltf and overwrite any existing files
-    await this.project.optimizeScene(gltfPath, gltfPath);
   }
 
   async extendScene(inheritedURI) {
