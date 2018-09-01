@@ -258,12 +258,12 @@ export default async function startServer(options) {
     recast.load(new Float32Array(position.buffer), new Int32Array(index.buffer));
     // TODO; Dumb that recast returns an OBJ formatted string. We should have it return an array somehow.
     const objMesh = recast.build(
-      0.03, // cellSize
+      0.05, // cellSize
       0.02, // cellHeight
       1.6, // agentHeight
       0.2, // agentRadius
       0.5, // agentMaxClimp
-      30, // agentMaxSlop
+      45, // agentMaxSlop
       8, // regionMinSize
       20, // regionMergeSize
       12, // edgeMaxLen
@@ -282,9 +282,9 @@ export default async function startServer(options) {
           acc.navPosition[acc.navPosition.length] = Number(values[2]);
           acc.navPosition[acc.navPosition.length] = Number(values[3]);
         } else if (values[0] === "f") {
-          acc.navIndex[acc.navIndex.length] = Number(values[1]);
-          acc.navIndex[acc.navIndex.length] = Number(values[2]);
-          acc.navIndex[acc.navIndex.length] = Number(values[3]);
+          acc.navIndex[acc.navIndex.length] = Number(values[1]) - 1;
+          acc.navIndex[acc.navIndex.length] = Number(values[2]) - 1;
+          acc.navIndex[acc.navIndex.length] = Number(values[3]) - 1;
         } else {
           throw new Error(`Invalid objMesh line "${line}"`);
         }
@@ -292,6 +292,7 @@ export default async function startServer(options) {
       },
       { navPosition: [], navIndex: [] }
     );
+    console.log("BPDEBUG results", navPosition.length, navIndex.length);
     ctx.body = { navPosition, navIndex };
   });
 
