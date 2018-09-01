@@ -12,6 +12,7 @@ import fs from "fs-extra";
 import chokidar from "chokidar";
 import debounce from "lodash.debounce";
 import opn from "opn";
+import recast from "@donmccurdy/recast";
 
 async function getProjectHierarchy(projectPath) {
   async function buildProjectNode(filePath, name, ext, isDirectory, uri) {
@@ -247,6 +248,51 @@ export default async function startServer(options) {
     }
 
     ctx.body = { success: true };
+  });
+
+  router.post("/api/navmesh", koaBody({ multipart: true, text: false }), async ctx => {
+    const [position, index] = await Promise.all([
+      fs.readFile(ctx.request.files.position.path),
+      fs.readFile(ctx.request.files.index.path)
+    ]);
+    recast.load(new Float32Array(position.buffer), new Int32Array(index.buffer));
+    // TODO; Dumb that recast returns an OBJ formatted string. We should have it return an array somehow.
+    const objMesh = recast.build(
+      0.03, // cellSize
+      0.02, // cellHeight
+      1.6, // agentHeight
+      0.2, // agentRadius
+      0.5, // agentMaxClimp
+      30, // agentMaxSlop
+      8, // regionMinSize
+      20, // regionMergeSize
+      12, // edgeMaxLen
+      1.3, // edgeMaxError
+      3, // vertsPerPoly
+      6, //detailSampleDist
+      1 // detailSampleMaxError
+    );
+    const { navPosition, navIndex } = objMesh.split("@").reduce(
+      (acc, line) => {
+        line = line.trim();
+        if (line.length === 0) return acc;
+        const values = line.split(" ");
+        if (values[0] === "v") {
+          acc.navPosition[acc.navPosition.length] = Number(values[1]);
+          acc.navPosition[acc.navPosition.length] = Number(values[2]);
+          acc.navPosition[acc.navPosition.length] = Number(values[3]);
+        } else if (values[0] === "f") {
+          acc.navIndex[acc.navIndex.length] = Number(values[1]);
+          acc.navIndex[acc.navIndex.length] = Number(values[2]);
+          acc.navIndex[acc.navIndex.length] = Number(values[3]);
+        } else {
+          throw new Error(`Invalid objMesh line "${line}"`);
+        }
+        return acc;
+      },
+      { navPosition: [], navIndex: [] }
+    );
+    ctx.body = { navPosition, navIndex };
   });
 
   app.use(router.routes());

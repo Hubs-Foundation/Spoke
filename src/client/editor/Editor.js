@@ -765,6 +765,48 @@ export default class Editor {
     return serializedScene;
   }
 
+  async generateNavMesh() {
+    const geometries = [];
+
+    this.scene.traverse(node => {
+      if (!node.isMesh) return;
+
+      let geometry = node.geometry;
+      let attributes = geometry.attributes;
+
+      if (!geometry.isBufferGeometry) {
+        geometry = new THREE.BufferGeometry().fromGeometry(geometry);
+        attributes = geometry.attributes;
+      }
+
+      // Skip geometry without 3D position data, like text.
+      if (!attributes.position || attributes.position.itemSize !== 3) return;
+
+      if (geometry.index) geometry = geometry.toNonIndexed();
+
+      const cloneGeometry = new THREE.BufferGeometry();
+      cloneGeometry.addAttribute("position", geometry.attributes.position.clone());
+      cloneGeometry.applyMatrix(node.matrixWorld);
+      geometry = cloneGeometry;
+
+      geometries.push(geometry);
+    });
+
+    const geometry = THREE.BufferGeometryUtils.mergeBufferGeometries(geometries);
+
+    const position = geometry.attributes.position.array;
+    const index = new Uint32Array(position.length / 3);
+    for (let i = 0; i < index.length; i++) {
+      index[i] = i + 1;
+    }
+
+    const { navPosition, navIndex } = await this.project.generateNavMesh(position, index);
+    const navGeo = new THREE.BufferGeometry();
+    navGeo.setIndex(navIndex);
+    navGeo.addAttribute("position", new THREE.Float32BufferAttribute(navPosition, 3));
+    this.addObject(new THREE.Mesh(navGeo, new THREE.MeshLambertMaterial({ side: THREE.DoubleSide })));
+  }
+
   async exportScene(outputPath) {
     const scene = this.scene;
     const clonedScene = scene.clone();
