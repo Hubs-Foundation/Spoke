@@ -163,7 +163,6 @@ export default class Project extends EventEmitter {
   }
 
   async generateNavMesh(position, index) {
-    console.log(position.length);
     const positionBlob = new Blob([new Float32Array(position)], { type: "application/octet-stream" });
     const indexBlob = new Blob([new Int32Array(index)], { type: "application/octet-stream" });
     const formData = new FormData();
