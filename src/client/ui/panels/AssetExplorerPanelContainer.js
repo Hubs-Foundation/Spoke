@@ -64,10 +64,8 @@ class AssetExplorerPanelContainer extends Component {
     this.clicked = null;
 
     this.state = {
-      tree: {
-        name: "New Project"
-      },
-      selectedDirectory: null,
+      tree: props.editor.project.hierarchy,
+      selectedDirectory: props.editor.project.hierarchy,
       selectedFile: null,
       singleClickedFile: null,
       newFolderActive: false,
@@ -116,6 +114,13 @@ class AssetExplorerPanelContainer extends Component {
   };
 
   onClickFile = async (e, file) => {
+    // Prevent double click on right click.
+    if (e.button !== 0) {
+      this.setState({ singleClickedFile: null });
+      clearTimeout(this.doubleClickTimeout);
+      return;
+    }
+
     if (this.state.singleClickedFile && file.uri === this.state.singleClickedFile.uri) {
       // Handle double click
       if (file.isDirectory) {
@@ -202,6 +207,8 @@ class AssetExplorerPanelContainer extends Component {
 
   onOpenScene = (e, file) => this.props.sceneActions.onOpenScene(file.uri);
 
+  onOpenFile = (e, file) => this.props.editor.project.openFile(file.uri);
+
   onDropNativeFiles = async (filesPromise, target) => {
     const files = await filesPromise;
 
@@ -210,18 +217,22 @@ class AssetExplorerPanelContainer extends Component {
   };
 
   renderNode = node => {
+    const className = classNames("node", styles.node, {
+      "is-active": this.state.selectedDirectory ? this.state.selectedDirectory === node.uri : node === this.state.tree
+    });
+
+    const onClick = e => this.onClickNode(e, node);
+
     return (
-      <div
-        id="node-menu"
-        className={classNames("node", styles.node, {
-          "is-active": this.state.selectedDirectory
-            ? this.state.selectedDirectory === node.uri
-            : node === this.state.tree
-        })}
-        onClick={e => this.onClickNode(e, node)}
+      <ContextMenuTrigger
+        attributes={{ className, onClick }}
+        holdToDisplay={-1}
+        id="directory-menu-default"
+        file={node}
+        collect={collectFileMenuProps}
       >
         {node.name}
-      </div>
+      </ContextMenuTrigger>
     );
   };
 
@@ -249,6 +260,8 @@ class AssetExplorerPanelContainer extends Component {
             attributes={{ className: styles.rightColumn }}
             holdToDisplay={-1}
             id="current-directory-menu-default"
+            file={selectedDirectory}
+            collect={collectFileMenuProps}
           >
             <IconGrid>
               {files.map(file => (
@@ -283,27 +296,23 @@ class AssetExplorerPanelContainer extends Component {
           </ContextMenuTrigger>
         </NativeFileDropTarget>
         <ContextMenu id="directory-menu-default">
-          <MenuItem>Open Directory</MenuItem>
-          <MenuItem>Delete Directory</MenuItem>
+          <MenuItem onClick={this.onOpenFile}>Open Directory</MenuItem>
         </ContextMenu>
         <ContextMenu id="file-menu-default">
-          <MenuItem>Open File</MenuItem>
-          <MenuItem>Delete File</MenuItem>
+          <MenuItem onClick={this.onOpenFile}>Open File</MenuItem>
           <MenuItem onClick={this.onCopyURL}>Copy URL</MenuItem>
         </ContextMenu>
         <ContextMenu id="file-menu-scene">
           <MenuItem onCLick={this.onOpenScene}>Open File</MenuItem>
-          <MenuItem>Delete File</MenuItem>
           <MenuItem onClick={this.onCopyURL}>Copy URL</MenuItem>
         </ContextMenu>
         <ContextMenu id="file-menu-gltf">
-          <MenuItem>Duplicate</MenuItem>
-          <MenuItem>Rename</MenuItem>
+          <MenuItem onClick={this.onOpenFile}>Open File</MenuItem>
           <MenuItem onClick={this.onCopyURL}>Copy URL</MenuItem>
-          <MenuItem>Delete</MenuItem>
         </ContextMenu>
         <ContextMenu id="current-directory-menu-default">
           <MenuItem onClick={this.onNewFolder}>New Folder</MenuItem>
+          <MenuItem onClick={this.onOpenFile}>Open Directory</MenuItem>
         </ContextMenu>
       </div>
     );

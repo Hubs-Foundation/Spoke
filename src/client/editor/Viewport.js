@@ -128,12 +128,14 @@ export default class Viewport {
 
           if (object.userData._selectionRoot !== undefined) {
             editor.select(object.userData._selectionRoot);
-          } else {
+            return;
+          } else if (!object.userData._dontShowInHierarchy) {
             editor.select(object);
+            return;
           }
-        } else {
-          editor.deselect();
         }
+
+        editor.deselect();
       }
     }
 
@@ -275,7 +277,11 @@ export default class Viewport {
     });
 
     signals.objectFocused.add(function(object) {
-      controls.focus(object);
+      if (object.userData._selectionRoot !== undefined) {
+        controls.focus(object.userData._selectionRoot);
+      } else if (!object.userData._dontShowInHierarchy) {
+        controls.focus(object);
+      }
     });
 
     signals.objectChanged.add(object => {

@@ -15,7 +15,7 @@ export default class SkyboxComponent extends BaseComponent {
     { name: "mieDirectionalG", type: types.number, default: 0.8 },
     { name: "inclination", type: types.number, default: 0 },
     { name: "azimuth", type: types.number, default: 0 },
-    { name: "distance", type: types.number, default: 8000, min: 0, max: 10000 }
+    { name: "distance", type: types.number, default: 8000, min: 0, max: 1000 }
   ];
 
   _updateSunPosition() {

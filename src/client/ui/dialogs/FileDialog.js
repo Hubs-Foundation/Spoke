@@ -84,9 +84,7 @@ class FileDialog extends Component {
     }
 
     this.state = {
-      tree: {
-        name: "New Project"
-      },
+      tree: props.editor.project.hierarchy,
       selectedDirectory,
       selectedFile,
       fileName,
@@ -157,6 +155,13 @@ class FileDialog extends Component {
   onClickIcon = (e, file) => {
     const { directory } = this.props;
     const { singleClickedFile } = this.state;
+
+    // Prevent double click on right click.
+    if (e.button !== 0) {
+      this.setState({ singleClickedFile: null });
+      clearTimeout(this.doubleClickTimeout);
+      return;
+    }
 
     if (!singleClickedFile) {
       if (!directory && file.isDirectory) {
@@ -242,6 +247,8 @@ class FileDialog extends Component {
     });
   };
 
+  onOpenFile = (e, file) => this.props.editor.project.openFile(file.uri);
+
   onConfirm = e => {
     e.preventDefault();
 
@@ -276,18 +283,22 @@ class FileDialog extends Component {
   };
 
   renderNode = node => {
+    const className = classNames("node", styles.node, {
+      "is-active": this.state.selectedDirectory ? this.state.selectedDirectory === node.uri : node === this.state.tree
+    });
+
+    const onClick = e => this.onClickNode(e, node);
+
     return (
-      <div
-        id="node-menu"
-        className={classNames("node", styles.node, {
-          "is-active": this.state.selectedDirectory
-            ? this.state.selectedDirectory === node.uri
-            : node === this.state.tree
-        })}
-        onClick={e => this.onClickNode(e, node)}
+      <ContextMenuTrigger
+        attributes={{ className, onClick }}
+        holdToDisplay={-1}
+        id="dialog-directory-menu-default"
+        file={node}
+        collect={collectFileMenuProps}
       >
         {node.name}
-      </div>
+      </ContextMenuTrigger>
     );
   };
 
@@ -295,9 +306,9 @@ class FileDialog extends Component {
     const { filters, title, onCancel, hideDialog, confirmButtonLabel, directory } = this.props;
     const { tree, selectedDirectory, selectedFile, fileName, newFolderActive, newFolderName } = this.state;
 
-    const activeDirectoryTree = getSelectedDirectory(tree, selectedDirectory);
+    const activeDirectoryTree = getSelectedDirectory(tree, selectedDirectory) || tree;
 
-    let files = activeDirectoryTree && activeDirectoryTree.files ? activeDirectoryTree.files : [];
+    let files = activeDirectoryTree.files || [];
 
     if (filters && filters.length) {
       files = files.filter(file => file.isDirectory || filters.some(filter => file.ext === filter));
@@ -323,6 +334,8 @@ class FileDialog extends Component {
             attributes={{ className: styles.rightColumn }}
             holdToDisplay={-1}
             id="dialog-current-directory-menu-default"
+            file={activeDirectoryTree}
+            collect={collectFileMenuProps}
           >
             <IconGrid>
               {files.map(file => (
@@ -354,15 +367,14 @@ class FileDialog extends Component {
             </IconGrid>
           </ContextMenuTrigger>
           <ContextMenu id="dialog-directory-menu-default">
-            <MenuItem>Open Directory</MenuItem>
-            <MenuItem>Delete Directory</MenuItem>
+            <MenuItem onClick={this.onOpenFile}>Open Directory</MenuItem>
           </ContextMenu>
           <ContextMenu id="dialog-file-menu-default">
-            <MenuItem>Open File</MenuItem>
-            <MenuItem>Delete File</MenuItem>
+            <MenuItem onClick={this.onOpenFile}>Open File</MenuItem>
           </ContextMenu>
           <ContextMenu id="dialog-current-directory-menu-default">
             <MenuItem onClick={this.onNewFolder}>New Folder</MenuItem>
+            <MenuItem onClick={this.onOpenFile}>Open Directory</MenuItem>
           </ContextMenu>
         </div>
         <div className={dialogStyles.bottom}>

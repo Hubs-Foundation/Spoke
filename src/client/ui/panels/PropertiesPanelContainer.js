@@ -354,27 +354,25 @@ class PropertiesPanelContainer extends Component {
             <InputGroup className={styles.topBarName} name="Name">
               <StringInput value={this.state.name} onChange={this.onUpdateName} onBlur={this.onBlurName} />
             </InputGroup>
-            {object.parent !== null && (
-              <InputGroup className={styles.topBarStatic} name="Static">
-                <Select
-                  className={styles.staticSelect}
-                  classNamePrefix={"static-select"}
-                  styles={staticStyle}
-                  value={
-                    staticMode
-                      ? {
-                          value: staticMode,
-                          label: staticModeLabel
-                        }
-                      : null
-                  }
-                  components={{ IndicatorSeparator: () => null }}
-                  options={staticModeOptions}
-                  isClearable={false}
-                  onChange={this.onUpdateStatic}
-                />
-              </InputGroup>
-            )}
+            <InputGroup className={styles.topBarStatic} name="Static">
+              <Select
+                className={styles.staticSelect}
+                classNamePrefix={"static-select"}
+                styles={staticStyle}
+                value={
+                  staticMode
+                    ? {
+                        value: staticMode,
+                        label: staticModeLabel
+                      }
+                    : null
+                }
+                components={{ IndicatorSeparator: () => null }}
+                options={staticModeOptions}
+                isClearable={false}
+                onChange={this.onUpdateStatic}
+              />
+            </InputGroup>
           </div>
           {this._renderObjectComponent(
             objectTransform,

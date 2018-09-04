@@ -1,6 +1,6 @@
 import THREE from "../three";
 import BaseComponent from "./BaseComponent";
-import { types } from "./utils";
+import { types, addPicker } from "./utils";
 
 export default class PointLightComponent extends BaseComponent {
   static componentName = "point-light";
@@ -33,8 +33,11 @@ export default class PointLightComponent extends BaseComponent {
   static async inflate(node, _props) {
     const light = new THREE.PointLight();
     light.decay = 2;
+    addPicker(light, node);
+
     const component = await this._getOrCreateComponent(node, _props, light);
     node.add(light);
+
     return component;
   }
 }

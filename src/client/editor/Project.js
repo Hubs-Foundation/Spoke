@@ -18,7 +18,12 @@ export default class Project extends EventEmitter {
 
     this.ws = null;
 
-    this.hierarchy = null;
+    this.hierarchy = {
+      name: "New Project",
+      files: [],
+      uri: this.projectDirectoryPath,
+      children: []
+    };
   }
 
   getRelativeURI(uri) {

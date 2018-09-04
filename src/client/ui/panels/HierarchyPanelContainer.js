@@ -1,6 +1,5 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
-import { HotKeys } from "react-hotkeys";
 import FileDropTarget from "../FileDropTarget";
 import Tree from "@robertlong/react-ui-tree";
 import classNames from "classnames";
@@ -33,13 +32,9 @@ class HierarchyPanelContainer extends Component {
 
     this.state = {
       tree: this.props.editor.getNodeHierarchy(),
-      hierarchyHotKeyHandlers: {
-        delete: this.onDeleteSelected,
-        duplicate: this.onDuplicateSelected
-      }
+      singleClicked: null
     };
 
-    this.clicked = null;
     this.doubleClickTimeout = null;
 
     const editor = this.props.editor;
@@ -93,17 +88,24 @@ class HierarchyPanelContainer extends Component {
   };
 
   onMouseDownNode = (e, node) => {
-    if (this.clicked === node.object) {
+    // Prevent double click on right click.
+    if (e.button !== 0) {
+      this.setState({ singleClicked: null });
+      clearTimeout(this.doubleClickTimeout);
+      return;
+    }
+
+    if (this.state.singleClicked === node.object) {
       this.props.editor.focusById(node.object.id);
       return;
     }
 
     this.props.editor.selectById(node.object.id);
-    this.clicked = node.object;
+    this.setState({ singleClicked: node.object });
 
     clearTimeout(this.doubleClickTimeout);
     this.doubleClickTimeout = setTimeout(() => {
-      this.clicked = null;
+      this.setState({ singleClicked: null });
     }, 500);
   };
 
@@ -111,18 +113,8 @@ class HierarchyPanelContainer extends Component {
     this.props.editor.createNode("New_Node", node.object);
   };
 
-  onDuplicateSelected = () => {
-    this.props.editor.duplicateSelectedObject();
-    return false;
-  };
-
   onDuplicateNode = (e, node) => {
     this.props.editor.duplicateObject(node.object);
-  };
-
-  onDeleteSelected = e => {
-    e.preventDefault();
-    this.props.editor.deleteSelectedObject();
   };
 
   onDeleteNode = (e, node) => {
@@ -239,7 +231,7 @@ class HierarchyPanelContainer extends Component {
     return (
       <div className={styles.hierarchyRoot}>
         <FileDropTarget onDropFile={this.onDropFile}>
-          <HotKeys className={styles.tree} handlers={this.state.hierarchyHotKeyHandlers}>
+          <div className={styles.tree}>
             <Tree
               paddingLeft={8}
               isNodeCollapsed={false}
@@ -249,7 +241,7 @@ class HierarchyPanelContainer extends Component {
               onChange={this.onChange}
             />
             <this.HierarchyNodeMenu />
-          </HotKeys>
+          </div>
         </FileDropTarget>
         {this.renderWarnings()}
       </div>
