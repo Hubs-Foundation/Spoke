@@ -820,8 +820,9 @@ export default class Editor {
 
     const navNode = new THREE.Object3D();
     navNode.name = "Nav Mesh";
-    this._addComponent(navNode, "gltf-model", { src: path });
+    await this._addComponent(navNode, "gltf-model", { src: path });
     this._addComponent(navNode, "visible", { visible: true });
+    this._addComponent(navNode, "nav-mesh");
 
     this.addObject(navNode);
   }
