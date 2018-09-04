@@ -261,8 +261,8 @@ export default async function startServer(options) {
       0.05, // cellSize
       0.02, // cellHeight
       1.6, // agentHeight
-      0.2, // agentRadius
-      0.5, // agentMaxClimp
+      0.02, // agentRadius
+      0.1, // agentMaxClimp
       45, // agentMaxSlop
       8, // regionMinSize
       20, // regionMergeSize
@@ -292,7 +292,6 @@ export default async function startServer(options) {
       },
       { navPosition: [], navIndex: [] }
     );
-    console.log("BPDEBUG results", navPosition.length, navIndex.length);
     ctx.body = { navPosition, navIndex };
   });
 

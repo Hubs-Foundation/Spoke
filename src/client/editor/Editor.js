@@ -804,7 +804,16 @@ export default class Editor {
     const navGeo = new THREE.BufferGeometry();
     navGeo.setIndex(navIndex);
     navGeo.addAttribute("position", new THREE.Float32BufferAttribute(navPosition, 3));
-    this.addObject(new THREE.Mesh(navGeo, new THREE.MeshLambertMaterial({ side: THREE.DoubleSide, wireframe: true })));
+    this.addObject(
+      new THREE.Mesh(
+        navGeo,
+        new THREE.MeshLambertMaterial({
+          color: 0xff0000,
+          side: THREE.DoubleSide,
+          wireframe: true
+        })
+      )
+    );
   }
 
   async exportScene(outputPath) {
