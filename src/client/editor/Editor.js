@@ -804,16 +804,26 @@ export default class Editor {
     const navGeo = new THREE.BufferGeometry();
     navGeo.setIndex(navIndex);
     navGeo.addAttribute("position", new THREE.Float32BufferAttribute(navPosition, 3));
-    this.addObject(
-      new THREE.Mesh(
-        navGeo,
-        new THREE.MeshLambertMaterial({
-          color: 0xff0000,
-          side: THREE.DoubleSide,
-          wireframe: true
-        })
-      )
+
+    const navMesh = new THREE.Mesh(
+      navGeo,
+      new THREE.MeshBasicMaterial({
+        color: 0xff0000
+      })
     );
+
+    const exporter = new THREE.GLTFExporter();
+    const glb = await new Promise((resolve, reject) => exporter.parse(navMesh, resolve, reject, { mode: "binary" }));
+    const path = `/api/files/generated/${navMesh.uuid}.glb`;
+    await this.project.mkdir("/api/files/generated");
+    await this.project.writeBlob(path, glb);
+
+    const navNode = new THREE.Object3D();
+    navNode.name = "Nav Mesh";
+    this._addComponent(navNode, "gltf-model", { src: path });
+    this._addComponent(navNode, "visible", { visible: true });
+
+    this.addObject(navNode);
   }
 
   async exportScene(outputPath) {
