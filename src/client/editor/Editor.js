@@ -675,6 +675,8 @@ export default class Editor {
     this.signals.sceneGraphChanged.dispatch();
 
     this.sceneInfo.modified = false;
+
+    this.signals.sceneModified.dispatch();
   }
 
   _serializeScene(scene, scenePath) {

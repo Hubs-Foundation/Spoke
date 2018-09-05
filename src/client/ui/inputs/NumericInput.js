@@ -81,6 +81,10 @@ export default class NumericInput extends React.Component {
   setValidValue(value) {
     value = this.clamp(round(value));
     this.lastValidValue = value;
+  }
+
+  setValidValueAndDispatch(value) {
+    this.setValidValue(value);
     const parsedValue = this.parseValue(value);
     this.props.onChange(parsedValue);
   }
@@ -98,7 +102,7 @@ export default class NumericInput extends React.Component {
     } else if (key === "ArrowDown") {
       value -= step;
     }
-    this.setValidValue(value);
+    this.setValidValueAndDispatch(value);
   };
 
   onWheel = e => {
@@ -110,7 +114,7 @@ export default class NumericInput extends React.Component {
     const step = this.getStepForEvent(e);
     let { value } = this.props;
     value += (deltaY > 0 ? 1 : -1) * step;
-    this.setValidValue(value);
+    this.setValidValueAndDispatch(value);
   };
 
   setStep = e => {
@@ -140,7 +144,7 @@ export default class NumericInput extends React.Component {
 
   onMouseMove = e => {
     const value = this.formatValue(this.props.value);
-    this.setValidValue(value + (e.movementX / 100) * this.state.step);
+    this.setValidValueAndDispatch(value + (e.movementX / 100) * this.state.step);
   };
 
   cleanUpListeners = () => {
@@ -168,17 +172,18 @@ export default class NumericInput extends React.Component {
     if (looksValid) {
       const parsed = parseFloat(trimmed);
       if (this.clamp(parsed) === parsed) {
-        this.setValidValue(parsed);
+        this.setValidValueAndDispatch(parsed);
       }
     }
   }
 
   componentDidUpdate(prevProps) {
     const value = this.formatValue(this.props.value);
-    const valueChanged = value !== this.formatValue(prevProps.value);
-    const stateIsNotLikeNewVal = parseFloat(this.state.value.trim()) !== value;
-    if (valueChanged && stateIsNotLikeNewVal) {
-      this.setValue(round(value).toString());
+    const propValueChanged = value !== this.formatValue(prevProps.value);
+    const currentStateIsDifferent = parseFloat(this.state.value.trim()) !== value;
+    if (propValueChanged && currentStateIsDifferent) {
+      this.setValidValue(this.props.value);
+      this.setState({ value: round(value).toString() });
     }
   }
 
