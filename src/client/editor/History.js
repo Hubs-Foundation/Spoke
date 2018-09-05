@@ -101,38 +101,4 @@ export default class History {
 
     this.editor.signals.historyChanged.dispatch();
   }
-
-  goToState(id) {
-    if (this.historyDisabled) {
-      alert("Undo/Redo disabled while scene is playing.");
-      return;
-    }
-
-    this.editor.signals.sceneGraphChanged.active = false;
-    this.editor.signals.historyChanged.active = false;
-
-    let cmd = this.undos.length > 0 ? this.undos[this.undos.length - 1] : undefined; // next cmd to pop
-
-    if (cmd === undefined || id > cmd.id) {
-      cmd = this.redo();
-      while (cmd !== undefined && id > cmd.id) {
-        cmd = this.redo();
-      }
-    } else {
-      // eslint-disable-next-line no-constant-condition
-      while (true) {
-        cmd = this.undos[this.undos.length - 1]; // next cmd to pop
-
-        if (cmd === undefined || id === cmd.id) break;
-
-        this.undo();
-      }
-    }
-
-    this.editor.signals.sceneGraphChanged.active = true;
-    this.editor.signals.historyChanged.active = true;
-
-    this.editor.signals.sceneGraphChanged.dispatch();
-    this.editor.signals.historyChanged.dispatch(cmd);
-  }
 }

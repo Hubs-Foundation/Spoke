@@ -22,11 +22,9 @@ export default class SetComponentPropertyCommand extends Command {
 
   execute() {
     this.editor.updateComponentProperty(this.object, this.componentName, this.propertyName, this.newValue);
-    this.editor.signals.objectChanged.dispatch(this.object);
   }
 
   undo() {
     this.editor.updateComponentProperty(this.object, this.componentName, this.propertyName, this.oldValue);
-    this.editor.signals.objectChanged.dispatch(this.object);
   }
 }

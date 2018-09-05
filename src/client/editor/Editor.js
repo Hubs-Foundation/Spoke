@@ -10,6 +10,7 @@ import SetValueCommand from "./commands/SetValueCommand";
 import RemoveComponentCommand from "./commands/RemoveComponentCommand";
 import SetComponentPropertyCommand from "./commands/SetComponentPropertyCommand";
 import MoveObjectCommand from "./commands/MoveObjectCommand";
+import MultiCmdsCommand from "./commands/MultiCmdsCommand";
 import {
   isStatic,
   setStaticMode,
@@ -1127,8 +1128,13 @@ export default class Editor {
     const object = new THREE.Object3D();
     object.name = name;
     setStaticMode(object, StaticModes.Static);
-    this.addObject(object);
-    this._addComponent(object, "gltf-model", { src: url });
+    this.execute(
+      new MultiCmdsCommand([
+        new AddObjectCommand(object, this.scene),
+        new AddComponentCommand(object, "gltf-model"),
+        new SetComponentPropertyCommand(object, "gltf-model", "src", url)
+      ])
+    );
     this.select(object);
   }
 
@@ -1169,6 +1175,8 @@ export default class Editor {
       this.removeHelper(child);
       this._removeSceneRefDependency(child);
     });
+
+    object.parent.remove(object);
 
     this.signals.objectRemoved.dispatch(object);
     this.signals.sceneGraphChanged.dispatch();
@@ -1232,6 +1240,10 @@ export default class Editor {
 
   async updateGLTFModelComponent(object) {
     const component = GLTFModelComponent.getComponent(object);
+
+    if (!component.props.src) {
+      return;
+    }
 
     try {
       const scene = await this._loadGLTF(component.props.src);
@@ -1369,7 +1381,9 @@ export default class Editor {
 
   getComponentProperty(object, componentName, propertyName) {
     if (this.components.has(componentName)) {
-      return this.getComponent(object, componentName).getProperty(propertyName);
+      const component = this.getComponent(object, componentName);
+      if (!component) return null;
+      return component.getProperty(propertyName);
     } else {
       return this.getComponent(object, componentName)[propertyName];
     }
