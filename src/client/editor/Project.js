@@ -162,6 +162,18 @@ export default class Project extends EventEmitter {
     return Promise.resolve(this);
   }
 
+  async generateNavMesh(position, index) {
+    const positionBlob = new Blob([new Float32Array(position)], { type: "application/octet-stream" });
+    const indexBlob = new Blob([new Int32Array(index)], { type: "application/octet-stream" });
+    const formData = new FormData();
+    formData.append("position", positionBlob);
+    formData.append("index", indexBlob);
+
+    const res = await this.fetch("/api/navmesh", { method: "POST", body: formData });
+    const json = await res.json();
+    return json;
+  }
+
   close() {
     this.ws.close();
     return Promise.resolve(this);

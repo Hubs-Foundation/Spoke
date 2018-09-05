@@ -134,6 +134,10 @@ class EditorContainer extends Component {
               action: e => this.onExportScene(e)
             },
             {
+              name: "Generate Nav Mesh",
+              action: e => this.onGenerateNavMesh(e)
+            },
+            {
               name: "Open Project Directory",
               action: () => this.props.editor.project.openProjectDirectory()
             }
@@ -283,6 +287,19 @@ class EditorContainer extends Component {
     }
 
     this.onExportSceneDialog();
+  };
+
+  onGenerateNavMesh = async e => {
+    e.preventDefault();
+
+    this.showDialog(ProgressDialog, {
+      title: "Generating Nav Mesh",
+      message: "Generating nav mesh..."
+    });
+
+    await this.props.editor.generateNavMesh();
+
+    this.hideDialog();
   };
 
   onTranslateTool = e => {

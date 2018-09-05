@@ -765,6 +765,87 @@ export default class Editor {
     return serializedScene;
   }
 
+  async generateNavMesh() {
+    const geometries = [];
+
+    this.scene.traverse(node => {
+      if (!node.isMesh) return;
+
+      let geometry = node.geometry;
+      let attributes = geometry.attributes;
+
+      if (!geometry.isBufferGeometry) {
+        geometry = new THREE.BufferGeometry().fromGeometry(geometry);
+        attributes = geometry.attributes;
+      }
+
+      // Skip geometry without 3D position data, like text.
+      if (!attributes.position || attributes.position.itemSize !== 3) return;
+
+      if (geometry.index) geometry = geometry.toNonIndexed();
+
+      const cloneGeometry = new THREE.BufferGeometry();
+      cloneGeometry.addAttribute("position", geometry.attributes.position.clone());
+      cloneGeometry.applyMatrix(node.matrixWorld);
+      geometry = cloneGeometry;
+
+      geometries.push(geometry);
+    });
+
+    const geometry = THREE.BufferGeometryUtils.mergeBufferGeometries(geometries);
+
+    const flippedGeometry = geometry.clone();
+
+    const positions = flippedGeometry.attributes.position.array;
+    for (let i = 0; i < positions.length; i += 9) {
+      const x0 = positions[i];
+      const y0 = positions[i + 1];
+      const z0 = positions[i + 2];
+      const offset = 6;
+      positions[i] = positions[i + offset];
+      positions[i + 1] = positions[i + offset + 1];
+      positions[i + 2] = positions[i + offset + 2];
+      positions[i + offset] = x0;
+      positions[i + offset + 1] = y0;
+      positions[i + offset + 2] = z0;
+    }
+
+    const finalGeo = THREE.BufferGeometryUtils.mergeBufferGeometries([geometry, flippedGeometry]);
+
+    const position = finalGeo.attributes.position.array;
+    const index = new Uint32Array(position.length / 3);
+    for (let i = 0; i < index.length; i++) {
+      index[i] = i + 1;
+    }
+
+    const { navPosition, navIndex } = await this.project.generateNavMesh(position, index);
+
+    const navGeo = new THREE.BufferGeometry();
+    navGeo.setIndex(navIndex);
+    navGeo.addAttribute("position", new THREE.Float32BufferAttribute(navPosition, 3));
+
+    const navMesh = new THREE.Mesh(
+      navGeo,
+      new THREE.MeshBasicMaterial({
+        color: 0xff0000
+      })
+    );
+
+    const exporter = new THREE.GLTFExporter();
+    const glb = await new Promise((resolve, reject) => exporter.parse(navMesh, resolve, reject, { mode: "binary" }));
+    const path = `/api/files/generated/${navMesh.uuid}.glb`;
+    await this.project.mkdir("/api/files/generated");
+    await this.project.writeBlob(path, glb);
+
+    const navNode = new THREE.Object3D();
+    navNode.name = "Nav Mesh";
+    await this._addComponent(navNode, "gltf-model", { src: path });
+    this._addComponent(navNode, "visible", { visible: true });
+    this._addComponent(navNode, "nav-mesh");
+
+    this.addObject(navNode);
+  }
+
   async exportScene(outputPath) {
     const scene = this.scene;
     const clonedScene = scene.clone();
