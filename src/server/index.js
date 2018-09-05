@@ -256,22 +256,22 @@ export default async function startServer(options) {
       fs.readFile(ctx.request.files.index.path)
     ]);
     recast.load(new Float32Array(position.buffer), new Int32Array(index.buffer));
-    // TODO; Dumb that recast returns an OBJ formatted string. We should have it return an array somehow.
     const objMesh = recast.build(
-      0.05, // cellSize
-      0.02, // cellHeight
-      1.6, // agentHeight
-      0.02, // agentRadius
-      0.1, // agentMaxClimp
-      45, // agentMaxSlop
-      8, // regionMinSize
+      0.15, // cellSize
+      0.1, // cellHeight
+      1.0, // agentHeight
+      0.0001, // agentRadius
+      0.5, // agentMaxClimb
+      45, // agentMaxSlope
+      4, // regionMinSize
       20, // regionMergeSize
       12, // edgeMaxLen
-      1.3, // edgeMaxError
+      1, // edgeMaxError
       3, // vertsPerPoly
-      6, //detailSampleDist
+      16, //detailSampleDist
       1 // detailSampleMaxError
     );
+    // TODO; Dumb that recast returns an OBJ formatted string. We should have it return an array somehow.
     const { navPosition, navIndex } = objMesh.split("@").reduce(
       (acc, line) => {
         line = line.trim();
