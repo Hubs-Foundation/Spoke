@@ -794,13 +794,32 @@ export default class Editor {
 
     const geometry = THREE.BufferGeometryUtils.mergeBufferGeometries(geometries);
 
-    const position = geometry.attributes.position.array;
+    const flippedGeometry = geometry.clone();
+
+    const positions = flippedGeometry.attributes.position.array;
+    for (let i = 0; i < positions.length; i += 9) {
+      const x0 = positions[i];
+      const y0 = positions[i + 1];
+      const z0 = positions[i + 2];
+      const offset = 6;
+      positions[i] = positions[i + offset];
+      positions[i + 1] = positions[i + offset + 1];
+      positions[i + 2] = positions[i + offset + 2];
+      positions[i + offset] = x0;
+      positions[i + offset + 1] = y0;
+      positions[i + offset + 2] = z0;
+    }
+
+    const finalGeo = THREE.BufferGeometryUtils.mergeBufferGeometries([geometry, flippedGeometry]);
+
+    const position = finalGeo.attributes.position.array;
     const index = new Uint32Array(position.length / 3);
     for (let i = 0; i < index.length; i++) {
       index[i] = i + 1;
     }
 
     const { navPosition, navIndex } = await this.project.generateNavMesh(position, index);
+
     const navGeo = new THREE.BufferGeometry();
     navGeo.setIndex(navIndex);
     navGeo.addAttribute("position", new THREE.Float32BufferAttribute(navPosition, 3));
