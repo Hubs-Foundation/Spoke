@@ -6,7 +6,7 @@ import { withDialog } from "../contexts/DialogContext";
 import { withSceneActions } from "../contexts/SceneActionsContext";
 import ErrorDialog from "../dialogs/ErrorDialog";
 import styles from "./ViewportPanelContainer.scss";
-import FileDropTarget from "../FileDropTarget";
+import AssetDropTarget from "../AssetDropTarget";
 
 class ViewportPanelContainer extends Component {
   static propTypes = {
@@ -26,7 +26,7 @@ class ViewportPanelContainer extends Component {
     this.props.editor.createViewport(this.canvasRef.current);
   }
 
-  onDropFile = async item => {
+  onDropAsset = async item => {
     if (item.file) {
       const file = item.file;
 
@@ -46,9 +46,9 @@ class ViewportPanelContainer extends Component {
   render() {
     return (
       <div className={styles.viewportPanelContainer}>
-        <FileDropTarget onDropFile={this.onDropFile}>
-          <Viewport ref={this.canvasRef} onDropFile={this.onDropFile} />
-        </FileDropTarget>
+        <AssetDropTarget onDropAsset={this.onDropAsset}>
+          <Viewport ref={this.canvasRef} onDropAsset={this.onDropAsset} />
+        </AssetDropTarget>
       </div>
     );
   }
