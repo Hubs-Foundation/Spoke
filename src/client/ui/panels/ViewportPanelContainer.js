@@ -40,6 +40,25 @@ class ViewportPanelContainer extends Component {
           });
         }
       }
+    } else if (item.dataTransfer && item.dataTransfer.items.length) {
+      const urlItem = Array.from(item.dataTransfer.items).find(
+        item => item.kind === "string" && item.type === "text/plain"
+      );
+      if (!urlItem) return;
+      try {
+        const url = await new Promise(resolve => urlItem.getAsString(resolve));
+        const media = await fetch("/api/media", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ url })
+        }).then(r => r.json());
+        this.props.editor.addGLTFModelNode("Model", media.uri);
+      } catch (e) {
+        this.props.showDialog(ErrorDialog, {
+          title: "Error adding model.",
+          message: e.message
+        });
+      }
     }
   };
 

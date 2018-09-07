@@ -13,6 +13,8 @@ import chokidar from "chokidar";
 import debounce from "lodash.debounce";
 import opn from "opn";
 import recast from "@donmccurdy/recast";
+import fetch from "node-fetch";
+import crc32 from "crc32";
 
 async function getProjectHierarchy(projectPath) {
   async function buildProjectNode(filePath, name, ext, isDirectory, uri) {
@@ -206,8 +208,39 @@ export default async function startServer(options) {
     )
   );
 
+  function getFilePath(ctx) {
+    return ctx.params.filePath ? path.resolve(projectPath, ctx.params.filePath) : projectPath;
+  }
+
+  async function pipeToFile(stream, filePath) {
+    // If uploading as text body, write it to filePath using the stream API.
+    const writeStream = fs.createWriteStream(filePath, { flags: "w" });
+
+    stream.pipe(writeStream);
+
+    await new Promise((resolve, reject) => {
+      function cleanUp() {
+        writeStream.removeListener("finish", onFinish);
+        writeStream.removeListener("error", onError);
+      }
+
+      function onFinish() {
+        cleanUp();
+        resolve();
+      }
+
+      function onError(err) {
+        cleanUp();
+        reject(err);
+      }
+
+      writeStream.on("finish", onFinish);
+      writeStream.on("error", onError);
+    });
+  }
+
   router.post("/api/files/:filePath*", koaBody({ multipart: true, text: false }), async ctx => {
-    const filePath = ctx.params.filePath ? path.resolve(projectPath, ctx.params.filePath) : projectPath;
+    const filePath = getFilePath(ctx);
 
     if (ctx.request.query.open) {
       // Attempt to open file at filePath with the default application for that file type.
@@ -221,30 +254,7 @@ export default async function startServer(options) {
         await fs.move(file.path, destPath, { overwrite: true });
       }
     } else {
-      // If uploading as text body, write it to filePath using the stream API.
-      const writeStream = fs.createWriteStream(filePath, { flags: "w" });
-
-      ctx.req.pipe(writeStream);
-
-      await new Promise((resolve, reject) => {
-        function cleanUp() {
-          writeStream.removeListener("finish", onFinish);
-          writeStream.removeListener("error", onError);
-        }
-
-        function onFinish() {
-          cleanUp();
-          resolve();
-        }
-
-        function onError(err) {
-          cleanUp();
-          reject(err);
-        }
-
-        writeStream.on("finish", onFinish);
-        writeStream.on("error", onError);
-      });
+      await pipeToFile(ctx.req, filePath);
     }
 
     ctx.body = { success: true };
@@ -293,6 +303,22 @@ export default async function startServer(options) {
       { navPosition: [], navIndex: [] }
     );
     ctx.body = { navPosition, navIndex };
+  });
+
+  router.post("/api/media", koaBody(), async ctx => {
+    const origin = ctx.request.body.url;
+    const { raw } = await fetch("https://hubs.mozilla.com/api/v1/media", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ media: { url: origin, index: 0 } })
+    }).then(r => r.json());
+    const resp = await fetch(raw);
+    const originHash = crc32(origin);
+    const filePath = path.resolve(projectPath, "imports", `${originHash}.model`);
+    await fs.ensureDir(path.resolve(projectPath, "imports"));
+    await pipeToFile(resp.body, filePath);
+    const uri = filePath.replace(projectPath, "/api/files");
+    ctx.body = { uri };
   });
 
   app.use(router.routes());
