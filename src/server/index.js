@@ -106,16 +106,16 @@ async function pipeToFile(stream, filePath) {
 }
 
 function extractZip(zipPath, basePath) {
-  return new Promise(resolve => {
+  return new Promise((resolve, reject) => {
     yauzl.open(zipPath, { lazyEntries: true }, (err, zipFile) => {
-      if (err) throw err;
+      if (err) reject(err);
       zipFile.on("entry", async entry => {
         if (/\/$/.test(entry.fileName)) {
           await fs.ensureDir(path.join(basePath, entry.fileName));
           zipFile.readEntry();
         } else {
           zipFile.openReadStream(entry, async (err, readStream) => {
-            if (err) throw err;
+            if (err) reject(err);
             await pipeToFile(readStream, path.join(basePath, entry.fileName));
             zipFile.readEntry();
           });
