@@ -174,6 +174,15 @@ export default class Project extends EventEmitter {
     return json;
   }
 
+  async import(url) {
+    const { uri } = await fetch("/api/import", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ url })
+    }).then(r => r.json());
+    return uri;
+  }
+
   close() {
     this.ws.close();
     return Promise.resolve(this);

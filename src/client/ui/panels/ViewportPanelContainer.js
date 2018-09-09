@@ -47,12 +47,8 @@ class ViewportPanelContainer extends Component {
       if (!urlItem) return;
       try {
         const url = await new Promise(resolve => urlItem.getAsString(resolve));
-        const media = await fetch("/api/media", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ url })
-        }).then(r => r.json());
-        this.props.editor.addGLTFModelNode("Model", media.uri);
+        const importedUri = await this.props.editor.project.import(url);
+        this.props.editor.addGLTFModelNode("Model", importedUri);
       } catch (e) {
         this.props.showDialog(ErrorDialog, {
           title: "Error adding model.",

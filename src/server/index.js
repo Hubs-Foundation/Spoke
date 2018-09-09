@@ -258,12 +258,8 @@ export default async function startServer(options) {
     )
   );
 
-  function getFilePath(ctx) {
-    return ctx.params.filePath ? path.resolve(projectPath, ctx.params.filePath) : projectPath;
-  }
-
   router.post("/api/files/:filePath*", koaBody({ multipart: true, text: false }), async ctx => {
-    const filePath = getFilePath(ctx);
+    const filePath = ctx.params.filePath ? path.resolve(projectPath, ctx.params.filePath) : projectPath;
 
     if (ctx.request.query.open) {
       // Attempt to open file at filePath with the default application for that file type.
@@ -328,7 +324,7 @@ export default async function startServer(options) {
     ctx.body = { navPosition, navIndex };
   });
 
-  router.post("/api/media", koaBody(), async ctx => {
+  router.post("/api/import", koaBody(), async ctx => {
     const origin = ctx.request.body.url;
     const originHash = crc32(origin);
     const filePathBase = path.join(projectPath, "imported", originHash);
