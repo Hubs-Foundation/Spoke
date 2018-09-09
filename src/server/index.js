@@ -17,6 +17,10 @@ import fetch from "node-fetch";
 import crc32 from "crc32";
 import yauzl from "yauzl";
 
+function pathToUri(projectPath, path) {
+  return path.replace(projectPath, "/api/files").replace(/\\/g, "/");
+}
+
 async function getProjectHierarchy(projectPath) {
   async function buildProjectNode(filePath, name, ext, isDirectory, uri) {
     if (!isDirectory) {
@@ -48,7 +52,7 @@ async function getProjectHierarchy(projectPath) {
         base,
         ext,
         stats.isDirectory(),
-        childPath.replace(projectPath, "/api/files").replace(/\\/g, "/")
+        pathToUri(projectPath, childPath)
       );
 
       if (childNode.isDirectory) {
@@ -196,7 +200,7 @@ export default async function startServer(options) {
     .on("all", (type, filePath) => {
       broadcast({
         type,
-        path: filePath.replace(projectDirName, "/api/files").replace(/\\/g, "/")
+        path: pathToUri(projectDirName, filePath)
       });
       debouncedBroadcastHierarchy();
     });
@@ -333,10 +337,10 @@ export default async function startServer(options) {
     const filePath = `${filePathBase}.gltf`;
 
     if (fs.existsSync(filePath)) {
-      const uri = filePath.replace(projectPath, "/api/files");
+      const uri = pathToUri(projectPath, filePath);
       ctx.body = { uri };
     } else if (fs.existsSync(filePathBase)) {
-      const uri = path.join(filePathBase, "scene.gltf").replace(projectPath, "/api/files");
+      const uri = pathToUri(projectPath, path.join(filePathBase, "scene.gltf"));
       ctx.body = { uri };
     } else {
       const { raw, meta } = await fetch("https://dev.reticulum.io/api/v1/media", {
@@ -354,11 +358,11 @@ export default async function startServer(options) {
         await pipeToFile(resp.body, zipPath);
         await fs.ensureDir(filePathBase);
         await extractZip(zipPath, filePathBase);
-        const uri = path.join(filePathBase, "scene.gltf").replace(projectPath, "/api/files");
+        const uri = pathToUri(projectPath, path.join(filePathBase, "scene.gltf"));
         ctx.body = { uri };
       } else {
         await pipeToFile(resp.body, filePath);
-        const uri = filePath.replace(projectPath, "/api/files");
+        const uri = pathToUri(projectPath, filePath);
         ctx.body = { uri };
       }
     }
