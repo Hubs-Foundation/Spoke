@@ -353,12 +353,13 @@ export default async function startServer(options) {
       await fs.ensureDir(path.join(projectPath, "imported"));
 
       const resp = await fetch(raw);
-
       if (meta && meta.expected_content_type.includes("gltf+zip")) {
         const zipPath = `${filePath}.zip`;
         await pipeToFile(resp.body, zipPath);
         await fs.ensureDir(filePathBase);
         await extractZip(zipPath, filePathBase);
+        await fs.remove(zipPath);
+
         const uri = pathToUri(projectPath, path.join(filePathBase, "scene.gltf"));
         ctx.body = { uri };
       } else {
