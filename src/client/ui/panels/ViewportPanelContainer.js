@@ -4,6 +4,7 @@ import Viewport from "../Viewport";
 import { withEditor } from "../contexts/EditorContext";
 import { withDialog } from "../contexts/DialogContext";
 import { withSceneActions } from "../contexts/SceneActionsContext";
+import ProgressDialog from "../dialogs/ProgressDialog";
 import ErrorDialog from "../dialogs/ErrorDialog";
 import styles from "./ViewportPanelContainer.scss";
 import AssetDropTarget from "../AssetDropTarget";
@@ -46,9 +47,14 @@ class ViewportPanelContainer extends Component {
       );
       if (!urlItem) return;
       try {
-        const url = await new Promise(resolve => urlItem.getAsString(resolve));
+        this.props.showDialog(ProgressDialog, {
+          title: "Importing Asset",
+          message: "Importing asset..."
+        });
+        const url = (await new Promise(resolve => urlItem.getAsString(resolve))).trim();
         const importedUri = await this.props.editor.project.import(url);
         this.props.editor.addGLTFModelNode("Model", importedUri);
+        this.props.hideDialog();
       } catch (e) {
         this.props.showDialog(ErrorDialog, {
           title: "Error adding model.",
