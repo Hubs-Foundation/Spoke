@@ -328,6 +328,7 @@ export default async function startServer(options) {
     ctx.body = { navPosition, navIndex };
   });
 
+  const mediaServer = process.env.NODE_ENV === "development" ? "dev.reticulum.io" : "hubs.mozilla.com";
   router.post("/api/import", koaBody(), async ctx => {
     const origin = ctx.request.body.url;
     const originHash = crc32(origin);
@@ -343,7 +344,7 @@ export default async function startServer(options) {
       const uri = pathToUri(projectPath, path.join(filePathBase, "scene.gltf"));
       ctx.body = { uri };
     } else {
-      const { raw, meta } = await fetch("https://dev.reticulum.io/api/v1/media", {
+      const { raw, meta } = await fetch(`https://${mediaServer}/api/v1/media`, {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ media: { url: origin, index: 0 } })
