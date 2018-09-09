@@ -71,7 +71,7 @@
     "rc-slider": "^8.6.1",
     "react": "^16.4.0",
     "react-color": "^2.14.1",
-    "react-contextmenu": "^2.9.2",
+    "react-contextmenu": "^2.9.3",
     "react-dnd": "^2.6.0",
     "react-dom": "^16.4.0",
     "react-hotkeys": "^1.1.4",
