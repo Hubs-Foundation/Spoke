@@ -180,6 +180,7 @@ class EditorContainer extends Component {
   componentDidMount() {
     this.props.editor.signals.windowResize.dispatch();
     this.props.editor.signals.sceneModified.add(this.onSceneModified);
+    this.props.editor.signals.editorError.add(this.onEditorError);
 
     window.onbeforeunload = e => {
       if (!this.props.editor.sceneModified()) {

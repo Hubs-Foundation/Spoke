@@ -78,6 +78,8 @@ export default class Editor {
       helperAdded: new Signal(),
       helperRemoved: new Signal(),
 
+      editorError: new Signal(),
+
       windowResize: new Signal(),
 
       historyChanged: new Signal(),
@@ -1267,6 +1269,8 @@ export default class Editor {
       this.signals.objectChanged.dispatch(object);
     } catch (e) {
       console.error("Failed to load glTF", e);
+
+      this.signals.editorError.dispatch(e);
 
       if (component.propValidation.src !== false) {
         component.propValidation.src = false;
