@@ -1,4 +1,4 @@
-const namePattern = new RegExp("(.*)_d+$");
+const namePattern = new RegExp("(.*)_\\d+$");
 function nodesToTree(nodes) {
   if (!nodes) {
     return;
@@ -75,17 +75,16 @@ export default class ConflictHandler {
     const name = node.name;
 
     if (this._duplicateNameCounters.has(name)) {
-      const n = this._duplicateNameCounters.get(name) + 1;
-      this._duplicateNameCounters.set(name, n);
-      node.userData._resolvedName = name + "_" + n;
+      const nameObj = this._duplicateNameCounters.get(name);
+      nameObj.count++;
+      node.userData._resolvedName = name + "_" + nameObj.count;
       this._updatedNodes.set(this._hashTreePath(node.userData._path), node.userData._resolvedName);
     } else {
-      this._duplicateNameCounters.set(name, 0);
+      this._duplicateNameCounters.set(name, { used: true, count: 0 });
       const cacheName = getNameWithoutIndex(name);
       if (name !== cacheName) {
         if (!this.isUniqueObjectName(cacheName)) {
-          const n = this._duplicateNameCounters.get(cacheName) + 1;
-          this._duplicateNameCounters.set(cacheName, n);
+          this._duplicateNameCounters.get(cacheName).count++;
         }
       }
     }
@@ -130,8 +129,8 @@ export default class ConflictHandler {
   };
 
   _updateDuplicateStatus = () => {
-    for (const value of this._duplicateNameCounters.values()) {
-      if (value > 0) {
+    for (const nameObj of this._duplicateNameCounters.values()) {
+      if (nameObj.count > 0) {
         this.setDuplicateStatus(true);
         break;
       }
@@ -216,7 +215,8 @@ export default class ConflictHandler {
   };
 
   isUniqueObjectName = name => {
-    return !this._duplicateNameCounters.has(name);
+    const nameObj = this._duplicateNameCounters.get(name);
+    return !nameObj || !nameObj.used;
   };
 
   updateDuplicateNameCounters = scene => {
@@ -230,26 +230,52 @@ export default class ConflictHandler {
 
     if (difference.length > 0) {
       for (const name of difference) {
-        this._duplicateNameCounters.delete(name);
+        const nameObj = this._duplicateNameCounters.get(name);
+        if (nameObj.count === 0) {
+          this._duplicateNameCounters.delete(name);
+        } else {
+          nameObj.used = false;
+        }
       }
     }
   };
 
-  addToDuplicateNameCounters = name => {
-    if (this.isUniqueObjectName(name)) {
-      this._duplicateNameCounters.set(name, 0);
+  removeFromDuplicateNameCounters = name => {
+    const cacheName = getNameWithoutIndex(name);
+    const nameObj = this._duplicateNameCounters.get(name);
+    if (nameObj === undefined) return;
+    if (name === cacheName) {
+      nameObj.used = false;
     } else {
-      let n = this._duplicateNameCounters.get(name) + 1;
-      let newName = name + "_" + n;
+      this._duplicateNameCounters.delete(name);
+    }
+  };
+
+  addToDuplicateNameCounters = name => {
+    const cacheName = getNameWithoutIndex(name);
+    if (this.isUniqueObjectName(name)) {
+      const nameObj = this._duplicateNameCounters.get(cacheName);
+      if (name === cacheName) {
+        if (nameObj) {
+          nameObj.used = true;
+        } else {
+          this._duplicateNameCounters.set(cacheName, { used: true, count: 0 });
+        }
+      } else {
+        this._duplicateNameCounters.set(name, { used: true, count: 0 });
+      }
+      return name;
+    } else {
+      let n = this._duplicateNameCounters.get(cacheName).count + 1;
+      let newName = cacheName + "_" + n;
       while (!this.isUniqueObjectName(newName)) {
         n += 1;
-        newName = name + "_" + n;
+        newName = cacheName + "_" + n;
       }
-      this._duplicateNameCounters.set(name, n);
-      this._duplicateNameCounters.set(newName, 0);
+      this._duplicateNameCounters.get(cacheName).count = n;
+      this._duplicateNameCounters.set(newName, { used: true });
       return newName;
     }
-    return name;
   };
 
   resolveConflicts = scene => {
