@@ -257,7 +257,7 @@ export default async function startServer(options) {
     ]);
     recast.load(new Float32Array(position.buffer), new Int32Array(index.buffer));
     const objMesh = recast.build(
-      0.15, // cellSize
+      parseFloat(ctx.request.body.cellSize),
       0.1, // cellHeight
       1.0, // agentHeight
       0.0001, // agentRadius

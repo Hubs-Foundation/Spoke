@@ -821,7 +821,13 @@ export default class Editor {
       index[i] = i + 1;
     }
 
-    const { navPosition, navIndex } = await this.project.generateNavMesh(position, index);
+    const box = new THREE.Box3().setFromBufferAttribute(finalGeo.attributes.position);
+    const size = new THREE.Vector3();
+    box.getSize(size);
+    const area = size.x * size.z;
+    // Tuned to produce cell sizes from ~0.5 to ~1.5 for areas from ~200 to ~350,000.
+    const cellSize = Math.pow(area, 1 / 3) / 50;
+    const { navPosition, navIndex } = await this.project.generateNavMesh(position, index, cellSize);
 
     const navGeo = new THREE.BufferGeometry();
     navGeo.setIndex(navIndex);
