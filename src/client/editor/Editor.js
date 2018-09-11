@@ -3,14 +3,16 @@ import signals from "signals";
 import THREE from "./three";
 import History from "./History";
 import Viewport from "./Viewport";
-import RemoveObjectCommand from "./commands/RemoveObjectCommand";
-import AddObjectCommand from "./commands/AddObjectCommand";
+
 import AddComponentCommand from "./commands/AddComponentCommand";
-import SetValueCommand from "./commands/SetValueCommand";
-import RemoveComponentCommand from "./commands/RemoveComponentCommand";
-import SetComponentPropertyCommand from "./commands/SetComponentPropertyCommand";
+import AddObjectCommand from "./commands/AddObjectCommand";
 import MoveObjectCommand from "./commands/MoveObjectCommand";
 import MultiCmdsCommand from "./commands/MultiCmdsCommand";
+import RemoveComponentCommand from "./commands/RemoveComponentCommand";
+import RemoveObjectCommand from "./commands/RemoveObjectCommand";
+import SetComponentPropertyCommand from "./commands/SetComponentPropertyCommand";
+import SetValueCommand from "./commands/SetValueCommand";
+
 import {
   isStatic,
   setStaticMode,
@@ -21,28 +23,29 @@ import {
   getOriginalStaticMode,
   setOriginalStaticMode
 } from "./StaticMode";
-import { Components } from "./components";
-import { types } from "./components/utils";
-import SceneReferenceComponent from "./components/SceneReferenceComponent";
-import SaveableComponent from "./components/SaveableComponent";
-import { last } from "../utils";
 import { textureCache, gltfCache } from "./caches";
+
 import ConflictHandler from "./ConflictHandler";
 import ConflictError from "./ConflictError";
+import SceneLoaderError from "./SceneLoaderError";
+
 import SpokeDirectionalLightHelper from "./helpers/SpokeDirectionalLightHelper";
 import SpokeHemisphereLightHelper from "./helpers/SpokeHemisphereLightHelper";
-import absoluteToRelativeURL from "./utils/absoluteToRelativeURL";
-import StandardMaterialComponent from "../editor/components/StandardMaterialComponent";
-import ShadowComponent from "./components/ShadowComponent";
-import shallowEquals from "./utils/shallowEquals";
-import addChildAtIndex from "./utils/addChildAtIndex";
-import SceneLoaderError from "./SceneLoaderError";
-import sortEntities from "./utils/sortEntities";
-import GLTFModelComponent from "./components/GLTFModelComponent";
 
-/**
- * @author mrdoob / http://mrdoob.com/
- */
+import { last } from "../utils";
+import absoluteToRelativeURL from "./utils/absoluteToRelativeURL";
+import addChildAtIndex from "./utils/addChildAtIndex";
+import shallowEquals from "./utils/shallowEquals";
+import sortEntities from "./utils/sortEntities";
+
+import { Components } from "./components";
+import { types } from "./components/utils";
+import GLTFModelComponent from "./components/GLTFModelComponent";
+import SaveableComponent from "./components/SaveableComponent";
+import SceneReferenceComponent from "./components/SceneReferenceComponent";
+import ShadowComponent from "./components/ShadowComponent";
+import StandardMaterialComponent from "./components/StandardMaterialComponent";
+
 export default class Editor {
   constructor(project) {
     this.project = project;
