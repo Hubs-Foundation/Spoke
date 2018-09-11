@@ -29,8 +29,20 @@ function isInputSelected() {
 }
 
 class EditorContainer extends Component {
-  static defaultProps = {
-    initialPanels: {
+  static initialPanels = {
+    basic: {
+      direction: "row",
+      first: {
+        direction: "row",
+        first: "hierarchy",
+        second: "viewport",
+        splitPercentage: 25
+      },
+      second: "properties",
+      splitPercentage: 75
+    },
+
+    advanced: {
       direction: "column",
       first: {
         direction: "row",
@@ -49,8 +61,8 @@ class EditorContainer extends Component {
   };
 
   static propTypes = {
-    initialPanels: PropTypes.object,
-    editor: PropTypes.object
+    editor: PropTypes.object,
+    uiMode: PropTypes.string
   };
 
   constructor(props) {
@@ -678,7 +690,7 @@ class EditorContainer extends Component {
   render() {
     const { openModal, menus, DialogComponent, dialogProps } = this.state;
 
-    const { initialPanels, editor } = this.props;
+    const { editor } = this.props;
 
     return (
       <DragDropContextProvider backend={HTML5Backend}>
@@ -690,7 +702,7 @@ class EditorContainer extends Component {
                 <MosaicWithoutDragDropContext
                   className="mosaic-theme"
                   renderTile={this.renderPanel}
-                  initialValue={initialPanels}
+                  initialValue={EditorContainer.initialPanels[this.props.uiMode]}
                   onChange={this.onPanelChange}
                 />
                 <Modal
