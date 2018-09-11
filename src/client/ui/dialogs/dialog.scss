@@ -135,3 +135,24 @@
     }
   }
 }
+
+
+:local(.loginContainer) {
+  :local(.cancel) {
+    background: $panel2;
+
+    &:hover {
+       background-color: $panel;
+     }
+  }
+
+  :local(.label) {
+    display: flex;
+    align-items: center;
+    margin-right: 0.5em;
+  }
+
+  input {
+    width: auto;
+  }
+}

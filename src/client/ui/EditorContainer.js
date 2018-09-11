@@ -6,6 +6,7 @@ import { MosaicWindow } from "react-mosaic-component";
 import { HotKeys } from "react-hotkeys";
 import Modal from "react-modal";
 import { MosaicWithoutDragDropContext } from "react-mosaic-component";
+
 import ToolBar from "./menus/ToolBar";
 import ViewportPanelContainer from "./panels/ViewportPanelContainer";
 import HierarchyPanelContainer from "./panels/HierarchyPanelContainer";
@@ -18,6 +19,7 @@ import ConfirmDialog from "./dialogs/ConfirmDialog";
 import styles from "../common.scss";
 import FileDialog from "./dialogs/FileDialog";
 import ProgressDialog from "./dialogs/ProgressDialog";
+import LoginDialog from "./dialogs/LoginDialog";
 import ErrorDialog from "./dialogs/ErrorDialog";
 import ConflictError from "../editor/ConflictError";
 import { getUrlDirname, getUrlFilename } from "../utils/url-path";
@@ -651,6 +653,14 @@ class EditorContainer extends Component {
     }
   };
 
+  onPublishScene = async () => {
+    this.showDialog(LoginDialog, {
+      onLogin: email => {
+        console.log(email);
+      }
+    });
+  };
+
   sceneActionsContext = {
     onNewScene: this.onNewScene,
     onOpenSceneDialog: this.onOpenSceneDialog,
@@ -662,6 +672,7 @@ class EditorContainer extends Component {
     onPopScene: this.onPopScene,
     onCreatePrefabFromGLTF: this.onCreatePrefabFromGLTF,
     onExportSceneDialog: this.onExportSceneDialog,
+    onPublishScene: this.onPublishScene,
     onWriteFiles: this.onWriteFiles
   };
 
@@ -686,7 +697,7 @@ class EditorContainer extends Component {
           <EditorContextProvider value={editor}>
             <DialogContextProvider value={this.dialogContext}>
               <SceneActionsContextProvider value={this.sceneActionsContext}>
-                <ToolBar menus={menus} editor={editor} />
+                <ToolBar menus={menus} editor={editor} sceneActions={this.sceneActionsContext} />
                 <MosaicWithoutDragDropContext
                   className="mosaic-theme"
                   renderTile={this.renderPanel}
