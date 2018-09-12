@@ -11,9 +11,9 @@ export function getDefaultsFromSchema(schema) {
 }
 
 export default class BaseComponent {
-  static canAdd = true;
+  static canAdd = false;
 
-  static canRemove = true;
+  static canRemove = false;
 
   static showProps = true;
 

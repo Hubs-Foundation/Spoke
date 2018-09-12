@@ -1,0 +1,25 @@
+@import "../theme";
+
+:local(.addNodeActionButtons) {
+  position: absolute;
+  right: 26px;
+  bottom: 26px;
+  background-color: red;
+  width: 85px;
+  background-color: red;
+}
+
+:local(.fab) {
+  background-color: green;
+}
+
+:local(.fabOpen) {
+  background-color: blue;
+}
+
+:local(.actionButtonContainer) {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}

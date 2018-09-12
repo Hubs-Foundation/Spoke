@@ -7,6 +7,7 @@ import { withSceneActions } from "../contexts/SceneActionsContext";
 import ErrorDialog from "../dialogs/ErrorDialog";
 import styles from "./ViewportPanelContainer.scss";
 import FileDropTarget from "../FileDropTarget";
+import AddNodeActionButtons from "../AddNodeActionButtons";
 
 class ViewportPanelContainer extends Component {
   static propTypes = {
@@ -49,6 +50,7 @@ class ViewportPanelContainer extends Component {
         <FileDropTarget onDropFile={this.onDropFile}>
           <Viewport ref={this.canvasRef} onDropFile={this.onDropFile} />
         </FileDropTarget>
+        <AddNodeActionButtons />
       </div>
     );
   }

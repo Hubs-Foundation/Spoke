@@ -381,9 +381,11 @@ class PropertiesPanelContainer extends Component {
             styles.propertiesHeaderContent,
             false
           )}
-          <div className={styles.addComponentContainer}>
-            <AddComponentDropdown options={componentOptions} onChange={this.onAddComponent} />
-          </div>
+          {componentOptions.length > 0 && (
+            <div className={styles.addComponentContainer}>
+              <AddComponentDropdown options={componentOptions} onChange={this.onAddComponent} />
+            </div>
+          )}
         </PropertyGroup>
         {objectComponents.map(component => {
           // Generate property groups for each component and property editors for each property.
