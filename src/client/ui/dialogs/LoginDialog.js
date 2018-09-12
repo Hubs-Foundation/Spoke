@@ -7,7 +7,9 @@ import StringInput from "../inputs/StringInput";
 
 export default class LoginDialog extends Component {
   static propTypes = {
-    onLogin: PropTypes.func.isRequired,
+    onLogin: PropTypes.func,
+    authStarted: PropTypes.bool,
+    onCancel: PropTypes.func,
     hideDialog: PropTypes.func.isRequired
   };
 
@@ -19,28 +21,44 @@ export default class LoginDialog extends Component {
   }
 
   render() {
-    const { onLogin, hideDialog } = this.props;
+    const { onLogin, authStarted, onCancel, hideDialog } = this.props;
     return (
       <div className={styles.dialogContainer}>
-        <Header title="Login to publish" />
+        <Header title="Login to Publish" />
         <div className={styles.loginContainer}>
-          <div className={styles.content}>
-            <div className={styles.message}>
-              Login to publish your scene. You will be sent an email with a magic link.
+          {authStarted ? (
+            <div className={styles.content}>
+              <div className={styles.message}>Email sent! Please click on the link in th email to continue.</div>
             </div>
-          </div>
-          <div className={styles.content}>
-            <label className={styles.label}>E-Mail Address:</label>
-            <StringInput type="email" required value={this.state.email} onChange={email => this.setState({ email })} />
-          </div>
+          ) : (
+            <div>
+              <div className={styles.content}>
+                <div className={styles.message}>
+                  Login to publish your scene. You will be sent an email with a magic link.
+                </div>
+              </div>
+              <div className={styles.content}>
+                <label className={styles.label}>E-Mail Address:</label>
+                <StringInput
+                  id="email"
+                  type="email"
+                  required
+                  value={this.state.email}
+                  onChange={email => this.setState({ email })}
+                />
+              </div>
+            </div>
+          )}
         </div>
         <div className={styles.bottom}>
-          <Button key="cancel" onClick={hideDialog} className={styles.cancel}>
+          <Button key="cancel" onClick={onCancel || hideDialog} className={styles.cancel}>
             Cancel
           </Button>
-          <Button key="login" onClick={() => onLogin(this.state.email)}>
-            Login
-          </Button>
+          {!authStarted && (
+            <Button key="login" onClick={() => onLogin(this.state.email)}>
+              Login
+            </Button>
+          )}
         </div>
       </div>
     );
