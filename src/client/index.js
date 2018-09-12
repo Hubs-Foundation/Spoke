@@ -3,6 +3,7 @@ import React from "react";
 import EditorContainer from "./ui/EditorContainer";
 import Editor from "./editor/Editor";
 import Project from "./editor/Project";
+import qsTruthy from "./utils/qs-truthy.js";
 import "./global.scss";
 
 const rootEl = document.createElement("div");
@@ -13,4 +14,6 @@ const project = new Project();
 const editor = new Editor(project);
 window.editor = editor;
 
-ReactDOM.render(<EditorContainer editor={editor} />, rootEl);
+const uiMode = qsTruthy("advanced") ? "advanced" : "basic";
+
+ReactDOM.render(<EditorContainer uiMode={uiMode} editor={editor} />, rootEl);
