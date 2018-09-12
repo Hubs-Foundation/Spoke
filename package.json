@@ -39,6 +39,7 @@
       "src/**/*.js"
     ],
     "require": [
+      "babel-register",
       "esm",
       "./test/helpers/browser-env-entry.js"
     ]
