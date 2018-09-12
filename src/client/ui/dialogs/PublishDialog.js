@@ -38,10 +38,9 @@ export default class PublishDialog extends Component {
                 <textarea
                   className={styles.description}
                   id="description"
+                  value={this.state.description}
                   onChange={description => this.setState({ description })}
-                >
-                  {this.state.description}
-                </textarea>
+                />
               </div>
             </div>
           </div>

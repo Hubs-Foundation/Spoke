@@ -8,19 +8,20 @@ import Modal from "react-modal";
 import { MosaicWithoutDragDropContext } from "react-mosaic-component";
 
 import ToolBar from "./menus/ToolBar";
-import ViewportPanelContainer from "./panels/ViewportPanelContainer";
+import AssetExplorerPanelContainer from "./panels/AssetExplorerPanelContainer";
 import HierarchyPanelContainer from "./panels/HierarchyPanelContainer";
 import PropertiesPanelContainer from "./panels/PropertiesPanelContainer";
-import AssetExplorerPanelContainer from "./panels/AssetExplorerPanelContainer";
+import ViewportPanelContainer from "./panels/ViewportPanelContainer";
 import { EditorContextProvider } from "./contexts/EditorContext";
 import { DialogContextProvider } from "./contexts/DialogContext";
 import { SceneActionsContextProvider } from "./contexts/SceneActionsContext";
-import ConfirmDialog from "./dialogs/ConfirmDialog";
 import styles from "../common.scss";
-import FileDialog from "./dialogs/FileDialog";
-import ProgressDialog from "./dialogs/ProgressDialog";
-import LoginDialog from "./dialogs/LoginDialog";
+import ConfirmDialog from "./dialogs/ConfirmDialog";
 import ErrorDialog from "./dialogs/ErrorDialog";
+import FileDialog from "./dialogs/FileDialog";
+import LoginDialog from "./dialogs/LoginDialog";
+import PublishDialog from "./dialogs/PublishDialog";
+import ProgressDialog from "./dialogs/ProgressDialog";
 import ConflictError from "../editor/ConflictError";
 import { getUrlDirname, getUrlFilename } from "../utils/url-path";
 
@@ -654,9 +655,25 @@ class EditorContainer extends Component {
   };
 
   onPublishScene = async () => {
-    this.showDialog(LoginDialog, {
-      onLogin: email => {
-        console.log(email);
+    if (this.props.editor.authenticated()) {
+      this._publishScene();
+    } else {
+      this.showDialog(LoginDialog, {
+        onLogin: async email => {
+          const { authComplete } = await this.props.editor.startAuthentication(email);
+          this.showDialog(LoginDialog, { authStarted: true });
+          await authComplete;
+          this._publishScene();
+        },
+        onCancel: () => this.hideDialog()
+      });
+    }
+  };
+
+  _publishScene = async () => {
+    this.showDialog(PublishDialog, {
+      onPublish: async () => {
+        await this.props.editor.publishScene();
       }
     });
   };

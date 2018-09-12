@@ -1,6 +1,7 @@
-const pkg = require("./package.json");
-const path = require("path");
 const HTMLWebpackPlugin = require("html-webpack-plugin");
+const path = require("path");
+const pkg = require("./package.json");
+const webpack = require("webpack");
 
 module.exports = {
   mode: process.env.NODE_ENV ? "development" : "production",
@@ -47,6 +48,7 @@ module.exports = {
   plugins: [
     new HTMLWebpackPlugin({
       title: pkg.productName
-    })
+    }),
+    new webpack.EnvironmentPlugin(["NODE_ENV"])
   ]
 };

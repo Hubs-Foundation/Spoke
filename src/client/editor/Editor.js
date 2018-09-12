@@ -1,4 +1,6 @@
 import signals from "signals";
+import { Socket } from "phoenix";
+import uuid from "uuid/v4";
 
 import THREE from "./three";
 import History from "./History";
@@ -1696,5 +1698,56 @@ export default class Editor {
 
   redo() {
     this.history.redo();
+  }
+
+  async publishScene() {}
+
+  async debugVerifyAuth(url) {
+    const params = new URLSearchParams(url);
+    const topic = params.get("auth_topic");
+    const token = params.get("auth_token");
+    const reticulumServer = process.env.NODE_ENV === "development" ? "dev.reticulum.io" : "hubs.mozilla.com";
+    const socketUrl = `wss://${reticulumServer}/socket`;
+    const socket = new Socket(socketUrl, { params: { session_id: uuid() } });
+    socket.connect();
+    const channel = socket.channel(topic);
+    await new Promise((resolve, reject) =>
+      channel
+        .join()
+        .receive("ok", resolve)
+        .receive("error", reject)
+    );
+    channel.push("auth_verified", { token });
+  }
+
+  async startAuthentication(email) {
+    const reticulumServer = process.env.NODE_ENV === "development" ? "dev.reticulum.io" : "hubs.mozilla.com";
+    const socketUrl = `wss://${reticulumServer}/socket`;
+    const socket = new Socket(socketUrl, { params: { session_id: uuid() } });
+    socket.connect();
+    const channel = socket.channel(`auth:${uuid()}`);
+    await new Promise((resolve, reject) =>
+      channel
+        .join()
+        .receive("ok", resolve)
+        .receive("error", reject)
+    );
+
+    const authComplete = new Promise(resolve =>
+      channel.on("auth_credentials", ({ credentials }) => {
+        // TODO BP: Actually, we shouldn't store creds in local storage because other apps that happen to use localhost
+        // will be able to read them. We need to put them on disk and access them through the server.
+        localStorage.setItem("credentials", credentials);
+        resolve(credentials);
+      })
+    );
+
+    channel.push("auth_request", { email, origin: "spoke" });
+
+    return { authComplete };
+  }
+
+  authenticated() {
+    return localStorage.getItem("credentials") !== null;
   }
 }
