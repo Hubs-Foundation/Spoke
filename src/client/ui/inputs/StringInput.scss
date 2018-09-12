@@ -1,23 +1,12 @@
+@import "../../common";
 @import "../../theme";
 
 :local(.stringInput) {
+  @include input;
   display: flex;
   width: 100%;
-  color: $text;
-  background-color: $input-background;
-  border-radius: 4px;
-  border: 1px solid $border;
   padding: 0;
-  padding-left: 8px;
   font-size: 12px;
   height: 22px;
-
-  &:hover {
-    border-color: $blue-hover;
-  }
-
-  &:focus {
-    border-color: $blue;
-  }
 }
 
