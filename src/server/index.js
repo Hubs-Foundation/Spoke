@@ -1,20 +1,20 @@
-import Koa from "koa";
-import serve from "koa-static";
-import mount from "koa-mount";
-import koaBody from "koa-body";
-import path from "path";
-import Router from "koa-router";
-import WebSocket from "ws";
-import https from "https";
-import http from "http";
-import selfsigned from "selfsigned";
-import fs from "fs-extra";
 import chokidar from "chokidar";
 import debounce from "lodash.debounce";
-import opn from "opn";
-import recast from "@donmccurdy/recast";
 import fetch from "node-fetch";
-import crc32 from "crc32";
+import fs from "fs-extra";
+import http from "http";
+import https from "https";
+import Koa from "koa";
+import koaBody from "koa-body";
+import mount from "koa-mount";
+import opn from "opn";
+import path from "path";
+import recast from "@donmccurdy/recast";
+import Router from "koa-router";
+import selfsigned from "selfsigned";
+import serve from "koa-static";
+import sha from "sha.js";
+import WebSocket from "ws";
 import yauzl from "yauzl";
 
 function pathToUri(projectPath, path) {
@@ -331,7 +331,7 @@ export default async function startServer(options) {
   const mediaServer = process.env.NODE_ENV === "development" ? "dev.reticulum.io" : "hubs.mozilla.com";
   router.post("/api/import", koaBody(), async ctx => {
     const origin = ctx.request.body.url;
-    const originHash = crc32(origin);
+    const originHash = new sha.sha256().update(origin).digest("hex");
     const filePathBase = path.join(projectPath, "imported", originHash);
 
     // We're calling these .gltf files, but they could be glbs.
