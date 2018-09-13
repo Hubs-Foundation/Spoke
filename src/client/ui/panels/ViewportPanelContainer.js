@@ -7,7 +7,6 @@ import { withSceneActions } from "../contexts/SceneActionsContext";
 import ProgressDialog from "../dialogs/ProgressDialog";
 import ErrorDialog from "../dialogs/ErrorDialog";
 import styles from "./ViewportPanelContainer.scss";
-import FileDropTarget from "../FileDropTarget";
 import AssetDropTarget from "../AssetDropTarget";
 import AddNodeActionButtons from "../AddNodeActionButtons";
 
@@ -54,8 +53,7 @@ class ViewportPanelContainer extends Component {
           message: "Importing asset..."
         });
         const url = (await new Promise(resolve => urlItem.getAsString(resolve))).trim();
-        const { uri: importedUri, name } = await this.props.editor.project.import(url);
-        this.props.editor.addGLTFModelNode(name || "Model", importedUri);
+        await this.props.editor.importGLTFIntoModelNode(url);
         this.props.hideDialog();
       } catch (e) {
         this.props.showDialog(ErrorDialog, {
@@ -69,9 +67,6 @@ class ViewportPanelContainer extends Component {
   render() {
     return (
       <div className={styles.viewportPanelContainer}>
-        <FileDropTarget onDropFile={this.onDropFile}>
-          <Viewport ref={this.canvasRef} onDropFile={this.onDropFile} />
-        </FileDropTarget>
         <AssetDropTarget onDropAsset={this.onDropAsset}>
           <Viewport ref={this.canvasRef} onDropAsset={this.onDropAsset} />
         </AssetDropTarget>

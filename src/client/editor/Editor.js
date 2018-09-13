@@ -1159,6 +1159,11 @@ export default class Editor {
     this.addUnicomponentNode(name, "gltf-model", { src: url });
   }
 
+  async importGLTFIntoModelNode(url) {
+    const { uri: importedUri, name } = await this.project.import(url);
+    this.addGLTFModelNode(name || "Model", importedUri);
+  }
+
   createNode(name, parent) {
     const object = new THREE.Object3D();
     object.name = name;
