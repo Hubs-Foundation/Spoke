@@ -1,18 +1,25 @@
-import Koa from "koa";
-import serve from "koa-static";
-import mount from "koa-mount";
-import koaBody from "koa-body";
-import path from "path";
-import Router from "koa-router";
-import WebSocket from "ws";
-import https from "https";
-import http from "http";
-import selfsigned from "selfsigned";
-import fs from "fs-extra";
 import chokidar from "chokidar";
 import debounce from "lodash.debounce";
+import fetch from "node-fetch";
+import fs from "fs-extra";
+import http from "http";
+import https from "https";
+import Koa from "koa";
+import koaBody from "koa-body";
+import mount from "koa-mount";
 import opn from "opn";
+import path from "path";
 import recast from "@donmccurdy/recast";
+import Router from "koa-router";
+import selfsigned from "selfsigned";
+import serve from "koa-static";
+import sha from "sha.js";
+import WebSocket from "ws";
+import yauzl from "yauzl";
+
+function pathToUri(projectPath, path) {
+  return path.replace(projectPath, "/api/files").replace(/\\/g, "/");
+}
 
 async function getProjectHierarchy(projectPath) {
   async function buildProjectNode(filePath, name, ext, isDirectory, uri) {
@@ -45,7 +52,7 @@ async function getProjectHierarchy(projectPath) {
         base,
         ext,
         stats.isDirectory(),
-        childPath.replace(projectPath, "/api/files").replace(/\\/g, "/")
+        pathToUri(projectPath, childPath)
       );
 
       if (childNode.isDirectory) {
@@ -69,6 +76,55 @@ async function getProjectHierarchy(projectPath) {
   const projectHierarchy = await buildProjectNode(projectPath, projectName, undefined, true, "/api/files");
 
   return projectHierarchy;
+}
+
+async function pipeToFile(stream, filePath) {
+  // If uploading as text body, write it to filePath using the stream API.
+  const writeStream = fs.createWriteStream(filePath, { flags: "w" });
+
+  stream.pipe(writeStream);
+
+  await new Promise((resolve, reject) => {
+    function cleanUp() {
+      writeStream.removeListener("finish", onFinish);
+      writeStream.removeListener("error", onError);
+    }
+
+    function onFinish() {
+      cleanUp();
+      resolve();
+    }
+
+    function onError(err) {
+      cleanUp();
+      reject(err);
+    }
+
+    writeStream.on("finish", onFinish);
+    writeStream.on("error", onError);
+  });
+}
+
+function extractZip(zipPath, basePath) {
+  return new Promise((resolve, reject) => {
+    yauzl.open(zipPath, { lazyEntries: true }, (err, zipFile) => {
+      if (err) reject(err);
+      zipFile.on("entry", async entry => {
+        if (/\/$/.test(entry.fileName)) {
+          await fs.ensureDir(path.join(basePath, entry.fileName));
+          zipFile.readEntry();
+        } else {
+          zipFile.openReadStream(entry, async (err, readStream) => {
+            if (err) reject(err);
+            await pipeToFile(readStream, path.join(basePath, entry.fileName));
+            zipFile.readEntry();
+          });
+        }
+      });
+      zipFile.on("end", resolve);
+      zipFile.readEntry();
+    });
+  });
 }
 
 export default async function startServer(options) {
@@ -144,7 +200,7 @@ export default async function startServer(options) {
     .on("all", (type, filePath) => {
       broadcast({
         type,
-        path: filePath.replace(projectDirName, "/api/files").replace(/\\/g, "/")
+        path: pathToUri(projectDirName, filePath)
       });
       debouncedBroadcastHierarchy();
     });
@@ -221,30 +277,7 @@ export default async function startServer(options) {
         await fs.move(file.path, destPath, { overwrite: true });
       }
     } else {
-      // If uploading as text body, write it to filePath using the stream API.
-      const writeStream = fs.createWriteStream(filePath, { flags: "w" });
-
-      ctx.req.pipe(writeStream);
-
-      await new Promise((resolve, reject) => {
-        function cleanUp() {
-          writeStream.removeListener("finish", onFinish);
-          writeStream.removeListener("error", onError);
-        }
-
-        function onFinish() {
-          cleanUp();
-          resolve();
-        }
-
-        function onError(err) {
-          cleanUp();
-          reject(err);
-        }
-
-        writeStream.on("finish", onFinish);
-        writeStream.on("error", onError);
-      });
+      await pipeToFile(ctx.req, filePath);
     }
 
     ctx.body = { success: true };
@@ -293,6 +326,54 @@ export default async function startServer(options) {
       { navPosition: [], navIndex: [] }
     );
     ctx.body = { navPosition, navIndex };
+  });
+
+  const mediaServer = process.env.NODE_ENV === "development" ? "dev.reticulum.io" : "hubs.mozilla.com";
+  router.post("/api/import", koaBody(), async ctx => {
+    const origin = ctx.request.body.url;
+    const originHash = new sha.sha256().update(origin).digest("hex");
+    const filePathBase = path.join(projectPath, "imported", originHash);
+
+    if (fs.existsSync(filePathBase)) {
+      const uri = pathToUri(projectPath, path.join(filePathBase, "scene.gltf"));
+      const { name } = await fs.readJSON(path.join(filePathBase, "meta.json"));
+      ctx.body = { uri, name };
+    } else {
+      const { raw, meta } = await fetch(`https://${mediaServer}/api/v1/media`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ media: { url: origin, index: 0 } })
+      }).then(r => r.json());
+
+      await fs.ensureDir(filePathBase);
+
+      let name;
+      const resp = await fetch(raw);
+      const expected_content_type = (meta && meta.expected_content_type) || "";
+      if (expected_content_type.includes("gltf+zip")) {
+        const zipPath = `${filePathBase}.zip`;
+        await pipeToFile(resp.body, zipPath);
+        await extractZip(zipPath, filePathBase);
+        await fs.remove(zipPath);
+
+        const sceneFilePath = path.join(filePathBase, "scene.gltf");
+        const gltf = await fs.readJSON(sceneFilePath);
+        name = gltf.asset && gltf.asset.extras && gltf.asset.extras.title;
+
+        const uri = pathToUri(projectPath, sceneFilePath);
+        ctx.body = { uri, name };
+      } else {
+        // If we don't have an expected_content_type, assume they are gltfs.
+        // We're calling these .gltf files, but they could be glbs.
+        const filePath = path.join(filePathBase, "scene.gltf");
+        await pipeToFile(resp.body, filePath);
+        const uri = pathToUri(projectPath, filePath);
+        name = meta && meta.name;
+        ctx.body = { uri, name };
+      }
+
+      await fs.writeJSON(path.join(filePathBase, "meta.json"), { ...meta, origin, name });
+    }
   });
 
   app.use(router.routes());

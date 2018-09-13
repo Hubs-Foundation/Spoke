@@ -1,7 +1,6 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
 import styles from "./dialog.scss";
-import classNames from "classnames";
 import Button from "../Button";
 import StringInput from "../inputs/StringInput";
 import Header from "../Header";

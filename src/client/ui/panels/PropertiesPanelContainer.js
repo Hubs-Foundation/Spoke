@@ -14,6 +14,7 @@ import ErrorDialog from "../dialogs/ErrorDialog";
 import ProgressDialog, { PROGRESS_DIALOG_DELAY } from "../dialogs/ProgressDialog";
 import AddComponentDropdown from "../AddComponentDropdown";
 import { getDisplayName } from "../../utils/get-display-name";
+import SetNameCommand from "../../editor/commands/SetNameCommand";
 
 class PropertiesPanelContainer extends Component {
   static propTypes = {
@@ -64,7 +65,15 @@ class PropertiesPanelContainer extends Component {
   };
 
   onBlurName = () => {
-    this.props.editor.setObjectName(this.state.object, this.state.name);
+    if (this.state.object.name !== this.state.name) {
+      this.props.editor.execute(new SetNameCommand(this.state.object, this.state.name));
+    }
+  };
+
+  onKeyUpName = e => {
+    if (e.key === "Enter") {
+      this.props.editor.execute(new SetNameCommand(this.state.object, this.state.name));
+    }
   };
 
   onUpdateStatic = ({ value }) => {
@@ -341,7 +350,12 @@ class PropertiesPanelContainer extends Component {
         >
           <div className={styles.propertiesPanelTopBar}>
             <InputGroup className={styles.topBarName} name="Name">
-              <StringInput value={this.state.name} onChange={this.onUpdateName} onBlur={this.onBlurName} />
+              <StringInput
+                value={this.state.name}
+                onChange={this.onUpdateName}
+                onBlur={this.onBlurName}
+                onKeyUp={this.onKeyUpName}
+              />
             </InputGroup>
             <InputGroup className={styles.topBarStatic} name="Static">
               <Select

@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
-import FileDropTarget from "../FileDropTarget";
+import AssetDropTarget from "../AssetDropTarget";
 import Tree from "@robertlong/react-ui-tree";
 import classNames from "classnames";
 import { ContextMenu, MenuItem, ContextMenuTrigger, connectMenu } from "react-contextmenu";
@@ -230,7 +230,7 @@ class HierarchyPanelContainer extends Component {
   render() {
     return (
       <div className={styles.hierarchyRoot}>
-        <FileDropTarget onDropFile={this.onDropFile}>
+        <AssetDropTarget onDropFile={this.onDropFile}>
           <div className={styles.tree}>
             <Tree
               paddingLeft={8}
@@ -242,7 +242,7 @@ class HierarchyPanelContainer extends Component {
             />
             <this.HierarchyNodeMenu />
           </div>
-        </FileDropTarget>
+        </AssetDropTarget>
         {this.renderWarnings()}
       </div>
     );

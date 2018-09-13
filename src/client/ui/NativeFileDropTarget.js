@@ -3,10 +3,10 @@ import PropTypes from "prop-types";
 import { DropTarget } from "react-dnd";
 import { NativeTypes } from "@mozillareality/react-dnd-html5-backend";
 import { getFilesFromDragEvent } from "html-dir-content";
-import styles from "./FileDropTarget.scss";
+import styles from "./AssetDropTarget.scss";
 
 function NativeFileDropTarget({ connectDropTarget, children }) {
-  return connectDropTarget(<div className={styles.fileDropTarget}>{children}</div>);
+  return connectDropTarget(<div className={styles.assetDropTarget}>{children}</div>);
 }
 
 NativeFileDropTarget.propTypes = {

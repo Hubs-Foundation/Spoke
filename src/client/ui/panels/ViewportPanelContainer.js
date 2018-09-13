@@ -4,9 +4,11 @@ import Viewport from "../Viewport";
 import { withEditor } from "../contexts/EditorContext";
 import { withDialog } from "../contexts/DialogContext";
 import { withSceneActions } from "../contexts/SceneActionsContext";
+import ProgressDialog from "../dialogs/ProgressDialog";
 import ErrorDialog from "../dialogs/ErrorDialog";
 import styles from "./ViewportPanelContainer.scss";
 import FileDropTarget from "../FileDropTarget";
+import AssetDropTarget from "../AssetDropTarget";
 import AddNodeActionButtons from "../AddNodeActionButtons";
 
 class ViewportPanelContainer extends Component {
@@ -27,7 +29,7 @@ class ViewportPanelContainer extends Component {
     this.props.editor.createViewport(this.canvasRef.current);
   }
 
-  onDropFile = async item => {
+  onDropAsset = async item => {
     if (item.file) {
       const file = item.file;
 
@@ -41,6 +43,26 @@ class ViewportPanelContainer extends Component {
           });
         }
       }
+    } else if (item.dataTransfer && item.dataTransfer.items.length) {
+      const urlItem = Array.from(item.dataTransfer.items).find(
+        item => item.kind === "string" && item.type === "text/plain"
+      );
+      if (!urlItem) return;
+      try {
+        this.props.showDialog(ProgressDialog, {
+          title: "Importing Asset",
+          message: "Importing asset..."
+        });
+        const url = (await new Promise(resolve => urlItem.getAsString(resolve))).trim();
+        const { uri: importedUri, name } = await this.props.editor.project.import(url);
+        this.props.editor.addGLTFModelNode(name || "Model", importedUri);
+        this.props.hideDialog();
+      } catch (e) {
+        this.props.showDialog(ErrorDialog, {
+          title: "Error adding model.",
+          message: e.message
+        });
+      }
     }
   };
 
@@ -50,6 +72,9 @@ class ViewportPanelContainer extends Component {
         <FileDropTarget onDropFile={this.onDropFile}>
           <Viewport ref={this.canvasRef} onDropFile={this.onDropFile} />
         </FileDropTarget>
+        <AssetDropTarget onDropAsset={this.onDropAsset}>
+          <Viewport ref={this.canvasRef} onDropAsset={this.onDropAsset} />
+        </AssetDropTarget>
         <AddNodeActionButtons />
       </div>
     );
