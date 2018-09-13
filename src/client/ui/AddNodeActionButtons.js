@@ -17,6 +17,7 @@ import HemisphereLightComponent from "../editor/components/HemisphereLightCompon
 import PointLightComponent from "../editor/components/PointLightComponent";
 import SkyboxComponent from "../editor/components/SkyboxComponent";
 import SpawnPointComponent from "../editor/components/SpawnPointComponent";
+import GroupComponent from "../editor/components/GroupComponent";
 
 function AddButton({ label, iconClassName, onClick }) {
   return (
@@ -148,6 +149,11 @@ class AddNodeActionButtons extends Component {
               onClick={() => this.addNodeWithComponent("spawn-point")}
             />
             <AddButton label="Light" iconClassName={PointLightComponent.iconClassName} onClick={this.addLight} />
+            <AddButton
+              label="Group"
+              iconClassName={GroupComponent.iconClassName}
+              onClick={() => this.addNodeWithComponent("group")}
+            />
             <AddButton label="Model" iconClassName="fa-cube" onClick={this.addModel} />
           </div>
         )}
