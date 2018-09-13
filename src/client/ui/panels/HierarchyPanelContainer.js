@@ -197,7 +197,6 @@ class HierarchyPanelContainer extends Component {
     const hasParent = node && node.object.parent;
     return (
       <ContextMenu id="hierarchy-node-menu">
-        <MenuItem onClick={this.onAddNode}>New Node</MenuItem>
         {hasParent && <MenuItem divider />}
         {hasParent && (
           <MenuItem onClick={this.onDuplicateNode}>
