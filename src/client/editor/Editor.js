@@ -13,7 +13,6 @@ import MultiCmdsCommand from "./commands/MultiCmdsCommand";
 import RemoveComponentCommand from "./commands/RemoveComponentCommand";
 import RemoveObjectCommand from "./commands/RemoveObjectCommand";
 import SetComponentPropertyCommand from "./commands/SetComponentPropertyCommand";
-import SetValueCommand from "./commands/SetValueCommand";
 
 import {
   isStatic,
@@ -82,6 +81,8 @@ export default class Editor {
 
       helperAdded: new Signal(),
       helperRemoved: new Signal(),
+
+      editorError: new Signal(),
 
       windowResize: new Signal(),
 
@@ -261,6 +262,8 @@ export default class Editor {
 
     const scene = new THREE.Scene();
     scene.name = "Scene";
+
+    this._conflictHandler = null;
 
     this._setSceneInfo(scene, null);
     this.scenes = [this.sceneInfo];
@@ -1188,6 +1191,7 @@ export default class Editor {
     });
 
     object.parent.remove(object);
+    this._conflictHandler.removeFromDuplicateNameCounters(object.name);
 
     this.signals.objectRemoved.dispatch(object);
     this.signals.sceneGraphChanged.dispatch();
@@ -1278,6 +1282,8 @@ export default class Editor {
       this.signals.objectChanged.dispatch(object);
     } catch (e) {
       console.error("Failed to load glTF", e);
+
+      this.signals.editorError.dispatch(e);
 
       if (component.propValidation.src !== false) {
         component.propValidation.src = false;
@@ -1509,11 +1515,11 @@ export default class Editor {
 
   setObjectName(object, value) {
     const handler = this._conflictHandler;
-
     if (handler.isUniqueObjectName(value)) {
-      object.name = value;
+      const prevName = object.name;
       handler.addToDuplicateNameCounters(value);
-      this.execute(new SetValueCommand(object, "name", value));
+      object.name = value;
+      handler.removeFromDuplicateNameCounters(prevName);
     } else {
       this.signals.objectChanged.dispatch(object);
       throw new ConflictError("rename error", "rename", this.sceneInfo.uri, handler);
@@ -1636,8 +1642,9 @@ export default class Editor {
   }
 
   deleteObject(object) {
+    const objectName = object.name;
     this.execute(new RemoveObjectCommand(object));
-    this._conflictHandler.updateDuplicateNameCounters(this.scene);
+    this._conflictHandler.removeFromDuplicateNameCounters(objectName);
   }
 
   deleteSelectedObject() {

@@ -7,4 +7,6 @@ yarn.lock
 node_modules/
 lib/
 public/
+example/generated/
+example/imported/
 .certs/
