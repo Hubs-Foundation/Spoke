@@ -31,7 +31,7 @@ $fa-font-path: "~@fortawesome/fontawesome-free/webfonts";
   .icon-scene {
     &:before {
       @include solidIcon;
-      content: fa-content($fa-var-cubes);
+      content: fa-content($fa-var-cube);
     }
   }
 
