@@ -57,19 +57,6 @@ class AddNodeActionButtons extends Component {
     this.setState({ open: false });
   };
 
-  addOrSelectSkybox = () => {
-    const editor = this.props.editor;
-    const existingSkybox = editor.findFirstWithComponent("skybox");
-
-    if (existingSkybox) {
-      editor.select(existingSkybox);
-    } else {
-      editor.addUnicomponentNode("Skybox", "skybox");
-    }
-
-    this.setState({ open: false });
-  };
-
   addModel = () => {
     this.props.showDialog(AddModelDialog, {
       title: "Add Model",
@@ -132,11 +119,19 @@ class AddNodeActionButtons extends Component {
       [styles.fabClosed]: !this.state.open
     };
 
+    const hasSkybox = !!this.props.editor.findFirstWithComponent("skybox");
+
     return (
       <div className={styles.addNodeActionButtons}>
         {this.state.open && (
           <div className={styles.actionButtonContainer}>
-            <AddButton label="Skybox" iconClassName={SkyboxComponent.iconClassName} onClick={this.addOrSelectSkybox} />
+            {!hasSkybox && (
+              <AddButton
+                label="Skybox"
+                iconClassName={SkyboxComponent.iconClassName}
+                onClick={() => this.addNodeWithComponent("skybox")}
+              />
+            )}
             <AddButton
               label="Collider"
               iconClassName="fa-hand-paper"
