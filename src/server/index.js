@@ -368,7 +368,7 @@ export default async function startServer(options) {
         const filePath = path.join(filePathBase, "scene.gltf");
         await pipeToFile(resp.body, filePath);
         const uri = pathToUri(projectPath, filePath);
-        name = meta.name;
+        name = meta && meta.name;
         ctx.body = { uri, name };
       }
 
