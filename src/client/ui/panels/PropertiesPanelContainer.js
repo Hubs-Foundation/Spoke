@@ -13,18 +13,7 @@ import FileDialog from "../dialogs/FileDialog";
 import ErrorDialog from "../dialogs/ErrorDialog";
 import ProgressDialog, { PROGRESS_DIALOG_DELAY } from "../dialogs/ProgressDialog";
 import AddComponentDropdown from "../AddComponentDropdown";
-
-export function getDisplayName(name) {
-  if (name.includes("-")) {
-    return name
-      .split("-")
-      .map(([f, ...rest]) => f.toUpperCase() + rest.join(""))
-      .join(" ");
-  } else {
-    const displayName = name.replace(/[A-Z]/g, " $&");
-    return displayName[0].toUpperCase() + displayName.substr(1);
-  }
-}
+import { getDisplayName } from "../../utils/get-display-name"
 
 class PropertiesPanelContainer extends Component {
   static propTypes = {

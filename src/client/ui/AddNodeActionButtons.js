@@ -4,8 +4,14 @@ import classNames from "classnames";
 import { withEditor } from "./contexts/EditorContext";
 import { withDialog } from "./contexts/DialogContext";
 import { withSceneActions } from "./contexts/SceneActionsContext";
-//import ErrorDialog from "../dialogs/ErrorDialog";
+import ButtonSelectDialog from "./dialogs/ButtonSelectDialog";
+import { getDisplayName } from "../utils/get-display-name";
 import styles from "./AddNodeActionButtons.scss";
+import SpotLightComponent from "../editor/components/SpotLightComponent";
+import DirectionalLightComponent from "../editor/components/DirectionalLightComponent";
+import AmbientLightComponent from "../editor/components/AmbientLightComponent";
+import HemisphereLightComponent from "../editor/components/HemisphereLightComponent";
+import PointLightComponent from "../editor/components/PointLightComponent";
 
 class AddNodeActionButtons extends Component {
   static propTypes = {
@@ -29,7 +35,7 @@ class AddNodeActionButtons extends Component {
     this.setState({ open: false });
   };
 
-  createOrSelectSkybox = () => {
+  addOrSelectSkybox = () => {
     const editor = this.props.editor;
     const existingSkybox = editor.findFirstWithComponent("skybox");
 
@@ -39,6 +45,26 @@ class AddNodeActionButtons extends Component {
       editor.addUnicomponentNode("Skybox", "skybox");
     }
 
+    this.setState({ open: false });
+  };
+
+  addLight = () => {
+    this.props.showDialog(ButtonSelectDialog, {
+      title: "Add Light",
+      message: "Choose the type of light to add.",
+      options: [
+        PointLightComponent,
+        SpotLightComponent,
+        DirectionalLightComponent,
+        AmbientLightComponent,
+        HemisphereLightComponent
+      ].map(c => ({ value: c.componentName, iconClassName: c.iconClassName, label: getDisplayName(c.componentName) })),
+      onSelect: v => {
+        this.addNodeWithComponent(v);
+        this.props.hideDialog();
+      },
+      onCancel: this.props.hideDialog
+    });
     this.setState({ open: false });
   };
 
@@ -58,8 +84,10 @@ class AddNodeActionButtons extends Component {
       <div className={styles.addNodeActionButtons}>
         {this.state.open && (
           <div className={styles.actionButtonContainer}>
-            <button onClick={this.createOrSelectSkybox}>skybox</button>
+            <button onClick={this.addOrSelectSkybox}>skybox</button>
+            <button onClick={this.addLight}>light</button>
             <button onClick={() => this.addNodeWithComponent("spawn-point")}>spawn-point</button>
+            <button onClick={() => this.addNodeWithComponent("box-collider")}>box-collider</button>
           </div>
         )}
         <button onClick={this.toggle} className={classNames(fabClassNames)}>

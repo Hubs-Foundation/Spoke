@@ -26,6 +26,23 @@
   padding: 8px;
 }
 
+:local(.contentRows) {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+:local(.buttonList) {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  button {
+    width: 125px;
+    margin: 6px;
+  }
+}
+
 :local(.bottom) {
   margin: 8px 0;
   display: flex;
