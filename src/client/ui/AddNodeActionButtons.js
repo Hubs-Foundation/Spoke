@@ -53,7 +53,7 @@ class AddNodeActionButtons extends Component {
 
   addNodeWithComponent = name => {
     const editor = this.props.editor;
-    editor.addUnicomponentNode(name, name);
+    editor.addUnicomponentNode(getDisplayName(name), name);
     this.setState({ open: false });
   };
 
