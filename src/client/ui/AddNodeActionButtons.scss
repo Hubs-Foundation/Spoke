@@ -4,17 +4,85 @@
   position: absolute;
   right: 26px;
   bottom: 26px;
-  background-color: red;
-  width: 85px;
-  background-color: red;
+  width: 80px;
+}
+
+@keyframes fab-open {
+    from {
+      transform: rotate(0deg);
+    }
+
+    to {
+      transform: rotate(45deg);
+    }
 }
 
 :local(.fab) {
-  background-color: green;
+  background: $blue;
+  color: $white;
+  width: 80px;
+  height: 80px;
+  border-radius: 40px;
+  border: none;
+  white-space: nowrap;
+  font-size: 24px;
+  font-family: Lato;
+  padding-bottom: 2px;
+  outline: none;
+  cursor: pointer;
+
+  &:hover {
+    background-color: $blue-hover;
+  }
+
+  &:active {
+    background-color: $blue-pressed;
+  }
 }
 
 :local(.fabOpen) {
-  background-color: blue;
+  transform: rotate(45deg);
+  transition: transform 0.25s;
+}
+
+:local(.fabClosed) {
+  transform: rotate(0deg);
+  transition: transform 0.25s;
+}
+
+:local(.addButton) {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin-bottom: 16px;
+
+  label {
+    white-space: nowrap;
+    margin-right: 8px;
+    position: absolute;
+    right: 65px;
+    text-shadow: 0px 0px 3px rgba(16, 16, 16, 1.0);
+  }
+
+  button {
+    cursor: pointer;
+    background: $blue;
+    color: $white;
+    width: 40px;
+    height: 40px;
+    border-radius: 40px;
+    border: none;
+    white-space: nowrap;
+    outline: none;
+
+    &:hover {
+      background-color: $blue-hover;
+    }
+
+    &:active {
+      background-color: $blue-pressed;
+    }
+  }
 }
 
 :local(.actionButtonContainer) {

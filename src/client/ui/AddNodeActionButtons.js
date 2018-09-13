@@ -15,6 +15,25 @@ import DirectionalLightComponent from "../editor/components/DirectionalLightComp
 import AmbientLightComponent from "../editor/components/AmbientLightComponent";
 import HemisphereLightComponent from "../editor/components/HemisphereLightComponent";
 import PointLightComponent from "../editor/components/PointLightComponent";
+import SkyboxComponent from "../editor/components/SkyboxComponent";
+import SpawnPointComponent from "../editor/components/SpawnPointComponent";
+
+function AddButton({ label, iconClassName, onClick }) {
+  return (
+    <div className={styles.addButton}>
+      <label>{label}</label>
+      <button onClick={onClick}>
+        <i className={classNames("fas", iconClassName)} />
+      </button>
+    </div>
+  );
+}
+
+AddButton.propTypes = {
+  label: PropTypes.string.isRequired,
+  iconClassName: PropTypes.string.isRequired,
+  onClick: PropTypes.func.isRequired
+};
 
 class AddNodeActionButtons extends Component {
   static propTypes = {
@@ -109,22 +128,31 @@ class AddNodeActionButtons extends Component {
   render() {
     const fabClassNames = {
       [styles.fab]: true,
-      [styles.fabOpen]: this.state.open
+      [styles.fabOpen]: this.state.open,
+      [styles.fabClosed]: !this.state.open
     };
 
     return (
       <div className={styles.addNodeActionButtons}>
         {this.state.open && (
           <div className={styles.actionButtonContainer}>
-            <button onClick={this.addOrSelectSkybox}>skybox</button>
-            <button onClick={() => this.addNodeWithComponent("box-collider")}>box-collider</button>
-            <button onClick={() => this.addNodeWithComponent("spawn-point")}>spawn-point</button>
-            <button onClick={this.addLight}>light</button>
-            <button onClick={this.addModel}>model</button>
+            <AddButton label="Skybox" iconClassName={SkyboxComponent.iconClassName} onClick={this.addOrSelectSkybox} />
+            <AddButton
+              label="Collider"
+              iconClassName="fa-hand-paper"
+              onClick={() => this.addNodeWithComponent("box-collider")}
+            />
+            <AddButton
+              label="Spawn Point"
+              iconClassName={SpawnPointComponent.iconClassName}
+              onClick={() => this.addNodeWithComponent("spawn-point")}
+            />
+            <AddButton label="Light" iconClassName={PointLightComponent.iconClassName} onClick={this.addLight} />
+            <AddButton label="Model" iconClassName="fa-cube" onClick={this.addModel} />
           </div>
         )}
         <button onClick={this.toggle} className={classNames(fabClassNames)}>
-          {this.state.open ? "Open" : "Closed"}
+          <i className={classNames("fas", "fa-plus")} />
         </button>
       </div>
     );
