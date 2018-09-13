@@ -8,13 +8,13 @@
 }
 
 @keyframes fab-open {
-    from {
-      transform: rotate(0deg);
-    }
+  from {
+    transform: rotate(0deg);
+  }
 
-    to {
-      transform: rotate(45deg);
-    }
+  to {
+    transform: rotate(45deg);
+  }
 }
 
 :local(.fab) {
