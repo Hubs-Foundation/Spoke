@@ -1,4 +1,4 @@
-const namePattern = new RegExp("(.*)_\\d+$");
+const namePattern = new RegExp("(.*) \\d+$");
 function nodesToTree(nodes) {
   if (!nodes) {
     return;
@@ -77,7 +77,7 @@ export default class ConflictHandler {
     if (this._duplicateNameCounters.has(name)) {
       const nameObj = this._duplicateNameCounters.get(name);
       nameObj.count++;
-      node.userData._resolvedName = name + "_" + nameObj.count;
+      node.userData._resolvedName = name + " " + nameObj.count;
       this._updatedNodes.set(this._hashTreePath(node.userData._path), node.userData._resolvedName);
     } else {
       this._duplicateNameCounters.set(name, { used: true, count: 0 });
@@ -267,10 +267,10 @@ export default class ConflictHandler {
       return name;
     } else {
       let n = this._duplicateNameCounters.get(cacheName).count + 1;
-      let newName = cacheName + "_" + n;
+      let newName = cacheName + " " + (n + 1);
       while (!this.isUniqueObjectName(newName)) {
         n += 1;
-        newName = cacheName + "_" + n;
+        newName = cacheName + " " + (n + 1);
       }
       this._duplicateNameCounters.get(cacheName).count = n;
       this._duplicateNameCounters.set(newName, { used: true });
