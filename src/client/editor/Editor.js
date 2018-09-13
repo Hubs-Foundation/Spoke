@@ -297,7 +297,6 @@ export default class Editor {
   }
 
   _createDefaultSceneObjects() {
-    this.addUnicomponentNode("Skybox", "skybox");
     this.addUnicomponentNode(
       "Sun",
       "directional-light",
@@ -307,6 +306,7 @@ export default class Editor {
         rotation: { x: Math.PI * 0.5, y: Math.PI * (0.5 / 3.0), z: -Math.PI * 0.5 }
       }
     );
+    this.addUnicomponentNode("Skybox", "skybox");
     this.addUnicomponentNode("Ambient Light", "ambient-light", {}, { position: { x: 0, y: 10, z: 0 } });
   }
 
