@@ -30,10 +30,6 @@ let cachedEnvMap = null;
 export default class StandardMaterialComponent extends SaveableComponent {
   static componentName = "standard-material";
 
-  static canAdd = false;
-
-  static canRemove = false;
-
   static dontExportProps = true;
 
   static schema = [

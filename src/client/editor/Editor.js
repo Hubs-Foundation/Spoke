@@ -1133,18 +1133,35 @@ export default class Editor {
     this.select(object);
   }
 
-  addGLTFModelNode(name, url) {
+  addUnicomponentNode(name, componentName, properties = {}) {
     const object = new THREE.Object3D();
     object.name = name;
     setStaticMode(object, StaticModes.Static);
+
+    const componentSetters = [];
+
+    for (const [property, value] of Object.entries(properties)) {
+      componentSetters.push(new SetComponentPropertyCommand(object, componentName, property, value));
+    }
+
     this.execute(
       new MultiCmdsCommand([
         new AddObjectCommand(object, this.scene),
-        new AddComponentCommand(object, "gltf-model"),
-        new SetComponentPropertyCommand(object, "gltf-model", "src", url)
+        new AddComponentCommand(object, componentName),
+        ...componentSetters
       ])
     );
+
     this.select(object);
+  }
+
+  addGLTFModelNode(name, url) {
+    this.addUnicomponentNode(name, "gltf-model", { src: url });
+  }
+
+  async importGLTFIntoModelNode(url) {
+    const { uri: importedUri, name } = await this.project.import(url);
+    this.addGLTFModelNode(name || "Model", importedUri);
   }
 
   createNode(name, parent) {
@@ -1622,6 +1639,18 @@ export default class Editor {
         scope.select(child);
       }
     });
+  }
+
+  findFirstWithComponent(componentName) {
+    let result = null;
+
+    this.scene.traverse(child => {
+      if (result) return;
+      if (!this.getComponent(child, componentName)) return;
+      result = child;
+    });
+
+    return result;
   }
 
   deselect() {

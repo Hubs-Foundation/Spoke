@@ -4,7 +4,7 @@ import styles from "./dialog.scss";
 import Button from "../Button";
 import Header from "../Header";
 
-export function OptionDialog({ title, message, options, cancelLabel, onCancel, hideDialog }) {
+export default function OptionDialog({ title, message, options, cancelLabel, onCancel, hideDialog }) {
   return (
     <div className={styles.dialogContainer}>
       <Header title={title} />

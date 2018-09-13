@@ -4,8 +4,6 @@ import { types } from "./utils";
 export default class TransformComponent extends BaseComponent {
   static componentName = "transform";
 
-  static canAdd = false;
-
   static canRemove = false;
 
   static dontExportProps = true;

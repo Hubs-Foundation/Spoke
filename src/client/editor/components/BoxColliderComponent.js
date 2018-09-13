@@ -8,10 +8,6 @@ export default class BoxColliderComponent extends TransformComponent {
 
   static _material = new THREE.Material();
 
-  static canAdd = true;
-
-  static canRemove = true;
-
   // Since the box collider props just mirror the node's transform, we hide the props.
   static showProps = false;
 

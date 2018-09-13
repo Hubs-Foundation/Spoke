@@ -195,10 +195,10 @@ class HierarchyPanelContainer extends Component {
   renderHierarchyNodeMenu = props => {
     const node = props.trigger;
     const hasParent = node && node.object.parent;
+    if (!hasParent) return null;
+
     return (
       <ContextMenu id="hierarchy-node-menu">
-        <MenuItem onClick={this.onAddNode}>New Node</MenuItem>
-        {hasParent && <MenuItem divider />}
         {hasParent && (
           <MenuItem onClick={this.onDuplicateNode}>
             Duplicate
