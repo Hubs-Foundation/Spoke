@@ -24,7 +24,7 @@ export default class LoginDialog extends Component {
     const { onLogin, authStarted, onCancel, hideDialog } = this.props;
     return (
       <div className={styles.dialogContainer}>
-        <Header title="Login to Publish" />
+        <Header title="Log in to Publish" />
         <div className={styles.loginContainer}>
           {authStarted ? (
             <div className={styles.content}>
@@ -34,7 +34,7 @@ export default class LoginDialog extends Component {
             <div>
               <div className={styles.content}>
                 <div className={styles.message}>
-                  Login to publish your scene. You will be sent an email with a magic link.
+                  Log in to publish your scene. You will be sent an email with a magic link.
                 </div>
               </div>
               <div className={styles.content}>
@@ -56,7 +56,7 @@ export default class LoginDialog extends Component {
           </Button>
           {!authStarted && (
             <Button key="login" onClick={() => onLogin(this.state.email)}>
-              Login
+              Log in
             </Button>
           )}
         </div>
