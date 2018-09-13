@@ -685,8 +685,8 @@ class EditorContainer extends Component {
 
   _publishScene = async () => {
     this.showDialog(PublishDialog, {
-      onPublish: async () => {
-        await this.props.editor.publishScene();
+      onPublish: async ({ name, description }) => {
+        await this.props.editor.publishScene(name, description);
       }
     });
   };

@@ -175,11 +175,35 @@ export default class Project extends EventEmitter {
     return json;
   }
 
+  async writeGeneratedBlob(fileName, blob) {
+    const basePath = this.projectDirectoryPath;
+    const path = `${basePath}generated/${fileName}`;
+    await this.mkdir(`${basePath}generated`);
+    await this.writeBlob(path, blob);
+    return path;
+  }
+
   async import(url) {
     return await fetch("/api/import", {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ url })
+    }).then(r => r.json());
+  }
+
+  async upload(uri) {
+    return await fetch("/api/upload", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ uri })
+    }).then(r => r.json());
+  }
+
+  async createOrUpdateScene(credentials, screenshotId, screenshotToken, glbId, glbToken, name, description) {
+    return await fetch("/api/scene", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ credentials, screenshotId, screenshotToken, glbId, glbToken, name, description })
     }).then(r => r.json());
   }
 

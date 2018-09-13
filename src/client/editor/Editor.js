@@ -849,10 +849,8 @@ export default class Editor {
     );
 
     const exporter = new THREE.GLTFExporter();
-    const glb = await new Promise((resolve, reject) => exporter.parse(navMesh, resolve, reject, { mode: "binary" }));
-    const path = `/api/files/generated/${navMesh.uuid}.glb`;
-    await this.project.mkdir("/api/files/generated");
-    await this.project.writeBlob(path, glb);
+    const glb = await new Promise((resolve, reject) => exporter.parse(navMesh, resolve, reject, { mode: "glb" }));
+    const path = this.project.writeGeneratedBlob(`${navMesh.uuid}.glb`, glb);
 
     const navNode = new THREE.Object3D();
     navNode.name = "Nav Mesh";
@@ -863,7 +861,7 @@ export default class Editor {
     this.addObject(navNode);
   }
 
-  async exportScene(outputPath) {
+  async exportScene(outputPath, glb) {
     const scene = this.scene;
     const clonedScene = scene.clone();
 
@@ -1024,18 +1022,22 @@ export default class Editor {
       }
     });
 
+    const exporter = new THREE.GLTFExporter();
+
     // TODO: export animations
     const chunks = await new Promise((resolve, reject) => {
-      new THREE.GLTFExporter().parseChunks(clonedScene, resolve, reject, {
-        mode: "gltf",
+      exporter.parseChunks(clonedScene, resolve, reject, {
+        mode: glb ? "glb" : "gltf",
         onlyVisible: false
       });
     });
 
-    const bufferDefs = chunks.json.buffers;
+    if (!glb) {
+      const bufferDefs = chunks.json.buffers;
 
-    if (bufferDefs && bufferDefs.length > 0 && bufferDefs[0].uri === undefined) {
-      bufferDefs[0].uri = clonedScene.name + ".bin";
+      if (bufferDefs && bufferDefs.length > 0 && bufferDefs[0].uri === undefined) {
+        bufferDefs[0].uri = clonedScene.name + ".bin";
+      }
     }
 
     // De-duplicate images.
@@ -1073,29 +1075,34 @@ export default class Editor {
       }
     }
 
-    // Export current editor scene using THREE.GLTFExporter
-    const { json, buffers, images } = chunks;
+    if (glb) {
+      const glbBlob = await new Promise((resolve, reject) => exporter.createGLBBlob(chunks, resolve, reject));
+      await this.project.writeBlob(outputPath, glbBlob);
+    } else {
+      // Export current editor scene using THREE.GLTFExporter
+      const { json, buffers, images } = chunks;
 
-    // Ensure the output directory exists
-    await this.project.mkdir(outputPath);
+      // Ensure the output directory exists
+      await this.project.mkdir(outputPath);
 
-    // Write the .gltf file
-    const gltfPath = outputPath + "/" + scene.name + ".gltf";
-    await this.project.writeJSON(gltfPath, json);
+      // Write the .gltf file
+      const gltfPath = outputPath + "/" + scene.name + ".gltf";
+      await this.project.writeJSON(gltfPath, json);
 
-    // Write .bin files
-    for (const [index, buffer] of buffers.entries()) {
-      if (buffer !== undefined) {
-        const bufferName = json.buffers[index].uri;
-        await this.project.writeBlob(outputPath + "/" + bufferName, buffer);
+      // Write .bin files
+      for (const [index, buffer] of buffers.entries()) {
+        if (buffer !== undefined) {
+          const bufferName = json.buffers[index].uri;
+          await this.project.writeBlob(outputPath + "/" + bufferName, buffer);
+        }
       }
-    }
 
-    // Write image files
-    for (const [index, image] of images.entries()) {
-      if (image !== undefined) {
-        const imageName = json.images[index].uri;
-        await this.project.writeBlob(outputPath + "/" + imageName, image);
+      // Write image files
+      for (const [index, image] of images.entries()) {
+        if (image !== undefined) {
+          const imageName = json.images[index].uri;
+          await this.project.writeBlob(outputPath + "/" + imageName, image);
+        }
       }
     }
   }
@@ -1707,7 +1714,30 @@ export default class Editor {
     this.history.redo();
   }
 
-  async publishScene() {}
+  async publishScene(name, description) {
+    await this.project.mkdir(this.project.getAbsoluteURI("generated"));
+
+    const screenshotUri = this.project.getAbsoluteURI(`temp-screenshot.jpg`);
+    // TODO BP: Generate actual screenshot here
+    const { id: screenshotId, token: screenshotToken } = await this.project.upload(screenshotUri);
+
+    const glbUri = this.project.getAbsoluteURI(`generated/${uuid()}.glb`);
+    await this.exportScene(glbUri, true);
+    const { id: glbId, token: glbToken } = await this.project.upload(glbUri);
+
+    // TODO BP: server should use credential token from disk
+    const { url } = await this.project.createOrUpdateScene(
+      localStorage.getItem("credentials"),
+      screenshotId,
+      screenshotToken,
+      glbId,
+      glbToken,
+      name,
+      description
+    );
+
+    return url;
+  }
 
   async debugVerifyAuth(url) {
     const params = new URLSearchParams(url);

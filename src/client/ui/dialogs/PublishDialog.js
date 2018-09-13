@@ -39,7 +39,7 @@ export default class PublishDialog extends Component {
                   className={styles.description}
                   id="description"
                   value={this.state.description}
-                  onChange={description => this.setState({ description })}
+                  onChange={e => this.setState({ description: e.target.value })}
                 />
               </div>
             </div>
