@@ -30,7 +30,6 @@ export default class ButtonSelectDialog extends Component {
   }
 
   render = () => {
-    console.log(this.props.options);
     return (
       <div className={styles.dialogContainer}>
         <Header title={this.props.title} />

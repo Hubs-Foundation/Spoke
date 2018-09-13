@@ -43,6 +43,17 @@
   }
 }
 
+:local(.fieldRow) {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  justify-content: center;
+
+  input[type="text"] {
+    margin-right: 8px;
+  }
+}
+
 :local(.bottom) {
   margin: 8px 0;
   display: flex;

@@ -13,7 +13,7 @@ import FileDialog from "../dialogs/FileDialog";
 import ErrorDialog from "../dialogs/ErrorDialog";
 import ProgressDialog, { PROGRESS_DIALOG_DELAY } from "../dialogs/ProgressDialog";
 import AddComponentDropdown from "../AddComponentDropdown";
-import { getDisplayName } from "../../utils/get-display-name"
+import { getDisplayName } from "../../utils/get-display-name";
 
 class PropertiesPanelContainer extends Component {
   static propTypes = {

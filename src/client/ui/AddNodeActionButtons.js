@@ -5,6 +5,7 @@ import { withEditor } from "./contexts/EditorContext";
 import { withDialog } from "./contexts/DialogContext";
 import { withSceneActions } from "./contexts/SceneActionsContext";
 import ButtonSelectDialog from "./dialogs/ButtonSelectDialog";
+import AddModelDialog from "./dialogs/AddModelDialog";
 import { getDisplayName } from "../utils/get-display-name";
 import styles from "./AddNodeActionButtons.scss";
 import SpotLightComponent from "../editor/components/SpotLightComponent";
@@ -48,6 +49,18 @@ class AddNodeActionButtons extends Component {
     this.setState({ open: false });
   };
 
+  addModel = () => {
+    this.props.showDialog(AddModelDialog, {
+      title: "Add Model",
+      message: "Enter the URL to a Sketchfab model, a Poly model, or a GLTF/GLB file.",
+      onURLEntered: () => {},
+      onFilePickerChosen: () => {},
+      onCancel: this.props.hideDialog
+    });
+
+    this.setState({ open: false });
+  };
+
   addLight = () => {
     this.props.showDialog(ButtonSelectDialog, {
       title: "Add Light",
@@ -85,9 +98,10 @@ class AddNodeActionButtons extends Component {
         {this.state.open && (
           <div className={styles.actionButtonContainer}>
             <button onClick={this.addOrSelectSkybox}>skybox</button>
-            <button onClick={this.addLight}>light</button>
-            <button onClick={() => this.addNodeWithComponent("spawn-point")}>spawn-point</button>
             <button onClick={() => this.addNodeWithComponent("box-collider")}>box-collider</button>
+            <button onClick={() => this.addNodeWithComponent("spawn-point")}>spawn-point</button>
+            <button onClick={this.addLight}>light</button>
+            <button onClick={this.addModel}>model</button>
           </div>
         )}
         <button onClick={this.toggle} className={classNames(fabClassNames)}>
