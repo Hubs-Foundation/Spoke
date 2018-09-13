@@ -342,7 +342,8 @@ export default async function startServer(options) {
       ctx.body = { uri };
     } else if (fs.existsSync(filePathBase)) {
       const uri = pathToUri(projectPath, path.join(filePathBase, "scene.gltf"));
-      ctx.body = { uri };
+      const { name } = await fs.readJSON(path.join(filePathBase, "meta.json"));
+      ctx.body = { uri, name };
     } else {
       const { raw, meta } = await fetch(`https://${mediaServer}/api/v1/media`, {
         method: "POST",
@@ -352,6 +353,7 @@ export default async function startServer(options) {
 
       await fs.ensureDir(path.join(projectPath, "imported"));
 
+      let name;
       const resp = await fetch(raw);
       if (meta && meta.expected_content_type.includes("gltf+zip")) {
         const zipPath = `${filePath}.zip`;
@@ -360,13 +362,20 @@ export default async function startServer(options) {
         await extractZip(zipPath, filePathBase);
         await fs.remove(zipPath);
 
-        const uri = pathToUri(projectPath, path.join(filePathBase, "scene.gltf"));
-        ctx.body = { uri };
+        const sceneFilePath = path.join(filePathBase, "scene.gltf");
+        const gltf = await fs.readJSON(sceneFilePath);
+        name = gltf.asset && gltf.asset.extras && gltf.asset.extras.title;
+
+        const uri = pathToUri(projectPath, sceneFilePath);
+        ctx.body = { uri, name };
       } else {
         await pipeToFile(resp.body, filePath);
         const uri = pathToUri(projectPath, filePath);
-        ctx.body = { uri };
+        name = meta.name;
+        ctx.body = { uri, name };
       }
+
+      await fs.writeJSON(path.join(filePathBase, "meta.json"), { ...meta, origin, name });
     }
   });
 

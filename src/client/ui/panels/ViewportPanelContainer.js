@@ -52,8 +52,8 @@ class ViewportPanelContainer extends Component {
           message: "Importing asset..."
         });
         const url = (await new Promise(resolve => urlItem.getAsString(resolve))).trim();
-        const importedUri = await this.props.editor.project.import(url);
-        this.props.editor.addGLTFModelNode("Model", importedUri);
+        const { uri: importedUri, name } = await this.props.editor.project.import(url);
+        this.props.editor.addGLTFModelNode(name || "Model", importedUri);
         this.props.hideDialog();
       } catch (e) {
         this.props.showDialog(ErrorDialog, {
