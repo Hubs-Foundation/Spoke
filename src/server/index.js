@@ -334,13 +334,7 @@ export default async function startServer(options) {
     const originHash = new sha.sha256().update(origin).digest("hex");
     const filePathBase = path.join(projectPath, "imported", originHash);
 
-    // We're calling these .gltf files, but they could be glbs.
-    const filePath = `${filePathBase}.gltf`;
-
-    if (fs.existsSync(filePath)) {
-      const uri = pathToUri(projectPath, filePath);
-      ctx.body = { uri };
-    } else if (fs.existsSync(filePathBase)) {
+    if (fs.existsSync(filePathBase)) {
       const uri = pathToUri(projectPath, path.join(filePathBase, "scene.gltf"));
       const { name } = await fs.readJSON(path.join(filePathBase, "meta.json"));
       ctx.body = { uri, name };
@@ -351,14 +345,14 @@ export default async function startServer(options) {
         body: JSON.stringify({ media: { url: origin, index: 0 } })
       }).then(r => r.json());
 
-      await fs.ensureDir(path.join(projectPath, "imported"));
+      await fs.ensureDir(filePathBase);
 
       let name;
       const resp = await fetch(raw);
-      if (meta && meta.expected_content_type.includes("gltf+zip")) {
-        const zipPath = `${filePath}.zip`;
+      const expected_content_type = (meta && meta.expected_content_type) || "";
+      if (expected_content_type.includes("gltf+zip")) {
+        const zipPath = `${filePathBase}.zip`;
         await pipeToFile(resp.body, zipPath);
-        await fs.ensureDir(filePathBase);
         await extractZip(zipPath, filePathBase);
         await fs.remove(zipPath);
 
@@ -369,6 +363,9 @@ export default async function startServer(options) {
         const uri = pathToUri(projectPath, sceneFilePath);
         ctx.body = { uri, name };
       } else {
+        // If we don't have an expected_content_type, assume they are gltfs.
+        // We're calling these .gltf files, but they could be glbs.
+        const filePath = path.join(filePathBase, "scene.gltf");
         await pipeToFile(resp.body, filePath);
         const uri = pathToUri(projectPath, filePath);
         name = meta.name;
