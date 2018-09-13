@@ -4,6 +4,8 @@ import TransformComponent from "./TransformComponent";
 export default class BoxColliderComponent extends TransformComponent {
   static componentName = "box-collider";
 
+  static iconClassName = "fa-hand-paper";
+
   static _geometry = new THREE.BoxBufferGeometry();
 
   static _material = new THREE.Material();

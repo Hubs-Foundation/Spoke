@@ -18,6 +18,8 @@ import PointLightComponent from "../editor/components/PointLightComponent";
 import SkyboxComponent from "../editor/components/SkyboxComponent";
 import SpawnPointComponent from "../editor/components/SpawnPointComponent";
 import GroupComponent from "../editor/components/GroupComponent";
+import BoxColliderComponent from "../editor/components/BoxColliderComponent";
+import GLTFModelComponent from "../editor/components/GLTFModelComponent";
 
 function AddButton({ label, iconClassName, onClick }) {
   return (
@@ -140,7 +142,7 @@ class AddNodeActionButtons extends Component {
             <AddButton label="Skybox" iconClassName={SkyboxComponent.iconClassName} onClick={this.addOrSelectSkybox} />
             <AddButton
               label="Collider"
-              iconClassName="fa-hand-paper"
+              iconClassName={BoxColliderComponent.iconClassName}
               onClick={() => this.addNodeWithComponent("box-collider")}
             />
             <AddButton
@@ -154,7 +156,7 @@ class AddNodeActionButtons extends Component {
               iconClassName={GroupComponent.iconClassName}
               onClick={() => this.addNodeWithComponent("group")}
             />
-            <AddButton label="Model" iconClassName="fa-cube" onClick={this.addModel} />
+            <AddButton label="Model" iconClassName={GLTFModelComponent.iconClassName} onClick={this.addModel} />
           </div>
         )}
         <button onClick={this.toggle} className={classNames(fabClassNames)}>
