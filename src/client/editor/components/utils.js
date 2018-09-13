@@ -16,6 +16,12 @@ const material = new THREE.MeshBasicMaterial({ color: 0xff0000, visible: false }
 export function addPicker(parent, selectionRoot) {
   const picker = new THREE.Mesh(geometry, material);
   picker.name = "picker";
-  picker.userData._selectionRoot = selectionRoot;
+
+  Object.defineProperty(picker.userData, "_selectionRoot", {
+    value: selectionRoot,
+    configurable: true,
+    enumerable: false
+  });
+
   parent.add(picker);
 }
