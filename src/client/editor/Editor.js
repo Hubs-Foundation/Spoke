@@ -297,17 +297,20 @@ export default class Editor {
   }
 
   _createDefaultSceneObjects() {
+    this._ignoreSceneModification = true;
     this.addUnicomponentNode(
       "Sun",
       "directional-light",
+      false,
       {},
       {
         position: { x: 0, y: 10, z: 0 },
         rotation: { x: Math.PI * 0.5, y: Math.PI * (0.5 / 3.0), z: -Math.PI * 0.5 }
       }
     );
-    this.addUnicomponentNode("Skybox", "skybox");
-    this.addUnicomponentNode("Ambient Light", "ambient-light", {}, { position: { x: 0, y: 10, z: 0 } });
+    this.addUnicomponentNode("Skybox", "skybox", false);
+    this.addUnicomponentNode("Ambient Light", "ambient-light", false, {}, { position: { x: 0, y: 10, z: 0 } });
+    this._ignoreSceneModification = false;
   }
 
   sceneModified() {
@@ -1108,34 +1111,40 @@ export default class Editor {
     this.select(object);
   }
 
-  addUnicomponentNode(name, componentName, properties = {}, transform = {}) {
+  addUnicomponentNode(name, componentName, includeInHistory = true, properties = {}, transform = {}) {
     const object = new THREE.Object3D();
     object.name = name;
     setStaticMode(object, StaticModes.Static);
 
-    const componentSetters = [];
+    if (includeInHistory) {
+      const componentSetters = [];
 
-    for (const [property, value] of Object.entries(properties)) {
-      componentSetters.push(new SetComponentPropertyCommand(object, componentName, property, value));
+      for (const [property, value] of Object.entries(properties)) {
+        componentSetters.push(new SetComponentPropertyCommand(object, componentName, property, value));
+      }
+
+      for (const [property, value] of Object.entries(transform)) {
+        componentSetters.push(new SetComponentPropertyCommand(object, "transform", property, value));
+      }
+
+      this.execute(
+        new MultiCmdsCommand([
+          new AddObjectCommand(object, this.scene),
+          new AddComponentCommand(object, componentName),
+          ...componentSetters
+        ])
+      );
+    } else {
+      this.addObject(object, this.scene);
+      this._addComponent(object, componentName, properties);
+      this._addComponent(object, "transform", transform);
     }
-
-    for (const [property, value] of Object.entries(transform)) {
-      componentSetters.push(new SetComponentPropertyCommand(object, "transform", property, value));
-    }
-
-    this.execute(
-      new MultiCmdsCommand([
-        new AddObjectCommand(object, this.scene),
-        new AddComponentCommand(object, componentName),
-        ...componentSetters
-      ])
-    );
 
     this.select(object);
   }
 
   addGLTFModelNode(name, url) {
-    this.addUnicomponentNode(name, "gltf-model", { src: url });
+    this.addUnicomponentNode(name, "gltf-model", true, { src: url });
   }
 
   async importGLTFIntoModelNode(url) {
