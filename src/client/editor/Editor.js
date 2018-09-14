@@ -25,6 +25,7 @@ import { types } from "./components/utils";
 import SceneReferenceComponent from "./components/SceneReferenceComponent";
 import SaveableComponent from "./components/SaveableComponent";
 import { last } from "../utils";
+import { getUrlFilename } from "../utils/url-path";
 import { textureCache, gltfCache } from "./caches";
 import ConflictHandler from "./ConflictHandler";
 import ConflictError from "./ConflictError";
@@ -104,7 +105,6 @@ export default class Editor {
       helpers: {},
       modified: false
     };
-    initialSceneInfo.scene.name = "Scene";
     this.scenes.push(initialSceneInfo);
 
     this.scene = initialSceneInfo.scene;
@@ -253,7 +253,7 @@ export default class Editor {
     this._clearCaches();
 
     const scene = new THREE.Scene();
-    scene.name = "Scene";
+    scene.name = "Untitled";
 
     this._conflictHandler = null;
 
@@ -640,6 +640,9 @@ export default class Editor {
   }
 
   async saveScene(sceneURI) {
+    const newSceneName = getUrlFilename(sceneURI);
+    this.scene.name = newSceneName;
+
     const serializedScene = this._serializeScene(this.scene, sceneURI || this.sceneInfo.uri);
 
     this.ignoreNextSceneFileChange = true;

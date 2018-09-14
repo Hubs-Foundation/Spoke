@@ -126,54 +126,6 @@ class EditorContainer extends Component {
         undo: ["ctrl+z", "command+z"],
         redo: ["ctrl+shift+z", "command+shift+z"]
       },
-      menus: [
-        {
-          name: "File",
-          items: [
-            {
-              name: "New Scene",
-              action: e => this.onNewScene(e)
-            },
-            {
-              name: "Save Scene",
-              action: e => this.onSave(e)
-            },
-            {
-              name: "Save Scene As...",
-              action: e => this.onSaveAs(e)
-            },
-            {
-              name: "Export Scene...",
-              action: e => this.onExportScene(e)
-            },
-            {
-              name: "Generate Nav Mesh",
-              action: e => this.onGenerateNavMesh(e)
-            },
-            {
-              name: "Open Project Directory",
-              action: () => this.props.editor.project.openProjectDirectory()
-            }
-          ]
-        },
-        {
-          name: "Help",
-          items: [
-            {
-              name: "Getting Started",
-              action: () => window.open("https://github.com/MozillaReality/spoke/wiki/Getting-Started")
-            },
-            {
-              name: "Tutorials",
-              action: () => window.open("https://github.com/MozillaReality/spoke/wiki/Tutorials")
-            },
-            {
-              name: "Keyboard Shortcuts",
-              action: () => window.open("https://github.com/MozillaReality/spoke/wiki/Keyboard-Shortcuts")
-            }
-          ]
-        }
-      ],
       globalHotKeyHandlers: {
         undo: this.onUndo,
         redo: this.onRedo,
@@ -187,9 +139,63 @@ class EditorContainer extends Component {
         duplicate: this.onDuplicate,
         snapTool: this.onSnapTool,
         spaceTool: this.onSpaceTool
-      }
+      },
+      menus: this.generateMenus()
     };
   }
+
+  generateMenus = () => {
+    return [
+      {
+        name: "File",
+        items: [
+          {
+            name: "New Scene",
+            action: e => this.onNewScene(e)
+          },
+          this.props.editor.sceneInfo.uri
+            ? {
+                name: "Save " + getUrlFilename(this.props.editor.sceneInfo.uri),
+                action: e => this.onSave(e)
+              }
+            : null,
+          {
+            name: "Save Scene As...",
+            action: e => this.onSaveAs(e)
+          },
+          {
+            name: "Export Scene...",
+            action: e => this.onExportScene(e)
+          },
+          {
+            name: "Generate Nav Mesh",
+            action: e => this.onGenerateNavMesh(e)
+          },
+          {
+            name: "Open Project Directory",
+            action: () => this.props.editor.project.openProjectDirectory()
+          }
+        ].filter(x => x !== null)
+      },
+      {
+        name: "Help",
+        items: [
+          {
+            name: "Getting Started",
+            action: () => window.open("https://github.com/MozillaReality/spoke/wiki/Getting-Started")
+          },
+          {
+            name: "Tutorials",
+            action: () => window.open("https://github.com/MozillaReality/spoke/wiki/Tutorials")
+          },
+          {
+            name: "Keyboard Shortcuts",
+            action: () => window.open("https://github.com/MozillaReality/spoke/wiki/Keyboard-Shortcuts")
+          }
+        ]
+      }
+    ];
+  };
 
   componentDidMount() {
     this.props.editor.signals.windowResize.dispatch();
@@ -202,7 +208,9 @@ class EditorContainer extends Component {
         return undefined;
       }
 
-      const dialogText = "Your scene has unsaved changes, are you sure you wish to navigate away from the page?";
+      const dialogText = `${
+        this.props.editor.scene.name
+      } has unsaved changes, are you sure you wish to navigate away from the page?`;
       e.returnValue = dialogText;
       return dialogText;
     };
@@ -276,11 +284,7 @@ class EditorContainer extends Component {
       return;
     }
 
-    if (this.props.editor.sceneInfo.uri) {
-      this.onSaveScene(this.props.editor.sceneInfo.uri);
-    } else {
-      this.onSaveSceneAsDialog();
-    }
+    this.onSaveScene(this.props.editor.sceneInfo.uri);
   };
 
   onSaveAs = e => {
@@ -404,6 +408,7 @@ class EditorContainer extends Component {
 
   onSceneModified = () => {
     this.updateDocumentTitle();
+    this.setState({ menus: this.generateMenus() });
   };
 
   updateDocumentTitle = () => {
