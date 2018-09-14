@@ -686,7 +686,12 @@ class EditorContainer extends Component {
   _showPublishDialog = async () => {
     this.showDialog(PublishDialog, {
       onPublish: async ({ name, description }) => {
-        await this.props.editor.publishScene(name, description);
+        this.showDialog(ProgressDialog, {
+          title: "Publishing Scene",
+          message: "Publishing scene..."
+        });
+        const url = await this.props.editor.publishScene(name, description);
+        this.showDialog(PublishDialog, { published: true, url });
       }
     });
   };

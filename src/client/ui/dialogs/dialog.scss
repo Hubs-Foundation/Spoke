@@ -147,6 +147,7 @@
 
 
 :local(.loginContainer) {
+  flex: 1;
 
   :local(.label) {
     display: flex;
@@ -168,6 +169,12 @@
   :local(.content) {
     flex-direction: row;
     background-color: $panel;
+  }
+  :local(.publishedContent) {
+    background-color: $dropdown;
+    & a {
+      color: $text2;
+    }
   }
   :local(.label) {
     margin: 0.2em;

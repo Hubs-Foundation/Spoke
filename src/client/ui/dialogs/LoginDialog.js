@@ -7,10 +7,10 @@ import StringInput from "../inputs/StringInput";
 
 export default class LoginDialog extends Component {
   static propTypes = {
-    onLogin: PropTypes.func,
     authStarted: PropTypes.bool,
+    hideDialog: PropTypes.func.isRequired,
     onCancel: PropTypes.func,
-    hideDialog: PropTypes.func.isRequired
+    onLogin: PropTypes.func
   };
 
   constructor(props) {
@@ -20,8 +20,13 @@ export default class LoginDialog extends Component {
     };
   }
 
+  handleSubmit = e => {
+    e.preventDefault();
+    this.props.onLogin(this.state.email);
+  };
+
   render() {
-    const { onLogin, authStarted, onCancel, hideDialog } = this.props;
+    const { authStarted, onCancel, hideDialog } = this.props;
     return (
       <div className={styles.dialogContainer}>
         <Header title="Log in to Publish" />
@@ -31,7 +36,7 @@ export default class LoginDialog extends Component {
               <div className={styles.message}>Email sent! Please click on the link in th email to continue.</div>
             </div>
           ) : (
-            <div>
+            <form id="login" onSubmit={this.handleSubmit}>
               <div className={styles.content}>
                 <div className={styles.message}>
                   Log in to publish your scene. You will be sent an email with a magic link.
@@ -47,7 +52,7 @@ export default class LoginDialog extends Component {
                   onChange={email => this.setState({ email })}
                 />
               </div>
-            </div>
+            </form>
           )}
         </div>
         <div className={styles.bottom}>
@@ -55,7 +60,7 @@ export default class LoginDialog extends Component {
             Cancel
           </Button>
           {!authStarted && (
-            <Button key="login" onClick={() => onLogin(this.state.email)}>
+            <Button key="login" form="login">
               Log in
             </Button>
           )}
