@@ -21,4 +21,14 @@
     background-color: $toolbar2;
     align-items: center;
   }
+
+  :local(.spacer) {
+    flex: 1;
+  }
+
+  :local(.publishButton) {
+    align-self: center;
+    margin: 1em;
+    padding: 0 2em;
+  }
 }

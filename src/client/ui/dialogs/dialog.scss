@@ -1,5 +1,6 @@
-@import "../../theme.scss";
-@import "../../global.scss";
+@import "../../common";
+@import "../../theme";
+@import "../../global";
 
 :local(.dialogContainer) {
   display: flex;
@@ -161,5 +162,66 @@
         display: none;
       }
     }
+  }
+}
+
+:local(.cancel) {
+  background: $panel2;
+
+  &:hover {
+     background-color: $panel;
+   }
+}
+
+
+:local(.loginContainer) {
+  flex: 1;
+
+  :local(.label) {
+    display: flex;
+    align-items: center;
+    margin-right: 0.5em;
+  }
+
+  input {
+    width: auto;
+  }
+}
+
+:local(.publishContainer) {
+  :local(.sceneThumbnail) {
+    width: 400px;
+    height: 260px;
+    margin: 1em;
+  }
+  :local(.content) {
+    flex-direction: row;
+    background-color: $panel;
+  }
+  :local(.publishedContent) {
+    background-color: $dropdown;
+    & a {
+      color: $text2;
+    }
+  }
+  :local(.label) {
+    margin: 0.2em;
+  }
+  :local(.inputField) {
+    margin: 1em;
+  }
+  :local(input) {
+    width: auto;
+  }
+  :local(.description) {
+    @include input;
+    display: block;
+    font-family: $lato;
+    font-size: 13px;
+    padding-top: 4px;
+    padding-bottom: 4px;
+    resize: none;
+    width: 300px;
+    height: 100px;
   }
 }
