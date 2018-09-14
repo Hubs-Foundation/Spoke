@@ -138,7 +138,7 @@ export default class ToolBar extends Component {
       );
     } else {
       return (
-        <SubMenu key={menu.name} title={menu.name}>
+        <SubMenu key={menu.name} title={menu.name} hoverDelay={0}>
           {menu.items.map(item => {
             return this.renderMenus(item);
           })}
