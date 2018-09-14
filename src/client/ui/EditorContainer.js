@@ -117,7 +117,7 @@ class EditorContainer extends Component {
         rotateTool: "e",
         scaleTool: "r",
         spaceTool: "x",
-        snapTool: "t",
+        snapTool: "s",
         focusSelection: "f",
         delete: ["del", "backspace"],
         duplicate: ["ctrl+d", "command+d"],
