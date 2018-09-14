@@ -111,6 +111,7 @@
     "concurrently": "^3.6.0",
     "cross-env": "^5.2.0",
     "css-loader": "^0.28.11",
+    "dotenv": "^6.0.0",
     "eslint": "^4.19.1",
     "eslint-config-prettier": "^2.9.0",
     "eslint-plugin-prettier": "^2.6.0",

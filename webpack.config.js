@@ -1,3 +1,12 @@
+// Variables in .env and .env.defaults will be added to process.env
+const dotenv = require("dotenv");
+if (process.env.NODE_ENV === "production") {
+  dotenv.config({ path: ".env.prod" });
+} else {
+  dotenv.config({ path: ".env" });
+  dotenv.config({ path: ".env.defaults" });
+}
+
 const HTMLWebpackPlugin = require("html-webpack-plugin");
 const path = require("path");
 const pkg = require("./package.json");
@@ -49,6 +58,6 @@ module.exports = {
     new HTMLWebpackPlugin({
       title: pkg.productName
     }),
-    new webpack.EnvironmentPlugin(["NODE_ENV"])
+    new webpack.EnvironmentPlugin(["NODE_ENV", "RETICULUM_SERVER"])
   ]
 };

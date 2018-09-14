@@ -10,3 +10,4 @@ public/
 example/generated/
 example/imported/
 .certs/
+.env

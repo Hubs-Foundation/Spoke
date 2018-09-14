@@ -1759,7 +1759,7 @@ export default class Editor {
     const params = new URLSearchParams(url);
     const topic = params.get("auth_topic");
     const token = params.get("auth_token");
-    const reticulumServer = process.env.NODE_ENV === "development" ? "dev.reticulum.io" : "hubs.mozilla.com";
+    const reticulumServer = process.env.RETICULUM_SERVER;
     const socketUrl = `wss://${reticulumServer}/socket`;
     const socket = new Socket(socketUrl, { params: { session_id: uuid() } });
     socket.connect();
@@ -1774,7 +1774,7 @@ export default class Editor {
   }
 
   async startAuthentication(email) {
-    const reticulumServer = process.env.NODE_ENV === "development" ? "dev.reticulum.io" : "hubs.mozilla.com";
+    const reticulumServer = process.env.RETICULUM_SERVER;
     const socketUrl = `wss://${reticulumServer}/socket`;
     const socket = new Socket(socketUrl, { params: { session_id: uuid() } });
     socket.connect();
