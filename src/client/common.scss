@@ -17,6 +17,21 @@
   user-select: none;
 }
 
+@mixin input {
+  background-color: $input-background;
+  border-radius: 4px;
+  border: 1px solid $border;
+  color: $text;
+  padding-left: 8px;
+  &:hover {
+    border-color: $blue-hover;
+  }
+
+  &:focus {
+    border-color: $blue;
+  }
+}
+
 :local(.disabled) {
   pointer-events: none;
   opacity: 0.3;

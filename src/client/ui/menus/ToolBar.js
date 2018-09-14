@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
 import ToolButton from "./ToolButton";
+import Button from "../Button";
 import ToolToggle from "./ToolToggle";
 import { showMenu, ContextMenu, MenuItem, SubMenu } from "react-contextmenu";
 import styles from "./ToolBar.scss";
@@ -178,6 +179,10 @@ export default class ToolBar extends Component {
             {snapToggle.children}
           </ToolToggle>
         </div>
+        <div className={styles.spacer} />
+        <Button className={styles.publishButton} onClick={this.props.sceneActions.onPublishScene}>
+          Publish
+        </Button>
         <ContextMenu id="menu">
           {this.props.menus.map(menu => {
             return this.renderMenus(menu);
@@ -190,5 +195,6 @@ export default class ToolBar extends Component {
 
 ToolBar.propTypes = {
   menus: PropTypes.array,
-  editor: PropTypes.object
+  editor: PropTypes.object,
+  sceneActions: PropTypes.object
 };

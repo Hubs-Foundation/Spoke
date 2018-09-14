@@ -1,6 +1,8 @@
 import chokidar from "chokidar";
 import debounce from "lodash.debounce";
+import envPaths from "env-paths";
 import fetch from "node-fetch";
+import FormData from "form-data";
 import fs from "fs-extra";
 import http from "http";
 import https from "https";
@@ -19,6 +21,10 @@ import yauzl from "yauzl";
 
 function pathToUri(projectPath, path) {
   return path.replace(projectPath, "/api/files").replace(/\\/g, "/");
+}
+
+function uriToPath(projectPath, path) {
+  return path.replace("/api/files", projectPath);
 }
 
 async function getProjectHierarchy(projectPath) {
@@ -328,7 +334,8 @@ export default async function startServer(options) {
     ctx.body = { navPosition, navIndex };
   });
 
-  const mediaServer = process.env.NODE_ENV === "development" ? "dev.reticulum.io" : "hubs.mozilla.com";
+  const reticulumServer = process.env.NODE_ENV === "development" ? "dev.reticulum.io" : "hubs.mozilla.com";
+  const mediaEndpoint = `https://${reticulumServer}/api/v1/media`;
   router.post("/api/import", koaBody(), async ctx => {
     const origin = ctx.request.body.url;
     const originHash = new sha.sha256().update(origin).digest("hex");
@@ -339,7 +346,7 @@ export default async function startServer(options) {
       const { name } = await fs.readJSON(path.join(filePathBase, "meta.json"));
       ctx.body = { uri, name };
     } else {
-      const { raw, meta } = await fetch(`https://${mediaServer}/api/v1/media`, {
+      const { raw, meta } = await fetch(mediaEndpoint, {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ media: { url: origin, index: 0 } })
@@ -373,6 +380,89 @@ export default async function startServer(options) {
       }
 
       await fs.writeJSON(path.join(filePathBase, "meta.json"), { ...meta, origin, name });
+    }
+  });
+
+  function getCredentialsPath() {
+    return path.join(envPaths("Spoke", { suffix: "" }).config, "spoke-credentials.json");
+  }
+
+  router.post("/api/credentials", koaBody(), async ctx => {
+    const credentialsPath = getCredentialsPath();
+    await fs.ensureDir(path.dirname(credentialsPath));
+    await fs.writeJSON(credentialsPath, { credentials: ctx.request.body.credentials });
+    ctx.stats = 200;
+  });
+
+  async function getCredentials() {
+    const credentialsPath = getCredentialsPath();
+    if (fs.existsSync(credentialsPath)) {
+      const json = await fs.readJSON(credentialsPath);
+      return (json && json.credentials) || null;
+    }
+    return null;
+  }
+
+  router.get("/api/authenticated", koaBody(), async ctx => {
+    const authenticated = !!(await getCredentials());
+    ctx.status = authenticated ? 200 : 401;
+  });
+
+  router.post("/api/upload", koaBody(), async ctx => {
+    const { uri } = ctx.request.body;
+
+    const fileStream = fs.createReadStream(uriToPath(projectPath, uri));
+    const formData = new FormData();
+    formData.append("media", fileStream);
+
+    const { file_id, meta } = await fetch(mediaEndpoint, {
+      method: "POST",
+      body: formData
+    }).then(r => r.json());
+
+    ctx.body = { id: file_id, token: meta.access_token };
+  });
+
+  router.post("/api/scene", koaBody(), async ctx => {
+    const params = ctx.request.body;
+    const sceneParams = {
+      screenshot_file_id: params.screenshotId,
+      screenshot_file_token: params.screenshotToken,
+      model_file_id: params.glbId,
+      model_file_token: params.glbToken,
+      name: params.name,
+      description: params.description
+    };
+
+    const projectFilePath = path.join(projectPath, "spoke-project.json");
+    const projectJSON = await fs.readJSON(projectFilePath);
+
+    const credentials = await getCredentials();
+    if (!credentials) {
+      ctx.status = 401;
+      return;
+    }
+
+    const headers = {
+      "content-type": "application/json",
+      authorization: `Bearer ${credentials}`
+    };
+    const body = JSON.stringify({ scene: sceneParams });
+
+    const sceneEndpoint = `https://${reticulumServer}/api/v1/scenes`;
+    if (projectJSON.sceneId) {
+      const resp = await fetch(`${sceneEndpoint}/${projectJSON.sceneId}`, { method: "PATCH", headers, body });
+      const { scenes } = await resp.json();
+
+      ctx.body = { url: scenes[0].url };
+    } else {
+      const resp = await fetch(sceneEndpoint, { method: "POST", headers, body });
+      const { scenes } = await resp.json();
+      const scene = scenes[0];
+
+      await fs.writeJSON(projectFilePath, { ...projectJSON, sceneId: scene.scene_id });
+
+      ctx.body = { url: scene.url };
     }
   });
 

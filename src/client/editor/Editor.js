@@ -1,15 +1,19 @@
 import signals from "signals";
+import { Socket } from "phoenix";
+import uuid from "uuid/v4";
 
 import THREE from "./three";
 import History from "./History";
 import Viewport from "./Viewport";
-import RemoveObjectCommand from "./commands/RemoveObjectCommand";
-import AddObjectCommand from "./commands/AddObjectCommand";
+
 import AddComponentCommand from "./commands/AddComponentCommand";
-import RemoveComponentCommand from "./commands/RemoveComponentCommand";
-import SetComponentPropertyCommand from "./commands/SetComponentPropertyCommand";
+import AddObjectCommand from "./commands/AddObjectCommand";
 import MoveObjectCommand from "./commands/MoveObjectCommand";
 import MultiCmdsCommand from "./commands/MultiCmdsCommand";
+import RemoveComponentCommand from "./commands/RemoveComponentCommand";
+import RemoveObjectCommand from "./commands/RemoveObjectCommand";
+import SetComponentPropertyCommand from "./commands/SetComponentPropertyCommand";
+
 import {
   isStatic,
   setStaticMode,
@@ -20,28 +24,29 @@ import {
   getOriginalStaticMode,
   setOriginalStaticMode
 } from "./StaticMode";
-import { Components } from "./components";
-import { types } from "./components/utils";
-import SceneReferenceComponent from "./components/SceneReferenceComponent";
-import SaveableComponent from "./components/SaveableComponent";
-import { last } from "../utils";
 import { textureCache, gltfCache } from "./caches";
+
 import ConflictHandler from "./ConflictHandler";
 import ConflictError from "./ConflictError";
+import SceneLoaderError from "./SceneLoaderError";
+
 import SpokeDirectionalLightHelper from "./helpers/SpokeDirectionalLightHelper";
 import SpokeHemisphereLightHelper from "./helpers/SpokeHemisphereLightHelper";
-import absoluteToRelativeURL from "./utils/absoluteToRelativeURL";
-import StandardMaterialComponent from "../editor/components/StandardMaterialComponent";
-import ShadowComponent from "./components/ShadowComponent";
-import shallowEquals from "./utils/shallowEquals";
-import addChildAtIndex from "./utils/addChildAtIndex";
-import SceneLoaderError from "./SceneLoaderError";
-import sortEntities from "./utils/sortEntities";
-import GLTFModelComponent from "./components/GLTFModelComponent";
 
-/**
- * @author mrdoob / http://mrdoob.com/
- */
+import { last } from "../utils";
+import absoluteToRelativeURL from "./utils/absoluteToRelativeURL";
+import addChildAtIndex from "./utils/addChildAtIndex";
+import shallowEquals from "./utils/shallowEquals";
+import sortEntities from "./utils/sortEntities";
+
+import { Components } from "./components";
+import { types } from "./components/utils";
+import GLTFModelComponent from "./components/GLTFModelComponent";
+import SaveableComponent from "./components/SaveableComponent";
+import SceneReferenceComponent from "./components/SceneReferenceComponent";
+import ShadowComponent from "./components/ShadowComponent";
+import StandardMaterialComponent from "./components/StandardMaterialComponent";
+
 export default class Editor {
   constructor(project) {
     this.project = project;
@@ -823,10 +828,8 @@ export default class Editor {
     );
 
     const exporter = new THREE.GLTFExporter();
-    const glb = await new Promise((resolve, reject) => exporter.parse(navMesh, resolve, reject, { mode: "binary" }));
-    const path = `/api/files/generated/${navMesh.uuid}.glb`;
-    await this.project.mkdir("/api/files/generated");
-    await this.project.writeBlob(path, glb);
+    const glb = await new Promise((resolve, reject) => exporter.parse(navMesh, resolve, reject, { mode: "glb" }));
+    const path = this.project.writeGeneratedBlob(`${navMesh.uuid}.glb`, glb);
 
     const navNode = new THREE.Object3D();
     navNode.name = "Nav Mesh";
@@ -837,7 +840,7 @@ export default class Editor {
     this.addObject(navNode);
   }
 
-  async exportScene(outputPath) {
+  async exportScene(outputPath, glb) {
     const scene = this.scene;
     const clonedScene = scene.clone();
 
@@ -998,18 +1001,22 @@ export default class Editor {
       }
     });
 
+    const exporter = new THREE.GLTFExporter();
+
     // TODO: export animations
     const chunks = await new Promise((resolve, reject) => {
-      new THREE.GLTFExporter().parseChunks(clonedScene, resolve, reject, {
-        mode: "gltf",
+      exporter.parseChunks(clonedScene, resolve, reject, {
+        mode: glb ? "glb" : "gltf",
         onlyVisible: false
       });
     });
 
-    const bufferDefs = chunks.json.buffers;
+    if (!glb) {
+      const bufferDefs = chunks.json.buffers;
 
-    if (bufferDefs && bufferDefs.length > 0 && bufferDefs[0].uri === undefined) {
-      bufferDefs[0].uri = clonedScene.name + ".bin";
+      if (bufferDefs && bufferDefs.length > 0 && bufferDefs[0].uri === undefined) {
+        bufferDefs[0].uri = clonedScene.name + ".bin";
+      }
     }
 
     // De-duplicate images.
@@ -1047,29 +1054,34 @@ export default class Editor {
       }
     }
 
-    // Export current editor scene using THREE.GLTFExporter
-    const { json, buffers, images } = chunks;
+    if (glb) {
+      const glbBlob = await new Promise((resolve, reject) => exporter.createGLBBlob(chunks, resolve, reject));
+      await this.project.writeBlob(outputPath, glbBlob);
+    } else {
+      // Export current editor scene using THREE.GLTFExporter
+      const { json, buffers, images } = chunks;
 
-    // Ensure the output directory exists
-    await this.project.mkdir(outputPath);
+      // Ensure the output directory exists
+      await this.project.mkdir(outputPath);
 
-    // Write the .gltf file
-    const gltfPath = outputPath + "/" + scene.name + ".gltf";
-    await this.project.writeJSON(gltfPath, json);
+      // Write the .gltf file
+      const gltfPath = outputPath + "/" + scene.name + ".gltf";
+      await this.project.writeJSON(gltfPath, json);
 
-    // Write .bin files
-    for (const [index, buffer] of buffers.entries()) {
-      if (buffer !== undefined) {
-        const bufferName = json.buffers[index].uri;
-        await this.project.writeBlob(outputPath + "/" + bufferName, buffer);
+      // Write .bin files
+      for (const [index, buffer] of buffers.entries()) {
+        if (buffer !== undefined) {
+          const bufferName = json.buffers[index].uri;
+          await this.project.writeBlob(outputPath + "/" + bufferName, buffer);
+        }
       }
-    }
 
-    // Write image files
-    for (const [index, image] of images.entries()) {
-      if (image !== undefined) {
-        const imageName = json.images[index].uri;
-        await this.project.writeBlob(outputPath + "/" + imageName, image);
+      // Write image files
+      for (const [index, image] of images.entries()) {
+        if (image !== undefined) {
+          const imageName = json.images[index].uri;
+          await this.project.writeBlob(outputPath + "/" + imageName, image);
+        }
       }
     }
   }
@@ -1710,5 +1722,79 @@ export default class Editor {
 
   redo() {
     this.history.redo();
+  }
+
+  async publishScene(name, description) {
+    await this.project.mkdir(this.project.getAbsoluteURI("generated"));
+
+    const screenshotUri = this.project.getAbsoluteURI(`temp-screenshot.jpg`);
+    // TODO BP: Generate actual screenshot here
+    const { id: screenshotId, token: screenshotToken } = await this.project.upload(screenshotUri);
+
+    const glbUri = this.project.getAbsoluteURI(`generated/${uuid()}.glb`);
+    await this.exportScene(glbUri, true);
+    const { id: glbId, token: glbToken } = await this.project.upload(glbUri);
+
+    const { url } = await this.project.createOrUpdateScene(
+      screenshotId,
+      screenshotToken,
+      glbId,
+      glbToken,
+      name,
+      description
+    );
+
+    return url;
+  }
+
+  async debugVerifyAuth(url) {
+    const params = new URLSearchParams(url);
+    const topic = params.get("auth_topic");
+    const token = params.get("auth_token");
+    const reticulumServer = process.env.NODE_ENV === "development" ? "dev.reticulum.io" : "hubs.mozilla.com";
+    const socketUrl = `wss://${reticulumServer}/socket`;
+    const socket = new Socket(socketUrl, { params: { session_id: uuid() } });
+    socket.connect();
+    const channel = socket.channel(topic);
+    await new Promise((resolve, reject) =>
+      channel
+        .join()
+        .receive("ok", resolve)
+        .receive("error", reject)
+    );
+    channel.push("auth_verified", { token });
+  }
+
+  async startAuthentication(email) {
+    const reticulumServer = process.env.NODE_ENV === "development" ? "dev.reticulum.io" : "hubs.mozilla.com";
+    const socketUrl = `wss://${reticulumServer}/socket`;
+    const socket = new Socket(socketUrl, { params: { session_id: uuid() } });
+    socket.connect();
+    const channel = socket.channel(`auth:${uuid()}`);
+    await new Promise((resolve, reject) =>
+      channel
+        .join()
+        .receive("ok", resolve)
+        .receive("error", reject)
+    );
+
+    const authComplete = new Promise(resolve =>
+      channel.on("auth_credentials", async ({ credentials }) => {
+        await fetch("/api/credentials", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ credentials })
+        });
+        resolve();
+      })
+    );
+
+    channel.push("auth_request", { email, origin: "spoke" });
+
+    return { authComplete };
+  }
+
+  async authenticated() {
+    return await fetch("/api/authenticated").then(r => r.ok);
   }
 }

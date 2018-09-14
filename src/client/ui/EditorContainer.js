@@ -6,19 +6,22 @@ import { MosaicWindow } from "react-mosaic-component";
 import { HotKeys } from "react-hotkeys";
 import Modal from "react-modal";
 import { MosaicWithoutDragDropContext } from "react-mosaic-component";
+
 import ToolBar from "./menus/ToolBar";
-import ViewportPanelContainer from "./panels/ViewportPanelContainer";
+import AssetExplorerPanelContainer from "./panels/AssetExplorerPanelContainer";
 import HierarchyPanelContainer from "./panels/HierarchyPanelContainer";
 import PropertiesPanelContainer from "./panels/PropertiesPanelContainer";
-import AssetExplorerPanelContainer from "./panels/AssetExplorerPanelContainer";
+import ViewportPanelContainer from "./panels/ViewportPanelContainer";
 import { EditorContextProvider } from "./contexts/EditorContext";
 import { DialogContextProvider } from "./contexts/DialogContext";
 import { SceneActionsContextProvider } from "./contexts/SceneActionsContext";
-import ConfirmDialog from "./dialogs/ConfirmDialog";
 import styles from "../common.scss";
-import FileDialog from "./dialogs/FileDialog";
-import ProgressDialog from "./dialogs/ProgressDialog";
+import ConfirmDialog from "./dialogs/ConfirmDialog";
 import ErrorDialog from "./dialogs/ErrorDialog";
+import FileDialog from "./dialogs/FileDialog";
+import LoginDialog from "./dialogs/LoginDialog";
+import PublishDialog from "./dialogs/PublishDialog";
+import ProgressDialog from "./dialogs/ProgressDialog";
 import ConflictError from "../editor/ConflictError";
 import { getUrlDirname, getUrlFilename } from "../utils/url-path";
 
@@ -669,6 +672,35 @@ class EditorContainer extends Component {
     }
   };
 
+  onPublishScene = async () => {
+    if (await this.props.editor.authenticated()) {
+      this._showPublishDialog();
+    } else {
+      this.showDialog(LoginDialog, {
+        onLogin: async email => {
+          const { authComplete } = await this.props.editor.startAuthentication(email);
+          this.showDialog(LoginDialog, { authStarted: true });
+          await authComplete;
+          this._showPublishDialog();
+        },
+        onCancel: () => this.hideDialog()
+      });
+    }
+  };
+
+  _showPublishDialog = async () => {
+    this.showDialog(PublishDialog, {
+      onPublish: async ({ name, description }) => {
+        this.showDialog(ProgressDialog, {
+          title: "Publishing Scene",
+          message: "Publishing scene..."
+        });
+        const url = await this.props.editor.publishScene(name, description);
+        this.showDialog(PublishDialog, { published: true, url });
+      }
+    });
+  };
+
   sceneActionsContext = {
     onNewScene: this.onNewScene,
     onOpenSceneDialog: this.onOpenSceneDialog,
@@ -680,6 +712,7 @@ class EditorContainer extends Component {
     onPopScene: this.onPopScene,
     onCreatePrefabFromGLTF: this.onCreatePrefabFromGLTF,
     onExportSceneDialog: this.onExportSceneDialog,
+    onPublishScene: this.onPublishScene,
     onWriteFiles: this.onWriteFiles
   };
 
@@ -704,7 +737,7 @@ class EditorContainer extends Component {
           <EditorContextProvider value={editor}>
             <DialogContextProvider value={this.dialogContext}>
               <SceneActionsContextProvider value={this.sceneActionsContext}>
-                <ToolBar menus={menus} editor={editor} />
+                <ToolBar menus={menus} editor={editor} sceneActions={this.sceneActionsContext} />
                 <MosaicWithoutDragDropContext
                   className="mosaic-theme"
                   renderTile={this.renderPanel}
