@@ -310,6 +310,7 @@ export default class Editor {
     );
     this.addUnicomponentNode("Skybox", "skybox", false);
     this.addUnicomponentNode("Ambient Light", "ambient-light", false, {}, { position: { x: 0, y: 10, z: 0 } });
+    this.addUnicomponentNode("Spawn Point", "spawn-point", false);
     this._ignoreSceneModification = false;
   }
 
