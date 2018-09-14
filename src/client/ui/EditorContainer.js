@@ -408,7 +408,7 @@ class EditorContainer extends Component {
 
   updateDocumentTitle = () => {
     const modified = this.props.editor.sceneModified() ? "*" : "";
-    document.title = `Spoke - ${modified}${this.props.editor.scene.name}`;
+    document.title = `${modified}${this.props.editor.scene.name} - Spoke by Mozilla`;
   };
 
   /**
