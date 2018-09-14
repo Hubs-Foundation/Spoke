@@ -123,6 +123,7 @@ class EditorContainer extends Component {
         duplicate: ["ctrl+d", "command+d"],
         save: ["ctrl+s", "command+s"],
         saveAs: ["ctrl+shift+s", "command+shift+s"],
+        open: ["ctrl+o", "command+o"],
         undo: ["ctrl+z", "command+z"],
         redo: ["ctrl+shift+z", "command+shift+z"]
       },
@@ -132,6 +133,7 @@ class EditorContainer extends Component {
         delete: this.onDelete,
         save: this.onSave,
         saveAs: this.onSaveAs,
+        open: this.onOpen,
         translateTool: this.onTranslateTool,
         rotateTool: this.onRotateTool,
         scaleTool: this.onScaleTool,
@@ -153,6 +155,10 @@ class EditorContainer extends Component {
             name: "New Scene",
             action: e => this.onNewScene(e)
           },
+          {
+            name: "Open Scene...",
+            action: e => this.onOpenSceneDialog(e)
+          },
           this.props.editor.sceneInfo.uri
             ? {
                 name: "Save " + getUrlFilename(this.props.editor.sceneInfo.uri),
@@ -164,7 +170,7 @@ class EditorContainer extends Component {
             action: e => this.onSaveAs(e)
           },
           {
-            name: "Export Scene...",
+            name: "Export to GLTF...",
             action: e => this.onExportScene(e)
           },
           {
@@ -284,7 +290,11 @@ class EditorContainer extends Component {
       return;
     }
 
-    this.onSaveScene(this.props.editor.sceneInfo.uri);
+    if (this.props.editor.sceneInfo.uri) {
+      this.onSaveScene(this.props.editor.sceneInfo.uri);
+    } else {
+      this.onSaveSceneAsDialog();
+    }
   };
 
   onSaveAs = e => {
@@ -296,6 +306,17 @@ class EditorContainer extends Component {
     }
 
     this.onSaveSceneAsDialog();
+  };
+
+  onOpen = e => {
+    e.preventDefault();
+
+    // Disable when dialog is shown.
+    if (this.state.DialogComponent !== null) {
+      return;
+    }
+
+    this.onOpenSceneDialog();
   };
 
   onExportScene = e => {
@@ -476,8 +497,8 @@ class EditorContainer extends Component {
   onOpenSceneDialog = async () => {
     const filePath = await this.waitForFile({
       title: "Open scene...",
-      filters: [".scene"],
-      extension: ".scene",
+      filters: [".spoke"],
+      extension: ".spoke",
       confirmButtonLabel: "Open"
     });
 
@@ -511,8 +532,8 @@ class EditorContainer extends Component {
   onSaveSceneAsDialog = async () => {
     const filePath = await this.waitForFile({
       title: "Save scene as...",
-      filters: [".scene"],
-      extension: ".scene",
+      filters: [".spoke"],
+      extension: ".spoke",
       confirmButtonLabel: "Save",
       initialPath: this.props.editor.sceneInfo.uri
     });
@@ -593,8 +614,8 @@ class EditorContainer extends Component {
 
       const outputPath = await this.waitForFile({
         title: "Save prefab as...",
-        filters: [".scene"],
-        extension: ".scene",
+        filters: [".spoke"],
+        extension: ".spoke",
         confirmButtonLabel: "Create Prefab",
         initialPath,
         defaultFileName

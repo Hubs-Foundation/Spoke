@@ -429,7 +429,7 @@ export default class Editor {
 
     const sceneResponse = await fetch(url);
     if (!sceneResponse.ok) {
-      const error = new SceneLoaderError("Error loading .scene", url, "damaged", null);
+      const error = new SceneLoaderError("Error loading .spoke file", url, "damaged", null);
       throw error;
     }
     const sceneDef = await sceneResponse.json();

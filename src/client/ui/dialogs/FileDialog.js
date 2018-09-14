@@ -377,14 +377,18 @@ class FileDialog extends Component {
             <MenuItem onClick={this.onOpenFile}>Open Directory</MenuItem>
           </ContextMenu>
         </div>
-        <div className={dialogStyles.bottom}>
-          <div className={styles.fileNameLabel}>File Name:</div>
-          <StringInput value={fileName} ref={this.input} onChange={this.onChangeFileName} autoFocus />
-          <Button onClick={onCancel || hideDialog} className={styles.cancel}>
-            Cancel
-          </Button>
-          <Button onClick={this.onConfirm}>{confirmButtonLabel}</Button>
-        </div>
+        <form>
+          <div className={dialogStyles.bottom}>
+            <div className={styles.fileNameLabel}>File Name:</div>
+            <StringInput value={fileName} ref={this.input} onChange={this.onChangeFileName} autoFocus />
+            <Button type="button" onClick={onCancel || hideDialog} className={styles.cancel}>
+              Cancel
+            </Button>
+            <Button type="submit" onClick={this.onConfirm}>
+              {confirmButtonLabel}
+            </Button>
+          </div>
+        </form>
       </div>
     );
   }

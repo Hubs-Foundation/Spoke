@@ -6,5 +6,7 @@ export default class SceneReferenceComponent extends BaseComponent {
 
   static dontExportProps = true;
 
-  static schema = [{ name: "src", type: types.file, filters: [".scene"], default: null }];
+  static iconClassName = "fa-cube";
+
+  static schema = [{ name: "src", type: types.file, filters: [".spoke"], default: null }];
 }
