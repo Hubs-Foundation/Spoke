@@ -1642,6 +1642,11 @@ export default class Editor {
     this.signals.objectFocused.dispatch(object);
   }
 
+  focusSelection() {
+    if (this.selected == null) return;
+    this.focus(this.selected);
+  }
+
   focusById(id) {
     this.focus(this.scene.getObjectById(id, true));
   }

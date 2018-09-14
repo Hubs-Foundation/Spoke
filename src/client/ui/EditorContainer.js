@@ -118,6 +118,7 @@ class EditorContainer extends Component {
         scaleTool: "r",
         spaceTool: "x",
         snapTool: "t",
+        focusSelection: "f",
         delete: ["del", "backspace"],
         duplicate: ["ctrl+d", "command+d"],
         save: ["ctrl+s", "command+s"],
@@ -182,6 +183,7 @@ class EditorContainer extends Component {
         translateTool: this.onTranslateTool,
         rotateTool: this.onRotateTool,
         scaleTool: this.onScaleTool,
+        focusSelection: this.onFocusSelection,
         duplicate: this.onDuplicate,
         snapTool: this.onSnapTool,
         spaceTool: this.onSpaceTool
@@ -341,6 +343,15 @@ class EditorContainer extends Component {
 
     e.preventDefault();
     this.props.editor.signals.transformModeChanged.dispatch("scale");
+  };
+
+  onFocusSelection = e => {
+    if (isInputSelected()) {
+      return true;
+    }
+
+    e.preventDefault();
+    this.props.editor.focusSelection();
   };
 
   onDuplicate = e => {
