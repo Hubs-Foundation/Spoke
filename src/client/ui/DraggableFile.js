@@ -14,7 +14,7 @@ function DraggableFile({ file, selected, onClick, connectDragSource }) {
       return prefix + "folder";
     }
     switch (ext) {
-      case ".scene":
+      case ".spoke":
         return prefix + "scene";
       case ".gltf":
       case ".glb":

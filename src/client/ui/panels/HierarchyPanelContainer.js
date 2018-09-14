@@ -96,6 +96,9 @@ class HierarchyPanelContainer extends Component {
       return;
     }
 
+    // Do not allow interaction with scene node.
+    if (node.object === this.props.editor.scene) return;
+
     if (this.state.singleClicked === node.object) {
       this.props.editor.focusById(node.object.id);
       return;
