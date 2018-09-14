@@ -119,7 +119,7 @@ class EditorContainer extends Component {
         spaceTool: "d",
         snapTool: "s",
         focusSelection: "f",
-        delete: ["del", "backspace", "x"],
+        delete: ["del", "backspace"],
         duplicate: ["ctrl+d", "command+d"],
         save: ["ctrl+s", "command+s"],
         saveAs: ["ctrl+shift+s", "command+shift+s"],

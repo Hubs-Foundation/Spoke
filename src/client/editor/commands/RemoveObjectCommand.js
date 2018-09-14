@@ -40,8 +40,8 @@ export default class RemoveObjectCommand extends Command {
   undo() {
     const scope = this.editor;
 
-    this.object.traverse(function(child) {
-      scope.addHelper(child);
+    this.object.traverse(child => {
+      scope.addHelper(child, this.object);
     });
 
     this.parent.children.splice(this.index, 0, this.object);
