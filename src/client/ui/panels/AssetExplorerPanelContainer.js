@@ -23,7 +23,7 @@ function collectFileMenuProps({ file }) {
 function getFileContextMenuId(file) {
   if (file.isDirectory) {
     return "directory-menu-default";
-  } else if (file.ext === ".scene") {
+  } else if (file.ext === ".spoke") {
     return "file-menu-scene";
   } else if (file.ext === ".gltf" || file.ext === ".glb") {
     return "file-menu-gltf";
@@ -128,7 +128,7 @@ class AssetExplorerPanelContainer extends Component {
         return;
       }
 
-      if (file.ext === ".scene") {
+      if (file.ext === ".spoke") {
         await this.props.sceneActions.onOpenScene(file.uri);
         return;
       }
@@ -239,7 +239,7 @@ class AssetExplorerPanelContainer extends Component {
   render() {
     const selectedDirectory = getSelectedDirectory(this.state.tree, this.state.selectedDirectory) || this.state.tree;
     const files = (selectedDirectory.files || []).filter(
-      file => [".gltf", ".glb", ".scene", ".material"].includes(file.ext) || file.isDirectory
+      file => [".gltf", ".glb", ".spoke", ".material"].includes(file.ext) || file.isDirectory
     );
     const selectedFile = this.state.selectedFile;
 

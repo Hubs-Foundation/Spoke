@@ -36,13 +36,13 @@ class EditorContainer extends Component {
     basic: {
       direction: "row",
       first: {
-        direction: "row",
+        direction: "column",
         first: "hierarchy",
-        second: "viewport",
-        splitPercentage: 25
+        second: "properties",
+        splitPercentage: 50
       },
-      second: "properties",
-      splitPercentage: 75
+      second: "viewport",
+      splitPercentage: 25
     },
 
     advanced: {
@@ -119,78 +119,92 @@ class EditorContainer extends Component {
         translateTool: "w",
         rotateTool: "e",
         scaleTool: "r",
-        spaceTool: "x",
-        snapTool: "t",
+        spaceTool: "d",
+        snapTool: "s",
+        focusSelection: "f",
         delete: ["del", "backspace"],
         duplicate: ["ctrl+d", "command+d"],
         save: ["ctrl+s", "command+s"],
         saveAs: ["ctrl+shift+s", "command+shift+s"],
+        open: ["ctrl+o", "command+o"],
         undo: ["ctrl+z", "command+z"],
         redo: ["ctrl+shift+z", "command+shift+z"]
       },
-      menus: [
-        {
-          name: "File",
-          items: [
-            {
-              name: "New Scene",
-              action: e => this.onNewScene(e)
-            },
-            {
-              name: "Save Scene",
-              action: e => this.onSave(e)
-            },
-            {
-              name: "Save Scene As...",
-              action: e => this.onSaveAs(e)
-            },
-            {
-              name: "Export Scene...",
-              action: e => this.onExportScene(e)
-            },
-            {
-              name: "Generate Nav Mesh",
-              action: e => this.onGenerateNavMesh(e)
-            },
-            {
-              name: "Open Project Folder...",
-              action: () => this.props.editor.project.openProjectDirectory()
-            }
-          ]
-        },
-        {
-          name: "Help",
-          items: [
-            {
-              name: "Getting Started",
-              action: () => window.open("https://github.com/MozillaReality/spoke/wiki/Getting-Started")
-            },
-            {
-              name: "Tutorials",
-              action: () => window.open("https://github.com/MozillaReality/spoke/wiki/Tutorials")
-            },
-            {
-              name: "Keyboard Shortcuts",
-              action: () => window.open("https://github.com/MozillaReality/spoke/wiki/Keyboard-Shortcuts")
-            }
-          ]
-        }
-      ],
       globalHotKeyHandlers: {
         undo: this.onUndo,
         redo: this.onRedo,
         delete: this.onDelete,
         save: this.onSave,
         saveAs: this.onSaveAs,
+        open: this.onOpen,
         translateTool: this.onTranslateTool,
         rotateTool: this.onRotateTool,
         scaleTool: this.onScaleTool,
+        focusSelection: this.onFocusSelection,
         duplicate: this.onDuplicate,
         snapTool: this.onSnapTool,
         spaceTool: this.onSpaceTool
-      }
+      },
+      menus: this.generateMenus()
     };
   }
+
+  generateMenus = () => {
+    return [
+      {
+        name: "File",
+        items: [
+          {
+            name: "New Scene",
+            action: e => this.onNewScene(e)
+          },
+          {
+            name: "Open Scene...",
+            action: e => this.onOpenSceneDialog(e)
+          },
+          this.props.editor.sceneInfo.uri
+            ? {
+                name: "Save " + getUrlFilename(this.props.editor.sceneInfo.uri),
+                action: e => this.onSave(e)
+              }
+            : null,
+          {
+            name: "Save Scene As...",
+            action: e => this.onSaveAs(e)
+          },
+          {
+            name: "Export to GLTF...",
+            action: e => this.onExportScene(e)
+          },
+          {
+            name: "Generate Nav Mesh",
+            action: e => this.onGenerateNavMesh(e)
+          },
+          {
+            name: "Open Project Folder...",
+            action: () => this.props.editor.project.openProjectDirectory()
+          }
+        ].filter(x => x !== null)
+      },
+      {
+        name: "Help",
+        items: [
+          {
+            name: "Getting Started",
+            action: () => window.open("https://github.com/MozillaReality/spoke/wiki/Getting-Started")
+          },
+          {
+            name: "Tutorials",
+            action: () => window.open("https://github.com/MozillaReality/spoke/wiki/Tutorials")
+          },
+          {
+            name: "Keyboard Shortcuts",
+            action: () => window.open("https://github.com/MozillaReality/spoke/wiki/Keyboard-Shortcuts")
+          }
+        ]
+      }
+    ];
+  };
 
   componentDidMount() {
     this.props.editor.signals.windowResize.dispatch();
@@ -203,7 +217,9 @@ class EditorContainer extends Component {
         return undefined;
       }
 
-      const dialogText = "Your scene has unsaved changes, are you sure you wish to navigate away from the page?";
+      const dialogText = `${
+        this.props.editor.scene.name
+      } has unsaved changes, are you sure you wish to navigate away from the page?`;
       e.returnValue = dialogText;
       return dialogText;
     };
@@ -295,6 +311,17 @@ class EditorContainer extends Component {
     this.onSaveSceneAsDialog();
   };
 
+  onOpen = e => {
+    e.preventDefault();
+
+    // Disable when dialog is shown.
+    if (this.state.DialogComponent !== null) {
+      return;
+    }
+
+    this.onOpenSceneDialog();
+  };
+
   onExportScene = e => {
     e.preventDefault();
 
@@ -344,6 +371,15 @@ class EditorContainer extends Component {
 
     e.preventDefault();
     this.props.editor.signals.transformModeChanged.dispatch("scale");
+  };
+
+  onFocusSelection = e => {
+    if (isInputSelected()) {
+      return true;
+    }
+
+    e.preventDefault();
+    this.props.editor.focusSelection();
   };
 
   onDuplicate = e => {
@@ -396,11 +432,12 @@ class EditorContainer extends Component {
 
   onSceneModified = () => {
     this.updateDocumentTitle();
+    this.setState({ menus: this.generateMenus() });
   };
 
   updateDocumentTitle = () => {
     const modified = this.props.editor.sceneModified() ? "*" : "";
-    document.title = `Spoke - ${modified}${this.props.editor.scene.name}`;
+    document.title = `${modified}${this.props.editor.scene.name} - Spoke by Mozilla`;
   };
 
   /**
@@ -463,8 +500,8 @@ class EditorContainer extends Component {
   onOpenSceneDialog = async () => {
     const filePath = await this.waitForFile({
       title: "Open scene...",
-      filters: [".scene"],
-      extension: ".scene",
+      filters: [".spoke"],
+      extension: ".spoke",
       confirmButtonLabel: "Open"
     });
 
@@ -498,8 +535,8 @@ class EditorContainer extends Component {
   onSaveSceneAsDialog = async () => {
     const filePath = await this.waitForFile({
       title: "Save scene as...",
-      filters: [".scene"],
-      extension: ".scene",
+      filters: [".spoke"],
+      extension: ".spoke",
       confirmButtonLabel: "Save",
       initialPath: this.props.editor.sceneInfo.uri
     });
@@ -580,8 +617,8 @@ class EditorContainer extends Component {
 
       const outputPath = await this.waitForFile({
         title: "Save prefab as...",
-        filters: [".scene"],
-        extension: ".scene",
+        filters: [".spoke"],
+        extension: ".spoke",
         confirmButtonLabel: "Create Prefab",
         initialPath,
         defaultFileName

@@ -35,11 +35,6 @@ export default class AddModelDialog extends Component {
     this.setState({ url: value });
   };
 
-  handleSubmit = e => {
-    e.preventDefault();
-    console.log("submit");
-  };
-
   isValidURLEntered = () => {
     try {
       new URL(this.state.url);
@@ -58,26 +53,28 @@ export default class AddModelDialog extends Component {
 
     return (
       <div className={styles.dialogContainer}>
-        <Header title={this.props.title} />
-        <div className={styles.content}>
-          <div className={styles.contentRows}>
-            <p>{this.props.message}</p>
-            <form onSubmit={this.handleSubmit}>
+        <form>
+          <Header title={this.props.title} />
+          <div className={styles.content}>
+            <div className={styles.contentRows}>
+              <p>{this.props.message}</p>
               <div className={styles.fieldRow}>
                 <StringInput value={this.state.url} onChange={this.handleChange} autoFocus />
-                <Button onClick={this.props.onFilePickerChosen}>{this.props.chooseFileLabel}</Button>
+                <Button type="button" onClick={this.props.onFilePickerChosen}>
+                  {this.props.chooseFileLabel}
+                </Button>
               </div>
-            </form>
+            </div>
           </div>
-        </div>
-        <div className={styles.bottom}>
-          <Button key="cancel" onClick={this.props.onCancel}>
-            {this.props.cancelLabel}
-          </Button>
-          <Button {...okAttributes} key="ok" onClick={() => this.props.onURLEntered(this.state.url)}>
-            {this.props.okLabel}
-          </Button>
-        </div>
+          <div className={styles.bottom}>
+            <Button key="cancel" type="button" onClick={this.props.onCancel}>
+              {this.props.cancelLabel}
+            </Button>
+            <Button {...okAttributes} key="ok" type="submit" onClick={() => this.props.onURLEntered(this.state.url)}>
+              {this.props.okLabel}
+            </Button>
+          </div>
+        </form>
       </div>
     );
   };

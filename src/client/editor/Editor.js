@@ -24,6 +24,7 @@ import {
   getOriginalStaticMode,
   setOriginalStaticMode
 } from "./StaticMode";
+import { getUrlFilename } from "../utils/url-path";
 import { textureCache, gltfCache } from "./caches";
 
 import ConflictHandler from "./ConflictHandler";
@@ -109,7 +110,6 @@ export default class Editor {
       helpers: {},
       modified: false
     };
-    initialSceneInfo.scene.name = "Scene";
     this.scenes.push(initialSceneInfo);
 
     this.scene = initialSceneInfo.scene;
@@ -258,7 +258,7 @@ export default class Editor {
     this._clearCaches();
 
     const scene = new THREE.Scene();
-    scene.name = "Scene";
+    scene.name = "Untitled";
 
     this._conflictHandler = null;
 
@@ -434,7 +434,7 @@ export default class Editor {
 
     const sceneResponse = await fetch(url);
     if (!sceneResponse.ok) {
-      const error = new SceneLoaderError("Error loading .scene", url, "damaged", null);
+      const error = new SceneLoaderError("Error loading .spoke file", url, "damaged", null);
       throw error;
     }
     const sceneDef = await sceneResponse.json();
@@ -645,6 +645,9 @@ export default class Editor {
   }
 
   async saveScene(sceneURI) {
+    const newSceneName = getUrlFilename(sceneURI);
+    this.scene.name = newSceneName;
+
     const serializedScene = this._serializeScene(this.scene, sceneURI || this.sceneInfo.uri);
 
     this.ignoreNextSceneFileChange = true;
@@ -1652,6 +1655,11 @@ export default class Editor {
 
   focus(object) {
     this.signals.objectFocused.dispatch(object);
+  }
+
+  focusSelection() {
+    if (this.selected == null) return;
+    this.focus(this.selected);
   }
 
   focusById(id) {
