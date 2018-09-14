@@ -80,7 +80,8 @@ class FileDialog extends Component {
     if (props.initialPath) {
       selectedDirectory = getUrlDirname(props.initialPath);
       selectedFile = props.extension && getUrlExtname(props.initialPath) === props.extension ? props.initialPath : null;
-      fileName = props.defaultFileName !== "" ? props.defaultFileName : getUrlFilename(props.initialPath);
+      fileName =
+        props.defaultFileName !== "" ? props.defaultFileName : decodeURIComponent(getUrlFilename(props.initialPath));
     }
 
     this.state = {

@@ -645,7 +645,16 @@ export default class Editor {
   }
 
   async saveScene(sceneURI) {
-    const newSceneName = getUrlFilename(sceneURI);
+    let newSceneName = decodeURIComponent(getUrlFilename(sceneURI));
+
+    // Edge case: we may already have an object in the scene with this name. Our
+    // code assumes all objects in the scene have unique names (including the scene itself)
+    // so add a suffix.
+
+    while (this.scene.getObjectByName(newSceneName)) {
+      newSceneName += " Scene";
+    }
+
     this.scene.name = newSceneName;
 
     const serializedScene = this._serializeScene(this.scene, sceneURI || this.sceneInfo.uri);

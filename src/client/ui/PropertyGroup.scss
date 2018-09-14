@@ -34,6 +34,13 @@
     }
   }
 
+  :local(.description) {
+    background-color: $panel;
+    color: $text2;
+    white-space: pre-wrap;
+    padding: 0 8px 8px;
+  }
+
   :local(.content) {
 
     display: flex;

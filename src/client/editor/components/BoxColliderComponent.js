@@ -4,6 +4,9 @@ import TransformComponent from "./TransformComponent";
 export default class BoxColliderComponent extends TransformComponent {
   static componentName = "box-collider";
 
+  static componentDescription =
+    "An invisible box that objects will bounce off of or rest on top of.\nWithout colliders, objects will fall through floors and go through walls.";
+
   static iconClassName = "fa-hand-paper";
 
   static _geometry = new THREE.BoxBufferGeometry();

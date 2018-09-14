@@ -11,6 +11,7 @@ import ReactTooltip from "react-tooltip";
 function PropertyGroup(props) {
   const {
     name,
+    description,
     canRemove,
     removeHandler,
     src,
@@ -67,6 +68,7 @@ function PropertyGroup(props) {
         {name}
         {renderRemoveButton()}
       </div>
+      {description && <div className={styles.description}>{description}</div>}
       {renderSaveButtons()}
       {showSaveInfo && (
         <div className={styles.saveInfo}>
@@ -81,6 +83,7 @@ function PropertyGroup(props) {
 
 PropertyGroup.propTypes = {
   name: PropTypes.string,
+  description: PropTypes.string,
   canRemove: PropTypes.bool,
   className: PropTypes.string,
   headerClassName: PropTypes.string,

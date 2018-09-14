@@ -7,6 +7,9 @@ const spawnPointIcon = new THREE.TextureLoader().load(spawnPointIconUrl);
 export default class SpawnPointComponent extends BaseComponent {
   static componentName = "spawn-point";
 
+  static componentDescription =
+    "A point where people will appear when they enter your scene.\nThe icon in your scene represents the actual size of an avatar.";
+
   static iconClassName = "fa-street-view";
 
   static schema = [];
