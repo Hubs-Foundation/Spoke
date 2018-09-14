@@ -668,22 +668,22 @@ class EditorContainer extends Component {
   };
 
   onPublishScene = async () => {
-    if (this.props.editor.authenticated()) {
-      this._publishScene();
+    if (await this.props.editor.authenticated()) {
+      this._showPublishDialog();
     } else {
       this.showDialog(LoginDialog, {
         onLogin: async email => {
           const { authComplete } = await this.props.editor.startAuthentication(email);
           this.showDialog(LoginDialog, { authStarted: true });
           await authComplete;
-          this._publishScene();
+          this._showPublishDialog();
         },
         onCancel: () => this.hideDialog()
       });
     }
   };
 
-  _publishScene = async () => {
+  _showPublishDialog = async () => {
     this.showDialog(PublishDialog, {
       onPublish: async ({ name, description }) => {
         await this.props.editor.publishScene(name, description);

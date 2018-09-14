@@ -58,6 +58,7 @@
     "chokidar": "^2.0.4",
     "classnames": "^2.2.5",
     "commander": "^2.15.1",
+    "env-paths": "^1.0.0",
     "eventemitter3": "^3.1.0",
     "fast-deep-equal": "^2.0.1",
     "form-data": "^2.3.2",

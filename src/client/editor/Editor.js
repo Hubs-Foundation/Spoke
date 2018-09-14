@@ -1725,9 +1725,7 @@ export default class Editor {
     await this.exportScene(glbUri, true);
     const { id: glbId, token: glbToken } = await this.project.upload(glbUri);
 
-    // TODO BP: server should use credential token from disk
     const { url } = await this.project.createOrUpdateScene(
-      localStorage.getItem("credentials"),
       screenshotId,
       screenshotToken,
       glbId,
@@ -1771,11 +1769,13 @@ export default class Editor {
     );
 
     const authComplete = new Promise(resolve =>
-      channel.on("auth_credentials", ({ credentials }) => {
-        // TODO BP: Actually, we shouldn't store creds in local storage because other apps that happen to use localhost
-        // will be able to read them. We need to put them on disk and access them through the server.
-        localStorage.setItem("credentials", credentials);
-        resolve(credentials);
+      channel.on("auth_credentials", async ({ credentials }) => {
+        await fetch("/api/credentials", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ credentials })
+        });
+        resolve();
       })
     );
 
@@ -1784,7 +1784,7 @@ export default class Editor {
     return { authComplete };
   }
 
-  authenticated() {
-    return localStorage.getItem("credentials") !== null;
+  async authenticated() {
+    return await fetch("/api/authenticated").then(r => r.ok);
   }
 }

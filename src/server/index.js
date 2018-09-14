@@ -1,5 +1,6 @@
 import chokidar from "chokidar";
 import debounce from "lodash.debounce";
+import envPaths from "env-paths";
 import fetch from "node-fetch";
 import FormData from "form-data";
 import fs from "fs-extra";
@@ -382,6 +383,31 @@ export default async function startServer(options) {
     }
   });
 
+  function getCredentialsPath() {
+    return path.join(envPaths("Spoke", { suffix: "" }).config, "spoke-credentials.json");
+  }
+
+  router.post("/api/credentials", koaBody(), async ctx => {
+    const credentialsPath = getCredentialsPath();
+    await fs.ensureDir(path.dirname(credentialsPath));
+    await fs.writeJSON(credentialsPath, { credentials: ctx.request.body.credentials });
+    ctx.stats = 200;
+  });
+
+  async function getCredentials() {
+    const credentialsPath = getCredentialsPath();
+    if (fs.existsSync(credentialsPath)) {
+      const json = await fs.readJSON(credentialsPath);
+      return (json && json.credentials) || null;
+    }
+    return null;
+  }
+
+  router.get("/api/authenticated", koaBody(), async ctx => {
+    const authenticated = !!(await getCredentials());
+    ctx.status = authenticated ? 200 : 401;
+  });
+
   router.post("/api/upload", koaBody(), async ctx => {
     const { uri } = ctx.request.body;
 
@@ -411,9 +437,15 @@ export default async function startServer(options) {
     const projectFilePath = path.join(projectPath, "spoke-project.json");
     const projectJSON = await fs.readJSON(projectFilePath);
 
+    const credentials = await getCredentials();
+    if (!credentials) {
+      ctx.status = 401;
+      return;
+    }
+
     const headers = {
       "content-type": "application/json",
-      authorization: `Bearer ${params.credentials}`
+      authorization: `Bearer ${credentials}`
     };
     const body = JSON.stringify({ scene: sceneParams });
 
