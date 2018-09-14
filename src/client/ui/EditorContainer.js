@@ -150,7 +150,7 @@ class EditorContainer extends Component {
               action: e => this.onGenerateNavMesh(e)
             },
             {
-              name: "Open Project Directory",
+              name: "Open Project Folder...",
               action: () => this.props.editor.project.openProjectDirectory()
             }
           ]
