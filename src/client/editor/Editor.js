@@ -143,10 +143,9 @@ export default class Editor {
     this.ignoreNextSceneFileChange = false;
     this.signals.fileChanged.add(this.onFileChanged);
 
-    this._resetDefaultLights();
-
     this.ComponentPropTypes = types;
     this.StaticModes = StaticModes;
+    this.loadNewScene();
   }
 
   createViewport(canvas) {
@@ -247,8 +246,6 @@ export default class Editor {
   }
 
   loadNewScene() {
-    this.deselect();
-
     this._deleteSceneDependencies();
 
     this._resetHelpers();
@@ -266,6 +263,10 @@ export default class Editor {
     this._setScene(scene);
 
     this.signals.sceneModified.dispatch();
+    this._createDefaultSceneObjects();
+
+    this.history.clear();
+    this.deselect();
 
     return scene;
   }
@@ -283,7 +284,6 @@ export default class Editor {
 
   _setScene(scene) {
     this.scene = scene;
-    this._resetDefaultLights();
     if (this.scene.userData && this.scene.userData._conflictHandler) {
       this._conflictHandler = this.scene.userData._conflictHandler;
     } else if (!this._conflictHandler) {
@@ -296,43 +296,22 @@ export default class Editor {
     this.signals.sceneSet.dispatch();
   }
 
-  _resetDefaultLights() {
-    let hasDirectionalLight = false;
-    let hasAmbientLight = false;
-
-    let defaultAmbientLight = this.scene.getObjectByName("_defaultAmbientLight");
-    let defaultDirectionalLight = this.scene.getObjectByName("_defaultDirectionalLight");
-
-    this.scene.traverse(node => {
-      if (node.type === "AmbientLight" || node.type === "HemisphereLight") {
-        hasAmbientLight = true;
+  _createDefaultSceneObjects() {
+    this._ignoreSceneModification = true;
+    this.addUnicomponentNode(
+      "Sun",
+      "directional-light",
+      false,
+      {},
+      {
+        position: { x: 0, y: 10, z: 0 },
+        rotation: { x: Math.PI * 0.5, y: Math.PI * (0.5 / 3.0), z: -Math.PI * 0.5 }
       }
-
-      if (node.type === "DirectionalLight" || node.type === "PointLight" || node.type === "SpotLight") {
-        hasDirectionalLight = true;
-      }
-    });
-
-    if (!hasAmbientLight && !defaultAmbientLight) {
-      defaultAmbientLight = new THREE.AmbientLight();
-      defaultAmbientLight.name = "_defaultAmbientLight";
-      defaultAmbientLight.userData._dontExport = true;
-      defaultAmbientLight.userData._dontShowInHierarchy = true;
-      this.scene.add(defaultAmbientLight);
-    } else if (hasAmbientLight && defaultAmbientLight) {
-      this.scene.remove(defaultAmbientLight);
-    }
-
-    if (!hasDirectionalLight && !defaultDirectionalLight) {
-      defaultDirectionalLight = new THREE.DirectionalLight();
-      defaultDirectionalLight.name = "_defaultDirectionalLight";
-      defaultDirectionalLight.userData._dontExport = true;
-      defaultDirectionalLight.userData._dontShowInHierarchy = true;
-      defaultDirectionalLight.position.set(5, 10, 7.5);
-      this.scene.add(defaultDirectionalLight);
-    } else if (hasDirectionalLight && defaultDirectionalLight) {
-      this.scene.remove(defaultDirectionalLight);
-    }
+    );
+    this.addUnicomponentNode("Skybox", "skybox", false);
+    this.addUnicomponentNode("Ambient Light", "ambient-light", false, {}, { position: { x: 0, y: 10, z: 0 } });
+    this.addUnicomponentNode("Spawn Point", "spawn-point", false);
+    this._ignoreSceneModification = false;
   }
 
   sceneModified() {
@@ -1133,30 +1112,40 @@ export default class Editor {
     this.select(object);
   }
 
-  addUnicomponentNode(name, componentName, properties = {}) {
+  addUnicomponentNode(name, componentName, includeInHistory = true, properties = {}, transform = {}) {
     const object = new THREE.Object3D();
     object.name = name;
     setStaticMode(object, StaticModes.Static);
 
-    const componentSetters = [];
+    if (includeInHistory) {
+      const componentSetters = [];
 
-    for (const [property, value] of Object.entries(properties)) {
-      componentSetters.push(new SetComponentPropertyCommand(object, componentName, property, value));
+      for (const [property, value] of Object.entries(properties)) {
+        componentSetters.push(new SetComponentPropertyCommand(object, componentName, property, value));
+      }
+
+      for (const [property, value] of Object.entries(transform)) {
+        componentSetters.push(new SetComponentPropertyCommand(object, "transform", property, value));
+      }
+
+      this.execute(
+        new MultiCmdsCommand([
+          new AddObjectCommand(object, this.scene),
+          new AddComponentCommand(object, componentName),
+          ...componentSetters
+        ])
+      );
+    } else {
+      this.addObject(object, this.scene);
+      this._addComponent(object, componentName, properties);
+      this._addComponent(object, "transform", transform);
     }
-
-    this.execute(
-      new MultiCmdsCommand([
-        new AddObjectCommand(object, this.scene),
-        new AddComponentCommand(object, componentName),
-        ...componentSetters
-      ])
-    );
 
     this.select(object);
   }
 
   addGLTFModelNode(name, url) {
-    this.addUnicomponentNode(name, "gltf-model", { src: url });
+    this.addUnicomponentNode(name, "gltf-model", true, { src: url });
   }
 
   async importGLTFIntoModelNode(url) {
@@ -1216,13 +1205,13 @@ export default class Editor {
     let helper;
 
     if (object instanceof THREE.Camera) {
-      helper = new THREE.CameraHelper(object, 1);
+      helper = new THREE.CameraHelper(object);
     } else if (object instanceof THREE.PointLight) {
       helper = new THREE.PointLightHelper(object, 1);
     } else if (object instanceof THREE.DirectionalLight && object.name !== "_defaultDirectionalLight") {
       helper = new SpokeDirectionalLightHelper(object, 1);
     } else if (object instanceof THREE.SpotLight) {
-      helper = new THREE.SpotLightHelper(object, 1);
+      helper = new THREE.SpotLightHelper(object);
     } else if (object instanceof THREE.HemisphereLight) {
       helper = new SpokeHemisphereLightHelper(object, 1);
     } else if (object instanceof THREE.SkinnedMesh) {
@@ -1310,10 +1299,6 @@ export default class Editor {
       let component;
 
       if (componentClass) {
-        if (componentClass.type === "light") {
-          this._resetDefaultLights();
-        }
-
         if (componentName === GLTFModelComponent.componentName && props && props.src) {
           component = await this.components.get(componentName).inflate(object, props);
           await this.updateGLTFModelComponent(object);
@@ -1377,10 +1362,6 @@ export default class Editor {
     const componentClass = this.components.get(componentName);
 
     if (componentClass) {
-      if (componentClass.type === "light") {
-        this._resetDefaultLights();
-      }
-
       if (componentName === SceneReferenceComponent.componentName) {
         this._removeSceneRefDependency(object);
       }
