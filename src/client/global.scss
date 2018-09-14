@@ -53,8 +53,7 @@ html, body, #app {
     flex: 1;
 
     .mosaic-window-toolbar {
-      background-color: $toolbar;
-      height: 24px;
+      display: none;
     }
 
     .mosaic-window-title {
