@@ -645,7 +645,7 @@ export default class Editor {
   }
 
   async saveScene(sceneURI) {
-    const newSceneName = getUrlFilename(sceneURI);
+    const newSceneName = decodeURIComponent(getUrlFilename(sceneURI));
     this.scene.name = newSceneName;
 
     const serializedScene = this._serializeScene(this.scene, sceneURI || this.sceneInfo.uri);
