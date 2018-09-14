@@ -5,6 +5,8 @@ import { types, addPicker } from "./utils";
 export default class PointLightComponent extends BaseComponent {
   static componentName = "point-light";
 
+  static componentDescription = "A light which emits in all directions from a single point.";
+
   static iconClassName = "fa-lightbulb";
 
   static type = "light";

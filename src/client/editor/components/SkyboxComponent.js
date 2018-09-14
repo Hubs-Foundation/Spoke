@@ -5,6 +5,8 @@ import THREE from "../three";
 export default class SkyboxComponent extends BaseComponent {
   static componentName = "skybox";
 
+  static componentDescription = "Creates a visualization of an open sky and atmosphere around your scene.";
+
   static iconClassName = "fa-cloud";
 
   static schema = [

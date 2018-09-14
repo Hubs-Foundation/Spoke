@@ -5,6 +5,8 @@ import { types, addPicker } from "./utils";
 export default class HemisphereLightComponent extends BaseComponent {
   static componentName = "hemisphere-light";
 
+  static componentDescription = "A light which illuminates the scene from directly overhead.";
+
   static iconClassName = "fa-certificate";
 
   static type = "light";
