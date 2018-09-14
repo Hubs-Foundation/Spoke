@@ -33,13 +33,13 @@ class EditorContainer extends Component {
     basic: {
       direction: "row",
       first: {
-        direction: "row",
+        direction: "column",
         first: "hierarchy",
-        second: "viewport",
-        splitPercentage: 25
+        second: "properties",
+        splitPercentage: 50
       },
-      second: "properties",
-      splitPercentage: 75
+      second: "viewport",
+      splitPercentage: 25
     },
 
     advanced: {
