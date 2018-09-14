@@ -27,6 +27,34 @@
   padding: 8px;
 }
 
+:local(.contentRows) {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+:local(.buttonList) {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  button {
+    width: 125px;
+    margin: 6px;
+  }
+}
+
+:local(.fieldRow) {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  justify-content: center;
+
+  input[type="text"] {
+    margin-right: 8px;
+  }
+}
+
 :local(.bottom) {
   margin: 8px 0;
   display: flex;

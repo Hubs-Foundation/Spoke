@@ -4,7 +4,7 @@ import { types } from "./utils";
 export default class GLTFModelComponent extends BaseComponent {
   static componentName = "gltf-model";
 
-  static iconClassName = "fa-file-import";
+  static iconClassName = "fa-cube";
 
   static dontExportProps = true;
 

@@ -183,7 +183,7 @@ class FileDialog extends Component {
       }, 500);
     } else {
       if (!file.isDirectory && !directory) {
-        this.props.onConfirm(file.uri);
+        this.props.onConfirm(file.uri, file.name);
       } else if (file.isDirectory) {
         if (directory) {
           this.setState({

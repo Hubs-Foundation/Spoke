@@ -57,6 +57,12 @@
 }
 :local(.treeNode) {
   padding: 6px 0;
+  display: flex;
+
+  i {
+    margin-top: 2px;
+    padding: 0 6px;
+  }
 }
 
 :local(.conflictDisplay) {

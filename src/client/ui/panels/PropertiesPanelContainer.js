@@ -13,19 +13,8 @@ import FileDialog from "../dialogs/FileDialog";
 import ErrorDialog from "../dialogs/ErrorDialog";
 import ProgressDialog, { PROGRESS_DIALOG_DELAY } from "../dialogs/ProgressDialog";
 import AddComponentDropdown from "../AddComponentDropdown";
+import { getDisplayName } from "../../utils/get-display-name";
 import SetNameCommand from "../../editor/commands/SetNameCommand";
-
-export function getDisplayName(name) {
-  if (name.includes("-")) {
-    return name
-      .split("-")
-      .map(([f, ...rest]) => f.toUpperCase() + rest.join(""))
-      .join(" ");
-  } else {
-    const displayName = name.replace(/[A-Z]/g, " $&");
-    return displayName[0].toUpperCase() + displayName.substr(1);
-  }
-}
 
 class PropertiesPanelContainer extends Component {
   static propTypes = {
@@ -395,9 +384,11 @@ class PropertiesPanelContainer extends Component {
             styles.propertiesHeaderContent,
             false
           )}
-          <div className={styles.addComponentContainer}>
-            <AddComponentDropdown options={componentOptions} onChange={this.onAddComponent} />
-          </div>
+          {componentOptions.length > 0 && (
+            <div className={styles.addComponentContainer}>
+              <AddComponentDropdown options={componentOptions} onChange={this.onAddComponent} />
+            </div>
+          )}
         </PropertyGroup>
         {objectComponents.map(component => {
           // Generate property groups for each component and property editors for each property.

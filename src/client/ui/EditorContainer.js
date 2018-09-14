@@ -196,6 +196,7 @@ class EditorContainer extends Component {
     this.props.editor.signals.windowResize.dispatch();
     this.props.editor.signals.sceneModified.add(this.onSceneModified);
     this.props.editor.signals.editorError.add(this.onEditorError);
+    this.updateDocumentTitle();
 
     window.onbeforeunload = e => {
       if (!this.props.editor.sceneModified()) {
@@ -394,8 +395,12 @@ class EditorContainer extends Component {
   };
 
   onSceneModified = () => {
+    this.updateDocumentTitle();
+  };
+
+  updateDocumentTitle = () => {
     const modified = this.props.editor.sceneModified() ? "*" : "";
-    document.title = `Spoke - ${this.props.editor.scene.name}${modified}`;
+    document.title = `Spoke - ${modified}${this.props.editor.scene.name}`;
   };
 
   /**

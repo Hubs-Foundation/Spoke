@@ -15,6 +15,14 @@
   cursor: pointer;
   align-items: center;
 
+  &:disabled {
+    background: $panel2;
+
+    &:hover {
+      background-color: $panel2;
+    }
+  }
+
   &:hover {
     background-color: $blue-hover;
   }

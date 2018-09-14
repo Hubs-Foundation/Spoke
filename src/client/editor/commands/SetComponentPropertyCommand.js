@@ -14,13 +14,13 @@ export default class SetComponentPropertyCommand extends Command {
     this.object = object;
     this.componentName = componentName;
     this.propertyName = propertyName;
-    this.oldValue = this.editor.getComponentProperty(object, componentName, propertyName);
     this.newValue = value;
 
     this.name = `Set ${componentName}.${propertyName} on ${object.name}`;
   }
 
   execute() {
+    this.oldValue = this.editor.getComponentProperty(this.object, this.componentName, this.propertyName);
     this.editor.updateComponentProperty(this.object, this.componentName, this.propertyName, this.newValue);
   }
 

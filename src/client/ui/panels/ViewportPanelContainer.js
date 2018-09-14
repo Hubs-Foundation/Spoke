@@ -8,6 +8,7 @@ import ProgressDialog from "../dialogs/ProgressDialog";
 import ErrorDialog from "../dialogs/ErrorDialog";
 import styles from "./ViewportPanelContainer.scss";
 import AssetDropTarget from "../AssetDropTarget";
+import AddNodeActionButtons from "../AddNodeActionButtons";
 
 class ViewportPanelContainer extends Component {
   static propTypes = {
@@ -52,8 +53,7 @@ class ViewportPanelContainer extends Component {
           message: "Importing asset..."
         });
         const url = (await new Promise(resolve => urlItem.getAsString(resolve))).trim();
-        const { uri: importedUri, name } = await this.props.editor.project.import(url);
-        this.props.editor.addGLTFModelNode(name || "Model", importedUri);
+        await this.props.editor.importGLTFIntoModelNode(url);
         this.props.hideDialog();
       } catch (e) {
         this.props.showDialog(ErrorDialog, {
@@ -70,6 +70,7 @@ class ViewportPanelContainer extends Component {
         <AssetDropTarget onDropAsset={this.onDropAsset}>
           <Viewport ref={this.canvasRef} onDropAsset={this.onDropAsset} />
         </AssetDropTarget>
+        <AddNodeActionButtons />
       </div>
     );
   }

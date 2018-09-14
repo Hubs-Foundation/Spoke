@@ -13,6 +13,7 @@ import "../../vendor/react-contextmenu/index.scss";
 import SnackBar from "../SnackBar";
 import ReactTooltip from "react-tooltip";
 import ErrorDialog from "../dialogs/ErrorDialog";
+import { Components } from "../../editor/components/index";
 
 function collectNodeMenuProps({ node }) {
   return node;
@@ -131,18 +132,19 @@ class HierarchyPanelContainer extends Component {
     });
   };
 
-  getNodeType = node => {
-    const prefix = "icon-";
+  getNodeIconClassName = node => {
     if (!node.object.parent) {
-      return prefix + "root";
+      return "fa-globe";
     }
-    if (
-      this.props.editor.getComponent(node.object, "scene-reference") ||
-      this.props.editor.getComponent(node.object, "gltf-model")
-    ) {
-      return prefix + "scene";
+
+    // TODO deal with nodes with multiple components somehow.
+    for (const component of Components) {
+      if (this.props.editor.getComponent(node.object, component.componentName)) {
+        return component.iconClassName;
+      }
     }
-    return prefix + "node";
+
+    return "fa-circle";
   };
 
   renderNode = node => {
@@ -150,12 +152,13 @@ class HierarchyPanelContainer extends Component {
     const isDuplicateChild = node.object.userData._duplicate && !node.object.userData._isDuplicateRoot;
     const disableEditing =
       node.object.userData._duplicate || node.object.userData._isDuplicateRoot || node.object.userData._isMissingRoot;
-    const nodeType = this.getNodeType(node);
+    const iconClassName = this.getNodeIconClassName(node);
+
     const onMouseDown = disableEditing ? e => e.stopPropagation() : e => this.onMouseDownNode(e, node);
     return (
       <ContextMenuTrigger
         attributes={{
-          className: classNames("node", nodeType, {
+          className: classNames("node", {
             "is-active": this.props.editor.selected && node.object.id === this.props.editor.selected.id,
             conflict: disableEditing,
             "error-root": node.object.userData._isMissingRoot ? node.object.userData._missing : false,
@@ -169,7 +172,10 @@ class HierarchyPanelContainer extends Component {
         node={node}
         collect={collectNodeMenuProps}
       >
-        <div className={styles.treeNode}>{this.renderNodeName(node)}</div>
+        <div className={styles.treeNode}>
+          <i className={classNames("fas", iconClassName)} />
+          {this.renderNodeName(node)}
+        </div>
       </ContextMenuTrigger>
     );
   };
@@ -195,10 +201,10 @@ class HierarchyPanelContainer extends Component {
   renderHierarchyNodeMenu = props => {
     const node = props.trigger;
     const hasParent = node && node.object.parent;
+    if (!hasParent) return null;
+
     return (
       <ContextMenu id="hierarchy-node-menu">
-        <MenuItem onClick={this.onAddNode}>New Node</MenuItem>
-        {hasParent && <MenuItem divider />}
         {hasParent && (
           <MenuItem onClick={this.onDuplicateNode}>
             Duplicate
