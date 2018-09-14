@@ -393,7 +393,7 @@ export default async function startServer(options) {
     const credentialsPath = getCredentialsPath();
     await fs.ensureDir(path.dirname(credentialsPath));
     await fs.writeJSON(credentialsPath, { credentials: ctx.request.body.credentials });
-    ctx.stats = 200;
+    ctx.status = 200;
   });
 
   async function getCredentials() {
