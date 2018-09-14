@@ -8,7 +8,7 @@ export default class SpawnPointComponent extends BaseComponent {
   static componentName = "spawn-point";
 
   static componentDescription =
-    "A point where people will appear when they enter your scene.\nThe icon in your scene represents the actual size of an avatar.";
+    "A point where people will appear when they enter your scene.\nThe icon in the Viewport represents the actual size of an avatar.";
 
   static iconClassName = "fa-street-view";
 
