@@ -5,6 +5,8 @@ import { types } from "./utils";
 export default class AmbientLightComponent extends BaseComponent {
   static componentName = "ambient-light";
 
+  static componentDescription = "A light which illuminates all objects in your scene.";
+
   static type = "light";
 
   static iconClassName = "fa-sun";

@@ -5,6 +5,8 @@ import { types, addPicker } from "./utils";
 export default class DirectionalLightComponent extends BaseComponent {
   static componentName = "directional-light";
 
+  static componentDescription = "A light which illuminates the entire scene, but emits along a single direction.";
+
   static type = "light";
 
   static iconClassName = "fa-bolt";
