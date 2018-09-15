@@ -773,6 +773,7 @@ export default class Editor {
     this.scene.traverse(node => {
       if (!node.isMesh) return;
       if (node instanceof THREE.Sky) return;
+      if (node.userData._dontExport) return;
 
       let geometry = node.geometry;
       let attributes = geometry.attributes;

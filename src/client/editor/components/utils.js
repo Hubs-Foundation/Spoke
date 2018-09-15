@@ -22,6 +22,8 @@ export function addPicker(parent, selectionRoot) {
     configurable: true,
     enumerable: false
   });
+  picker.userData._inflated = true;
+  picker.userData._dontExport = true;
 
   parent.add(picker);
 }
