@@ -4,13 +4,13 @@ import styles from "./dialog.scss";
 import Button from "../Button";
 import Header from "../Header";
 
-export default function ErrorDialog({ title, message, confirmLabel, hideDialog }) {
+export default function ErrorDialog({ title, message, hideDialog }) {
   return (
     <div className={styles.dialogContainer}>
       <Header title={title} />
       <div className={styles.content}>{message}</div>
       <div className={styles.bottom}>
-        <Button onClick={hideDialog}>{confirmLabel}</Button>
+        <Button onClick={hideDialog}>Ok</Button>
       </div>
     </div>
   );
@@ -19,11 +19,9 @@ export default function ErrorDialog({ title, message, confirmLabel, hideDialog }
 ErrorDialog.propTypes = {
   title: PropTypes.string.isRequired,
   message: PropTypes.string.isRequired,
-  confirmLabel: PropTypes.string,
   hideDialog: PropTypes.func.isRequired
 };
 
 ErrorDialog.defaultProps = {
-  title: "Error",
-  confirmLabel: "Cancel"
+  title: "Error"
 };

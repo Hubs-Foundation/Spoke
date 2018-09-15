@@ -341,9 +341,16 @@ class EditorContainer extends Component {
       message: "Generating nav mesh..."
     });
 
-    await this.props.editor.generateNavMesh();
-
-    this.hideDialog();
+    try {
+      await this.props.editor.generateNavMesh();
+      this.hideDialog();
+    } catch (e) {
+      console.error(e);
+      this.showDialog(ErrorDialog, {
+        title: "Error Generating Nav Mesh",
+        message: e.message || "There was an unknown error."
+      });
+    }
   };
 
   onTranslateTool = e => {

@@ -827,6 +827,9 @@ export default class Editor {
     const box = new THREE.Box3().setFromBufferAttribute(finalGeo.attributes.position);
     const size = new THREE.Vector3();
     box.getSize(size);
+    if (Math.max(size.x, size.y, size.z) > 2000) {
+      throw new Error(`Scene is too large (${size.x} x ${size.y} x ${size.z}) to generate a nav mesh.`);
+    }
     const area = size.x * size.z;
     // Tuned to produce cell sizes from ~0.5 to ~1.5 for areas from ~200 to ~350,000.
     const cellSize = Math.pow(area, 1 / 3) / 50;
