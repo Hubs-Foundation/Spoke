@@ -796,6 +796,8 @@ export default class Editor {
       geometries.push(geometry);
     });
 
+    if (!geometries.length) return;
+
     const geometry = THREE.BufferGeometryUtils.mergeBufferGeometries(geometries);
 
     const flippedGeometry = geometry.clone();
