@@ -845,7 +845,7 @@ export default class Editor {
 
     const exporter = new THREE.GLTFExporter();
     const glb = await new Promise((resolve, reject) => exporter.parse(navMesh, resolve, reject, { mode: "glb" }));
-    const path = this.project.writeGeneratedBlob(`${navMesh.uuid}.glb`, glb);
+    const path = await this.project.writeGeneratedBlob(`${navMesh.uuid}.glb`, glb);
 
     const navNode = new THREE.Object3D();
     navNode.name = "Nav Mesh";
