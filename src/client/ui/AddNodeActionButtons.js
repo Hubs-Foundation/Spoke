@@ -5,10 +5,10 @@ import { withEditor } from "./contexts/EditorContext";
 import { withDialog } from "./contexts/DialogContext";
 import { withSceneActions } from "./contexts/SceneActionsContext";
 import ButtonSelectDialog from "./dialogs/ButtonSelectDialog";
-import ProgressDialog from "./dialogs/ProgressDialog";
 import AddModelDialog from "./dialogs/AddModelDialog";
 import FileDialog from "./dialogs/FileDialog";
 import { getDisplayName } from "../utils/get-display-name";
+import { performModelImport } from "../utils/import.js";
 import styles from "./AddNodeActionButtons.scss";
 import SpotLightComponent from "../editor/components/SpotLightComponent";
 import DirectionalLightComponent from "../editor/components/DirectionalLightComponent";
@@ -65,12 +65,7 @@ class AddNodeActionButtons extends Component {
       title: "Add Model",
       message: "Enter the URL to a Sketchfab model, a Poly model, or a GLTF/GLB file.",
       onURLEntered: async url => {
-        this.props.showDialog(ProgressDialog, {
-          title: "Importing Asset",
-          message: "Importing asset..."
-        });
-        await this.props.editor.importGLTFIntoModelNode(url);
-        this.props.hideDialog();
+        performModelImport(url, this.props.editor, this.props.showDialog, this.props.hideDialog);
       },
       onFilePickerChosen: () => {
         this.props.hideDialog();
