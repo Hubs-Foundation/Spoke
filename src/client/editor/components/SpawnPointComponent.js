@@ -17,6 +17,7 @@ export default class SpawnPointComponent extends BaseComponent {
   static async inflate(node, _props) {
     const spriteMaterial = new THREE.SpriteMaterial({ map: spawnPointIcon });
     const sprite = new THREE.Sprite(spriteMaterial);
+    sprite.layers.set(1);
     sprite.position.set(0, 0.5, 0);
     const component = await this._getOrCreateComponent(node, _props, sprite);
     node.add(sprite);

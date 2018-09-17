@@ -21,6 +21,7 @@ export default class BoxColliderComponent extends TransformComponent {
   static async inflate(node, _props) {
     const boxMesh = new THREE.Mesh(this._geometry, this._material);
     const box = new THREE.BoxHelper(boxMesh, 0x00ff00);
+    box.layers.set(1);
     Object.defineProperty(box.userData, "_selectionRoot", { value: node, configurable: true, enumerable: false });
     box.userData._dontExport = true;
     box.userData._dontShowInHierarchy = true;

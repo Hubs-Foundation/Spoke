@@ -9,12 +9,16 @@ import SetScaleCommand from "./commands/SetScaleCommand";
 
 export default class Viewport {
   constructor(editor, canvas) {
+    this._editor = editor;
+    this._canvas = canvas;
     const signals = editor.signals;
 
     const renderer = new THREE.WebGLRenderer({
       canvas,
-      antialias: true
+      antialias: true,
+      preserveDrawingBuffer: true
     });
+    this._renderer = renderer;
 
     renderer.gammaOutput = true;
     renderer.gammaFactor = 2.2;
@@ -28,6 +32,7 @@ export default class Viewport {
     editor.scene.background = new THREE.Color(0xaaaaaa);
 
     const camera = editor.camera;
+    this._camera = camera;
 
     // helpers
 
@@ -312,6 +317,13 @@ export default class Viewport {
 
     signals.viewportInitialized.dispatch(this);
   }
+
+  takeScreenshot = async () => {
+    this._camera.layers.disable(1);
+    this._renderer.render(this._editor.scene, this._camera);
+    this._camera.layers.enable(1);
+    return new Promise(resolve => this._canvas.toBlob(resolve));
+  };
 
   toggleSnap = () => {
     this.snapEnabled = !this.snapEnabled;

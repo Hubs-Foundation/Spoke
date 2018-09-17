@@ -334,8 +334,9 @@ export default async function startServer(options) {
     ctx.body = { navPosition, navIndex };
   });
 
-  const reticulumServer = process.env.NODE_ENV === "development" ? "dev.reticulum.io" : "hubs.mozilla.com";
-  const mediaEndpoint = `https://${reticulumServer}/api/v1/media`;
+  const mediaEndpoint = `https://${process.env.RETICULUM_SERVER}/api/v1/media`;
+  const agent = process.env.NODE_ENV === "development" ? https.Agent({ rejectUnauthorized: false }) : null;
+
   router.post("/api/import", koaBody(), async ctx => {
     const origin = ctx.request.body.url;
     const originHash = new sha.sha256().update(origin).digest("hex");
@@ -347,6 +348,7 @@ export default async function startServer(options) {
       ctx.body = { uri, name };
     } else {
       const { raw, meta } = await fetch(mediaEndpoint, {
+        agent,
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ media: { url: origin, index: 0 } })
@@ -355,7 +357,7 @@ export default async function startServer(options) {
       await fs.ensureDir(filePathBase);
 
       let name;
-      const resp = await fetch(raw);
+      const resp = await fetch(raw, { agent });
       const expected_content_type = (meta && meta.expected_content_type) || "";
       if (expected_content_type.includes("gltf+zip")) {
         const zipPath = `${filePathBase}.zip`;
@@ -391,7 +393,7 @@ export default async function startServer(options) {
     const credentialsPath = getCredentialsPath();
     await fs.ensureDir(path.dirname(credentialsPath));
     await fs.writeJSON(credentialsPath, { credentials: ctx.request.body.credentials });
-    ctx.stats = 200;
+    ctx.status = 200;
   });
 
   async function getCredentials() {
@@ -410,15 +412,19 @@ export default async function startServer(options) {
 
   router.post("/api/upload", koaBody(), async ctx => {
     const { uri } = ctx.request.body;
+    const path = uriToPath(projectPath, uri);
 
-    const fileStream = fs.createReadStream(uriToPath(projectPath, uri));
+    const fileStream = fs.createReadStream(path);
     const formData = new FormData();
     formData.append("media", fileStream);
 
     const { file_id, meta } = await fetch(mediaEndpoint, {
+      agent,
       method: "POST",
       body: formData
     }).then(r => r.json());
+
+    fs.remove(path);
 
     ctx.body = { id: file_id, token: meta.access_token };
   });
@@ -449,14 +455,14 @@ export default async function startServer(options) {
     };
     const body = JSON.stringify({ scene: sceneParams });
 
-    const sceneEndpoint = `https://${reticulumServer}/api/v1/scenes`;
+    const sceneEndpoint = `https://${process.env.RETICULUM_SERVER}/api/v1/scenes`;
     if (projectJSON.sceneId) {
-      const resp = await fetch(`${sceneEndpoint}/${projectJSON.sceneId}`, { method: "PATCH", headers, body });
+      const resp = await fetch(`${sceneEndpoint}/${projectJSON.sceneId}`, { agent, method: "PATCH", headers, body });
       const { scenes } = await resp.json();
 
       ctx.body = { url: scenes[0].url };
     } else {
-      const resp = await fetch(sceneEndpoint, { method: "POST", headers, body });
+      const resp = await fetch(sceneEndpoint, { agent, method: "POST", headers, body });
       const { scenes } = await resp.json();
       const scene = scenes[0];
 

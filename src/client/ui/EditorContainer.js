@@ -341,9 +341,16 @@ class EditorContainer extends Component {
       message: "Generating nav mesh..."
     });
 
-    await this.props.editor.generateNavMesh();
-
-    this.hideDialog();
+    try {
+      await this.props.editor.generateNavMesh();
+      this.hideDialog();
+    } catch (e) {
+      console.error(e);
+      this.showDialog(ErrorDialog, {
+        title: "Error Generating Nav Mesh",
+        message: e.message || "There was an unknown error."
+      });
+    }
   };
 
   onTranslateTool = e => {
@@ -726,14 +733,18 @@ class EditorContainer extends Component {
   };
 
   _showPublishDialog = async () => {
+    const screenshotBlob = await this.props.editor.takeScreenshot();
+    const screenshotURL = URL.createObjectURL(screenshotBlob);
     this.showDialog(PublishDialog, {
+      screenshotURL,
       onPublish: async ({ name, description }) => {
         this.showDialog(ProgressDialog, {
           title: "Publishing Scene",
           message: "Publishing scene..."
         });
-        const url = await this.props.editor.publishScene(name, description);
-        this.showDialog(PublishDialog, { published: true, url });
+        URL.revokeObjectURL(screenshotURL);
+        const sceneUrl = await this.props.editor.publishScene(name, description, screenshotBlob);
+        this.showDialog(PublishDialog, { published: true, sceneUrl });
       }
     });
   };

@@ -53,6 +53,7 @@ export default class Editor {
     this.project = project;
 
     this.DEFAULT_CAMERA = new THREE.PerspectiveCamera(80, window.innerWidth / window.innerHeight, 0.005, 10000);
+    this.DEFAULT_CAMERA.layers.enable(1);
     this.DEFAULT_CAMERA.name = "Camera";
     this.DEFAULT_CAMERA.position.set(0, 5, 10);
     this.DEFAULT_CAMERA.lookAt(new THREE.Vector3());
@@ -772,6 +773,8 @@ export default class Editor {
 
     this.scene.traverse(node => {
       if (!node.isMesh) return;
+      if (node instanceof THREE.Sky) return;
+      if (node.userData._dontExport) return;
 
       let geometry = node.geometry;
       let attributes = geometry.attributes;
@@ -793,6 +796,8 @@ export default class Editor {
 
       geometries.push(geometry);
     });
+
+    if (!geometries.length) return;
 
     const geometry = THREE.BufferGeometryUtils.mergeBufferGeometries(geometries);
 
@@ -823,6 +828,9 @@ export default class Editor {
     const box = new THREE.Box3().setFromBufferAttribute(finalGeo.attributes.position);
     const size = new THREE.Vector3();
     box.getSize(size);
+    if (Math.max(size.x, size.y, size.z) > 2000) {
+      throw new Error(`Scene is too large (${size.x} x ${size.y} x ${size.z}) to generate a nav mesh.`);
+    }
     const area = size.x * size.z;
     // Tuned to produce cell sizes from ~0.5 to ~1.5 for areas from ~200 to ~350,000.
     const cellSize = Math.pow(area, 1 / 3) / 50;
@@ -841,7 +849,7 @@ export default class Editor {
 
     const exporter = new THREE.GLTFExporter();
     const glb = await new Promise((resolve, reject) => exporter.parse(navMesh, resolve, reject, { mode: "glb" }));
-    const path = this.project.writeGeneratedBlob(`${navMesh.uuid}.glb`, glb);
+    const path = await this.project.writeGeneratedBlob(`${navMesh.uuid}.glb`, glb);
 
     const navNode = new THREE.Object3D();
     navNode.name = "Nav Mesh";
@@ -1741,16 +1749,20 @@ export default class Editor {
     this.history.redo();
   }
 
-  async publishScene(name, description) {
+  async takeScreenshot() {
+    return await this.viewports[0].takeScreenshot();
+  }
+
+  async publishScene(name, description, screenshotBlob) {
     await this.project.mkdir(this.project.getAbsoluteURI("generated"));
 
-    const screenshotUri = this.project.getAbsoluteURI(`temp-screenshot.jpg`);
-    // TODO BP: Generate actual screenshot here
-    const { id: screenshotId, token: screenshotToken } = await this.project.upload(screenshotUri);
+    const screenshotUri = this.project.getAbsoluteURI(`generated/${uuid()}.png`);
+    await this.project.writeBlob(screenshotUri, screenshotBlob);
+    const { id: screenshotId, token: screenshotToken } = await this.project.uploadAndDelete(screenshotUri);
 
     const glbUri = this.project.getAbsoluteURI(`generated/${uuid()}.glb`);
     await this.exportScene(glbUri, true);
-    const { id: glbId, token: glbToken } = await this.project.upload(glbUri);
+    const { id: glbId, token: glbToken } = await this.project.uploadAndDelete(glbUri);
 
     const { url } = await this.project.createOrUpdateScene(
       screenshotId,
@@ -1764,11 +1776,11 @@ export default class Editor {
     return url;
   }
 
-  async debugVerifyAuth(url) {
+  async _debugVerifyAuth(url) {
     const params = new URLSearchParams(url);
     const topic = params.get("auth_topic");
     const token = params.get("auth_token");
-    const reticulumServer = process.env.NODE_ENV === "development" ? "dev.reticulum.io" : "hubs.mozilla.com";
+    const reticulumServer = process.env.RETICULUM_SERVER;
     const socketUrl = `wss://${reticulumServer}/socket`;
     const socket = new Socket(socketUrl, { params: { session_id: uuid() } });
     socket.connect();
@@ -1783,7 +1795,7 @@ export default class Editor {
   }
 
   async startAuthentication(email) {
-    const reticulumServer = process.env.NODE_ENV === "development" ? "dev.reticulum.io" : "hubs.mozilla.com";
+    const reticulumServer = process.env.RETICULUM_SERVER;
     const socketUrl = `wss://${reticulumServer}/socket`;
     const socket = new Socket(socketUrl, { params: { session_id: uuid() } });
     socket.connect();

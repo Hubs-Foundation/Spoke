@@ -191,7 +191,7 @@ export default class Project extends EventEmitter {
     }).then(r => r.json());
   }
 
-  async upload(uri) {
+  async uploadAndDelete(uri) {
     return await fetch("/api/upload", {
       method: "POST",
       headers: { "content-type": "application/json" },
