@@ -5,7 +5,15 @@ import classNames from "classnames";
 
 const StringInput = React.forwardRef(({ onChange, ...props }, ref) => {
   const fullClassName = classNames(styles.stringInput, props.className);
-  return <input ref={ref} onChange={e => onChange(e.target.value, e)} {...props} className={fullClassName} />;
+  return (
+    <input
+      ref={ref}
+      onChange={e => onChange(e.target.value, e)}
+      {...props}
+      className={fullClassName}
+      placeholder={props.placeholder}
+    />
+  );
 });
 
 StringInput.defaultProps = {
@@ -20,6 +28,7 @@ StringInput.propTypes = {
   value: PropTypes.string,
   type: PropTypes.string,
   required: PropTypes.bool,
+  placeholder: PropTypes.string,
   onChange: PropTypes.func
 };
 

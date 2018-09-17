@@ -32,6 +32,12 @@
   display: flex;
   flex-direction: column;
   width: 100%;
+
+  :local(.topImage) {
+    max-height: 300px;
+    width: auto;
+    padding: 0 0 16px 0;
+  }
 }
 
 :local(.buttonList) {

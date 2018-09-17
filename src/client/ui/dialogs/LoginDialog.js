@@ -4,6 +4,7 @@ import styles from "./dialog.scss";
 import Button from "../Button";
 import Header from "../Header";
 import StringInput from "../inputs/StringInput";
+import BotImageUrl from "../../assets/LoginBot.png";
 
 export default class LoginDialog extends Component {
   static propTypes = {
@@ -29,7 +30,7 @@ export default class LoginDialog extends Component {
     const { authStarted, onCancel, hideDialog } = this.props;
     return (
       <div className={styles.dialogContainer}>
-        <Header title="Log in to Publish" />
+        <Header title="Publish to Hubs" />
         <div className={styles.loginContainer}>
           {authStarted ? (
             <div className={styles.content}>
@@ -38,8 +39,9 @@ export default class LoginDialog extends Component {
           ) : (
             <form id="login" onSubmit={this.handleSubmit}>
               <div className={styles.content}>
-                <div className={styles.message}>
-                  Log in to publish your scene. You will be sent an email with a magic link.
+                <div className={styles.contentRows}>
+                  <img className={styles.topImage} src={BotImageUrl} />
+                  <div className={styles.message}>{"Enter your email address to publish your scene to Hubs."}</div>
                 </div>
               </div>
               <div className={styles.content}>
@@ -61,7 +63,7 @@ export default class LoginDialog extends Component {
           </Button>
           {!authStarted && (
             <Button key="login" form="login">
-              Log in
+              Next
             </Button>
           )}
         </div>
