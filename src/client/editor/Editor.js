@@ -53,6 +53,7 @@ export default class Editor {
     this.project = project;
 
     this.DEFAULT_CAMERA = new THREE.PerspectiveCamera(80, window.innerWidth / window.innerHeight, 0.005, 10000);
+    this.DEFAULT_CAMERA.layers.enable(1);
     this.DEFAULT_CAMERA.name = "Camera";
     this.DEFAULT_CAMERA.position.set(0, 5, 10);
     this.DEFAULT_CAMERA.lookAt(new THREE.Vector3());
@@ -1748,16 +1749,20 @@ export default class Editor {
     this.history.redo();
   }
 
-  async publishScene(name, description) {
+  async takeScreenshot() {
+    return await this.viewports[0].takeScreenshot();
+  }
+
+  async publishScene(name, description, screenshotBlob) {
     await this.project.mkdir(this.project.getAbsoluteURI("generated"));
 
-    const screenshotUri = this.project.getAbsoluteURI(`temp-screenshot.jpg`);
-    // TODO BP: Generate actual screenshot here
-    const { id: screenshotId, token: screenshotToken } = await this.project.upload(screenshotUri);
+    const screenshotUri = this.project.getAbsoluteURI(`generated/${uuid()}.png`);
+    await this.project.writeBlob(screenshotUri, screenshotBlob);
+    const { id: screenshotId, token: screenshotToken } = await this.project.uploadAndDelete(screenshotUri);
 
     const glbUri = this.project.getAbsoluteURI(`generated/${uuid()}.glb`);
     await this.exportScene(glbUri, true);
-    const { id: glbId, token: glbToken } = await this.project.upload(glbUri);
+    const { id: glbId, token: glbToken } = await this.project.uploadAndDelete(glbUri);
 
     const { url } = await this.project.createOrUpdateScene(
       screenshotId,
@@ -1771,7 +1776,7 @@ export default class Editor {
     return url;
   }
 
-  async debugVerifyAuth(url) {
+  async _debugVerifyAuth(url) {
     const params = new URLSearchParams(url);
     const topic = params.get("auth_topic");
     const token = params.get("auth_token");

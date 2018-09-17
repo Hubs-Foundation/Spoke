@@ -412,8 +412,9 @@ export default async function startServer(options) {
 
   router.post("/api/upload", koaBody(), async ctx => {
     const { uri } = ctx.request.body;
+    const path = uriToPath(projectPath, uri);
 
-    const fileStream = fs.createReadStream(uriToPath(projectPath, uri));
+    const fileStream = fs.createReadStream(path);
     const formData = new FormData();
     formData.append("media", fileStream);
 
@@ -422,6 +423,8 @@ export default async function startServer(options) {
       method: "POST",
       body: formData
     }).then(r => r.json());
+
+    fs.remove(path);
 
     ctx.body = { id: file_id, token: meta.access_token };
   });

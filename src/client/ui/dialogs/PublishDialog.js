@@ -10,9 +10,10 @@ export default class PublishDialog extends Component {
   static propTypes = {
     hideDialog: PropTypes.func.isRequired,
     onCancel: PropTypes.func,
+    screenshotURL: PropTypes.string,
     onPublish: PropTypes.func,
     published: PropTypes.bool,
-    url: PropTypes.string
+    sceneUrl: PropTypes.string
   };
 
   constructor(props) {
@@ -29,7 +30,7 @@ export default class PublishDialog extends Component {
   };
 
   render() {
-    const { onCancel, hideDialog, published, url } = this.props;
+    const { onCancel, hideDialog, screenshotURL, published, sceneUrl } = this.props;
     return (
       <div className={styles.dialogContainer}>
         <Header title="Publish to Hubs" />
@@ -38,14 +39,14 @@ export default class PublishDialog extends Component {
             <div className={classNames(styles.content, styles.publishedContent)}>
               <span>
                 Your scene has been published!<br />
-                <a href={url} target="_blank" rel="noopener noreferrer">
-                  {url}
+                <a href={sceneUrl} target="_blank" rel="noopener noreferrer">
+                  {sceneUrl}
                 </a>
               </span>
             </div>
           ) : (
             <div className={styles.content}>
-              <img className={styles.sceneThumbnail} />
+              <img className={styles.sceneThumbnail} src={screenshotURL} />
               <form id="publish" onSubmit={this.handleSubmit}>
                 <div className={styles.inputField}>
                   <label className={styles.label}>Name:</label>
