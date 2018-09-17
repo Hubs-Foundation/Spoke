@@ -25,6 +25,7 @@
   // This forces firefox to give the contents a proper height.
   overflow: hidden;
   padding: 8px;
+  white-space: pre;
 }
 
 :local(.contentRows) {
