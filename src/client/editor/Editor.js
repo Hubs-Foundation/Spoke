@@ -1177,8 +1177,9 @@ export default class Editor {
     this.select(object);
   }
 
-  addGLTFModelNode(name, url) {
-    this.addUnicomponentNode(name, "gltf-model", true, { src: url });
+  async addGLTFModelNode(name, uri) {
+    const attribution = await this.project.getImportAttribution(uri);
+    this.addUnicomponentNode(name, "gltf-model", true, { src: uri, attribution });
   }
 
   async importGLTFIntoModelNode(url) {
@@ -1748,6 +1749,16 @@ export default class Editor {
 
   redo() {
     this.history.redo();
+  }
+
+  getSceneAttribution() {
+    const attributions = new Set();
+    this.scene.traverse(obj => {
+      const gltfModelComponent = GLTFModelComponent.getComponent(obj);
+      if (!gltfModelComponent) return;
+      attributions.add(gltfModelComponent.getProperty("attribution"));
+    });
+    return Array.from(attributions).join("\n");
   }
 
   async takeScreenshot() {
