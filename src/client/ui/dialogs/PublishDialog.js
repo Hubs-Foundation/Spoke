@@ -35,18 +35,18 @@ export default class PublishDialog extends Component {
       <div className={styles.dialogContainer}>
         <Header title="Publish to Hubs" />
         <div className={styles.publishContainer}>
-          {published ? (
-            <div className={classNames(styles.content, styles.publishedContent)}>
-              <span>
-                Your scene has been published!<br />
-                <a href={sceneUrl} target="_blank" rel="noopener noreferrer">
-                  {sceneUrl}
-                </a>
-              </span>
-            </div>
-          ) : (
-            <div className={styles.content}>
-              <img className={styles.sceneThumbnail} src={screenshotURL} />
+          <div className={styles.content}>
+            <img className={styles.sceneThumbnail} src={screenshotURL} />
+            {published ? (
+              <div className={classNames(styles.content, styles.publishedContent)}>
+                <span>
+                  Your scene has been published!<br />
+                  <a href={sceneUrl} target="_blank" rel="noopener noreferrer">
+                    {sceneUrl}
+                  </a>
+                </span>
+              </div>
+            ) : (
               <form id="publish" onSubmit={this.handleSubmit}>
                 <div className={styles.inputField}>
                   <label className={styles.label}>Name:</label>
@@ -62,8 +62,8 @@ export default class PublishDialog extends Component {
                   />
                 </div>
               </form>
-            </div>
-          )}
+            )}
+          </div>
         </div>
         {published ? (
           <div className={styles.bottom}>
