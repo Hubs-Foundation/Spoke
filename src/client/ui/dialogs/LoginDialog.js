@@ -5,6 +5,7 @@ import Button from "../Button";
 import Header from "../Header";
 import StringInput from "../inputs/StringInput";
 import BotImageUrl from "../../assets/LoginBot.png";
+import classNames from "classnames";
 
 export default class LoginDialog extends Component {
   static propTypes = {
@@ -33,26 +34,31 @@ export default class LoginDialog extends Component {
         <Header title="Publish to Hubs" />
         <div className={styles.loginContainer}>
           {authStarted ? (
-            <div className={styles.content}>
-              <div className={styles.message}>Email sent! Please click on the link in th email to continue.</div>
+            <div className={classNames([styles.content, styles.contentFullHeight])}>
+              <div className={classNames([styles.contentRows, styles.contentRowsCentered])}>
+                <div className={styles.message}>{"Email sent! Click the link in the email to continue."}</div>
+              </div>
             </div>
           ) : (
             <form id="login" onSubmit={this.handleSubmit}>
               <div className={styles.content}>
-                <div className={styles.contentRows}>
+                <div className={classNames([styles.contentRows, styles.contentRowsCentered])}>
                   <img className={styles.topImage} src={BotImageUrl} />
                   <div className={styles.message}>{"Enter your email address to publish your scene to Hubs."}</div>
                 </div>
               </div>
               <div className={styles.content}>
-                <label className={styles.label}>E-Mail Address:</label>
-                <StringInput
-                  id="email"
-                  type="email"
-                  required
-                  value={this.state.email}
-                  onChange={email => this.setState({ email })}
-                />
+                <div className={classNames([styles.contentRows, styles.contentRowsCentered])}>
+                  <StringInput
+                    id="email"
+                    type="email"
+                    placeholder="Your email address"
+                    required
+                    value={this.state.email}
+                    style={{ width: "200px" }}
+                    onChange={email => this.setState({ email })}
+                  />
+                </div>
               </div>
             </form>
           )}
