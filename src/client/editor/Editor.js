@@ -842,8 +842,8 @@ export default class Editor {
 
     const navMesh = new THREE.Mesh(
       navGeo,
-      new THREE.MeshBasicMaterial({
-        color: 0xff0000
+      new THREE.MeshLambertMaterial({
+        color: 0x0000ff
       })
     );
 
@@ -854,8 +854,9 @@ export default class Editor {
     const navNode = new THREE.Object3D();
     navNode.name = "Nav Mesh";
     await this._addComponent(navNode, "gltf-model", { src: path });
-    this._addComponent(navNode, "visible", { visible: true });
+    this._addComponent(navNode, "visible", { visible: false });
     this._addComponent(navNode, "nav-mesh");
+    this._addComponent(navNode, "heightfield");
 
     this.addObject(navNode);
   }

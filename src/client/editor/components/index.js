@@ -3,6 +3,7 @@ import BoxColliderComponent from "./BoxColliderComponent";
 import DirectionalLightComponent from "./DirectionalLightComponent";
 import GLTFModelComponent from "./GLTFModelComponent";
 import GroupComponent from "./GroupComponent";
+import HeightfieldComponent from "./HeightfieldComponent";
 import HemisphereLightComponent from "./HemisphereLightComponent";
 import HoverableComponent from "./HoverableComponent";
 import InteractableComponent from "./InteractableComponent";
@@ -28,8 +29,9 @@ export const Components = [
   AmbientLightComponent,
   BoxColliderComponent,
   DirectionalLightComponent,
-  GroupComponent,
   GLTFModelComponent,
+  GroupComponent,
+  HeightfieldComponent,
   HemisphereLightComponent,
   HoverableComponent,
   InteractableComponent,
