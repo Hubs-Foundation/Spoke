@@ -16,10 +16,11 @@
   align-items: center;
 
   &:disabled {
-    background: $panel2;
+    background: $disabled;
+    color: $disabled-text;
 
     &:hover {
-      background-color: $panel2;
+      background-color: $disabled;
     }
   }
 

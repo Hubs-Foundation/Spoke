@@ -10,8 +10,10 @@ export default function ConfirmDialog({ title, message, confirmLabel, cancelLabe
       <Header title={title} />
       <div className={styles.content}>{message}</div>
       <div className={styles.bottom}>
+        <Button className={styles.cancel} onClick={onCancel}>
+          {cancelLabel}
+        </Button>
         <Button onClick={onConfirm}>{confirmLabel}</Button>
-        <Button onClick={onCancel}>{cancelLabel}</Button>
       </div>
     </div>
   );

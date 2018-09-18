@@ -293,11 +293,7 @@ class EditorContainer extends Component {
       return;
     }
 
-    if (this.props.editor.sceneInfo.uri) {
-      this.onSaveScene(this.props.editor.sceneInfo.uri);
-    } else {
-      this.onSaveSceneAsDialog();
-    }
+    return this.saveOrSaveAsScene();
   };
 
   onSaveAs = e => {
@@ -539,6 +535,14 @@ class EditorContainer extends Component {
     }
   };
 
+  saveOrSaveAsScene = async () => {
+    if (this.props.editor.sceneInfo.uri) {
+      return this.onSaveScene(this.props.editor.sceneInfo.uri);
+    } else {
+      return this.onSaveSceneAsDialog();
+    }
+  };
+
   onSaveSceneAsDialog = async () => {
     const filePath = await this.waitForFile({
       title: "Save scene as...",
@@ -548,9 +552,9 @@ class EditorContainer extends Component {
       initialPath: this.props.editor.sceneInfo.uri
     });
 
-    if (filePath === null) return;
+    if (filePath === null) return false;
 
-    await this.onSaveScene(filePath);
+    return await this.onSaveScene(filePath);
   };
 
   onSaveScene = async sceneURI => {
@@ -562,6 +566,8 @@ class EditorContainer extends Component {
     try {
       await this.props.editor.saveScene(sceneURI);
       this.hideDialog();
+
+      return true;
     } catch (e) {
       console.error(e);
 
@@ -569,6 +575,8 @@ class EditorContainer extends Component {
         title: "Error Saving Scene",
         message: e.message || "There was an error when saving the scene."
       });
+
+      return false;
     }
   };
 
@@ -718,6 +726,18 @@ class EditorContainer extends Component {
 
   onPublishScene = async () => {
     if (await this.props.editor.authenticated()) {
+      if (this.props.editor.sceneModified()) {
+        const willSaveChanges = await this.waitForConfirm({
+          title: "Unsaved Chages",
+          message: "Your scene has unsaved changes, you'll need to save before publishing."
+        });
+
+        if (!willSaveChanges) return;
+
+        const savedOk = await this.saveOrSaveAsScene();
+        if (!savedOk) return;
+      }
+
       this._showPublishDialog();
     } else {
       this.showDialog(LoginDialog, {
