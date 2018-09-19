@@ -848,7 +848,7 @@ class EditorContainer extends Component {
                   menus={menus}
                   editor={editor}
                   sceneActions={this.sceneActionsContext}
-                  mayPublish={editor.sceneWasModified()}
+                  mayPublish={!editor.sceneIsDefault()}
                 />
                 <MosaicWithoutDragDropContext
                   className="mosaic-theme"
