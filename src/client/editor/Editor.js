@@ -1190,14 +1190,14 @@ export default class Editor {
     this.select(object);
   }
 
-  async addGLTFModelNode(name, uri) {
+  async addGLTFModelNode(name, uri, originUri) {
     const attribution = await this.project.getImportAttribution(uri);
-    this.addUnicomponentNode(name, "gltf-model", true, { src: uri, attribution });
+    this.addUnicomponentNode(name, "gltf-model", true, { src: uri, attribution, origin: originUri });
   }
 
   async importGLTFIntoModelNode(url) {
     const { uri: importedUri, name } = await this.project.import(url);
-    this.addGLTFModelNode(name || "Model", importedUri);
+    this.addGLTFModelNode(name || "Model", importedUri, url);
   }
 
   createNode(name, parent) {
