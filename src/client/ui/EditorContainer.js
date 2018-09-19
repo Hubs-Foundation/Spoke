@@ -739,7 +739,8 @@ class EditorContainer extends Component {
       if (this.props.editor.sceneModified()) {
         const willSaveChanges = await this.waitForConfirm({
           title: "Unsaved Chages",
-          message: "Your scene has unsaved changes, you'll need to save before publishing."
+          message: "Your scene must be saved before publishing.",
+          confirmLabel: "Save"
         });
 
         if (!willSaveChanges) return;
