@@ -211,6 +211,7 @@
     width: 400px;
     height: 260px;
     margin: 1em;
+    border-radius: 4px;
   }
   :local(.content) {
     flex-direction: row;
@@ -238,6 +239,7 @@
     font-size: 13px;
     padding-top: 4px;
     padding-bottom: 4px;
+    margin-top: 1em;
     resize: none;
     width: 300px;
     height: 100px;
@@ -256,5 +258,7 @@
 
 :local(.contentTitle) {
   color: $white;
+  font-size: 1.5em;
+  font-weight: bold;
 }
 

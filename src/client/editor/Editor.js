@@ -486,7 +486,7 @@ export default class Editor {
     }
 
     if (metadata) {
-      scene.userData.metadata = metadata;
+      scene.userData._metadata = metadata;
     }
 
     // init scene conflict status

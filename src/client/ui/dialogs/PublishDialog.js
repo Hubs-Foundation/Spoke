@@ -56,7 +56,7 @@ export default class PublishDialog extends Component {
               <div>
                 <form id="publish" onSubmit={this.handleSubmit}>
                   <div className={styles.inputField}>
-                    <label className={styles.label}>Name:</label>
+                    {this.state.isNewScene && <label className={styles.label}>Name:</label>}
                     {this.state.isNewScene ? (
                       <StringInput
                         id="name"
@@ -98,7 +98,7 @@ export default class PublishDialog extends Component {
             <Button key="cancel" onClick={onCancel || hideDialog} className={styles.cancel}>
               Cancel
             </Button>
-            <Button key="publish" form="publish">
+            <Button key="publish" type="submit" form="publish">
               {this.state.isNewScene ? "Publish" : "Re-Publish"}
             </Button>
           </div>
