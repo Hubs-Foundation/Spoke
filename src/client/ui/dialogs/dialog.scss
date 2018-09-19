@@ -259,6 +259,16 @@
       white-space: pre-wrap;
     }
   }
+  :local(.publishInfo) {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 12px;
+
+    a {
+      margin-top: 12px;
+    }
+  }
 }
 
 :local(.titleRow) {

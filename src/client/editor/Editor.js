@@ -109,7 +109,8 @@ export default class Editor {
       scene: new THREE.Scene(),
       helperScene: new THREE.Scene(),
       helpers: {},
-      modified: false
+      modified: false,
+      saved: false
     };
     this.scenes.push(initialSceneInfo);
 
@@ -123,12 +124,12 @@ export default class Editor {
     this._ignoreSceneModification = false;
     this.signals.sceneGraphChanged.add(() => {
       if (this._ignoreSceneModification) return;
-      this.sceneInfo.modified = true;
+      this.sceneInfo.modified = this.sceneInfo.saved = true;
       this.signals.sceneModified.dispatch();
     });
     this.signals.objectChanged.add(() => {
       if (this._ignoreSceneModification) return;
-      this.sceneInfo.modified = true;
+      this.sceneInfo.modified = this.sceneInfo.saved = true;
       this.signals.sceneModified.dispatch();
     });
 
@@ -246,6 +247,7 @@ export default class Editor {
       uri: uri,
       scene: scene,
       modified: false,
+      saved: false,
       helperScene: this.helperScene,
       helpers: this.helpers
     };
@@ -322,6 +324,10 @@ export default class Editor {
 
   sceneModified() {
     return this.sceneInfo.modified;
+  }
+
+  sceneSaved() {
+    return this.sceneInfo.saved;
   }
 
   _addDependency(uri, obj) {
@@ -1806,7 +1812,6 @@ export default class Editor {
       description,
       attribution
     );
-    console.log(res);
 
     return { sceneUrl: res.url, sceneId: res.sceneId };
   }

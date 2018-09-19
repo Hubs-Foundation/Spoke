@@ -180,9 +180,11 @@ export default class ToolBar extends Component {
           </ToolToggle>
         </div>
         <div className={styles.spacer} />
-        <Button className={styles.publishButton} onClick={this.props.sceneActions.onPublishScene}>
-          Publish to Hubs
-        </Button>
+        {this.props.mayPublish && (
+          <Button className={styles.publishButton} onClick={this.props.sceneActions.onPublishScene}>
+            Publish to Hubs
+          </Button>
+        )}
         <ContextMenu id="menu">
           {this.props.menus.map(menu => {
             return this.renderMenus(menu);
@@ -196,5 +198,6 @@ export default class ToolBar extends Component {
 ToolBar.propTypes = {
   menus: PropTypes.array,
   editor: PropTypes.object,
-  sceneActions: PropTypes.object
+  sceneActions: PropTypes.object,
+  mayPublish: PropTypes.bool
 };

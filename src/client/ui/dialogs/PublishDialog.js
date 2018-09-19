@@ -1,5 +1,4 @@
 import React, { Component } from "react";
-import classNames from "classnames";
 import PropTypes from "prop-types";
 import styles from "./dialog.scss";
 import Button from "../Button";
@@ -32,7 +31,10 @@ export default class PublishDialog extends Component {
 
   handleSubmit = e => {
     e.preventDefault();
-    this.props.onPublish(this.state);
+
+    if (this.props.onPublish) {
+      this.props.onPublish(this.state);
+    }
   };
 
   render() {
@@ -43,38 +45,29 @@ export default class PublishDialog extends Component {
         <div className={styles.publishContainer}>
           <div className={styles.content}>
             <img className={styles.sceneThumbnail} src={screenshotURL} />
-            {published ? (
-              <div className={classNames(styles.content, styles.publishedContent)}>
-                <span>
-                  Your scene has been published!<br />
-                  <a href={sceneUrl} target="_blank" rel="noopener noreferrer">
-                    {sceneUrl}
-                  </a>
-                </span>
-              </div>
-            ) : (
-              <div>
-                <form id="publish" onSubmit={this.handleSubmit}>
-                  {this.state.isNewScene ? (
-                    <div className={styles.inputField}>
-                      <label className={styles.label}>Scene Name:</label>
-                      <StringInput
-                        id="name"
-                        required
-                        pattern=".{4,}"
-                        title="Name must be at least 4 characters."
-                        value={this.state.name}
-                        className={styles.name}
-                        onChange={name => this.setState({ name })}
-                      />
-                    </div>
-                  ) : (
-                    <div className={styles.titleRow}>
-                      <div className={styles.contentTitle}>{this.state.name}</div>
+            <div>
+              <form id="publish" onSubmit={this.handleSubmit}>
+                {this.state.isNewScene && !published ? (
+                  <div className={styles.inputField}>
+                    <label className={styles.label}>Scene Name:</label>
+                    <StringInput
+                      id="name"
+                      required
+                      pattern=".{4,}"
+                      title="Name must be at least 4 characters."
+                      value={this.state.name}
+                      className={styles.name}
+                      onChange={name => this.setState({ name })}
+                    />
+                  </div>
+                ) : (
+                  <div className={styles.titleRow}>
+                    <div className={styles.contentTitle}>{this.state.name}</div>
 
-                      <Button onClick={() => this.setState({ isNewScene: true })}>New Scene</Button>
-                    </div>
-                  )}
+                    {!published && <Button onClick={() => this.setState({ isNewScene: true })}>New Scene</Button>}
+                  </div>
+                )}
+                {!published ? (
                   <div className={styles.inputField}>
                     <label className={styles.label}>Scene Description:</label>
                     <textarea
@@ -84,19 +77,28 @@ export default class PublishDialog extends Component {
                       onChange={e => this.setState({ description: e.target.value })}
                     />
                   </div>
-                </form>
+                ) : (
+                  <div className={styles.publishInfo}>
+                    <span>Your scene has been published to Hubs.</span>
+                    <Button href={sceneUrl} target="_blank">
+                      View Your Scene
+                    </Button>
+                  </div>
+                )}
+              </form>
+              {!published && (
                 <div className={styles.attribution}>
                   <label className={styles.label}>Attribution:</label>
                   <p className={styles.attributionText}>{attribution}</p>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
         {published ? (
           <div className={styles.bottom}>
-            <Button key="ok" onClick={hideDialog}>
-              Ok
+            <Button key="ok" className={styles.cancel} onClick={hideDialog}>
+              Close
             </Button>
           </div>
         ) : (

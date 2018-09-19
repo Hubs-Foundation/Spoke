@@ -768,18 +768,21 @@ class EditorContainer extends Component {
     const screenshotURL = URL.createObjectURL(screenshotBlob);
     const { name, description, sceneId } = this.props.editor.getSceneMetadata();
 
-    this.showDialog(PublishDialog, {
+    await this.showDialog(PublishDialog, {
       screenshotURL,
       attribution,
       initialName: name || this.props.editor.scene.name,
       initialDescription: description,
       isNewScene: !sceneId,
+      onCancel: () => {
+        URL.revokeObjectURL(screenshotURL);
+        this.hideDialog();
+      },
       onPublish: async ({ name, description, isNewScene }) => {
         this.showDialog(ProgressDialog, {
           title: "Publishing Scene",
           message: "Publishing scene..."
         });
-        URL.revokeObjectURL(screenshotURL);
 
         this.props.editor.setSceneMetadata({ name, description });
 
@@ -792,7 +795,14 @@ class EditorContainer extends Component {
 
         await this.saveOrSaveAsScene();
 
-        this.showDialog(PublishDialog, { published: true, sceneUrl: publishResult.sceneUrl });
+        await this.showDialog(PublishDialog, {
+          screenshotURL,
+          initialName: name,
+          published: true,
+          sceneUrl: publishResult.sceneUrl
+        });
+
+        URL.revokeObjectURL(screenshotURL);
       }
     });
   };
@@ -833,7 +843,12 @@ class EditorContainer extends Component {
           <EditorContextProvider value={editor}>
             <DialogContextProvider value={this.dialogContext}>
               <SceneActionsContextProvider value={this.sceneActionsContext}>
-                <ToolBar menus={menus} editor={editor} sceneActions={this.sceneActionsContext} />
+                <ToolBar
+                  menus={menus}
+                  editor={editor}
+                  sceneActions={this.sceneActionsContext}
+                  mayPublish={editor.sceneSaved()}
+                />
                 <MosaicWithoutDragDropContext
                   className="mosaic-theme"
                   renderTile={this.renderPanel}
