@@ -55,22 +55,28 @@ export default class PublishDialog extends Component {
             ) : (
               <div>
                 <form id="publish" onSubmit={this.handleSubmit}>
-                  <div className={styles.inputField}>
-                    {this.state.isNewScene && <label className={styles.label}>Name:</label>}
-                    {this.state.isNewScene ? (
+                  {this.state.isNewScene ? (
+                    <div className={styles.inputField}>
+                      <label className={styles.label}>Scene Name:</label>
                       <StringInput
                         id="name"
                         required
-                        minLength="4"
+                        pattern=".{4,}"
+                        title="Name must be at least 4 characters."
                         value={this.state.name}
+                        className={styles.name}
                         onChange={name => this.setState({ name })}
                       />
-                    ) : (
+                    </div>
+                  ) : (
+                    <div className={styles.titleRow}>
                       <div className={styles.contentTitle}>{this.state.name}</div>
-                    )}
-                  </div>
+
+                      <Button onClick={() => this.setState({ isNewScene: true })}>New Scene</Button>
+                    </div>
+                  )}
                   <div className={styles.inputField}>
-                    <label className={styles.label}>Description:</label>
+                    <label className={styles.label}>Scene Description:</label>
                     <textarea
                       className={styles.description}
                       id="description"
