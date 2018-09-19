@@ -1765,7 +1765,7 @@ export default class Editor {
     return await this.viewports[0].takeScreenshot();
   }
 
-  async publishScene(name, description, screenshotBlob) {
+  async publishScene(name, description, screenshotBlob, attribution) {
     await this.project.mkdir(this.project.getAbsoluteURI("generated"));
 
     const screenshotUri = this.project.getAbsoluteURI(`generated/${uuid()}.png`);
@@ -1782,7 +1782,8 @@ export default class Editor {
       glbId,
       glbToken,
       name,
-      description
+      description,
+      attribution
     );
 
     return url;

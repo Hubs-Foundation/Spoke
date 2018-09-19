@@ -55,6 +55,7 @@ export default class PublishDialog extends Component {
                     <StringInput
                       id="name"
                       required
+                      minLength="4"
                       value={this.state.name}
                       onChange={name => this.setState({ name })}
                     />

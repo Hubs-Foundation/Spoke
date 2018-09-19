@@ -440,7 +440,8 @@ export default async function startServer(options) {
       model_file_id: params.glbId,
       model_file_token: params.glbToken,
       name: params.name,
-      description: params.description
+      description: params.description,
+      attribution: params.attribution
     };
 
     const projectFilePath = path.join(projectPath, "spoke-project.json");
