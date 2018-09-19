@@ -2,30 +2,14 @@
 
 Easily create custom 3D environments for [Mozilla Hubs](https://hubs.mozilla.com).
 
-## Getting Started
-
-New to Spoke? Check out the [Getting Started Guide](https://github.com/MozillaReality/Spoke/wiki/Getting-Started)
-
-## Installation
-
-```
-npm install -g spoke-test-cli
-```
-
 ## Usage
 
-```
-cd my-project
-spoke
-```
+- [Download](https://github.com/MozillaReality/Spoke/archive/master.zip) and extract this repo
+- `cd Spoke-master`
+- `npm ci`
+- `npm run dev:http`
 
-## Development
-
-```
-npm run dev
-```
-
-Then open https://localhost:9090.
+Then open http://localhost:9090.
 
 ## Credits
 
