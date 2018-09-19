@@ -445,7 +445,6 @@ export default class Editor {
     }
 
     scene = await this._loadSerializedScene(sceneDef, uri, isRoot, ancestors);
-
     scene.userData._ancestors = ancestors;
 
     return scene;
@@ -466,7 +465,7 @@ export default class Editor {
   async _loadSerializedScene(sceneDef, baseURI, isRoot = true, ancestors) {
     let scene;
 
-    const { inherits, root, entities } = sceneDef;
+    const { metadata, inherits, root, entities } = sceneDef;
 
     const absoluteBaseURL = new URL(baseURI, window.location);
     if (inherits) {
@@ -484,6 +483,10 @@ export default class Editor {
       scene.name = root;
     } else {
       throw new Error("Invalid Scene: Scene does not inherit from another scene or have a root entity.");
+    }
+
+    if (metadata) {
+      scene.userData.metadata = metadata;
     }
 
     // init scene conflict status
@@ -755,7 +758,10 @@ export default class Editor {
       }
     });
 
+    const metadata = this.getSceneMetadata();
+
     const serializedScene = {
+      metadata,
       entities
     };
 
@@ -1488,6 +1494,19 @@ export default class Editor {
     }
   }
 
+  clearSceneMetadata() {
+    delete this.scene.userData._metadata;
+  }
+
+  setSceneMetadata(newMetadata) {
+    const existingMetadata = this.scene.userData._metadata || {};
+    this.scene.userData._metadata = Object.assign(existingMetadata, newMetadata);
+  }
+
+  getSceneMetadata() {
+    return this.scene.userData._metadata || {};
+  }
+
   async loadComponent(object, componentName, src) {
     const component = this.getComponent(object, componentName);
     component.src = src;
@@ -1753,9 +1772,10 @@ export default class Editor {
     return await this.viewports[0].takeScreenshot();
   }
 
-  async publishScene(name, description, screenshotBlob) {
+  async publishScene(sceneId, screenshotBlob) {
     await this.project.mkdir(this.project.getAbsoluteURI("generated"));
 
+    const { name, description } = this.getSceneMetadata();
     const screenshotUri = this.project.getAbsoluteURI(`generated/${uuid()}.png`);
     await this.project.writeBlob(screenshotUri, screenshotBlob);
     const { id: screenshotId, token: screenshotToken } = await this.project.uploadAndDelete(screenshotUri);
@@ -1764,7 +1784,8 @@ export default class Editor {
     await this.exportScene(glbUri, true);
     const { id: glbId, token: glbToken } = await this.project.uploadAndDelete(glbUri);
 
-    const { url } = await this.project.createOrUpdateScene(
+    const res = await this.project.createOrUpdateScene(
+      sceneId,
       screenshotId,
       screenshotToken,
       glbId,
@@ -1772,8 +1793,9 @@ export default class Editor {
       name,
       description
     );
+    console.log(res);
 
-    return url;
+    return { sceneUrl: res.url, sceneId: res.sceneId };
   }
 
   async _debugVerifyAuth(url) {

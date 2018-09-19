@@ -544,6 +544,8 @@ class EditorContainer extends Component {
   };
 
   onSaveSceneAsDialog = async () => {
+    const initialPath = this.props.editor.sceneInfo.uri;
+
     const filePath = await this.waitForFile({
       title: "Save scene as...",
       filters: [".spoke"],
@@ -553,6 +555,14 @@ class EditorContainer extends Component {
     });
 
     if (filePath === null) return false;
+
+    const newScenePath = filePath !== initialPath;
+
+    if (newScenePath) {
+      // When we save the scene to a new file, clear the metadata
+      // used for publishing so it ends up as a new scene in Hubs.
+      this.props.editor.clearSceneMetadata();
+    }
 
     return await this.onSaveScene(filePath);
   };
@@ -755,16 +765,28 @@ class EditorContainer extends Component {
   _showPublishDialog = async () => {
     const screenshotBlob = await this.props.editor.takeScreenshot();
     const screenshotURL = URL.createObjectURL(screenshotBlob);
+    const { name, description, sceneId } = this.props.editor.getSceneMetadata();
+
     this.showDialog(PublishDialog, {
       screenshotURL,
-      onPublish: async ({ name, description }) => {
+      initialName: name || this.props.editor.scene.name,
+      initialDescription: description,
+      isNewScene: !sceneId,
+      onPublish: async ({ name, description, isNewScene }) => {
         this.showDialog(ProgressDialog, {
           title: "Publishing Scene",
           message: "Publishing scene..."
         });
         URL.revokeObjectURL(screenshotURL);
-        const sceneUrl = await this.props.editor.publishScene(name, description, screenshotBlob);
-        this.showDialog(PublishDialog, { published: true, sceneUrl });
+
+        this.props.editor.setSceneMetadata({ name, description });
+
+        const publishResult = await this.props.editor.publishScene(isNewScene ? null : sceneId, screenshotBlob);
+        this.props.editor.setSceneMetadata({ sceneUrl: publishResult.sceneUrl, sceneId: publishResult.sceneId });
+
+        await this.saveOrSaveAsScene();
+
+        this.showDialog(PublishDialog, { published: true, sceneUrl: publishResult.sceneUrl });
       }
     });
   };

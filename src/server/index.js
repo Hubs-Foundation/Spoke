@@ -440,8 +440,7 @@ export default async function startServer(options) {
       description: params.description
     };
 
-    const projectFilePath = path.join(projectPath, "spoke-project.json");
-    const projectJSON = await fs.readJSON(projectFilePath);
+    const sceneId = params.sceneId;
 
     const credentials = await getCredentials();
     if (!credentials) {
@@ -456,19 +455,17 @@ export default async function startServer(options) {
     const body = JSON.stringify({ scene: sceneParams });
 
     const sceneEndpoint = `https://${process.env.RETICULUM_SERVER}/api/v1/scenes`;
-    if (projectJSON.sceneId) {
-      const resp = await fetch(`${sceneEndpoint}/${projectJSON.sceneId}`, { agent, method: "PATCH", headers, body });
+    if (sceneId) {
+      const resp = await fetch(`${sceneEndpoint}/${sceneId}`, { agent, method: "PATCH", headers, body });
       const { scenes } = await resp.json();
 
-      ctx.body = { url: scenes[0].url };
+      ctx.body = { url: scenes[0].url, sceneId: sceneId };
     } else {
       const resp = await fetch(sceneEndpoint, { agent, method: "POST", headers, body });
       const { scenes } = await resp.json();
       const scene = scenes[0];
 
-      await fs.writeJSON(projectFilePath, { ...projectJSON, sceneId: scene.scene_id });
-
-      ctx.body = { url: scene.url };
+      ctx.body = { url: scene.url, sceneId: scene.scene_id };
     }
   });
 

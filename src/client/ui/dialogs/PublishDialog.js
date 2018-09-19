@@ -13,14 +13,19 @@ export default class PublishDialog extends Component {
     screenshotURL: PropTypes.string,
     onPublish: PropTypes.func,
     published: PropTypes.bool,
-    sceneUrl: PropTypes.string
+    sceneUrl: PropTypes.string,
+    initialName: PropTypes.string,
+    initialDescription: PropTypes.string,
+    isNewScene: PropTypes.bool
   };
 
   constructor(props) {
     super(props);
+
     this.state = {
-      name: "",
-      description: ""
+      name: props.initialName || "",
+      description: props.initialDescription || "",
+      isNewScene: props.isNewScene
     };
   }
 
@@ -50,7 +55,16 @@ export default class PublishDialog extends Component {
               <form id="publish" onSubmit={this.handleSubmit}>
                 <div className={styles.inputField}>
                   <label className={styles.label}>Name:</label>
-                  <StringInput id="name" required value={this.state.name} onChange={name => this.setState({ name })} />
+                  {this.state.isNewScene ? (
+                    <StringInput
+                      id="name"
+                      required
+                      value={this.state.name}
+                      onChange={name => this.setState({ name })}
+                    />
+                  ) : (
+                    <div className={styles.contentTitle}>{this.state.name}</div>
+                  )}
                 </div>
                 <div className={styles.inputField}>
                   <label className={styles.label}>Description:</label>
@@ -77,7 +91,7 @@ export default class PublishDialog extends Component {
               Cancel
             </Button>
             <Button key="publish" form="publish">
-              Publish
+              {this.state.isNewScene ? "Publish" : "Re-Publish"}
             </Button>
           </div>
         )}
