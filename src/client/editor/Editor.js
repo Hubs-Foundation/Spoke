@@ -1781,7 +1781,9 @@ export default class Editor {
     this.scene.traverse(obj => {
       const gltfModelComponent = GLTFModelComponent.getComponent(obj);
       if (!gltfModelComponent) return;
-      attributions.add(gltfModelComponent.getProperty("attribution"));
+      const attribution = gltfModelComponent.getProperty("attribution");
+      if (!attribution) return;
+      attributions.add(attribution);
     });
     return Array.from(attributions).join("\n");
   }
