@@ -172,6 +172,12 @@ class EditorContainer extends Component {
             name: "Save Scene As...",
             action: e => this.onSaveAs(e)
           },
+          this.props.editor.sceneIsDefault()
+            ? null
+            : {
+                name: "Publish to Hubs...",
+                action: () => this.onPublishScene()
+              },
           {
             name: "Export to GLTF...",
             action: e => this.onExportScene(e)
