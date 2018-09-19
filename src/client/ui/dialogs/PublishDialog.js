@@ -70,10 +70,12 @@ export default class PublishDialog extends Component {
                     />
                   </div>
                 </form>
-                <div className={styles.attribution}>
-                  <label className={styles.label}>Attribution:</label>
-                  <p className={styles.attributionText}>{attribution}</p>
-                </div>
+                {attribution && (
+                  <div className={styles.attribution}>
+                    <label className={styles.label}>Attribution:</label>
+                    <p className={styles.attributionText}>{attribution}</p>
+                  </div>
+                )}
               </div>
             </div>
           )}

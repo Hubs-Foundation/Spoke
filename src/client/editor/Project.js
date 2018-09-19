@@ -192,7 +192,7 @@ export default class Project extends EventEmitter {
   }
 
   async getImportAttribution(uri) {
-    if (!uri.includes("/imported/")) return {};
+    if (!uri.includes("/imported/")) return null;
     try {
       const baseUri = uri
         .split("/")
@@ -201,7 +201,7 @@ export default class Project extends EventEmitter {
       const { name, author } = await this.readJSON(`${baseUri}/meta.json`);
       return `${name} by ${author}`;
     } catch (e) {
-      return {};
+      return null;
     }
   }
 
