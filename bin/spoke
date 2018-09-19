@@ -28,22 +28,28 @@ if (process.env.NODE_ENV === "development") {
 const projectPath = commander.args.length > 0 ? commander.args[0] : process.cwd();
 const projectFilePath = path.join(projectPath, "spoke-project.json");
 
-if (!fs.existsSync(projectFilePath)) {
-  const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout
-  });
+run(false);
 
-  rl.question("Creating new Spoke project. Would you like to add a the default assets? (Y/n)", answer => {
-    const formattedAnswer = answer.trim().toLowerCase();
-    const copyDefaultAssets = formattedAnswer === "y" || formattedAnswer === "";
+// Disable default assets for V1 release
+/* eslint-disable no-unused-vars */
+function promptAboutDefaultAssets() {
+  if (!fs.existsSync(projectFilePath)) {
+    const rl = readline.createInterface({
+      input: process.stdin,
+      output: process.stdout
+    });
 
-    rl.close();
+    rl.question("Creating new Spoke project. Would you like to add a the default assets? (Y/n)", answer => {
+      const formattedAnswer = answer.trim().toLowerCase();
+      const copyDefaultAssets = formattedAnswer === "y" || formattedAnswer === "";
 
-    run(copyDefaultAssets);
-  });
-} else {
-  run(false);
+      rl.close();
+
+      run(copyDefaultAssets);
+    });
+  } else {
+    run(false);
+  }
 }
 
 function run(copyDefaultAssets) {
