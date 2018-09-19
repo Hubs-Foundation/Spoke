@@ -11,8 +11,6 @@
     "bin/",
     "lib/",
     "public/",
-    "example/ArchitectureKit",
-    "example/Parthenon",
     "LICENSE"
   ],
   "repository": {
