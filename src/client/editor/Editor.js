@@ -958,30 +958,35 @@ export default class Editor {
 
     const componentsToExport = Components.filter(c => !c.dontExportProps).map(component => component.componentName);
 
+    function ensureHubsComponents(userData) {
+      if (userData.gltfExtensions === undefined) {
+        userData.gltfExtensions = {};
+      }
+      if (userData.gltfExtensions.HUBS_components === undefined) {
+        userData.gltfExtensions.HUBS_components = {};
+      }
+    }
+
     // Second pass at scene optimization.
     clonedScene.traverse(object => {
       const userData = object.userData;
 
-      // Move component data to userData.components
+      // Move component data to userData.extensions.HUBS_components
       if (userData._components) {
         for (const component of userData._components) {
           if (componentsToExport.includes(component.name)) {
-            if (userData.components === undefined) {
-              userData.components = {};
-            }
+            ensureHubsComponents(userData);
 
-            userData.components[component.name] = component.props;
+            userData.gltfExtensions.HUBS_components[component.name] = component.props;
           }
         }
       }
 
       // Add shadow component to meshes with non-default values.
       if (object.isMesh && (object.castShadow || object.receiveShadow)) {
-        if (!object.userData.components) {
-          object.userData.components = {};
-        }
+        ensureHubsComponents(object.userData);
 
-        object.userData.components.shadow = {
+        object.userData.gltfExtensions.HUBS_components.shadow = {
           castShadow: object.castShadow,
           receiveShadow: object.receiveShadow
         };
