@@ -25,12 +25,29 @@
   // This forces firefox to give the contents a proper height.
   overflow: hidden;
   padding: 8px;
+  white-space: pre;
+}
+
+:local(.contentFullHeight) {
+  height: 100%;
 }
 
 :local(.contentRows) {
   display: flex;
   flex-direction: column;
   width: 100%;
+
+  :local(.topImage) {
+    max-height: 300px;
+    width: auto;
+    padding: 0 0 16px 0;
+  }
+}
+
+:local(.contentRowsCentered) {
+  justify-content: center;
+  align-items: center;
+  height: 100%;
 }
 
 :local(.buttonList) {
@@ -96,6 +113,7 @@
 
   :local(.message) {
     padding-bottom: 24px;
+    white-space: pre;
   }
 
   :local(.loadingBarContainer) {

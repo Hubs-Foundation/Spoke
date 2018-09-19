@@ -181,7 +181,7 @@ export default class ToolBar extends Component {
         </div>
         <div className={styles.spacer} />
         <Button className={styles.publishButton} onClick={this.props.sceneActions.onPublishScene}>
-          Publish
+          Publish to Hubs
         </Button>
         <ContextMenu id="menu">
           {this.props.menus.map(menu => {
