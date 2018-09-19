@@ -191,6 +191,20 @@ export default class Project extends EventEmitter {
     }).then(r => r.json());
   }
 
+  async getImportAttribution(uri) {
+    if (!uri.includes("/imported/")) return {};
+    try {
+      const baseUri = uri
+        .split("/")
+        .slice(0, -1)
+        .join("/");
+      const { name, author } = await this.readJSON(`${baseUri}/meta.json`);
+      return `${name} by ${author}`;
+    } catch (e) {
+      return {};
+    }
+  }
+
   async uploadAndDelete(uri) {
     return await fetch("/api/upload", {
       method: "POST",
@@ -199,11 +213,11 @@ export default class Project extends EventEmitter {
     }).then(r => r.json());
   }
 
-  async createOrUpdateScene(screenshotId, screenshotToken, glbId, glbToken, name, description) {
+  async createOrUpdateScene(screenshotId, screenshotToken, glbId, glbToken, name, description, attribution) {
     return await fetch("/api/scene", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ screenshotId, screenshotToken, glbId, glbToken, name, description })
+      body: JSON.stringify({ screenshotId, screenshotToken, glbId, glbToken, name, description, attribution })
     }).then(r => r.json());
   }
 

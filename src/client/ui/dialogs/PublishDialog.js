@@ -11,6 +11,7 @@ export default class PublishDialog extends Component {
     hideDialog: PropTypes.func.isRequired,
     onCancel: PropTypes.func,
     screenshotURL: PropTypes.string,
+    attribution: PropTypes.string,
     onPublish: PropTypes.func,
     published: PropTypes.bool,
     sceneUrl: PropTypes.string
@@ -30,7 +31,7 @@ export default class PublishDialog extends Component {
   };
 
   render() {
-    const { onCancel, hideDialog, screenshotURL, published, sceneUrl } = this.props;
+    const { onCancel, hideDialog, screenshotURL, published, sceneUrl, attribution } = this.props;
     return (
       <div className={styles.dialogContainer}>
         <Header title="Publish to Hubs" />
@@ -47,21 +48,33 @@ export default class PublishDialog extends Component {
           ) : (
             <div className={styles.content}>
               <img className={styles.sceneThumbnail} src={screenshotURL} />
-              <form id="publish" onSubmit={this.handleSubmit}>
-                <div className={styles.inputField}>
-                  <label className={styles.label}>Name:</label>
-                  <StringInput id="name" required value={this.state.name} onChange={name => this.setState({ name })} />
+              <div>
+                <form id="publish" onSubmit={this.handleSubmit}>
+                  <div className={styles.inputField}>
+                    <label className={styles.label}>Name:</label>
+                    <StringInput
+                      id="name"
+                      required
+                      minLength="4"
+                      value={this.state.name}
+                      onChange={name => this.setState({ name })}
+                    />
+                  </div>
+                  <div className={styles.inputField}>
+                    <label className={styles.label}>Description:</label>
+                    <textarea
+                      className={styles.description}
+                      id="description"
+                      value={this.state.description}
+                      onChange={e => this.setState({ description: e.target.value })}
+                    />
+                  </div>
+                </form>
+                <div className={styles.attribution}>
+                  <label className={styles.label}>Attribution:</label>
+                  <p className={styles.attributionText}>{attribution}</p>
                 </div>
-                <div className={styles.inputField}>
-                  <label className={styles.label}>Description:</label>
-                  <textarea
-                    className={styles.description}
-                    id="description"
-                    value={this.state.description}
-                    onChange={e => this.setState({ description: e.target.value })}
-                  />
-                </div>
-              </form>
+              </div>
             </div>
           )}
         </div>

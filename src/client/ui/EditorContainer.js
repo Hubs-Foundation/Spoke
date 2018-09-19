@@ -734,16 +734,18 @@ class EditorContainer extends Component {
 
   _showPublishDialog = async () => {
     const screenshotBlob = await this.props.editor.takeScreenshot();
+    const attribution = this.props.editor.getSceneAttribution();
     const screenshotURL = URL.createObjectURL(screenshotBlob);
     this.showDialog(PublishDialog, {
       screenshotURL,
+      attribution,
       onPublish: async ({ name, description }) => {
         this.showDialog(ProgressDialog, {
           title: "Publishing Scene",
           message: "Publishing scene..."
         });
         URL.revokeObjectURL(screenshotURL);
-        const sceneUrl = await this.props.editor.publishScene(name, description, screenshotBlob);
+        const sceneUrl = await this.props.editor.publishScene(name, description, screenshotBlob, attribution);
         this.showDialog(PublishDialog, { published: true, sceneUrl });
       }
     });

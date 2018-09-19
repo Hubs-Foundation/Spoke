@@ -356,7 +356,7 @@ export default async function startServer(options) {
 
       await fs.ensureDir(filePathBase);
 
-      let name;
+      let name, author;
       const resp = await fetch(raw, { agent });
       const expected_content_type = (meta && meta.expected_content_type) || "";
       if (expected_content_type.includes("gltf+zip")) {
@@ -367,7 +367,9 @@ export default async function startServer(options) {
 
         const sceneFilePath = path.join(filePathBase, "scene.gltf");
         const gltf = await fs.readJSON(sceneFilePath);
-        name = gltf.asset && gltf.asset.extras && gltf.asset.extras.title;
+        const sketchfabExtras = gltf.asset && gltf.asset.extras;
+        name = sketchfabExtras && sketchfabExtras.title;
+        author = sketchfabExtras && sketchfabExtras.author.replace(/ \(http.+\)/, "");
 
         const uri = pathToUri(projectPath, sceneFilePath);
         ctx.body = { uri, name };
@@ -378,10 +380,11 @@ export default async function startServer(options) {
         await pipeToFile(resp.body, filePath);
         const uri = pathToUri(projectPath, filePath);
         name = meta && meta.name;
+        author = meta && meta.author;
         ctx.body = { uri, name };
       }
 
-      await fs.writeJSON(path.join(filePathBase, "meta.json"), { ...meta, origin, name });
+      await fs.writeJSON(path.join(filePathBase, "meta.json"), { ...meta, origin, name, author });
     }
   });
 
@@ -437,7 +440,8 @@ export default async function startServer(options) {
       model_file_id: params.glbId,
       model_file_token: params.glbToken,
       name: params.name,
-      description: params.description
+      description: params.description,
+      attribution: params.attribution
     };
 
     const projectFilePath = path.join(projectPath, "spoke-project.json");

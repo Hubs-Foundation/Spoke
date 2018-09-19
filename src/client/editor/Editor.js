@@ -1177,8 +1177,9 @@ export default class Editor {
     this.select(object);
   }
 
-  addGLTFModelNode(name, url) {
-    this.addUnicomponentNode(name, "gltf-model", true, { src: url });
+  async addGLTFModelNode(name, uri) {
+    const attribution = await this.project.getImportAttribution(uri);
+    this.addUnicomponentNode(name, "gltf-model", true, { src: uri, attribution });
   }
 
   async importGLTFIntoModelNode(url) {
@@ -1750,11 +1751,21 @@ export default class Editor {
     this.history.redo();
   }
 
+  getSceneAttribution() {
+    const attributions = new Set();
+    this.scene.traverse(obj => {
+      const gltfModelComponent = GLTFModelComponent.getComponent(obj);
+      if (!gltfModelComponent) return;
+      attributions.add(gltfModelComponent.getProperty("attribution"));
+    });
+    return Array.from(attributions).join("\n");
+  }
+
   async takeScreenshot() {
     return await this.viewports[0].takeScreenshot();
   }
 
-  async publishScene(name, description, screenshotBlob) {
+  async publishScene(name, description, screenshotBlob, attribution) {
     await this.project.mkdir(this.project.getAbsoluteURI("generated"));
 
     const screenshotUri = this.project.getAbsoluteURI(`generated/${uuid()}.png`);
@@ -1771,7 +1782,8 @@ export default class Editor {
       glbId,
       glbToken,
       name,
-      description
+      description,
+      attribution
     );
 
     return url;

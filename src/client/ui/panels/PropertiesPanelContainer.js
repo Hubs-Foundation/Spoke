@@ -220,7 +220,7 @@ class PropertiesPanelContainer extends Component {
         useDefault={useDefault}
       >
         {componentDefinition.showProps &&
-          componentDefinition.schema.map(prop => (
+          componentDefinition.schema.filter(prop => !prop.hidden).map(prop => (
             <InputGroup name={getDisplayName(prop.name)} key={prop.name} disabled={saveable && !component.src}>
               {componentTypeMappings.get(prop.type)(
                 component.props[prop.name],
