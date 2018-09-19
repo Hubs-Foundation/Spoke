@@ -242,6 +242,16 @@
     width: 300px;
     height: 100px;
   }
+  :local(.attribution) {
+    margin: 1em;
+    :local(.attributionText) {
+      margin: 0;
+      padding: 0 0.2em;
+      height: 4em;
+      overflow: auto;
+      white-space: pre-wrap;
+    }
+  }
 }
 
 :local(.contentTitle) {

@@ -848,8 +848,8 @@ export default class Editor {
 
     const navMesh = new THREE.Mesh(
       navGeo,
-      new THREE.MeshBasicMaterial({
-        color: 0xff0000
+      new THREE.MeshLambertMaterial({
+        color: 0x0000ff
       })
     );
 
@@ -860,8 +860,9 @@ export default class Editor {
     const navNode = new THREE.Object3D();
     navNode.name = "Nav Mesh";
     await this._addComponent(navNode, "gltf-model", { src: path });
-    this._addComponent(navNode, "visible", { visible: true });
+    this._addComponent(navNode, "visible", { visible: false });
     this._addComponent(navNode, "nav-mesh");
+    this._addComponent(navNode, "heightfield");
 
     this.addObject(navNode);
   }
@@ -1182,8 +1183,9 @@ export default class Editor {
     this.select(object);
   }
 
-  addGLTFModelNode(name, url) {
-    this.addUnicomponentNode(name, "gltf-model", true, { src: url });
+  async addGLTFModelNode(name, uri) {
+    const attribution = await this.project.getImportAttribution(uri);
+    this.addUnicomponentNode(name, "gltf-model", true, { src: uri, attribution });
   }
 
   async importGLTFIntoModelNode(url) {
@@ -1768,11 +1770,21 @@ export default class Editor {
     this.history.redo();
   }
 
+  getSceneAttribution() {
+    const attributions = new Set();
+    this.scene.traverse(obj => {
+      const gltfModelComponent = GLTFModelComponent.getComponent(obj);
+      if (!gltfModelComponent) return;
+      attributions.add(gltfModelComponent.getProperty("attribution"));
+    });
+    return Array.from(attributions).join("\n");
+  }
+
   async takeScreenshot() {
     return await this.viewports[0].takeScreenshot();
   }
 
-  async publishScene(sceneId, screenshotBlob) {
+  async publishScene(sceneId, screenshotBlob, attribution) {
     await this.project.mkdir(this.project.getAbsoluteURI("generated"));
 
     const { name, description } = this.getSceneMetadata();
@@ -1791,7 +1803,8 @@ export default class Editor {
       glbId,
       glbToken,
       name,
-      description
+      description,
+      attribution
     );
     console.log(res);
 

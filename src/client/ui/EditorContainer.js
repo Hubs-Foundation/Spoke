@@ -764,11 +764,13 @@ class EditorContainer extends Component {
 
   _showPublishDialog = async () => {
     const screenshotBlob = await this.props.editor.takeScreenshot();
+    const attribution = this.props.editor.getSceneAttribution();
     const screenshotURL = URL.createObjectURL(screenshotBlob);
     const { name, description, sceneId } = this.props.editor.getSceneMetadata();
 
     this.showDialog(PublishDialog, {
       screenshotURL,
+      attribution,
       initialName: name || this.props.editor.scene.name,
       initialDescription: description,
       isNewScene: !sceneId,
@@ -781,7 +783,11 @@ class EditorContainer extends Component {
 
         this.props.editor.setSceneMetadata({ name, description });
 
-        const publishResult = await this.props.editor.publishScene(isNewScene ? null : sceneId, screenshotBlob);
+        const publishResult = await this.props.editor.publishScene(
+          isNewScene ? null : sceneId,
+          screenshotBlob,
+          attribution
+        );
         this.props.editor.setSceneMetadata({ sceneUrl: publishResult.sceneUrl, sceneId: publishResult.sceneId });
 
         await this.saveOrSaveAsScene();
