@@ -293,11 +293,7 @@ class EditorContainer extends Component {
       return;
     }
 
-    if (this.props.editor.sceneInfo.uri) {
-      this.onSaveScene(this.props.editor.sceneInfo.uri);
-    } else {
-      this.onSaveSceneAsDialog();
-    }
+    return this.saveOrSaveAsScene();
   };
 
   onSaveAs = e => {
@@ -539,7 +535,17 @@ class EditorContainer extends Component {
     }
   };
 
+  saveOrSaveAsScene = async () => {
+    if (this.props.editor.sceneInfo.uri) {
+      return this.onSaveScene(this.props.editor.sceneInfo.uri);
+    } else {
+      return this.onSaveSceneAsDialog();
+    }
+  };
+
   onSaveSceneAsDialog = async () => {
+    const initialPath = this.props.editor.sceneInfo.uri;
+
     const filePath = await this.waitForFile({
       title: "Save scene as...",
       filters: [".spoke"],
@@ -548,9 +554,17 @@ class EditorContainer extends Component {
       initialPath: this.props.editor.sceneInfo.uri
     });
 
-    if (filePath === null) return;
+    if (filePath === null) return false;
 
-    await this.onSaveScene(filePath);
+    const newScenePath = filePath !== initialPath;
+
+    if (newScenePath) {
+      // When we save the scene to a new file, clear the metadata
+      // used for publishing so it ends up as a new scene in Hubs.
+      this.props.editor.clearSceneMetadata();
+    }
+
+    return await this.onSaveScene(filePath);
   };
 
   onSaveScene = async sceneURI => {
@@ -562,6 +576,8 @@ class EditorContainer extends Component {
     try {
       await this.props.editor.saveScene(sceneURI);
       this.hideDialog();
+
+      return true;
     } catch (e) {
       console.error(e);
 
@@ -569,6 +585,8 @@ class EditorContainer extends Component {
         title: "Error Saving Scene",
         message: e.message || "There was an error when saving the scene."
       });
+
+      return false;
     }
   };
 
@@ -718,6 +736,19 @@ class EditorContainer extends Component {
 
   onPublishScene = async () => {
     if (await this.props.editor.authenticated()) {
+      if (this.props.editor.sceneModified()) {
+        const willSaveChanges = await this.waitForConfirm({
+          title: "Unsaved Chages",
+          message: "Your scene must be saved before publishing.",
+          confirmLabel: "Save"
+        });
+
+        if (!willSaveChanges) return;
+
+        const savedOk = await this.saveOrSaveAsScene();
+        if (!savedOk) return;
+      }
+
       this._showPublishDialog();
     } else {
       this.showDialog(LoginDialog, {
@@ -736,17 +767,43 @@ class EditorContainer extends Component {
     const screenshotBlob = await this.props.editor.takeScreenshot();
     const attribution = this.props.editor.getSceneAttribution();
     const screenshotURL = URL.createObjectURL(screenshotBlob);
-    this.showDialog(PublishDialog, {
+    const { name, description, sceneId } = this.props.editor.getSceneMetadata();
+
+    await this.showDialog(PublishDialog, {
       screenshotURL,
       attribution,
-      onPublish: async ({ name, description }) => {
+      initialName: name || this.props.editor.scene.name,
+      initialDescription: description,
+      isNewScene: !sceneId,
+      onCancel: () => {
+        URL.revokeObjectURL(screenshotURL);
+        this.hideDialog();
+      },
+      onPublish: async ({ name, description, isNewScene }) => {
         this.showDialog(ProgressDialog, {
           title: "Publishing Scene",
           message: "Publishing scene..."
         });
+
+        this.props.editor.setSceneMetadata({ name, description });
+
+        const publishResult = await this.props.editor.publishScene(
+          isNewScene ? null : sceneId,
+          screenshotBlob,
+          attribution
+        );
+        this.props.editor.setSceneMetadata({ sceneUrl: publishResult.sceneUrl, sceneId: publishResult.sceneId });
+
+        await this.saveOrSaveAsScene();
+
+        await this.showDialog(PublishDialog, {
+          screenshotURL,
+          initialName: name,
+          published: true,
+          sceneUrl: publishResult.sceneUrl
+        });
+
         URL.revokeObjectURL(screenshotURL);
-        const sceneUrl = await this.props.editor.publishScene(name, description, screenshotBlob, attribution);
-        this.showDialog(PublishDialog, { published: true, sceneUrl });
       }
     });
   };
@@ -787,7 +844,12 @@ class EditorContainer extends Component {
           <EditorContextProvider value={editor}>
             <DialogContextProvider value={this.dialogContext}>
               <SceneActionsContextProvider value={this.sceneActionsContext}>
-                <ToolBar menus={menus} editor={editor} sceneActions={this.sceneActionsContext} />
+                <ToolBar
+                  menus={menus}
+                  editor={editor}
+                  sceneActions={this.sceneActionsContext}
+                  mayPublish={editor.sceneWasModified()}
+                />
                 <MosaicWithoutDragDropContext
                   className="mosaic-theme"
                   renderTile={this.renderPanel}

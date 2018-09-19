@@ -10,16 +10,18 @@
   min-height: 24px;
   font-size: 12px;
   font-family: Lato;
-  padding-top: 1px;
   text-align: center;
   cursor: pointer;
   align-items: center;
+  text-decoration: none;
+  padding: 1px 6px;
 
   &:disabled {
-    background: $panel2;
+    background: $disabled;
+    color: $disabled-text;
 
     &:hover {
-      background-color: $panel2;
+      background-color: $disabled;
     }
   }
 

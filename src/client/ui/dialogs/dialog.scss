@@ -191,7 +191,6 @@
    }
 }
 
-
 :local(.loginContainer) {
   flex: 1;
 
@@ -211,6 +210,7 @@
     width: 400px;
     height: 260px;
     margin: 1em;
+    border-radius: 4px;
   }
   :local(.content) {
     flex-direction: row;
@@ -231,6 +231,10 @@
   :local(input) {
     width: auto;
   }
+  :local(.name) {
+    width: 300px;
+    margin-top: 0.8em;
+  }
   :local(.description) {
     @include input;
     display: block;
@@ -238,18 +242,45 @@
     font-size: 13px;
     padding-top: 4px;
     padding-bottom: 4px;
+    margin-top: 0.8em;
     resize: none;
     width: 300px;
     height: 100px;
   }
   :local(.attribution) {
-    margin: 1em;
+    margin: 0.8em;
+
     :local(.attributionText) {
       margin: 0;
+      margin-top: 0.8em;
       padding: 0 0.2em;
       height: 4em;
       overflow: auto;
       white-space: pre-wrap;
     }
   }
+  :local(.publishInfo) {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 12px;
+
+    a {
+      margin-top: 12px;
+    }
+  }
 }
+
+:local(.titleRow) {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  margin: 12px;
+}
+
+:local(.contentTitle) {
+  color: $white;
+  font-size: 1.5em;
+  font-weight: bold;
+}
+

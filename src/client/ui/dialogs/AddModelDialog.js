@@ -67,7 +67,7 @@ export default class AddModelDialog extends Component {
             </div>
           </div>
           <div className={styles.bottom}>
-            <Button key="cancel" type="button" onClick={this.props.onCancel}>
+            <Button key="cancel" type="button" onClick={this.props.onCancel} className={styles.cancel}>
               {this.props.cancelLabel}
             </Button>
             <Button {...okAttributes} key="ok" type="submit" onClick={() => this.props.onURLEntered(this.state.url)}>

@@ -6,14 +6,23 @@ import styles from "./Button.scss";
 export default function Button({ className, children, ...props }) {
   const fullClassName = classNames(styles.button, className);
 
-  return (
-    <button className={fullClassName} {...props}>
-      {children}
-    </button>
-  );
+  if (props.href) {
+    return (
+      <a className={fullClassName} {...props}>
+        {children}
+      </a>
+    );
+  } else {
+    return (
+      <button className={fullClassName} {...props}>
+        {children}
+      </button>
+    );
+  }
 }
 
 Button.propTypes = {
   className: PropTypes.string,
-  children: PropTypes.node
+  children: PropTypes.node,
+  href: PropTypes.string
 };

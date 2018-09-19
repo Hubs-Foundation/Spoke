@@ -213,11 +213,17 @@ export default class Project extends EventEmitter {
     }).then(r => r.json());
   }
 
-  async createOrUpdateScene(screenshotId, screenshotToken, glbId, glbToken, name, description, attribution) {
+  async createOrUpdateScene(sceneId, screenshotId, screenshotToken, glbId, glbToken, name, description, attribution) {
+    const params = { screenshotId, screenshotToken, glbId, glbToken, name, description, attribution };
+
+    if (sceneId) {
+      params.sceneId = sceneId;
+    }
+
     return await fetch("/api/scene", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ screenshotId, screenshotToken, glbId, glbToken, name, description, attribution })
+      body: JSON.stringify(params)
     }).then(r => r.json());
   }
 

@@ -4,7 +4,7 @@ import Viewport from "../Viewport";
 import { withEditor } from "../contexts/EditorContext";
 import { withDialog } from "../contexts/DialogContext";
 import { withSceneActions } from "../contexts/SceneActionsContext";
-import { performModelImport } from "../../utils/import.js";
+import ProgressDialog from "../dialogs/ProgressDialog";
 import ErrorDialog from "../dialogs/ErrorDialog";
 import styles from "./ViewportPanelContainer.scss";
 import AssetDropTarget from "../AssetDropTarget";
@@ -48,7 +48,40 @@ class ViewportPanelContainer extends Component {
       );
       if (!urlItem) return;
       const url = (await new Promise(resolve => urlItem.getAsString(resolve))).trim();
-      performModelImport(url, this.props.editor, this.props.showDialog, this.props.hideDialog);
+      this.performModelImport(url);
+    }
+  };
+
+  performModelImport = async url => {
+    const editor = this.props.editor;
+    const showDialog = this.props.showDialog;
+    const hideDialog = this.props.hideDialog;
+
+    showDialog(ProgressDialog, {
+      title: "Importing Asset",
+      message: "Importing asset..."
+    });
+
+    try {
+      await editor.importGLTFIntoModelNode(url);
+      hideDialog();
+    } catch (e) {
+      let message = e.message;
+
+      if (url.indexOf("sketchfab.com") >= 0) {
+        message =
+          "Error adding model.\n\nNote: Sketchfab models must be marked as 'Downloadable' to be added to your scene.\n\nError: " +
+          e.message;
+      } else if (url.indexOf("poly.google.com") >= 0) {
+        message =
+          "Error adding model.\n\nNote: Poly panoramas are not supported and 3D models must be GLTF 2.0.\n\nError: " +
+          e.message;
+      }
+
+      showDialog(ErrorDialog, {
+        title: "Add Model",
+        message: message
+      });
     }
   };
 
@@ -58,7 +91,7 @@ class ViewportPanelContainer extends Component {
         <AssetDropTarget onDropAsset={this.onDropAsset}>
           <Viewport ref={this.canvasRef} onDropAsset={this.onDropAsset} />
         </AssetDropTarget>
-        <AddNodeActionButtons />
+        <AddNodeActionButtons onAddModelByURL={this.performModelImport} />
       </div>
     );
   }
