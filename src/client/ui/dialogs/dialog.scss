@@ -221,6 +221,7 @@
     height: 260px;
     margin: 1em;
     border-radius: 4px;
+    object-fit: cover;
   }
   :local(.content) {
     flex-direction: row;
