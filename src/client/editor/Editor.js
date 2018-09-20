@@ -1092,8 +1092,7 @@ export default class Editor {
     }
 
     if (glb) {
-      const glbBlob = await new Promise((resolve, reject) => exporter.createGLBBlob(chunks, resolve, reject));
-      await this.project.writeBlob(outputPath, glbBlob);
+      return await new Promise((resolve, reject) => exporter.createGLBBlob(chunks, resolve, reject));
     } else {
       // Export current editor scene using THREE.GLTFExporter
       const { json, buffers, images } = chunks;
@@ -1815,7 +1814,12 @@ export default class Editor {
     const { id: screenshotId, token: screenshotToken } = await this.project.uploadAndDelete(screenshotUri);
 
     const glbUri = this.project.getAbsoluteURI(`generated/${uuid()}.glb`);
-    await this.exportScene(glbUri, true);
+    const glbBlob = await this.exportScene(null, true);
+    const size = glbBlob.size / 1024 / 1024;
+    if (glbBlob.size > 100) {
+      throw new Error(`Scene is too large (${size.toFixed(2)}MB) to publish.`);
+    }
+    await this.project.writeBlob(glbUri, glbBlob);
     const { id: glbId, token: glbToken } = await this.project.uploadAndDelete(glbUri);
 
     const sceneFileUri = this.project.getAbsoluteURI(`generated/${uuid()}.spoke`);

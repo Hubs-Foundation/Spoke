@@ -795,23 +795,32 @@ class EditorContainer extends Component {
 
         this.props.editor.setSceneMetadata({ name, description, allowRemixing, allowPromotion });
 
-        const publishResult = await this.props.editor.publishScene(
-          isNewScene ? null : sceneId,
-          screenshotBlob,
-          attribution
-        );
-        this.props.editor.setSceneMetadata({ sceneUrl: publishResult.sceneUrl, sceneId: publishResult.sceneId });
+        let publishResult;
+        try {
+          publishResult = await this.props.editor.publishScene(
+            isNewScene ? null : sceneId,
+            screenshotBlob,
+            attribution
+          );
+          this.props.editor.setSceneMetadata({ sceneUrl: publishResult.sceneUrl, sceneId: publishResult.sceneId });
 
-        await this.saveOrSaveAsScene();
+          await this.saveOrSaveAsScene();
 
-        await this.showDialog(PublishDialog, {
-          screenshotURL,
-          initialName: name,
-          published: true,
-          sceneUrl: publishResult.sceneUrl
-        });
-
-        URL.revokeObjectURL(screenshotURL);
+          await this.showDialog(PublishDialog, {
+            screenshotURL,
+            initialName: name,
+            published: true,
+            sceneUrl: publishResult.sceneUrl
+          });
+        } catch (e) {
+          console.error(e);
+          this.showDialog(ErrorDialog, {
+            title: "Error Publishing Scene",
+            message: e.message || "There was an unknown error."
+          });
+        } finally {
+          URL.revokeObjectURL(screenshotURL);
+        }
       }
     });
   };

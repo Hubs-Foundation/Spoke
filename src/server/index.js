@@ -339,6 +339,15 @@ export default async function startServer(options) {
   const mediaEndpoint = `https://${process.env.RETICULUM_SERVER}/api/v1/media`;
   const agent = process.env.NODE_ENV === "development" ? https.Agent({ rejectUnauthorized: false }) : null;
 
+  async function tryGetJson(request) {
+    const text = await request.text();
+    try {
+      return JSON.parse(text);
+    } catch (e) {
+      console.log(text, e);
+    }
+  }
+
   router.post("/api/import", koaBody(), async ctx => {
     const origin = ctx.request.body.url;
     const originHash = new sha.sha256().update(origin).digest("hex");
@@ -354,7 +363,7 @@ export default async function startServer(options) {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ media: { url: origin, index: 0 } })
-      }).then(r => r.json());
+      }).then(tryGetJson);
 
       await fs.ensureDir(filePathBase);
 
@@ -427,7 +436,7 @@ export default async function startServer(options) {
       agent,
       method: "POST",
       body: formData
-    }).then(r => r.json());
+    }).then(tryGetJson);
 
     fs.remove(path);
 
@@ -467,12 +476,12 @@ export default async function startServer(options) {
     const sceneEndpoint = `https://${process.env.RETICULUM_SERVER}/api/v1/scenes`;
     if (sceneId) {
       const resp = await fetch(`${sceneEndpoint}/${sceneId}`, { agent, method: "PATCH", headers, body });
-      const { scenes } = await resp.json();
+      const { scenes } = await tryGetJson(resp);
 
       ctx.body = { url: scenes[0].url, sceneId: sceneId };
     } else {
       const resp = await fetch(sceneEndpoint, { agent, method: "POST", headers, body });
-      const { scenes } = await resp.json();
+      const { scenes } = await tryGetJson(resp);
       const scene = scenes[0];
 
       ctx.body = { url: scene.url, sceneId: scene.scene_id };
