@@ -11,7 +11,7 @@ export default class ColorInput extends Component {
     this.state = {
       targetBlock: null,
       pickerX: 0,
-      pickerY: 0,
+      pickerBottom: 0,
       displayColorPicker: false
     };
   }
@@ -28,7 +28,7 @@ export default class ColorInput extends Component {
     const target = this.state.targetBlock.getBoundingClientRect();
     this.setState({
       pickerX: target.left,
-      pickerY: target.y + target.height
+      pickerBottom: window.innerHeight - target.y
     });
   };
 
@@ -37,7 +37,7 @@ export default class ColorInput extends Component {
     this.setState({
       targetBlock: e.currentTarget,
       pickerX: target.left,
-      pickerY: target.y + target.height,
+      pickerBottom: window.innerHeight - target.y,
       displayColorPicker: !this.state.displayColorPicker
     });
   };
@@ -57,7 +57,7 @@ export default class ColorInput extends Component {
     }
     const pos = {
       left: this.state.pickerX,
-      top: this.state.pickerY
+      bottom: this.state.pickerBottom
     };
     return (
       <div style={pos} className={styles.popover}>

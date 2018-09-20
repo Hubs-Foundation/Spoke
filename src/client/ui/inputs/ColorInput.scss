@@ -31,6 +31,7 @@
     position: fixed;
     z-index: 100;
     box-shadow: $shadow-30;
+    margin-bottom: 3px;
     :local(.cover) {
       position: fixed;
       left: 0;
