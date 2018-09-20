@@ -690,7 +690,7 @@ export default class Editor {
     this.signals.sceneModified.dispatch();
   }
 
-  _serializeScene(scene, scenePath) {
+  _serializeScene(scene, scenePath, skipMetadata = false) {
     const entities = {};
 
     scene.traverse(entityObject => {
@@ -765,12 +765,11 @@ export default class Editor {
       }
     });
 
-    const metadata = this.getSceneMetadata();
+    const serializedScene = { entities };
 
-    const serializedScene = {
-      metadata,
-      entities
-    };
+    if (!skipMetadata) {
+      serializedScene.metadata = this.getSceneMetadata();
+    }
 
     if (scene.userData._inherits) {
       serializedScene.inherits = absoluteToRelativeURL(scenePath, scene.userData._inherits);
@@ -1810,7 +1809,9 @@ export default class Editor {
     await this.exportScene(glbUri, true);
     const { id: glbId, token: glbToken } = await this.project.uploadAndDelete(glbUri);
 
-    const sceneFileUri = this.sceneInfo.uri;
+    const sceneFileUri = this.project.getAbsoluteURI(`generated/${uuid()}.spoke`);
+    const serializedScene = this._serializeScene(this.scene, sceneFileUri, true);
+    await this.project.writeJSON(sceneFileUri, serializedScene);
     const { id: sceneFileId, token: sceneFileToken } = await this.project.uploadAndDelete(sceneFileUri);
 
     const res = await this.project.createOrUpdateScene({
