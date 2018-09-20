@@ -1816,7 +1816,7 @@ export default class Editor {
     const glbUri = this.project.getAbsoluteURI(`generated/${uuid()}.glb`);
     const glbBlob = await this.exportScene(null, true);
     const size = glbBlob.size / 1024 / 1024;
-    if (glbBlob.size > 100) {
+    if (size > 100) {
       throw new Error(`Scene is too large (${size.toFixed(2)}MB) to publish.`);
     }
     await this.project.writeBlob(glbUri, glbBlob);
