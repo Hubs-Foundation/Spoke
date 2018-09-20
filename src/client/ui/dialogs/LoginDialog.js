@@ -36,7 +36,9 @@ export default class LoginDialog extends Component {
           {authStarted ? (
             <div className={classNames([styles.content, styles.contentFullHeight])}>
               <div className={classNames([styles.contentRows, styles.contentRowsCentered])}>
-                <div className={styles.message}>{"Email sent! Click the link in the email to continue."}</div>
+                <div className={styles.message}>
+                  {"Email sent!\nKeep this dialog open and click the link in the email to continue."}
+                </div>
               </div>
             </div>
           ) : (
@@ -45,6 +47,24 @@ export default class LoginDialog extends Component {
                 <div className={classNames([styles.contentRows, styles.contentRowsCentered])}>
                   <img className={styles.topImage} src={BotImageUrl} />
                   <div className={styles.message}>{"Enter your email address to publish your scene to Hubs."}</div>
+                  <div className={styles.message}>
+                    By proceeding, you agree to the Hubs{" "}
+                    <a
+                      href="https://github.com/mozilla/hubs/blob/master/TERMS.md"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Terms of Use
+                    </a>{" "}
+                    and{" "}
+                    <a
+                      href="https://github.com/mozilla/hubs/blob/master/PRIVACY.md"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Privacy Notice
+                    </a>.
+                  </div>
                 </div>
               </div>
               <div className={styles.content}>

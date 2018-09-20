@@ -172,6 +172,12 @@ class EditorContainer extends Component {
             name: "Save Scene As...",
             action: e => this.onSaveAs(e)
           },
+          this.props.editor.sceneIsDefault()
+            ? null
+            : {
+                name: "Publish to Hubs...",
+                action: () => this.onPublishScene()
+              },
           {
             name: "Export to GLTF...",
             action: e => this.onExportScene(e)
@@ -767,25 +773,27 @@ class EditorContainer extends Component {
     const screenshotBlob = await this.props.editor.takeScreenshot();
     const attribution = this.props.editor.getSceneAttribution();
     const screenshotURL = URL.createObjectURL(screenshotBlob);
-    const { name, description, sceneId } = this.props.editor.getSceneMetadata();
+    const { name, description, allowRemixing, allowPromotion, sceneId } = this.props.editor.getSceneMetadata();
 
     await this.showDialog(PublishDialog, {
       screenshotURL,
       attribution,
       initialName: name || this.props.editor.scene.name,
       initialDescription: description,
+      initialAllowRemixing: allowRemixing,
+      initialAllowPromotion: allowPromotion,
       isNewScene: !sceneId,
       onCancel: () => {
         URL.revokeObjectURL(screenshotURL);
         this.hideDialog();
       },
-      onPublish: async ({ name, description, isNewScene }) => {
+      onPublish: async ({ name, description, allowRemixing, allowPromotion, isNewScene }) => {
         this.showDialog(ProgressDialog, {
           title: "Publishing Scene",
           message: "Publishing scene..."
         });
 
-        this.props.editor.setSceneMetadata({ name, description });
+        this.props.editor.setSceneMetadata({ name, description, allowRemixing, allowPromotion });
 
         const publishResult = await this.props.editor.publishScene(
           isNewScene ? null : sceneId,

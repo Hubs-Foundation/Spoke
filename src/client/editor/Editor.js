@@ -690,7 +690,7 @@ export default class Editor {
     this.signals.sceneModified.dispatch();
   }
 
-  _serializeScene(scene, scenePath) {
+  _serializeScene(scene, scenePath, skipMetadata = false) {
     const entities = {};
 
     scene.traverse(entityObject => {
@@ -765,12 +765,11 @@ export default class Editor {
       }
     });
 
-    const metadata = this.getSceneMetadata();
+    const serializedScene = { entities };
 
-    const serializedScene = {
-      metadata,
-      entities
-    };
+    if (!skipMetadata) {
+      serializedScene.metadata = this.getSceneMetadata();
+    }
 
     if (scene.userData._inherits) {
       serializedScene.inherits = absoluteToRelativeURL(scenePath, scene.userData._inherits);
@@ -1195,14 +1194,14 @@ export default class Editor {
     this.select(object);
   }
 
-  async addGLTFModelNode(name, uri) {
+  async addGLTFModelNode(name, uri, originUri) {
     const attribution = await this.project.getImportAttribution(uri);
-    this.addUnicomponentNode(name, "gltf-model", true, { src: uri, attribution });
+    this.addUnicomponentNode(name, "gltf-model", true, { src: uri, attribution, origin: originUri });
   }
 
   async importGLTFIntoModelNode(url) {
     const { uri: importedUri, name } = await this.project.import(url);
-    this.addGLTFModelNode(name || "Model", importedUri);
+    this.addGLTFModelNode(name || "Model", importedUri, url);
   }
 
   createNode(name, parent) {
@@ -1801,7 +1800,7 @@ export default class Editor {
   async publishScene(sceneId, screenshotBlob, attribution) {
     await this.project.mkdir(this.project.getAbsoluteURI("generated"));
 
-    const { name, description } = this.getSceneMetadata();
+    const { name, description, allowRemixing, allowPromotion } = this.getSceneMetadata();
     const screenshotUri = this.project.getAbsoluteURI(`generated/${uuid()}.png`);
     await this.project.writeBlob(screenshotUri, screenshotBlob);
     const { id: screenshotId, token: screenshotToken } = await this.project.uploadAndDelete(screenshotUri);
@@ -1810,16 +1809,25 @@ export default class Editor {
     await this.exportScene(glbUri, true);
     const { id: glbId, token: glbToken } = await this.project.uploadAndDelete(glbUri);
 
-    const res = await this.project.createOrUpdateScene(
+    const sceneFileUri = this.project.getAbsoluteURI(`generated/${uuid()}.spoke`);
+    const serializedScene = this._serializeScene(this.scene, sceneFileUri, true);
+    await this.project.writeJSON(sceneFileUri, serializedScene);
+    const { id: sceneFileId, token: sceneFileToken } = await this.project.uploadAndDelete(sceneFileUri);
+
+    const res = await this.project.createOrUpdateScene({
       sceneId,
       screenshotId,
       screenshotToken,
       glbId,
       glbToken,
+      sceneFileId,
+      sceneFileToken,
       name,
       description,
-      attribution
-    );
+      attribution,
+      allowRemixing,
+      allowPromotion
+    });
 
     return { sceneUrl: res.url, sceneId: res.sceneId };
   }

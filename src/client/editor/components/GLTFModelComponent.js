@@ -12,6 +12,7 @@ export default class GLTFModelComponent extends BaseComponent {
 
   static schema = [
     { name: "src", type: types.file, filters: [".gltf", ".glb"], default: null },
-    { name: "attribution", type: types.string, hidden: true }
+    { name: "attribution", type: types.string, hidden: true },
+    { name: "origin", type: types.string, hidden: true }
   ];
 }

@@ -6,7 +6,7 @@ import styles from "./BooleanInput.scss";
 export default function BooleanInput({ onChange, value }) {
   return (
     <div>
-      <label>
+      <label className={styles.label}>
         <input type="checkbox" className={styles.hide} checked={value} onChange={e => onChange(e.target.checked)} />
         <span className={classNames("fas", "fa-square", "fa-12px")} />
       </label>
