@@ -92,7 +92,7 @@ export default class PublishDialog extends Component {
                     </div>
                     <div className={styles.inputField}>
                       <div className={styles.checkboxRow}>
-                        <label htmlFor="allowRemixing" className={styles.label}>
+                        <label htmlFor="allowRemixing">
                           Allow{" "}
                           <a
                             href="https://github.com/MozillaReality/Spoke/blob/master/REMIXING.md"
@@ -111,7 +111,7 @@ export default class PublishDialog extends Component {
                     </div>
                     <div className={styles.inputField}>
                       <div className={styles.checkboxRow}>
-                        <label htmlFor="allowPromotion" className={styles.label}>
+                        <label htmlFor="allowPromotion">
                           Allow Mozilla to{" "}
                           <a
                             href="https://github.com/MozillaReality/Spoke/blob/master/PROMOTION.md"
@@ -142,7 +142,7 @@ export default class PublishDialog extends Component {
               {!published &&
                 attribution && (
                   <div className={styles.attribution}>
-                    <label className={styles.label}>Attribution:</label>
+                    <label>Attribution:</label>
                     <p className={styles.attributionText}>{attribution}</p>
                   </div>
                 )}
