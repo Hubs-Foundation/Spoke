@@ -796,7 +796,6 @@ export default class Editor {
         attributes = geometry.attributes;
       }
 
-      // Skip geometry without 3D position data, like text.
       if (!attributes.position || attributes.position.itemSize !== 3) return;
 
       if (geometry.index) geometry = geometry.toNonIndexed();
@@ -1798,6 +1797,16 @@ export default class Editor {
   }
 
   async publishScene(sceneId, screenshotBlob, attribution) {
+    // TODO: We re-generate the nav mesh even if the scene geometry has not changed. We could be more intelligent
+    // about detecting changes to the merged geometry.
+    const currentNavMeshNode = this.findFirstWithComponent("nav-mesh");
+    if (currentNavMeshNode) {
+      const src = this.getComponentProperty(currentNavMeshNode, "gltf-model", "src");
+      await this.project.remove(src);
+      this.removeObject(currentNavMeshNode);
+    }
+    await this.generateNavMesh();
+
     await this.project.mkdir(this.project.getAbsoluteURI("generated"));
 
     const { name, description, allowRemixing, allowPromotion } = this.getSceneMetadata();

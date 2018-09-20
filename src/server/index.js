@@ -277,6 +277,8 @@ export default async function startServer(options) {
     } else if (ctx.request.query.mkdir) {
       // Make the directory at filePath if it doesn't already exist.
       await fs.ensureDir(filePath);
+    } else if (ctx.request.query.remove) {
+      await fs.remove(filePath);
     } else if (ctx.request.files) {
       for (const file of Object.values(ctx.request.files)) {
         const destPath = path.join(filePath, file.name);

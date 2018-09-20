@@ -97,6 +97,14 @@ export default class Project extends EventEmitter {
     return json;
   }
 
+  async remove(relativePath) {
+    const res = await this.fetch(relativePath + "?remove=true", { method: "POST" });
+
+    const json = await res.json();
+
+    return json;
+  }
+
   async mkdir(relativePath) {
     const res = await this.fetch(relativePath + "?mkdir=true", { method: "POST" });
 
