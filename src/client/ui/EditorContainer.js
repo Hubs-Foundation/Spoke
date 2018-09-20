@@ -735,20 +735,20 @@ class EditorContainer extends Component {
   };
 
   onPublishScene = async () => {
+    if (this.props.editor.sceneModified()) {
+      const willSaveChanges = await this.waitForConfirm({
+        title: "Unsaved Chages",
+        message: "Your scene must be saved before publishing.",
+        confirmLabel: "Save"
+      });
+
+      if (!willSaveChanges) return;
+
+      const savedOk = await this.saveOrSaveAsScene();
+      if (!savedOk) return;
+    }
+
     if (await this.props.editor.authenticated()) {
-      if (this.props.editor.sceneModified()) {
-        const willSaveChanges = await this.waitForConfirm({
-          title: "Unsaved Chages",
-          message: "Your scene must be saved before publishing.",
-          confirmLabel: "Save"
-        });
-
-        if (!willSaveChanges) return;
-
-        const savedOk = await this.saveOrSaveAsScene();
-        if (!savedOk) return;
-      }
-
       this._showPublishDialog();
     } else {
       this.showDialog(LoginDialog, {
