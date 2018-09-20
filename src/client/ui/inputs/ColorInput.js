@@ -25,6 +25,7 @@ export default class ColorInput extends Component {
   };
 
   updateDimensions = () => {
+    if (!this.state.targetBlock) return;
     const target = this.state.targetBlock.getBoundingClientRect();
     this.setState({
       pickerX: target.left,
