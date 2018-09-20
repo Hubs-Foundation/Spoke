@@ -16,15 +16,26 @@ export default class PublishDialog extends Component {
     sceneUrl: PropTypes.string,
     initialName: PropTypes.string,
     initialDescription: PropTypes.string,
+    initialAllowRemixing: PropTypes.bool,
+    initialAllowPromotion: PropTypes.bool,
     isNewScene: PropTypes.bool
+  };
+
+  static defaultProps = {
+    initialName: "",
+    initialDescription: "",
+    initialAllowRemixing: true,
+    initialAllowPromotion: true
   };
 
   constructor(props) {
     super(props);
 
     this.state = {
-      name: props.initialName || "",
-      description: props.initialDescription || "",
+      name: props.initialName,
+      description: props.initialDescription,
+      allowRemixing: props.initialAllowRemixing,
+      allowPromotion: props.initialAllowPromotion,
       isNewScene: props.isNewScene
     };
   }

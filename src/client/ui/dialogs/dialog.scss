@@ -15,6 +15,12 @@
   min-width: 400px;
   min-height: 150px;
   max-height: 80vh;
+
+  :local(.message) {
+    a {
+      color: white;
+    }
+  }
 }
 
 :local(.content) {

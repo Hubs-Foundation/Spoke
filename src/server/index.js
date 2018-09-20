@@ -439,6 +439,10 @@ export default async function startServer(options) {
       screenshot_file_token: params.screenshotToken,
       model_file_id: params.glbId,
       model_file_token: params.glbToken,
+      scene_file_id: params.sceneFileId,
+      scene_file_token: params.sceneFileToken,
+      allow_remixing: params.allowRemixing,
+      allow_promotion: params.allowPromotion,
       name: params.name,
       description: params.description,
       attribution: params.attribution

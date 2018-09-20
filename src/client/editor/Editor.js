@@ -1796,7 +1796,7 @@ export default class Editor {
   async publishScene(sceneId, screenshotBlob, attribution) {
     await this.project.mkdir(this.project.getAbsoluteURI("generated"));
 
-    const { name, description } = this.getSceneMetadata();
+    const { name, description, allowRemixing, allowPromotion } = this.getSceneMetadata();
     const screenshotUri = this.project.getAbsoluteURI(`generated/${uuid()}.png`);
     await this.project.writeBlob(screenshotUri, screenshotBlob);
     const { id: screenshotId, token: screenshotToken } = await this.project.uploadAndDelete(screenshotUri);
@@ -1805,16 +1805,23 @@ export default class Editor {
     await this.exportScene(glbUri, true);
     const { id: glbId, token: glbToken } = await this.project.uploadAndDelete(glbUri);
 
-    const res = await this.project.createOrUpdateScene(
+    const sceneFileUri = this.sceneInfo.uri;
+    const { id: sceneFileId, token: sceneFileToken } = await this.project.uploadAndDelete(sceneFileUri);
+
+    const res = await this.project.createOrUpdateScene({
       sceneId,
       screenshotId,
       screenshotToken,
       glbId,
       glbToken,
+      sceneFileId,
+      sceneFileToken,
       name,
       description,
-      attribution
-    );
+      attribution,
+      allowRemixing,
+      allowPromotion
+    });
 
     return { sceneUrl: res.url, sceneId: res.sceneId };
   }

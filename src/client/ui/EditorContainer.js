@@ -785,13 +785,13 @@ class EditorContainer extends Component {
         URL.revokeObjectURL(screenshotURL);
         this.hideDialog();
       },
-      onPublish: async ({ name, description, isNewScene }) => {
+      onPublish: async ({ name, description, allowRemixing, allowPromotion, isNewScene }) => {
         this.showDialog(ProgressDialog, {
           title: "Publishing Scene",
           message: "Publishing scene..."
         });
 
-        this.props.editor.setSceneMetadata({ name, description });
+        this.props.editor.setSceneMetadata({ name, description, allowRemixing, allowPromotion });
 
         const publishResult = await this.props.editor.publishScene(
           isNewScene ? null : sceneId,
