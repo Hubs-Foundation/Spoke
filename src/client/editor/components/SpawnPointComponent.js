@@ -1,8 +1,11 @@
 import THREE from "../three";
 import BaseComponent from "./BaseComponent";
-import spawnPointIconUrl from "../../assets/spawn-point.png";
+import spawnPointModelUrl from "../../assets/spawn-point.glb";
 
-const spawnPointIcon = new THREE.TextureLoader().load(spawnPointIconUrl);
+const spawnPointModel = new Promise((resolve, reject) => {
+  const loader = new THREE.GLTFLoader();
+  loader.load(spawnPointModelUrl, resolve, null, reject);
+});
 
 export default class SpawnPointComponent extends BaseComponent {
   static componentName = "spawn-point";
@@ -15,12 +18,20 @@ export default class SpawnPointComponent extends BaseComponent {
   static schema = [];
 
   static async inflate(node, _props) {
-    const spriteMaterial = new THREE.SpriteMaterial({ map: spawnPointIcon });
-    const sprite = new THREE.Sprite(spriteMaterial);
-    sprite.layers.set(1);
-    sprite.position.set(0, 0.5, 0);
-    const component = await this._getOrCreateComponent(node, _props, sprite);
-    node.add(sprite);
+    const spawnPoint = (await spawnPointModel).scene.clone();
+    spawnPoint.rotation.y = Math.PI;
+    spawnPoint.traverse(obj => {
+      if (!obj.isMesh) return;
+      obj.userData._dontExport = true;
+      obj.layers.set(1);
+      Object.defineProperty(obj.userData, "_selectionRoot", {
+        value: node,
+        configurable: true,
+        enumerable: false
+      });
+    });
+    const component = await this._getOrCreateComponent(node, _props, spawnPoint);
+    node.add(spawnPoint);
     return component;
   }
 }
