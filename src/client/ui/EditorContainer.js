@@ -773,13 +773,15 @@ class EditorContainer extends Component {
     const screenshotBlob = await this.props.editor.takeScreenshot();
     const attribution = this.props.editor.getSceneAttribution();
     const screenshotURL = URL.createObjectURL(screenshotBlob);
-    const { name, description, sceneId } = this.props.editor.getSceneMetadata();
+    const { name, description, allowRemixing, allowPromotion, sceneId } = this.props.editor.getSceneMetadata();
 
     await this.showDialog(PublishDialog, {
       screenshotURL,
       attribution,
       initialName: name || this.props.editor.scene.name,
       initialDescription: description,
+      initialAllowRemixing: allowRemixing,
+      initialAllowPromotion: allowPromotion,
       isNewScene: !sceneId,
       onCancel: () => {
         URL.revokeObjectURL(screenshotURL);

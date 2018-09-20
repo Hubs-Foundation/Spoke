@@ -4,6 +4,7 @@ import styles from "./dialog.scss";
 import Button from "../Button";
 import Header from "../Header";
 import StringInput from "../inputs/StringInput";
+import BooleanInput from "../inputs/BooleanInput";
 
 export default class PublishDialog extends Component {
   static propTypes = {
@@ -79,14 +80,55 @@ export default class PublishDialog extends Component {
                   </div>
                 )}
                 {!published ? (
-                  <div className={styles.inputField}>
-                    <label className={styles.label}>Scene Description:</label>
-                    <textarea
-                      className={styles.description}
-                      id="description"
-                      value={this.state.description}
-                      onChange={e => this.setState({ description: e.target.value })}
-                    />
+                  <div>
+                    <div className={styles.inputField}>
+                      <label className={styles.label}>Scene Description:</label>
+                      <textarea
+                        className={styles.description}
+                        id="description"
+                        value={this.state.description}
+                        onChange={e => this.setState({ description: e.target.value })}
+                      />
+                    </div>
+                    <div className={styles.inputField}>
+                      <div className={styles.checkboxRow}>
+                        <label htmlFor="allowRemixing" className={styles.label}>
+                          Allow{" "}
+                          <a
+                            href="https://github.com/MozillaReality/Spoke/blob/master/REMIXING.md"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            Remixing
+                          </a>
+                        </label>
+                        <BooleanInput
+                          id="allowRemixing"
+                          value={this.state.allowRemixing}
+                          onChange={allowRemixing => this.setState({ allowRemixing })}
+                        />
+                      </div>
+                    </div>
+                    <div className={styles.inputField}>
+                      <div className={styles.checkboxRow}>
+                        <label htmlFor="allowPromotion" className={styles.label}>
+                          Allow Mozilla to{" "}
+                          <a
+                            href="https://github.com/MozillaReality/Spoke/blob/master/PROMOTION.md"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            promote
+                          </a>{" "}
+                          my scene
+                        </label>
+                        <BooleanInput
+                          id="allowPromotion"
+                          value={this.state.allowPromotion}
+                          onChange={allowPromotion => this.setState({ allowPromotion })}
+                        />
+                      </div>
+                    </div>
                   </div>
                 ) : (
                   <div className={styles.publishInfo}>

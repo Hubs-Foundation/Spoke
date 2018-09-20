@@ -16,10 +16,8 @@
   min-height: 150px;
   max-height: 80vh;
 
-  :local(.message) {
-    a {
-      color: white;
-    }
+  a {
+    color: white;
   }
 }
 
@@ -76,6 +74,12 @@
   input[type="text"] {
     margin-right: 8px;
   }
+}
+
+:local(.checkboxRow) {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
 }
 
 :local(.bottom) {
