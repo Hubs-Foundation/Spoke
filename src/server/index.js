@@ -1,3 +1,4 @@
+import childProcess from "child_process";
 import chokidar from "chokidar";
 import debounce from "lodash.debounce";
 import envPaths from "env-paths";
@@ -9,7 +10,6 @@ import https from "https";
 import Koa from "koa";
 import koaBody from "koa-body";
 import mount from "koa-mount";
-import opn from "opn";
 import path from "path";
 import recast from "@donmccurdy/recast";
 import Router from "koa-router";
@@ -18,6 +18,26 @@ import serve from "koa-static";
 import sha from "sha.js";
 import WebSocket from "ws";
 import yauzl from "yauzl";
+import isWsl from "is-wsl";
+
+function openFile(target) {
+  let cmd;
+  const args = [];
+
+  if (process.platform === "darwin") {
+    cmd = "open";
+    args.push("-W");
+  } else if (process.platform === "win32" || isWsl) {
+    cmd = "cmd" + (isWsl ? ".exe" : "");
+    args.push("/c", "start", '""', "/b", "/wait");
+    target = target.replace(/&/g, "^&");
+  } else {
+    cmd = "xdg-open";
+  }
+
+  args.push(target);
+  childProcess.spawn(cmd, args).unref();
+}
 
 function pathToUri(projectPath, path) {
   return path.replace(projectPath, "/api/files").replace(/\\/g, "/");
@@ -274,7 +294,7 @@ export default async function startServer(options) {
 
     if (ctx.request.query.open) {
       // Attempt to open file at filePath with the default application for that file type.
-      opn(filePath);
+      openFile(filePath);
       ctx.body = { success: true };
       return;
     } else if (ctx.request.query.mkdir) {
@@ -503,4 +523,9 @@ export default async function startServer(options) {
   app.use(router.allowedMethods());
 
   server.listen(opts.port);
+
+  if (opts.open) {
+    const protocol = opts.https ? "https" : "http";
+    openFile(`${protocol}://localhost:${opts.port}`);
+  }
 }
