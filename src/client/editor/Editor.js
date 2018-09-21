@@ -867,7 +867,7 @@ export default class Editor {
     await this._addComponent(navNode, "gltf-model", { src: path });
     this._addComponent(navNode, "visible", { visible: false });
     this._addComponent(navNode, "nav-mesh");
-    this._addComponent(navNode, "heightfield");
+    await this._addComponent(navNode, "heightfield");
 
     this.addObject(navNode);
   }
