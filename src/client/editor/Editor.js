@@ -253,7 +253,7 @@ export default class Editor {
     };
   }
 
-  loadNewScene() {
+  async loadNewScene() {
     this._deleteSceneDependencies();
 
     this._resetHelpers();
@@ -272,7 +272,7 @@ export default class Editor {
     this._setScene(scene);
 
     this.signals.sceneModified.dispatch();
-    this._createDefaultSceneObjects();
+    await this._createDefaultSceneObjects();
 
     this.history.clear();
     this.deselect();
@@ -310,16 +310,16 @@ export default class Editor {
     await this.addUnicomponentNode(
       "Sun",
       "directional-light",
-      false,
       {},
       {
         position: { x: 0, y: 10, z: 0 },
         rotation: { x: Math.PI * 0.5, y: Math.PI * (0.5 / 3.0), z: -Math.PI * 0.5 }
-      }
+      },
+      true
     );
-    await this.addUnicomponentNode("Skybox", "skybox", false);
-    await this.addUnicomponentNode("Ambient Light", "ambient-light", false, {}, { position: { x: 0, y: 10, z: 0 } });
-    await this.addUnicomponentNode("Spawn Point", "spawn-point", false);
+    await this.addUnicomponentNode("Skybox", "skybox", {}, {}, true);
+    await this.addUnicomponentNode("Ambient Light", "ambient-light", {}, { position: { x: 0, y: 10, z: 0 } }, true);
+    await this.addUnicomponentNode("Spawn Point", "spawn-point", {}, {}, true);
     this._ignoreSceneModification = false;
   }
 
@@ -1160,12 +1160,12 @@ export default class Editor {
     this.select(object);
   }
 
-  async addUnicomponentNode(name, componentName, includeInHistory = true, properties = {}, transform = {}) {
+  async addUnicomponentNode(name, componentName, properties = {}, transform = {}, skipHistory = false) {
     const object = new THREE.Object3D();
     object.name = name;
     setStaticMode(object, StaticModes.Static);
 
-    if (includeInHistory) {
+    if (!skipHistory) {
       const componentSetters = [];
 
       for (const [property, value] of Object.entries(properties)) {
@@ -1194,7 +1194,7 @@ export default class Editor {
 
   async addGLTFModelNode(name, uri, originUri) {
     const attribution = await this.project.getImportAttribution(uri);
-    this.addUnicomponentNode(name, "gltf-model", true, { src: uri, attribution, origin: originUri });
+    this.addUnicomponentNode(name, "gltf-model", { src: uri, attribution, origin: originUri });
   }
 
   async importGLTFIntoModelNode(url) {
