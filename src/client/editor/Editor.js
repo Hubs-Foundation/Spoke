@@ -305,9 +305,9 @@ export default class Editor {
     this.signals.sceneSet.dispatch();
   }
 
-  _createDefaultSceneObjects() {
+  async _createDefaultSceneObjects() {
     this._ignoreSceneModification = true;
-    this.addUnicomponentNode(
+    await this.addUnicomponentNode(
       "Sun",
       "directional-light",
       false,
@@ -317,9 +317,9 @@ export default class Editor {
         rotation: { x: Math.PI * 0.5, y: Math.PI * (0.5 / 3.0), z: -Math.PI * 0.5 }
       }
     );
-    this.addUnicomponentNode("Skybox", "skybox", false);
-    this.addUnicomponentNode("Ambient Light", "ambient-light", false, {}, { position: { x: 0, y: 10, z: 0 } });
-    this.addUnicomponentNode("Spawn Point", "spawn-point", false);
+    await this.addUnicomponentNode("Skybox", "skybox", false);
+    await this.addUnicomponentNode("Ambient Light", "ambient-light", false, {}, { position: { x: 0, y: 10, z: 0 } });
+    await this.addUnicomponentNode("Spawn Point", "spawn-point", false);
     this._ignoreSceneModification = false;
   }
 
@@ -1160,7 +1160,7 @@ export default class Editor {
     this.select(object);
   }
 
-  addUnicomponentNode(name, componentName, includeInHistory = true, properties = {}, transform = {}) {
+  async addUnicomponentNode(name, componentName, includeInHistory = true, properties = {}, transform = {}) {
     const object = new THREE.Object3D();
     object.name = name;
     setStaticMode(object, StaticModes.Static);
@@ -1185,8 +1185,8 @@ export default class Editor {
       );
     } else {
       this.addObject(object, this.scene);
-      this._addComponent(object, componentName, properties);
-      this._addComponent(object, "transform", transform);
+      await this._addComponent(object, componentName, properties);
+      await this._addComponent(object, "transform", transform);
     }
 
     this.select(object);
