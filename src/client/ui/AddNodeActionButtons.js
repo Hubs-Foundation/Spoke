@@ -47,7 +47,7 @@ class AddNodeActionButtons extends Component {
   };
 
   state = {
-    open: false
+    open: true
   };
 
   toggle = () => {
@@ -123,6 +123,23 @@ class AddNodeActionButtons extends Component {
       <div className={styles.addNodeActionButtons}>
         {this.state.open && (
           <div className={styles.actionButtonContainer}>
+            <AddButton label="Model" iconClassName={GLTFModelComponent.iconClassName} onClick={this.addModel} />
+            <AddButton
+              label="Group"
+              iconClassName={GroupComponent.iconClassName}
+              onClick={() => this.addNodeWithComponent("group")}
+            />
+            <AddButton label="Light" iconClassName={PointLightComponent.iconClassName} onClick={this.addLight} />
+            <AddButton
+              label="Spawn Point"
+              iconClassName={SpawnPointComponent.iconClassName}
+              onClick={() => this.addNodeWithComponent("spawn-point")}
+            />
+            <AddButton
+              label="Collider"
+              iconClassName={BoxColliderComponent.iconClassName}
+              onClick={() => this.addNodeWithComponent("box-collider")}
+            />
             {!hasSkybox && (
               <AddButton
                 label="Skybox"
@@ -130,23 +147,6 @@ class AddNodeActionButtons extends Component {
                 onClick={() => this.addNodeWithComponent("skybox")}
               />
             )}
-            <AddButton
-              label="Collider"
-              iconClassName={BoxColliderComponent.iconClassName}
-              onClick={() => this.addNodeWithComponent("box-collider")}
-            />
-            <AddButton
-              label="Spawn Point"
-              iconClassName={SpawnPointComponent.iconClassName}
-              onClick={() => this.addNodeWithComponent("spawn-point")}
-            />
-            <AddButton label="Light" iconClassName={PointLightComponent.iconClassName} onClick={this.addLight} />
-            <AddButton
-              label="Group"
-              iconClassName={GroupComponent.iconClassName}
-              onClick={() => this.addNodeWithComponent("group")}
-            />
-            <AddButton label="Model" iconClassName={GLTFModelComponent.iconClassName} onClick={this.addModel} />
           </div>
         )}
         <button onClick={this.toggle} className={classNames(fabClassNames)}>
