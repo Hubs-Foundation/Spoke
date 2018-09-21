@@ -5,6 +5,8 @@ import Button from "../Button";
 import StringInput from "../inputs/StringInput";
 import Header from "../Header";
 
+const DEFAULT_OBJECT_URL = "https://asset-bundles-prod.reticulum.io/interactables/Ducky/DuckyMesh-438ff8e022.gltf";
+
 export default class AddModelDialog extends Component {
   static propTypes = {
     title: PropTypes.string.isRequired,
@@ -47,7 +49,7 @@ export default class AddModelDialog extends Component {
   render = () => {
     const okAttributes = {};
 
-    if (!this.isValidURLEntered()) {
+    if (!this.isValidURLEntered() && this.state.url !== "") {
       okAttributes.disabled = true;
     }
 
@@ -70,7 +72,12 @@ export default class AddModelDialog extends Component {
             <Button key="cancel" type="button" onClick={this.props.onCancel} className={styles.cancel}>
               {this.props.cancelLabel}
             </Button>
-            <Button {...okAttributes} key="ok" type="submit" onClick={() => this.props.onURLEntered(this.state.url)}>
+            <Button
+              {...okAttributes}
+              key="ok"
+              type="submit"
+              onClick={() => this.props.onURLEntered(this.state.url || DEFAULT_OBJECT_URL)}
+            >
               {this.props.okLabel}
             </Button>
           </div>
