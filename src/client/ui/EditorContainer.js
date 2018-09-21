@@ -172,12 +172,10 @@ class EditorContainer extends Component {
             name: "Save Scene As...",
             action: e => this.onSaveAs(e)
           },
-          this.props.editor.sceneIsDefault()
-            ? null
-            : {
-                name: "Publish to Hubs...",
-                action: () => this.onPublishScene()
-              },
+          {
+            name: "Publish to Hubs...",
+            action: () => this.onPublishScene()
+          },
           {
             name: "Export to GLTF...",
             action: e => this.onExportScene(e)
@@ -741,7 +739,7 @@ class EditorContainer extends Component {
   };
 
   onPublishScene = async () => {
-    if (this.props.editor.sceneModified()) {
+    if (this.props.editor.sceneModified() || this.props.editor.sceneIsDefault()) {
       const willSaveChanges = await this.waitForConfirm({
         title: "Unsaved Chages",
         message: "Your scene must be saved before publishing.",
@@ -861,12 +859,7 @@ class EditorContainer extends Component {
           <EditorContextProvider value={editor}>
             <DialogContextProvider value={this.dialogContext}>
               <SceneActionsContextProvider value={this.sceneActionsContext}>
-                <ToolBar
-                  menus={menus}
-                  editor={editor}
-                  sceneActions={this.sceneActionsContext}
-                  mayPublish={!editor.sceneIsDefault()}
-                />
+                <ToolBar menus={menus} editor={editor} sceneActions={this.sceneActionsContext} />
                 <MosaicWithoutDragDropContext
                   className="mosaic-theme"
                   renderTile={this.renderPanel}
