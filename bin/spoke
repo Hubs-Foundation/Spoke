@@ -1,8 +1,6 @@
 #!/usr/bin/env node
 const commander = require("commander");
-const pkg = require("../package.json");
 const fs = require("fs");
-const opn = require("opn");
 const os = require("os");
 const path = require("path");
 const pkg = require("../package.json");
@@ -17,15 +15,6 @@ commander.option("-p, --port <port>", "Web server port. Defaults to 9090", 9090)
 commander.option("-s, --https", "Use HTTPS.");
 
 commander.parse(process.argv);
-
-let startServer;
-
-if (process.env.NODE_ENV === "development") {
-q  require("babel-register");
-  startServer = require("../src/server/index").default;
-} else {
-  startServer = require("../lib/server/index").default;
-}
 
 function getProjectFile(projectPath) {
   return path.join(projectPath, "spoke-project.json");
@@ -52,6 +41,7 @@ if (commander.args.length > 0) {
 }
 
 const projectFilePath = getProjectFile(projectPath);
+const startServer = require("../src/server/index");
 
 // Disabled default assets for V1 release
 run(false);

@@ -5,7 +5,6 @@ yarn-debug.log*
 yarn-error.log*
 yarn.lock
 node_modules/
-lib/
 public/
 example/generated/
 example/imported/
