@@ -35,14 +35,14 @@ class EditorContainer extends Component {
   static initialPanels = {
     basic: {
       direction: "row",
-      first: {
+      first: "viewport",
+      second: {
         direction: "column",
         first: "hierarchy",
         second: "properties",
         splitPercentage: 50
       },
-      second: "viewport",
-      splitPercentage: 25
+      splitPercentage: 75
     },
 
     advanced: {
