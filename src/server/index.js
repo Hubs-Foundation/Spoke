@@ -344,7 +344,7 @@ export default async function startServer(options) {
     try {
       return JSON.parse(text);
     } catch (e) {
-      console.log(text, e);
+      console.log("JSON error", text, e);
     }
   }
 

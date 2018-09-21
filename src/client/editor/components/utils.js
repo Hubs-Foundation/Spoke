@@ -7,7 +7,8 @@ export const types = {
   euler: "euler",
   boolean: "boolean",
   file: "file",
-  string: "string"
+  string: "string",
+  array: "array"
 };
 
 const geometry = new THREE.SphereBufferGeometry(1, 4, 2);
