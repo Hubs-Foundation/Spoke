@@ -6,6 +6,8 @@ export default class VisibleComponent extends BaseComponent {
 
   static iconClassName = "fa-eye";
 
+  static showProps = false;
+
   static schema = [{ name: "visible", type: types.boolean, default: true }];
 
   static _propsFromObject(node) {

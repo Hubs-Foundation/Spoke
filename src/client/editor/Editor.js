@@ -133,6 +133,16 @@ export default class Editor {
       this.sceneInfo.isDefaultScene = false;
       this.signals.sceneModified.dispatch();
     });
+    this.signals.objectSelected.add((obj, prev) => {
+      // Toggle visibility on selection if there is a visible component
+      const setVisibleTo = (node, visible) => {
+        if (!this.hasComponent(node, "visible")) return;
+        this.setComponentProperty(node, "visible", "visible", visible);
+      };
+
+      if (prev) setVisibleTo(prev, false);
+      setVisibleTo(obj, true);
+    });
 
     // TODO: Support multiple viewports
     this.viewports = [];
@@ -863,10 +873,10 @@ export default class Editor {
     const path = await this.project.writeGeneratedBlob(`${navMesh.uuid}.glb`, glb);
 
     const navNode = new THREE.Object3D();
-    navNode.name = "Nav Mesh";
-    await this._addComponent(navNode, "gltf-model", { src: path });
-    this._addComponent(navNode, "visible", { visible: false });
+    navNode.name = "Floor Plan";
     this._addComponent(navNode, "nav-mesh");
+    this._addComponent(navNode, "visible", { visible: false });
+    await this._addComponent(navNode, "gltf-model", { src: path });
     await this._addComponent(navNode, "heightfield");
 
     this.addObject(navNode);
@@ -1430,6 +1440,10 @@ export default class Editor {
     this.signals.objectChanged.dispatch(object);
   }
 
+  hasComponent(object, componentName) {
+    return !!this.getComponent(object, componentName);
+  }
+
   getComponent(object, componentName) {
     if (this.components.has(componentName)) {
       return this.components.get(componentName).getComponent(object);
@@ -1652,12 +1666,13 @@ export default class Editor {
 
   //
 
-  select(object) {
-    if (this.selected === object) return;
+  select(newSelection) {
+    if (this.selected === newSelection) return;
+    const previousSelection = this.selected;
 
-    this.selected = object;
+    this.selected = newSelection;
 
-    this.signals.objectSelected.dispatch(object);
+    this.signals.objectSelected.dispatch(newSelection, previousSelection);
   }
 
   selectById(id) {
