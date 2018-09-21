@@ -1,6 +1,6 @@
 const childProcess = require("child_process");
 const chokidar = require("chokidar");
-const debounce = require("lodash.debounce");
+const debounce = require("lodash/debounce");
 const envPaths = require("env-paths");
 const fetch = require("node-fetch");
 const FormData = require("form-data");
