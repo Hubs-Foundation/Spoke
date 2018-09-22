@@ -141,7 +141,7 @@ export default class Editor {
       };
 
       if (prev) setVisibleTo(prev, false);
-      setVisibleTo(obj, true);
+      if (obj) setVisibleTo(obj, true);
     });
 
     // TODO: Support multiple viewports
