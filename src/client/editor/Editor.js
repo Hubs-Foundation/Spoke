@@ -886,6 +886,16 @@ export default class Editor {
     const scene = this.scene;
     const clonedScene = scene.clone();
 
+    // Add a preview camera to the exported GLB if there is a transform in the metadata.
+    const { previewCameraTransform } = this.getSceneMetadata();
+
+    if (previewCameraTransform) {
+      const previewCamera = this.DEFAULT_CAMERA.clone();
+      previewCamera.name = "Preview Camera";
+      previewCamera.applyMatrix(previewCameraTransform);
+      clonedScene.add(previewCamera);
+    }
+
     computeAndSetStaticModes(clonedScene);
 
     const meshesToCombine = [];
