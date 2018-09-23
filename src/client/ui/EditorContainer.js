@@ -768,7 +768,10 @@ class EditorContainer extends Component {
   };
 
   _showPublishDialog = async () => {
-    const screenshotBlob = await this.props.editor.takeScreenshot();
+    const {
+      blob: screenshotBlob,
+      cameraTransform: screenshotCameraTransform
+    } = await this.props.editor.takeScreenshot();
     const attribution = this.props.editor.getSceneAttribution();
     const screenshotURL = URL.createObjectURL(screenshotBlob);
     const { name, description, allowRemixing, allowPromotion, sceneId } = this.props.editor.getSceneMetadata();
@@ -791,7 +794,13 @@ class EditorContainer extends Component {
           message: "Publishing scene..."
         });
 
-        this.props.editor.setSceneMetadata({ name, description, allowRemixing, allowPromotion });
+        this.props.editor.setSceneMetadata({
+          name,
+          description,
+          allowRemixing,
+          allowPromotion,
+          previewCameraTransform: screenshotCameraTransform
+        });
 
         let publishResult;
         try {
