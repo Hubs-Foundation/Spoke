@@ -322,7 +322,15 @@ export default class Viewport {
     this._camera.layers.disable(1);
     this._renderer.render(this._editor.scene, this._camera);
     this._camera.layers.enable(1);
-    return new Promise(resolve => this._canvas.toBlob(resolve));
+
+    this._camera.updateMatrixWorld();
+    const cameraTransform = this._camera.matrixWorld.clone();
+
+    return new Promise(resolve => {
+      this._canvas.toBlob(blob => {
+        resolve({ blob, cameraTransform });
+      });
+    });
   };
 
   toggleSnap = () => {
