@@ -891,7 +891,7 @@ export default class Editor {
 
     if (previewCameraTransform) {
       const previewCamera = this.DEFAULT_CAMERA.clone();
-      previewCamera.name = "Preview Camera";
+      previewCamera.name = "scene-preview-camera";
       previewCamera.applyMatrix(previewCameraTransform);
       clonedScene.add(previewCamera);
     }
