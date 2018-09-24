@@ -261,6 +261,7 @@ export default async function startServer(options) {
     mount(
       "/api/files/",
       serve(projectPath, {
+        hidden: true,
         setHeaders: res => {
           res.setHeader("Access-Control-Allow-Origin", "*");
         }
