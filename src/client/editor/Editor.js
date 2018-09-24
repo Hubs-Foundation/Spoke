@@ -1258,6 +1258,10 @@ export default class Editor {
   removeObject(object) {
     if (object.parent === null) return; // avoid deleting the camera or scene
 
+    if (object === this.selected) {
+      this.deselect();
+    }
+
     object.traverse(child => {
       this.removeHelper(child);
       this._removeSceneRefDependency(child);
