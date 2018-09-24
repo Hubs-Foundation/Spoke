@@ -136,8 +136,11 @@ export default class Editor {
     this.signals.objectSelected.add((obj, prev) => {
       // Toggle visibility on selection if there is a visible component
       const setVisibleTo = (node, visible) => {
-        if (!this.hasComponent(node, "visible")) return;
-        this.setComponentProperty(node, "visible", "visible", visible);
+        const visibleComponent = this.getComponent(node, "visible");
+        if (!visibleComponent) return;
+        // Update component property directly since we don't want to put this on the history stack nor dispatch any
+        // signals.
+        visibleComponent.updateProperty("visible", visible);
       };
 
       if (prev) setVisibleTo(prev, false);

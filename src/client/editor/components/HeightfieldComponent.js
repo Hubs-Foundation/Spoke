@@ -17,10 +17,19 @@ export default class HeightfieldComponent extends BaseComponent {
     { name: "distance", type: types.number }
   ];
 
+  constructor(node, object) {
+    super(node, object);
+    // Never save the heightfield component, since it's auto-generated from the nav-mesh on publish.
+    this.shouldSave = false;
+  }
+
   static async inflate(node, props) {
     const component = await this._getOrCreateComponent(node, props);
 
     const mesh = node.getObjectByProperty("type", "Mesh");
+
+    if (!mesh || !mesh.geometry) return component;
+
     mesh.geometry.computeBoundingBox();
     const size = new THREE.Vector3();
     mesh.geometry.boundingBox.getSize(size);
