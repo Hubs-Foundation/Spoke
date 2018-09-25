@@ -1,4 +1,5 @@
 import EventEmitter from "eventemitter3";
+import AuthenticationError from "./AuthenticationError";
 
 export default class Project extends EventEmitter {
   constructor() {
@@ -179,8 +180,10 @@ export default class Project extends EventEmitter {
     formData.append("cellSize", cellSize);
 
     const res = await this.fetch("/api/navmesh", { method: "POST", body: formData });
-    const json = await res.json();
-    return json;
+    if (res.status !== 200) {
+      throw new Error("Failed to generate floor plan");
+    }
+    return res.json();
   }
 
   async writeGeneratedBlob(fileName, blob) {
@@ -214,11 +217,17 @@ export default class Project extends EventEmitter {
   }
 
   async uploadAndDelete(uri) {
-    return await fetch("/api/upload", {
+    const res = await fetch("/api/upload", {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ uri })
-    }).then(r => r.json());
+    });
+
+    if (res.status !== 200) {
+      throw new Error(`Upload failed ${uri}`);
+    }
+
+    return res.json();
   }
 
   async createOrUpdateScene(params) {
@@ -226,11 +235,17 @@ export default class Project extends EventEmitter {
       delete params.sceneId;
     }
 
-    return await fetch("/api/scene", {
+    const resp = await fetch("/api/scene", {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify(params)
-    }).then(r => r.json());
+    });
+
+    if (resp.status === 401) {
+      throw new AuthenticationError();
+    }
+
+    return resp.json();
   }
 
   close() {

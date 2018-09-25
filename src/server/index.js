@@ -474,19 +474,22 @@ export default async function startServer(options) {
     };
     const body = JSON.stringify({ scene: sceneParams });
 
-    const sceneEndpoint = `https://${process.env.RETICULUM_SERVER}/api/v1/scenes`;
+    let sceneEndpoint = `https://${process.env.RETICULUM_SERVER}/api/v1/scenes`;
+    let method = "POST";
     if (sceneId) {
-      const resp = await fetch(`${sceneEndpoint}/${sceneId}`, { agent, method: "PATCH", headers, body });
-      const { scenes } = await tryGetJson(resp);
-
-      ctx.body = { url: scenes[0].url, sceneId: sceneId };
-    } else {
-      const resp = await fetch(sceneEndpoint, { agent, method: "POST", headers, body });
-      const { scenes } = await tryGetJson(resp);
-      const scene = scenes[0];
-
-      ctx.body = { url: scene.url, sceneId: scene.scene_id };
+      sceneEndpoint = `${sceneEndpoint}/${sceneId}`;
+      method = "PATCH";
     }
+
+    const resp = await fetch(sceneEndpoint, { agent, method, headers, body });
+    if (resp.status === 401) {
+      ctx.status = 401;
+      return;
+    }
+
+    const json = await tryGetJson(resp);
+    const { url, scene_id } = json.scenes[0];
+    ctx.body = { url, sceneId: scene_id };
   });
 
   app.use(router.routes());

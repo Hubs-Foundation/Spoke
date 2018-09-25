@@ -43,11 +43,19 @@ class ViewportPanelContainer extends Component {
         }
       }
     } else if (item.dataTransfer && item.dataTransfer.items.length) {
-      const urlItem = Array.from(item.dataTransfer.items).find(
-        item => item.kind === "string" && item.type === "text/plain"
-      );
+      const urlItem = Array.from(item.dataTransfer.items).find(item => item.kind === "string");
       if (!urlItem) return;
       const url = (await new Promise(resolve => urlItem.getAsString(resolve))).trim();
+      try {
+        new URL(url);
+      } catch (e) {
+        const truncatedUrl = url.substring(0, 50).replace(/\n/g, "");
+        this.props.showDialog(ErrorDialog, {
+          title: "Error adding model.",
+          message: `"${truncatedUrl}${url.length > 50 ? "..." : ""}" is not a valid URL.`
+        });
+        return;
+      }
       this.performModelImport(url);
     }
   };

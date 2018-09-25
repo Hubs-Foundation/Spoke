@@ -23,6 +23,7 @@ import LoginDialog from "./dialogs/LoginDialog";
 import PublishDialog from "./dialogs/PublishDialog";
 import ProgressDialog from "./dialogs/ProgressDialog";
 import ConflictError from "../editor/ConflictError";
+import AuthenticationError from "../editor/AuthenticationError";
 import { getUrlDirname, getUrlFilename } from "../utils/url-path";
 
 function isInputSelected() {
@@ -755,16 +756,20 @@ class EditorContainer extends Component {
     if (await this.props.editor.authenticated()) {
       this._showPublishDialog();
     } else {
-      this.showDialog(LoginDialog, {
-        onLogin: async email => {
-          const { authComplete } = await this.props.editor.startAuthentication(email);
-          this.showDialog(LoginDialog, { authStarted: true });
-          await authComplete;
-          this._showPublishDialog();
-        },
-        onCancel: () => this.hideDialog()
-      });
+      this._showLoginDialog();
     }
+  };
+
+  _showLoginDialog = () => {
+    this.showDialog(LoginDialog, {
+      onLogin: async email => {
+        const { authComplete } = await this.props.editor.startAuthentication(email);
+        this.showDialog(LoginDialog, { authStarted: true });
+        await authComplete;
+        this._showPublishDialog();
+      },
+      onCancel: () => this.hideDialog()
+    });
   };
 
   _showPublishDialog = async () => {
@@ -813,7 +818,7 @@ class EditorContainer extends Component {
 
           await this.saveOrSaveAsScene();
 
-          await this.showDialog(PublishDialog, {
+          this.showDialog(PublishDialog, {
             screenshotURL,
             initialName: name,
             published: true,
@@ -821,10 +826,14 @@ class EditorContainer extends Component {
           });
         } catch (e) {
           console.error(e);
-          this.showDialog(ErrorDialog, {
-            title: "Error Publishing Scene",
-            message: e.message || "There was an unknown error."
-          });
+          if (e instanceof AuthenticationError) {
+            this._showLoginDialog();
+          } else {
+            this.showDialog(ErrorDialog, {
+              title: "Error Publishing Scene",
+              message: e.message || "There was an unknown error."
+            });
+          }
         } finally {
           URL.revokeObjectURL(screenshotURL);
         }

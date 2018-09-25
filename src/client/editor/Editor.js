@@ -1358,9 +1358,9 @@ export default class Editor {
       component._object = scene;
       this.signals.objectChanged.dispatch(object);
     } catch (e) {
-      console.error("Failed to load glTF", e);
+      console.error("Failed to load GLTF", e);
 
-      this.signals.editorError.dispatch(e);
+      this.signals.editorError.dispatch(new Error(`Failed to load GLTF ${e}`));
 
       if (component.propValidation.src !== false) {
         component.propValidation.src = false;
