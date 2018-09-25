@@ -10,3 +10,4 @@ example/generated/
 example/imported/
 .certs/
 .env
+release/
