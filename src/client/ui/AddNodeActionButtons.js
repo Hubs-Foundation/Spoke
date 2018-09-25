@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
 import classNames from "classnames";
+
 import { withEditor } from "./contexts/EditorContext";
 import { withDialog } from "./contexts/DialogContext";
 import { withSceneActions } from "./contexts/SceneActionsContext";
@@ -9,16 +10,18 @@ import AddModelDialog from "./dialogs/AddModelDialog";
 import FileDialog from "./dialogs/FileDialog";
 import { getDisplayName } from "../utils/get-display-name";
 import styles from "./AddNodeActionButtons.scss";
-import SpotLightComponent from "../editor/components/SpotLightComponent";
-import DirectionalLightComponent from "../editor/components/DirectionalLightComponent";
+
 import AmbientLightComponent from "../editor/components/AmbientLightComponent";
+import BoxColliderComponent from "../editor/components/BoxColliderComponent";
+import DirectionalLightComponent from "../editor/components/DirectionalLightComponent";
+import GLTFModelComponent from "../editor/components/GLTFModelComponent";
+import GroupComponent from "../editor/components/GroupComponent";
+import GroundPlaneComponent from "../editor/components/GroundPlaneComponent";
 import HemisphereLightComponent from "../editor/components/HemisphereLightComponent";
 import PointLightComponent from "../editor/components/PointLightComponent";
 import SkyboxComponent from "../editor/components/SkyboxComponent";
 import SpawnPointComponent from "../editor/components/SpawnPointComponent";
-import GroupComponent from "../editor/components/GroupComponent";
-import BoxColliderComponent from "../editor/components/BoxColliderComponent";
-import GLTFModelComponent from "../editor/components/GLTFModelComponent";
+import SpotLightComponent from "../editor/components/SpotLightComponent";
 
 function AddButton({ label, iconClassName, onClick }) {
   return (
@@ -44,10 +47,6 @@ class AddNodeActionButtons extends Component {
     showDialog: PropTypes.func,
     hideDialog: PropTypes.func,
     onAddModelByURL: PropTypes.func
-  };
-
-  state = {
-    open: true
   };
 
   toggle = () => {
@@ -106,9 +105,23 @@ class AddNodeActionButtons extends Component {
 
   constructor(props) {
     super(props);
+    this.props.editor.signals.sceneGraphChanged.add(this.updateSingletonState);
+    this.state = {
+      open: true,
+      ...this.getSingletonNodeState()
+    };
   }
 
-  componentDidMount() {}
+  getSingletonNodeState() {
+    return {
+      hasSkybox: !!this.props.editor.findFirstWithComponent("skybox"),
+      hasGroundPlane: !!this.props.editor.findFirstWithComponent("ground-plane")
+    };
+  }
+
+  updateSingletonState = () => {
+    this.setState(this.getSingletonNodeState());
+  };
 
   render() {
     const fabClassNames = {
@@ -117,11 +130,11 @@ class AddNodeActionButtons extends Component {
       [styles.fabClosed]: !this.state.open
     };
 
-    const hasSkybox = !!this.props.editor.findFirstWithComponent("skybox");
+    const { open, hasSkybox, hasGroundPlane } = this.state;
 
     return (
       <div className={styles.addNodeActionButtons}>
-        {this.state.open && (
+        {open && (
           <div className={styles.actionButtonContainer}>
             <AddButton label="Model" iconClassName={GLTFModelComponent.iconClassName} onClick={this.addModel} />
             <AddButton
@@ -145,6 +158,13 @@ class AddNodeActionButtons extends Component {
                 label="Skybox"
                 iconClassName={SkyboxComponent.iconClassName}
                 onClick={() => this.addNodeWithComponent("skybox")}
+              />
+            )}
+            {!hasGroundPlane && (
+              <AddButton
+                label="Ground Plane"
+                iconClassName={GroundPlaneComponent.iconClassName}
+                onClick={() => this.addNodeWithComponent("ground-plane")}
               />
             )}
           </div>
