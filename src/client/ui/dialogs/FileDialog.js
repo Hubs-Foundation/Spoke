@@ -14,7 +14,6 @@ import StringInput from "../inputs/StringInput";
 import Header from "../Header";
 import Icon from "../Icon";
 import iconStyles from "../Icon.scss";
-import folderIcon from "../../assets/folder-icon.svg";
 import { getUrlDirname, getUrlFilename, getUrlExtname } from "../../utils/url-path";
 
 function collectFileMenuProps({ file }) {
@@ -357,8 +356,7 @@ class FileDialog extends Component {
               {newFolderActive && (
                 <Icon
                   rename
-                  src={folderIcon}
-                  className={iconStyles.small}
+                  className={classNames(iconStyles.small, "icon-folder", "icon-large")}
                   name={newFolderName}
                   onChange={this.onNewFolderChange}
                   onCancel={this.onCancelNewFolder}
