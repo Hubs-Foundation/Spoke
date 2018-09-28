@@ -33,6 +33,7 @@ import SceneLoaderError from "./SceneLoaderError";
 
 import SpokeDirectionalLightHelper from "./helpers/SpokeDirectionalLightHelper";
 import SpokeHemisphereLightHelper from "./helpers/SpokeHemisphereLightHelper";
+import SpokeSpotlightHelper from "./helpers/SpokeSpotLightHelper";
 
 import { last } from "../utils";
 import absoluteToRelativeURL from "./utils/absoluteToRelativeURL";
@@ -1287,7 +1288,7 @@ export default class Editor {
     } else if (object instanceof THREE.DirectionalLight && object.name !== "_defaultDirectionalLight") {
       helper = new SpokeDirectionalLightHelper(object, 1);
     } else if (object instanceof THREE.SpotLight) {
-      helper = new THREE.SpotLightHelper(object);
+      helper = new SpokeSpotlightHelper(object);
     } else if (object instanceof THREE.HemisphereLight) {
       helper = new SpokeHemisphereLightHelper(object, 1);
     } else if (object instanceof THREE.SkinnedMesh) {
