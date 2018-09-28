@@ -182,7 +182,7 @@ export default class NumericInput extends React.Component {
     const propValueChanged = value !== this.formatValue(prevProps.value);
     const currentStateIsDifferent = parseFloat(this.state.value.trim()) !== value;
     if (propValueChanged && currentStateIsDifferent) {
-      this.setValidValue(this.props.value);
+      this.setValidValue(value);
       this.setState({ value: round(value).toString() });
     }
   }
