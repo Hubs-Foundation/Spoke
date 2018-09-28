@@ -102,7 +102,7 @@ class FileDialog extends Component {
         this.setState({ tree });
       });
 
-      this.props.editor.project.addListener("changed", this.onHierarchyChanged);
+      this.props.editor.project.addListener("projectHierarchyChanged", this.onHierarchyChanged);
     }
 
     // HACK: need to figure out what is stealing focus and why
@@ -114,7 +114,7 @@ class FileDialog extends Component {
   componentDidUpdate(prevProps) {
     if (this.props.editor.project !== prevProps.editor.project) {
       if (prevProps.editor.project !== null) {
-        prevProps.editor.project.removeListener("changed", this.onHierarchyChanged);
+        prevProps.editor.project.removeListener("projectHierarchyChanged", this.onHierarchyChanged);
       }
 
       if (this.props.editor.project !== null) {
@@ -122,7 +122,7 @@ class FileDialog extends Component {
           this.setState({ tree });
         });
 
-        this.props.editor.project.addListener("changed", this.onHierarchyChanged);
+        this.props.editor.project.addListener("projectHierarchyChanged", this.onHierarchyChanged);
       }
     }
   }

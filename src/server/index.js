@@ -275,6 +275,8 @@ export default async function startServer(options) {
     if (ctx.request.query.open) {
       // Attempt to open file at filePath with the default application for that file type.
       opn(filePath);
+      ctx.body = { success: true };
+      return;
     } else if (ctx.request.query.mkdir) {
       // Make the directory at filePath if it doesn't already exist.
       await fs.ensureDir(filePath);
@@ -289,7 +291,12 @@ export default async function startServer(options) {
       await pipeToFile(ctx.req, filePath);
     }
 
-    ctx.body = { success: true };
+    const hierarchy = await getProjectHierarchy(projectPath);
+
+    ctx.body = {
+      success: true,
+      hierarchy
+    };
   });
 
   router.post("/api/navmesh", koaBody({ multipart: true, text: false }), async ctx => {
