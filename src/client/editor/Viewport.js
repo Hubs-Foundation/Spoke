@@ -205,6 +205,7 @@ export default class Viewport {
     // otherwise controls.enabled doesn't work.
 
     const controls = new THREE.EditorControls(camera, canvas);
+    controls.zoomSpeed = 0.02;
 
     this._transformControls.addEventListener("mouseDown", () => {
       const object = this._transformControls.object;
