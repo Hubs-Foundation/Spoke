@@ -7,6 +7,14 @@ import SetScaleCommand from "./commands/SetScaleCommand";
  * @author mrdoob / http://mrdoob.com/
  */
 
+function getCanvasBlob(canvas) {
+  if (canvas.msToBlob) {
+    return Promise.resolve(canvas.msToBlob());
+  } else {
+    return new Promise(resolve => canvas.toBlob(resolve));
+  }
+}
+
 export default class Viewport {
   constructor(editor, canvas) {
     this._editor = editor;
@@ -332,8 +340,8 @@ export default class Viewport {
 
   takeScreenshot = async () => {
     const { _screenshotRenderer: renderer, _camera: camera } = this;
-    this._skipRender = true;
 
+    this._skipRender = true;
     const prevAspect = camera.aspect;
     camera.aspect = 1920 / 1080;
     camera.updateProjectionMatrix();
@@ -345,14 +353,13 @@ export default class Viewport {
     camera.updateMatrixWorld();
     const cameraTransform = camera.matrixWorld.clone();
 
-    return new Promise(resolve => {
-      renderer.domElement.toBlob(blob => {
-        resolve({ blob, cameraTransform });
-        camera.aspect = prevAspect;
-        camera.updateProjectionMatrix();
-        this._skipRender = false;
-      });
-    });
+    const blob = await getCanvasBlob(renderer.domElement);
+
+    camera.aspect = prevAspect;
+    camera.updateProjectionMatrix();
+    this._skipRender = false;
+
+    return { blob, cameraTransform };
   };
 
   toggleSnap = () => {

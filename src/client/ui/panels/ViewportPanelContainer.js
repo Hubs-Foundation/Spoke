@@ -42,10 +42,16 @@ class ViewportPanelContainer extends Component {
           });
         }
       }
-    } else if (item.dataTransfer && item.dataTransfer.items.length) {
-      const urlItem = Array.from(item.dataTransfer.items).find(item => item.kind === "string");
-      if (!urlItem) return;
-      const url = (await new Promise(resolve => urlItem.getAsString(resolve))).trim();
+    } else if (item.dataTransfer) {
+      let url;
+      if (Array.from(item.dataTransfer.types).includes("text/plain")) {
+        url = item.dataTransfer.getData("text/plain");
+        if (!url) return;
+      } else {
+        const urlItem = Array.from(item.dataTransfer.items).find(item => item.kind === "string");
+        if (!urlItem) return;
+        url = (await new Promise(resolve => urlItem.getAsString(resolve))).trim();
+      }
       try {
         new URL(url);
       } catch (e) {
