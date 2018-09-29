@@ -1858,7 +1858,7 @@ export default class Editor {
   }
 
   async takeScreenshot() {
-    return await this.viewports[0].takeScreenshot();
+    return this.viewports[0].takeScreenshot();
   }
 
   async publishScene(sceneId, screenshotBlob, attribution) {

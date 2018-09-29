@@ -13,21 +13,28 @@ export default class Viewport {
     this._canvas = canvas;
     const signals = editor.signals;
 
-    const renderer = new THREE.WebGLRenderer({
-      canvas,
-      antialias: true,
-      preserveDrawingBuffer: true
-    });
+    function makeRenderer(width, height, canvas) {
+      const renderer = new THREE.WebGLRenderer({
+        canvas,
+        antialias: true,
+        preserveDrawingBuffer: true
+      });
+
+      renderer.gammaOutput = true;
+      renderer.gammaFactor = 2.2;
+      renderer.physicallyCorrectLights = true;
+      renderer.shadowMap.enabled = true;
+      renderer.autoClear = false;
+      renderer.autoUpdateScene = false;
+      renderer.setSize(width, height);
+      return renderer;
+    }
+
+    const renderer = makeRenderer(canvas.parentElement.offsetWidth, canvas.parentElement.offsetHeight, canvas);
+    renderer.setPixelRatio(window.devicePixelRatio);
     this._renderer = renderer;
 
-    renderer.gammaOutput = true;
-    renderer.gammaFactor = 2.2;
-    renderer.physicallyCorrectLights = true;
-    renderer.shadowMap.enabled = true;
-    renderer.autoClear = false;
-    renderer.autoUpdateScene = false;
-    renderer.setPixelRatio(window.devicePixelRatio);
-    renderer.setSize(canvas.parentElement.offsetWidth, canvas.parentElement.offsetHeight);
+    this._screenshotRenderer = makeRenderer(1920, 1080);
 
     editor.scene.background = new THREE.Color(0xaaaaaa);
 
@@ -61,15 +68,18 @@ export default class Viewport {
     let objectRotationOnDown = null;
     let objectScaleOnDown = null;
 
-    function render() {
-      editor.helperScene.updateMatrixWorld();
-      editor.scene.updateMatrixWorld();
+    this._skipRender = false;
+    const render = () => {
+      if (!this._skipRender) {
+        editor.helperScene.updateMatrixWorld();
+        editor.scene.updateMatrixWorld();
 
-      renderer.render(editor.scene, camera);
-      renderer.render(editor.helperScene, camera);
+        renderer.render(editor.scene, camera);
+        renderer.render(editor.helperScene, camera);
+      }
 
       requestAnimationFrame(render);
-    }
+    };
 
     requestAnimationFrame(render);
 
@@ -259,6 +269,7 @@ export default class Viewport {
     signals.spaceChanged.add(this.toggleSpace);
 
     signals.sceneSet.add(() => {
+      this._screenshotRenderer.dispose();
       renderer.dispose();
       editor.helperScene.add(grid);
       editor.helperScene.add(selectionBox);
@@ -320,16 +331,26 @@ export default class Viewport {
   }
 
   takeScreenshot = async () => {
-    this._camera.layers.disable(1);
-    this._renderer.render(this._editor.scene, this._camera);
-    this._camera.layers.enable(1);
+    const { _screenshotRenderer: renderer, _camera: camera } = this;
+    this._skipRender = true;
 
-    this._camera.updateMatrixWorld();
-    const cameraTransform = this._camera.matrixWorld.clone();
+    const prevAspect = camera.aspect;
+    camera.aspect = 1920 / 1080;
+    camera.updateProjectionMatrix();
+
+    camera.layers.disable(1);
+    renderer.render(this._editor.scene, camera);
+    camera.layers.enable(1);
+
+    camera.updateMatrixWorld();
+    const cameraTransform = camera.matrixWorld.clone();
 
     return new Promise(resolve => {
-      this._canvas.toBlob(blob => {
+      renderer.domElement.toBlob(blob => {
         resolve({ blob, cameraTransform });
+        camera.aspect = prevAspect;
+        camera.updateProjectionMatrix();
+        this._skipRender = false;
       });
     });
   };
