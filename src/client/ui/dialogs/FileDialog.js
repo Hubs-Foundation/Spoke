@@ -129,6 +129,7 @@ class FileDialog extends Component {
 
   componentWillUnmount() {
     clearTimeout(this.doubleClickTimeout);
+    this.props.editor.project.removeListener("projectHierarchyChanged", this.onHierarchyChanged);
   }
 
   onHierarchyChanged = tree => {
