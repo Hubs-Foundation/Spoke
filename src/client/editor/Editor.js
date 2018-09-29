@@ -881,7 +881,7 @@ export default class Editor {
         const groundPlaneCollider = new THREE.Object3D();
         groundPlaneCollider.userData._dontShowInHierarchy = true;
         groundPlaneCollider.scale.set(4000, 0.01, 4000);
-        this._addComponent(groundPlaneCollider, "box-collider");
+        this._addComponent(groundPlaneCollider, "box-collider", {}, true);
         groundPlaneNode.add(groundPlaneCollider);
       }
       const groundPlaneMesh = groundPlaneNode.getObjectByProperty("type", "Mesh");
