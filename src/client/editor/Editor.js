@@ -44,6 +44,7 @@ import sortEntities from "./utils/sortEntities";
 import { Components } from "./components";
 import { types } from "./components/utils";
 import GLTFModelComponent from "./components/GLTFModelComponent";
+import HeightfieldComponent from "./components/HeightfieldComponent";
 import SaveableComponent from "./components/SaveableComponent";
 import SceneReferenceComponent from "./components/SceneReferenceComponent";
 import ShadowComponent from "./components/ShadowComponent";
@@ -825,6 +826,7 @@ export default class Editor {
     });
 
     const finalGeos = [];
+    let heightfield;
 
     if (geometries.length) {
       const geometry = THREE.BufferGeometryUtils.mergeBufferGeometries(geometries);
@@ -867,11 +869,21 @@ export default class Editor {
       const navGeo = new THREE.BufferGeometry();
       navGeo.setIndex(navIndex);
       navGeo.addAttribute("position", new THREE.Float32BufferAttribute(navPosition, 3));
+
+      heightfield = await HeightfieldComponent.generateHeightfield(new THREE.Mesh(navGeo));
+
       finalGeos.push(navGeo);
     }
 
     const groundPlaneNode = this.findFirstWithComponent("ground-plane");
     if (groundPlaneNode) {
+      if (!this.findFirstWithComponent("box-collider", groundPlaneNode)) {
+        const groundPlaneCollider = new THREE.Object3D();
+        groundPlaneCollider.userData._dontShowInHierarchy = true;
+        groundPlaneCollider.scale.set(4000, 0.01, 4000);
+        this._addComponent(groundPlaneCollider, "box-collider");
+        groundPlaneNode.add(groundPlaneCollider);
+      }
       const groundPlaneMesh = groundPlaneNode.getObjectByProperty("type", "Mesh");
       const origGroundPlaneGeo = groundPlaneMesh.geometry;
       const groundPlaneGeo = new THREE.BufferGeometry();
@@ -881,17 +893,12 @@ export default class Editor {
       finalGeos.push(groundPlaneGeo);
     }
 
-    if (!finalGeos.length) return;
+    if (finalGeos.length === 0) return;
 
     const finalNavGeo =
       finalGeos.length === 1 ? finalGeos[0] : THREE.BufferGeometryUtils.mergeBufferGeometries(finalGeos);
 
-    const navMesh = new THREE.Mesh(
-      finalNavGeo,
-      new THREE.MeshLambertMaterial({
-        color: 0x0000ff
-      })
-    );
+    const navMesh = new THREE.Mesh(finalNavGeo, new THREE.MeshLambertMaterial({ color: 0x0000ff }));
 
     const exporter = new THREE.GLTFExporter();
     const glb = await new Promise((resolve, reject) => exporter.parse(navMesh, resolve, reject, { mode: "glb" }));
@@ -902,8 +909,9 @@ export default class Editor {
     this._addComponent(navNode, "nav-mesh");
     this._addComponent(navNode, "visible", { visible: false });
     await this._addComponent(navNode, "gltf-model", { src: path });
-    await this._addComponent(navNode, "heightfield");
-
+    if (heightfield) {
+      await this._addComponent(navNode, "heightfield", heightfield);
+    }
     this.addObject(navNode);
   }
 
@@ -1738,10 +1746,14 @@ export default class Editor {
     });
   }
 
-  findFirstWithComponent(componentName) {
+  findFirstWithComponent(componentName, root) {
     let result = null;
 
-    this.scene.traverse(child => {
+    if (root === undefined) {
+      root = this.scene;
+    }
+
+    root.traverse(child => {
       if (result) return;
       if (!this.getComponent(child, componentName)) return;
       result = child;

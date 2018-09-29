@@ -23,13 +23,7 @@ export default class HeightfieldComponent extends BaseComponent {
     this.shouldSave = false;
   }
 
-  static async inflate(node, props) {
-    const component = await this._getOrCreateComponent(node, props);
-
-    const mesh = node.getObjectByProperty("type", "Mesh");
-
-    if (!mesh || !mesh.geometry) return component;
-
+  static async generateHeightfield(mesh) {
     mesh.geometry.computeBoundingBox();
     const size = new THREE.Vector3();
     mesh.geometry.boundingBox.getSize(size);
@@ -45,10 +39,8 @@ export default class HeightfieldComponent extends BaseComponent {
     const raycaster = new THREE.Raycaster();
     const intersections = [];
 
-    const meshPos = new THREE.Vector3();
-    mesh.getWorldPosition(meshPos);
-    const offsetX = -size.x / 2 + meshPos.x;
-    const offsetZ = -size.z / 2 + meshPos.z;
+    const offsetX = -size.x / 2;
+    const offsetZ = -size.z / 2;
 
     let min = Infinity;
     for (let z = 0; z < resolution; z++) {
@@ -82,10 +74,6 @@ export default class HeightfieldComponent extends BaseComponent {
       }
     }
 
-    component.props.offset = offset;
-    component.props.distance = distance;
-    component.props.data = data;
-
-    return component;
+    return { offset, distance, data };
   }
 }
