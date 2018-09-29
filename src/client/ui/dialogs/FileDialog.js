@@ -14,7 +14,6 @@ import StringInput from "../inputs/StringInput";
 import Header from "../Header";
 import Icon from "../Icon";
 import iconStyles from "../Icon.scss";
-import folderIcon from "../../assets/folder-icon.svg";
 import { getUrlDirname, getUrlFilename, getUrlExtname } from "../../utils/url-path";
 
 function collectFileMenuProps({ file }) {
@@ -103,7 +102,7 @@ class FileDialog extends Component {
         this.setState({ tree });
       });
 
-      this.props.editor.project.addListener("changed", this.onHierarchyChanged);
+      this.props.editor.project.addListener("projectHierarchyChanged", this.onHierarchyChanged);
     }
 
     // HACK: need to figure out what is stealing focus and why
@@ -115,7 +114,7 @@ class FileDialog extends Component {
   componentDidUpdate(prevProps) {
     if (this.props.editor.project !== prevProps.editor.project) {
       if (prevProps.editor.project !== null) {
-        prevProps.editor.project.removeListener("changed", this.onHierarchyChanged);
+        prevProps.editor.project.removeListener("projectHierarchyChanged", this.onHierarchyChanged);
       }
 
       if (this.props.editor.project !== null) {
@@ -123,7 +122,7 @@ class FileDialog extends Component {
           this.setState({ tree });
         });
 
-        this.props.editor.project.addListener("changed", this.onHierarchyChanged);
+        this.props.editor.project.addListener("projectHierarchyChanged", this.onHierarchyChanged);
       }
     }
   }
@@ -357,8 +356,7 @@ class FileDialog extends Component {
               {newFolderActive && (
                 <Icon
                   rename
-                  src={folderIcon}
-                  className={iconStyles.small}
+                  className={classNames(iconStyles.small, "icon-folder", "icon-large")}
                   name={newFolderName}
                   onChange={this.onNewFolderChange}
                   onCancel={this.onCancelNewFolder}

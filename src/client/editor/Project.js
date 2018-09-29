@@ -51,6 +51,8 @@ export default class Project extends EventEmitter {
 
     const json = await res.json();
 
+    this.updateHierarchy(json.hierarchy);
+
     return json;
   }
 
@@ -78,6 +80,8 @@ export default class Project extends EventEmitter {
 
     const json = await res.json();
 
+    this.updateHierarchy(json.hierarchy);
+
     return json;
   }
 
@@ -95,6 +99,8 @@ export default class Project extends EventEmitter {
 
     const json = await res.json();
 
+    this.updateHierarchy(json.hierarchy);
+
     return json;
   }
 
@@ -103,6 +109,8 @@ export default class Project extends EventEmitter {
 
     const json = await res.json();
 
+    this.updateHierarchy(json.hierarchy);
+
     return json;
   }
 
@@ -110,6 +118,8 @@ export default class Project extends EventEmitter {
     const res = await this.fetch(relativePath + "?mkdir=true", { method: "POST" });
 
     const json = await res.json();
+
+    this.updateHierarchy(json.hierarchy);
 
     return json;
   }
@@ -128,6 +138,11 @@ export default class Project extends EventEmitter {
     return this.openFile(this.projectDirectoryPath);
   }
 
+  updateHierarchy(hierarchy) {
+    this.hierarchy = hierarchy;
+    this.emit("projectHierarchyChanged", this.hierarchy);
+  }
+
   _onWebsocketMessage = event => {
     const json = JSON.parse(event.data);
 
@@ -137,8 +152,7 @@ export default class Project extends EventEmitter {
         this.watchPromise = undefined;
       }
 
-      this.hierarchy = json.hierarchy;
-      this.emit("projectHierarchyChanged", this.hierarchy);
+      this.updateHierarchy(json.hierarchy);
     } else if (json.type !== undefined && json.path !== undefined) {
       this.emit(json.type, json.path);
     }

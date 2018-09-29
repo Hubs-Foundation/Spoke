@@ -18,7 +18,7 @@ export default function Icon({ name, selected, rename, onClick, onChange, onCanc
           className={styles.name}
           value={name}
           onChange={onChange}
-          onBlur={onCancel}
+          onBlur={onSubmit}
           onKeyUp={e => {
             if (e.key === "Enter") {
               e.preventDefault();
