@@ -53,7 +53,7 @@ export default class Editor {
   constructor(project) {
     this.project = project;
 
-    this.DEFAULT_CAMERA = new THREE.PerspectiveCamera(80, window.innerWidth / window.innerHeight, 0.005, 10000);
+    this.DEFAULT_CAMERA = new THREE.PerspectiveCamera(80, window.innerWidth / window.innerHeight, 0.2, 8000);
     this.DEFAULT_CAMERA.layers.enable(1);
     this.DEFAULT_CAMERA.name = "Camera";
     this.DEFAULT_CAMERA.position.set(0, 5, 10);
@@ -332,6 +332,7 @@ export default class Editor {
       true
     );
     await this.addUnicomponentNode("Skybox", "skybox", {}, {}, true);
+    await this.addUnicomponentNode("Ground Plane", "ground-plane", {}, {}, true);
     await this.addUnicomponentNode("Ambient Light", "ambient-light", {}, { position: { x: 0, y: 10, z: 0 } }, true);
     await this.addUnicomponentNode("Spawn Point", "spawn-point", {}, {}, true);
     this._ignoreSceneModification = false;
@@ -799,6 +800,7 @@ export default class Editor {
 
     this.scene.traverse(node => {
       if (!node.isMesh) return;
+      if (node.parent && this.hasComponent(node.parent, "ground-plane")) return;
       if (node instanceof THREE.Sky) return;
       if (node.userData._dontExport) return;
 
@@ -822,51 +824,70 @@ export default class Editor {
       geometries.push(geometry);
     });
 
-    if (!geometries.length) return;
+    const finalGeos = [];
 
-    const geometry = THREE.BufferGeometryUtils.mergeBufferGeometries(geometries);
+    if (geometries.length) {
+      const geometry = THREE.BufferGeometryUtils.mergeBufferGeometries(geometries);
 
-    const flippedGeometry = geometry.clone();
+      const flippedGeometry = geometry.clone();
 
-    const positions = flippedGeometry.attributes.position.array;
-    for (let i = 0; i < positions.length; i += 9) {
-      const x0 = positions[i];
-      const y0 = positions[i + 1];
-      const z0 = positions[i + 2];
-      const offset = 6;
-      positions[i] = positions[i + offset];
-      positions[i + 1] = positions[i + offset + 1];
-      positions[i + 2] = positions[i + offset + 2];
-      positions[i + offset] = x0;
-      positions[i + offset + 1] = y0;
-      positions[i + offset + 2] = z0;
+      const positions = flippedGeometry.attributes.position.array;
+      for (let i = 0; i < positions.length; i += 9) {
+        const x0 = positions[i];
+        const y0 = positions[i + 1];
+        const z0 = positions[i + 2];
+        const offset = 6;
+        positions[i] = positions[i + offset];
+        positions[i + 1] = positions[i + offset + 1];
+        positions[i + 2] = positions[i + offset + 2];
+        positions[i + offset] = x0;
+        positions[i + offset + 1] = y0;
+        positions[i + offset + 2] = z0;
+      }
+
+      const finalGeo = THREE.BufferGeometryUtils.mergeBufferGeometries([geometry, flippedGeometry]);
+
+      const position = finalGeo.attributes.position.array;
+      const index = new Uint32Array(position.length / 3);
+      for (let i = 0; i < index.length; i++) {
+        index[i] = i + 1;
+      }
+
+      const box = new THREE.Box3().setFromBufferAttribute(finalGeo.attributes.position);
+      const size = new THREE.Vector3();
+      box.getSize(size);
+      if (Math.max(size.x, size.y, size.z) > 2000) {
+        throw new Error(`Scene is too large (${size.x} x ${size.y} x ${size.z}) to generate a nav mesh.`);
+      }
+      const area = size.x * size.z;
+      // Tuned to produce cell sizes from ~0.5 to ~1.5 for areas from ~200 to ~350,000.
+      const cellSize = Math.pow(area, 1 / 3) / 50;
+      const { navPosition, navIndex } = await this.project.generateNavMesh(position, index, cellSize);
+
+      const navGeo = new THREE.BufferGeometry();
+      navGeo.setIndex(navIndex);
+      navGeo.addAttribute("position", new THREE.Float32BufferAttribute(navPosition, 3));
+      finalGeos.push(navGeo);
     }
 
-    const finalGeo = THREE.BufferGeometryUtils.mergeBufferGeometries([geometry, flippedGeometry]);
-
-    const position = finalGeo.attributes.position.array;
-    const index = new Uint32Array(position.length / 3);
-    for (let i = 0; i < index.length; i++) {
-      index[i] = i + 1;
+    const groundPlaneNode = this.findFirstWithComponent("ground-plane");
+    if (groundPlaneNode) {
+      const groundPlaneMesh = groundPlaneNode.getObjectByProperty("type", "Mesh");
+      const origGroundPlaneGeo = groundPlaneMesh.geometry;
+      const groundPlaneGeo = new THREE.BufferGeometry();
+      groundPlaneGeo.setIndex(origGroundPlaneGeo.index);
+      groundPlaneGeo.addAttribute("position", origGroundPlaneGeo.attributes.position.clone());
+      groundPlaneGeo.applyMatrix(groundPlaneMesh.matrixWorld);
+      finalGeos.push(groundPlaneGeo);
     }
 
-    const box = new THREE.Box3().setFromBufferAttribute(finalGeo.attributes.position);
-    const size = new THREE.Vector3();
-    box.getSize(size);
-    if (Math.max(size.x, size.y, size.z) > 2000) {
-      throw new Error(`Scene is too large (${size.x} x ${size.y} x ${size.z}) to generate a nav mesh.`);
-    }
-    const area = size.x * size.z;
-    // Tuned to produce cell sizes from ~0.5 to ~1.5 for areas from ~200 to ~350,000.
-    const cellSize = Math.pow(area, 1 / 3) / 50;
-    const { navPosition, navIndex } = await this.project.generateNavMesh(position, index, cellSize);
+    if (!finalGeos.length) return;
 
-    const navGeo = new THREE.BufferGeometry();
-    navGeo.setIndex(navIndex);
-    navGeo.addAttribute("position", new THREE.Float32BufferAttribute(navPosition, 3));
+    const finalNavGeo =
+      finalGeos.length === 1 ? finalGeos[0] : THREE.BufferGeometryUtils.mergeBufferGeometries(finalGeos);
 
     const navMesh = new THREE.Mesh(
-      navGeo,
+      finalNavGeo,
       new THREE.MeshLambertMaterial({
         color: 0x0000ff
       })
@@ -1466,7 +1487,7 @@ export default class Editor {
     if (this.components.has(componentName)) {
       return this.components.get(componentName).getComponent(object);
     } else {
-      return object.userData._components.find(({ name }) => name === componentName);
+      return object.userData._components && object.userData._components.find(({ name }) => name === componentName);
     }
   }
 
