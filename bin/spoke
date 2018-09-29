@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 const commander = require("commander");
-const opn = require("opn");
-const pkg = require("../package.json");
 const fs = require("fs");
+const opn = require("opn");
+const os = require("os");
 const path = require("path");
+const pkg = require("../package.json");
 const readline = require("readline");
 
 commander.version(pkg.version);
@@ -25,12 +26,36 @@ if (process.env.NODE_ENV === "development") {
   startServer = require("../lib/server/index").default;
 }
 
-const projectPath = commander.args.length > 0 ? commander.args[0] : process.cwd();
-const projectFilePath = path.join(projectPath, "spoke-project.json");
+function getProjectFile(projectPath) {
+  return path.join(projectPath, "spoke-project.json");
+}
 
+function isExistingProjectPath(path) {
+  return fs.existsSync(getProjectFile(path));
+}
+
+let projectPath = null;
+if (commander.args.length > 0) {
+  projectPath = commander.args[0];
+} else {
+  for (const potentialProjectPathName of ["Spoke", "Spoke Scenes"]) {
+    const potentialProjectPath = path.join(os.homedir(), potentialProjectPathName);
+    if (!fs.existsSync(potentialProjectPath) || isExistingProjectPath(potentialProjectPath)) {
+      projectPath = potentialProjectPath;
+      break;
+    }
+  }
+  if (projectPath === null) {
+    throw new Error("Default directory is unavailable. Please specify a directory.");
+  }
+}
+
+const projectFilePath = getProjectFile(projectPath);
+
+// Disabled default assets for V1 release
 run(false);
 
-// Disable default assets for V1 release
+// Disabled default assets for V1 release
 /* eslint-disable no-unused-vars */
 function promptAboutDefaultAssets() {
   if (!fs.existsSync(projectFilePath)) {

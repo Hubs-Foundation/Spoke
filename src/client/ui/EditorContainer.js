@@ -186,7 +186,7 @@ class EditorContainer extends Component {
             action: e => this.onGenerateNavMesh(e)
           },
           {
-            name: "Open Project Folder...",
+            name: "Open Scenes Folder...",
             action: () => this.props.editor.project.openProjectDirectory()
           }
         ].filter(x => x !== null)
