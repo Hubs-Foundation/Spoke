@@ -108,13 +108,13 @@ export default class Viewport {
       }
     });
 
-    this.snapEnabled = false;
-    this.snapTempValues = {
+    this.snapEnabled = true;
+    this.snapValues = {
       translationSnap: 1,
       rotationSnap: Math.PI / 4
     };
-    this.toggleSnap();
     this.currentSpace = "world";
+    this.updateSnapSettings();
 
     editor.helperScene.add(this._transformControls);
 
@@ -364,8 +364,7 @@ export default class Viewport {
 
   toggleSnap = () => {
     this.snapEnabled = !this.snapEnabled;
-    this._transformControls.setTranslationSnap(this.snapEnabled ? this.snapTempValues.translationSnap : null);
-    this._transformControls.setRotationSnap(this.snapEnabled ? this.snapTempValues.rotationSnap : null);
+    this.updateSnapSettings();
   };
 
   toggleSpace = () => {
@@ -376,16 +375,20 @@ export default class Viewport {
   setSnapValue = ({ type, value }) => {
     switch (type) {
       case "translate":
-        this.snapTempValues.translationSnap = value;
+        this.snapValues.translationSnap = value;
         break;
       case "rotate":
-        this.snapTempValues.rotationSnap = value;
-        break;
-      case "scale":
-        this._transformControls.setSize(this.snapEnabled ? value : 1);
+        this.snapValues.rotationSnap = value;
         break;
       default:
         break;
     }
+
+    this.updateSnapSettings();
   };
+
+  updateSnapSettings() {
+    this._transformControls.setTranslationSnap(this.snapEnabled ? this.snapValues.translationSnap : null);
+    this._transformControls.setRotationSnap(this.snapEnabled ? this.snapValues.rotationSnap : null);
+  }
 }
