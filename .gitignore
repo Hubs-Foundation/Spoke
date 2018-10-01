@@ -10,4 +10,7 @@ example/generated/
 example/imported/
 .certs/
 .env
-release/
+release/spoke-linux
+release/spoke-macos
+release/spoke-win.exe
+release/*.zip

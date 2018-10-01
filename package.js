@@ -24,10 +24,8 @@ const targets = platforms.map(p => `node10-${p}-x64`);
 const readFilePromise = util.promisify(fs.readFile);
 
 buildRelease(targets, outputDir, process.argv.slice(2)).then(() => {
-  // if we were really clever we could distinguish runtime dependencies from dev dependencies
-  // and then just hoover up all runtime-required .node files in node_modules, but we aren't that clever
-  const modules = glob.sync("node_modules/**/RecastCLI.node");
   for (const platform of platforms) {
+    const modules = glob.sync(`release/${platform}/*.node`);
     const executableName = `spoke-${platform}`;
     const executablePath = path.join(outputDir, appendExtension(executableName, platform));
 
