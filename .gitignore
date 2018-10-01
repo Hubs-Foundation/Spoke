@@ -5,9 +5,12 @@ yarn-debug.log*
 yarn-error.log*
 yarn.lock
 node_modules/
-lib/
 public/
 example/generated/
 example/imported/
 .certs/
 .env
+release/spoke-linux
+release/spoke-macos
+release/spoke-win.exe
+release/*.zip

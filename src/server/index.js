@@ -1,23 +1,43 @@
-import chokidar from "chokidar";
-import debounce from "lodash.debounce";
-import envPaths from "env-paths";
-import fetch from "node-fetch";
-import FormData from "form-data";
-import fs from "fs-extra";
-import http from "http";
-import https from "https";
-import Koa from "koa";
-import koaBody from "koa-body";
-import mount from "koa-mount";
-import opn from "opn";
-import path from "path";
-import recast from "@donmccurdy/recast";
-import Router from "koa-router";
-import selfsigned from "selfsigned";
-import serve from "koa-static";
-import sha from "sha.js";
-import WebSocket from "ws";
-import yauzl from "yauzl";
+const childProcess = require("child_process");
+const chokidar = require("chokidar");
+const debounce = require("lodash/debounce");
+const envPaths = require("env-paths");
+const fetch = require("node-fetch");
+const FormData = require("form-data");
+const fs = require("fs-extra");
+const http = require("http");
+const https = require("https");
+const Koa = require("koa");
+const koaBody = require("koa-body");
+const mount = require("koa-mount");
+const path = require("path");
+const recast = require("@donmccurdy/recast");
+const Router = require("koa-router");
+const selfsigned = require("selfsigned");
+const serve = require("koa-static");
+const sha = require("sha.js");
+const WebSocket = require("ws");
+const yauzl = require("yauzl");
+const isWsl = require("is-wsl");
+
+function openFile(target) {
+  let cmd;
+  const args = [];
+
+  if (process.platform === "darwin") {
+    cmd = "open";
+    args.push("-W");
+  } else if (process.platform === "win32" || isWsl) {
+    cmd = "cmd" + (isWsl ? ".exe" : "");
+    args.push("/c", "start", '""', "/b", "/wait");
+    target = target.replace(/&/g, "^&");
+  } else {
+    cmd = "xdg-open";
+  }
+
+  args.push(target);
+  childProcess.spawn(cmd, args).unref();
+}
 
 function pathToUri(projectPath, path) {
   return path.replace(projectPath, "/api/files").replace(/\\/g, "/");
@@ -133,7 +153,7 @@ function extractZip(zipPath, basePath) {
   });
 }
 
-export default async function startServer(options) {
+module.exports = async function startServer(options) {
   const opts = options;
 
   const projectPath = path.resolve(opts.projectPath);
@@ -274,7 +294,7 @@ export default async function startServer(options) {
 
     if (ctx.request.query.open) {
       // Attempt to open file at filePath with the default application for that file type.
-      opn(filePath);
+      openFile(filePath);
       ctx.body = { success: true };
       return;
     } else if (ctx.request.query.mkdir) {
@@ -344,7 +364,7 @@ export default async function startServer(options) {
     ctx.body = { navPosition, navIndex };
   });
 
-  const mediaEndpoint = `https://${process.env.RETICULUM_SERVER}/api/v1/media`;
+  const mediaEndpoint = `https://hubs.mozilla.com/api/v1/media`;
   const agent = process.env.NODE_ENV === "development" ? https.Agent({ rejectUnauthorized: false }) : null;
 
   async function tryGetJson(request) {
@@ -481,7 +501,7 @@ export default async function startServer(options) {
     };
     const body = JSON.stringify({ scene: sceneParams });
 
-    let sceneEndpoint = `https://${process.env.RETICULUM_SERVER}/api/v1/scenes`;
+    let sceneEndpoint = `https://hubs.mozilla.com/api/v1/scenes`;
     let method = "POST";
     if (sceneId) {
       sceneEndpoint = `${sceneEndpoint}/${sceneId}`;
@@ -503,4 +523,9 @@ export default async function startServer(options) {
   app.use(router.allowedMethods());
 
   server.listen(opts.port);
-}
+
+  if (opts.open) {
+    const protocol = opts.https ? "https" : "http";
+    openFile(`${protocol}://localhost:${opts.port}`);
+  }
+};
