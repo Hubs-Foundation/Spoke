@@ -519,8 +519,10 @@ class EditorContainer extends Component {
   };
 
   onOpenScene = async uri => {
-    if (this.props.editor.sceneInfo.uri === uri) return;
-    if (!this.confirmSceneChange()) return;
+    if (!this.confirmSceneChange()) {
+      this.hideDialog();
+      return;
+    }
 
     this.showDialog(ProgressDialog, {
       title: "Opening Scene",
