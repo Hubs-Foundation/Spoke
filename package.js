@@ -30,9 +30,10 @@ buildRelease(targets, outputDir, process.argv.slice(2)).then(() => {
     const executablePath = path.join(outputDir, appendExtension(executableName, platform));
 
     const zip = new JSZip();
-    zip.file(appendExtension("spoke", platform), readFilePromise(executablePath));
+    const spoke = zip.folder("Spoke");
+    spoke.file(appendExtension("spoke", platform), readFilePromise(executablePath));
     for (const module of modules) {
-      zip.file(path.basename(module), readFilePromise(module));
+      spoke.file(path.basename(module), readFilePromise(module));
     }
 
     const archivePath = path.join(outputDir, `${executableName}.zip`);
