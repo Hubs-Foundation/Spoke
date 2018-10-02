@@ -364,7 +364,8 @@ module.exports = async function startServer(options) {
     ctx.body = { navPosition, navIndex };
   });
 
-  const mediaEndpoint = `https://hubs.mozilla.com/api/v1/media`;
+  const reticulumServer = "hubs.mozilla.com";
+  const mediaEndpoint = `https://${reticulumServer}/api/v1/media`;
   const agent = process.env.NODE_ENV === "development" ? https.Agent({ rejectUnauthorized: false }) : null;
 
   async function tryGetJson(request) {
@@ -501,7 +502,7 @@ module.exports = async function startServer(options) {
     };
     const body = JSON.stringify({ scene: sceneParams });
 
-    let sceneEndpoint = `https://hubs.mozilla.com/api/v1/scenes`;
+    let sceneEndpoint = `https://${reticulumServer}/api/v1/scenes`;
     let method = "POST";
     if (sceneId) {
       sceneEndpoint = `${sceneEndpoint}/${sceneId}`;
