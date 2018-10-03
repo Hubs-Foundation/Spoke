@@ -853,7 +853,7 @@ export default class Editor {
       const position = finalGeo.attributes.position.array;
       const index = new Int32Array(position.length / 3);
       for (let i = 0; i < index.length; i++) {
-        index[i] = i + 1;
+        index[i] = i;
       }
 
       const box = new THREE.Box3().setFromBufferAttribute(finalGeo.attributes.position);
