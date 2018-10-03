@@ -40,6 +40,7 @@ import absoluteToRelativeURL from "./utils/absoluteToRelativeURL";
 import addChildAtIndex from "./utils/addChildAtIndex";
 import shallowEquals from "./utils/shallowEquals";
 import sortEntities from "./utils/sortEntities";
+import cloneObject3D from "./utils/cloneObject3D";
 
 import { Components } from "./components";
 import { types } from "./components/utils";
@@ -49,6 +50,7 @@ import SaveableComponent from "./components/SaveableComponent";
 import SceneReferenceComponent from "./components/SceneReferenceComponent";
 import ShadowComponent from "./components/ShadowComponent";
 import StandardMaterialComponent from "./components/StandardMaterialComponent";
+import LoopAnimationComponent from "./components/LoopAnimationComponent";
 
 export default class Editor {
   constructor(project) {
@@ -917,7 +919,7 @@ export default class Editor {
 
   async exportScene(outputPath, glb) {
     const scene = this.scene;
-    const clonedScene = scene.clone();
+    const clonedScene = cloneObject3D(scene);
 
     // Add a preview camera to the exported GLB if there is a transform in the metadata.
     const { previewCameraTransform } = this.getSceneMetadata();
@@ -1006,6 +1008,27 @@ export default class Editor {
         }
       }
     }
+
+    const animations = [];
+
+    clonedScene.traverse(object => {
+      const gltfModelComponent = GLTFModelComponent.getComponent(object);
+      const loopAnimationComponent = LoopAnimationComponent.getComponent(object);
+
+      if (gltfModelComponent && loopAnimationComponent) {
+        const gltfRoot = object.children.find(node => node.type === "Scene");
+        if (gltfRoot) {
+          const clipName = loopAnimationComponent.props.clip;
+          const animation = gltfRoot.animations.find(a => a.name === clipName);
+
+          if (animation) {
+            animations.push(animation);
+          } else {
+            throw new Error(`Animation for clip "${clipName}" not found.`);
+          }
+        }
+      }
+    });
 
     const componentsToExport = Components.filter(c => !c.dontExportProps).map(component => component.componentName);
 
@@ -1097,7 +1120,8 @@ export default class Editor {
     const chunks = await new Promise((resolve, reject) => {
       exporter.parseChunks(clonedScene, resolve, reject, {
         mode: glb ? "glb" : "gltf",
-        onlyVisible: false
+        onlyVisible: false,
+        animations
       });
     });
 
@@ -1386,6 +1410,15 @@ export default class Editor {
 
       object.add(scene);
       component._object = scene;
+
+      const animations = scene.animations;
+
+      if (animations.length > 0) {
+        await this._addComponent(object, "loop-animation", {
+          clip: animations[0].name
+        });
+      }
+
       this.signals.objectChanged.dispatch(object);
     } catch (e) {
       console.error("Failed to load GLTF", e);
