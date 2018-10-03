@@ -851,7 +851,7 @@ export default class Editor {
       const finalGeo = THREE.BufferGeometryUtils.mergeBufferGeometries([geometry, flippedGeometry]);
 
       const position = finalGeo.attributes.position.array;
-      const index = new Uint32Array(position.length / 3);
+      const index = new Int32Array(position.length / 3);
       for (let i = 0; i < index.length; i++) {
         index[i] = i + 1;
       }

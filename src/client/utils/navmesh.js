@@ -10,7 +10,7 @@ export function generateNavMesh(positions, indices, cellSize) {
   if (!recast) {
     throw new Error("Recast module unavailable or not yet loaded.");
   }
-  recast.loadArray(new Float32Array(positions), new Int32Array(indices));
+  recast.loadArray(positions, indices);
   const objMesh = recast.build(
     cellSize,
     0.1, // cellHeight
