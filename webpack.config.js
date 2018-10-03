@@ -7,6 +7,7 @@ if (process.env.NODE_ENV === "production") {
   dotenv.config({ path: ".env.defaults" });
 }
 
+const CopyWebpackPlugin = require("copy-webpack-plugin");
 const HTMLWebpackPlugin = require("html-webpack-plugin");
 const path = require("path");
 const pkg = require("./package.json");
@@ -55,6 +56,7 @@ module.exports = {
   },
 
   plugins: [
+    new CopyWebpackPlugin([{ from: "src/client/vendor/recast/recast.wasm", to: "recast.wasm" }]),
     new HTMLWebpackPlugin({
       title: pkg.productName
     }),

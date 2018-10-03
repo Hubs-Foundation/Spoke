@@ -185,21 +185,6 @@ export default class Project extends EventEmitter {
     return Promise.resolve(this);
   }
 
-  async generateNavMesh(position, index, cellSize) {
-    const positionBlob = new Blob([new Float32Array(position)], { type: "application/octet-stream" });
-    const indexBlob = new Blob([new Int32Array(index)], { type: "application/octet-stream" });
-    const formData = new FormData();
-    formData.append("position", positionBlob);
-    formData.append("index", indexBlob);
-    formData.append("cellSize", cellSize);
-
-    const res = await this.fetch("/api/navmesh", { method: "POST", body: formData });
-    if (res.status !== 200) {
-      throw new Error("Failed to generate floor plan");
-    }
-    return res.json();
-  }
-
   async writeGeneratedBlob(fileName, blob) {
     const basePath = this.projectDirectoryPath;
     const path = `${basePath}generated/${fileName}`;

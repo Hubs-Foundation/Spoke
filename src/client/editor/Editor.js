@@ -24,6 +24,7 @@ import {
   getOriginalStaticMode,
   setOriginalStaticMode
 } from "./StaticMode";
+import { generateNavMesh } from "../utils/navmesh";
 import { getUrlFilename } from "../utils/url-path";
 import { textureCache, gltfCache } from "./caches";
 
@@ -864,7 +865,7 @@ export default class Editor {
       const area = size.x * size.z;
       // Tuned to produce cell sizes from ~0.5 to ~1.5 for areas from ~200 to ~350,000.
       const cellSize = Math.pow(area, 1 / 3) / 50;
-      const { navPosition, navIndex } = await this.project.generateNavMesh(position, index, cellSize);
+      const { navPosition, navIndex } = generateNavMesh(position, index, cellSize);
 
       const navGeo = new THREE.BufferGeometry();
       navGeo.setIndex(navIndex);
