@@ -11,7 +11,6 @@ const Koa = require("koa");
 const koaBody = require("koa-body");
 const mount = require("koa-mount");
 const path = require("path");
-const recast = require("@donmccurdy/recast");
 const Router = require("koa-router");
 const selfsigned = require("selfsigned");
 const serve = require("koa-static");
@@ -317,51 +316,6 @@ module.exports = async function startServer(options) {
       success: true,
       hierarchy
     };
-  });
-
-  router.post("/api/navmesh", koaBody({ multipart: true, text: false }), async ctx => {
-    const [position, index] = await Promise.all([
-      fs.readFile(ctx.request.files.position.path),
-      fs.readFile(ctx.request.files.index.path)
-    ]);
-    recast.load(new Float32Array(position.buffer), new Int32Array(index.buffer));
-    const objMesh = recast.build(
-      parseFloat(ctx.request.body.cellSize),
-      0.1, // cellHeight
-      1.0, // agentHeight
-      0.0001, // agentRadius
-      0.5, // agentMaxClimb
-      45, // agentMaxSlope
-      4, // regionMinSize
-      20, // regionMergeSize
-      12, // edgeMaxLen
-      1, // edgeMaxError
-      3, // vertsPerPoly
-      16, //detailSampleDist
-      1 // detailSampleMaxError
-    );
-    // TODO; Dumb that recast returns an OBJ formatted string. We should have it return an array somehow.
-    const { navPosition, navIndex } = objMesh.split("@").reduce(
-      (acc, line) => {
-        line = line.trim();
-        if (line.length === 0) return acc;
-        const values = line.split(" ");
-        if (values[0] === "v") {
-          acc.navPosition[acc.navPosition.length] = Number(values[1]);
-          acc.navPosition[acc.navPosition.length] = Number(values[2]);
-          acc.navPosition[acc.navPosition.length] = Number(values[3]);
-        } else if (values[0] === "f") {
-          acc.navIndex[acc.navIndex.length] = Number(values[1]) - 1;
-          acc.navIndex[acc.navIndex.length] = Number(values[2]) - 1;
-          acc.navIndex[acc.navIndex.length] = Number(values[3]) - 1;
-        } else {
-          throw new Error(`Invalid objMesh line "${line}"`);
-        }
-        return acc;
-      },
-      { navPosition: [], navIndex: [] }
-    );
-    ctx.body = { navPosition, navIndex };
   });
 
   const reticulumServer = "hubs.mozilla.com";

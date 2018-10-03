@@ -2,3 +2,4 @@ desktop/app/**/*.js
 desktop/node_modules/
 src/client/vendor/three/GLTFExporter.js
 src/client/vendor/three/GLTFLoader.js
+src/client/vendor/recast/recast.js
