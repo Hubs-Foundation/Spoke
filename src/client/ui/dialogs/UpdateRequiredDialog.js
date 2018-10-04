@@ -18,7 +18,6 @@ export default class UpdateRequiredDialog extends Component {
       <div className={styles.dialogContainer}>
         <Header title="Update Required" />
         <div className={styles.updateRequiredContainer}>
-          This version of Spoke is no longer supported.<br />
           Please download the latest version to continue using Spoke.
           <div className={styles.downloadButton}>
             <Button href={this.props.downloadUrl}>Download</Button>

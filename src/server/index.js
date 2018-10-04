@@ -594,7 +594,7 @@ module.exports = async function startServer(options) {
   router.get("/api/update_info", koaBody(), async ctx => {
     try {
       // This endpoint doesn't exist yet but we query it for future use.
-      const configEndpoint = `https://${reticulumServer}/api/v1/config`;
+      const configEndpoint = `https://${reticulumServer}/api/v1/configs/spoke`;
       const { min_spoke_version } =
         (await fetch(configEndpoint, { timeout: updateInfoTimeout }).then(tryGetJson)) || {};
 
