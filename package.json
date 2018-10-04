@@ -86,6 +86,7 @@
     "react-toggle": "^4.0.2",
     "react-tooltip": "^3.6.1",
     "selfsigned": "^1.10.3",
+    "semver": "^5.5.1",
     "sha.js": "^2.4.11",
     "signals": "^1.0.0",
     "three": "github:mozillareality/three.js#hubs/dev-v2",

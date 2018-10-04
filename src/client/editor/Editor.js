@@ -170,6 +170,8 @@ export default class Editor {
     this.ComponentPropTypes = types;
     this.StaticModes = StaticModes;
     this.loadNewScene();
+
+    this.updateInfo = null;
   }
 
   createViewport(canvas) {
@@ -1961,5 +1963,9 @@ export default class Editor {
 
   async authenticated() {
     return await fetch("/api/authenticated").then(r => r.ok);
+  }
+
+  async retrieveUpdateInfo() {
+    this.updateInfo = await fetch("/api/update_info").then(r => r.json());
   }
 }

@@ -6,14 +6,21 @@ import Project from "./editor/Project";
 import qsTruthy from "./utils/qs-truthy.js";
 import "./global.scss";
 
-const rootEl = document.createElement("div");
-rootEl.id = "app";
-document.body.appendChild(rootEl);
+(async () => {
+  // eslint-disable-next-line no-undef
+  console.log(`Spoke v${SPOKE_VERSION}`);
 
-const project = new Project();
-const editor = new Editor(project);
-window.editor = editor;
+  const rootEl = document.createElement("div");
+  rootEl.id = "app";
+  document.body.appendChild(rootEl);
 
-const uiMode = qsTruthy("advanced") ? "advanced" : "basic";
+  const project = new Project();
+  const editor = new Editor(project);
+  window.editor = editor;
 
-ReactDOM.render(<EditorContainer uiMode={uiMode} editor={editor} />, rootEl);
+  await editor.retrieveUpdateInfo();
+
+  const uiMode = qsTruthy("advanced") ? "advanced" : "basic";
+
+  ReactDOM.render(<EditorContainer uiMode={uiMode} editor={editor} />, rootEl);
+})();
