@@ -535,8 +535,10 @@ module.exports = async function startServer(options) {
 
   const updateInfoTimeout = 2000;
 
-  async function getLatestRelease() {
+  async function fetchReleases(after) {
+    // Read-only, public access token.
     const token = "de8cbfb4cc0281c7b731c891df431016c29b0ace";
+
     const result = await fetch("https://api.github.com/graphql", {
       timeout: updateInfoTimeout,
       method: "POST",
@@ -545,13 +547,20 @@ module.exports = async function startServer(options) {
         query: `
           {
             repository(owner: "mozillareality", name: "spoke") {
-              releases(last: 1, isPrerelease: false, isDraft: false) {
+              releases(
+                orderBy: { field: CREATED_AT, direction: DESC },
+                first: 5,
+                ${after ? `after: "${after}"` : ""}
+              ) {
                 nodes {
-                  tag { name }
+                  isPrerelease,
+                  isDraft,
+                  tag { name },
                   releaseAssets(last: 3) {
                     nodes { name, downloadUrl }
                   }
-                }
+                },
+                pageInfo { endCursor, hasNextPage }
               }
             }
           }
@@ -561,7 +570,20 @@ module.exports = async function startServer(options) {
 
     if (!result || !result.data) return;
 
-    const release = result.data.repository.releases.nodes[0];
+    return result.data.repository.releases;
+  }
+
+  async function getLatestRelease() {
+    let release, hasNextPage, after;
+    do {
+      const releases = await fetchReleases(after);
+      if (!releases) return;
+      release = releases.nodes.find(release => !release.isPrerelease && !release.isDraft);
+      hasNextPage = releases.pageInfo.hasNextPage;
+      after = releases.pageInfo.endCursor;
+    } while (!release && hasNextPage);
+
+    if (!release) return;
 
     return {
       version: release.tag.name,
@@ -589,7 +611,8 @@ module.exports = async function startServer(options) {
         latestVersion: latestRelease.version,
         downloadUrl: latestRelease.downloadUrl
       };
-    } catch (_) {
+    } catch (e) {
+      console.log("Update info check failed", e);
       ctx.body = {};
       return;
     }
