@@ -9,7 +9,7 @@ if (process.env.NODE_ENV === "production") {
 
 const HTMLWebpackPlugin = require("html-webpack-plugin");
 const path = require("path");
-const pkg = require("./package.json");
+const packageJSON = require("./package.json");
 const webpack = require("webpack");
 
 module.exports = {
@@ -56,7 +56,10 @@ module.exports = {
 
   plugins: [
     new HTMLWebpackPlugin({
-      title: pkg.productName
+      title: packageJSON.productName
+    }),
+    new webpack.DefinePlugin({
+      SPOKE_VERSION: JSON.stringify(packageJSON.version)
     }),
     new webpack.EnvironmentPlugin(["NODE_ENV", "RETICULUM_SERVER"])
   ]

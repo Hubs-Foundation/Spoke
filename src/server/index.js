@@ -7,6 +7,7 @@ const FormData = require("form-data");
 const fs = require("fs-extra");
 const http = require("http");
 const https = require("https");
+const isWsl = require("is-wsl");
 const Koa = require("koa");
 const koaBody = require("koa-body");
 const mount = require("koa-mount");
@@ -14,11 +15,13 @@ const path = require("path");
 const recast = require("@donmccurdy/recast");
 const Router = require("koa-router");
 const selfsigned = require("selfsigned");
+const semver = require("semver");
 const serve = require("koa-static");
 const sha = require("sha.js");
 const WebSocket = require("ws");
 const yauzl = require("yauzl");
-const isWsl = require("is-wsl");
+
+const packageJSON = require("../../package.json");
 
 function openFile(target) {
   let cmd;
@@ -373,7 +376,7 @@ module.exports = async function startServer(options) {
     try {
       return JSON.parse(text);
     } catch (e) {
-      console.log("JSON error", text, e);
+      console.log(`JSON error parsing response from ${request.url} "${text}"`, e);
     }
   }
 
@@ -518,6 +521,78 @@ module.exports = async function startServer(options) {
     const json = await tryGetJson(resp);
     const { url, scene_id } = json.scenes[0];
     ctx.body = { url, sceneId: scene_id };
+  });
+
+  const nodePlatformToAssetPlatform = {
+    win32: "win",
+    darwin: "macos",
+    linux: "linux"
+  };
+  function getDownloadUrlForCurrentPlatform(assets) {
+    const assetPlatform = nodePlatformToAssetPlatform[process.platform];
+    return assets.find(asset => asset.name.includes(assetPlatform)).downloadUrl;
+  }
+
+  const updateInfoTimeout = 2000;
+
+  async function getLatestRelease() {
+    const token = "de8cbfb4cc0281c7b731c891df431016c29b0ace";
+    const result = await fetch("https://api.github.com/graphql", {
+      timeout: updateInfoTimeout,
+      method: "POST",
+      headers: { authorization: `bearer ${token}` },
+      body: JSON.stringify({
+        query: `
+          {
+            repository(owner: "mozillareality", name: "spoke") {
+              releases(last: 1, isPrerelease: false, isDraft: false) {
+                nodes {
+                  tag { name }
+                  releaseAssets(last: 3) {
+                    nodes { name, downloadUrl }
+                  }
+                }
+              }
+            }
+          }
+        `
+      })
+    }).then(tryGetJson);
+
+    if (!result || !result.data) return;
+
+    const release = result.data.repository.releases.nodes[0];
+
+    return {
+      version: release.tag.name,
+      downloadUrl: getDownloadUrlForCurrentPlatform(release.releaseAssets.nodes)
+    };
+  }
+
+  router.get("/api/update_info", koaBody(), async ctx => {
+    try {
+      // This endpoint doesn't exist yet but we query it for future use.
+      const configEndpoint = `https://${reticulumServer}/api/v1/config`;
+      const { min_spoke_version } =
+        (await fetch(configEndpoint, { timeout: updateInfoTimeout }).then(tryGetJson)) || {};
+
+      const latestRelease = await getLatestRelease();
+
+      if (!latestRelease) {
+        ctx.body = {};
+        return;
+      }
+
+      ctx.body = {
+        updateAvailable: semver.gt(latestRelease.version, packageJSON.version),
+        updateRequired: min_spoke_version && semver.gt(min_spoke_version, packageJSON.version),
+        latestVersion: latestRelease.version,
+        downloadUrl: latestRelease.downloadUrl
+      };
+    } catch (_) {
+      ctx.body = {};
+      return;
+    }
   });
 
   app.use(router.routes());
