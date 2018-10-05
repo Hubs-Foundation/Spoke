@@ -83,6 +83,7 @@ export default class Viewport {
         editor.scene.updateMatrixWorld();
 
         renderer.render(editor.scene, camera);
+        signals.sceneRendered.dispatch(renderer.info);
         renderer.render(editor.helperScene, camera);
       }
 
