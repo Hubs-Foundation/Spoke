@@ -11,21 +11,33 @@
     top: 0;
     left: 0;
     text-align: center;
-    font-family: $lato;
+    font-family: $zilla;
+    text-shadow: 0 0 4px black;
     font-size: 24px;
     width: 100%;
     margin-top: 4px;
-    font-weight: bold;
+    font-weight: 600;
     pointer-events: none;
+  }
+
+  :local(.logoContent) {
+    display: flex;
+    justify-content: center;
+
+    img {
+      width: 32px;
+      height: 32px;
+      margin-right: 5px;
+    }
   }
 
   :local(.notification) {
     position: absolute;
-    top: 40px;
-    background: white;
+    top: 46px;
+    background: $panel;
     padding: 0.2em 1em;
-    color: black;
-    border-radius: 0 0 4px 4px;
+    color: white;
+    border-radius: 0 0 6px 6px;
     z-index: 5;
     left: 50%;
     width: 22em;
@@ -34,15 +46,17 @@
     box-sizing: border-box;
     display: flex;
     align-items: center;
+    justify-content: space-between;
 
     :local(.message) {
       flex: 1;
       display: flex;
       align-items: center;
+      margin: 0 0.2em;
     }
 
     :local(.download) {
-      margin: 0.4em;
+      margin: 0.4em 0.4em 0.4em 1.0em;
     }
 
     :local(.dismiss) {

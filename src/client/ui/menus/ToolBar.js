@@ -8,6 +8,7 @@ import Button from "../Button";
 import ToolToggle from "./ToolToggle";
 import styles from "./ToolBar.scss";
 import SnappingDropdown from "./SnappingDropdown";
+import SpokeIcon from "../../assets/spoke-icon.png";
 
 export default class ToolBar extends Component {
   static propTypes = {
@@ -163,7 +164,12 @@ export default class ToolBar extends Component {
     const showUpdateNotification = updateAvailable && !updateRequired && !this.state.updateNotificationDismissed;
     return (
       <div className={styles.toolbar}>
-        <div className={styles.logo}>spoke</div>
+        <div className={styles.logo}>
+          <div className={styles.logoContent}>
+            <img src={SpokeIcon} />
+            <div>spoke</div>
+          </div>
+        </div>
         {showUpdateNotification && (
           <div className={styles.notification}>
             <div className={styles.message}>
