@@ -552,15 +552,10 @@ module.exports = async function startServer(options) {
       const { min_spoke_version } =
         (await fetch(configEndpoint, { timeout: updateInfoTimeout }).then(tryGetJson)) || {};
 
-      const latestRelease = await getLatestRelease();
-
-      if (!latestRelease) {
-        ctx.body = {};
-        return;
-      }
+      const latestRelease = (await getLatestRelease()) || {};
 
       ctx.body = {
-        updateAvailable: semver.gt(latestRelease.version, packageJSON.version),
+        updateAvailable: latestRelease.version && semver.gt(latestRelease.version, packageJSON.version),
         updateRequired: min_spoke_version && semver.gt(min_spoke_version, packageJSON.version),
         latestVersion: latestRelease.version,
         downloadUrl: latestRelease.downloadUrl
