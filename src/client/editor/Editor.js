@@ -76,6 +76,7 @@ export default class Editor {
       sceneGraphChanged: new Signal(),
       sceneSet: new Signal(),
       sceneModified: new Signal(),
+      sceneRendered: new Signal(),
 
       objectSelected: new Signal(),
       objectFocused: new Signal(),
