@@ -206,14 +206,6 @@ class EditorContainer extends Component {
         name: "Help",
         items: [
           {
-            name: "Getting Started",
-            action: () => window.open("https://github.com/MozillaReality/spoke/wiki/Getting-Started")
-          },
-          {
-            name: "Tutorials",
-            action: () => window.open("https://github.com/MozillaReality/spoke/wiki/Tutorials")
-          },
-          {
             name: "Keyboard Shortcuts",
             action: () => window.open("https://github.com/MozillaReality/spoke/wiki/Keyboard-Shortcuts")
           }
