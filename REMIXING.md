@@ -8,6 +8,6 @@ Creative Commons licenses provide a standard way for content creators to grant s
 
 ## Licensing your content
 
-You can choose whether your content can be remixed by selecting "Allow remixing" when publishing from Spoke. By default this option is set to sllow remixing. You can change this setting at any time, by re-publishing your scene.
+You can choose whether your content can be remixed by selecting "Allow remixing" when publishing from Spoke. By default this option is set to allow remixing. You can change this setting at any time, by re-publishing your scene.
 
 If you don't allow remixing, your content will be published under the Hubs [Terms of Use](https://github.com/mozilla/hubs/blob/master/TERMS.md).
