@@ -14,10 +14,25 @@ class RendererStats extends Component {
   }
 
   componentDidMount() {
-    this.props.editor.signals.sceneRendered.add(info => {
+    this.props.editor.signals.sceneRendered.add((renderer, scene) => {
+      if (scene !== this.props.editor.scene) {
+        return; // don't do anything with rendering information from the helper scene
+      }
+      const materials = new Set();
+      scene.traverse(node => {
+        if (node.material) {
+          if (Array.isArray(node.material)) {
+            for (const mat of node.material) {
+              materials.add(mat);
+            }
+          } else {
+            materials.add(node.material);
+          }
+        }
+      });
       this.setState({
-        drawCalls: info.render.calls,
-        tris: info.render.triangles
+        materials: materials.size,
+        tris: renderer.info.render.triangles
       });
     });
   }
@@ -39,8 +54,8 @@ class RendererStats extends Component {
 
     return (
       <dl className={styles.rendererStats}>
-        <dt>Draw calls</dt>
-        <dd>{this.formatQuantity(this.state.drawCalls)}</dd>
+        <dt>Materials</dt>
+        <dd>{this.formatQuantity(this.state.materials)}</dd>
         <dt>Tris</dt>
         <dd>{this.formatQuantity(this.state.tris)}</dd>
       </dl>
