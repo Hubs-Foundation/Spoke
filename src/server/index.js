@@ -532,7 +532,7 @@ module.exports = async function startServer(options) {
     do {
       const releases = await fetchReleases(after);
       if (!releases) return;
-      release = releases.nodes.find(release => !release.isPrerelease && !release.isDraft);
+      release = releases.nodes.find(release => !release.isDraft);
       hasNextPage = releases.pageInfo.hasNextPage;
       after = releases.pageInfo.endCursor;
     } while (!release && hasNextPage);
