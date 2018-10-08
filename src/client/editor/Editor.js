@@ -223,7 +223,7 @@ export default class Editor {
       this.updateComponentProperty(this._prefabBeingEdited, sceneRefComponentName, "src", poppedURI);
       if (previousURI.endsWith(".gltf") || previousURI.endsWith(".glb")) {
         const name = last(poppedURI.split("/"));
-        const displayName = this._conflictHandler.addToDuplicateNameCounters(name);
+        const displayName = this._conflictHandler.addToDuplicateNameCounters(this._prefabBeingEdited, name);
         this._prefabBeingEdited.name = displayName;
       }
     }
@@ -1271,7 +1271,7 @@ export default class Editor {
     object.userData._saveParent = true;
 
     object.traverse(child => {
-      child.name = this._conflictHandler.addToDuplicateNameCounters(child.name);
+      child.name = this._conflictHandler.addToDuplicateNameCounters(child, child.name);
       this.addHelper(child, object);
     });
 
@@ -1302,7 +1302,7 @@ export default class Editor {
     });
 
     object.parent.remove(object);
-    this._conflictHandler.removeFromDuplicateNameCounters(object.name);
+    this._conflictHandler.removeFromDuplicateNameCounters(object, object.name);
 
     this.signals.objectRemoved.dispatch(object);
     this.signals.sceneGraphChanged.dispatch();
@@ -1637,9 +1637,9 @@ export default class Editor {
     const handler = this._conflictHandler;
     if (handler.isUniqueObjectName(value)) {
       const prevName = object.name;
-      handler.addToDuplicateNameCounters(value);
+      handler.addToDuplicateNameCounters(object, value);
       object.name = value;
-      handler.removeFromDuplicateNameCounters(prevName);
+      handler.removeFromDuplicateNameCounters(object, prevName);
     } else {
       this.signals.objectChanged.dispatch(object);
       throw new ConflictError("rename error", "rename", this.sceneInfo.uri, handler);
@@ -1786,7 +1786,7 @@ export default class Editor {
   deleteObject(object) {
     const objectName = object.name;
     this.execute(new RemoveObjectCommand(object));
-    this._conflictHandler.removeFromDuplicateNameCounters(objectName);
+    this._conflictHandler.removeFromDuplicateNameCounters(object, objectName);
   }
 
   deleteSelectedObject() {
