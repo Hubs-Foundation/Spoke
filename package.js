@@ -3,10 +3,9 @@
 // Outputs the executables and archives into the /release directory.
 
 const { exec } = require("pkg");
-const util = require("util");
 const fs = require("fs");
 const path = require("path");
-const JSZip = require("jszip");
+const { ZipFile } = require("yazl");
 
 function buildRelease(targets, outPath, opts) {
   const args = ["bin/spoke", "--config", ".pkg.json", "--target", targets.join(","), "--out-path", outPath];
@@ -20,25 +19,17 @@ function appendExtension(executableName, platform) {
 const outputDir = "release";
 const platforms = ["linux", "macos", "win"];
 const targets = platforms.map(p => `node10-${p}-x64`);
-const readFilePromise = util.promisify(fs.readFile);
 
 buildRelease(targets, outputDir, process.argv.slice(2)).then(() => {
   for (const platform of platforms) {
     const executableName = `spoke-${platform}`;
     const executablePath = path.join(outputDir, appendExtension(executableName, platform));
-
-    const zip = new JSZip();
-    const spoke = zip.folder("Spoke");
-    spoke.file(appendExtension("spoke", platform), readFilePromise(executablePath), { unixPermissions: 0o775 });
-
     const archivePath = path.join(outputDir, `${executableName}.zip`);
-    const archiveStream = zip.generateNodeStream({
-      type: "nodebuffer",
-      streamFiles: true,
-      compression: "DEFLATE",
-      compressionOptions: { level: 5 },
-      platform: platform === "win" ? "DOS" : "UNIX"
-    });
-    archiveStream.pipe(fs.createWriteStream(archivePath));
+    const archiveStream = fs.createWriteStream(archivePath);
+
+    const zip = new ZipFile();
+    zip.outputStream.pipe(archiveStream);
+    zip.addFile(executablePath, appendExtension("spoke", platform), { mode: 33277 });
+    zip.end();
   }
 });

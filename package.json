@@ -120,7 +120,6 @@
     "file-loader": "^1.1.11",
     "html-webpack-plugin": "^3.2.0",
     "husky": "^0.14.3",
-    "jszip": "^3.1.5",
     "koa-webpack": "^5.0.2",
     "lint-staged": "^7.2.0",
     "node-sass": "^4.9.1",
@@ -130,6 +129,7 @@
     "sass-loader": "^7.0.1",
     "style-loader": "^0.21.0",
     "webpack": "^4.9.1",
-    "webpack-cli": "^2.1.4"
+    "webpack-cli": "^2.1.4",
+    "yazl": "^2.4.3"
   }
 }
