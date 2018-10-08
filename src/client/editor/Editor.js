@@ -1021,8 +1021,9 @@ export default class Editor {
 
       if (gltfModelComponent && loopAnimationComponent) {
         const gltfRoot = object.children.find(node => node.type === "Scene");
-        if (gltfRoot) {
-          const clipName = loopAnimationComponent.props.clip;
+        const clipName = loopAnimationComponent.props.clip;
+
+        if (gltfRoot && clipName !== null) {
           const animation = gltfRoot.animations.find(a => a.name === clipName);
 
           if (animation) {
@@ -1030,6 +1031,11 @@ export default class Editor {
           } else {
             throw new Error(`Animation for clip "${clipName}" not found.`);
           }
+        } else if (loopAnimationComponent) {
+          const index = object.userData._components.findIndex(
+            ({ name }) => name === LoopAnimationComponent.componentName
+          );
+          object.userData._components.splice(index, 1);
         }
       }
     });
@@ -1416,8 +1422,9 @@ export default class Editor {
       component._object = scene;
 
       const animations = scene.animations;
+      const loopAnimationComponent = LoopAnimationComponent.getComponent(object);
 
-      if (animations.length > 0) {
+      if (!loopAnimationComponent && animations && animations.length > 0) {
         await this._addComponent(object, "loop-animation", {
           clip: animations[0].name
         });

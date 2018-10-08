@@ -1,0 +1,10 @@
+@import "../../theme";
+
+:global(.select-input) {
+  text-align: left;
+  width: 100%;
+}
+
+.select-input__option:hover {
+  background-color: $blue;
+}
