@@ -1,13 +1,22 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
+import classNames from "classnames";
+import { showMenu, ContextMenu, MenuItem, SubMenu } from "react-contextmenu";
+
 import ToolButton from "./ToolButton";
 import Button from "../Button";
 import ToolToggle from "./ToolToggle";
-import { showMenu, ContextMenu, MenuItem, SubMenu } from "react-contextmenu";
 import styles from "./ToolBar.scss";
 import SnappingDropdown from "./SnappingDropdown";
+import SpokeIcon from "../../assets/spoke-icon.png";
 
 export default class ToolBar extends Component {
+  static propTypes = {
+    menus: PropTypes.array,
+    editor: PropTypes.object,
+    sceneActions: PropTypes.object
+  };
+
   constructor(props) {
     super(props);
     this.state = {
@@ -58,7 +67,8 @@ export default class ToolBar extends Component {
         },
         action: () => this.onSnappingChanged()
       },
-      toolButtonSelected: "translate"
+      toolButtonSelected: "translate",
+      updateNotificationDismissed: false
     };
     props.editor.signals.transformModeChanged.add(mode => {
       this._updateToolBarStatus(mode);
@@ -150,9 +160,30 @@ export default class ToolBar extends Component {
 
   render() {
     const { toolButtons, spaceToggle, snapToggle } = this.state;
+    const { updateAvailable, updateRequired, latestVersion, downloadUrl } = this.props.editor.updateInfo;
+    const showUpdateNotification = updateAvailable && !updateRequired && !this.state.updateNotificationDismissed;
     return (
       <div className={styles.toolbar}>
-        <div className={styles.logo}>spoke</div>
+        <div className={styles.logo}>
+          <div className={styles.logoContent}>
+            <img src={SpokeIcon} />
+            <div>spoke</div>
+          </div>
+        </div>
+        {showUpdateNotification && (
+          <div className={styles.notification}>
+            <div className={styles.message}>
+              {`Spoke ${latestVersion} is available. `}
+              <Button className={styles.download} href={downloadUrl}>
+                Download
+              </Button>
+            </div>
+            <i
+              className={classNames(styles.dismiss, "fa fa-times fa-12px")}
+              onClick={() => this.setState({ updateNotificationDismissed: true })}
+            />
+          </div>
+        )}
         <div className={styles.toolbtns}>{this.renderToolButtons(toolButtons)}</div>
         <div className={styles.tooltoggles}>
           <ToolToggle
@@ -193,9 +224,3 @@ export default class ToolBar extends Component {
     );
   }
 }
-
-ToolBar.propTypes = {
-  menus: PropTypes.array,
-  editor: PropTypes.object,
-  sceneActions: PropTypes.object
-};

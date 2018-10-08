@@ -16,12 +16,15 @@ import { EditorContextProvider } from "./contexts/EditorContext";
 import { DialogContextProvider } from "./contexts/DialogContext";
 import { SceneActionsContextProvider } from "./contexts/SceneActionsContext";
 import styles from "../common.scss";
+
 import ConfirmDialog from "./dialogs/ConfirmDialog";
 import ErrorDialog from "./dialogs/ErrorDialog";
 import FileDialog from "./dialogs/FileDialog";
 import LoginDialog from "./dialogs/LoginDialog";
-import PublishDialog from "./dialogs/PublishDialog";
 import ProgressDialog from "./dialogs/ProgressDialog";
+import PublishDialog from "./dialogs/PublishDialog";
+import UpdateRequiredDialog from "./dialogs/UpdateRequiredDialog";
+
 import ConflictError from "../editor/ConflictError";
 import AuthenticationError from "../editor/AuthenticationError";
 import { getUrlDirname, getUrlFilename } from "../utils/url-path";
@@ -74,6 +77,14 @@ class EditorContainer extends Component {
 
     window.addEventListener("resize", this.onWindowResize, false);
 
+    let dialogProps = {};
+    let DialogComponent = null;
+
+    if (props.editor.updateInfo.updateRequired) {
+      DialogComponent = UpdateRequiredDialog;
+      dialogProps = props.editor.updateInfo;
+    }
+
     this.state = {
       registeredPanels: {
         hierarchy: {
@@ -113,8 +124,8 @@ class EditorContainer extends Component {
           }
         }
       },
-      DialogComponent: null,
-      dialogProps: {},
+      DialogComponent,
+      dialogProps,
       openModal: null,
       keyMap: {
         translateTool: "w",
@@ -194,14 +205,6 @@ class EditorContainer extends Component {
       {
         name: "Help",
         items: [
-          {
-            name: "Getting Started",
-            action: () => window.open("https://github.com/MozillaReality/spoke/wiki/Getting-Started")
-          },
-          {
-            name: "Tutorials",
-            action: () => window.open("https://github.com/MozillaReality/spoke/wiki/Tutorials")
-          },
           {
             name: "Keyboard Shortcuts",
             action: () => window.open("https://github.com/MozillaReality/spoke/wiki/Keyboard-Shortcuts")

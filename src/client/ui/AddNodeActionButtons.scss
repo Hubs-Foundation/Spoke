@@ -17,6 +17,13 @@
   }
 }
 
+@mixin remove-moz-focus-inner {
+  &::-moz-focus-inner {
+    border: 0;
+    outline: 0;
+  }
+}
+
 :local(.fab) {
   background: $blue;
   color: $white;
@@ -27,6 +34,7 @@
   white-space: nowrap;
   font-size: 24px;
   font-family: Lato;
+  padding: 0;
   padding-bottom: 2px;
   outline: none;
   cursor: pointer;
@@ -38,6 +46,8 @@
   &:active {
     background-color: $blue-pressed;
   }
+
+  @include remove-moz-focus-inner
 }
 
 :local(.fabOpen) {
@@ -55,6 +65,8 @@
   flex-direction: row;
   align-items: center;
   margin-bottom: 24px;
+
+  @include remove-moz-focus-inner
 
   label {
     white-space: nowrap;

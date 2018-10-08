@@ -7,18 +7,20 @@ const FormData = require("form-data");
 const fs = require("fs-extra");
 const http = require("http");
 const https = require("https");
+const isWsl = require("is-wsl");
 const Koa = require("koa");
 const koaBody = require("koa-body");
 const mount = require("koa-mount");
 const path = require("path");
-const recast = require("@donmccurdy/recast");
 const Router = require("koa-router");
 const selfsigned = require("selfsigned");
+const semver = require("semver");
 const serve = require("koa-static");
 const sha = require("sha.js");
 const WebSocket = require("ws");
 const yauzl = require("yauzl");
-const isWsl = require("is-wsl");
+
+const packageJSON = require("../../package.json");
 
 function openFile(target) {
   let cmd;
@@ -319,51 +321,6 @@ module.exports = async function startServer(options) {
     };
   });
 
-  router.post("/api/navmesh", koaBody({ multipart: true, text: false }), async ctx => {
-    const [position, index] = await Promise.all([
-      fs.readFile(ctx.request.files.position.path),
-      fs.readFile(ctx.request.files.index.path)
-    ]);
-    recast.load(new Float32Array(position.buffer), new Int32Array(index.buffer));
-    const objMesh = recast.build(
-      parseFloat(ctx.request.body.cellSize),
-      0.1, // cellHeight
-      1.0, // agentHeight
-      0.0001, // agentRadius
-      0.5, // agentMaxClimb
-      45, // agentMaxSlope
-      4, // regionMinSize
-      20, // regionMergeSize
-      12, // edgeMaxLen
-      1, // edgeMaxError
-      3, // vertsPerPoly
-      16, //detailSampleDist
-      1 // detailSampleMaxError
-    );
-    // TODO; Dumb that recast returns an OBJ formatted string. We should have it return an array somehow.
-    const { navPosition, navIndex } = objMesh.split("@").reduce(
-      (acc, line) => {
-        line = line.trim();
-        if (line.length === 0) return acc;
-        const values = line.split(" ");
-        if (values[0] === "v") {
-          acc.navPosition[acc.navPosition.length] = Number(values[1]);
-          acc.navPosition[acc.navPosition.length] = Number(values[2]);
-          acc.navPosition[acc.navPosition.length] = Number(values[3]);
-        } else if (values[0] === "f") {
-          acc.navIndex[acc.navIndex.length] = Number(values[1]) - 1;
-          acc.navIndex[acc.navIndex.length] = Number(values[2]) - 1;
-          acc.navIndex[acc.navIndex.length] = Number(values[3]) - 1;
-        } else {
-          throw new Error(`Invalid objMesh line "${line}"`);
-        }
-        return acc;
-      },
-      { navPosition: [], navIndex: [] }
-    );
-    ctx.body = { navPosition, navIndex };
-  });
-
   const reticulumServer = "hubs.mozilla.com";
   const mediaEndpoint = `https://${reticulumServer}/api/v1/media`;
   const agent = process.env.NODE_ENV === "development" ? https.Agent({ rejectUnauthorized: false }) : null;
@@ -373,7 +330,7 @@ module.exports = async function startServer(options) {
     try {
       return JSON.parse(text);
     } catch (e) {
-      console.log("JSON error", text, e);
+      console.log(`JSON error parsing response from ${request.url} "${text}"`, e);
     }
   }
 
@@ -518,6 +475,96 @@ module.exports = async function startServer(options) {
     const json = await tryGetJson(resp);
     const { url, scene_id } = json.scenes[0];
     ctx.body = { url, sceneId: scene_id };
+  });
+
+  const nodePlatformToAssetPlatform = {
+    win32: "win",
+    darwin: "macos",
+    linux: "linux"
+  };
+  function getDownloadUrlForCurrentPlatform(assets) {
+    const assetPlatform = nodePlatformToAssetPlatform[process.platform];
+    return assets.find(asset => asset.name.includes(assetPlatform)).downloadUrl;
+  }
+
+  const updateInfoTimeout = 2000;
+
+  async function fetchReleases(after) {
+    // Read-only, public access token.
+    const token = "de8cbfb4cc0281c7b731c891df431016c29b0ace";
+
+    const result = await fetch("https://api.github.com/graphql", {
+      timeout: updateInfoTimeout,
+      method: "POST",
+      headers: { authorization: `bearer ${token}` },
+      body: JSON.stringify({
+        query: `
+          {
+            repository(owner: "mozillareality", name: "spoke") {
+              releases(
+                orderBy: { field: CREATED_AT, direction: DESC },
+                first: 5,
+                ${after ? `after: "${after}"` : ""}
+              ) {
+                nodes {
+                  isPrerelease,
+                  isDraft,
+                  tag { name },
+                  releaseAssets(last: 3) {
+                    nodes { name, downloadUrl }
+                  }
+                },
+                pageInfo { endCursor, hasNextPage }
+              }
+            }
+          }
+        `
+      })
+    }).then(tryGetJson);
+
+    if (!result || !result.data) return;
+
+    return result.data.repository.releases;
+  }
+
+  async function getLatestRelease() {
+    let release, hasNextPage, after;
+    do {
+      const releases = await fetchReleases(after);
+      if (!releases) return;
+      release = releases.nodes.find(release => !release.isDraft);
+      hasNextPage = releases.pageInfo.hasNextPage;
+      after = releases.pageInfo.endCursor;
+    } while (!release && hasNextPage);
+
+    if (!release) return;
+
+    return {
+      version: release.tag.name,
+      downloadUrl: getDownloadUrlForCurrentPlatform(release.releaseAssets.nodes)
+    };
+  }
+
+  router.get("/api/update_info", koaBody(), async ctx => {
+    try {
+      // This endpoint doesn't exist yet but we query it for future use.
+      const configEndpoint = `https://${reticulumServer}/api/v1/configs/spoke`;
+      const { min_spoke_version } =
+        (await fetch(configEndpoint, { timeout: updateInfoTimeout }).then(tryGetJson)) || {};
+
+      const latestRelease = (await getLatestRelease()) || {};
+
+      ctx.body = {
+        updateAvailable: latestRelease.version && semver.gt(latestRelease.version, packageJSON.version),
+        updateRequired: min_spoke_version && semver.gt(min_spoke_version, packageJSON.version),
+        latestVersion: latestRelease.version,
+        downloadUrl: latestRelease.downloadUrl
+      };
+    } catch (e) {
+      console.log("Update info check failed", e);
+      ctx.body = {};
+      return;
+    }
   });
 
   app.use(router.routes());

@@ -1,4 +1,3 @@
-const namePattern = new RegExp("(.*) \\d+$");
 function nodesToTree(nodes) {
   if (!nodes) {
     return;
@@ -40,13 +39,11 @@ function createTreePath(node, layer, index, nodes) {
   }
 }
 
-function getNameWithoutIndex(name) {
-  let cacheName = name;
-  const match = namePattern.exec(name);
-  if (match) {
-    cacheName = match[1];
+function getOriginalName(obj) {
+  if (!obj.userData._originalName) {
+    obj.userData._originalName = obj.name;
   }
-  return cacheName;
+  return obj.userData._originalName;
 }
 
 export default class ConflictHandler {
@@ -81,7 +78,7 @@ export default class ConflictHandler {
       this._updatedNodes.set(this._hashTreePath(node.userData._path), node.userData._resolvedName);
     } else {
       this._duplicateNameCounters.set(name, { used: true, count: 0 });
-      const cacheName = getNameWithoutIndex(name);
+      const cacheName = getOriginalName(node);
       if (name !== cacheName) {
         if (!this.isUniqueObjectName(cacheName)) {
           this._duplicateNameCounters.get(cacheName).count++;
@@ -240,8 +237,8 @@ export default class ConflictHandler {
     }
   };
 
-  removeFromDuplicateNameCounters = name => {
-    const cacheName = getNameWithoutIndex(name);
+  removeFromDuplicateNameCounters = (obj, name) => {
+    const cacheName = getOriginalName(obj);
     const nameObj = this._duplicateNameCounters.get(name);
     if (nameObj === undefined) return;
     if (name === cacheName) {
@@ -251,8 +248,8 @@ export default class ConflictHandler {
     }
   };
 
-  addToDuplicateNameCounters = name => {
-    const cacheName = getNameWithoutIndex(name);
+  addToDuplicateNameCounters = (obj, name) => {
+    const cacheName = getOriginalName(obj);
     if (this.isUniqueObjectName(name)) {
       const nameObj = this._duplicateNameCounters.get(cacheName);
       if (name === cacheName) {

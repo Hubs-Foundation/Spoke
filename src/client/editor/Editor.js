@@ -24,6 +24,7 @@ import {
   getOriginalStaticMode,
   setOriginalStaticMode
 } from "./StaticMode";
+import { generateNavMesh } from "../utils/navmesh";
 import { getUrlFilename } from "../utils/url-path";
 import { textureCache, gltfCache } from "./caches";
 
@@ -77,6 +78,7 @@ export default class Editor {
       sceneGraphChanged: new Signal(),
       sceneSet: new Signal(),
       sceneModified: new Signal(),
+      sceneRendered: new Signal(),
 
       objectSelected: new Signal(),
       objectFocused: new Signal(),
@@ -171,6 +173,8 @@ export default class Editor {
     this.ComponentPropTypes = types;
     this.StaticModes = StaticModes;
     this.loadNewScene();
+
+    this.updateInfo = null;
   }
 
   createViewport(canvas) {
@@ -221,7 +225,7 @@ export default class Editor {
       this.updateComponentProperty(this._prefabBeingEdited, sceneRefComponentName, "src", poppedURI);
       if (previousURI.endsWith(".gltf") || previousURI.endsWith(".glb")) {
         const name = last(poppedURI.split("/"));
-        const displayName = this._conflictHandler.addToDuplicateNameCounters(name);
+        const displayName = this._conflictHandler.addToDuplicateNameCounters(this._prefabBeingEdited, name);
         this._prefabBeingEdited.name = displayName;
       }
     }
@@ -852,9 +856,9 @@ export default class Editor {
       const finalGeo = THREE.BufferGeometryUtils.mergeBufferGeometries([geometry, flippedGeometry]);
 
       const position = finalGeo.attributes.position.array;
-      const index = new Uint32Array(position.length / 3);
+      const index = new Int32Array(position.length / 3);
       for (let i = 0; i < index.length; i++) {
-        index[i] = i + 1;
+        index[i] = i;
       }
 
       const box = new THREE.Box3().setFromBufferAttribute(finalGeo.attributes.position);
@@ -866,7 +870,7 @@ export default class Editor {
       const area = size.x * size.z;
       // Tuned to produce cell sizes from ~0.5 to ~1.5 for areas from ~200 to ~350,000.
       const cellSize = Math.pow(area, 1 / 3) / 50;
-      const { navPosition, navIndex } = await this.project.generateNavMesh(position, index, cellSize);
+      const { navPosition, navIndex } = generateNavMesh(position, index, cellSize);
 
       const navGeo = new THREE.BufferGeometry();
       navGeo.setIndex(navIndex);
@@ -1291,7 +1295,7 @@ export default class Editor {
     object.userData._saveParent = true;
 
     object.traverse(child => {
-      child.name = this._conflictHandler.addToDuplicateNameCounters(child.name);
+      child.name = this._conflictHandler.addToDuplicateNameCounters(child, child.name);
       this.addHelper(child, object);
     });
 
@@ -1322,7 +1326,7 @@ export default class Editor {
     });
 
     object.parent.remove(object);
-    this._conflictHandler.removeFromDuplicateNameCounters(object.name);
+    this._conflictHandler.removeFromDuplicateNameCounters(object, object.name);
 
     this.signals.objectRemoved.dispatch(object);
     this.signals.sceneGraphChanged.dispatch();
@@ -1666,9 +1670,9 @@ export default class Editor {
     const handler = this._conflictHandler;
     if (handler.isUniqueObjectName(value)) {
       const prevName = object.name;
-      handler.addToDuplicateNameCounters(value);
+      handler.addToDuplicateNameCounters(object, value);
       object.name = value;
-      handler.removeFromDuplicateNameCounters(prevName);
+      handler.removeFromDuplicateNameCounters(object, prevName);
     } else {
       this.signals.objectChanged.dispatch(object);
       throw new ConflictError("rename error", "rename", this.sceneInfo.uri, handler);
@@ -1815,7 +1819,7 @@ export default class Editor {
   deleteObject(object) {
     const objectName = object.name;
     this.execute(new RemoveObjectCommand(object));
-    this._conflictHandler.removeFromDuplicateNameCounters(objectName);
+    this._conflictHandler.removeFromDuplicateNameCounters(object, objectName);
   }
 
   deleteSelectedObject() {
@@ -1993,5 +1997,9 @@ export default class Editor {
 
   async authenticated() {
     return await fetch("/api/authenticated").then(r => r.ok);
+  }
+
+  async retrieveUpdateInfo() {
+    this.updateInfo = await fetch("/api/update_info").then(r => r.json());
   }
 }

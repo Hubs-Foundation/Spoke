@@ -9,6 +9,7 @@ import ErrorDialog from "../dialogs/ErrorDialog";
 import styles from "./ViewportPanelContainer.scss";
 import AssetDropTarget from "../AssetDropTarget";
 import AddNodeActionButtons from "../AddNodeActionButtons";
+import RendererStats from "../RendererStats";
 
 class ViewportPanelContainer extends Component {
   static propTypes = {
@@ -106,6 +107,7 @@ class ViewportPanelContainer extends Component {
           <Viewport ref={this.canvasRef} onDropAsset={this.onDropAsset} />
         </AssetDropTarget>
         <AddNodeActionButtons onAddModelByURL={this.performModelImport} />
+        <RendererStats />
       </div>
     );
   }
