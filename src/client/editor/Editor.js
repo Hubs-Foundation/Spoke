@@ -910,6 +910,7 @@ export default class Editor {
 
     const navNode = new THREE.Object3D();
     navNode.name = "Floor Plan";
+    navNode.position.y = 0.005;
     this._addComponent(navNode, "nav-mesh");
     this._addComponent(navNode, "visible", { visible: false });
     await this._addComponent(navNode, "gltf-model", { src: path });
