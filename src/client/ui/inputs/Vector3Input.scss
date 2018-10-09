@@ -1,4 +1,5 @@
 @import "../../theme";
+@import "../../icons";
 
 :local(.inputGroup) {
   display: flex;
@@ -13,4 +14,30 @@
   align-items: center;
   padding: 0 8px;
   color: $text2;
+}
+
+:local(.uniformButton) {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+
+  &:before {
+    color: $text2;
+    font-size: 10px;
+    padding: 0 6px;
+    @extend .fas;
+    content: fa-content($fa-var-unlock);
+  }
+
+  &:hover {
+    &:before {
+      color: $blue-hover;
+    }
+  }
+}
+
+:local(.uniformEnabled) {
+  &:before {
+    content: fa-content($fa-var-lock);
+  }
 }

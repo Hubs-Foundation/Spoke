@@ -24,7 +24,12 @@ const componentTypeMappings = new Map([
       }
     }
   ],
-  [types.vector, (component, propDef, value, isValid, onChange) => <Vector3Input value={value} onChange={onChange} />],
+  [
+    types.vector,
+    (component, propDef, value, isValid, onChange) => (
+      <Vector3Input value={value} onChange={onChange} uniformScaling={propDef.uniformScaling} />
+    )
+  ],
   [types.euler, (component, propDef, value, isValid, onChange) => <EulerInput value={value} onChange={onChange} />],
   [types.boolean, (component, propDef, value, isValid, onChange) => <BooleanInput value={value} onChange={onChange} />],
   [
