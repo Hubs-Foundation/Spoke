@@ -156,7 +156,7 @@ function extractZip(zipPath, basePath) {
 }
 
 module.exports = async function startServer(options) {
-  console.log(`${packageJSON.productName} configs stored at: "${envPaths("Spoke", { suffix: "" }).config}"`);
+  console.log(`${packageJSON.productName} configs stored at: "${envPaths("Spoke", { suffix: "" }).config}"\n`);
 
   const opts = options;
   let port = opts.port;
@@ -558,8 +558,9 @@ module.exports = async function startServer(options) {
     try {
       // This endpoint doesn't exist yet but we query it for future use.
       const configEndpoint = `https://${reticulumServer}/api/v1/configs/spoke`;
-      const { min_spoke_version } =
-        (await fetch(configEndpoint, { timeout: updateInfoTimeout }).then(tryGetJson)) || {};
+      const { min_spoke_version } = await fetch(configEndpoint, { timeout: updateInfoTimeout })
+        .then(r => r.json())
+        .catch(() => ({}));
 
       const latestRelease = (await getLatestRelease()) || {};
 
@@ -595,12 +596,13 @@ module.exports = async function startServer(options) {
   });
 
   server.on("listening", () => {
-    console.log(`Server listening on port ${port}`);
+    const protocol = opts.https ? "https" : "http";
+    const url = `${protocol}://localhost:${port}`;
+    console.log(`Server running at ${url}\n`);
 
     if (opts.open) {
-      console.log("Spoke will now open in your web browser...");
-      const protocol = opts.https ? "https" : "http";
-      openFile(`${protocol}://localhost:${port}`);
+      console.log("Spoke will now open in your web browser...\n\n");
+      openFile(url);
     }
   });
 
