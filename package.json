@@ -54,6 +54,7 @@
     "@fortawesome/fontawesome-free": "^5.2.0",
     "@mozillareality/react-dnd-html5-backend": "^5.1.11",
     "@robertlong/react-ui-tree": "github:robertlong/react-ui-tree#dev",
+    "async-exit-hook": "^2.0.1",
     "chokidar": "^2.0.4",
     "classnames": "^2.2.5",
     "commander": "^2.15.1",

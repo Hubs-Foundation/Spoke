@@ -1,10 +1,14 @@
 #!/usr/bin/env node
+
 const commander = require("commander");
-const fs = require("fs");
+const exitHook = require("async-exit-hook");
+const fetch = require("node-fetch");
+const fs = require("fs-extra");
 const os = require("os");
 const path = require("path");
-const packageJSON = require("../package.json");
 const readline = require("readline");
+
+const packageJSON = require("../package.json");
 
 commander.version(packageJSON.version);
 
@@ -40,8 +44,10 @@ if (commander.args.length > 0) {
   }
 }
 
+const { startServer, openFile } = require("../src/server/index");
+
 const projectFilePath = getProjectFile(projectPath);
-const startServer = require("../src/server/index");
+const serverFilePath = path.join(path.dirname(process.execPath), ".spoke-server");
 
 // Disabled default assets for V1 release
 run(false);
@@ -68,13 +74,28 @@ function promptAboutDefaultAssets() {
   }
 }
 
-function run(copyDefaultAssets) {
+async function run(copyDefaultAssets) {
+  if (fs.existsSync(serverFilePath)) {
+    const serverUrl = fs.readFileSync(serverFilePath, { encoding: "utf8" });
+    const serverResponse = await fetch(serverUrl)
+      .then(r => r.text())
+      .catch(e => "");
+    if (serverResponse.includes(packageJSON.productName)) {
+      console.log("Server already running at ${serverUrl}. Opening web browser and quitting.");
+      openFile(serverUrl);
+      return;
+    }
+  }
+
+  exitHook(() => fs.removeSync(serverFilePath));
+
   console.log(`Starting ${packageJSON.productName} server...\n`);
   console.log(`Leave this window open while using ${packageJSON.productName}.\n`);
   console.log(`Serving scenes directory: "${projectPath}"`);
 
   startServer({
     projectPath,
+    serverFilePath,
     copyDefaultAssets,
     port: commander.port,
     https: commander.https,

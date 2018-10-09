@@ -155,7 +155,7 @@ function extractZip(zipPath, basePath) {
   });
 }
 
-module.exports = async function startServer(options) {
+async function startServer(options) {
   console.log(`${packageJSON.productName} configs stored at: "${envPaths("Spoke", { suffix: "" }).config}"\n`);
 
   const opts = options;
@@ -591,14 +591,16 @@ module.exports = async function startServer(options) {
       }
       port++;
       portTryCount++;
-      server.listen(port);
+      server.listen(port, "127.0.0.1");
     }
   });
 
   server.on("listening", () => {
     const protocol = opts.https ? "https" : "http";
-    const url = `${protocol}://localhost:${port}`;
+    const url = `${protocol}://127.0.0.1:${port}`;
     console.log(`Server running at ${url}\n`);
+
+    fs.writeFileSync(opts.serverFilePath, url);
 
     if (opts.open) {
       console.log("Spoke will now open in your web browser...\n\n");
@@ -606,5 +608,10 @@ module.exports = async function startServer(options) {
     }
   });
 
-  server.listen(port);
+  server.listen(port, "127.0.0.1");
+}
+
+module.exports = {
+  startServer,
+  openFile
 };
