@@ -1,8 +1,9 @@
 {
   "name": "spoke-cli",
+  "private": true,
   "productName": "Spoke",
   "license": "MPL-2.0",
-  "version": "1.0.0-rc.3",
+  "version": "0.5.0",
   "engines": {
     "node": ">=10",
     "npm": ">=6.4"
