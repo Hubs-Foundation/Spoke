@@ -155,8 +155,11 @@ function extractZip(zipPath, basePath) {
   });
 }
 
-module.exports = async function startServer(options) {
+async function startServer(options) {
+  console.log(`${packageJSON.productName} configs stored at: "${envPaths("Spoke", { suffix: "" }).config}"\n`);
+
   const opts = options;
+  let port = opts.port;
 
   const projectPath = path.resolve(opts.projectPath);
   const projectDirName = path.basename(projectPath);
@@ -201,7 +204,13 @@ module.exports = async function startServer(options) {
   } else {
     server = http.createServer(app.callback());
   }
+
   const wss = new WebSocket.Server({ server });
+
+  // wss error needs to be handled or else it will crash the process if the server errors.
+  wss.on("error", e => {
+    console.log(e.toString());
+  });
 
   function broadcast(json) {
     const message = JSON.stringify(json);
@@ -549,8 +558,9 @@ module.exports = async function startServer(options) {
     try {
       // This endpoint doesn't exist yet but we query it for future use.
       const configEndpoint = `https://${reticulumServer}/api/v1/configs/spoke`;
-      const { min_spoke_version } =
-        (await fetch(configEndpoint, { timeout: updateInfoTimeout }).then(tryGetJson)) || {};
+      const { min_spoke_version } = await fetch(configEndpoint, { timeout: updateInfoTimeout })
+        .then(r => r.json())
+        .catch(() => ({}));
 
       const latestRelease = (await getLatestRelease()) || {};
 
@@ -570,10 +580,38 @@ module.exports = async function startServer(options) {
   app.use(router.routes());
   app.use(router.allowedMethods());
 
-  server.listen(opts.port);
+  const maxPortTries = 20;
+  let portTryCount = 0;
+  server.on("error", e => {
+    if (e.code === "EADDRINUSE") {
+      server.close();
+      if (portTryCount > maxPortTries) {
+        console.log("Could not find a free port. Exiting.");
+        process.exit(1);
+      }
+      port++;
+      portTryCount++;
+      server.listen(port, opts.host);
+    }
+  });
 
-  if (opts.open) {
+  server.on("listening", () => {
     const protocol = opts.https ? "https" : "http";
-    openFile(`${protocol}://localhost:${opts.port}`);
-  }
+    const url = `${protocol}://localhost:${port}`;
+    console.log(`Server running at ${url}\n`);
+
+    fs.writeFileSync(opts.serverFilePath, url);
+
+    if (opts.open) {
+      console.log("Spoke will now open in your web browser...\n\n");
+      openFile(url);
+    }
+  });
+
+  server.listen(port, opts.host);
+}
+
+module.exports = {
+  startServer,
+  openFile
 };

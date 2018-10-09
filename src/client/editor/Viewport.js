@@ -151,8 +151,10 @@ export default class Viewport {
         if (results.length > 0) {
           const { object } = results[0];
 
-          if (object.userData._selectionRoot !== undefined) {
-            editor.select(object.userData._selectionRoot);
+          const selectionRoot = object.userData._selectionRoot;
+
+          if (selectionRoot !== undefined && !selectionRoot.userData._dontShowInHierarchy) {
+            editor.select(selectionRoot);
             return;
           } else if (!object.userData._dontShowInHierarchy) {
             editor.select(object);
@@ -210,11 +212,13 @@ export default class Viewport {
 
       const intersects = getIntersects(onDoubleClickPosition, editor.scene);
 
-      if (intersects.length > 0) {
-        const intersect = intersects[0];
+      if (!intersects.length) return;
 
-        signals.objectFocused.dispatch(intersect.object);
-      }
+      const intersect = intersects[0];
+
+      if (intersects.userData._dontShowInHierarchy) return;
+
+      signals.objectFocused.dispatch(intersect.object);
     }
 
     canvas.addEventListener("mousedown", onMouseDown, false);
