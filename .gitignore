@@ -14,3 +14,4 @@ release/spoke-linux
 release/spoke-macos
 release/spoke-win.exe
 release/*.zip
+bin/.spoke-server

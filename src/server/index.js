@@ -591,13 +591,13 @@ async function startServer(options) {
       }
       port++;
       portTryCount++;
-      server.listen(port, "127.0.0.1");
+      server.listen(port, opts.host);
     }
   });
 
   server.on("listening", () => {
     const protocol = opts.https ? "https" : "http";
-    const url = `${protocol}://127.0.0.1:${port}`;
+    const url = `${protocol}://localhost:${port}`;
     console.log(`Server running at ${url}\n`);
 
     fs.writeFileSync(opts.serverFilePath, url);
@@ -608,7 +608,7 @@ async function startServer(options) {
     }
   });
 
-  server.listen(port, "127.0.0.1");
+  server.listen(port, opts.host);
 }
 
 module.exports = {

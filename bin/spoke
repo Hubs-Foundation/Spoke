@@ -47,7 +47,14 @@ if (commander.args.length > 0) {
 const { startServer, openFile } = require("../src/server/index");
 
 const projectFilePath = getProjectFile(projectPath);
-const serverFilePath = path.join(path.dirname(process.execPath), ".spoke-server");
+const isPackagedProcess = !!process.pkg;
+const serverFilePath = path.join(isPackagedProcess ? path.dirname(process.execPath) : __dirname, ".spoke-server");
+
+// host is intentionally undefined by default
+let host;
+if (isPackagedProcess) {
+  host = "127.0.0.1";
+}
 
 // Disabled default assets for V1 release
 run(false);
@@ -94,6 +101,7 @@ async function run(copyDefaultAssets) {
   console.log(`Serving scenes directory: "${projectPath}"`);
 
   startServer({
+    host,
     projectPath,
     serverFilePath,
     copyDefaultAssets,
