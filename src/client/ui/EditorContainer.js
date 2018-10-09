@@ -208,6 +208,18 @@ class EditorContainer extends Component {
           {
             name: "Keyboard Shortcuts",
             action: () => window.open("https://github.com/MozillaReality/spoke/wiki/Keyboard-Shortcuts")
+          },
+          {
+            name: "Get Support",
+            action: () => window.open("https://github.com/MozillaReality/Spoke/blob/master/SUPPORT.md")
+          },
+          {
+            name: "Report an Issue",
+            action: () => window.open("https://github.com/MozillaReality/Spoke/issues")
+          },
+          {
+            name: "Join us on Discord",
+            action: () => window.open("https://discord.gg/XzrGUY8")
           }
         ]
       }
