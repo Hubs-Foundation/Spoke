@@ -29,7 +29,7 @@ buildRelease(targets, outputDir, process.argv.slice(2)).then(() => {
 
     const zip = new ZipFile();
     zip.outputStream.pipe(archiveStream);
-    zip.addFile(executablePath, appendExtension("spoke", platform), { mode: 33277 });
+    zip.addFile(executablePath, path.join("Spoke", appendExtension("spoke", platform)), { mode: 33277 });
     zip.end();
   }
 });
