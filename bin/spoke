@@ -69,8 +69,8 @@ function promptAboutDefaultAssets() {
 }
 
 function run(copyDefaultAssets) {
-  console.log(`Starting ${packageJSON.name} server...`);
-  console.log(`Serving project directory: ${projectPath}`);
+  console.log(`Starting ${packageJSON.productName} server...`);
+  console.log(`Serving project directory: "${projectPath}"`);
 
   startServer({
     projectPath,
@@ -78,11 +78,7 @@ function run(copyDefaultAssets) {
     port: commander.port,
     https: commander.https,
     open: commander.open
-  })
-    .then(() => {
-      console.log(`Server listening on port ${commander.port}`);
-    })
-    .catch(error => {
-      console.error(error);
-    });
+  }).catch(error => {
+    console.error(error);
+  });
 }
