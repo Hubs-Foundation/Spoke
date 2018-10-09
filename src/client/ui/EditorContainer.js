@@ -112,6 +112,9 @@ class EditorContainer extends Component {
             title: "Properties",
             toolbarControls: [],
             draggable: false
+          },
+          props: {
+            uiMode: props.uiMode
           }
         },
         assetExplorer: {

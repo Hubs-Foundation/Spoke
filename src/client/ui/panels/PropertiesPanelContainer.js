@@ -20,7 +20,8 @@ class PropertiesPanelContainer extends Component {
   static propTypes = {
     editor: PropTypes.object,
     showDialog: PropTypes.func.isRequired,
-    hideDialog: PropTypes.func.isRequired
+    hideDialog: PropTypes.func.isRequired,
+    uiMode: PropTypes.string
   };
 
   constructor(props) {
@@ -347,25 +348,27 @@ class PropertiesPanelContainer extends Component {
                 onKeyUp={this.onKeyUpName}
               />
             </InputGroup>
-            <InputGroup className={styles.topBarStatic} name="Static">
-              <Select
-                className={styles.staticSelect}
-                classNamePrefix={"static-select"}
-                styles={staticStyle}
-                value={
-                  staticMode
-                    ? {
-                        value: staticMode,
-                        label: staticModeLabel
-                      }
-                    : null
-                }
-                components={{ IndicatorSeparator: () => null }}
-                options={staticModeOptions}
-                isClearable={false}
-                onChange={this.onUpdateStatic}
-              />
-            </InputGroup>
+            {this.props.uiMode === "advanced" && (
+              <InputGroup className={styles.topBarStatic} name="Static">
+                <Select
+                  className={styles.staticSelect}
+                  classNamePrefix={"static-select"}
+                  styles={staticStyle}
+                  value={
+                    staticMode
+                      ? {
+                          value: staticMode,
+                          label: staticModeLabel
+                        }
+                      : null
+                  }
+                  components={{ IndicatorSeparator: () => null }}
+                  options={staticModeOptions}
+                  isClearable={false}
+                  onChange={this.onUpdateStatic}
+                />
+              </InputGroup>
+            )}
           </div>
           {this._renderObjectComponent(
             objectTransform,
