@@ -12,31 +12,31 @@ import SelectInput from "./ui/inputs/SelectInput";
 
 /* eslint react/display-name: 0 */
 const componentTypeMappings = new Map([
-  [types.color, (component, prop, value, isValid, onChange) => <ColorInput value={value} onChange={onChange} />],
-  [types.string, (component, prop, value, isValid, onChange) => <StringInput value={value} onChange={onChange} />],
+  [types.color, (component, propDef, value, isValid, onChange) => <ColorInput value={value} onChange={onChange} />],
+  [types.string, (component, propDef, value, isValid, onChange) => <StringInput value={value} onChange={onChange} />],
   [
     types.number,
-    (component, prop, value, isValid, onChange) => {
-      if (prop.min === undefined || prop.max === undefined) {
-        return <NumericInput value={value} onChange={onChange} {...prop} />;
+    (component, propDef, value, isValid, onChange) => {
+      if (propDef.min === undefined || propDef.max === undefined) {
+        return <NumericInput value={value} onChange={onChange} {...propDef} />;
       } else {
-        return <CompoundNumericInput value={value} onChange={onChange} {...prop} />;
+        return <CompoundNumericInput value={value} onChange={onChange} {...propDef} />;
       }
     }
   ],
-  [types.vector, (component, prop, value, isValid, onChange) => <Vector3Input value={value} onChange={onChange} />],
-  [types.euler, (component, prop, value, isValid, onChange) => <EulerInput value={value} onChange={onChange} />],
-  [types.boolean, (component, prop, value, isValid, onChange) => <BooleanInput value={value} onChange={onChange} />],
+  [types.vector, (component, propDef, value, isValid, onChange) => <Vector3Input value={value} onChange={onChange} />],
+  [types.euler, (component, propDef, value, isValid, onChange) => <EulerInput value={value} onChange={onChange} />],
+  [types.boolean, (component, propDef, value, isValid, onChange) => <BooleanInput value={value} onChange={onChange} />],
   [
     types.file,
-    (component, prop, value, isValid, onChange) => (
-      <FileInput value={value} onChange={onChange} isValid={isValid} filters={prop.filters} />
+    (component, propDef, value, isValid, onChange) => (
+      <FileInput value={value} onChange={onChange} isValid={isValid} filters={propDef.filters} />
     )
   ],
   [
     types.select,
-    (component, prop, value, isValid, onChange) => (
-      <SelectInput value={value} onChange={onChange} options={prop.options(component)} />
+    (component, propDef, value, isValid, onChange) => (
+      <SelectInput value={value} onChange={onChange} options={propDef.options(component)} />
     )
   ]
 ]);

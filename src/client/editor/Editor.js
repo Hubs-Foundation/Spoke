@@ -1422,9 +1422,10 @@ export default class Editor {
       component._object = scene;
 
       const animations = scene.animations;
-      const loopAnimationComponent = LoopAnimationComponent.getComponent(object);
 
-      if (!loopAnimationComponent && animations && animations.length > 0) {
+      const hasAnimationComponent = this.hasComponent(object, "loop-animation");
+
+      if (!hasAnimationComponent && animations && animations.length > 0) {
         await this._addComponent(object, "loop-animation", {
           clip: animations[0].name
         });
