@@ -8,7 +8,8 @@ export const types = {
   boolean: "boolean",
   file: "file",
   string: "string",
-  array: "array"
+  array: "array",
+  select: "select"
 };
 
 const geometry = new THREE.SphereBufferGeometry(1, 4, 2);

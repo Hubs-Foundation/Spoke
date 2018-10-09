@@ -1,4 +1,5 @@
 import THREE from "./three";
+import cloneObject3D from "./utils/cloneObject3D";
 
 const textureLoader = new THREE.TextureLoader();
 
@@ -39,17 +40,6 @@ class TextureCache extends Cache {
 
 export const textureCache = new TextureCache();
 
-function clonable(obj) {
-  // Punting on skinned meshes for now because of https://github.com/mrdoob/three.js/pull/14494
-  // We solved this in Hubs here:
-  // https://github.com/mozilla/hubs/blob/9f48f8ee/src/components/gltf-model-plus.js#L28-L77
-  if (obj.isSkinnedMesh) return false;
-  for (const child of obj.children) {
-    if (!clonable(child)) return false;
-  }
-  return true;
-}
-
 class GLTFCache extends Cache {
   get(url) {
     const absoluteURL = new URL(url, window.location).href;
@@ -58,13 +48,20 @@ class GLTFCache extends Cache {
         absoluteURL,
         new Promise((resolve, reject) => {
           const loader = new THREE.GLTFLoader();
-          loader.load(absoluteURL, resolve, null, reject);
+          loader.load(
+            absoluteURL,
+            gltf => {
+              gltf.scene.animations = gltf.animations;
+              resolve(gltf);
+            },
+            null,
+            reject
+          );
         })
       );
     }
     return this._cache.get(absoluteURL).then(gltf => {
-      if (!clonable(gltf.scene)) return gltf;
-      const clonedGLTF = { scene: gltf.scene.clone() };
+      const clonedGLTF = { scene: cloneObject3D(gltf.scene) };
       clonedGLTF.scene.traverse(obj => {
         if (!obj.material) return;
         if (obj.material.clone) {

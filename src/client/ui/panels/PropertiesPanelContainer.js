@@ -223,28 +223,17 @@ class PropertiesPanelContainer extends Component {
           componentDefinition.schema.filter(prop => !prop.hidden).map(prop => (
             <InputGroup name={getDisplayName(prop.name)} key={prop.name} disabled={saveable && !component.src}>
               {componentTypeMappings.get(prop.type)(
+                component,
+                prop,
                 component.props[prop.name],
                 component.propValidation[prop.name],
-                this.onChangeComponent.bind(null, component, prop.name),
-                this.getExtras(prop)
+                this.onChangeComponent.bind(null, component, prop.name)
               )}
             </InputGroup>
           ))}
       </PropertyGroup>
     );
   };
-
-  getExtras(prop) {
-    const ComponentPropTypes = this.props.editor.ComponentPropTypes;
-    switch (prop.type) {
-      case ComponentPropTypes.number:
-        return { min: prop.min, max: prop.max, parse: prop.parse, format: prop.format, step: prop.step };
-      case ComponentPropTypes.file:
-        return { filters: prop.filters };
-      default:
-        null;
-    }
-  }
 
   render() {
     const object = this.state.object;
