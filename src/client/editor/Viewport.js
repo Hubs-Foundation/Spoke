@@ -54,11 +54,12 @@ export default class Viewport {
     const grid = new THREE.GridHelper(30, 30, 0x444444, 0x888888);
     editor.helperScene.add(grid);
 
+    // Add more emphasized major grid lines
     const array = grid.geometry.attributes.color.array;
 
     for (let i = 0; i < array.length; i += 60) {
       for (let j = 0; j < 12; j++) {
-        array[i + j] = 0.26;
+        array[i + j] = 0.9;
       }
     }
 
