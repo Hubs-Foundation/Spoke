@@ -339,7 +339,8 @@ export default class Editor {
       true
     );
     await this.addUnicomponentNode("Skybox", "skybox", {}, {}, true);
-    await this.addUnicomponentNode("Ground Plane", "ground-plane", {}, {}, true);
+    const ground = await this.addUnicomponentNode("Ground Plane", "ground-plane", {}, {}, true);
+    await this._addComponent(ground, "shadow", { castShadow: true, receiveShadow: true });
     await this.addUnicomponentNode("Ambient Light", "ambient-light", {}, { position: { x: 0, y: 10, z: 0 } }, true);
     await this.addUnicomponentNode("Spawn Point", "spawn-point", {}, {}, true);
     this._ignoreSceneModification = false;
@@ -1278,11 +1279,13 @@ export default class Editor {
     }
 
     this.select(object);
+
+    return object;
   }
 
   async addGLTFModelNode(name, uri, originUri) {
     const attribution = await this.project.getImportAttribution(uri);
-    this.addUnicomponentNode(name, "gltf-model", { src: uri, attribution, origin: originUri });
+    await this.addUnicomponentNode(name, "gltf-model", { src: uri, attribution, origin: originUri });
   }
 
   async importGLTFIntoModelNode(url) {
@@ -1431,6 +1434,8 @@ export default class Editor {
           clip: animations[0].name
         });
       }
+
+      await this._addComponent(object, "shadow", { castShadow: true, receiveShadow: true });
 
       this.signals.objectChanged.dispatch(object);
     } catch (e) {
