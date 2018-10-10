@@ -10,9 +10,6 @@ export default class SpokeSpotLightHelper extends THREE.Object3D {
     this.matrix = light.matrixWorld;
     this.matrixAutoUpdate = false;
 
-    this.vector = new THREE.Vector3();
-    this.vector2 = new THREE.Vector3();
-
     this.color = color;
 
     const geometry = new THREE.BufferGeometry();
@@ -54,12 +51,6 @@ export default class SpokeSpotLightHelper extends THREE.Object3D {
 
     this.outerCone.scale.set(outerConeWidth, outerConeWidth, coneLength);
     this.innerCone.scale.set(innerConeWidth, innerConeWidth, coneLength);
-
-    this.vector.setFromMatrixPosition(this.light.matrixWorld);
-    this.vector2.setFromMatrixPosition(this.light.target.matrixWorld);
-
-    this.outerCone.lookAt(this.vector2.sub(this.vector));
-    this.innerCone.lookAt(this.vector2.sub(this.vector));
 
     if (this.color !== undefined) {
       this.outerCone.material.color.set(this.color);
