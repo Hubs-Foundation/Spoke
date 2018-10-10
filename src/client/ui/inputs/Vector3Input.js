@@ -1,8 +1,9 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
 import styles from "./Vector3Input.scss";
-import classNames from "classnames";
 import NumericInput from "./NumericInput";
+
+let uniqueId = 0;
 
 export default class Vector3Input extends Component {
   static propTypes = {
@@ -23,13 +24,15 @@ export default class Vector3Input extends Component {
   constructor(props) {
     super(props);
 
+    this.id = uniqueId++;
+
     this.state = {
       uniformEnabled: props.uniformScaling
     };
   }
 
-  onToggleUniform = e => {
-    e.preventDefault();
+  onToggleUniform = () => {
+    console.log("toggle");
     this.setState({ uniformEnabled: !this.state.uniformEnabled });
   };
 
@@ -71,12 +74,16 @@ export default class Vector3Input extends Component {
     const vx = value ? value.x : 0;
     const vy = value ? value.y : 0;
     const vz = value ? value.z : 0;
-
-    const uniformClassName = classNames(styles.uniformButton, uniformEnabled ? styles.uniformEnabled : undefined);
+    const checkboxId = "uniform-button-" + this.id;
 
     return (
       <div className={styles.inputGroup}>
-        {uniformScaling && <i className={uniformClassName} onClick={this.onToggleUniform} />}
+        {uniformScaling && (
+          <div className={styles.uniformButton}>
+            <input id={checkboxId} type="checkbox" checked={uniformEnabled} onChange={this.onToggleUniform} />
+            <label title="Uniform Scale" htmlFor={checkboxId} />
+          </div>
+        )}
         <div className={styles.label}>X:</div>
         <NumericInput value={vx} onChange={this.onChangeX} />
         <div className={styles.label}>Y:</div>
