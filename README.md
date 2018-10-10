@@ -1,11 +1,11 @@
-# Spoke (alpha)
+# Spoke (beta)
 
 Easily create custom 3D environments for [Mozilla Hubs](https://hubs.mozilla.com).
 
-## Usage
+## Development
 
-- [Download](https://github.com/MozillaReality/Spoke/archive/master.zip) and extract this repo
-- `cd Spoke-master`
+- `git clone https://github.com/MozillaReality/Spoke.git`
+- `cd Spoke`
 - `npm ci`
 - `npm run dev`
 
