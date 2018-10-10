@@ -1,4 +1,5 @@
 @import "../../theme";
+@import "../../icons";
 
 :local(.inputGroup) {
   display: flex;
@@ -13,4 +14,28 @@
   align-items: center;
   padding: 0 8px;
   color: $text2;
+}
+
+:local(.uniformButton) {
+  display: flex;
+  align-items: center;
+
+  input {
+    display: none;
+  }
+
+  label:before {
+    color: $text2;
+    font-size: 10px;
+    @extend .fas;
+    content: fa-content($fa-var-unlink);
+  }
+
+  label:hover:before {
+    color: $blue-hover;
+  }
+
+  input:checked ~ label:before {
+    content: fa-content($fa-var-link);
+  }
 }

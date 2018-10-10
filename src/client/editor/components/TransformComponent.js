@@ -11,7 +11,7 @@ export default class TransformComponent extends BaseComponent {
   static schema = [
     { name: "position", type: types.vector },
     { name: "rotation", type: types.euler },
-    { name: "scale", type: types.vector }
+    { name: "scale", type: types.vector, uniformScaling: true }
   ];
 
   static _propsFromObject(node) {
