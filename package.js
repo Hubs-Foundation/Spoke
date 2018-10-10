@@ -7,6 +7,8 @@ const fs = require("fs");
 const path = require("path");
 const { ZipFile } = require("yazl");
 
+const packageJSON = require("./package.json");
+
 function buildRelease(targets, outPath, opts) {
   const args = ["bin/spoke", "--config", ".pkg.json", "--target", targets.join(","), "--out-path", outPath];
   return exec(args.concat(opts));
@@ -24,7 +26,7 @@ buildRelease(targets, outputDir, process.argv.slice(2)).then(() => {
   for (const platform of platforms) {
     const executableName = `spoke-${platform}`;
     const executablePath = path.join(outputDir, appendExtension(executableName, platform));
-    const archivePath = path.join(outputDir, `${executableName}.zip`);
+    const archivePath = path.join(outputDir, `${executableName}-v${packageJSON.version}.zip`);
     const archiveStream = fs.createWriteStream(archivePath);
 
     const zip = new ZipFile();
