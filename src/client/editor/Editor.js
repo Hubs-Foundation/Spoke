@@ -1403,6 +1403,8 @@ export default class Editor {
     try {
       const scene = await this._loadGLTF(component.props.src);
 
+      scene.userData._inflated = true;
+
       scene.traverse(child => {
         child.userData._dontSerialize = true;
         this.setHidden(child, true);
