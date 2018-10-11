@@ -209,8 +209,8 @@ class EditorContainer extends Component {
         name: "Help",
         items: [
           {
-            name: "Keyboard Shortcuts",
-            action: () => window.open("https://github.com/MozillaReality/spoke/wiki/Keyboard-Shortcuts")
+            name: "Keyboard and Mouse Controls",
+            action: () => window.open("https://github.com/MozillaReality/Spoke/wiki/Keyboard-and-Mouse-Controls")
           },
           {
             name: "Get Support",
