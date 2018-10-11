@@ -194,11 +194,17 @@ export default class Project extends EventEmitter {
   }
 
   async import(url) {
-    return await fetch("/api/import", {
+    const resp = await fetch("/api/import", {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ url })
-    }).then(r => r.json());
+    });
+
+    if (resp.status !== 200) {
+      throw new Error(`Import failed for "${url}". ${await resp.text()}`);
+    }
+
+    return resp.json();
   }
 
   async getImportAttribution(uri) {
@@ -216,17 +222,17 @@ export default class Project extends EventEmitter {
   }
 
   async uploadAndDelete(uri) {
-    const res = await fetch("/api/upload", {
+    const resp = await fetch("/api/upload", {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ uri })
     });
 
-    if (res.status !== 200) {
-      throw new Error(`Upload failed ${uri}`);
+    if (resp.status !== 200) {
+      throw new Error(`Upload failed for "${uri}". ${await resp.text()}`);
     }
 
-    return res.json();
+    return resp.json();
   }
 
   async createOrUpdateScene(params) {
@@ -242,6 +248,10 @@ export default class Project extends EventEmitter {
 
     if (resp.status === 401) {
       throw new AuthenticationError();
+    }
+
+    if (resp.status !== 200) {
+      throw new Error(`Scene creation failed. ${await resp.text()}`);
     }
 
     return resp.json();

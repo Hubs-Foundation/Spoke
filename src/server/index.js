@@ -334,15 +334,6 @@ async function startServer(options) {
   const mediaEndpoint = `https://${reticulumServer}/api/v1/media`;
   const agent = process.env.NODE_ENV === "development" ? https.Agent({ rejectUnauthorized: false }) : null;
 
-  async function tryGetJson(request) {
-    const text = await request.text();
-    try {
-      return JSON.parse(text);
-    } catch (e) {
-      console.log(`JSON error parsing response from ${request.url} "${text}"`, e);
-    }
-  }
-
   router.post("/api/import", koaBody(), async ctx => {
     const origin = ctx.request.body.url;
     const originHash = new sha.sha256().update(origin).digest("hex");
@@ -353,21 +344,29 @@ async function startServer(options) {
       const { name } = await fs.readJSON(path.join(filePathBase, "meta.json"));
       ctx.body = { uri, name };
     } else {
-      const { raw, meta } = await fetch(mediaEndpoint, {
+      const resp = await fetch(mediaEndpoint, {
         agent,
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ media: { url: origin, index: 0 } })
-      }).then(tryGetJson);
+      });
+
+      if (resp.status !== 200) {
+        ctx.status = resp.status;
+        ctx.body = await resp.text();
+        return;
+      }
+
+      const { raw, meta } = await resp.json();
 
       await fs.ensureDir(filePathBase);
 
       let name, author;
-      const resp = await fetch(raw, { agent });
+      const mediaResp = await fetch(raw, { agent });
       const expected_content_type = (meta && meta.expected_content_type) || "";
       if (expected_content_type.includes("gltf+zip")) {
         const zipPath = `${filePathBase}.zip`;
-        await pipeToFile(resp.body, zipPath);
+        await pipeToFile(mediaResp.body, zipPath);
         await extractZip(zipPath, filePathBase);
         await fs.remove(zipPath);
 
@@ -383,7 +382,7 @@ async function startServer(options) {
         // If we don't have an expected_content_type, assume they are gltfs.
         // We're calling these .gltf files, but they could be glbs.
         const filePath = path.join(filePathBase, "scene.gltf");
-        await pipeToFile(resp.body, filePath);
+        await pipeToFile(mediaResp.body, filePath);
         const uri = pathToUri(projectPath, filePath);
         name = meta && meta.name;
         author = meta && meta.author;
@@ -427,11 +426,19 @@ async function startServer(options) {
     const formData = new FormData();
     formData.append("media", fileStream);
 
-    const { file_id, meta } = await fetch(mediaEndpoint, {
+    const resp = await fetch(mediaEndpoint, {
       agent,
       method: "POST",
       body: formData
-    }).then(tryGetJson);
+    });
+
+    if (resp.status !== 200) {
+      ctx.status = resp.status;
+      ctx.body = await resp.text();
+      return;
+    }
+
+    const { file_id, meta } = await resp.json();
 
     fs.remove(path);
 
@@ -476,13 +483,21 @@ async function startServer(options) {
     }
 
     const resp = await fetch(sceneEndpoint, { agent, method, headers, body });
+
     if (resp.status === 401) {
       ctx.status = 401;
       return;
     }
 
-    const json = await tryGetJson(resp);
+    if (resp.status !== 200) {
+      ctx.status = resp.status;
+      ctx.body = await resp.text();
+      return;
+    }
+
+    const json = await resp.json();
     const { url, scene_id } = json.scenes[0];
+
     ctx.body = { url, sceneId: scene_id };
   });
 
@@ -502,7 +517,7 @@ async function startServer(options) {
     // Read-only, public access token.
     const token = "de8cbfb4cc0281c7b731c891df431016c29b0ace";
 
-    const result = await fetch("https://api.github.com/graphql", {
+    const resp = await fetch("https://api.github.com/graphql", {
       timeout: updateInfoTimeout,
       method: "POST",
       headers: { authorization: `bearer ${token}` },
@@ -529,8 +544,11 @@ async function startServer(options) {
           }
         `
       })
-    }).then(tryGetJson);
+    });
 
+    if (resp.status !== 200) return;
+
+    const result = await resp.json();
     if (!result || !result.data) return;
 
     return result.data.repository.releases;
