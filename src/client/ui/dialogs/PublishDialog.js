@@ -65,8 +65,8 @@ export default class PublishDialog extends Component {
                     <StringInput
                       id="name"
                       required
-                      pattern=".{4,}"
-                      title="Name must be at least 4 characters."
+                      pattern={"[A-Za-z0-9-':\"!@#$%^&*(),.?~ ]{4,64}"}
+                      title="Name must be between 4 and 64 characters and cannot contain underscores"
                       value={this.state.name}
                       className={styles.name}
                       onChange={name => this.setState({ name })}
