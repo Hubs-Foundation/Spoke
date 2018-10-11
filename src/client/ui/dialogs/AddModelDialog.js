@@ -69,6 +69,14 @@ export default class AddModelDialog extends Component {
             </div>
           </div>
           <div className={styles.bottom}>
+            <Button
+              key="find"
+              type="button"
+              onClick={() => window.open("https://sketchfab.com/mozillareality/collections", "_blank")}
+            >
+              Find Models...
+            </Button>
+            <div style={{ flex: 10 }} />
             <Button key="cancel" type="button" onClick={this.props.onCancel} className={styles.cancel}>
               {this.props.cancelLabel}
             </Button>
