@@ -72,9 +72,23 @@ export default class AddModelDialog extends Component {
             <Button
               key="find"
               type="button"
+              className={styles.cancel}
+              onClick={() =>
+                window.open(
+                  "https://sketchfab.com/search?features=downloadable&sort_by=-pertinence&type=models",
+                  "_blank"
+                )
+              }
+            >
+              Search...
+            </Button>
+            <Button
+              key="find"
+              type="button"
+              className={styles.cancel}
               onClick={() => window.open("https://sketchfab.com/mozillareality/collections", "_blank")}
             >
-              Find Models...
+              Collections...
             </Button>
             <div style={{ flex: 10 }} />
             <Button key="cancel" type="button" onClick={this.props.onCancel} className={styles.cancel}>
