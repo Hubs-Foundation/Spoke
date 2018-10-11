@@ -1,7 +1,7 @@
 import THREE from "../three";
 
 export default class SpokePointLightHelper extends THREE.Mesh {
-  constructor(light, sphereSize, color) {
+  constructor(light, sphereSize) {
     const geometry = new THREE.SphereBufferGeometry(sphereSize, 4, 2);
     const material = new THREE.MeshBasicMaterial({ wireframe: true, fog: false });
 
@@ -10,14 +10,11 @@ export default class SpokePointLightHelper extends THREE.Mesh {
     this.light = light;
     this.light.updateMatrixWorld();
 
-    this.color = color;
-
     this.matrix = this.light.matrixWorld;
     this.matrixAutoUpdate = false;
 
     const distanceGeometry = new THREE.IcosahedronBufferGeometry(1, 2);
     const distanceMaterial = new THREE.MeshBasicMaterial({
-      color: color,
       fog: false,
       wireframe: true,
       opacity: 0.1,
@@ -39,11 +36,7 @@ export default class SpokePointLightHelper extends THREE.Mesh {
   }
 
   update() {
-    if (this.color !== undefined) {
-      this.material.color.set(this.color);
-    } else {
-      this.material.color.copy(this.light.color);
-    }
+    this.material.color.copy(this.light.color);
 
     const d = this.light.distance;
 
