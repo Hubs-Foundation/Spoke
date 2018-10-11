@@ -1,6 +1,7 @@
 @import "../../common";
 @import "../../theme";
 @import "../../global";
+@import "../../icons";
 
 :local(.dialogContainer) {
   display: flex;
@@ -199,6 +200,34 @@
   &:hover {
      background-color: $panel;
    }
+}
+
+:local(.search) {
+  background: $panel2;
+
+  &:hover {
+     background-color: $panel;
+   }
+}
+
+:local(.search:before) {
+  @extend .fas;
+  content: fa-content($fa-var-search);
+  padding-right: 8px;
+}
+
+:local(.collections) {
+  background: $panel2;
+
+  &:hover {
+     background-color: $panel;
+   }
+}
+
+:local(.collections:before) {
+  @extend .fas;
+  content: fa-content($fa-var-cubes);
+  padding-right: 8px;
 }
 
 :local(.loginContainer) {

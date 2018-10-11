@@ -72,7 +72,7 @@ export default class AddModelDialog extends Component {
             <Button
               key="find"
               type="button"
-              className={styles.cancel}
+              className={styles.search}
               onClick={() =>
                 window.open(
                   "https://sketchfab.com/search?features=downloadable&sort_by=-pertinence&type=models",
@@ -85,7 +85,7 @@ export default class AddModelDialog extends Component {
             <Button
               key="find"
               type="button"
-              className={styles.cancel}
+              className={styles.collections}
               onClick={() => window.open("https://sketchfab.com/mozillareality/collections", "_blank")}
             >
               Collections...

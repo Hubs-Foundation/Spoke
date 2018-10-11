@@ -58,7 +58,8 @@ module.exports = {
   plugins: [
     new CopyWebpackPlugin([{ from: "src/client/vendor/recast/recast.wasm", to: "recast.wasm" }]),
     new HTMLWebpackPlugin({
-      title: packageJSON.productName
+      title: packageJSON.productName,
+      favicon: "src/client/assets/favicon.ico"
     }),
     new webpack.DefinePlugin({
       SPOKE_VERSION: JSON.stringify(packageJSON.version)
