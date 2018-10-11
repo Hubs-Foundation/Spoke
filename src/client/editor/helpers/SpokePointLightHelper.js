@@ -15,7 +15,7 @@ export default class SpokePointLightHelper extends THREE.Mesh {
     this.matrix = this.light.matrixWorld;
     this.matrixAutoUpdate = false;
 
-    const distanceGeometry = new THREE.IcosahedronGeometry(1, 2);
+    const distanceGeometry = new THREE.IcosahedronBufferGeometry(1, 2);
     const distanceMaterial = new THREE.MeshBasicMaterial({
       color: color,
       fog: false,
@@ -26,14 +26,6 @@ export default class SpokePointLightHelper extends THREE.Mesh {
 
     this.lightDistanceHelper = new THREE.Mesh(distanceGeometry, distanceMaterial);
 
-    const d = light.distance;
-
-    if (d === 0.0) {
-      this.lightDistanceHelper.visible = false;
-    } else {
-      this.lightDistanceHelper.scale.set(d, d, d);
-    }
-
     this.add(this.lightDistanceHelper);
 
     this.update();
@@ -42,6 +34,8 @@ export default class SpokePointLightHelper extends THREE.Mesh {
   dispose() {
     this.geometry.dispose();
     this.material.dispose();
+    this.lightDistanceHelper.geometry.dispose();
+    this.lightDistanceHelper.material.dispose();
   }
 
   update() {
