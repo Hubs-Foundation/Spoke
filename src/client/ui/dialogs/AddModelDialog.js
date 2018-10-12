@@ -83,7 +83,7 @@ export default class AddModelDialog extends Component {
               Search...
             </Button>
             <Button
-              key="find"
+              key="collections"
               type="button"
               className={styles.collections}
               onClick={() => window.open("https://sketchfab.com/mozillareality/collections", "_blank")}
