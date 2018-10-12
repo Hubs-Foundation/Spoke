@@ -799,12 +799,25 @@ class EditorContainer extends Component {
     } = await this.props.editor.takeScreenshot();
     const attribution = this.props.editor.getSceneAttribution();
     const screenshotURL = URL.createObjectURL(screenshotBlob);
-    const { name, description, allowRemixing, allowPromotion, sceneId } = this.props.editor.getSceneMetadata();
+    const {
+      name,
+      creatorAttribution,
+      description,
+      allowRemixing,
+      allowPromotion,
+      sceneId
+    } = this.props.editor.getSceneMetadata();
+
+    let initialCreatorAttribution = creatorAttribution;
+    if (!initialCreatorAttribution || initialCreatorAttribution.length === 0) {
+      initialCreatorAttribution = (await this.props.editor.getUserInfo()).creatorAttribution;
+    }
 
     await this.showDialog(PublishDialog, {
       screenshotURL,
       attribution,
       initialName: name || this.props.editor.scene.name,
+      initialCreatorAttribution,
       initialDescription: description,
       initialAllowRemixing: allowRemixing,
       initialAllowPromotion: allowPromotion,
@@ -813,7 +826,7 @@ class EditorContainer extends Component {
         URL.revokeObjectURL(screenshotURL);
         this.hideDialog();
       },
-      onPublish: async ({ name, description, allowRemixing, allowPromotion, isNewScene }) => {
+      onPublish: async ({ name, creatorAttribution, description, allowRemixing, allowPromotion, isNewScene }) => {
         this.showDialog(ProgressDialog, {
           title: "Publishing Scene",
           message: "Publishing scene..."
@@ -821,11 +834,14 @@ class EditorContainer extends Component {
 
         this.props.editor.setSceneMetadata({
           name,
+          creatorAttribution,
           description,
           allowRemixing,
           allowPromotion,
           previewCameraTransform: screenshotCameraTransform
         });
+
+        await this.props.editor.setUserInfo({ creatorAttribution });
 
         let publishResult;
         try {
@@ -841,6 +857,7 @@ class EditorContainer extends Component {
           this.showDialog(PublishDialog, {
             screenshotURL,
             initialName: name,
+            initialCreatorAttribution: creatorAttribution,
             published: true,
             sceneUrl: publishResult.sceneUrl
           });

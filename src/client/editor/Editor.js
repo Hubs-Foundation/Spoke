@@ -1920,7 +1920,9 @@ export default class Editor {
 
     await this.project.mkdir(this.project.getAbsoluteURI("generated"));
 
-    const { name, description, allowRemixing, allowPromotion } = this.getSceneMetadata();
+    const { name, creatorAttribution, description, allowRemixing, allowPromotion } = this.getSceneMetadata();
+    attribution = creatorAttribution + "\n" + attribution;
+
     const screenshotUri = this.project.getAbsoluteURI(`generated/${uuid()}.png`);
     await this.project.writeBlob(screenshotUri, screenshotBlob);
     const { id: screenshotId, token: screenshotToken } = await this.project.uploadAndDelete(screenshotUri);
@@ -2006,6 +2008,22 @@ export default class Editor {
 
   async authenticated() {
     return await fetch("/api/authenticated").then(r => r.ok);
+  }
+
+  /*
+   * Stores user info on disk.
+   * userInfo can be a partial object.
+   */
+  async setUserInfo(userInfo) {
+    return await fetch("/api/user_info", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(userInfo)
+    });
+  }
+
+  async getUserInfo() {
+    return fetch("/api/user_info").then(r => r.json());
   }
 
   async retrieveUpdateInfo() {
