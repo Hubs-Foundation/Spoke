@@ -254,7 +254,7 @@ class FileDialog extends Component {
     e.preventDefault();
 
     if (this.state.selectedFile) {
-      this.props.onConfirm(this.state.selectedFile.uri);
+      this.props.onConfirm(this.state.selectedFile.uri, this.state.fileName);
       return;
     }
 
@@ -277,7 +277,7 @@ class FileDialog extends Component {
     const directoryURI = this.state.selectedDirectory || this.state.tree.uri;
 
     if (fileName.length > 0) {
-      this.props.onConfirm(directoryURI + "/" + fileName);
+      this.props.onConfirm(directoryURI + "/" + fileName, fileName);
     } else {
       this.props.onConfirm(directoryURI);
     }
