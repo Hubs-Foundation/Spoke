@@ -3,7 +3,7 @@ import BaseComponent from "./BaseComponent";
 import { types } from "./utils";
 
 const planeGeo = new THREE.CircleBufferGeometry(4000, 32);
-const planeMat = new THREE.MeshBasicMaterial();
+const planeMat = new THREE.MeshStandardMaterial({ roughness: 1, metalness: 0 });
 
 export default class GroundPlaneComponent extends BaseComponent {
   static componentName = "ground-plane";
