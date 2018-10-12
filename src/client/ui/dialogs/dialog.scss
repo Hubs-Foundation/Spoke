@@ -113,20 +113,7 @@
   }
 }
 
-:local(.progressContainer){
-  color: $text2;
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  // This forces firefox to give the contents a proper height.
-  overflow: hidden;
-  padding: 8px;
-
-  :local(.message) {
-    padding-bottom: 24px;
-    white-space: pre;
-  }
-
+:local(.progressContainer), :local(.loginContainer) {
   :local(.loadingBarContainer) {
     height: 20px;
 	  position: relative;
@@ -201,6 +188,29 @@
      background-color: $panel;
    }
 }
+
+:local(.progressContainer) {
+  color: $text2;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  // This forces firefox to give the contents a proper height.
+  overflow: hidden;
+  padding: 8px;
+
+  :local(.message) {
+    padding-bottom: 24px;
+    white-space: pre;
+  }
+}
+
+:local(.loginContainer) {
+  :local(.loadingBarContainer) {
+    width: 80%;
+    margin-top: 24px;
+  }
+}
+
 
 :local(.search) {
   background: $panel2;

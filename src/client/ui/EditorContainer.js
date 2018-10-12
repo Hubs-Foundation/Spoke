@@ -787,8 +787,7 @@ class EditorContainer extends Component {
         this.showDialog(LoginDialog, { authStarted: true });
         await authComplete;
         this._showPublishDialog();
-      },
-      onCancel: () => this.hideDialog()
+      }
     });
   };
 

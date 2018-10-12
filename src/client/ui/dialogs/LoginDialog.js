@@ -11,7 +11,6 @@ export default class LoginDialog extends Component {
   static propTypes = {
     authStarted: PropTypes.bool,
     hideDialog: PropTypes.func.isRequired,
-    onCancel: PropTypes.func,
     onLogin: PropTypes.func
   };
 
@@ -28,7 +27,7 @@ export default class LoginDialog extends Component {
   };
 
   render() {
-    const { authStarted, onCancel, hideDialog } = this.props;
+    const { authStarted } = this.props;
     return (
       <div className={styles.dialogContainer}>
         <Header title="Publish to Hubs" />
@@ -36,8 +35,11 @@ export default class LoginDialog extends Component {
           {authStarted ? (
             <div className={classNames([styles.content, styles.contentFullHeight])}>
               <div className={classNames([styles.contentRows, styles.contentRowsCentered])}>
-                <div className={styles.message}>
-                  {"Email sent!\nKeep this dialog open and click the link in the email to continue."}
+                <div className={styles.message}>{"Email sent!\nWaiting for you to click the link in the email..."}</div>
+                <div className={[styles.loadingBarContainer, styles.animate].join(" ")}>
+                  <span>
+                    <span />
+                  </span>
                 </div>
               </div>
             </div>
@@ -84,9 +86,6 @@ export default class LoginDialog extends Component {
           )}
         </div>
         <div className={styles.bottom}>
-          <Button key="cancel" onClick={onCancel || hideDialog} className={styles.cancel}>
-            Cancel
-          </Button>
           {!authStarted && (
             <Button key="login" form="login">
               Next
