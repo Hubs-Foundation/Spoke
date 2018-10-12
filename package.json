@@ -23,8 +23,8 @@
     "url": "https://github.com/MozillaReality/spoke.git"
   },
   "scripts": {
+    "start": "cross-env NODE_ENV=development node ./bin/spoke",
     "dev": "cross-env NODE_ENV=development node ./bin/spoke --no-open example",
-    "open": "cross-env NODE_ENV=development node ./bin/spoke",
     "build": "cross-env NODE_ENV=production webpack --mode production",
     "binaries": "npm run build && node package.js",
     "precommit": "lint-staged",
