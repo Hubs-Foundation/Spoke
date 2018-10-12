@@ -1436,7 +1436,9 @@ export default class Editor {
     } catch (e) {
       console.error("Failed to load GLTF", e);
 
-      this.signals.editorError.dispatch(new Error(`Failed to load GLTF ${e}`));
+      const errorMessage = e.message || "An unknown error occurred.";
+
+      this.signals.editorError.dispatch(new Error(`Failed to load GLTF: ${errorMessage}`));
 
       if (component.propValidation.src !== false) {
         component.propValidation.src = false;
