@@ -94,9 +94,11 @@ export default class PublishDialog extends Component {
 
                       {!published && <Button onClick={() => this.setState({ isNewScene: true })}>New Scene</Button>}
                     </div>
-                    <div className={styles.titleRow}>
-                      <div>by {this.state.creatorAttribution}</div>
-                    </div>
+                    {this.state.creatorAttribution && (
+                      <div className={styles.titleRow}>
+                        <div>by {this.state.creatorAttribution}</div>
+                      </div>
+                    )}
                   </div>
                 )}
                 {!published ? (

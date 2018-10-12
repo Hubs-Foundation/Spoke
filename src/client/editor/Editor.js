@@ -1921,7 +1921,9 @@ export default class Editor {
     await this.project.mkdir(this.project.getAbsoluteURI("generated"));
 
     const { name, creatorAttribution, description, allowRemixing, allowPromotion } = this.getSceneMetadata();
-    attribution = creatorAttribution + "\n" + attribution;
+    if (creatorAttribution && creatorAttribution.trim().length) {
+      attribution = `by ${creatorAttribution}.` + "\n" + attribution;
+    }
 
     const screenshotUri = this.project.getAbsoluteURI(`generated/${uuid()}.png`);
     await this.project.writeBlob(screenshotUri, screenshotBlob);
