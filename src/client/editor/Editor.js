@@ -864,8 +864,13 @@ export default class Editor {
       const box = new THREE.Box3().setFromBufferAttribute(finalGeo.attributes.position);
       const size = new THREE.Vector3();
       box.getSize(size);
-      if (Math.max(size.x, size.y, size.z) > 2000) {
-        throw new Error(`Scene is too large (${size.x} x ${size.y} x ${size.z}) to generate a nav mesh.`);
+
+      if (size.x * size.y * size.z > 1000000) {
+        throw new Error(
+          `Scene is too large (${size.x} x ${size.y} x ${
+            size.z
+          }) to generate a nav mesh. Maximum volume is 1,000,000 cubic meters.`
+        );
       }
 
       const { navPosition, navIndex } = generateNavMesh(position, index);
