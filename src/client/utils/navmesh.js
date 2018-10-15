@@ -6,13 +6,13 @@ Recast().then(r => {
   recast = r;
 });
 
-export function generateNavMesh(positions, indices, cellSize) {
+export function generateNavMesh(positions, indices) {
   if (!recast) {
     throw new Error("Recast module unavailable or not yet loaded.");
   }
   recast.loadArray(positions, indices);
   const objMesh = recast.build(
-    cellSize,
+    0.25, // cellSize
     0.1, // cellHeight
     1.0, // agentHeight
     0.0001, // agentRadius
