@@ -32,7 +32,6 @@ export default class Vector3Input extends Component {
   }
 
   onToggleUniform = () => {
-    console.log("toggle");
     this.setState({ uniformEnabled: !this.state.uniformEnabled });
   };
 
