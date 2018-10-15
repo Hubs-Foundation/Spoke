@@ -1,32 +1,27 @@
+@import "../../common";
 @import "../../theme";
+@import "../../icons";
 
-:local(.hide) {
-  display: none;
-}
+:local(.booleanInput) {
+  input {
+    display: none;
+  }
 
-@mixin basic {
-  width: 13px;
-  height: 13px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  border-radius: 2px;
-  cursor: pointer;
-}
+  label {
+    @include input;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 16px;
+    height: 16px;
+    margin: 4px 0;
+    padding: 0;
+    cursor: pointer;
+  }
 
-input[type="checkbox"] + span {
-  @include basic;
-  color: $input-background;
-  background-color: $border;
-}
-
-input[type="checkbox"]:checked + span {
-  @include basic;
-  color: $blue;
-  background-color: $white;
-}
-
-input[type="checkbox"]:hover + span {
-  @include basic;
-  background-color: $blue-hover;
+  input:checked ~ label:before {
+    color: $blue;
+    @extend .fas;
+    content: fa-content($fa-var-check);
+  }
 }
