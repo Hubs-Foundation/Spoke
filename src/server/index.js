@@ -393,8 +393,37 @@ async function startServer(options) {
     }
   });
 
+  function getConfigPath(filename) {
+    return path.join(envPaths("Spoke", { suffix: "" }).config, filename);
+  }
+
+  function getUserInfoPath() {
+    return getConfigPath("spoke-user-info.json");
+  }
+
+  async function getUserInfo() {
+    const userInfoPath = getUserInfoPath();
+    if (fs.existsSync(userInfoPath)) {
+      return await fs.readJSON(userInfoPath);
+    } else {
+      return {};
+    }
+  }
+
+  router.get("/api/user_info", koaBody(), async ctx => {
+    ctx.body = await getUserInfo();
+  });
+
+  router.post("/api/user_info", koaBody(), async ctx => {
+    const userInfoPath = getUserInfoPath();
+    await fs.ensureDir(path.dirname(userInfoPath));
+    const currentUserInfo = getUserInfo();
+    await fs.writeJSON(userInfoPath, { ...currentUserInfo, ...ctx.request.body });
+    ctx.status = 200;
+  });
+
   function getCredentialsPath() {
-    return path.join(envPaths("Spoke", { suffix: "" }).config, "spoke-credentials.json");
+    return getConfigPath("spoke-credentials.json");
   }
 
   router.post("/api/credentials", koaBody(), async ctx => {

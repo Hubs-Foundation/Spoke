@@ -281,7 +281,7 @@
   :local(input) {
     width: auto;
   }
-  :local(.name) {
+  :local(.name), :local(.creatorAttribution) {
     width: 300px;
     margin-top: 0.8em;
   }

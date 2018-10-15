@@ -17,6 +17,7 @@ export default class PublishDialog extends Component {
     sceneUrl: PropTypes.string,
     initialName: PropTypes.string,
     initialDescription: PropTypes.string,
+    initialCreatorAttribution: PropTypes.string,
     initialAllowRemixing: PropTypes.bool,
     initialAllowPromotion: PropTypes.bool,
     isNewScene: PropTypes.bool
@@ -25,6 +26,7 @@ export default class PublishDialog extends Component {
   static defaultProps = {
     initialName: "",
     initialDescription: "",
+    initialCreatorAttribution: "",
     initialAllowRemixing: true,
     initialAllowPromotion: true
   };
@@ -34,7 +36,9 @@ export default class PublishDialog extends Component {
 
     this.state = {
       name: props.initialName,
+      // Description field removed for initial launch
       description: props.initialDescription,
+      creatorAttribution: props.initialCreatorAttribution,
       allowRemixing: props.initialAllowRemixing,
       allowPromotion: props.initialAllowPromotion,
       isNewScene: props.isNewScene
@@ -60,36 +64,45 @@ export default class PublishDialog extends Component {
             <div>
               <form id="publish" onSubmit={this.handleSubmit}>
                 {this.state.isNewScene && !published ? (
-                  <div className={styles.inputField}>
-                    <label className={styles.label}>Scene Name:</label>
-                    <StringInput
-                      id="name"
-                      required
-                      pattern={"[A-Za-z0-9-':\"!@#$%^&*(),.?~ ]{4,64}"}
-                      title="Name must be between 4 and 64 characters and cannot contain underscores"
-                      value={this.state.name}
-                      className={styles.name}
-                      onChange={name => this.setState({ name })}
-                    />
+                  <div>
+                    <div className={styles.inputField}>
+                      <label className={styles.label}>Scene Name:</label>
+                      <StringInput
+                        id="name"
+                        required
+                        pattern={"[A-Za-z0-9-':\"!@#$%^&*(),.?~ ]{4,64}"}
+                        title="Name must be between 4 and 64 characters and cannot contain underscores"
+                        value={this.state.name}
+                        className={styles.name}
+                        onChange={value => this.setState({ name: value.trim() })}
+                      />
+                    </div>
+                    <div className={styles.inputField}>
+                      <label className={styles.label}>Your Attribution (optional):</label>
+                      <StringInput
+                        id="creatorAttribution"
+                        value={this.state.creatorAttribution}
+                        className={styles.creatorAttribution}
+                        onChange={value => this.setState({ creatorAttribution: value.trim() })}
+                      />
+                    </div>
                   </div>
                 ) : (
-                  <div className={styles.titleRow}>
-                    <div className={styles.contentTitle}>{this.state.name}</div>
+                  <div>
+                    <div className={styles.titleRow}>
+                      <div className={styles.contentTitle}>{this.state.name}</div>
 
-                    {!published && <Button onClick={() => this.setState({ isNewScene: true })}>New Scene</Button>}
+                      {!published && <Button onClick={() => this.setState({ isNewScene: true })}>New Scene</Button>}
+                    </div>
+                    {this.state.creatorAttribution && (
+                      <div className={styles.titleRow}>
+                        <div>by {this.state.creatorAttribution}</div>
+                      </div>
+                    )}
                   </div>
                 )}
                 {!published ? (
                   <div>
-                    <div className={styles.inputField}>
-                      <label className={styles.label}>Scene Description:</label>
-                      <textarea
-                        className={styles.description}
-                        id="description"
-                        value={this.state.description}
-                        onChange={e => this.setState({ description: e.target.value })}
-                      />
-                    </div>
                     <div className={styles.inputField}>
                       <div className={styles.checkboxRow}>
                         <label htmlFor="allowRemixing">
@@ -142,7 +155,7 @@ export default class PublishDialog extends Component {
               {!published &&
                 attribution && (
                   <div className={styles.attribution}>
-                    <label>Attribution:</label>
+                    <label>Model Attribution:</label>
                     <p className={styles.attributionText}>{attribution}</p>
                   </div>
                 )}
