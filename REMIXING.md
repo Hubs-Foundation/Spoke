@@ -1,13 +1,7 @@
-## Remixing and Creative Commons
+## Remixing
 
-Remixing allows others to download, edit, and re-publish your Spoke scene. If you allow remixing, your scene will be published under a [CC-BY](https://creativecommons.org/licenses/by/3.0/legalcode) license. We’ll automatically show attribution on any remixed content that is published from Spoke.
+Allowing remixing means that others can download, edit, change, and re-publish your Spoke scene as long as they give credit to the creators of the scene. If you allow allow remixing, you agree to license your scene under a [CC-BY 3.0](https://creativecommons.org/licenses/by/3.0/legalcode) license. We’ll provide you an opportunity to include the attribution information you want to include. This information will be associated with the scene, but not stored with you account.
 
-## Creative Commons
+You can change this setting at any time, by re-publishing your scene.
 
-Creative Commons licenses provide a standard way for content creators to grant someone else permission to use their work. If you allow remixing, your scene will be published under a [CC-BY 3.0](https://creativecommons.org/licenses/by/3.0/legalcode) license. These scene are then accessible to other Hubs and Spoke users for use, even commercially, in their own creations, provided they give attribution to the original author.
-
-## Licensing your content
-
-You can choose whether your content can be remixed by selecting "Allow remixing" when publishing from Spoke. By default this option is set to allow remixing. You can change this setting at any time, by re-publishing your scene.
-
-If you don't allow remixing, your content will be published under the Hubs [Terms of Use](https://github.com/mozilla/hubs/blob/master/TERMS.md).
+If you don't allow remixing, your content will be published under the Hubs and Spoke [Terms of Service](https://github.com/mozilla/hubs/blob/master/TERMS.md).
