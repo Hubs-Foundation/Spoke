@@ -20,10 +20,10 @@ import {
   StaticModes,
   getStaticMode,
   computeStaticMode,
-  computeAndSetStaticModes,
   getOriginalStaticMode,
   setOriginalStaticMode
 } from "./StaticMode";
+import MeshCombinationGroup from "./MeshCombinationGroup";
 import { generateNavMesh } from "../utils/navmesh";
 import { getUrlFilename } from "../utils/url-path";
 import { textureCache, gltfCache } from "./caches";
@@ -39,7 +39,6 @@ import SpokePointLightHelper from "./helpers/SpokePointLightHelper";
 import { last } from "../utils";
 import absoluteToRelativeURL from "./utils/absoluteToRelativeURL";
 import addChildAtIndex from "./utils/addChildAtIndex";
-import shallowEquals from "./utils/shallowEquals";
 import sortEntities from "./utils/sortEntities";
 import cloneObject3D from "./utils/cloneObject3D";
 
@@ -49,8 +48,6 @@ import GLTFModelComponent from "./components/GLTFModelComponent";
 import HeightfieldComponent from "./components/HeightfieldComponent";
 import SaveableComponent from "./components/SaveableComponent";
 import SceneReferenceComponent from "./components/SceneReferenceComponent";
-import ShadowComponent from "./components/ShadowComponent";
-import StandardMaterialComponent from "./components/StandardMaterialComponent";
 import LoopAnimationComponent from "./components/LoopAnimationComponent";
 
 export default class Editor {
@@ -936,39 +933,7 @@ export default class Editor {
       clonedScene.add(previewCamera);
     }
 
-    computeAndSetStaticModes(clonedScene);
-
-    const meshesToCombine = [];
-
-    // First pass at scene optimization.
     clonedScene.traverse(object => {
-      // Mark objects with meshes for merging
-      const curShadowComponent = ShadowComponent.getComponent(object);
-      const curMaterialComponent = StandardMaterialComponent.getComponent(object);
-
-      if (isStatic(object) && curShadowComponent && curMaterialComponent) {
-        let foundMaterial = false;
-
-        for (const { shadowComponent, materialComponent, meshes } of meshesToCombine) {
-          if (
-            shallowEquals(materialComponent.props, curMaterialComponent.props) &&
-            shallowEquals(shadowComponent.props, curShadowComponent.props)
-          ) {
-            meshes.push(object);
-            foundMaterial = true;
-            break;
-          }
-        }
-
-        if (!foundMaterial) {
-          meshesToCombine.push({
-            shadowComponent: curShadowComponent,
-            materialComponent: curMaterialComponent,
-            meshes: [object]
-          });
-        }
-      }
-
       // Remove objects marked as _dontExport
       for (const child of object.children) {
         if (child.userData._dontExport) {
@@ -978,41 +943,7 @@ export default class Editor {
       }
     });
 
-    // Combine meshes and add to scene.
-    for (const { meshes } of meshesToCombine) {
-      if (meshes.length > 1) {
-        const bufferGeometries = [];
-
-        for (const mesh of meshes) {
-          // Clone buffer geometry in case it is re-used across meshes with different materials.
-          const clonedBufferGeometry = mesh.geometry.clone();
-          clonedBufferGeometry.applyMatrix(mesh.matrixWorld);
-          bufferGeometries.push(clonedBufferGeometry);
-        }
-
-        const originalMesh = meshes[0];
-
-        const combinedGeometry = THREE.BufferGeometryUtils.mergeBufferGeometries(bufferGeometries);
-        delete combinedGeometry.userData.mergedUserData;
-        const combinedMesh = new THREE.Mesh(combinedGeometry, originalMesh.material);
-        combinedMesh.name = "CombinedMesh";
-        combinedMesh.receiveShadow = originalMesh.receiveShadow;
-        combinedMesh.castShadow = originalMesh.castShadow;
-
-        clonedScene.add(combinedMesh);
-
-        for (const mesh of meshes) {
-          const meshIndex = mesh.parent.children.indexOf(mesh);
-          const parent = mesh.parent;
-          mesh.parent.remove(mesh);
-          const replacementObj = new THREE.Object3D();
-          replacementObj.copy(mesh);
-          replacementObj.children = mesh.children;
-
-          addChildAtIndex(parent, replacementObj, meshIndex);
-        }
-      }
-    }
+    MeshCombinationGroup.combineMeshes(clonedScene);
 
     const animations = [];
 
@@ -1419,10 +1350,16 @@ export default class Editor {
         object.remove(component._object);
       }
 
+      const animations = scene.animations;
+
+      if (animations.length > 0) {
+        setStaticMode(scene, StaticModes.Dynamic);
+      } else {
+        setStaticMode(scene, StaticModes.Static);
+      }
+
       object.add(scene);
       component._object = scene;
-
-      const animations = scene.animations;
 
       const hasAnimationComponent = this.hasComponent(object, "loop-animation");
 
