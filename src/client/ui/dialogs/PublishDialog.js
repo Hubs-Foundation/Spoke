@@ -113,6 +113,15 @@ export default class PublishDialog extends Component {
                             rel="noopener noreferrer"
                           >
                             Remixing
+                          </a>&nbsp;with
+                          <br />
+                          Creative Commons&nbsp;
+                          <a
+                            href="https://creativecommons.org/licenses/by/3.0/"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            CC-BY 3.0
                           </a>
                         </label>
                         <BooleanInput
