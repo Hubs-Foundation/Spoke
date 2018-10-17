@@ -2,7 +2,7 @@ import THREE from "./three";
 import { isStatic, computeAndSetStaticModes } from "./StaticMode";
 import asyncTraverse from "./utils/asyncTraverse";
 import keysEqual from "./utils/keysEqual";
-import hashImage from "./utils/getImageData";
+import hashImage from "./utils/hashImage";
 
 export async function getImageHash(hashCache, img) {
   let hash = hashCache.get(img);
