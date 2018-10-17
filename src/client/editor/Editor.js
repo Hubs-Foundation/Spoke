@@ -1047,8 +1047,8 @@ export default class Editor {
       if (userData.gltfExtensions === undefined) {
         userData.gltfExtensions = {};
       }
-      if (userData.gltfExtensions.HUBS_components === undefined) {
-        userData.gltfExtensions.HUBS_components = {};
+      if (userData.gltfExtensions.MOZ_hubs_components === undefined) {
+        userData.gltfExtensions.MOZ_hubs_components = {};
       }
     }
 
@@ -1056,13 +1056,13 @@ export default class Editor {
     clonedScene.traverse(object => {
       const userData = object.userData;
 
-      // Move component data to userData.extensions.HUBS_components
+      // Move component data to userData.extensions.MOZ_hubs_components
       if (userData._components) {
         for (const component of userData._components) {
           if (componentsToExport.includes(component.name)) {
             ensureHubsComponents(userData);
 
-            userData.gltfExtensions.HUBS_components[component.name] = component.props;
+            userData.gltfExtensions.MOZ_hubs_components[component.name] = component.props;
           }
         }
       }
@@ -1071,7 +1071,7 @@ export default class Editor {
       if (object.isMesh && (object.castShadow || object.receiveShadow)) {
         ensureHubsComponents(object.userData);
 
-        object.userData.gltfExtensions.HUBS_components.shadow = {
+        object.userData.gltfExtensions.MOZ_hubs_components.shadow = {
           castShadow: object.castShadow,
           receiveShadow: object.receiveShadow
         };
