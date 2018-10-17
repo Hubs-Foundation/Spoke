@@ -9,7 +9,7 @@ module.exports = {
   rules: {
     "prettier/prettier": "error",
     "prefer-const": "error",
-    "no-use-before-define": ["error", { "functions": false, "classes": false, "variables": true }],
+    "no-use-before-define": ["error", { functions: false, classes: false, variables: true }],
     "no-var": "error",
     "no-throw-literal": "error",
     // Light console usage is useful but remove debug logs before merging to master.
@@ -17,16 +17,17 @@ module.exports = {
     "lines-between-class-members": 2,
     "padding-line-between-statements": [
       "error",
-      { "blankLine": "always", "prev": "function", "next": "function" },
-      { "blankLine": "always", "prev": "function", "next": "class" },
-      { "blankLine": "always", "prev": "class", "next": "function" },
-      { "blankLine": "always", "prev": "class", "next": "export" },
-      { "blankLine": "always", "prev": "export", "next": "function" },
-      { "blankLine": "always", "prev": "export", "next": "class" },
-      { "blankLine": "always", "prev": "export", "next": "export" },
-      { "blankLine": "always", "prev": "import", "next": "function" },
-      { "blankLine": "always", "prev": "import", "next": "class" },
-    ]
+      { blankLine: "always", prev: "function", next: "function" },
+      { blankLine: "always", prev: "function", next: "class" },
+      { blankLine: "always", prev: "class", next: "function" },
+      { blankLine: "always", prev: "class", next: "export" },
+      { blankLine: "always", prev: "export", next: "function" },
+      { blankLine: "always", prev: "export", next: "class" },
+      { blankLine: "always", prev: "export", next: "export" },
+      { blankLine: "always", prev: "import", next: "function" },
+      { blankLine: "always", prev: "import", next: "class" }
+    ],
+    "no-unused-vars": ["error", { varsIgnorePattern: "^_", argsIgnorePattern: "^_", ignoreRestSiblings: true }]
   },
   extends: ["prettier", "plugin:react/recommended", "eslint:recommended"]
 };

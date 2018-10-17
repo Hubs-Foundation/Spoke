@@ -943,7 +943,7 @@ export default class Editor {
       }
     });
 
-    MeshCombinationGroup.combineMeshes(clonedScene);
+    await MeshCombinationGroup.combineMeshes(clonedScene);
 
     const animations = [];
 
