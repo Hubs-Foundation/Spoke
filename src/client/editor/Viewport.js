@@ -11,7 +11,7 @@ function getCanvasBlob(canvas) {
   if (canvas.msToBlob) {
     return Promise.resolve(canvas.msToBlob());
   } else {
-    return new Promise(resolve => canvas.toBlob(resolve));
+    return new Promise(resolve => canvas.toBlob(resolve, "image/jpeg", 0.9));
   }
 }
 
