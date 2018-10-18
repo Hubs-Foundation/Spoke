@@ -417,7 +417,7 @@ async function startServer(options) {
   router.post("/api/user_info", koaBody(), async ctx => {
     const userInfoPath = getUserInfoPath();
     await fs.ensureDir(path.dirname(userInfoPath));
-    const currentUserInfo = getUserInfo();
+    const currentUserInfo = await getUserInfo();
     await fs.writeJSON(userInfoPath, { ...currentUserInfo, ...ctx.request.body });
     ctx.status = 200;
   });
