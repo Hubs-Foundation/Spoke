@@ -31,7 +31,12 @@ buildRelease(targets, outputDir, process.argv.slice(2)).then(() => {
 
     const zip = new ZipFile();
     zip.outputStream.pipe(archiveStream);
-    zip.addFile(executablePath, path.join("Spoke", appendExtension("spoke", platform)), { mode: 0o100775 });
+    if (platform === "macos") {
+      zip.addFile(executablePath, path.join("Spoke", "runtime.bin"), { mode: 0o100775 });
+      zip.addFile("src/server/launcher.sh", path.join("Spoke", "spoke"), { mode: 0o100775 });
+    } else {
+      zip.addFile(executablePath, path.join("Spoke", appendExtension("spoke", platform)), { mode: 0o100775 });
+    }
     zip.end();
   }
 });
