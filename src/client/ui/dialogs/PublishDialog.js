@@ -49,7 +49,10 @@ export default class PublishDialog extends Component {
     e.preventDefault();
 
     if (this.props.onPublish) {
-      this.props.onPublish(this.state);
+      const publishState = { ...this.state };
+      publishState.name = publishState.name.trim();
+      publishState.creatorAttribution = publishState.creatorAttribution.trim();
+      this.props.onPublish(publishState);
     }
   };
 
@@ -74,7 +77,7 @@ export default class PublishDialog extends Component {
                         title="Name must be between 4 and 64 characters and cannot contain underscores"
                         value={this.state.name}
                         className={styles.name}
-                        onChange={value => this.setState({ name: value.trim() })}
+                        onChange={name => this.setState({ name })}
                       />
                     </div>
                     <div className={styles.inputField}>
@@ -83,7 +86,7 @@ export default class PublishDialog extends Component {
                         id="creatorAttribution"
                         value={this.state.creatorAttribution}
                         className={styles.creatorAttribution}
-                        onChange={value => this.setState({ creatorAttribution: value.trim() })}
+                        onChange={value => this.setState({ creatorAttribution: value })}
                       />
                     </div>
                   </div>
