@@ -1864,7 +1864,7 @@ export default class Editor {
       attribution = `by ${creatorAttribution}.` + "\n" + attribution;
     }
 
-    const screenshotUri = this.project.getAbsoluteURI(`generated/${uuid()}.png`);
+    const screenshotUri = this.project.getAbsoluteURI(`generated/${uuid()}.jpg`);
     await this.project.writeBlob(screenshotUri, screenshotBlob);
     const { id: screenshotId, token: screenshotToken } = await this.project.uploadAndDelete(screenshotUri);
 
