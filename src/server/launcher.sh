@@ -1,2 +1,3 @@
 #!/bin/bash
-./runtime.bin
+script_dir=$(dirname "$0")
+"$script_dir/runtime.bin"
