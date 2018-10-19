@@ -458,6 +458,8 @@ async function startServer(options) {
 
         const req = request
           .post(mediaEndpoint, { formData: { media: fileStream } }, async (err, resp, body) => {
+            await fs.remove(path);
+
             if (err) {
               broadcast({ type: "uploadComplete", uploadInfo: { err: err.toString() } });
               return;
@@ -468,8 +470,6 @@ async function startServer(options) {
               return;
             }
 
-            await fs.remove(path);
-
             const { file_id, meta } = JSON.parse(body);
             broadcast({ type: "uploadComplete", uploadInfo: { id: file_id, token: meta.access_token } });
           })
@@ -479,6 +479,7 @@ async function startServer(options) {
             broadcast({ type: "uploadProgress", uploadProgress: percent });
           });
       } catch (e) {
+        await fs.remove(path);
         broadcast({ type: "uploadComplete", uploadInfo: { err: e.toString() } });
       }
     })();
