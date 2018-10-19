@@ -869,7 +869,11 @@ export default class Editor {
       const size = new THREE.Vector3();
       box.getSize(size);
       if (Math.max(size.x, size.y, size.z) > 2000) {
-        throw new Error(`Scene is too large (${size.x} x ${size.y} x ${size.z}) to generate a nav mesh.`);
+        throw new Error(
+          `Scene is too large (${size.x.toFixed(3)} x ${size.y.toFixed(3)} x ${size.z.toFixed(3)}) ` +
+            `to generate a floor plan.\n` +
+            `You can un-check the "Include in Floor Plan" checkbox on models to exclude them from the floor plan.`
+        );
       }
       const area = size.x * size.z;
       // Tuned to produce cell sizes from ~0.5 to ~1.5 for areas from ~200 to ~350,000.
@@ -1867,7 +1871,7 @@ export default class Editor {
 
   async publishScene(sceneId, screenshotBlob, attribution, onPublishProgress) {
     onPublishProgress("generating floor plan");
-  
+
     await this.generateNavMesh();
 
     await this.project.mkdir(this.project.getAbsoluteURI("generated"));

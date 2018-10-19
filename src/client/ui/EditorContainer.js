@@ -356,8 +356,8 @@ class EditorContainer extends Component {
     e.preventDefault();
 
     this.showDialog(ProgressDialog, {
-      title: "Generating Nav Mesh",
-      message: "Generating nav mesh..."
+      title: "Generating Floor Plan",
+      message: "Generating floor plan..."
     });
 
     try {
@@ -366,7 +366,7 @@ class EditorContainer extends Component {
     } catch (e) {
       console.error(e);
       this.showDialog(ErrorDialog, {
-        title: "Error Generating Nav Mesh",
+        title: "Error Generating Floor Plan",
         message: e.message || "There was an unknown error."
       });
     }
