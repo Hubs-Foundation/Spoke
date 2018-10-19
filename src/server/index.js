@@ -457,7 +457,7 @@ async function startServer(options) {
         const fileStream = fs.createReadStream(path);
 
         const req = request
-          .post(mediaEndpoint, { formData: { media: fileStream } }, (err, resp, body) => {
+          .post(mediaEndpoint, { formData: { media: fileStream } }, async (err, resp, body) => {
             if (err) {
               broadcast({ type: "uploadComplete", uploadInfo: { err: err.toString() } });
               return;
@@ -468,10 +468,10 @@ async function startServer(options) {
               return;
             }
 
+            await fs.remove(path);
+
             const { file_id, meta } = JSON.parse(body);
             broadcast({ type: "uploadComplete", uploadInfo: { id: file_id, token: meta.access_token } });
-
-            fs.remove(path);
           })
           .on("drain", () => {
             const { bytesWritten } = req.req.connection;
