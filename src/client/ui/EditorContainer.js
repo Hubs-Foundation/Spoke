@@ -847,8 +847,15 @@ class EditorContainer extends Component {
           publishResult = await this.props.editor.publishScene(
             isNewScene ? null : sceneId,
             screenshotBlob,
-            attribution
+            attribution,
+            publishProgress => {
+              this.showDialog(ProgressDialog, {
+                title: "Publishing Scene",
+                message: `Publishing scene${publishProgress ? ` [${publishProgress}]` : ""}...`
+              });
+            }
           );
+
           this.props.editor.setSceneMetadata({ sceneUrl: publishResult.sceneUrl, sceneId: publishResult.sceneId });
 
           await this.saveOrSaveAsScene();
