@@ -153,6 +153,10 @@ export default class Project extends EventEmitter {
       }
 
       this.updateHierarchy(json.hierarchy);
+    } else if (json.type === "uploadProgress") {
+      this.emit(json.type, json.uploadProgress);
+    } else if (json.type === "uploadComplete") {
+      this.emit(json.type, json.uploadInfo);
     } else if (json.type !== undefined && json.path !== undefined) {
       this.emit(json.type, json.path);
     }
@@ -221,7 +225,24 @@ export default class Project extends EventEmitter {
     }
   }
 
-  async uploadAndDelete(uri) {
+  async uploadAndDelete(uri, onUploadProgress) {
+    if (onUploadProgress) {
+      this.on("uploadProgress", onUploadProgress);
+    }
+
+    const uploadComplete = new Promise((resolve, reject) => {
+      this.once("uploadComplete", uploadInfo => {
+        if (onUploadProgress) {
+          this.off("uploadProgress", onUploadProgress);
+        }
+        if (uploadInfo.err) {
+          reject(new Error(`Upload failed for "${uri}". ${uploadInfo.err}`));
+        } else {
+          resolve(uploadInfo);
+        }
+      });
+    });
+
     const resp = await fetch("/api/upload", {
       method: "POST",
       headers: { "content-type": "application/json" },
@@ -232,7 +253,7 @@ export default class Project extends EventEmitter {
       throw new Error(`Upload failed for "${uri}". ${await resp.text()}`);
     }
 
-    return resp.json();
+    return uploadComplete;
   }
 
   async createOrUpdateScene(params) {

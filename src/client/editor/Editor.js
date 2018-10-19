@@ -1846,9 +1846,9 @@ export default class Editor {
     return this.viewports[0].takeScreenshot();
   }
 
-  async publishScene(sceneId, screenshotBlob, attribution) {
-    // TODO: We re-generate the nav mesh even if the scene geometry has not changed. We could be more intelligent
-    // about detecting changes to the merged geometry.
+  async publishScene(sceneId, screenshotBlob, attribution, onPublishProgress) {
+    onPublishProgress("generating floor plan");
+
     const currentNavMeshNode = this.findFirstWithComponent("nav-mesh");
     if (currentNavMeshNode) {
       const src = this.getComponentProperty(currentNavMeshNode, "gltf-model", "src");
@@ -1864,9 +1864,7 @@ export default class Editor {
       attribution = `by ${creatorAttribution}.` + "\n" + attribution;
     }
 
-    const screenshotUri = this.project.getAbsoluteURI(`generated/${uuid()}.jpg`);
-    await this.project.writeBlob(screenshotUri, screenshotBlob);
-    const { id: screenshotId, token: screenshotToken } = await this.project.uploadAndDelete(screenshotUri);
+    onPublishProgress("exporting scene");
 
     const glbUri = this.project.getAbsoluteURI(`generated/${uuid()}.glb`);
     const glbBlob = await this.exportScene(null, true);
@@ -1874,13 +1872,26 @@ export default class Editor {
     if (size > 100) {
       throw new Error(`Scene is too large (${size.toFixed(2)}MB) to publish.`);
     }
+
+    onPublishProgress("uploading");
+
+    const screenshotUri = this.project.getAbsoluteURI(`generated/${uuid()}.jpg`);
+    await this.project.writeBlob(screenshotUri, screenshotBlob);
+    const { id: screenshotId, token: screenshotToken } = await this.project.uploadAndDelete(screenshotUri);
+
     await this.project.writeBlob(glbUri, glbBlob);
-    const { id: glbId, token: glbToken } = await this.project.uploadAndDelete(glbUri);
+    const { id: glbId, token: glbToken } = await this.project.uploadAndDelete(glbUri, uploadProgress => {
+      onPublishProgress(`uploading ${Math.floor(uploadProgress * 100)}%`);
+    });
+
+    onPublishProgress("uploading");
 
     const sceneFileUri = this.project.getAbsoluteURI(`generated/${uuid()}.spoke`);
     const serializedScene = this._serializeScene(this.scene, sceneFileUri, true);
     await this.project.writeJSON(sceneFileUri, serializedScene);
     const { id: sceneFileId, token: sceneFileToken } = await this.project.uploadAndDelete(sceneFileUri);
+
+    onPublishProgress(`${sceneId ? "updating" : "creating"} scene`);
 
     const res = await this.project.createOrUpdateScene({
       sceneId,
@@ -1896,6 +1907,8 @@ export default class Editor {
       allowRemixing,
       allowPromotion
     });
+
+    onPublishProgress("");
 
     return { sceneUrl: res.url, sceneId: res.sceneId };
   }
