@@ -209,7 +209,11 @@ async function startServer(options) {
 
   // wss error needs to be handled or else it will crash the process if the server errors.
   wss.on("error", e => {
-    console.log(e.toString());
+    console.log("WebSocket Server Error", e.toString());
+  });
+
+  wss.on("close", e => {
+    console.log("WebSocket Server Closed", e);
   });
 
   function broadcast(json) {
@@ -643,6 +647,7 @@ async function startServer(options) {
   const maxPortTries = 20;
   let portTryCount = 0;
   server.on("error", e => {
+    console.log("Server Error", e.toString());
     if (e.code === "EADDRINUSE") {
       server.close();
       if (portTryCount > maxPortTries) {

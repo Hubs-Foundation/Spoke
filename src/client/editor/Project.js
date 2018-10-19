@@ -180,7 +180,10 @@ export default class Project extends EventEmitter {
       this.watchPromise = { resolve, reject };
       this.ws = new WebSocket(this.wsServerURL);
       this.ws.addEventListener("message", this._onWebsocketMessage);
-      this.ws.addEventListener("error", this._onWebsocketMessage);
+      this.ws.addEventListener("error", this._onWebsocketError);
+      this.ws.addEventListener("close", e => {
+        console.log("WebSocket closed", e);
+      });
     });
   }
 
