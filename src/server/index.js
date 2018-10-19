@@ -660,6 +660,10 @@ async function startServer(options) {
     }
   });
 
+  server.on("close", e => {
+    console.log("Server Closed", e);
+  });
+
   server.on("listening", () => {
     const protocol = opts.https ? "https" : "http";
     const url = `${protocol}://localhost:${port}`;
