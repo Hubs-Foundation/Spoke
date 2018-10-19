@@ -800,12 +800,19 @@ export default class Editor {
   }
 
   async generateNavMesh() {
+    const currentNavMeshNode = this.findFirstWithComponent("nav-mesh");
+
+    if (currentNavMeshNode) {
+      const src = this.getComponentProperty(currentNavMeshNode, "gltf-model", "src");
+      await this.project.remove(src);
+      this.removeObject(currentNavMeshNode);
+    }
+
     const geometries = [];
 
     this.scene.traverse(node => {
       if (!node.isMesh) return;
-      if (node.parent && this.hasComponent(node.parent, "ground-plane")) return;
-      if (node instanceof THREE.Sky) return;
+      if (!node.userData._includeInFloorPlan) return;
       if (node.userData._dontExport) return;
 
       let geometry = node.geometry;
@@ -1324,64 +1331,76 @@ export default class Editor {
     this.execute(new AddComponentCommand(object, componentName));
   }
 
-  async updateGLTFModelComponent(object) {
+  async updateGLTFModelComponent(object, srcChanged) {
     const component = GLTFModelComponent.getComponent(object);
 
     if (!component.props.src) {
       return;
     }
 
-    try {
-      const scene = await this._loadGLTF(component.props.src);
+    if (srcChanged) {
+      try {
+        const scene = await this._loadGLTF(component.props.src);
 
-      scene.userData._inflated = true;
+        scene.userData._inflated = true;
 
-      scene.traverse(child => {
-        child.userData._dontSerialize = true;
-        this.setHidden(child, true);
-        Object.defineProperty(child.userData, "_selectionRoot", {
-          value: object,
-          configurable: true,
-          enumerable: false
+        scene.traverse(child => {
+          child.userData._dontSerialize = true;
+          this.setHidden(child, true);
+          Object.defineProperty(child.userData, "_selectionRoot", {
+            value: object,
+            configurable: true,
+            enumerable: false
+          });
         });
-      });
 
-      if (component._object) {
-        object.remove(component._object);
-      }
+        if (component._object) {
+          object.remove(component._object);
+        }
 
-      const animations = scene.animations;
+        const animations = scene.animations;
 
-      if (animations.length > 0) {
-        setStaticMode(scene, StaticModes.Dynamic);
-      } else {
-        setStaticMode(scene, StaticModes.Static);
-      }
+        if (animations.length > 0) {
+          setStaticMode(scene, StaticModes.Dynamic);
+        } else {
+          setStaticMode(scene, StaticModes.Static);
+        }
 
-      object.add(scene);
-      component._object = scene;
+        object.add(scene);
+        component._object = scene;
 
-      const hasAnimationComponent = this.hasComponent(object, "loop-animation");
+        const hasAnimationComponent = this.hasComponent(object, "loop-animation");
 
-      if (!hasAnimationComponent && animations && animations.length > 0) {
-        await this._addComponent(object, "loop-animation", {
-          clip: animations[0].name
-        });
-      }
+        if (!hasAnimationComponent && animations && animations.length > 0) {
+          await this._addComponent(object, "loop-animation", {
+            clip: animations[0].name
+          });
+        }
+      } catch (e) {
+        console.error("Failed to load GLTF", e);
 
-      this.signals.objectChanged.dispatch(object);
-    } catch (e) {
-      console.error("Failed to load GLTF", e);
+        const errorMessage = e.message || "An unknown error occurred.";
 
-      const errorMessage = e.message || "An unknown error occurred.";
+        this.signals.editorError.dispatch(new Error(`Failed to load GLTF: ${errorMessage}`));
 
-      this.signals.editorError.dispatch(new Error(`Failed to load GLTF: ${errorMessage}`));
+        if (component.propValidation.src !== false) {
+          component.propValidation.src = false;
+          this.signals.objectChanged.dispatch(object);
+        }
 
-      if (component.propValidation.src !== false) {
-        component.propValidation.src = false;
-        this.signals.objectChanged.dispatch(object);
+        return;
       }
     }
+
+    if (component._object) {
+      component._object.traverse(child => {
+        if (child.isMesh) {
+          child.userData._includeInFloorPlan = component.props.includeInFloorPlan;
+        }
+      });
+    }
+
+    this.signals.objectChanged.dispatch(object);
   }
 
   _addComponent = async (object, componentName, props, skipSave) => {
@@ -1392,7 +1411,7 @@ export default class Editor {
       if (componentClass) {
         if (componentName === GLTFModelComponent.componentName && props && props.src) {
           component = await this.components.get(componentName).inflate(object, props);
-          await this.updateGLTFModelComponent(object);
+          await this.updateGLTFModelComponent(object, true);
         }
 
         if (componentName === SceneReferenceComponent.componentName && props && props.src) {
@@ -1518,9 +1537,9 @@ export default class Editor {
     const component = this.getComponent(object, componentName);
 
     if (this.components.has(componentName)) {
-      if (componentName === GLTFModelComponent.componentName && propertyName === "src") {
+      if (componentName === GLTFModelComponent.componentName) {
         component.updateProperty(propertyName, value);
-        this.updateGLTFModelComponent(object);
+        this.updateGLTFModelComponent(object, propertyName === "src");
       }
 
       if (componentName === SceneReferenceComponent.componentName && propertyName === "src") {
@@ -1849,12 +1868,6 @@ export default class Editor {
   async publishScene(sceneId, screenshotBlob, attribution) {
     // TODO: We re-generate the nav mesh even if the scene geometry has not changed. We could be more intelligent
     // about detecting changes to the merged geometry.
-    const currentNavMeshNode = this.findFirstWithComponent("nav-mesh");
-    if (currentNavMeshNode) {
-      const src = this.getComponentProperty(currentNavMeshNode, "gltf-model", "src");
-      await this.project.remove(src);
-      this.removeObject(currentNavMeshNode);
-    }
     await this.generateNavMesh();
 
     await this.project.mkdir(this.project.getAbsoluteURI("generated"));
