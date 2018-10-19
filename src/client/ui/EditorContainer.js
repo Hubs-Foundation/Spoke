@@ -196,7 +196,7 @@ class EditorContainer extends Component {
             action: e => this.onExportScene(e)
           },
           {
-            name: "Generate Nav Mesh",
+            name: "Generate Floor Plan",
             action: e => this.onGenerateNavMesh(e)
           },
           {
