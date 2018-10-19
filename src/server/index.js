@@ -3,7 +3,6 @@ const chokidar = require("chokidar");
 const debounce = require("lodash/debounce");
 const envPaths = require("env-paths");
 const fetch = require("node-fetch");
-const FormData = require("form-data");
 const fs = require("fs-extra");
 const http = require("http");
 const https = require("https");
@@ -12,6 +11,7 @@ const Koa = require("koa");
 const koaBody = require("koa-body");
 const mount = require("koa-mount");
 const path = require("path");
+const request = require("request");
 const Router = require("koa-router");
 const selfsigned = require("selfsigned");
 const semver = require("semver");
@@ -417,7 +417,7 @@ async function startServer(options) {
   router.post("/api/user_info", koaBody(), async ctx => {
     const userInfoPath = getUserInfoPath();
     await fs.ensureDir(path.dirname(userInfoPath));
-    const currentUserInfo = getUserInfo();
+    const currentUserInfo = await getUserInfo();
     await fs.writeJSON(userInfoPath, { ...currentUserInfo, ...ctx.request.body });
     ctx.status = 200;
   });
@@ -448,30 +448,43 @@ async function startServer(options) {
   });
 
   router.post("/api/upload", koaBody(), async ctx => {
-    const { uri } = ctx.request.body;
-    const path = uriToPath(projectPath, uri);
+    (async () => {
+      try {
+        const { uri } = ctx.request.body;
+        const path = uriToPath(projectPath, uri);
 
-    const fileStream = fs.createReadStream(path);
-    const formData = new FormData();
-    formData.append("media", fileStream);
+        const fileSize = fs.statSync(path).size;
+        const fileStream = fs.createReadStream(path);
 
-    const resp = await fetch(mediaEndpoint, {
-      agent,
-      method: "POST",
-      body: formData
-    });
+        const req = request
+          .post(mediaEndpoint, { formData: { media: fileStream } }, async (err, resp, body) => {
+            await fs.remove(path);
 
-    if (resp.status !== 200) {
-      ctx.status = resp.status;
-      ctx.body = await resp.text();
-      return;
-    }
+            if (err) {
+              broadcast({ type: "uploadComplete", uploadInfo: { err: err.toString() } });
+              return;
+            }
 
-    const { file_id, meta } = await resp.json();
+            if (resp.statusCode !== 200) {
+              broadcast({ type: "uploadComplete", uploadInfo: { err: body } });
+              return;
+            }
 
-    fs.remove(path);
+            const { file_id, meta } = JSON.parse(body);
+            broadcast({ type: "uploadComplete", uploadInfo: { id: file_id, token: meta.access_token } });
+          })
+          .on("drain", () => {
+            const { bytesWritten } = req.req.connection;
+            const percent = bytesWritten / fileSize;
+            broadcast({ type: "uploadProgress", uploadProgress: percent });
+          });
+      } catch (e) {
+        await fs.remove(path);
+        broadcast({ type: "uploadComplete", uploadInfo: { err: e.toString() } });
+      }
+    })();
 
-    ctx.body = { id: file_id, token: meta.access_token };
+    ctx.status = 200;
   });
 
   router.post("/api/scene", koaBody(), async ctx => {
