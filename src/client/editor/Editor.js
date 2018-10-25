@@ -1362,12 +1362,17 @@ export default class Editor {
           object.remove(component._object);
         }
 
-        const animations = scene.animations;
+        setStaticMode(scene, StaticModes.Static);
 
+        const animations = scene.animations;
         if (animations.length > 0) {
-          setStaticMode(scene, StaticModes.Dynamic);
-        } else {
-          setStaticMode(scene, StaticModes.Static);
+          for (const animation of animations) {
+            for (const track of animation.tracks) {
+              const { nodeName } = THREE.PropertyBinding.parseTrackName(track.name);
+              const animatedNode = scene.getObjectByName(nodeName);
+              setStaticMode(animatedNode, StaticModes.Dynamic);
+            }
+          }
         }
 
         object.add(scene);
