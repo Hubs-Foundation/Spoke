@@ -1,28 +1,34 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
-import PropertyGroup from "../../ui/PropertyGroup";
-import InputGroup from "../../ui/InputGroup";
-import FileInput from "../../ui/inputs/FileInput";
+import NodeEditor from "./NodeEditor";
+import SelectInput from "../inputs/SelectInput";
+import InputGroup from "../InputGroup";
 
 export default class ModelNodeEditor extends Component {
   static propTypes = {
     editor: PropTypes.object,
-    object3D: PropTypes.object
+    node: PropTypes.object
   };
 
-  onChangeSrc = src => {
-    this.props.object3D.loadGLTF(this.props.editor, src);
+  static iconClassName = "fa-cube";
+
+  onChangeAnimation = animation => {
+    console.log(animation);
   };
 
   render() {
-    const { object3D } = this.props;
+    const activeClipName = this.props.node.getActiveClipName();
+    const selectedAnimationOption = activeClipName ? { value: activeClipName, label: activeClipName } : null;
+    const animationOptions = this.props.node.getClipNames().map(name => ({ value: name, label: name }));
 
     return (
-      <PropertyGroup name="Model">
-        <InputGroup name="src">
-          <FileInput value={object3D.src} onChange={this.onChangeSrc} />
-        </InputGroup>
-      </PropertyGroup>
+      <NodeEditor description="A 3D model in your scene, loaded from a GLTF URL or file." {...this.props}>
+        {animationOptions.length > 0 && (
+          <InputGroup name="Loop Animation">
+            <SelectInput options={animationOptions} value={selectedAnimationOption} onChange={this.onChangeAnimation} />
+          </InputGroup>
+        )}
+      </NodeEditor>
     );
   }
 }

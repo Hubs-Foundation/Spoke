@@ -4,6 +4,10 @@ import { setStaticMode, StaticModes } from "../StaticMode";
 import sortEntities from "../utils/sortEntities";
 
 export default class SceneNode extends EditorNodeMixin(THREE.Scene) {
+  static nodeName = "Scene";
+
+  static hideTransform = true;
+
   static async deserialize(editor, json) {
     const scene = new THREE.Scene();
 

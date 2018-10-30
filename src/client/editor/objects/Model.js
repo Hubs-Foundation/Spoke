@@ -14,11 +14,14 @@ export default class Model extends THREE.Object3D {
   }
 
   setModel(object, animations) {
+    console.log("setModel", object, animations);
     this.model = object;
 
     if (animations) {
-      this.animations.concat(animations);
+      this.animations = this.animations.concat(animations);
     }
+
+    this.add(object);
   }
 
   addClipAction(clipName) {

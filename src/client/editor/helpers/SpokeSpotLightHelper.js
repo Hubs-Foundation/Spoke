@@ -5,10 +5,6 @@ export default class SpokeSpotLightHelper extends THREE.Object3D {
     super();
 
     this.light = light;
-    this.light.updateMatrixWorld();
-
-    this.matrix = light.matrixWorld;
-    this.matrixAutoUpdate = false;
 
     this.color = color;
 

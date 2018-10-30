@@ -8,10 +8,6 @@ export default class SpokePointLightHelper extends THREE.Mesh {
     super(geometry, material);
 
     this.light = light;
-    this.light.updateMatrixWorld();
-
-    this.matrix = this.light.matrixWorld;
-    this.matrixAutoUpdate = false;
 
     const distanceGeometry = new THREE.IcosahedronBufferGeometry(1, 2);
     const distanceMaterial = new THREE.MeshBasicMaterial({

@@ -34,10 +34,7 @@
   display: flex;
   flex-flow: row wrap;
   align-items: flex-start;
-
-  & > div {
-    margin-bottom: 8px;
-  }
+  padding: 8px 0;
 }
 
 :local(.topBarName) {

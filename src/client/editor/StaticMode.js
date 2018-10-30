@@ -4,22 +4,20 @@ export const StaticModes = {
   Inherits: "inherits"
 };
 
-export const StaticModeValues = Object.values(StaticModes);
-
 export function setOriginalStaticMode(node, mode) {
-  node.userData._originalStaticMode = mode;
+  node.originalStaticMode = mode;
 }
 
 export function getOriginalStaticMode(node) {
-  return node.userData._originalStaticMode;
+  return node.originalStaticMode;
 }
 
 export function setStaticMode(node, mode) {
-  node.userData._staticMode = mode;
+  node.userData.staticMode = mode;
 }
 
 export function getStaticMode(node) {
-  return node.userData._staticMode;
+  return node.staticMode;
 }
 
 export function isInherits(node) {
@@ -33,25 +31,4 @@ export function isStatic(node) {
 
 export function isDynamic(node) {
   return getStaticMode(node) === StaticModes.Dynamic;
-}
-
-export function computeStaticMode(node) {
-  let cur = node;
-
-  while (cur) {
-    if (isInherits(cur)) {
-      cur = cur.parent;
-    } else {
-      return getStaticMode(cur);
-    }
-  }
-
-  return StaticModes.Dynamic;
-}
-
-export function computeAndSetStaticModes(node) {
-  node.traverse(curNode => {
-    const staticMode = computeStaticMode(curNode);
-    setStaticMode(curNode, staticMode);
-  });
 }

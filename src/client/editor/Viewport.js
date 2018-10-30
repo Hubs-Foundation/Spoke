@@ -2,6 +2,7 @@ import THREE from "./three";
 import SetPositionCommand from "./commands/SetPositionCommand";
 import SetRotationCommand from "./commands/SetRotationCommand";
 import SetScaleCommand from "./commands/SetScaleCommand";
+import GridHelper from "./helpers/GridHelper";
 
 /**
  * @author mrdoob / http://mrdoob.com/
@@ -49,21 +50,8 @@ export default class Viewport {
     const camera = editor.camera;
     this._camera = camera;
 
-    // helpers
-
-    const grid = new THREE.GridHelper(30, 30, 0x444444, 0x888888);
-    editor.helperScene.add(grid);
-
-    // Add more emphasized major grid lines
-    const array = grid.geometry.attributes.color.array;
-
-    for (let i = 0; i < array.length; i += 60) {
-      for (let j = 0; j < 12; j++) {
-        array[i + j] = 0.9;
-      }
-    }
-
-    //
+    const grid = new GridHelper();
+    editor.scene.add(grid);
 
     const box = new THREE.Box3();
 
@@ -71,7 +59,7 @@ export default class Viewport {
     selectionBox.material.depthTest = false;
     selectionBox.material.transparent = true;
     selectionBox.visible = false;
-    editor.helperScene.add(selectionBox);
+    editor.scene.add(selectionBox);
 
     let objectPositionOnDown = null;
     let objectRotationOnDown = null;
@@ -80,13 +68,10 @@ export default class Viewport {
     this._skipRender = false;
     const render = () => {
       if (!this._skipRender) {
-        editor.helperScene.updateMatrixWorld();
         editor.scene.updateMatrixWorld();
 
         renderer.render(editor.scene, camera);
         signals.sceneRendered.dispatch(renderer, editor.scene);
-        renderer.render(editor.helperScene, camera);
-        signals.sceneRendered.dispatch(renderer, editor.helperScene);
       }
 
       requestAnimationFrame(render);
@@ -100,13 +85,6 @@ export default class Viewport {
 
       if (object !== undefined) {
         selectionBox.setFromObject(object);
-
-        const helper = editor.helpers[object.id];
-
-        if (helper !== undefined) {
-          helper.update();
-        }
-
         signals.transformChanged.dispatch(object);
       }
     });
@@ -119,7 +97,7 @@ export default class Viewport {
     this.currentSpace = "world";
     this.updateSnapSettings();
 
-    editor.helperScene.add(this._transformControls);
+    editor.scene.add(this._transformControls);
 
     // object picking
 
@@ -152,13 +130,14 @@ export default class Viewport {
         if (results.length > 0) {
           const { object } = results[0];
 
-          const selectionRoot = object.userData._selectionRoot;
+          let selection = object;
 
-          if (selectionRoot !== undefined && !selectionRoot.userData._dontShowInHierarchy) {
-            editor.select(selectionRoot);
-            return;
-          } else if (!object.userData._dontShowInHierarchy) {
-            editor.select(object);
+          while (selection && !selection.isNode) {
+            selection = selection.parent;
+          }
+
+          if (selection && selection !== editor.scene) {
+            editor.select(selection);
             return;
           }
         }
@@ -217,9 +196,16 @@ export default class Viewport {
 
       const intersect = intersects[0];
 
-      if (intersects.userData._dontShowInHierarchy) return;
+      let focusedObject = intersect;
 
-      signals.objectFocused.dispatch(intersect.object);
+      while (focusedObject && !focusedObject.isNode) {
+        focusedObject = focusedObject.parent;
+      }
+
+      if (focusedObject && focusedObject !== editor.scene) {
+        signals.objectFocused.dispatch(intersect.object);
+        return;
+      }
     }
 
     canvas.addEventListener("mousedown", onMouseDown, false);
@@ -286,9 +272,9 @@ export default class Viewport {
     signals.sceneSet.add(() => {
       this._screenshotRenderer.dispose();
       renderer.dispose();
-      editor.helperScene.add(grid);
-      editor.helperScene.add(selectionBox);
-      editor.helperScene.add(this._transformControls);
+      editor.scene.add(grid);
+      editor.scene.add(selectionBox);
+      editor.scene.add(this._transformControls);
       editor.scene.background = new THREE.Color(0xaaaaaa);
     });
 
@@ -296,7 +282,12 @@ export default class Viewport {
       selectionBox.visible = false;
       this._transformControls.detach();
 
-      if (object !== null && object !== editor.scene && object !== camera) {
+      if (
+        object !== null &&
+        object !== editor.scene &&
+        object !== camera &&
+        !(object.constructor && object.constructor.hideTransform)
+      ) {
         box.setFromObject(object);
 
         if (box.isEmpty() === false) {
@@ -325,10 +316,6 @@ export default class Viewport {
 
       if (object instanceof THREE.PerspectiveCamera) {
         object.updateProjectionMatrix();
-      }
-
-      if (editor.helpers[object.id] !== undefined) {
-        editor.helpers[object.id].update();
       }
     });
 

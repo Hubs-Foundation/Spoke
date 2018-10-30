@@ -37,6 +37,8 @@ class ViewportPanelContainer extends Component {
         try {
           this.props.editor.addGLTFModelNode(file.name, file.uri);
         } catch (e) {
+          console.error(e);
+
           this.props.showDialog(ErrorDialog, {
             title: "Error adding model.",
             message: e.message
@@ -56,6 +58,8 @@ class ViewportPanelContainer extends Component {
       try {
         new URL(url);
       } catch (e) {
+        console.error(e);
+
         const truncatedUrl = url.substring(0, 50).replace(/\n/g, "");
         this.props.showDialog(ErrorDialog, {
           title: "Error adding model.",
@@ -81,6 +85,8 @@ class ViewportPanelContainer extends Component {
       await editor.importGLTFIntoModelNode(url);
       hideDialog();
     } catch (e) {
+      console.error(e);
+
       let message = e.message;
 
       if (url.indexOf("sketchfab.com") >= 0) {

@@ -13,7 +13,7 @@ import "../../vendor/react-contextmenu/index.scss";
 import SnackBar from "../SnackBar";
 import ReactTooltip from "react-tooltip";
 import ErrorDialog from "../dialogs/ErrorDialog";
-import { Components } from "../../editor/components/index";
+import DefaultNodeEditor from "../node-editors/DefaultNodeEditor";
 
 function collectNodeMenuProps({ node }) {
   return node;
@@ -53,6 +53,8 @@ class HierarchyPanelContainer extends Component {
         try {
           this.props.editor.addGLTFModelNode(file.name, file.uri);
         } catch (e) {
+          console.error(e);
+
           this.props.showDialog(ErrorDialog, {
             title: "Error adding model.",
             message: e.message
@@ -65,8 +67,7 @@ class HierarchyPanelContainer extends Component {
   onChange = (tree, parent, node) => {
     if (!node) {
       // parent and node are null when expanding/collapsing the tree.
-      const collapsed = this.props.editor.isCollapsed(tree.object);
-      this.props.editor.setCollapsed(tree.object, !collapsed);
+      tree.object.isCollapsed = !tree.object.isCollapsed;
       return;
     }
 
@@ -96,9 +97,6 @@ class HierarchyPanelContainer extends Component {
       return;
     }
 
-    // Do not allow interaction with scene node.
-    if (node.object === this.props.editor.scene) return;
-
     if (this.state.singleClicked === node.object) {
       this.props.editor.focusById(node.object.id);
       return;
@@ -113,20 +111,12 @@ class HierarchyPanelContainer extends Component {
     }, 500);
   };
 
-  onAddNode = (e, node) => {
-    this.props.editor.createNode("New_Node", node.object);
-  };
-
   onDuplicateNode = (e, node) => {
     this.props.editor.duplicateObject(node.object);
   };
 
   onDeleteNode = (e, node) => {
     this.props.editor.deleteObject(node.object);
-  };
-
-  onClickBreadCrumb = () => {
-    this.props.sceneActions.onPopScene();
   };
 
   rebuildNodeHierarchy = () => {
@@ -136,18 +126,8 @@ class HierarchyPanelContainer extends Component {
   };
 
   getNodeIconClassName = node => {
-    if (!node.object.parent) {
-      return "fa-globe";
-    }
-
-    // TODO deal with nodes with multiple components somehow.
-    for (const component of Components) {
-      if (this.props.editor.getComponent(node.object, component.componentName)) {
-        return component.iconClassName;
-      }
-    }
-
-    return "fa-circle";
+    const NodeEditor = this.props.editor.getNodeEditor(node);
+    return NodeEditor.iconClassName || DefaultNodeEditor.iconClassName;
   };
 
   renderNode = node => {
@@ -155,7 +135,7 @@ class HierarchyPanelContainer extends Component {
     const isDuplicateChild = node.object.userData._duplicate && !node.object.userData._isDuplicateRoot;
     const disableEditing =
       node.object.userData._duplicate || node.object.userData._isDuplicateRoot || node.object.userData._isMissingRoot;
-    const iconClassName = this.getNodeIconClassName(node);
+    const iconClassName = this.getNodeIconClassName(node.object);
 
     const onMouseDown = disableEditing ? e => e.stopPropagation() : e => this.onMouseDownNode(e, node);
     return (

@@ -8,20 +8,30 @@ import { withSceneActions } from "./contexts/SceneActionsContext";
 import ButtonSelectDialog from "./dialogs/ButtonSelectDialog";
 import AddModelDialog from "./dialogs/AddModelDialog";
 import FileDialog from "./dialogs/FileDialog";
-import { getDisplayName } from "../utils/get-display-name";
 import styles from "./AddNodeActionButtons.scss";
 
-import AmbientLightComponent from "../editor/components/AmbientLightComponent";
-import BoxColliderComponent from "../editor/components/BoxColliderComponent";
-import DirectionalLightComponent from "../editor/components/DirectionalLightComponent";
-import GLTFModelComponent from "../editor/components/GLTFModelComponent";
-import GroupComponent from "../editor/components/GroupComponent";
-import GroundPlaneComponent from "../editor/components/GroundPlaneComponent";
-import HemisphereLightComponent from "../editor/components/HemisphereLightComponent";
-import PointLightComponent from "../editor/components/PointLightComponent";
-import SkyboxComponent from "../editor/components/SkyboxComponent";
-import SpawnPointComponent from "../editor/components/SpawnPointComponent";
-import SpotLightComponent from "../editor/components/SpotLightComponent";
+import GroupNode from "../editor/nodes/GroupNode";
+import GroupNodeEditor from "./node-editors/GroupNodeEditor";
+import ModelNode from "../editor/nodes/ModelNode";
+import ModelNodeEditor from "./node-editors/ModelNodeEditor";
+import BoxColliderNodeEditor from "./node-editors/BoxColliderNodeEditor";
+import BoxColliderNode from "../editor/nodes/BoxColliderNode";
+import GroundPlaneNodeEditor from "./node-editors/GroundPlaneNodeEditor";
+import GroundPlaneNode from "../editor/nodes/GroundPlaneNode";
+import SpawnPointNodeEditor from "./node-editors/SpawnPointNodeEditor";
+import SpawnPointNode from "../editor/nodes/SpawnPointNode";
+import AmbientLightNode from "../editor/nodes/AmbientLightNode";
+import AmbientLightNodeEditor from "./node-editors/AmbientLightNodeEditor";
+import DirectionalLightNode from "../editor/nodes/DirectionalLightNode";
+import DirectionalLightNodeEditor from "./node-editors/DirectionalLightNodeEditor";
+import HemisphereLightNode from "../editor/nodes/HemisphereLightNode";
+import HemisphereLightNodeEditor from "./node-editors/HemisphereLightNodeEditor";
+import SpotLightNode from "../editor/nodes/SpotLightNode";
+import SpotLightNodeEditor from "./node-editors/SpotLightNodeEditor";
+import PointLightNode from "../editor/nodes/PointLightNode";
+import PointLightNodeEditor from "./node-editors/PointLightNodeEditor";
+import SkyboxNode from "../editor/nodes/SkyboxNode";
+import SkyboxNodeEditor from "./node-editors/SkyboxNodeEditor";
 
 function AddButton({ label, iconClassName, onClick }) {
   return (
@@ -53,9 +63,9 @@ class AddNodeActionButtons extends Component {
     this.setState({ open: !this.state.open });
   };
 
-  addNodeWithComponent = name => {
-    const editor = this.props.editor;
-    editor.addUnicomponentNode(getDisplayName(name), name);
+  addNode = NodeConstructor => {
+    const node = new NodeConstructor();
+    this.props.editor.addObject(node);
     this.setState({ open: false });
   };
 
@@ -88,14 +98,34 @@ class AddNodeActionButtons extends Component {
       title: "Add Light",
       message: "Choose the type of light to add.",
       options: [
-        PointLightComponent,
-        SpotLightComponent,
-        DirectionalLightComponent,
-        AmbientLightComponent,
-        HemisphereLightComponent
-      ].map(c => ({ value: c.componentName, iconClassName: c.iconClassName, label: getDisplayName(c.componentName) })),
-      onSelect: v => {
-        this.addNodeWithComponent(v);
+        {
+          value: AmbientLightNode,
+          iconClassName: AmbientLightNodeEditor.iconClassName,
+          label: AmbientLightNode.nodeName
+        },
+        {
+          value: DirectionalLightNode,
+          iconClassName: DirectionalLightNodeEditor.iconClassName,
+          label: DirectionalLightNode.nodeName
+        },
+        {
+          value: HemisphereLightNode,
+          iconClassName: HemisphereLightNodeEditor.iconClassName,
+          label: HemisphereLightNode.nodeName
+        },
+        {
+          value: PointLightNode,
+          iconClassName: PointLightNodeEditor.iconClassName,
+          label: PointLightNode.nodeName
+        },
+        {
+          value: SpotLightNode,
+          iconClassName: SpotLightNodeEditor.iconClassName,
+          label: SpotLightNode.nodeName
+        }
+      ],
+      onSelect: value => {
+        this.addNode(value);
         this.props.hideDialog();
       },
       onCancel: this.props.hideDialog
@@ -114,8 +144,8 @@ class AddNodeActionButtons extends Component {
 
   getSingletonNodeState() {
     return {
-      hasSkybox: !!this.props.editor.findFirstWithComponent("skybox"),
-      hasGroundPlane: !!this.props.editor.findFirstWithComponent("ground-plane")
+      hasSkybox: !!this.props.editor.scene.getObjectByProperty("type", "Skybox"),
+      hasGroundPlane: !!this.props.editor.scene.getObjectByProperty("type", "GroundPlane")
     };
   }
 
@@ -136,35 +166,39 @@ class AddNodeActionButtons extends Component {
       <div className={styles.addNodeActionButtons}>
         {open && (
           <div className={styles.actionButtonContainer}>
-            <AddButton label="Model" iconClassName={GLTFModelComponent.iconClassName} onClick={this.addModel} />
             <AddButton
-              label="Group"
-              iconClassName={GroupComponent.iconClassName}
-              onClick={() => this.addNodeWithComponent("group")}
-            />
-            <AddButton label="Light" iconClassName={PointLightComponent.iconClassName} onClick={this.addLight} />
-            <AddButton
-              label="Spawn Point"
-              iconClassName={SpawnPointComponent.iconClassName}
-              onClick={() => this.addNodeWithComponent("spawn-point")}
+              label={ModelNode.nodeName}
+              iconClassName={ModelNodeEditor.iconClassName}
+              onClick={this.addModel}
             />
             <AddButton
-              label="Collider"
-              iconClassName={BoxColliderComponent.iconClassName}
-              onClick={() => this.addNodeWithComponent("box-collider")}
+              label={GroupNode.nodeName}
+              iconClassName={GroupNodeEditor.iconClassName}
+              onClick={() => this.addNode(GroupNode)}
             />
-            {!hasSkybox && (
-              <AddButton
-                label="Skybox"
-                iconClassName={SkyboxComponent.iconClassName}
-                onClick={() => this.addNodeWithComponent("skybox")}
-              />
-            )}
+            <AddButton
+              label={BoxColliderNode.nodeName}
+              iconClassName={BoxColliderNodeEditor.iconClassName}
+              onClick={() => this.addNode(BoxColliderNode)}
+            />
             {!hasGroundPlane && (
               <AddButton
-                label="Ground Plane"
-                iconClassName={GroundPlaneComponent.iconClassName}
-                onClick={() => this.addNodeWithComponent("ground-plane")}
+                label={GroundPlaneNode.nodeName}
+                iconClassName={GroundPlaneNodeEditor.iconClassName}
+                onClick={() => this.addNode(GroundPlaneNode)}
+              />
+            )}
+            <AddButton
+              label={SpawnPointNode.nodeName}
+              iconClassName={SpawnPointNodeEditor.iconClassName}
+              onClick={() => this.addNode(SpawnPointNode)}
+            />
+            <AddButton label="Light" iconClassName={PointLightNodeEditor.iconClassName} onClick={this.addLight} />
+            {!hasSkybox && (
+              <AddButton
+                label={SkyboxNode.nodeName}
+                iconClassName={SkyboxNodeEditor.iconClassName}
+                onClick={() => this.addNode(SkyboxNode)}
               />
             )}
           </div>

@@ -1,8 +1,17 @@
-export const mixin = Object3DClass =>
-  class extends Object3DClass {
-    static shouldDeserialize(/* entityJson */) {
-      // TODO: in a future scene format just check for the node type.
-      return false;
+import { StaticModes } from "../StaticMode";
+
+export default function EditorNodeMixin(Object3DClass) {
+  return class extends Object3DClass {
+    static nodeName = "Unknown Node";
+
+    static hideTransform = false;
+
+    static async load() {
+      return Promise.resolve();
+    }
+
+    static shouldDeserialize(entityJson) {
+      return !!entityJson.components.find(c => c.name === this.legacyComponentName);
     }
 
     static async deserialize(editor, json) {
@@ -25,8 +34,18 @@ export const mixin = Object3DClass =>
 
     constructor(...args) {
       super(...args);
+
+      this.nodeName = this.constructor.nodeName;
+      this.name = this.constructor.nodeName;
       this.isNode = true;
+      this.isCollapsed = false;
+
+      this.staticMode = StaticModes.Inherits;
+      this.originalStaticMode = null;
+      this.saveParent = false;
     }
+
+    onChange() {}
 
     copy(source, recursive) {
       super.copy(source, recursive);
@@ -60,4 +79,39 @@ export const mixin = Object3DClass =>
     }
 
     prepareForExport() {}
+
+    computeStaticMode() {
+      let cur = this;
+
+      while (cur) {
+        if (cur.staticMode === StaticModes.Inherits || cur.staticMode === undefined) {
+          cur = cur.parent;
+        } else {
+          return cur.staticMode;
+        }
+      }
+
+      return StaticModes.Dynamic;
+    }
+
+    computeAndSetStaticModes() {
+      this.traverse(curNode => {
+        const staticMode = curNode.computeStaticMode();
+        curNode.setStaticMode(staticMode);
+      });
+    }
+
+    isInherits() {
+      const staticMode = this.staticMode;
+      return staticMode === StaticModes.Inherits || staticMode === undefined;
+    }
+
+    isStatic() {
+      return this.staticMode === StaticModes.Static;
+    }
+
+    isDynamic() {
+      return this.staticMode === StaticModes.Dynamic;
+    }
   };
+}

@@ -1,17 +1,21 @@
-import THREE from "three";
+import THREE from "../three";
 import Model from "../objects/Model";
 import EditorNodeMixin from "./EditorNodeMixin";
 import { setStaticMode, StaticModes } from "../StaticMode";
 
 export default class ModelNode extends EditorNodeMixin(Model) {
+  static nodeName = "Model";
+
   static shouldDeserialize(entityJson) {
-    return !!entityJson.components.find(c => c.name === "gltf-model");
+    const gltfModelComponent = entityJson.components.find(c => c.name === "gltf-model");
+    const navMeshComponent = entityJson.components.find(c => c.name === "nav-mesh");
+    return gltfModelComponent && !navMeshComponent;
   }
 
   static async deserialize(editor, json) {
     const node = await super.deserialize(editor, json);
 
-    const { src, attribution, origin, includeInFloorPlan } = json.components.find(c => c.name === "gltf-model");
+    const { src, attribution, origin, includeInFloorPlan } = json.components.find(c => c.name === "gltf-model").props;
 
     await node.loadGLTF(editor, src);
 
@@ -34,6 +38,18 @@ export default class ModelNode extends EditorNodeMixin(Model) {
     this.attribution = null;
     this.origin = null;
     this.includeInFloorPlan = true;
+  }
+
+  getClipNames() {
+    return this.animations.map(clip => clip.name);
+  }
+
+  getActiveClipName() {
+    if (this.clipActions.length > 0) {
+      return this.clipActions[0].getClip().name;
+    }
+
+    return null;
   }
 
   serialize() {
