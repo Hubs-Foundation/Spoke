@@ -1030,6 +1030,7 @@ export default class Editor {
     }
 
     this.execute(command);
+    node.onChange();
   }
 
   getNodeHierarchy() {
