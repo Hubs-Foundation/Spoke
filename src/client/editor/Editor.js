@@ -918,6 +918,7 @@ export default class Editor {
     node.attribution = attribution;
     node.origin = originUri;
     this.addObject(node);
+    this.select(node);
   }
 
   async importGLTFIntoModelNode(url) {
