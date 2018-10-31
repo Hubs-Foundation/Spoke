@@ -128,17 +128,21 @@ export default class Viewport {
         const results = getIntersects(onUpPosition, editor.scene);
 
         if (results.length > 0) {
-          const { object } = results[0];
+          for (const { object } of results) {
+            let curObject = object;
 
-          let selection = object;
+            while (curObject) {
+              if (curObject.isNode) {
+                break;
+              }
 
-          while (selection && !selection.isNode) {
-            selection = selection.parent;
-          }
+              curObject = curObject.parent;
+            }
 
-          if (selection && selection !== editor.scene) {
-            editor.select(selection);
-            return;
+            if (curObject && curObject !== editor.scene) {
+              editor.select(curObject);
+              return;
+            }
           }
         }
 
