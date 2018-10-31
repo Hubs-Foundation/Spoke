@@ -18,12 +18,6 @@ export default class SpawnPointNode extends EditorNodeMixin(THREE.Object3D) {
     spawnPointHelperModel = scene;
   }
 
-  static async deserialize(editor, json) {
-    const node = await super.deserialize(editor, json);
-    await node.initHelper();
-    return node;
-  }
-
   constructor() {
     super();
     this.helper = spawnPointHelperModel.clone();
