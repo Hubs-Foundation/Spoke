@@ -47,10 +47,6 @@ export default function EditorNodeMixin(Object3DClass) {
 
     onChange() {}
 
-    copy(source, recursive) {
-      super.copy(source, recursive);
-    }
-
     serialize() {
       return {
         components: [

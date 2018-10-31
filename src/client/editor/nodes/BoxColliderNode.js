@@ -20,6 +20,21 @@ export default class BoxColliderNode extends EditorNodeMixin(THREE.Object3D) {
     this.add(box);
   }
 
+  copy(source, recursive) {
+    super.copy(source, false);
+
+    if (recursive) {
+      for (const child of source.children) {
+        if (child !== this.helper) {
+          const clonedChild = child.clone();
+          this.add(clonedChild);
+        }
+      }
+    }
+
+    return this;
+  }
+
   serialize() {
     const json = super.serialize();
 

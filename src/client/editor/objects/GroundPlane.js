@@ -17,4 +17,21 @@ export default class GroundPlane extends THREE.Object3D {
   get color() {
     return this.mesh.material.color;
   }
+
+  copy(source, recursive) {
+    super.copy(source, false);
+
+    if (recursive) {
+      for (const child of source.children) {
+        if (child !== this.mesh) {
+          const clonedChild = child.clone();
+          this.add(clonedChild);
+        }
+      }
+    }
+
+    this.color.copy(source.color);
+
+    return this;
+  }
 }

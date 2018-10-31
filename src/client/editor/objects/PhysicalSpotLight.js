@@ -36,4 +36,23 @@ export default class PhysicalSpotLight extends THREE.SpotLight {
     this.angle = value;
     this.penumbra = 1.0 - this.innerConeAngle / value;
   }
+
+  copy(source, recursive) {
+    // Override SpotLight's copy method and pass the recursive parameter so we can avoid cloning children.
+    THREE.Object3D.prototype.copy.call(this, source, recursive);
+
+    this.color.copy(source.color);
+    this.intensity = source.intensity;
+
+    this.distance = source.distance;
+    this.angle = source.angle;
+    this.penumbra = source.penumbra;
+    this.decay = source.decay;
+
+    this.target = source.target.clone();
+
+    this.shadow = source.shadow.clone();
+
+    return this;
+  }
 }

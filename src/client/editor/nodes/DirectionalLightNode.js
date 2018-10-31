@@ -35,6 +35,23 @@ export default class DirectionalLightNode extends EditorNodeMixin(PhysicalDirect
     this.helper.update();
   }
 
+  copy(source, recursive) {
+    super.copy(source, false);
+
+    this.helper.update();
+
+    if (recursive) {
+      for (const child of source.children) {
+        if (child !== this.helper && child !== this.picker) {
+          const clonedChild = child.clone();
+          this.add(clonedChild);
+        }
+      }
+    }
+
+    return this;
+  }
+
   serialize() {
     const json = super.serialize();
 

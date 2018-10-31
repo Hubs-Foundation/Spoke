@@ -190,7 +190,7 @@ void main() {
 }
 `;
 
-export default class Sky extends THREE.Mesh {
+export default class Sky extends THREE.Object3D {
   static shader = {
     uniforms: {
       luminance: { value: 1 },
@@ -207,6 +207,8 @@ export default class Sky extends THREE.Mesh {
   static _geometry = new THREE.BoxBufferGeometry(1, 1, 1);
 
   constructor() {
+    super();
+
     const material = new THREE.ShaderMaterial({
       fragmentShader: Sky.shader.fragmentShader,
       vertexShader: Sky.shader.vertexShader,
@@ -214,25 +216,117 @@ export default class Sky extends THREE.Mesh {
       side: THREE.BackSide
     });
 
-    super(Sky._geometry, material);
+    this.sky = new THREE.Mesh(Sky._geometry, material);
+    this.add(this.sky);
 
-    this.inclination = 0;
-    this.azimuth = 0.15;
-    this.distance = 8000;
+    this._inclination = 0;
+    this._azimuth = 0.15;
+    this._distance = 8000;
+    this.updateSunPosition();
+  }
+
+  get turbidity() {
+    return this.sky.material.uniforms.turbidity.value;
+  }
+
+  set turbidity(value) {
+    this.sky.material.uniforms.turbidity.value = value;
+  }
+
+  get rayleigh() {
+    return this.sky.material.uniforms.rayleigh.value;
+  }
+
+  set rayleigh(value) {
+    this.sky.material.uniforms.rayleigh.value = value;
+  }
+
+  get luminance() {
+    return this.sky.material.uniforms.luminance.value;
+  }
+
+  set luminance(value) {
+    this.sky.material.uniforms.luminance.value = value;
+  }
+
+  get mieCoefficient() {
+    return this.sky.material.uniforms.mieCoefficient.value;
+  }
+
+  set mieCoefficient(value) {
+    this.sky.material.uniforms.mieCoefficient.value = value;
+  }
+
+  get mieDirectionalG() {
+    return this.sky.material.uniforms.mieDirectionalG.value;
+  }
+
+  set mieDirectionalG(value) {
+    this.sky.material.uniforms.mieDirectionalG.value = value;
+  }
+
+  get inclination() {
+    return this._inclination;
+  }
+
+  set inclination(value) {
+    this._inclination = value;
+    this.updateSunPosition();
+  }
+
+  get azimuth() {
+    return this._azimuth;
+  }
+
+  set azimuth(value) {
+    this._azimuth = value;
+    this.updateSunPosition();
+  }
+
+  get distance() {
+    return this._distance;
+  }
+
+  set distance(value) {
+    this._distance = value;
     this.updateSunPosition();
   }
 
   updateSunPosition() {
-    const theta = Math.PI * (this.inclination - 0.5);
-    const phi = 2 * Math.PI * (this.azimuth - 0.5);
+    const theta = Math.PI * (this._inclination - 0.5);
+    const phi = 2 * Math.PI * (this._azimuth - 0.5);
 
-    const distance = this.distance;
+    const distance = this._distance;
 
     const x = distance * Math.cos(phi);
     const y = distance * Math.sin(phi) * Math.sin(theta);
     const z = distance * Math.sin(phi) * Math.cos(theta);
 
-    this.material.uniforms.sunPosition.value.set(x, y, z).normalize();
-    this.scale.set(distance, distance, distance);
+    this.sky.material.uniforms.sunPosition.value.set(x, y, z).normalize();
+    this.sky.scale.set(distance, distance, distance);
+  }
+
+  copy(source, recursive) {
+    super.copy(source, false);
+
+    if (recursive) {
+      for (const child of source.children) {
+        if (child !== this.sky) {
+          const clonedChild = child.clone();
+          this.add(clonedChild);
+        }
+      }
+    }
+
+    this.turbidity = source.turbidity;
+    this.rayleigh = source.rayleigh;
+    this.luminance = source.luminance;
+    this.mieCoefficient = source.mieCoefficient;
+    this.mieDirectionalG = source.mieDirectionalG;
+    this.inclination = source.inclination;
+    this.azimuth = source.azimuth;
+    this.distance = source.distance;
+
+    return this;
   }
 }

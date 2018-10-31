@@ -32,6 +32,23 @@ export default class PointLightNode extends EditorNodeMixin(PhysicalPointLight) 
     this.add(this.helper);
   }
 
+  copy(source, recursive) {
+    super.copy(source, false);
+
+    this.helper.update();
+
+    if (recursive) {
+      for (const child of source.children) {
+        if (child !== this.helper && child !== this.picker) {
+          const clonedChild = child.clone();
+          this.add(clonedChild);
+        }
+      }
+    }
+
+    return this;
+  }
+
   onChange() {
     this.helper.update();
   }

@@ -36,6 +36,23 @@ export default class SpotLightNode extends EditorNodeMixin(PhysicalSpotLight) {
     this.add(this.helper);
   }
 
+  copy(source, recursive) {
+    super.copy(source, false);
+
+    this.helper.update();
+
+    if (recursive) {
+      for (const child of source.children) {
+        if (child !== this.helper && child !== this.picker) {
+          const clonedChild = child.clone();
+          this.add(clonedChild);
+        }
+      }
+    }
+
+    return this;
+  }
+
   onChange() {
     this.helper.update();
   }

@@ -2,7 +2,7 @@ import THREE from "../three";
 import EditorNodeMixin from "./EditorNodeMixin";
 import Sky from "../objects/Sky";
 
-export default class SkyboxNode extends EditorNodeMixin(THREE.Object3D) {
+export default class SkyboxNode extends EditorNodeMixin(Sky) {
   static legacyComponentName = "skybox";
 
   static hideTransform = true;
@@ -35,80 +35,6 @@ export default class SkyboxNode extends EditorNodeMixin(THREE.Object3D) {
     return node;
   }
 
-  constructor() {
-    super();
-
-    this.sky = new Sky();
-    this.add(this.sky);
-  }
-
-  get turbidity() {
-    return this.sky.material.uniforms.turbidity.value;
-  }
-
-  set turbidity(value) {
-    this.sky.material.uniforms.turbidity.value = value;
-  }
-
-  get rayleigh() {
-    return this.sky.material.uniforms.rayleigh.value;
-  }
-
-  set rayleigh(value) {
-    this.sky.material.uniforms.rayleigh.value = value;
-  }
-
-  get luminance() {
-    return this.sky.material.uniforms.luminance.value;
-  }
-
-  set luminance(value) {
-    this.sky.material.uniforms.luminance.value = value;
-  }
-
-  get mieCoefficient() {
-    return this.sky.material.uniforms.mieCoefficient.value;
-  }
-
-  set mieCoefficient(value) {
-    this.sky.material.uniforms.mieCoefficient.value = value;
-  }
-
-  get mieDirectionalG() {
-    return this.sky.material.uniforms.mieDirectionalG.value;
-  }
-
-  set mieDirectionalG(value) {
-    this.sky.material.uniforms.mieDirectionalG.value = value;
-  }
-
-  get inclination() {
-    return this.sky.inclination;
-  }
-
-  set inclination(value) {
-    this.sky.inclination = value;
-    this.sky.updateSunPosition();
-  }
-
-  get azimuth() {
-    return this.sky.azimuth;
-  }
-
-  set azimuth(value) {
-    this.sky.azimuth = value;
-    this.sky.updateSunPosition();
-  }
-
-  get distance() {
-    return this.sky.distance;
-  }
-
-  set distance(value) {
-    this.sky.distance = value;
-    this.sky.updateSunPosition();
-  }
-
   serialize() {
     const json = super.serialize();
 
@@ -130,7 +56,9 @@ export default class SkyboxNode extends EditorNodeMixin(THREE.Object3D) {
   }
 
   prepareForExport() {
-    this.userData.gltfExtensions = {
+    const replacementObject = new THREE.Object3D();
+
+    replacementObject.userData.gltfExtensions = {
       HUBS_components: {
         skybox: {
           turbidity: this.turbidity,
@@ -145,6 +73,7 @@ export default class SkyboxNode extends EditorNodeMixin(THREE.Object3D) {
       }
     };
 
-    this.remove(this.sky);
+    this.parent.add(replacementObject);
+    this.parent.remove(this);
   }
 }
