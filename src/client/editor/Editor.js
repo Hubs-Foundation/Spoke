@@ -599,16 +599,16 @@ export default class Editor {
   }
 
   clearSceneMetadata() {
-    delete this.scene.userData._metadata;
+    this.scene.metadata = {};
   }
 
   setSceneMetadata(newMetadata) {
-    const existingMetadata = this.scene.userData._metadata || {};
-    this.scene.userData._metadata = Object.assign(existingMetadata, newMetadata);
+    const existingMetadata = this.scene.metadata || {};
+    this.scene.metadata = Object.assign(existingMetadata, newMetadata);
   }
 
   getSceneMetadata() {
-    return this.scene.userData._metadata || {};
+    return this.scene.metadata;
   }
 
   setTransformMode(mode) {
