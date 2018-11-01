@@ -1,5 +1,6 @@
 import EditorNodeMixin from "./EditorNodeMixin";
 import GroundPlane from "../objects/GroundPlane";
+import serializeColor from "../utils/serializeColor";
 
 export default class GroundPlaneNode extends EditorNodeMixin(GroundPlane) {
   static legacyComponentName = "ground-plane";
@@ -22,7 +23,7 @@ export default class GroundPlaneNode extends EditorNodeMixin(GroundPlane) {
     json.components.push({
       name: "ground-plane",
       props: {
-        color: this.color
+        color: serializeColor(this.color)
       }
     });
 

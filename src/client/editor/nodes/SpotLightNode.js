@@ -3,6 +3,7 @@ import EditorNodeMixin from "./EditorNodeMixin";
 import Picker from "../objects/Picker";
 import PhysicalSpotLight from "../objects/PhysicalSpotLight";
 import SpokeSpotLightHelper from "../helpers/SpokeSpotLightHelper";
+import serializeColor from "../utils/serializeColor";
 
 export default class SpotLightNode extends EditorNodeMixin(PhysicalSpotLight) {
   static legacyComponentName = "spot-light";
@@ -63,7 +64,7 @@ export default class SpotLightNode extends EditorNodeMixin(PhysicalSpotLight) {
     json.components.push({
       name: "spot-light",
       props: {
-        color: this.color,
+        color: serializeColor(this.color),
         intensity: this.intensity,
         range: this.range,
         innerConeAngle: this.innerConeAngle,
@@ -84,7 +85,7 @@ export default class SpotLightNode extends EditorNodeMixin(PhysicalSpotLight) {
     replacementObject.userData.gltfExtensions = {
       HUBS_components: {
         "spot-light": {
-          color: this.color,
+          color: serializeColor(this.color),
           intensity: this.intensity,
           range: this.range,
           innerConeAngle: this.innerConeAngle,

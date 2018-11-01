@@ -5,6 +5,7 @@ import InputGroup from "../InputGroup";
 import ColorInput from "../inputs/ColorInput";
 import BooleanInput from "../inputs/BooleanInput";
 import CompoundNumericInput from "../inputs/CompoundNumericInput";
+import NumericInput from "../inputs/NumericInput";
 
 export default class PointLightNodeEditor extends Component {
   static propTypes = {
@@ -22,6 +23,10 @@ export default class PointLightNodeEditor extends Component {
     this.props.editor.setNodeProperty(this.props.node, "intensity", intensity);
   };
 
+  onChangeRange = range => {
+    this.props.editor.setNodeProperty(this.props.node, "range", range);
+  };
+
   onChangeCastShadow = castShadow => {
     this.props.editor.setNodeProperty(this.props.node, "castShadow", castShadow);
   };
@@ -36,6 +41,9 @@ export default class PointLightNodeEditor extends Component {
         </InputGroup>
         <InputGroup name="Intensity">
           <CompoundNumericInput value={node.intensity} onChange={this.onChangeIntensity} />
+        </InputGroup>
+        <InputGroup name="Range">
+          <NumericInput value={node.range} onChange={this.onChangeRange} />
         </InputGroup>
         <InputGroup name="Cast Shadow">
           <BooleanInput value={node.castShadow} onChange={this.onChangeCastShadow} />

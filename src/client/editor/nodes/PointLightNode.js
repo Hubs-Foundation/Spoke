@@ -3,6 +3,7 @@ import EditorNodeMixin from "./EditorNodeMixin";
 import Picker from "../objects/Picker";
 import PhysicalPointLight from "../objects/PhysicalPointLight";
 import SpokePointLightHelper from "../helpers/SpokePointLightHelper";
+import serializeColor from "../utils/serializeColor";
 
 export default class PointLightNode extends EditorNodeMixin(PhysicalPointLight) {
   static legacyComponentName = "point-light";
@@ -59,7 +60,7 @@ export default class PointLightNode extends EditorNodeMixin(PhysicalPointLight) 
     json.components.push({
       name: "point-light",
       props: {
-        color: this.color,
+        color: serializeColor(this.color),
         intensity: this.intensity,
         range: this.range,
         castShadow: this.castShadow
@@ -78,7 +79,7 @@ export default class PointLightNode extends EditorNodeMixin(PhysicalPointLight) 
     replacementObject.userData.gltfExtensions = {
       HUBS_components: {
         "point-light": {
-          color: this.color,
+          color: serializeColor(this.color),
           intensity: this.intensity,
           range: this.range,
           castShadow: this.castShadow

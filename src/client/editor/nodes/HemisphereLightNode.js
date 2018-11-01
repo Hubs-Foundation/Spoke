@@ -1,6 +1,7 @@
 import THREE from "../three";
 import EditorNodeMixin from "./EditorNodeMixin";
 import PhysicalHemisphereLight from "../objects/PhysicalHemisphereLight";
+import serializeColor from "../utils/serializeColor";
 
 export default class HemisphereLightNode extends EditorNodeMixin(PhysicalHemisphereLight) {
   static legacyComponentName = "hemisphere-light";
@@ -27,8 +28,8 @@ export default class HemisphereLightNode extends EditorNodeMixin(PhysicalHemisph
     json.components.push({
       name: "hemisphere-light",
       props: {
-        skyColor: this.skyColor,
-        groundColor: this.groundColor,
+        skyColor: serializeColor(this.skyColor),
+        groundColor: serializeColor(this.groundColor),
         intensity: this.intensity
       }
     });
@@ -42,8 +43,8 @@ export default class HemisphereLightNode extends EditorNodeMixin(PhysicalHemisph
     replacementObject.userData.gltfExtensions = {
       HUBS_components: {
         "hemisphere-light": {
-          skyColor: this.skyColor,
-          groundColor: this.groundColor,
+          skyColor: serializeColor(this.skyColor),
+          groundColor: serializeColor(this.groundColor),
           intensity: this.intensity
         }
       }

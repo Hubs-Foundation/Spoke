@@ -34,6 +34,10 @@ export default class SpotLightNodeEditor extends Component {
     this.props.editor.setNodeProperty(this.props.node, "outerConeAngle", outerConeAngle);
   };
 
+  onChangeRange = range => {
+    this.props.editor.setNodeProperty(this.props.node, "range", range);
+  };
+
   onChangeCastShadow = castShadow => {
     this.props.editor.setNodeProperty(this.props.node, "castShadow", castShadow);
   };
@@ -67,6 +71,9 @@ export default class SpotLightNodeEditor extends Component {
             format={radToDeg}
             parse={degToRad}
           />
+        </InputGroup>
+        <InputGroup name="Range">
+          <NumericInput value={node.range} onChange={this.onChangeRange} />
         </InputGroup>
         <InputGroup name="Cast Shadow">
           <BooleanInput value={node.castShadow} onChange={this.onChangeCastShadow} />

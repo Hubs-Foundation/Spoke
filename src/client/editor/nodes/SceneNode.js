@@ -35,7 +35,14 @@ export default class SceneNode extends EditorNodeMixin(THREE.Scene) {
       }
 
       const parent = scene.getObjectByName(entity.parent);
+
+      if (!parent) {
+        throw new Error(`Node "${entityName}" specifies parent "${entity.parent}", but was not found.`);
+      }
+
       const node = await EntityNodeConstructor.deserialize(editor, entity);
+      node.name = entityName;
+      node.onChange();
 
       parent.children.splice(entity.index, 0, node);
       node.parent = parent;
@@ -74,8 +81,19 @@ export default class SceneNode extends EditorNodeMixin(THREE.Scene) {
 
       const entityJson = child.serialize();
       entityJson.parent = child.parent.name;
-      entityJson.index = child.parent.children.indexOf(child);
-      sceneJson.entities[this.name] = entityJson;
+
+      let index = 0;
+
+      for (const sibling of child.parent.children) {
+        if (sibling === child) {
+          break;
+        } else if (sibling.isNode) {
+          index++;
+        }
+      }
+
+      entityJson.index = index;
+      sceneJson.entities[child.name] = entityJson;
     });
 
     return sceneJson;

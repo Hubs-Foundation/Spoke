@@ -3,6 +3,7 @@ import EditorNodeMixin from "./EditorNodeMixin";
 import Picker from "../objects/Picker";
 import PhysicalDirectionalLight from "../objects/PhysicalDirectionalLight";
 import SpokeDirectionalLightHelper from "../helpers/SpokeDirectionalLightHelper";
+import serializeColor from "../utils/serializeColor";
 
 export default class DirectionalLightNode extends EditorNodeMixin(PhysicalDirectionalLight) {
   static legacyComponentName = "directional-light";
@@ -58,7 +59,7 @@ export default class DirectionalLightNode extends EditorNodeMixin(PhysicalDirect
     json.components.push({
       name: "directional-light",
       props: {
-        color: this.color,
+        color: serializeColor(this.color),
         intensity: this.intensity,
         castShadow: this.castShadow
       }
@@ -76,7 +77,7 @@ export default class DirectionalLightNode extends EditorNodeMixin(PhysicalDirect
     replacementObject.userData.gltfExtensions = {
       HUBS_components: {
         "directional-light": {
-          color: this.color,
+          color: serializeColor(this.color),
           intensity: this.intensity,
           castShadow: this.castShadow
         }

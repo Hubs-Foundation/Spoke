@@ -100,10 +100,11 @@ export default class Editor {
     this.signals.sceneModified.dispatch();
   };
 
-  onObjectChanged = () => {
+  onObjectChanged = object => {
     if (this._ignoreSceneModification) return;
     this.sceneModified = true;
     this.signals.sceneModified.dispatch();
+    object.onChange();
   };
 
   onObjectSelected = (/*obj, prev*/) => {};
@@ -182,6 +183,7 @@ export default class Editor {
     this.history.clear();
     this.deselect();
     this.signals.sceneSet.dispatch();
+    this.signals.sceneGraphChanged.dispatch();
     this.sceneModified = false;
   }
 
@@ -218,14 +220,7 @@ export default class Editor {
 
     await this.project.writeJSON(sceneURI, serializedScene);
 
-    const sceneUserData = this.scene.userData;
-
-    // If the previous URI was a gltf, update the ancestors, since we are now dealing with a .scene file.
-    if (this.sceneUri && (this.sceneUri.endsWith(".gltf") || this.sceneUri.endsWith(".glb"))) {
-      sceneUserData._ancestors = [this.sceneUri];
-    }
-
-    this.setSceneURI(sceneURI);
+    this.sceneUri = sceneURI;
 
     this.signals.sceneGraphChanged.dispatch();
 

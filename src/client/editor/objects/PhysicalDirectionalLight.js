@@ -6,6 +6,7 @@ export default class PhysicalDirectionalLight extends THREE.DirectionalLight {
     this.position.set(0, 0, 0);
     this.target.position.set(0, 0, 1);
     this.add(this.target);
+    this.castShadow = true;
   }
 
   copy(source, recursive) {
