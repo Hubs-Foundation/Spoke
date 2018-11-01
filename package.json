@@ -92,7 +92,7 @@
     "semver": "^5.5.1",
     "sha.js": "^2.4.11",
     "signals": "^1.0.0",
-    "three": "github:mozillareality/three.js#hubs/dev-v2",
+    "three": "github:mozillareality/three.js#220c52eb20b5d8afce8aecc295283d7a7a1e0c62",
     "throttle-debounce": "^2.0.1",
     "uuid": "^3.3.2",
     "ws": "^5.2.0",
