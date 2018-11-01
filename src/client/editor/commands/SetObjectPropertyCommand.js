@@ -9,21 +9,25 @@ export default class SetObjectPropertyCommand extends Command {
     this.object = object;
     this.propertyName = propertyName;
 
-    if (value.clone) {
+    if (value && value.clone) {
       this.newValue = value.clone();
     } else {
       this.newValue = value;
     }
 
-    if (this.object[propertyName].clone) {
-      this.oldValue = this.object[propertyName].clone();
+    const oldValue = this.object[propertyName];
+
+    if (oldValue && oldValue.clone) {
+      this.oldValue = oldValue.clone();
     } else {
-      this.oldValue = this.object[propertyName];
+      this.oldValue = oldValue;
     }
   }
 
   execute() {
-    if (this.object[this.propertyName].copy) {
+    const value = this.object[this.propertyName];
+
+    if (value && value.copy) {
       this.object[this.propertyName].copy(this.newValue);
     } else {
       this.object[this.propertyName] = this.newValue;
@@ -33,7 +37,9 @@ export default class SetObjectPropertyCommand extends Command {
   }
 
   undo() {
-    if (this.object[this.propertyName].copy) {
+    const value = this.object[this.propertyName];
+
+    if (value && value.copy) {
       this.object[this.propertyName].copy(this.oldValue);
     } else {
       this.object[this.propertyName] = this.oldValue;

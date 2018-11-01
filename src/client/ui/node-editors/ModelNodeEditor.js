@@ -12,8 +12,8 @@ export default class ModelNodeEditor extends Component {
 
   static iconClassName = "fa-cube";
 
-  onChangeAnimation = ({ value }) => {
-    this.props.node.activeClip = value;
+  onChangeAnimation = activeClip => {
+    this.props.editor.setNodeProperty(this.props.node, "activeClip", activeClip);
   };
 
   render() {

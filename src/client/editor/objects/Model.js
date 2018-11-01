@@ -44,7 +44,7 @@ export default class Model extends THREE.Object3D {
     const clip = this.animations.find(c => c.name === clipName) || null;
 
     if (!clip) {
-      throw new Error(`Model: No clip named: ${clipName} found.`);
+      return null;
     }
 
     const clipAction = this._mixer.clipAction(clip);
