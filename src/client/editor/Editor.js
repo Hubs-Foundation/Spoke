@@ -18,9 +18,7 @@ import SetScaleCommand from "./commands/SetScaleCommand";
 // import { generateNavMesh } from "../utils/navmesh";
 import { getUrlFilename } from "../utils/url-path";
 import { textureCache, gltfCache } from "./caches";
-
-import ConflictHandler from "./ConflictHandler";
-import ConflictError from "./ConflictError";
+import getNameWithoutIndex from "./utils/getNameWithoutIndex";
 
 // import cloneObject3D from "./utils/cloneObject3D";
 import ModelNode from "./nodes/ModelNode";
@@ -37,7 +35,8 @@ export default class Editor {
     this.scene = null;
     this.sceneModified = false;
     this.sceneUri = null;
-    this.conflictHandler = new ConflictHandler();
+
+    this.duplicateNameCounters = new Map();
 
     // TODO: Support multiple viewports
     this.viewports = [];
@@ -558,7 +557,26 @@ export default class Editor {
   addObject(object, parent) {
     object.saveParent = true;
 
-    object.traverse(child => (child.name = this.conflictHandler.addToDuplicateNameCounters(child, child.name)));
+    object.traverse(child => {
+      if (child.isNode) {
+        const name = getNameWithoutIndex(child.name);
+        const counter = this.duplicateNameCounters.get(name);
+        let objectCount, nextSuffix, suffix;
+
+        if (counter) {
+          objectCount = counter.objectCount + 1;
+          suffix = " " + counter.nextSuffix;
+          nextSuffix = counter.nextSuffix + 1;
+        } else {
+          objectCount = 1;
+          suffix = "";
+          nextSuffix = 1;
+        }
+
+        this.duplicateNameCounters.set(name, { objectCount, nextSuffix });
+        child.name = name + suffix;
+      }
+    });
 
     if (parent !== undefined) {
       parent.add(object);
@@ -581,20 +599,26 @@ export default class Editor {
       this.deselect();
     }
 
+    object.traverse(child => {
+      if (child.isNode) {
+        const name = getNameWithoutIndex(object.name);
+        const counter = this.duplicateNameCounters.get(name);
+
+        if (counter) {
+          const { objectCount, nextSuffix } = counter;
+
+          if (objectCount <= 1) {
+            this.duplicateNameCounters.delete(name);
+          } else {
+            this.duplicateNameCounters.set(name, { objectCount: objectCount - 1, nextSuffix });
+          }
+        }
+      }
+    });
+
     object.parent.remove(object);
-    this.conflictHandler.removeFromDuplicateNameCounters(object, object.name);
 
     this.signals.objectRemoved.dispatch(object);
-    this.signals.sceneGraphChanged.dispatch();
-  }
-
-  _removeChildren(object) {
-    const currentChildren = object.children.slice(0);
-    this.signals.sceneGraphChanged.active = false;
-    for (const child of currentChildren) {
-      this.removeObject(child);
-    }
-    this.signals.sceneGraphChanged.active = true;
     this.signals.sceneGraphChanged.dispatch();
   }
 
@@ -615,17 +639,42 @@ export default class Editor {
     this.signals.transformModeChanged.dispatch(mode);
   }
 
-  setObjectName(object, value) {
-    const handler = this.conflictHandler;
-    if (handler.isUniqueObjectName(value)) {
-      const prevName = object.name;
-      handler.addToDuplicateNameCounters(object, value);
-      object.name = value;
-      handler.removeFromDuplicateNameCounters(object, prevName);
-    } else {
-      this.signals.objectChanged.dispatch(object);
-      throw new ConflictError("rename error", "rename", this.scene.metadata.uri, handler);
+  setObjectName(object, name) {
+    const prevName = getNameWithoutIndex(object.name);
+    const prevCounter = this.duplicateNameCounters.get(prevName);
+
+    if (prevCounter) {
+      const prevObjectCount = prevCounter.objectCount;
+      if (prevObjectCount <= 1) {
+        this.duplicateNameCounters.delete(prevName);
+      } else {
+        this.duplicateNameCounters.set(prevName, {
+          objectCount: prevCounter.objectCount - 1,
+          nextSuffix: prevCounter.nextSuffix
+        });
+      }
     }
+
+    const nextName = getNameWithoutIndex(name);
+    const nextCounter = this.duplicateNameCounters.get(nextName);
+
+    let objectCount, nextSuffix, suffix;
+
+    if (nextCounter) {
+      objectCount = nextCounter.objectCount + 1;
+      suffix = " " + nextCounter.nextSuffix;
+      nextSuffix = suffix + 1;
+    } else {
+      objectCount = 1;
+      suffix = "";
+      nextSuffix = 1;
+    }
+
+    this.duplicateNameCounters.set(nextName, { objectCount, nextSuffix });
+
+    object.name = nextName + suffix;
+
+    this.signals.objectChanged.dispatch(object);
   }
 
   registerNode(nodeConstructor, nodeEditor) {
@@ -742,9 +791,7 @@ export default class Editor {
       return;
     }
 
-    const objectName = object.name;
     this.execute(new RemoveObjectCommand(object));
-    this.conflictHandler.removeFromDuplicateNameCounters(object, objectName);
   }
 
   deleteSelectedObject() {

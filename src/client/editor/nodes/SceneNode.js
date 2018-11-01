@@ -34,7 +34,7 @@ export default class SceneNode extends EditorNodeMixin(THREE.Scene) {
         throw new Error(`No node constructor found for entity "${entityName}"`);
       }
 
-      const parent = scene.getObjectByName(entity.parent);
+      const parent = this.getNodeWithName(entity.parent);
 
       if (!parent) {
         throw new Error(`Node "${entityName}" specifies parent "${entity.parent}", but was not found.`);
@@ -56,6 +56,19 @@ export default class SceneNode extends EditorNodeMixin(THREE.Scene) {
     this.url = null;
     this.metadata = {};
     setStaticMode(this, StaticModes.Static);
+  }
+
+  getNodeWithName(name) {
+    let node = null;
+
+    // TODO: Don't traverse the whole tree. Return early if found.
+    this.traverse(child => {
+      if (!node && child.isNode && child.name === name) {
+        node = child;
+      }
+    });
+
+    return node;
   }
 
   copy(source, recursive) {
