@@ -25,8 +25,8 @@ export default class ModelNode extends EditorNodeMixin(Model) {
 
     const loopAnimationComponent = json.components.find(c => c.name === "loop-animation");
 
-    if (loopAnimationComponent) {
-      node.addClipAction(loopAnimationComponent.clip);
+    if (loopAnimationComponent && loopAnimationComponent.props.clip) {
+      node.activeClip = loopAnimationComponent.props.clip;
     }
 
     return node;
@@ -38,18 +38,6 @@ export default class ModelNode extends EditorNodeMixin(Model) {
     this.attribution = null;
     this.origin = null;
     this.includeInFloorPlan = true;
-  }
-
-  getClipNames() {
-    return this.animations.map(clip => clip.name);
-  }
-
-  getActiveClipName() {
-    if (this.clipActions.length > 0) {
-      return this.clipActions[0].getClip().name;
-    }
-
-    return null;
   }
 
   serialize() {
@@ -87,7 +75,7 @@ export default class ModelNode extends EditorNodeMixin(Model) {
   }
 
   async loadGLTF(editor, src) {
-    const { scene, animations } = await editor.loadGLTF(src);
+    const { scene, animations } = await editor.loadGLTF(new URL(src, editor.sceneUri).href);
     this.src = src;
     this.setModel(scene, animations);
     return this;

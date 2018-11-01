@@ -30,6 +30,8 @@ import SpawnPointNode from "./editor/nodes/SpawnPointNode";
 import SpawnPointNodeEditor from "./ui/node-editors/SpawnPointNodeEditor";
 import SkyboxNode from "./editor/nodes/SkyboxNode";
 import SkyboxNodeEditor from "./ui/node-editors/SkyboxNodeEditor";
+import FloorPlanNode from "./editor/nodes/FloorPlanNode";
+import FloorPlanNodeEditor from "./ui/node-editors/FloorPlanNodeEditor";
 
 (async () => {
   // eslint-disable-next-line no-undef
@@ -55,6 +57,7 @@ import SkyboxNodeEditor from "./ui/node-editors/SkyboxNodeEditor";
   editor.registerNode(PointLightNode, PointLightNodeEditor);
   editor.registerNode(SpawnPointNode, SpawnPointNodeEditor);
   editor.registerNode(SkyboxNode, SkyboxNodeEditor);
+  editor.registerNode(FloorPlanNode, FloorPlanNodeEditor);
 
   await editor.init();
 

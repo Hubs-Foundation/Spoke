@@ -10,7 +10,6 @@ import { withDialog } from "../contexts/DialogContext";
 import { withSceneActions } from "../contexts/SceneActionsContext";
 import "../../vendor/react-ui-tree/index.scss";
 import "../../vendor/react-contextmenu/index.scss";
-import SnackBar from "../SnackBar";
 import ReactTooltip from "react-tooltip";
 import ErrorDialog from "../dialogs/ErrorDialog";
 import DefaultNodeEditor from "../node-editors/DefaultNodeEditor";
@@ -201,21 +200,6 @@ class HierarchyPanelContainer extends Component {
 
   HierarchyNodeMenu = connectMenu("hierarchy-node-menu")(this.renderHierarchyNodeMenu);
 
-  renderWarnings = () => {
-    const handler = this.props.editor.scene.userData._conflictHandler;
-    if (!handler) {
-      return;
-    }
-
-    const conflicts = handler.getConflictInfo();
-
-    return (
-      <div className={styles.conflictDisplay}>
-        {Object.keys(conflicts).map((type, i) => (conflicts[type] ? <SnackBar conflictType={type} key={i} /> : null))}
-      </div>
-    );
-  };
-
   render() {
     return (
       <div className={styles.hierarchyRoot}>
@@ -232,7 +216,6 @@ class HierarchyPanelContainer extends Component {
             <this.HierarchyNodeMenu />
           </div>
         </AssetDropTarget>
-        {this.renderWarnings()}
       </div>
     );
   }

@@ -23,11 +23,11 @@ export default function EditorNodeMixin(Object3DClass) {
         throw new Error("Node has no transform component");
       }
 
-      const { position, rotation, scale } = transformComponent;
+      const { position, rotation, scale } = transformComponent.props;
 
-      node.position.copy(position);
-      node.rotation.copy(rotation);
-      node.scale.copy(scale);
+      node.position.set(position.x, position.y, position.z);
+      node.rotation.set(rotation.x, rotation.y, rotation.z);
+      node.scale.set(scale.x, scale.y, scale.z);
 
       return node;
     }

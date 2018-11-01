@@ -14,7 +14,6 @@ import SetPositionCommand from "./commands/SetPositionCommand";
 import SetRotationCommand from "./commands/SetRotationCommand";
 import SetScaleCommand from "./commands/SetScaleCommand";
 
-import { StaticModes } from "./StaticMode";
 // import MeshCombinationGroup from "./MeshCombinationGroup";
 // import { generateNavMesh } from "../utils/navmesh";
 import { getUrlFilename } from "../utils/url-path";
@@ -22,11 +21,7 @@ import { textureCache, gltfCache } from "./caches";
 
 import ConflictHandler from "./ConflictHandler";
 import ConflictError from "./ConflictError";
-import SceneLoaderError from "./SceneLoaderError";
 
-import absoluteToRelativeURL from "./utils/absoluteToRelativeURL";
-import addChildAtIndex from "./utils/addChildAtIndex";
-import sortEntities from "./utils/sortEntities";
 // import cloneObject3D from "./utils/cloneObject3D";
 import ModelNode from "./nodes/ModelNode";
 import DefaultNodeEditor from "../ui/node-editors/DefaultNodeEditor";
@@ -37,11 +32,19 @@ export default class Editor {
   constructor(project) {
     this.project = project;
 
-    this.DEFAULT_CAMERA = new THREE.PerspectiveCamera(80, window.innerWidth / window.innerHeight, 0.2, 8000);
-    this.DEFAULT_CAMERA.layers.enable(1);
-    this.DEFAULT_CAMERA.name = "Camera";
-    this.DEFAULT_CAMERA.position.set(0, 5, 10);
-    this.DEFAULT_CAMERA.lookAt(new THREE.Vector3());
+    this.updateInfo = null;
+
+    this.scene = null;
+    this.sceneModified = false;
+    this.sceneUri = null;
+    this.conflictHandler = new ConflictHandler();
+
+    // TODO: Support multiple viewports
+    this.viewports = [];
+    this.selected = null;
+
+    this.nodeTypes = new Set();
+    this.nodeEditors = new Map();
 
     const Signal = signals.Signal;
 
@@ -76,61 +79,34 @@ export default class Editor {
       fileChanged: new Signal()
     };
 
+    this._ignoreSceneModification = false;
+    this.ignoreNextSceneFileChange = false;
     this.project.addListener("change", path => {
       this.signals.fileChanged.dispatch(path);
     });
+    this.signals.fileChanged.add(this.onFileChanged);
+    this.signals.sceneGraphChanged.add(this.onSceneGraphChanged);
+    this.signals.objectChanged.add(this.onObjectChanged);
+    this.signals.objectSelected.add(this.onObjectSelected);
 
     this.history = new History(this);
 
-    this.camera = this.DEFAULT_CAMERA.clone();
-
-    this.openFile = null;
-
-    this.scenes = [];
-    const initialSceneInfo = {
-      uri: null,
-      scene: new SceneNode(),
-      modified: false
-    };
-    this.scenes.push(initialSceneInfo);
-
-    this.scene = initialSceneInfo.scene;
-    this.sceneInfo = initialSceneInfo;
-
-    this._ignoreSceneModification = false;
-    this.signals.sceneGraphChanged.add(() => {
-      if (this._ignoreSceneModification) return;
-      this.sceneInfo.modified = true;
-      this.sceneInfo.isDefaultScene = false;
-      this.signals.sceneModified.dispatch();
-    });
-    this.signals.objectChanged.add(() => {
-      if (this._ignoreSceneModification) return;
-      this.sceneInfo.modified = true;
-      this.sceneInfo.isDefaultScene = false;
-      this.signals.sceneModified.dispatch();
-    });
-    // this.signals.objectSelected.add((obj, prev) => {
-    //   // TODO: Add onSelected/onUnselected hooks
-    // });
-
-    // TODO: Support multiple viewports
-    this.viewports = [];
-    this.selected = null;
-
-    this.nodeTypes = new Set();
-    this.nodeEditors = new Map();
-
-    this._conflictHandler = new ConflictHandler();
-    this.scene.userData._conflictHandler = this._conflictHandler;
-    this.ignoreNextSceneFileChange = false;
-    this.signals.fileChanged.add(this.onFileChanged);
-
-    this.StaticModes = StaticModes;
     this.loadNewScene();
-
-    this.updateInfo = null;
   }
+
+  onSceneGraphChanged = () => {
+    if (this._ignoreSceneModification) return;
+    this.sceneModified = true;
+    this.signals.sceneModified.dispatch();
+  };
+
+  onObjectChanged = () => {
+    if (this._ignoreSceneModification) return;
+    this.sceneModified = true;
+    this.signals.sceneModified.dispatch();
+  };
+
+  onObjectSelected = (/*obj, prev*/) => {};
 
   async init() {
     const tasks = [this.retrieveUpdateInfo()];
@@ -151,113 +127,62 @@ export default class Editor {
   onFileChanged = uri => {
     textureCache.evict(uri);
     gltfCache.evict(uri);
-    if (uri === this.sceneInfo.uri && this.ignoreNextSceneFileChange) {
+    if (uri === this.sceneUri && this.ignoreNextSceneFileChange) {
       this.ignoreNextSceneFileChange = false;
       return;
     }
   };
 
-  //
-
-  setSceneURI(uri) {
-    this.sceneInfo.uri = uri;
-  }
-
-  _clearCaches() {
+  clearCaches() {
     textureCache.disposeAndClear();
     gltfCache.disposeAndClear();
   }
 
-  _setSceneInfo(scene, uri) {
-    this.sceneInfo = {
-      uri: uri,
-      scene: scene,
-      modified: false
-    };
-  }
-
   async loadNewScene() {
-    this._clearCaches();
+    this.clearCaches();
 
     const scene = new SceneNode();
     scene.name = "Untitled";
 
-    this._conflictHandler = null;
-
-    this._setSceneInfo(scene, null);
-    this.sceneInfo.isDefaultScene = true;
-    this.scenes = [this.sceneInfo];
-
-    this._setScene(scene);
-
-    this.signals.sceneModified.dispatch();
-
-    this.history.clear();
-    this.deselect();
+    this.setScene(scene);
+    this.sceneModified = true;
 
     return scene;
   }
 
   async openScene(uri) {
-    this.scenes = [];
-    this._clearCaches();
-    this._ignoreSceneModification = true;
+    this.clearCaches();
 
-    const scene = await this._loadSceneFromURL(uri);
-    this._ignoreSceneModification = false;
+    const url = new URL(uri, window.location).href;
+
+    const sceneResponse = await fetch(url);
+
+    const json = await sceneResponse.json();
+
+    this.sceneUri = url;
+
+    const scene = await SceneNode.deserialize(this, json);
+
+    this.setScene(scene);
 
     return scene;
   }
 
-  _setScene(scene) {
+  setScene(scene) {
     this.scene = scene;
-    if (this.scene.userData && this.scene.userData._conflictHandler) {
-      this._conflictHandler = this.scene.userData._conflictHandler;
-    } else if (!this._conflictHandler) {
-      this._conflictHandler = new ConflictHandler();
-    }
-    this.scene.traverse(object => {
-      this.signals.objectAdded.dispatch(object);
-    });
 
-    this.signals.sceneSet.dispatch();
-  }
+    const camera = new THREE.PerspectiveCamera(80, window.innerWidth / window.innerHeight, 0.2, 8000);
+    camera.layers.enable(1);
+    camera.name = "Camera";
+    camera.position.set(0, 5, 10);
+    camera.lookAt(new THREE.Vector3());
+    this.scene.add(camera);
+    this.camera = camera;
 
-  sceneModified() {
-    return this.sceneInfo.modified;
-  }
-
-  sceneIsDefault() {
-    return !!this.sceneInfo.isDefaultScene;
-  }
-
-  async fixConflictError(error) {
-    if (error.type === "import") {
-      const originalGLTF = await this.project.readJSON(error.uri);
-
-      if (originalGLTF.nodes) {
-        error.handler.updateNodeNames(originalGLTF.nodes);
-        await this.project.writeJSON(error.uri, originalGLTF);
-      }
-
-      return true;
-    }
-  }
-
-  async _loadSceneFromURL(uri) {
+    this.history.clear();
     this.deselect();
-
-    const scene = await this._loadScene(uri, true);
-    this._conflictHandler = scene.userData._conflictHandler;
-
-    this._setSceneInfo(scene, uri);
-    this.scenes.push(this.sceneInfo);
-
-    this._setScene(scene);
-
-    this.signals.sceneModified.dispatch();
-
-    return scene;
+    this.signals.sceneSet.dispatch();
+    this.sceneModified = false;
   }
 
   async loadGLTF(url) {
@@ -268,211 +193,10 @@ export default class Editor {
     }
 
     if (!gltf.scene.name) {
-      gltf.scen.name = "Scene";
+      gltf.scene.name = "Scene";
     }
 
     return gltf;
-  }
-
-  async _loadScene(uri, isRoot = true, ancestors) {
-    let scene;
-
-    const url = new URL(uri, window.location).href;
-
-    if (url.endsWith(".gltf") || url.endsWith(".glb")) {
-      const gltf = await this.loadGLTF(url);
-      scene = gltf.scene;
-
-      if (isRoot) {
-        scene.userData._inherits = url;
-      }
-
-      // Inflate components
-      const addComponentPromises = [];
-
-      scene.traverse(async object => {
-        const extensions = object.userData.gltfExtensions;
-        if (extensions !== undefined) {
-          for (const extensionName in extensions) {
-            addComponentPromises.push(this._addComponent(object, extensionName, extensions[extensionName], true));
-          }
-        }
-
-        if (object instanceof THREE.Mesh) {
-          addComponentPromises.push(this._addComponent(object, "mesh", null, true));
-
-          const shadowProps = object.userData.components
-            ? object.userData.components.shadow
-            : { castShadow: true, receiveShadow: true };
-          addComponentPromises.push(this._addComponent(object, "shadow", shadowProps, true));
-
-          if (object.material instanceof THREE.MeshStandardMaterial) {
-            addComponentPromises.push(this._addComponent(object, "standard-material", null, true));
-          }
-        }
-      });
-
-      await Promise.all(addComponentPromises);
-
-      return scene;
-    }
-
-    const sceneResponse = await fetch(url);
-    if (!sceneResponse.ok) {
-      const error = new SceneLoaderError("Error loading .spoke file", url, "damaged", null);
-      throw error;
-    }
-    const sceneDef = await sceneResponse.json();
-
-    if (isRoot) {
-      ancestors = [];
-    }
-
-    scene = await this._loadSerializedScene(sceneDef, uri, isRoot, ancestors);
-    scene.userData._ancestors = ancestors;
-
-    return scene;
-  }
-
-  async _loadSerializedScene(sceneDef, baseURI, isRoot = true, ancestors) {
-    let scene;
-
-    const { metadata, inherits, root, entities } = sceneDef;
-
-    const absoluteBaseURL = new URL(baseURI, window.location);
-    if (inherits) {
-      const inheritedSceneURL = new URL(inherits, absoluteBaseURL).href;
-      scene = await this._loadScene(inheritedSceneURL, false, ancestors);
-
-      if (ancestors) {
-        ancestors.push(inheritedSceneURL);
-      }
-      if (isRoot) {
-        scene.userData._inherits = inheritedSceneURL;
-      }
-    } else if (root) {
-      scene = new SceneNode();
-      scene.name = root;
-    } else {
-      throw new Error("Invalid Scene: Scene does not inherit from another scene or have a root entity.");
-    }
-
-    if (metadata) {
-      scene.userData._metadata = metadata;
-    }
-
-    // init scene conflict status
-    if (!scene.userData._conflictHandler) {
-      scene.userData._conflictHandler = new ConflictHandler();
-      scene.userData._conflictHandler.findDuplicates(scene, 0, 0);
-    }
-
-    if (entities) {
-      // Sort entities by insertion order (uses parent and index to determine order).
-      const sortedEntities = sortEntities(entities);
-
-      const entityComponentPromises = [];
-      for (const entityName of sortedEntities) {
-        const entity = entities[entityName];
-
-        // Find or create the entity's Object3D
-        let entityObj = scene.getObjectByName(entityName);
-
-        if (entityObj === undefined) {
-          entityObj = new THREE.Object3D();
-          entityObj.name = entityName;
-        }
-
-        // Entities defined in the root scene should be saved.
-        if (isRoot) {
-          entityObj.userData._saveEntity = true;
-        }
-
-        // Attach the entity to its parent.
-        // An entity doesn't have a parent defined if the entity is loaded in an inherited scene.
-        if (entity.parent) {
-          let parentObject = scene.getObjectByName(entity.parent);
-          if (!parentObject) {
-            // parent node got renamed or deleted
-            parentObject = new THREE.Object3D();
-            parentObject.name = entity.parent;
-            parentObject.userData._isMissingRoot = true;
-            parentObject.userData._missing = true;
-            scene.userData._conflictHandler.setMissingStatus(true);
-            scene.add(parentObject);
-          } else {
-            if (!parentObject.userData._missing) {
-              parentObject.userData._isMissingRoot = false;
-              parentObject.userData._missing = false;
-            }
-          }
-
-          entityObj.userData._missing = parentObject.userData._missing;
-          entityObj.userData._duplicate = parentObject.userData._duplicate;
-          addChildAtIndex(parentObject, entityObj, entity.index);
-          // Parents defined in the root scene should be saved.
-          if (isRoot) {
-            entityObj.userData._saveParent = true;
-          }
-        }
-
-        // Inflate the entity's components.
-        if (Array.isArray(entity.components)) {
-          for (const componentDef of entity.components) {
-            if (componentDef.src) {
-              // Process SaveableComponent
-              componentDef.src = new URL(componentDef.src, absoluteBaseURL.href).href;
-              const resp = await fetch(componentDef.src);
-              let json = {};
-              if (resp.ok) {
-                json = await resp.json();
-              }
-
-              const props = this._resolveFileProps(this.components.get(componentDef.name), json, componentDef.src);
-
-              entityComponentPromises.push(
-                this._addComponent(entityObj, componentDef.name, props, !isRoot).then(component => {
-                  component.src = componentDef.src;
-                  component.srcIsValid = resp.ok;
-                })
-              );
-            } else {
-              const props = this._resolveFileProps(
-                this.components.get(componentDef.name),
-                componentDef.props,
-                absoluteBaseURL.href
-              );
-
-              entityComponentPromises.push(this._addComponent(entityObj, componentDef.name, props, !isRoot));
-            }
-          }
-        }
-
-        if (entity.staticMode !== undefined) {
-          entityObj.staticMode = entity.staticMode;
-
-          if (isRoot) {
-            entityObj.originalStaticMode = entity.staticMode;
-          }
-        }
-      }
-      await Promise.all(entityComponentPromises);
-    }
-    scene.userData._conflictHandler.findDuplicates(scene, 0, 0);
-    return scene;
-  }
-
-  async _reloadScene() {
-    const sceneURI = this.sceneInfo.uri;
-    const sceneDef = this._serializeScene(this.scene, sceneURI);
-    const scene = await this._loadSerializedScene(sceneDef, sceneURI, true);
-
-    const sceneInfo = this.scenes.find(sceneInfo => sceneInfo.uri === sceneURI);
-    sceneInfo.scene = scene;
-
-    this._setScene(scene);
-
-    return scene;
   }
 
   async saveScene(sceneURI) {
@@ -488,7 +212,7 @@ export default class Editor {
 
     this.scene.name = newSceneName;
 
-    const serializedScene = this._serializeScene(this.scene, sceneURI || this.sceneInfo.uri);
+    const serializedScene = this.scene.serialize();
 
     this.ignoreNextSceneFileChange = true;
 
@@ -497,107 +221,17 @@ export default class Editor {
     const sceneUserData = this.scene.userData;
 
     // If the previous URI was a gltf, update the ancestors, since we are now dealing with a .scene file.
-    if (this.sceneInfo.uri && (this.sceneInfo.uri.endsWith(".gltf") || this.sceneInfo.uri.endsWith(".glb"))) {
-      sceneUserData._ancestors = [this.sceneInfo.uri];
+    if (this.sceneUri && (this.sceneUri.endsWith(".gltf") || this.sceneUri.endsWith(".glb"))) {
+      sceneUserData._ancestors = [this.sceneUri];
     }
 
     this.setSceneURI(sceneURI);
 
     this.signals.sceneGraphChanged.dispatch();
 
-    this.sceneInfo.modified = false;
+    this.sceneModified = false;
 
     this.signals.sceneModified.dispatch();
-  }
-
-  _serializeScene(scene, scenePath, skipMetadata = false) {
-    const entities = {};
-
-    scene.traverse(entityObject => {
-      let parent;
-      let index;
-      let components;
-      let staticMode;
-
-      if (entityObject.userData._dontSerialize) {
-        return;
-      }
-
-      // Serialize the parent and index if _saveParent is set.
-      if (entityObject.userData._saveParent) {
-        parent = entityObject.parent.name;
-
-        const parentIndex = entityObject.parent.children.indexOf(entityObject);
-
-        if (parentIndex === -1) {
-          throw new Error("Entity not found in parent.");
-        }
-
-        index = parentIndex;
-      }
-
-      // Serialize all components with shouldSave set.
-      const entityComponents = entityObject.userData._components;
-
-      if (Array.isArray(entityComponents)) {
-        for (const component of entityComponents) {
-          if (component.shouldSave) {
-            if (components === undefined) {
-              components = [];
-            }
-
-            if (component.src) {
-              // Serialize SaveableComponent
-              const src = absoluteToRelativeURL(scenePath, component.src);
-
-              components.push({
-                name: component.name,
-                src
-              });
-            } else if (component.serialize) {
-              const props = component.serialize(scenePath);
-
-              components.push({
-                name: component.name,
-                props
-              });
-            }
-          }
-        }
-      }
-
-      const curStaticMode = entityObject.staticMode;
-      const originalStaticMode = entityObject.originalStaticMode;
-
-      if (curStaticMode !== originalStaticMode) {
-        staticMode = curStaticMode;
-      }
-
-      const saveEntity = entityObject.userData._saveEntity;
-
-      if (parent !== undefined || components !== undefined || staticMode !== undefined || saveEntity) {
-        entities[entityObject.name] = {
-          parent,
-          index,
-          staticMode,
-          components
-        };
-      }
-    });
-
-    const serializedScene = { entities };
-
-    if (!skipMetadata) {
-      serializedScene.metadata = this.getSceneMetadata();
-    }
-
-    if (scene.userData._inherits) {
-      serializedScene.inherits = absoluteToRelativeURL(scenePath, scene.userData._inherits);
-    } else {
-      serializedScene.root = scene.name;
-    }
-
-    return serializedScene;
   }
 
   // async generateNavMesh() {
@@ -929,7 +563,7 @@ export default class Editor {
   addObject(object, parent) {
     object.saveParent = true;
 
-    object.traverse(child => (child.name = this._conflictHandler.addToDuplicateNameCounters(child, child.name)));
+    object.traverse(child => (child.name = this.conflictHandler.addToDuplicateNameCounters(child, child.name)));
 
     if (parent !== undefined) {
       parent.add(object);
@@ -953,7 +587,7 @@ export default class Editor {
     }
 
     object.parent.remove(object);
-    this._conflictHandler.removeFromDuplicateNameCounters(object, object.name);
+    this.conflictHandler.removeFromDuplicateNameCounters(object, object.name);
 
     this.signals.objectRemoved.dispatch(object);
     this.signals.sceneGraphChanged.dispatch();
@@ -987,7 +621,7 @@ export default class Editor {
   }
 
   setObjectName(object, value) {
-    const handler = this._conflictHandler;
+    const handler = this.conflictHandler;
     if (handler.isUniqueObjectName(value)) {
       const prevName = object.name;
       handler.addToDuplicateNameCounters(object, value);
@@ -995,7 +629,7 @@ export default class Editor {
       handler.removeFromDuplicateNameCounters(object, prevName);
     } else {
       this.signals.objectChanged.dispatch(object);
-      throw new ConflictError("rename error", "rename", this.sceneInfo.uri, handler);
+      throw new ConflictError("rename error", "rename", this.scene.metadata.uri, handler);
     }
   }
 
@@ -1115,7 +749,7 @@ export default class Editor {
 
     const objectName = object.name;
     this.execute(new RemoveObjectCommand(object));
-    this._conflictHandler.removeFromDuplicateNameCounters(object, objectName);
+    this.conflictHandler.removeFromDuplicateNameCounters(object, objectName);
   }
 
   deleteSelectedObject() {

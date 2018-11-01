@@ -1,28 +1,17 @@
 import EditorNodeMixin from "./EditorNodeMixin";
-import GroundPlane from "../objects/GroundPlane";
 import THREE from "../three";
 
 async function yieldFor(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-export default class FloorPlanNode extends EditorNodeMixin(GroundPlane) {
+export default class FloorPlanNode extends EditorNodeMixin(THREE.Object3D) {
   static nodeName = "Floor Plan";
 
   static shouldDeserialize(entityJson) {
     const gltfModelComponent = entityJson.components.find(c => c.name === "gltf-model");
     const navMeshComponent = entityJson.components.find(c => c.name === "nav-mesh");
     return gltfModelComponent && navMeshComponent;
-  }
-
-  static async deserialize(editor, json) {
-    const node = super.deserialize(editor, json);
-
-    const { color } = json.components.find(c => c.name === "ground-plane").props;
-
-    node.mesh.material.color.set(color);
-
-    return node;
   }
 
   static async generateHeightfield(mesh) {
@@ -77,18 +66,5 @@ export default class FloorPlanNode extends EditorNodeMixin(GroundPlane) {
     }
 
     return { offset, distance, data };
-  }
-
-  serialize() {
-    const json = super.serialize();
-
-    json.components.push({
-      name: "ground-plane",
-      props: {
-        color: this.mesh.material.color
-      }
-    });
-
-    return json;
   }
 }

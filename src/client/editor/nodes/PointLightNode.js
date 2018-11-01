@@ -10,11 +10,11 @@ export default class PointLightNode extends EditorNodeMixin(PhysicalPointLight) 
   static nodeName = "Point Light";
 
   static async deserialize(editor, json) {
-    const node = super.deserialize(editor, json);
+    const node = await super.deserialize(editor, json);
 
     const { color, intensity, range, castShadow } = json.components.find(c => c.name === "point-light").props;
 
-    node.color.copy(color);
+    node.color.set(color);
     node.intensity = intensity;
     node.range = range;
     node.castShadow = castShadow;

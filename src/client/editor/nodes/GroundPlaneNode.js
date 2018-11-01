@@ -7,7 +7,7 @@ export default class GroundPlaneNode extends EditorNodeMixin(GroundPlane) {
   static nodeName = "Ground Plane";
 
   static async deserialize(editor, json) {
-    const node = super.deserialize(editor, json);
+    const node = await super.deserialize(editor, json);
 
     const { color } = json.components.find(c => c.name === "ground-plane").props;
 

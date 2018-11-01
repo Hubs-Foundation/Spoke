@@ -10,7 +10,7 @@ export default class SkyboxNode extends EditorNodeMixin(Sky) {
   static nodeName = "Skybox";
 
   static async deserialize(editor, json) {
-    const node = super.deserialize(editor, json);
+    const node = await super.deserialize(editor, json);
 
     const {
       turbidity,

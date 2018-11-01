@@ -177,9 +177,9 @@ class EditorContainer extends Component {
             name: "Open Scene...",
             action: e => this.onOpenSceneDialog(e)
           },
-          this.props.editor.sceneInfo.uri
+          this.props.editor.sceneUri
             ? {
-                name: "Save " + getUrlFilename(this.props.editor.sceneInfo.uri),
+                name: "Save " + getUrlFilename(this.props.editor.sceneUri),
                 action: e => this.onSave(e)
               }
             : null,
@@ -236,7 +236,7 @@ class EditorContainer extends Component {
     this.updateDocumentTitle();
 
     window.onbeforeunload = e => {
-      if (!this.props.editor.sceneModified()) {
+      if (!this.props.editor.sceneModified) {
         return undefined;
       }
 
@@ -462,7 +462,7 @@ class EditorContainer extends Component {
   };
 
   updateDocumentTitle = () => {
-    const modified = this.props.editor.sceneModified() ? "*" : "";
+    const modified = this.props.editor.sceneModified ? "*" : "";
     document.title = `${modified}${this.props.editor.scene.name} | Spoke by Mozilla`;
   };
 
@@ -508,7 +508,7 @@ class EditorContainer extends Component {
   }
 
   confirmSceneChange = async () => {
-    if (!this.props.editor.sceneModified()) {
+    if (!this.props.editor.sceneModified) {
       return true;
     }
 
@@ -561,22 +561,22 @@ class EditorContainer extends Component {
   };
 
   saveOrSaveAsScene = async () => {
-    if (this.props.editor.sceneInfo.uri) {
-      return this.onSaveScene(this.props.editor.sceneInfo.uri);
+    if (this.props.editor.sceneUri) {
+      return this.onSaveScene(this.props.editor.sceneUri);
     } else {
       return this.onSaveSceneAsDialog();
     }
   };
 
   onSaveSceneAsDialog = async () => {
-    const initialPath = this.props.editor.sceneInfo.uri;
+    const initialPath = this.props.editor.sceneUri;
 
     const filePath = await this.waitForFile({
       title: "Save scene as...",
       filters: [".spoke"],
       extension: ".spoke",
       confirmButtonLabel: "Save",
-      initialPath: this.props.editor.sceneInfo.uri
+      initialPath: this.props.editor.sceneUri
     });
 
     if (filePath === null) return false;
@@ -760,7 +760,7 @@ class EditorContainer extends Component {
   };
 
   onPublishScene = async () => {
-    if (this.props.editor.sceneModified() || this.props.editor.sceneIsDefault()) {
+    if (this.props.editor.sceneModified) {
       const willSaveChanges = await this.waitForConfirm({
         title: "Unsaved Chages",
         message: "Your scene must be saved before publishing.",

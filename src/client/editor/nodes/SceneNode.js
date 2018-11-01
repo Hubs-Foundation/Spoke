@@ -9,7 +9,7 @@ export default class SceneNode extends EditorNodeMixin(THREE.Scene) {
   static hideTransform = true;
 
   static async deserialize(editor, json) {
-    const scene = new THREE.Scene();
+    const scene = new SceneNode();
 
     const { root, metadata, entities } = json;
 
@@ -20,14 +20,22 @@ export default class SceneNode extends EditorNodeMixin(THREE.Scene) {
 
     for (const entityName of sortedEntities) {
       const entity = entities[entityName];
-      const NodeConstructor = editor.registeredNodes.find(n => n.shouldDeserialize(entity));
 
-      if (!NodeConstructor) {
+      let EntityNodeConstructor;
+
+      for (const NodeConstructor of editor.nodeTypes) {
+        if (NodeConstructor.shouldDeserialize(entity)) {
+          EntityNodeConstructor = NodeConstructor;
+          break;
+        }
+      }
+
+      if (!EntityNodeConstructor) {
         throw new Error(`No node constructor found for entity "${entityName}"`);
       }
 
       const parent = scene.getObjectByName(entity.parent);
-      const node = await NodeConstructor.deserialize(editor, entity);
+      const node = await EntityNodeConstructor.deserialize(editor, entity);
 
       parent.children.splice(entity.index, 0, node);
       node.parent = parent;
@@ -38,6 +46,7 @@ export default class SceneNode extends EditorNodeMixin(THREE.Scene) {
 
   constructor() {
     super();
+    this.url = null;
     this.metadata = {};
     setStaticMode(this, StaticModes.Static);
   }
@@ -45,6 +54,7 @@ export default class SceneNode extends EditorNodeMixin(THREE.Scene) {
   copy(source, recursive) {
     super.copy(source, recursive);
 
+    this.url = source.url;
     this.metadata = source.metadata;
 
     return this;

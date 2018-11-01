@@ -10,13 +10,13 @@ export default class SpotLightNode extends EditorNodeMixin(PhysicalSpotLight) {
   static nodeName = "Spot Light";
 
   static async deserialize(editor, json) {
-    const node = super.deserialize(editor, json);
+    const node = await super.deserialize(editor, json);
 
     const { color, intensity, range, innerConeAngle, outerConeAngle, castShadow } = json.components.find(
       c => c.name === "spot-light"
     ).props;
 
-    node.color.copy(color);
+    node.color.set(color);
     node.intensity = intensity;
     node.range = range;
     node.innerConeAngle = innerConeAngle;

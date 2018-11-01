@@ -12,20 +12,22 @@ export default class ModelNodeEditor extends Component {
 
   static iconClassName = "fa-cube";
 
-  onChangeAnimation = animation => {
-    console.log(animation);
+  onChangeAnimation = ({ value }) => {
+    this.props.node.activeClip = value;
   };
 
   render() {
-    const activeClipName = this.props.node.getActiveClipName();
-    const selectedAnimationOption = activeClipName ? { value: activeClipName, label: activeClipName } : null;
-    const animationOptions = this.props.node.getClipNames().map(name => ({ value: name, label: name }));
+    const activeClipName = this.props.node.activeClip;
+    const clipOptions = this.props.node
+      .getClipNames()
+      .map(name => ({ label: name, value: name }))
+      .concat({ label: "None", value: null });
 
     return (
       <NodeEditor description="A 3D model in your scene, loaded from a GLTF URL or file." {...this.props}>
-        {animationOptions.length > 0 && (
+        {clipOptions.length > 0 && (
           <InputGroup name="Loop Animation">
-            <SelectInput options={animationOptions} value={selectedAnimationOption} onChange={this.onChangeAnimation} />
+            <SelectInput options={clipOptions} value={activeClipName} onChange={this.onChangeAnimation} />
           </InputGroup>
         )}
       </NodeEditor>

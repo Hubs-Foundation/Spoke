@@ -14,7 +14,6 @@ export default class Model extends THREE.Object3D {
   }
 
   setModel(object, animations) {
-    console.log("setModel", object, animations);
     this.model = object;
 
     if (animations) {
@@ -22,6 +21,23 @@ export default class Model extends THREE.Object3D {
     }
 
     this.add(object);
+  }
+
+  getClipNames() {
+    return this.animations.map(clip => clip.name);
+  }
+
+  get activeClip() {
+    if (this.clipActions.length > 0) {
+      return this.clipActions[0].getClip().name;
+    }
+
+    return null;
+  }
+
+  set activeClip(clipName) {
+    this.clipActions = [];
+    this.addClipAction(clipName);
   }
 
   addClipAction(clipName) {

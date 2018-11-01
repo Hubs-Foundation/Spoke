@@ -10,12 +10,12 @@ export default class HemisphereLightNode extends EditorNodeMixin(PhysicalHemisph
   static nodeName = "Hemisphere Light";
 
   static async deserialize(editor, json) {
-    const node = super.deserialize(editor, json);
+    const node = await super.deserialize(editor, json);
 
     const { skyColor, groundColor, intensity } = json.components.find(c => c.name === "hemisphere-light").props;
 
-    node.skyColor.copy(skyColor);
-    node.groundColor.copy(groundColor);
+    node.skyColor.set(skyColor);
+    node.groundColor.set(groundColor);
     node.intensity = intensity;
 
     return node;
