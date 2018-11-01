@@ -25,9 +25,8 @@ import ProgressDialog from "./dialogs/ProgressDialog";
 import PublishDialog from "./dialogs/PublishDialog";
 import UpdateRequiredDialog from "./dialogs/UpdateRequiredDialog";
 
-import ConflictError from "../editor/ConflictError";
 import AuthenticationError from "../editor/AuthenticationError";
-import { getUrlDirname, getUrlFilename } from "../utils/url-path";
+import { getUrlFilename } from "../utils/url-path";
 
 function isInputSelected() {
   const el = document.activeElement;
@@ -615,103 +614,6 @@ class EditorContainer extends Component {
     }
   };
 
-  onExtendScene = async uri => {
-    if (!(await this.confirmSceneChange())) return;
-
-    this.showDialog(ProgressDialog, {
-      title: "Extending Prefab",
-      message: "Extending prefab..."
-    });
-
-    try {
-      await this.props.editor.extendScene(uri);
-      this.hideDialog();
-    } catch (e) {
-      console.error(e);
-
-      this.showDialog(ErrorDialog, {
-        title: "Error extending prefab.",
-        message: e.message || "There was an error when extending the prefab."
-      });
-    }
-  };
-
-  onEditPrefab = async (object, path) => {
-    this.showDialog(ProgressDialog, {
-      title: "Opening Prefab",
-      message: "Opening prefab..."
-    });
-
-    try {
-      await this.props.editor.editScenePrefab(object, path);
-      this.hideDialog();
-    } catch (e) {
-      console.error(e);
-
-      this.showDialog(ErrorDialog, {
-        title: "Error opening prefab.",
-        message: e.message || "There was an error when opening the prefab."
-      });
-    }
-  };
-
-  onPopScene = async () => {
-    if (!(await this.confirmSceneChange())) return;
-    this.props.editor.popScene();
-  };
-
-  onCreatePrefabFromGLTF = async gltfPath => {
-    try {
-      const initialPath = getUrlDirname(gltfPath);
-      const defaultFileName = getUrlFilename(gltfPath);
-
-      const outputPath = await this.waitForFile({
-        title: "Save prefab as...",
-        filters: [".spoke"],
-        extension: ".spoke",
-        confirmButtonLabel: "Create Prefab",
-        initialPath,
-        defaultFileName
-      });
-
-      if (!outputPath) return null;
-
-      this.showDialog(ProgressDialog, {
-        title: "Creating Prefab",
-        message: "Creating prefab..."
-      });
-
-      await this.props.editor.createPrefabFromGLTF(gltfPath, outputPath);
-
-      this.hideDialog();
-
-      return outputPath;
-    } catch (e) {
-      if (e instanceof ConflictError) {
-        const result = await this.waitForConfirm({
-          title: "Resolve Node Conflicts",
-          message:
-            "We've found duplicate and/or missing node names in this file.\nWould you like to fix all conflicts?\n*This will modify the original file."
-        });
-
-        if (!result) return null;
-
-        if (await this.props.editor.fixConflictError(e)) {
-          return this.onCreatePrefabFromGLTF(gltfPath);
-        }
-      }
-
-      console.error(e);
-
-      this.showDialog(ErrorDialog, {
-        title: "Error Creating Prefab",
-        message: e.message || "There was an error when creating the prefab."
-      });
-
-      return null;
-    }
-  };
-
   onExportSceneDialog = async () => {
     const outputPath = await this.waitForFile({
       title: "Select the output directory",
@@ -890,10 +792,6 @@ class EditorContainer extends Component {
     onOpenScene: this.onOpenScene,
     onSaveSceneAsDialog: this.onSaveSceneAsDialog,
     onSaveScene: this.onSaveScene,
-    onExtendScene: this.onExtendScene,
-    onEditPrefab: this.onEditPrefab,
-    onPopScene: this.onPopScene,
-    onCreatePrefabFromGLTF: this.onCreatePrefabFromGLTF,
     onExportSceneDialog: this.onExportSceneDialog,
     onPublishScene: this.onPublishScene,
     onWriteFiles: this.onWriteFiles
