@@ -25,11 +25,9 @@ export default class ModelNodeEditor extends Component {
 
     return (
       <NodeEditor description="A 3D model in your scene, loaded from a GLTF URL or file." {...this.props}>
-        {clipOptions.length > 0 && (
-          <InputGroup name="Loop Animation">
-            <SelectInput options={clipOptions} value={activeClipName} onChange={this.onChangeAnimation} />
-          </InputGroup>
-        )}
+        <InputGroup name="Loop Animation">
+          <SelectInput options={clipOptions} value={activeClipName} onChange={this.onChangeAnimation} />
+        </InputGroup>
       </NodeEditor>
     );
   }
