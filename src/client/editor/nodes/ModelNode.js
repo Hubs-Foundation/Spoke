@@ -2,6 +2,7 @@ import THREE from "../three";
 import Model from "../objects/Model";
 import EditorNodeMixin from "./EditorNodeMixin";
 import { setStaticMode, StaticModes } from "../StaticMode";
+import absoluteToRelativeURL from "../utils/absoluteToRelativeURL";
 
 export default class ModelNode extends EditorNodeMixin(Model) {
   static nodeName = "Model";
@@ -17,7 +18,8 @@ export default class ModelNode extends EditorNodeMixin(Model) {
 
     const { src, attribution, origin, includeInFloorPlan } = json.components.find(c => c.name === "gltf-model").props;
 
-    await node.loadGLTF(editor, src);
+    const absoluteURL = new URL(src, editor.sceneUri).href;
+    await node.loadGLTF(editor, absoluteURL);
 
     node.attribution = attribution;
     node.origin = origin;
@@ -40,13 +42,15 @@ export default class ModelNode extends EditorNodeMixin(Model) {
     this.includeInFloorPlan = true;
   }
 
-  serialize() {
+  serialize(sceneUri) {
     const json = super.serialize();
+
+    console.log(sceneUri, this.src);
 
     json.components.push({
       name: "gltf-model",
       props: {
-        src: this.src,
+        src: absoluteToRelativeURL(sceneUri, this.src),
         attribution: this.attribution,
         origin: this.origin,
         includeInFloorPlan: this.includeInFloorPlan
@@ -75,7 +79,7 @@ export default class ModelNode extends EditorNodeMixin(Model) {
   }
 
   async loadGLTF(editor, src) {
-    const { scene, animations } = await editor.loadGLTF(new URL(src, editor.sceneUri).href);
+    const { scene, animations } = await editor.loadGLTF(src);
     this.src = src;
     this.setModel(scene, animations);
     return this;

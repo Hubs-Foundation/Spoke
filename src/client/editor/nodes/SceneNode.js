@@ -70,7 +70,7 @@ export default class SceneNode extends EditorNodeMixin(THREE.Scene) {
     return this;
   }
 
-  serialize() {
+  serialize(sceneUri) {
     const sceneJson = {
       root: this.name,
       metadata: this.metadata,
@@ -82,7 +82,7 @@ export default class SceneNode extends EditorNodeMixin(THREE.Scene) {
         return;
       }
 
-      const entityJson = child.serialize();
+      const entityJson = child.serialize(sceneUri);
       entityJson.parent = child.parent.name;
 
       let index = 0;

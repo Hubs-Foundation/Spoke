@@ -211,7 +211,7 @@ export default class Editor {
 
     this.scene.name = newSceneName;
 
-    const serializedScene = this.scene.serialize();
+    const serializedScene = this.scene.serialize(sceneURI);
 
     this.ignoreNextSceneFileChange = true;
 
@@ -449,6 +449,7 @@ export default class Editor {
     const attribution = await this.project.getImportAttribution(uri);
     const node = new ModelNode();
     node.name = name;
+    console.log("addGLTFModelNode", uri);
     await node.loadGLTF(this, uri);
     node.attribution = attribution;
     node.origin = originUri;
@@ -792,7 +793,7 @@ export default class Editor {
     onPublishProgress("uploading");
 
     const sceneFileUri = this.project.getAbsoluteURI(`generated/${uuid()}.spoke`);
-    const serializedScene = this.scene.serialize();
+    const serializedScene = this.scene.serialize(sceneFileUri);
     await this.project.writeJSON(sceneFileUri, serializedScene);
     const { id: sceneFileId, token: sceneFileToken } = await this.project.uploadAndDelete(sceneFileUri);
 
