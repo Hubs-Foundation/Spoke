@@ -105,8 +105,10 @@ export default class ModelNode extends EditorNodeMixin(Model) {
     // TODO: Support exporting more than one active clip.
     if (this.clipActions.length > 0) {
       this.userData.gltfExtensions = {
-        "loop-animation": {
-          clip: this.clipActions[0].getClip().name
+        HUBS_components: {
+          "loop-animation": {
+            clip: this.clipActions[0].getClip().name
+          }
         }
       };
     }
