@@ -45,8 +45,6 @@ export default class ModelNode extends EditorNodeMixin(Model) {
   serialize(sceneUri) {
     const json = super.serialize();
 
-    console.log(sceneUri, this.src);
-
     json.components.push({
       name: "gltf-model",
       props: {

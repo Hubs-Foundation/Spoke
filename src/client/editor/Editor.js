@@ -449,7 +449,6 @@ export default class Editor {
     const attribution = await this.project.getImportAttribution(uri);
     const node = new ModelNode();
     node.name = name;
-    console.log("addGLTFModelNode", uri);
     await node.loadGLTF(this, uri);
     node.attribution = attribution;
     node.origin = originUri;
