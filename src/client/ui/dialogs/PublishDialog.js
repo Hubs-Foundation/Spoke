@@ -11,7 +11,7 @@ export default class PublishDialog extends Component {
     hideDialog: PropTypes.func.isRequired,
     onCancel: PropTypes.func,
     screenshotURL: PropTypes.string,
-    attribution: PropTypes.string,
+    contentAttributions: PropTypes.array,
     onPublish: PropTypes.func,
     published: PropTypes.bool,
     sceneUrl: PropTypes.string,
@@ -57,7 +57,7 @@ export default class PublishDialog extends Component {
   };
 
   render() {
-    const { onCancel, hideDialog, screenshotURL, published, sceneUrl, attribution } = this.props;
+    const { onCancel, hideDialog, screenshotURL, published, sceneUrl, contentAttributions } = this.props;
     return (
       <div className={styles.dialogContainer}>
         <Header title="Publish to Hubs" />
@@ -165,10 +165,12 @@ export default class PublishDialog extends Component {
                 )}
               </form>
               {!published &&
-                attribution && (
+                contentAttributions && (
                   <div className={styles.attribution}>
                     <label>Model Attribution:</label>
-                    <p className={styles.attributionText}>{attribution}</p>
+                    <p className={styles.attributionText}>
+                      {contentAttributions.map(a => `${a.name} by ${a.author}\n`)}
+                    </p>
                   </div>
                 )}
             </div>

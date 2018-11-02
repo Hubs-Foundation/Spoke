@@ -497,7 +497,7 @@ export default class Editor {
     const node = new ModelNode();
     node.name = name;
     await node.loadGLTF(this, uri);
-    node.attribution = attribution;
+    node.attribution = JSON.stringify(attribution);
     node.origin = originUri;
     this.addObject(node);
     this.select(node);
@@ -789,22 +789,37 @@ export default class Editor {
     this.history.redo();
   }
 
-  getSceneAttribution() {
-    const attributions = new Set();
+  getSceneContentAttributions() {
+    const contentAttributions = [];
+    const seenAttributions = new Set();
+
     this.scene.traverse(obj => {
       if (!(obj.isNode && obj.type === "Model")) return;
-      const attribution = obj.attribution;
-      if (!attribution) return;
-      attributions.add(attribution);
+      const attributionJson = obj.attribution;
+      if (!attributionJson) return;
+
+      let attribution;
+      try {
+        attribution = JSON.parse(attributionJson);
+      } catch (e) {
+        // Legacy, might be a raw string left over before switch to JSON.
+        const [name, author] = attributionJson.split(" by ");
+        attribution = { name, author };
+      }
+      const attributionKey = attribution.url || `${attribution.name}_${attribution.author}`;
+      if (seenAttributions.has(attributionKey)) return;
+      seenAttributions.add(attributionKey);
+      contentAttributions.push(attribution);
     });
-    return Array.from(attributions).join("\n");
+
+    return contentAttributions;
   }
 
   async takeScreenshot() {
     return this.viewports[0].takeScreenshot();
   }
 
-  async publishScene(sceneId, screenshotBlob, attribution, onPublishProgress) {
+  async publishScene(sceneId, screenshotBlob, contentAttributions, onPublishProgress) {
     onPublishProgress("generating floor plan");
 
     // await this.generateNavMesh();
@@ -812,9 +827,11 @@ export default class Editor {
     await this.project.mkdir(this.project.getAbsoluteURI("generated"));
 
     const { name, creatorAttribution, description, allowRemixing, allowPromotion } = this.getSceneMetadata();
-    if (creatorAttribution && creatorAttribution.trim().length) {
-      attribution = `by ${creatorAttribution}.` + "\n" + attribution;
-    }
+
+    const attributions = {
+      creator: creatorAttribution,
+      content: contentAttributions
+    };
 
     onPublishProgress("exporting scene");
 
@@ -855,7 +872,7 @@ export default class Editor {
       sceneFileToken,
       name,
       description,
-      attribution,
+      attributions,
       allowRemixing,
       allowPromotion
     });
