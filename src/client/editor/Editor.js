@@ -1224,7 +1224,11 @@ export default class Editor {
 
   async addGLTFModelNode(name, uri, originUri) {
     const attribution = await this.project.getImportAttribution(uri);
-    this.addUnicomponentNode(name, "gltf-model", { src: uri, attribution, origin: originUri });
+    this.addUnicomponentNode(name, "gltf-model", {
+      src: uri,
+      attribution: JSON.stringify(attribution),
+      origin: originUri
+    });
   }
 
   async importGLTFIntoModelNode(url) {
@@ -1858,23 +1862,41 @@ export default class Editor {
     this.history.redo();
   }
 
-  getSceneAttribution() {
-    const attributions = new Set();
+  getSceneContentAttributions() {
+    const contentAttributions = [];
+    const seenAttributions = new Set();
+
     this.scene.traverse(obj => {
       const gltfModelComponent = GLTFModelComponent.getComponent(obj);
       if (!gltfModelComponent) return;
-      const attribution = gltfModelComponent.getProperty("attribution");
-      if (!attribution) return;
-      attributions.add(attribution);
+      const attributionJson = gltfModelComponent.getProperty("attribution");
+      if (!attributionJson) return;
+
+      let attribution;
+
+      try {
+        attribution = JSON.parse(attributionJson);
+      } catch (e) {
+        // Legacy, might be a raw string left over before switch to JSON.
+        const [name, author] = attributionJson.split(" by ");
+        attribution = { name, author };
+      }
+
+      const attributionKey = attribution.url || `${attribution.name}_${attribution.author}`;
+      if (seenAttributions.has(attributionKey)) return;
+
+      seenAttributions.add(attributionKey);
+      contentAttributions.push(attribution);
     });
-    return Array.from(attributions).join("\n");
+
+    return contentAttributions;
   }
 
   async takeScreenshot() {
     return this.viewports[0].takeScreenshot();
   }
 
-  async publishScene(sceneId, screenshotBlob, attribution, onPublishProgress) {
+  async publishScene(sceneId, screenshotBlob, contentAttributions, onPublishProgress) {
     onPublishProgress("generating floor plan");
 
     await this.generateNavMesh();
@@ -1882,9 +1904,11 @@ export default class Editor {
     await this.project.mkdir(this.project.getAbsoluteURI("generated"));
 
     const { name, creatorAttribution, description, allowRemixing, allowPromotion } = this.getSceneMetadata();
-    if (creatorAttribution && creatorAttribution.trim().length) {
-      attribution = `by ${creatorAttribution}.` + "\n" + attribution;
-    }
+
+    const attributions = {
+      creator: creatorAttribution,
+      content: contentAttributions
+    };
 
     onPublishProgress("exporting scene");
 
@@ -1925,7 +1949,7 @@ export default class Editor {
       sceneFileToken,
       name,
       description,
-      attribution,
+      attributions,
       allowRemixing,
       allowPromotion
     });

@@ -504,7 +504,7 @@ async function startServer(options) {
       allow_promotion: params.allowPromotion,
       name: params.name,
       description: params.description,
-      attribution: params.attribution
+      attributions: params.attributions
     };
 
     const sceneId = params.sceneId;

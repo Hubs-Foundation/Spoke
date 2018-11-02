@@ -796,7 +796,7 @@ class EditorContainer extends Component {
       blob: screenshotBlob,
       cameraTransform: screenshotCameraTransform
     } = await this.props.editor.takeScreenshot();
-    const attribution = this.props.editor.getSceneAttribution();
+    const contentAttributions = this.props.editor.getSceneContentAttributions();
     const screenshotURL = URL.createObjectURL(screenshotBlob);
     const {
       name,
@@ -814,7 +814,7 @@ class EditorContainer extends Component {
 
     await this.showDialog(PublishDialog, {
       screenshotURL,
-      attribution,
+      contentAttributions,
       initialName: name || this.props.editor.scene.name,
       initialCreatorAttribution,
       initialDescription: description,
@@ -847,7 +847,7 @@ class EditorContainer extends Component {
           publishResult = await this.props.editor.publishScene(
             isNewScene ? null : sceneId,
             screenshotBlob,
-            attribution,
+            contentAttributions,
             publishProgress => {
               this.showDialog(ProgressDialog, {
                 title: "Publishing Scene",

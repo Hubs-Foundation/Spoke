@@ -11,6 +11,8 @@ Easily create custom 3D environments for [Mozilla Hubs](https://hubs.mozilla.com
 - `npm ci`
 - `npm run dev`
 
+When running against a local self-signed cert reticulum server, you'll need to `export NODE_TLS_REJECT_UNAUTHORIZED=0` for publishing to work.
+
 Then open http://localhost:9090.
 
 ## Credits
