@@ -13,16 +13,40 @@ import SetNameCommand from "./commands/SetNameCommand";
 import SetPositionCommand from "./commands/SetPositionCommand";
 import SetRotationCommand from "./commands/SetRotationCommand";
 import SetScaleCommand from "./commands/SetScaleCommand";
+import SetObjectPropertyCommand from "./commands/SetObjectPropertyCommand";
 
 // import { generateNavMesh } from "../utils/navmesh";
 import { getUrlFilename } from "../utils/url-path";
 import { textureCache, gltfCache } from "./caches";
 import getNameWithoutIndex from "./utils/getNameWithoutIndex";
 
-import ModelNode from "./nodes/ModelNode";
 import DefaultNodeEditor from "../ui/node-editors/DefaultNodeEditor";
 import SceneNode from "./nodes/SceneNode";
-import SetObjectPropertyCommand from "./commands/SetObjectPropertyCommand";
+import SceneNodeEditor from "../ui/node-editors/SceneNodeEditor";
+import GroupNode from "./nodes/GroupNode";
+import GroupNodeEditor from "../ui/node-editors/GroupNodeEditor";
+import ModelNode from "./nodes/ModelNode";
+import ModelNodeEditor from "../ui/node-editors/ModelNodeEditor";
+import GroundPlaneNode from "./nodes/GroundPlaneNode";
+import GroundPlaneNodeEditor from "../ui/node-editors/GroundPlaneNodeEditor";
+import BoxColliderNode from "./nodes/BoxColliderNode";
+import BoxColliderNodeEditor from "../ui/node-editors/BoxColliderNodeEditor";
+import AmbientLightNode from "./nodes/AmbientLightNode";
+import AmbientLightNodeEditor from "../ui/node-editors/AmbientLightNodeEditor";
+import DirectionalLightNode from "./nodes/DirectionalLightNode";
+import DirectionalLightNodeEditor from "../ui/node-editors/DirectionalLightNodeEditor";
+import SpotLightNode from "./nodes/SpotLightNode";
+import SpotLightNodeEditor from "../ui/node-editors/SpotLightNodeEditor";
+import PointLightNode from "./nodes/PointLightNode";
+import PointLightNodeEditor from "../ui/node-editors/PointLightNodeEditor";
+import HemisphereLightNode from "./nodes/HemisphereLightNode";
+import HemisphereLightNodeEditor from "../ui/node-editors/HemisphereLightNodeEditor";
+import SpawnPointNode from "./nodes/SpawnPointNode";
+import SpawnPointNodeEditor from "../ui/node-editors/SpawnPointNodeEditor";
+import SkyboxNode from "./nodes/SkyboxNode";
+import SkyboxNodeEditor from "../ui/node-editors/SkyboxNodeEditor";
+import FloorPlanNode from "./nodes/FloorPlanNode";
+import FloorPlanNodeEditor from "../ui/node-editors/FloorPlanNodeEditor";
 
 export default class Editor {
   constructor(project) {
@@ -88,7 +112,19 @@ export default class Editor {
 
     this.history = new History(this);
 
-    this.loadNewScene();
+    this.registerNode(SceneNode, SceneNodeEditor);
+    this.registerNode(GroupNode, GroupNodeEditor);
+    this.registerNode(ModelNode, ModelNodeEditor);
+    this.registerNode(GroundPlaneNode, GroundPlaneNodeEditor);
+    this.registerNode(BoxColliderNode, BoxColliderNodeEditor);
+    this.registerNode(AmbientLightNode, AmbientLightNodeEditor);
+    this.registerNode(DirectionalLightNode, DirectionalLightNodeEditor);
+    this.registerNode(HemisphereLightNode, HemisphereLightNodeEditor);
+    this.registerNode(SpotLightNode, SpotLightNodeEditor);
+    this.registerNode(PointLightNode, PointLightNodeEditor);
+    this.registerNode(SpawnPointNode, SpawnPointNodeEditor);
+    this.registerNode(SkyboxNode, SkyboxNodeEditor);
+    this.registerNode(FloorPlanNode, FloorPlanNodeEditor);
   }
 
   onSceneGraphChanged = () => {
@@ -114,6 +150,8 @@ export default class Editor {
     }
 
     await Promise.all(tasks);
+
+    this.loadNewScene();
   }
 
   createViewport(canvas) {
@@ -141,6 +179,15 @@ export default class Editor {
 
     const scene = new SceneNode();
     scene.name = "Untitled";
+
+    scene.add(new SkyboxNode());
+    scene.add(new AmbientLightNode());
+    const directionalLight = new DirectionalLightNode();
+    directionalLight.position.set(0, 10, 0);
+    directionalLight.rotation.set(Math.PI * 0.5, Math.PI * (0.5 / 3.0), -Math.PI * 0.5);
+    scene.add(directionalLight);
+    scene.add(new SpawnPointNode());
+    scene.add(new GroundPlaneNode());
 
     this.setScene(scene);
     this.sceneModified = true;
