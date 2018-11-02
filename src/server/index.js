@@ -393,7 +393,9 @@ async function startServer(options) {
         ctx.body = { uri, name };
       }
 
-      await fs.writeJSON(path.join(filePathBase, "meta.json"), { ...meta, origin, name, author });
+      const attribution = { url: origin, name, author };
+
+      await fs.writeJSON(path.join(filePathBase, "meta.json"), { ...meta, origin, attribution });
     }
   });
 
