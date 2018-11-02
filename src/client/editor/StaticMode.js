@@ -13,7 +13,7 @@ export function getOriginalStaticMode(node) {
 }
 
 export function setStaticMode(node, mode) {
-  node.userData.staticMode = mode;
+  node.staticMode = mode;
 }
 
 export function getStaticMode(node) {
@@ -31,4 +31,25 @@ export function isStatic(node) {
 
 export function isDynamic(node) {
   return getStaticMode(node) === StaticModes.Dynamic;
+}
+
+export function computeStaticMode(object) {
+  let cur = object;
+
+  while (cur) {
+    if (cur.staticMode === StaticModes.Inherits || cur.staticMode === undefined) {
+      cur = cur.parent;
+    } else {
+      return cur.staticMode;
+    }
+  }
+
+  return StaticModes.Dynamic;
+}
+
+export function computeAndSetStaticModes(object) {
+  object.traverse(curNode => {
+    const staticMode = computeStaticMode(curNode);
+    setStaticMode(curNode, staticMode);
+  });
 }

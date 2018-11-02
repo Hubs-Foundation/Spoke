@@ -14,13 +14,11 @@ import SetPositionCommand from "./commands/SetPositionCommand";
 import SetRotationCommand from "./commands/SetRotationCommand";
 import SetScaleCommand from "./commands/SetScaleCommand";
 
-// import MeshCombinationGroup from "./MeshCombinationGroup";
 // import { generateNavMesh } from "../utils/navmesh";
 import { getUrlFilename } from "../utils/url-path";
 import { textureCache, gltfCache } from "./caches";
 import getNameWithoutIndex from "./utils/getNameWithoutIndex";
 
-// import cloneObject3D from "./utils/cloneObject3D";
 import ModelNode from "./nodes/ModelNode";
 import DefaultNodeEditor from "../ui/node-editors/DefaultNodeEditor";
 import SceneNode from "./nodes/SceneNode";
@@ -359,183 +357,92 @@ export default class Editor {
   //   this.addObject(navNode);
   // }
 
-  async exportScene(/* outputPath, glb */) {
-    // const scene = this.scene;
-    // const clonedScene = cloneObject3D(scene);
-    // // Add a preview camera to the exported GLB if there is a transform in the metadata.
-    // const { previewCameraTransform } = this.getSceneMetadata();
-    // if (previewCameraTransform) {
-    //   const previewCamera = this.DEFAULT_CAMERA.clone();
-    //   previewCamera.name = "scene-preview-camera";
-    //   previewCamera.applyMatrix(previewCameraTransform);
-    //   clonedScene.add(previewCamera);
-    // }
-    // clonedScene.traverse(object => {
-    //   // Remove objects marked as _dontExport
-    //   for (const child of object.children) {
-    //     if (child.userData._dontExport) {
-    //       object.remove(child);
-    //       return;
-    //     }
-    //   }
-    // });
-    // await MeshCombinationGroup.combineMeshes(clonedScene);
-    // const animations = [];
-    // clonedScene.traverse(object => {
-    //   const gltfModelComponent = GLTFModelComponent.getComponent(object);
-    //   const loopAnimationComponent = LoopAnimationComponent.getComponent(object);
-    //   if (gltfModelComponent && loopAnimationComponent) {
-    //     const gltfRoot = object.children.find(node => node.type === "Scene");
-    //     const clipName = loopAnimationComponent.props.clip;
-    //     if (gltfRoot && clipName !== null) {
-    //       const animation = gltfRoot.animations.find(a => a.name === clipName);
-    //       if (animation) {
-    //         animations.push(animation);
-    //       } else {
-    //         throw new Error(`Animation for clip "${clipName}" not found.`);
-    //       }
-    //     } else if (loopAnimationComponent) {
-    //       const index = object.userData._components.findIndex(
-    //         ({ name }) => name === LoopAnimationComponent.componentName
-    //       );
-    //       object.userData._components.splice(index, 1);
-    //     }
-    //   }
-    // });
-    // const componentsToExport = Components.filter(c => !c.dontExportProps).map(component => component.componentName);
-    // function ensureHubsComponents(userData) {
-    //   if (userData.gltfExtensions === undefined) {
-    //     userData.gltfExtensions = {};
-    //   }
-    //   if (userData.gltfExtensions.HUBS_components === undefined) {
-    //     userData.gltfExtensions.HUBS_components = {};
-    //   }
-    // }
-    // // Second pass at scene optimization.
-    // clonedScene.traverse(object => {
-    //   const userData = object.userData;
-    //   // Move component data to userData.extensions.HUBS_components
-    //   if (userData._components) {
-    //     for (const component of userData._components) {
-    //       if (componentsToExport.includes(component.name)) {
-    //         ensureHubsComponents(userData);
-    //         userData.gltfExtensions.HUBS_components[component.name] = component.props;
-    //       }
-    //     }
-    //   }
-    //   // Add shadow component to meshes with non-default values.
-    //   if (object.isMesh && (object.castShadow || object.receiveShadow)) {
-    //     ensureHubsComponents(object.userData);
-    //     object.userData.gltfExtensions.HUBS_components.shadow = {
-    //       castShadow: object.castShadow,
-    //       receiveShadow: object.receiveShadow
-    //     };
-    //   }
-    // });
-    // function hasExtrasOrExtensions(object) {
-    //   const userData = object.userData;
-    //   for (const key in userData) {
-    //     if (userData.hasOwnProperty(key) && !key.startsWith("_")) {
-    //       return true;
-    //     }
-    //   }
-    //   return false;
-    // }
-    // function removeUnusedObjects(object) {
-    //   let canBeRemoved = !!object.parent;
-    //   for (const child of object.children.slice(0)) {
-    //     if (!removeUnusedObjects(child)) {
-    //       canBeRemoved = false;
-    //     }
-    //   }
-    //   const shouldRemove =
-    //     canBeRemoved &&
-    //     (object.constructor === THREE.Object3D || object.constructor === THREE.Scene) &&
-    //     object.children.length === 0 &&
-    //     isStatic(object) &&
-    //     !hasExtrasOrExtensions(object);
-    //   if (canBeRemoved && shouldRemove) {
-    //     object.parent.remove(object);
-    //     return true;
-    //   }
-    //   return false;
-    // }
-    // removeUnusedObjects(clonedScene);
-    // clonedScene.traverse(({ userData }) => {
-    //   // Remove editor data.
-    //   for (const key in userData) {
-    //     if (userData.hasOwnProperty(key) && key.startsWith("_")) {
-    //       delete userData[key];
-    //     }
-    //   }
-    // });
-    // const exporter = new THREE.GLTFExporter();
-    // // TODO: export animations
-    // const chunks = await new Promise((resolve, reject) => {
-    //   exporter.parseChunks(clonedScene, resolve, reject, {
-    //     mode: glb ? "glb" : "gltf",
-    //     onlyVisible: false,
-    //     animations
-    //   });
-    // });
-    // if (!glb) {
-    //   const bufferDefs = chunks.json.buffers;
-    //   if (bufferDefs && bufferDefs.length > 0 && bufferDefs[0].uri === undefined) {
-    //     bufferDefs[0].uri = clonedScene.name + ".bin";
-    //   }
-    // }
-    // // De-duplicate images.
-    // const imageDefs = chunks.json.images;
-    // if (imageDefs && imageDefs.length > 0) {
-    //   // Map containing imageProp -> newIndex
-    //   const uniqueImageProps = new Map();
-    //   // Map containing oldIndex -> newIndex
-    //   const imageIndexMap = new Map();
-    //   // Array containing unique imageDefs
-    //   const uniqueImageDefs = [];
-    //   // Array containing unique image blobs
-    //   const uniqueImages = [];
-    //   for (const [index, imageDef] of imageDefs.entries()) {
-    //     const imageProp = imageDef.uri === undefined ? imageDef.bufferView : imageDef.uri;
-    //     let newIndex = uniqueImageProps.get(imageProp);
-    //     if (newIndex === undefined) {
-    //       newIndex = uniqueImageDefs.push(imageDef) - 1;
-    //       uniqueImageProps.set(imageProp, newIndex);
-    //       uniqueImages.push(chunks.images[index]);
-    //     }
-    //     imageIndexMap.set(index, newIndex);
-    //   }
-    //   chunks.json.images = uniqueImageDefs;
-    //   chunks.images = uniqueImages;
-    //   for (const textureDef of chunks.json.textures) {
-    //     textureDef.source = imageIndexMap.get(textureDef.source);
-    //   }
-    // }
-    // if (glb) {
-    //   return await new Promise((resolve, reject) => exporter.createGLBBlob(chunks, resolve, reject));
-    // } else {
-    //   // Export current editor scene using THREE.GLTFExporter
-    //   const { json, buffers, images } = chunks;
-    //   // Ensure the output directory exists
-    //   await this.project.mkdir(outputPath);
-    //   // Write the .gltf file
-    //   const gltfPath = outputPath + "/" + scene.name + ".gltf";
-    //   await this.project.writeJSON(gltfPath, json);
-    //   // Write .bin files
-    //   for (const [index, buffer] of buffers.entries()) {
-    //     if (buffer !== undefined) {
-    //       const bufferName = json.buffers[index].uri;
-    //       await this.project.writeBlob(outputPath + "/" + bufferName, buffer);
-    //     }
-    //   }
-    //   // Write image files
-    //   for (const [index, image] of images.entries()) {
-    //     if (image !== undefined) {
-    //       const imageName = json.images[index].uri;
-    //       await this.project.writeBlob(outputPath + "/" + imageName, image);
-    //     }
-    //   }
-    // }
+  async exportScene(outputPath, glb) {
+    const scene = this.scene;
+    const clonedScene = scene.clone();
+
+    clonedScene.prepareForExport();
+    await clonedScene.combineMeshes();
+    clonedScene.removeUnusedObjects();
+
+    // Add a preview camera to the exported GLB if there is a transform in the metadata.
+    const { previewCameraTransform } = this.getSceneMetadata();
+    if (previewCameraTransform) {
+      const previewCamera = this.camera.clone();
+      previewCamera.name = "scene-preview-camera";
+      previewCamera.applyMatrix(previewCameraTransform);
+      clonedScene.add(previewCamera);
+    }
+
+    const animations = clonedScene.getAnimationClips();
+
+    const exporter = new THREE.GLTFExporter();
+    // TODO: export animations
+    const chunks = await new Promise((resolve, reject) => {
+      exporter.parseChunks(clonedScene, resolve, reject, {
+        mode: glb ? "glb" : "gltf",
+        onlyVisible: false,
+        animations
+      });
+    });
+    if (!glb) {
+      const bufferDefs = chunks.json.buffers;
+      if (bufferDefs && bufferDefs.length > 0 && bufferDefs[0].uri === undefined) {
+        bufferDefs[0].uri = clonedScene.name + ".bin";
+      }
+    }
+    // De-duplicate images.
+    const imageDefs = chunks.json.images;
+    if (imageDefs && imageDefs.length > 0) {
+      // Map containing imageProp -> newIndex
+      const uniqueImageProps = new Map();
+      // Map containing oldIndex -> newIndex
+      const imageIndexMap = new Map();
+      // Array containing unique imageDefs
+      const uniqueImageDefs = [];
+      // Array containing unique image blobs
+      const uniqueImages = [];
+      for (const [index, imageDef] of imageDefs.entries()) {
+        const imageProp = imageDef.uri === undefined ? imageDef.bufferView : imageDef.uri;
+        let newIndex = uniqueImageProps.get(imageProp);
+        if (newIndex === undefined) {
+          newIndex = uniqueImageDefs.push(imageDef) - 1;
+          uniqueImageProps.set(imageProp, newIndex);
+          uniqueImages.push(chunks.images[index]);
+        }
+        imageIndexMap.set(index, newIndex);
+      }
+      chunks.json.images = uniqueImageDefs;
+      chunks.images = uniqueImages;
+      for (const textureDef of chunks.json.textures) {
+        textureDef.source = imageIndexMap.get(textureDef.source);
+      }
+    }
+    if (glb) {
+      return await new Promise((resolve, reject) => exporter.createGLBBlob(chunks, resolve, reject));
+    } else {
+      // Export current editor scene using THREE.GLTFExporter
+      const { json, buffers, images } = chunks;
+      // Ensure the output directory exists
+      await this.project.mkdir(outputPath);
+      // Write the .gltf file
+      const gltfPath = outputPath + "/" + scene.name + ".gltf";
+      await this.project.writeJSON(gltfPath, json);
+      // Write .bin files
+      for (const [index, buffer] of buffers.entries()) {
+        if (buffer !== undefined) {
+          const bufferName = json.buffers[index].uri;
+          await this.project.writeBlob(outputPath + "/" + bufferName, buffer);
+        }
+      }
+      // Write image files
+      for (const [index, image] of images.entries()) {
+        if (image !== undefined) {
+          const imageName = json.images[index].uri;
+          await this.project.writeBlob(outputPath + "/" + imageName, image);
+        }
+      }
+    }
   }
 
   async addGLTFModelNode(name, uri, originUri) {
@@ -853,7 +760,7 @@ export default class Editor {
   async publishScene(sceneId, screenshotBlob, attribution, onPublishProgress) {
     onPublishProgress("generating floor plan");
 
-    await this.generateNavMesh();
+    // await this.generateNavMesh();
 
     await this.project.mkdir(this.project.getAbsoluteURI("generated"));
 
@@ -885,7 +792,7 @@ export default class Editor {
     onPublishProgress("uploading");
 
     const sceneFileUri = this.project.getAbsoluteURI(`generated/${uuid()}.spoke`);
-    const serializedScene = this._serializeScene(this.scene, sceneFileUri, true);
+    const serializedScene = this.scene.serialize();
     await this.project.writeJSON(sceneFileUri, serializedScene);
     const { id: sceneFileId, token: sceneFileToken } = await this.project.uploadAndDelete(sceneFileUri);
 

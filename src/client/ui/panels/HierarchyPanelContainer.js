@@ -10,7 +10,6 @@ import { withDialog } from "../contexts/DialogContext";
 import { withSceneActions } from "../contexts/SceneActionsContext";
 import "../../vendor/react-ui-tree/index.scss";
 import "../../vendor/react-contextmenu/index.scss";
-import ReactTooltip from "react-tooltip";
 import ErrorDialog from "../dialogs/ErrorDialog";
 import DefaultNodeEditor from "../node-editors/DefaultNodeEditor";
 
@@ -130,24 +129,15 @@ class HierarchyPanelContainer extends Component {
   };
 
   renderNode = node => {
-    const isMissingChild = node.object.userData._missing && !node.object.userData._isMissingRoot;
-    const isDuplicateChild = node.object.userData._duplicate && !node.object.userData._isDuplicateRoot;
-    const disableEditing =
-      node.object.userData._duplicate || node.object.userData._isDuplicateRoot || node.object.userData._isMissingRoot;
     const iconClassName = this.getNodeIconClassName(node.object);
 
-    const onMouseDown = disableEditing ? e => e.stopPropagation() : e => this.onMouseDownNode(e, node);
     return (
       <ContextMenuTrigger
         attributes={{
           className: classNames("node", {
-            "is-active": this.props.editor.selected && node.object.id === this.props.editor.selected.id,
-            conflict: disableEditing,
-            "error-root": node.object.userData._isMissingRoot ? node.object.userData._missing : false,
-            "warning-root": node.object.userData._isDuplicateRoot ? node.object.userData._duplicate : false,
-            disabled: isMissingChild || isDuplicateChild
+            "is-active": this.props.editor.selected && node.object.id === this.props.editor.selected.id
           }),
-          onMouseDown
+          onMouseDown: e => this.onMouseDownNode(e, node)
         }}
         holdToDisplay={-1}
         id="hierarchy-node-menu"
@@ -163,21 +153,7 @@ class HierarchyPanelContainer extends Component {
   };
 
   renderNodeName = node => {
-    let name = node.object.name;
-    if (node.object.userData._isDuplicateRoot) {
-      const duplicatePostfix = `_${node.object.userData._path.join("-")}`;
-      name = `${name}${duplicatePostfix}`;
-    }
-    return (
-      <div data-tip={node.object.userData._isDuplicateRoot} data-for={name}>
-        {name}
-        {node.object.userData._isDuplicateRoot ? (
-          <ReactTooltip id={name} type="warning" place="bottom" effect="float">
-            <span>Original node name: {node.object.name}</span>
-          </ReactTooltip>
-        ) : null}
-      </div>
-    );
+    return <div>{node.object.name}</div>;
   };
 
   renderHierarchyNodeMenu = props => {

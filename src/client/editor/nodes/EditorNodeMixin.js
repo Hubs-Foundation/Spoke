@@ -1,4 +1,11 @@
-import { StaticModes } from "../StaticMode";
+import {
+  StaticModes,
+  computeStaticMode,
+  computeAndSetStaticModes,
+  isDynamic,
+  isInherits,
+  isStatic
+} from "../StaticMode";
 
 export default function EditorNodeMixin(Object3DClass) {
   return class extends Object3DClass {
@@ -77,37 +84,23 @@ export default function EditorNodeMixin(Object3DClass) {
     prepareForExport() {}
 
     computeStaticMode() {
-      let cur = this;
-
-      while (cur) {
-        if (cur.staticMode === StaticModes.Inherits || cur.staticMode === undefined) {
-          cur = cur.parent;
-        } else {
-          return cur.staticMode;
-        }
-      }
-
-      return StaticModes.Dynamic;
+      return computeStaticMode(this);
     }
 
     computeAndSetStaticModes() {
-      this.traverse(curNode => {
-        const staticMode = curNode.computeStaticMode();
-        curNode.setStaticMode(staticMode);
-      });
+      return computeAndSetStaticModes(this);
     }
 
     isInherits() {
-      const staticMode = this.staticMode;
-      return staticMode === StaticModes.Inherits || staticMode === undefined;
+      return isInherits(this);
     }
 
     isStatic() {
-      return this.staticMode === StaticModes.Static;
+      return isStatic(this);
     }
 
     isDynamic() {
-      return this.staticMode === StaticModes.Dynamic;
+      return isDynamic(this);
     }
   };
 }

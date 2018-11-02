@@ -26,7 +26,7 @@ export default class ModelNode extends EditorNodeMixin(Model) {
     const loopAnimationComponent = json.components.find(c => c.name === "loop-animation");
 
     if (loopAnimationComponent && loopAnimationComponent.props.clip) {
-      node.activeClip = loopAnimationComponent.props.clip;
+      node.activeClipName = loopAnimationComponent.props.clip;
     }
 
     return node;

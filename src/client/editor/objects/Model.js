@@ -23,11 +23,19 @@ export default class Model extends THREE.Object3D {
     this.add(object);
   }
 
+  get activeClip() {
+    if (this.clipActions.length > 0) {
+      return this.clipActions[0].getClip();
+    }
+
+    return null;
+  }
+
   getClipNames() {
     return this.animations.map(clip => clip.name);
   }
 
-  get activeClip() {
+  get activeClipName() {
     if (this.clipActions.length > 0) {
       return this.clipActions[0].getClip().name;
     }
@@ -35,7 +43,7 @@ export default class Model extends THREE.Object3D {
     return null;
   }
 
-  set activeClip(clipName) {
+  set activeClipName(clipName) {
     this.clipActions = [];
     this.addClipAction(clipName);
   }

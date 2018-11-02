@@ -106,12 +106,32 @@ export default class Viewport {
 
     // events
 
-    function getIntersects(point, scene) {
+    function getIntersectingNode(point, scene) {
       mouse.set(point.x * 2 - 1, -(point.y * 2) + 1);
 
       raycaster.setFromCamera(mouse, camera);
 
-      return raycaster.intersectObject(scene, true);
+      const results = raycaster.intersectObject(scene, true);
+
+      if (results.length > 0) {
+        for (const { object } of results) {
+          let curObject = object;
+
+          while (curObject) {
+            if (curObject.isNode) {
+              break;
+            }
+
+            curObject = curObject.parent;
+          }
+
+          if (curObject && curObject !== editor.scene) {
+            return curObject;
+          }
+        }
+      }
+
+      return null;
     }
 
     const onDownPosition = new THREE.Vector2();
@@ -125,28 +145,13 @@ export default class Viewport {
 
     function handleClick() {
       if (onDownPosition.distanceTo(onUpPosition) === 0) {
-        const results = getIntersects(onUpPosition, editor.scene);
+        const node = getIntersectingNode(onUpPosition, editor.scene);
 
-        if (results.length > 0) {
-          for (const { object } of results) {
-            let curObject = object;
-
-            while (curObject) {
-              if (curObject.isNode) {
-                break;
-              }
-
-              curObject = curObject.parent;
-            }
-
-            if (curObject && curObject !== editor.scene) {
-              editor.select(curObject);
-              return;
-            }
-          }
+        if (node) {
+          editor.select(node);
+        } else {
+          editor.deselect();
         }
-
-        editor.deselect();
       }
     }
 
@@ -194,21 +199,10 @@ export default class Viewport {
       const array = getMousePosition(canvas, event.clientX, event.clientY);
       onDoubleClickPosition.fromArray(array);
 
-      const intersects = getIntersects(onDoubleClickPosition, editor.scene);
+      const node = getIntersectingNode(onDoubleClickPosition, editor.scene);
 
-      if (!intersects.length) return;
-
-      const intersect = intersects[0];
-
-      let focusedObject = intersect;
-
-      while (focusedObject && !focusedObject.isNode) {
-        focusedObject = focusedObject.parent;
-      }
-
-      if (focusedObject && focusedObject !== editor.scene) {
-        signals.objectFocused.dispatch(intersect.object);
-        return;
+      if (node) {
+        editor.focus(node);
       }
     }
 
@@ -304,11 +298,7 @@ export default class Viewport {
     });
 
     signals.objectFocused.add(function(object) {
-      if (object.userData._selectionRoot !== undefined) {
-        controls.focus(object.userData._selectionRoot);
-      } else if (!object.userData._dontShowInHierarchy) {
-        controls.focus(object);
-      }
+      controls.focus(object);
     });
 
     signals.objectChanged.add(object => {

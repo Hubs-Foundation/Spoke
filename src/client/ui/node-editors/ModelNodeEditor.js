@@ -13,8 +13,8 @@ export default class ModelNodeEditor extends Component {
 
   static iconClassName = "fa-cube";
 
-  onChangeAnimation = activeClip => {
-    this.props.editor.setNodeProperty(this.props.node, "activeClip", activeClip);
+  onChangeAnimation = activeClipName => {
+    this.props.editor.setNodeProperty(this.props.node, "activeClipName", activeClipName);
   };
 
   onChangeIncludeInFloorPlan = includeInFloorPlan => {
@@ -23,7 +23,7 @@ export default class ModelNodeEditor extends Component {
 
   render() {
     const node = this.props.node;
-    const activeClipName = node.activeClip;
+    const activeClipName = node.activeClipName;
     const clipOptions = node.getClipNames().map(name => ({ label: name, value: name }));
     clipOptions.unshift({ label: "None", value: null });
 
