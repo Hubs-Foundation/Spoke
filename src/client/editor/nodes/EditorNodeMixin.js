@@ -102,5 +102,23 @@ export default function EditorNodeMixin(Object3DClass) {
     isDynamic() {
       return isDynamic(this);
     }
+
+    getNodeByType(nodeType) {
+      if (this.constructor === nodeType) {
+        return this;
+      }
+
+      for (const child of this.children) {
+        if (child.isNode) {
+          const result = child.getNodeByType(nodeType);
+
+          if (result) {
+            return result;
+          }
+        }
+      }
+
+      return null;
+    }
   };
 }

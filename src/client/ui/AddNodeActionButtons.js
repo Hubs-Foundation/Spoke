@@ -95,36 +95,48 @@ class AddNodeActionButtons extends Component {
   };
 
   addLight = () => {
+    const hasAmbientLight = !!this.props.editor.scene.getNodeByType(AmbientLightNode);
+    const hasHemisphereLight = !!this.props.editor.scene.getNodeByType(HemisphereLightNode);
+
+    const options = [
+      {
+        value: DirectionalLightNode,
+        iconClassName: DirectionalLightNodeEditor.iconClassName,
+        label: DirectionalLightNode.nodeName
+      },
+
+      {
+        value: PointLightNode,
+        iconClassName: PointLightNodeEditor.iconClassName,
+        label: PointLightNode.nodeName
+      },
+      {
+        value: SpotLightNode,
+        iconClassName: SpotLightNodeEditor.iconClassName,
+        label: SpotLightNode.nodeName
+      }
+    ];
+
+    if (!hasHemisphereLight) {
+      options.unshift({
+        value: HemisphereLightNode,
+        iconClassName: HemisphereLightNodeEditor.iconClassName,
+        label: HemisphereLightNode.nodeName
+      });
+    }
+
+    if (!hasAmbientLight) {
+      options.unshift({
+        value: AmbientLightNode,
+        iconClassName: AmbientLightNodeEditor.iconClassName,
+        label: AmbientLightNode.nodeName
+      });
+    }
+
     this.props.showDialog(ButtonSelectDialog, {
       title: "Add Light",
       message: "Choose the type of light to add.",
-      options: [
-        {
-          value: AmbientLightNode,
-          iconClassName: AmbientLightNodeEditor.iconClassName,
-          label: AmbientLightNode.nodeName
-        },
-        {
-          value: DirectionalLightNode,
-          iconClassName: DirectionalLightNodeEditor.iconClassName,
-          label: DirectionalLightNode.nodeName
-        },
-        {
-          value: HemisphereLightNode,
-          iconClassName: HemisphereLightNodeEditor.iconClassName,
-          label: HemisphereLightNode.nodeName
-        },
-        {
-          value: PointLightNode,
-          iconClassName: PointLightNodeEditor.iconClassName,
-          label: PointLightNode.nodeName
-        },
-        {
-          value: SpotLightNode,
-          iconClassName: SpotLightNodeEditor.iconClassName,
-          label: SpotLightNode.nodeName
-        }
-      ],
+      options,
       onSelect: value => {
         this.addNode(value);
         this.props.hideDialog();
@@ -145,8 +157,8 @@ class AddNodeActionButtons extends Component {
 
   getSingletonNodeState() {
     return {
-      hasSkybox: !!this.props.editor.scene.getObjectByProperty("type", "Skybox"),
-      hasGroundPlane: !!this.props.editor.scene.getObjectByProperty("type", "GroundPlane")
+      hasSkybox: !!this.props.editor.scene.getNodeByType(SkyboxNode),
+      hasGroundPlane: !!this.props.editor.scene.getNodeByType(GroundPlaneNode)
     };
   }
 
