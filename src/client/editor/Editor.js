@@ -187,16 +187,17 @@ export default class Editor {
     const scene = new SceneNode();
     scene.name = "Untitled";
 
-    scene.add(new SkyboxNode());
-    scene.add(new AmbientLightNode());
+    this.setScene(scene);
+
+    this._addObject(new SkyboxNode());
+    this._addObject(new AmbientLightNode());
     const directionalLight = new DirectionalLightNode();
     directionalLight.position.set(0, 10, 0);
     directionalLight.rotation.set(Math.PI * 0.5, Math.PI * (0.5 / 3.0), -Math.PI * 0.5);
-    scene.add(directionalLight);
-    scene.add(new SpawnPointNode());
-    scene.add(new GroundPlaneNode());
+    this._addObject(directionalLight);
+    this._addObject(new SpawnPointNode());
+    this._addObject(new GroundPlaneNode());
 
-    this.setScene(scene);
     this.sceneModified = true;
 
     return scene;
@@ -400,7 +401,6 @@ export default class Editor {
     node.attribution = JSON.stringify(attribution);
     node.origin = originUri;
     this.addObject(node);
-    this.select(node);
   }
 
   async importGLTFIntoModelNode(url) {
@@ -409,6 +409,10 @@ export default class Editor {
   }
 
   addObject(object, parent) {
+    this.execute(new AddObjectCommand(object, parent));
+  }
+
+  _addObject(object, parent) {
     object.saveParent = true;
 
     object.traverse(child => {
@@ -437,9 +441,6 @@ export default class Editor {
     } else {
       this.scene.add(object);
     }
-
-    this.signals.objectAdded.dispatch(object);
-    this.signals.sceneGraphChanged.dispatch();
   }
 
   moveObject(object, parent, before) {

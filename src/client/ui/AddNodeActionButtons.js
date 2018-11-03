@@ -66,7 +66,6 @@ class AddNodeActionButtons extends Component {
   addNode = NodeConstructor => {
     const node = new NodeConstructor();
     this.props.editor.addObject(node);
-    this.props.editor.select(node);
     this.setState({ open: false });
   };
 

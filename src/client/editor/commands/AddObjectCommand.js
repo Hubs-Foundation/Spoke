@@ -24,12 +24,18 @@ export default class AddObjectCommand extends Command {
   }
 
   execute() {
-    this.editor.addObject(this.object, this.parent);
+    this.editor._addObject(this.object, this.parent);
+
+    this.editor.signals.objectAdded.dispatch(this.object);
+    this.editor.signals.sceneGraphChanged.dispatch();
     this.editor.select(this.object);
   }
 
   undo() {
     this.editor.removeObject(this.object);
+
+    this.editor.signals.objectAdded.dispatch(this.object);
+    this.editor.signals.sceneGraphChanged.dispatch();
     this.editor.deselect();
   }
 }
