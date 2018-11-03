@@ -54,6 +54,10 @@ export default function EditorNodeMixin(Object3DClass) {
 
     onChange() {}
 
+    onSelect() {}
+
+    onDeselect() {}
+
     serialize() {
       return {
         components: [
@@ -103,14 +107,14 @@ export default function EditorNodeMixin(Object3DClass) {
       return isDynamic(this);
     }
 
-    getNodeByType(nodeType) {
+    findNodeByType(nodeType) {
       if (this.constructor === nodeType) {
         return this;
       }
 
       for (const child of this.children) {
         if (child.isNode) {
-          const result = child.getNodeByType(nodeType);
+          const result = child.findNodeByType(nodeType);
 
           if (result) {
             return result;
@@ -119,6 +123,26 @@ export default function EditorNodeMixin(Object3DClass) {
       }
 
       return null;
+    }
+
+    getNodesByType(nodeType) {
+      const nodes = [];
+
+      if (this.constructor === nodeType) {
+        return nodes.push(this);
+      }
+
+      for (const child of this.children) {
+        if (child.isNode) {
+          const results = child.getNodesByType(nodeType);
+
+          for (const result of results) {
+            nodes.push(result);
+          }
+        }
+      }
+
+      return nodes;
     }
   };
 }

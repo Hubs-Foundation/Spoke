@@ -15,7 +15,6 @@ import SetRotationCommand from "./commands/SetRotationCommand";
 import SetScaleCommand from "./commands/SetScaleCommand";
 import SetObjectPropertyCommand from "./commands/SetObjectPropertyCommand";
 
-// import { generateNavMesh } from "../utils/navmesh";
 import { getUrlFilename } from "../utils/url-path";
 import { textureCache, gltfCache } from "./caches";
 import getNameWithoutIndex from "./utils/getNameWithoutIndex";
@@ -140,7 +139,15 @@ export default class Editor {
     object.onChange();
   };
 
-  onObjectSelected = (/*obj, prev*/) => {};
+  onObjectSelected = (obj, prev) => {
+    if (prev && prev.isNode) {
+      prev.onDeselect();
+    }
+
+    if (obj && obj.isNode) {
+      obj.onSelect();
+    }
+  };
 
   async init() {
     const tasks = [this.retrieveUpdateInfo()];
@@ -273,136 +280,29 @@ export default class Editor {
     this.signals.sceneModified.dispatch();
   }
 
-  // async generateNavMesh() {
-  //   const currentNavMeshNode = this.findFirstWithComponent("nav-mesh");
+  async generateFloorPlan() {
+    let floorPlan = this.scene.findNodeByType(FloorPlanNode);
 
-  //   if (currentNavMeshNode) {
-  //     const src = this.getComponentProperty(currentNavMeshNode, "gltf-model", "src");
-  //     await this.project.remove(src);
-  //     this.removeObject(currentNavMeshNode);
-  //   }
+    if (!floorPlan) {
+      floorPlan = new FloorPlanNode();
+      this.addObject(floorPlan);
+    }
 
-  //   const geometries = [];
+    if (floorPlan.navMeshSrc) {
+      await this.project.remove(floorPlan.navMeshSrc);
+    }
 
-  //   this.scene.traverse(node => {
-  //     if (!node.isMesh) return;
-  //     if (!node.userData._includeInFloorPlan) return;
-  //     if (node.userData._dontExport) return;
+    await floorPlan.generate(this.scene);
 
-  //     let geometry = node.geometry;
-  //     let attributes = geometry.attributes;
-
-  //     if (!geometry.isBufferGeometry) {
-  //       geometry = new THREE.BufferGeometry().fromGeometry(geometry);
-  //       attributes = geometry.attributes;
-  //     }
-
-  //     if (!attributes.position || attributes.position.itemSize !== 3) return;
-
-  //     if (geometry.index) geometry = geometry.toNonIndexed();
-
-  //     const cloneGeometry = new THREE.BufferGeometry();
-  //     cloneGeometry.addAttribute("position", geometry.attributes.position.clone());
-  //     cloneGeometry.applyMatrix(node.matrixWorld);
-  //     geometry = cloneGeometry;
-
-  //     geometries.push(geometry);
-  //   });
-
-  //   const finalGeos = [];
-  //   let heightfield;
-
-  //   if (geometries.length) {
-  //     const geometry = THREE.BufferGeometryUtils.mergeBufferGeometries(geometries);
-
-  //     const flippedGeometry = geometry.clone();
-
-  //     const positions = flippedGeometry.attributes.position.array;
-  //     for (let i = 0; i < positions.length; i += 9) {
-  //       const x0 = positions[i];
-  //       const y0 = positions[i + 1];
-  //       const z0 = positions[i + 2];
-  //       const offset = 6;
-  //       positions[i] = positions[i + offset];
-  //       positions[i + 1] = positions[i + offset + 1];
-  //       positions[i + 2] = positions[i + offset + 2];
-  //       positions[i + offset] = x0;
-  //       positions[i + offset + 1] = y0;
-  //       positions[i + offset + 2] = z0;
-  //     }
-
-  //     const finalGeo = THREE.BufferGeometryUtils.mergeBufferGeometries([geometry, flippedGeometry]);
-
-  //     const position = finalGeo.attributes.position.array;
-  //     const index = new Int32Array(position.length / 3);
-  //     for (let i = 0; i < index.length; i++) {
-  //       index[i] = i;
-  //     }
-
-  //     const box = new THREE.Box3().setFromBufferAttribute(finalGeo.attributes.position);
-  //     const size = new THREE.Vector3();
-  //     box.getSize(size);
-  //     if (Math.max(size.x, size.y, size.z) > 2000) {
-  //       throw new Error(
-  //         `Scene is too large (${size.x.toFixed(3)} x ${size.y.toFixed(3)} x ${size.z.toFixed(3)}) ` +
-  //           `to generate a floor plan.\n` +
-  //           `You can un-check the "Include in Floor Plan" checkbox on models to exclude them from the floor plan.`
-  //       );
-  //     }
-  //     const area = size.x * size.z;
-  //     // Tuned to produce cell sizes from ~0.5 to ~1.5 for areas from ~200 to ~350,000.
-  //     const cellSize = Math.pow(area, 1 / 3) / 50;
-  //     const { navPosition, navIndex } = generateNavMesh(position, index, cellSize);
-
-  //     const navGeo = new THREE.BufferGeometry();
-  //     navGeo.setIndex(navIndex);
-  //     navGeo.addAttribute("position", new THREE.Float32BufferAttribute(navPosition, 3));
-
-  //     heightfield = await HeightfieldComponent.generateHeightfield(new THREE.Mesh(navGeo));
-
-  //     finalGeos.push(navGeo);
-  //   }
-
-  //   const groundPlaneNode = this.findFirstWithComponent("ground-plane");
-  //   if (groundPlaneNode) {
-  //     if (!this.findFirstWithComponent("box-collider", groundPlaneNode)) {
-  //       const groundPlaneCollider = new THREE.Object3D();
-  //       groundPlaneCollider.userData._dontShowInHierarchy = true;
-  //       groundPlaneCollider.scale.set(4000, 0.01, 4000);
-  //       this._addComponent(groundPlaneCollider, "box-collider", {}, true);
-  //       groundPlaneNode.add(groundPlaneCollider);
-  //     }
-  //     const groundPlaneMesh = groundPlaneNode.getObjectByProperty("type", "Mesh");
-  //     const origGroundPlaneGeo = groundPlaneMesh.geometry;
-  //     const groundPlaneGeo = new THREE.BufferGeometry();
-  //     groundPlaneGeo.setIndex(origGroundPlaneGeo.index);
-  //     groundPlaneGeo.addAttribute("position", origGroundPlaneGeo.attributes.position.clone());
-  //     groundPlaneGeo.applyMatrix(groundPlaneMesh.matrixWorld);
-  //     finalGeos.push(groundPlaneGeo);
-  //   }
-
-  //   if (finalGeos.length === 0) return;
-
-  //   const finalNavGeo =
-  //     finalGeos.length === 1 ? finalGeos[0] : THREE.BufferGeometryUtils.mergeBufferGeometries(finalGeos);
-
-  //   const navMesh = new THREE.Mesh(finalNavGeo, new THREE.MeshLambertMaterial({ color: 0x0000ff }));
-
-  //   const exporter = new THREE.GLTFExporter();
-  //   const glb = await new Promise((resolve, reject) => exporter.parse(navMesh, resolve, reject, { mode: "glb" }));
-  //   const path = await this.project.writeGeneratedBlob(`${navMesh.uuid}.glb`, glb);
-
-  //   const navNode = new THREE.Object3D();
-  //   navNode.name = "Floor Plan";
-  //   navNode.position.y = 0.005;
-  //   this._addComponent(navNode, "nav-mesh");
-  //   this._addComponent(navNode, "visible", { visible: false });
-  //   await this._addComponent(navNode, "gltf-model", { src: path });
-  //   if (heightfield) {
-  //     await this._addComponent(navNode, "heightfield", heightfield);
-  //   }
-  //   this.addObject(navNode);
-  // }
+    if (floorPlan.navMesh) {
+      const exporter = new THREE.GLTFExporter();
+      const glb = await new Promise((resolve, reject) =>
+        exporter.parse(floorPlan.navMesh, resolve, reject, { mode: "glb" })
+      );
+      const path = await this.project.writeGeneratedBlob(`${floorPlan.navMesh.uuid}.glb`, glb);
+      floorPlan.navMeshSrc = path;
+    }
+  }
 
   async exportScene(outputPath, glb) {
     const scene = this.scene;
@@ -816,13 +716,14 @@ export default class Editor {
   }
 
   async takeScreenshot() {
+    this.deselect();
     return this.viewports[0].takeScreenshot();
   }
 
   async publishScene(sceneId, screenshotBlob, contentAttributions, onPublishProgress) {
     onPublishProgress("generating floor plan");
 
-    // await this.generateNavMesh();
+    await this.generateFloorPlan();
 
     await this.project.mkdir(this.project.getAbsoluteURI("generated"));
 

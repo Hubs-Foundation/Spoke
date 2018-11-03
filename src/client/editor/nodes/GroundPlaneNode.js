@@ -1,3 +1,4 @@
+import THREE from "../three";
 import EditorNodeMixin from "./EditorNodeMixin";
 import GroundPlane from "../objects/GroundPlane";
 import serializeColor from "../utils/serializeColor";
@@ -28,5 +29,16 @@ export default class GroundPlaneNode extends EditorNodeMixin(GroundPlane) {
     });
 
     return json;
+  }
+
+  prepareForExport() {
+    const groundPlaneCollider = new THREE.Object3D();
+    groundPlaneCollider.scale.set(4000, 0.01, 4000);
+    groundPlaneCollider.userData.gltfExtensions = {
+      HUBS_components: {
+        "box-collider": {}
+      }
+    };
+    this.add(groundPlaneCollider);
   }
 }

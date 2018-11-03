@@ -12,5 +12,7 @@ export default class GridHelper extends THREE.GridHelper {
         array[i + j] = 0.9;
       }
     }
+
+    this.layers.set(1);
   }
 }

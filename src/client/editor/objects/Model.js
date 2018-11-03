@@ -76,8 +76,6 @@ export default class Model extends THREE.Object3D {
   copy(source, recursive) {
     super.copy(source, false);
 
-    this.src = source.src;
-
     for (const child of source.children) {
       let clonedChild;
 
@@ -96,6 +94,8 @@ export default class Model extends THREE.Object3D {
     for (const clipAction of source.clipActions) {
       this.addClipAction(clipAction.getClip().name);
     }
+
+    return this;
   }
 
   update(dt) {

@@ -95,8 +95,8 @@ class AddNodeActionButtons extends Component {
   };
 
   addLight = () => {
-    const hasAmbientLight = !!this.props.editor.scene.getNodeByType(AmbientLightNode);
-    const hasHemisphereLight = !!this.props.editor.scene.getNodeByType(HemisphereLightNode);
+    const hasAmbientLight = !!this.props.editor.scene.findNodeByType(AmbientLightNode);
+    const hasHemisphereLight = !!this.props.editor.scene.findNodeByType(HemisphereLightNode);
 
     const options = [
       {
@@ -157,8 +157,8 @@ class AddNodeActionButtons extends Component {
 
   getSingletonNodeState() {
     return {
-      hasSkybox: !!this.props.editor.scene.getNodeByType(SkyboxNode),
-      hasGroundPlane: !!this.props.editor.scene.getNodeByType(GroundPlaneNode)
+      hasSkybox: !!this.props.editor.scene.findNodeByType(SkyboxNode),
+      hasGroundPlane: !!this.props.editor.scene.findNodeByType(GroundPlaneNode)
     };
   }
 

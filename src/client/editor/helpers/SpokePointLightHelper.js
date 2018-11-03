@@ -21,6 +21,8 @@ export default class SpokePointLightHelper extends THREE.Mesh {
 
     this.add(this.lightDistanceHelper);
 
+    this.layers.set(1);
+
     this.update();
   }
 

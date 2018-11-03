@@ -15,6 +15,12 @@ export default class SpawnPointNode extends EditorNodeMixin(THREE.Object3D) {
       loader.load(spawnPointModelUrl, resolve, null, reject);
     });
 
+    scene.traverse(child => {
+      if (child.isMesh) {
+        child.layers.set(1);
+      }
+    });
+
     spawnPointHelperModel = scene;
   }
 

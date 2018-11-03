@@ -196,7 +196,7 @@ class EditorContainer extends Component {
           },
           {
             name: "Generate Floor Plan",
-            action: e => this.onGenerateNavMesh(e)
+            action: e => this.onGenerateFloorPlan(e)
           },
           {
             name: "Open Scenes Folder...",
@@ -351,7 +351,7 @@ class EditorContainer extends Component {
     this.onExportSceneDialog();
   };
 
-  onGenerateNavMesh = async e => {
+  onGenerateFloorPlan = async e => {
     e.preventDefault();
 
     this.showDialog(ProgressDialog, {
@@ -360,7 +360,7 @@ class EditorContainer extends Component {
     });
 
     try {
-      await this.props.editor.generateNavMesh();
+      await this.props.editor.generateFloorPlan();
       this.hideDialog();
     } catch (e) {
       console.error(e);

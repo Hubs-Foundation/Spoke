@@ -23,4 +23,4 @@ import "./global.scss";
   const uiMode = qsTruthy("advanced") ? "advanced" : "basic";
 
   ReactDOM.render(<EditorContainer uiMode={uiMode} editor={editor} />, rootEl);
-})();
+})().catch(e => console.error(e));
