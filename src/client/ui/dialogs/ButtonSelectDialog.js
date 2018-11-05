@@ -2,8 +2,8 @@ import React, { Component } from "react";
 import PropTypes from "prop-types";
 import styles from "./dialog.scss";
 import classNames from "classnames";
-import Button from "../Button";
-import Header from "../Header";
+import Button from "../inputs/Button";
+import DialogHeader from "./DialogHeader";
 export default class ButtonSelectDialog extends Component {
   static propTypes = {
     title: PropTypes.string.isRequired,
@@ -32,7 +32,7 @@ export default class ButtonSelectDialog extends Component {
   render = () => {
     return (
       <div className={styles.dialogContainer}>
-        <Header title={this.props.title} />
+        <DialogHeader title={this.props.title} />
         <div className={styles.content}>
           <div className={styles.contentRows}>
             <p>{this.props.message}</p>

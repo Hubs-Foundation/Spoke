@@ -1,4 +1,4 @@
-import Command from "../Command";
+import Command from "./Command";
 
 export default class SetNameCommand extends Command {
   constructor(object, newName) {

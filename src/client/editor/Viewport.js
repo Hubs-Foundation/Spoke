@@ -1,4 +1,4 @@
-import THREE from "./three";
+import * as THREE from "three";
 import SetPositionCommand from "./commands/SetPositionCommand";
 import SetRotationCommand from "./commands/SetRotationCommand";
 import SetScaleCommand from "./commands/SetScaleCommand";

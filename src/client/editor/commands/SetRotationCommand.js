@@ -1,4 +1,4 @@
-import Command from "../Command";
+import Command from "./Command";
 
 /**
  * @author dforrer / https://github.com/dforrer

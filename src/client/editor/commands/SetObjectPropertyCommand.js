@@ -1,4 +1,4 @@
-import Command from "../Command";
+import Command from "./Command";
 
 export default class SetObjectPropertyCommand extends Command {
   constructor(object, propertyName, value) {

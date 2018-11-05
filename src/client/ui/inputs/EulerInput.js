@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import PropTypes from "prop-types";
 import styles from "./Vector3Input.scss";
 import NumericInput from "./NumericInput";
-import THREE from "../../editor/three";
+import * as THREE from "three";
 
 const { RAD2DEG, DEG2RAD } = THREE.Math;
 

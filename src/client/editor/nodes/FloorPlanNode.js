@@ -1,7 +1,7 @@
 import EditorNodeMixin from "./EditorNodeMixin";
-import THREE from "../three";
+import * as THREE from "three";
 import FloorPlan from "../objects/FloorPlan";
-import Recast from "../../vendor/recast/recast.js";
+import Recast from "../recast/recast.js";
 import ModelNode from "./ModelNode";
 import GroundPlaneNode from "./GroundPlaneNode";
 import absoluteToRelativeURL from "../utils/absoluteToRelativeURL";

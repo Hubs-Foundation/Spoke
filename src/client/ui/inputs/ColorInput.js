@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import { SketchPicker } from "react-color";
 import { EditableInput } from "react-color/lib/components/common";
 import styles from "./ColorInput.scss";
-import THREE from "../../editor/three";
+import * as THREE from "three";
 
 export default class ColorInput extends Component {
   static propTypes = {

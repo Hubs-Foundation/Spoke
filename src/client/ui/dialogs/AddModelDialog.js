@@ -1,9 +1,9 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
 import styles from "./dialog.scss";
-import Button from "../Button";
+import Button from "../inputs/Button";
 import StringInput from "../inputs/StringInput";
-import Header from "../Header";
+import DialogHeader from "./DialogHeader";
 
 const DEFAULT_OBJECT_URL = "https://asset-bundles-prod.reticulum.io/interactables/Ducky/DuckyMesh-438ff8e022.gltf";
 
@@ -56,7 +56,7 @@ export default class AddModelDialog extends Component {
     return (
       <div className={styles.dialogContainer}>
         <form>
-          <Header title={this.props.title} />
+          <DialogHeader title={this.props.title} />
           <div className={styles.content}>
             <div className={styles.contentRows}>
               <p>{this.props.message}</p>

@@ -1,4 +1,4 @@
-import THREE from "./three";
+import * as THREE from "three";
 import { isStatic } from "./StaticMode";
 import asyncTraverse from "./utils/asyncTraverse";
 import keysEqual from "./utils/keysEqual";

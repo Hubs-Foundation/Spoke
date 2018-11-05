@@ -1,20 +1,19 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
-import Tree from "@robertlong/react-ui-tree";
-import "../../vendor/react-ui-tree/index.scss";
 import classNames from "classnames";
+import Tree from "@robertlong/react-ui-tree";
+import { ContextMenu, MenuItem, ContextMenuTrigger } from "react-contextmenu";
+import "../styles/vendor/react-ui-tree/index.scss";
 import { withEditor } from "../contexts/EditorContext";
-import IconGrid from "../IconGrid";
 import dialogStyles from "./dialog.scss";
 import styles from "./FileDialog.scss";
-import DraggableFile from "../DraggableFile";
-import { ContextMenu, MenuItem, ContextMenuTrigger } from "react-contextmenu";
-import Button from "../Button";
+import IconGrid from "../explorer/IconGrid";
+import DraggableFile from "../explorer/DraggableFile";
+import Icon from "../explorer/Icon";
+import iconStyles from "../explorer/Icon.scss";
+import Button from "../inputs/Button";
 import StringInput from "../inputs/StringInput";
-import Header from "../Header";
-import Icon from "../Icon";
-import iconStyles from "../Icon.scss";
-import { getUrlDirname, getUrlFilename, getUrlExtname } from "../../utils/url-path";
+import DialogHeader from "./DialogHeader";
 
 function collectFileMenuProps({ file }) {
   return file;
@@ -76,11 +75,16 @@ class FileDialog extends Component {
     let selectedFile = null;
     let fileName = props.defaultFileName;
 
+    const project = props.editor.project;
+
     if (props.initialPath) {
-      selectedDirectory = getUrlDirname(props.initialPath);
-      selectedFile = props.extension && getUrlExtname(props.initialPath) === props.extension ? props.initialPath : null;
+      selectedDirectory = project.getUrlDirname(props.initialPath);
+      selectedFile =
+        props.extension && project.getUrlExtname(props.initialPath) === props.extension ? props.initialPath : null;
       fileName =
-        props.defaultFileName !== "" ? props.defaultFileName : decodeURIComponent(getUrlFilename(props.initialPath));
+        props.defaultFileName !== ""
+          ? props.defaultFileName
+          : decodeURIComponent(project.getUrlFilename(props.initialPath));
     }
 
     this.state = {
@@ -154,8 +158,9 @@ class FileDialog extends Component {
   };
 
   onClickIcon = (e, file) => {
-    const { directory } = this.props;
+    const { directory, editor } = this.props;
     const { singleClickedFile } = this.state;
+    const project = editor.project;
 
     // Prevent double click on right click.
     if (e.button !== 0) {
@@ -174,7 +179,7 @@ class FileDialog extends Component {
         this.setState({
           selectedFile: file,
           singleClickedFile: file,
-          fileName: getUrlFilename(file.uri) || ""
+          fileName: project.getUrlFilename(file.uri) || ""
         });
       }
 
@@ -319,7 +324,7 @@ class FileDialog extends Component {
 
     return (
       <div className={dialogStyles.dialogContainer}>
-        <Header icon="fa-folder" title={title} />
+        <DialogHeader icon="fa-folder" title={title} />
         <div className={styles.content}>
           <div className={styles.leftColumn}>
             <Tree

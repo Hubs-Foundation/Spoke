@@ -55,8 +55,14 @@ module.exports = {
     ]
   },
 
+  resolve: {
+    alias: {
+      three$: path.join(__dirname, "node_modules/three/build/three.module.js")
+    }
+  },
+
   plugins: [
-    new CopyWebpackPlugin([{ from: "src/client/vendor/recast/recast.wasm", to: "recast.wasm" }]),
+    new CopyWebpackPlugin([{ from: "src/client/editor/recast/recast.wasm", to: "recast.wasm" }]),
     new HTMLWebpackPlugin({
       title: packageJSON.productName,
       favicon: "src/client/assets/favicon.ico"

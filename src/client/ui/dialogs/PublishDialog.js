@@ -1,8 +1,8 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
 import styles from "./dialog.scss";
-import Button from "../Button";
-import Header from "../Header";
+import Button from "../inputs/Button";
+import DialogHeader from "./DialogHeader";
 import StringInput from "../inputs/StringInput";
 import BooleanInput from "../inputs/BooleanInput";
 
@@ -60,7 +60,7 @@ export default class PublishDialog extends Component {
     const { onCancel, hideDialog, screenshotURL, published, sceneUrl, contentAttributions } = this.props;
     return (
       <div className={styles.dialogContainer}>
-        <Header title="Publish to Hubs" />
+        <DialogHeader title="Publish to Hubs" />
         <div className={styles.publishContainer}>
           <div className={styles.content}>
             <img className={styles.sceneThumbnail} src={screenshotURL} />

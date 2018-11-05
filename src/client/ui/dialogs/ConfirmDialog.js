@@ -1,13 +1,13 @@
 import React from "react";
 import PropTypes from "prop-types";
 import styles from "./dialog.scss";
-import Button from "../Button";
-import Header from "../Header";
+import Button from "../inputs/Button";
+import DialogHeader from "./DialogHeader";
 
 export default function ConfirmDialog({ title, message, confirmLabel, cancelLabel, onConfirm, onCancel }) {
   return (
     <div className={styles.dialogContainer}>
-      <Header title={title} />
+      <DialogHeader title={title} />
       <div className={styles.content}>{message}</div>
       <div className={styles.bottom}>
         <Button className={styles.cancel} onClick={onCancel}>
