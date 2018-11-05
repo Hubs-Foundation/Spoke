@@ -133,7 +133,7 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
 
     const { src } = json.components.find(c => c.name === "gltf-model").props;
     const absoluteURL = new URL(src, editor.sceneUri).href;
-    const { scene } = await editor.loadGLTF(editor, absoluteURL);
+    const { scene } = await editor.loadGLTF(absoluteURL);
     const navMesh = scene.getObjectByProperty("type", "Mesh");
 
     node.navMeshSrc = absoluteURL;
