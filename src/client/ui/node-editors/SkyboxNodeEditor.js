@@ -3,6 +3,7 @@ import PropTypes from "prop-types";
 import NodeEditor from "./NodeEditor";
 import InputGroup from "../InputGroup";
 import NumericInput from "../inputs/NumericInput";
+import CompoundNumericInput from "../inputs/CompoundNumericInput";
 import THREE from "../../editor/three";
 
 const { degToRad, radToDeg } = THREE.Math;
@@ -56,22 +57,25 @@ export default class SkyboxNodeEditor extends Component {
         {...this.props}
       >
         <InputGroup name="Turbidity">
-          <NumericInput value={node.turbidity} onChange={this.onChangeTurbidity} />
+          <CompoundNumericInput min={1} max={20} value={node.turbidity} onChange={this.onChangeTurbidity} />
         </InputGroup>
         <InputGroup name="Rayleigh">
-          <NumericInput value={node.rayleigh} onChange={this.onChangeRayleigh} />
+          <CompoundNumericInput min={0} max={4} value={node.rayleigh} onChange={this.onChangeRayleigh} />
         </InputGroup>
         <InputGroup name="Luminance">
-          <NumericInput value={node.luminance} onChange={this.onChangeLuminance} />
+          <CompoundNumericInput min={0} max={2} value={node.luminance} onChange={this.onChangeLuminance} />
         </InputGroup>
         <InputGroup name="MIE Coefficient">
-          <NumericInput value={node.mieCoefficient} onChange={this.onChangeMieCoefficient} />
+          <CompoundNumericInput min={0} max={0.1} value={node.mieCoefficient} onChange={this.onChangeMieCoefficient} />
         </InputGroup>
         <InputGroup name="MIE Directional G">
-          <NumericInput value={node.mieDirectionalG} onChange={this.onChangeMieDirectionalG} />
+          <CompoundNumericInput min={0} max={1} value={node.mieDirectionalG} onChange={this.onChangeMieDirectionalG} />
         </InputGroup>
         <InputGroup name="Inclination">
           <NumericInput
+            smallStep={1}
+            mediumStep={15}
+            bigStep={30}
             value={node.inclination}
             onChange={this.onChangeInclination}
             format={radToDeg}
@@ -79,10 +83,25 @@ export default class SkyboxNodeEditor extends Component {
           />
         </InputGroup>
         <InputGroup name="Azimuth">
-          <NumericInput value={node.azimuth} onChange={this.onChangeAzimuth} format={radToDeg} parse={degToRad} />
+          <NumericInput
+            smallStep={1}
+            mediumStep={15}
+            bigStep={30}
+            value={node.azimuth}
+            onChange={this.onChangeAzimuth}
+            format={radToDeg}
+            parse={degToRad}
+          />
         </InputGroup>
         <InputGroup name="Distance">
-          <NumericInput value={node.distance} onChange={this.onChangeDistance} />
+          <NumericInput
+            smallStep={10}
+            mediumStep={100}
+            bigStep={250}
+            min={0}
+            value={node.distance}
+            onChange={this.onChangeDistance}
+          />
         </InputGroup>
       </NodeEditor>
     );

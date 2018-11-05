@@ -3,7 +3,6 @@ import PropTypes from "prop-types";
 import NodeEditor from "./NodeEditor";
 import InputGroup from "../InputGroup";
 import ColorInput from "../inputs/ColorInput";
-import CompoundNumericInput from "../inputs/CompoundNumericInput";
 import NumericInput from "../inputs/NumericInput";
 import BooleanInput from "../inputs/BooleanInput";
 import THREE from "../../editor/three";
@@ -54,10 +53,11 @@ export default class SpotLightNodeEditor extends Component {
           <ColorInput value={node.color} onChange={this.onChangeColor} />
         </InputGroup>
         <InputGroup name="Intensity">
-          <CompoundNumericInput value={node.intensity} onChange={this.onChangeIntensity} />
+          <NumericInput min={0} value={node.intensity} onChange={this.onChangeIntensity} />
         </InputGroup>
         <InputGroup name="Inner Cone Angle">
           <NumericInput
+            min={0}
             value={node.innerConeAngle}
             onChange={this.onChangeInnerConeAngle}
             format={radToDeg}
@@ -66,6 +66,7 @@ export default class SpotLightNodeEditor extends Component {
         </InputGroup>
         <InputGroup name="Outer Cone Angle">
           <NumericInput
+            min={0}
             value={node.outerConeAngle}
             onChange={this.onChangeOuterConeAngle}
             format={radToDeg}
@@ -73,7 +74,7 @@ export default class SpotLightNodeEditor extends Component {
           />
         </InputGroup>
         <InputGroup name="Range">
-          <NumericInput value={node.range} onChange={this.onChangeRange} />
+          <NumericInput min={0} value={node.range} onChange={this.onChangeRange} />
         </InputGroup>
         <InputGroup name="Cast Shadow">
           <BooleanInput value={node.castShadow} onChange={this.onChangeCastShadow} />

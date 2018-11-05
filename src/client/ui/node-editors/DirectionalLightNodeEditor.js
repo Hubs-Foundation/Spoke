@@ -38,7 +38,7 @@ export default class DirectionalLightNodeEditor extends Component {
           <ColorInput value={node.color} onChange={this.onChangeColor} />
         </InputGroup>
         <InputGroup name="Intensity">
-          <NumericInput value={node.intensity} onChange={this.onChangeIntensity} />
+          <NumericInput min={0} value={node.intensity} onChange={this.onChangeIntensity} />
         </InputGroup>
         <InputGroup name="Cast Shadow">
           <BooleanInput value={node.castShadow} onChange={this.onChangeCastShadow} />
