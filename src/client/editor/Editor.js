@@ -520,7 +520,7 @@ export default class Editor {
     if (nextCounter) {
       objectCount = nextCounter.objectCount + 1;
       suffix = " " + nextCounter.nextSuffix;
-      nextSuffix = suffix + 1;
+      nextSuffix = nextCounter.nextSuffix + 1;
     } else {
       objectCount = 1;
       suffix = "";
