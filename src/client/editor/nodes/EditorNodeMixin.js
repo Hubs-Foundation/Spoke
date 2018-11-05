@@ -46,6 +46,7 @@ export default function EditorNodeMixin(Object3DClass) {
       this.name = this.constructor.nodeName;
       this.isNode = true;
       this.isCollapsed = false;
+      this.hideTransform = this.constructor.hideTransform;
 
       this.staticMode = StaticModes.Inherits;
       this.originalStaticMode = null;

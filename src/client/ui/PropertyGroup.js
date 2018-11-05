@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Fragment } from "react";
 import PropTypes from "prop-types";
 import classNames from "classnames";
 import styles from "./PropertyGroup.scss";
@@ -16,7 +16,16 @@ function PropertyGroup(props) {
       >
         {name}
       </div>
-      {description && <div className={styles.description}>{description}</div>}
+      {description && (
+        <div className={styles.description}>
+          {description.split("\\n").map((line, i) => (
+            <Fragment key={i}>
+              {line}
+              <br />
+            </Fragment>
+          ))}
+        </div>
+      )}
       <div className={classNames(styles.content, contentClassName)}>{children}</div>
     </div>
   );

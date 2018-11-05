@@ -24,13 +24,6 @@ export default class NodeEditor extends Component {
 
     return (
       <div className={styles.propertiesPanelContainer}>
-        {/* <PropertyGroup
-          
-          headerClassName={styles.propertiesHeaderTitle}
-          contentClassName={styles.propertiesHeaderContent}
-        >
-           
-        </PropertyGroup>*/}
         <div className={styles.propertiesHeader}>
           <div className={styles.propertiesPanelTopBar}>
             <NameInputGroup node={node} editor={editor} />
