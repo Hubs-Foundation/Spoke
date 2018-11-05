@@ -1,82 +1,32 @@
-import React from "react";
+import React, { Fragment } from "react";
 import PropTypes from "prop-types";
 import classNames from "classnames";
-
-import Button from "./Button";
 import styles from "./PropertyGroup.scss";
-import infoIcon from "../assets/info-icon.svg";
-import { withEditor } from "./contexts/EditorContext";
-import ReactTooltip from "react-tooltip";
 
 function PropertyGroup(props) {
-  const {
-    name,
-    description,
-    canRemove,
-    removeHandler,
-    src,
-    srcIsValid,
-    saveable,
-    modified,
-    saveHandler,
-    saveAsHandler,
-    loadHandler,
-    children,
-    editor
-  } = props;
-  const renderRemoveButton = () => {
-    if (!canRemove) return;
-    return <Button onClick={removeHandler}>Remove</Button>;
-  };
-
-  const renderSaveButtons = () => {
-    if (!saveable) return;
-    const srcStatus = {
-      classNames: [styles.src, src && srcIsValid ? null : styles.invalidSrc],
-      tip: src && srcIsValid ? null : "File does not exist",
-      type: src && srcIsValid ? null : "error"
-    };
-
-    return (
-      <div>
-        {src && (
-          <span className={classNames(srcStatus.classNames)} data-tip={srcStatus.tip} data-type={srcStatus.type}>
-            {editor.project.getRelativeURI(src)}
-            {modified && "*"}
-            <ReactTooltip />
-          </span>
-        )}
-        <div className={styles.saveButtons}>
-          {src && <Button onClick={saveHandler}>Save</Button>}
-          <Button onClick={saveAsHandler}>Save As...</Button>
-          <Button onClick={loadHandler}>Load...</Button>
-        </div>
-      </div>
-    );
-  };
-
-  const showSaveInfo = saveable && !src;
+  const { name, description, children, className, useDefault, headerClassName, contentClassName } = props;
 
   return (
-    <div className={classNames(styles.propertyGroup, props.className)}>
+    <div className={classNames(styles.propertyGroup, className)}>
       <div
         className={classNames(
-          { [`${styles.header}`]: props.useDefault, [`${styles.lightHeader}`]: !props.useDefault },
-          props.headerClassName
+          { [`${styles.header}`]: useDefault, [`${styles.lightHeader}`]: !useDefault },
+          headerClassName
         )}
       >
         {name}
-        {renderRemoveButton()}
       </div>
-      {description && <div className={styles.description}>{description}</div>}
-      {renderSaveButtons()}
-      {showSaveInfo && (
-        <div className={styles.saveInfo}>
-          <img className={styles.icon} src={infoIcon} />
-          <span className={styles.text}>You must save this component or load a saved file in order to edit it.</span>
+      {description && (
+        <div className={styles.description}>
+          {description.split("\\n").map((line, i) => (
+            <Fragment key={i}>
+              {line}
+              <br />
+            </Fragment>
+          ))}
         </div>
       )}
-      <div className={classNames(styles.content, props.contentClassName)}>{children}</div>
+      <div className={classNames(styles.content, contentClassName)}>{children}</div>
     </div>
   );
 }
@@ -84,21 +34,11 @@ function PropertyGroup(props) {
 PropertyGroup.propTypes = {
   name: PropTypes.string,
   description: PropTypes.string,
-  canRemove: PropTypes.bool,
   className: PropTypes.string,
   headerClassName: PropTypes.string,
   contentClassName: PropTypes.string,
-  removeHandler: PropTypes.func,
-  src: PropTypes.string,
-  srcIsValid: PropTypes.bool,
-  saveable: PropTypes.bool,
-  modified: PropTypes.bool,
-  saveHandler: PropTypes.func,
-  saveAsHandler: PropTypes.func,
-  loadHandler: PropTypes.func,
   children: PropTypes.node,
-  useDefault: PropTypes.bool,
-  editor: PropTypes.object
+  useDefault: PropTypes.bool
 };
 
-export default withEditor(PropertyGroup);
+export default PropertyGroup;

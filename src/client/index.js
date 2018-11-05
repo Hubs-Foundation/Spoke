@@ -18,9 +18,9 @@ import "./global.scss";
   const editor = new Editor(project);
   window.editor = editor;
 
-  await editor.retrieveUpdateInfo();
+  await editor.init();
 
   const uiMode = qsTruthy("advanced") ? "advanced" : "basic";
 
   ReactDOM.render(<EditorContainer uiMode={uiMode} editor={editor} />, rootEl);
-})();
+})().catch(e => console.error(e));

@@ -10,10 +10,8 @@ import { withDialog } from "../contexts/DialogContext";
 import { withSceneActions } from "../contexts/SceneActionsContext";
 import "../../vendor/react-ui-tree/index.scss";
 import "../../vendor/react-contextmenu/index.scss";
-import SnackBar from "../SnackBar";
-import ReactTooltip from "react-tooltip";
 import ErrorDialog from "../dialogs/ErrorDialog";
-import { Components } from "../../editor/components/index";
+import DefaultNodeEditor from "../node-editors/DefaultNodeEditor";
 
 function collectNodeMenuProps({ node }) {
   return node;
@@ -53,6 +51,8 @@ class HierarchyPanelContainer extends Component {
         try {
           this.props.editor.addGLTFModelNode(file.name, file.uri);
         } catch (e) {
+          console.error(e);
+
           this.props.showDialog(ErrorDialog, {
             title: "Error adding model.",
             message: e.message
@@ -65,8 +65,7 @@ class HierarchyPanelContainer extends Component {
   onChange = (tree, parent, node) => {
     if (!node) {
       // parent and node are null when expanding/collapsing the tree.
-      const collapsed = this.props.editor.isCollapsed(tree.object);
-      this.props.editor.setCollapsed(tree.object, !collapsed);
+      tree.object.isCollapsed = !tree.object.isCollapsed;
       return;
     }
 
@@ -96,9 +95,6 @@ class HierarchyPanelContainer extends Component {
       return;
     }
 
-    // Do not allow interaction with scene node.
-    if (node.object === this.props.editor.scene) return;
-
     if (this.state.singleClicked === node.object) {
       this.props.editor.focusById(node.object.id);
       return;
@@ -113,20 +109,12 @@ class HierarchyPanelContainer extends Component {
     }, 500);
   };
 
-  onAddNode = (e, node) => {
-    this.props.editor.createNode("New_Node", node.object);
-  };
-
   onDuplicateNode = (e, node) => {
     this.props.editor.duplicateObject(node.object);
   };
 
   onDeleteNode = (e, node) => {
     this.props.editor.deleteObject(node.object);
-  };
-
-  onClickBreadCrumb = () => {
-    this.props.sceneActions.onPopScene();
   };
 
   rebuildNodeHierarchy = () => {
@@ -136,39 +124,20 @@ class HierarchyPanelContainer extends Component {
   };
 
   getNodeIconClassName = node => {
-    if (!node.object.parent) {
-      return "fa-globe";
-    }
-
-    // TODO deal with nodes with multiple components somehow.
-    for (const component of Components) {
-      if (this.props.editor.getComponent(node.object, component.componentName)) {
-        return component.iconClassName;
-      }
-    }
-
-    return "fa-circle";
+    const NodeEditor = this.props.editor.getNodeEditor(node);
+    return NodeEditor.iconClassName || DefaultNodeEditor.iconClassName;
   };
 
   renderNode = node => {
-    const isMissingChild = node.object.userData._missing && !node.object.userData._isMissingRoot;
-    const isDuplicateChild = node.object.userData._duplicate && !node.object.userData._isDuplicateRoot;
-    const disableEditing =
-      node.object.userData._duplicate || node.object.userData._isDuplicateRoot || node.object.userData._isMissingRoot;
-    const iconClassName = this.getNodeIconClassName(node);
+    const iconClassName = this.getNodeIconClassName(node.object);
 
-    const onMouseDown = disableEditing ? e => e.stopPropagation() : e => this.onMouseDownNode(e, node);
     return (
       <ContextMenuTrigger
         attributes={{
           className: classNames("node", {
-            "is-active": this.props.editor.selected && node.object.id === this.props.editor.selected.id,
-            conflict: disableEditing,
-            "error-root": node.object.userData._isMissingRoot ? node.object.userData._missing : false,
-            "warning-root": node.object.userData._isDuplicateRoot ? node.object.userData._duplicate : false,
-            disabled: isMissingChild || isDuplicateChild
+            "is-active": this.props.editor.selected && node.object.id === this.props.editor.selected.id
           }),
-          onMouseDown
+          onMouseDown: e => this.onMouseDownNode(e, node)
         }}
         holdToDisplay={-1}
         id="hierarchy-node-menu"
@@ -184,21 +153,7 @@ class HierarchyPanelContainer extends Component {
   };
 
   renderNodeName = node => {
-    let name = node.object.name;
-    if (node.object.userData._isDuplicateRoot) {
-      const duplicatePostfix = `_${node.object.userData._path.join("-")}`;
-      name = `${name}${duplicatePostfix}`;
-    }
-    return (
-      <div data-tip={node.object.userData._isDuplicateRoot} data-for={name}>
-        {name}
-        {node.object.userData._isDuplicateRoot ? (
-          <ReactTooltip id={name} type="warning" place="bottom" effect="float">
-            <span>Original node name: {node.object.name}</span>
-          </ReactTooltip>
-        ) : null}
-      </div>
-    );
+    return <div>{node.object.name}</div>;
   };
 
   renderHierarchyNodeMenu = props => {
@@ -221,21 +176,6 @@ class HierarchyPanelContainer extends Component {
 
   HierarchyNodeMenu = connectMenu("hierarchy-node-menu")(this.renderHierarchyNodeMenu);
 
-  renderWarnings = () => {
-    const handler = this.props.editor.scene.userData._conflictHandler;
-    if (!handler) {
-      return;
-    }
-
-    const conflicts = handler.getConflictInfo();
-
-    return (
-      <div className={styles.conflictDisplay}>
-        {Object.keys(conflicts).map((type, i) => (conflicts[type] ? <SnackBar conflictType={type} key={i} /> : null))}
-      </div>
-    );
-  };
-
   render() {
     return (
       <div className={styles.hierarchyRoot}>
@@ -252,7 +192,6 @@ class HierarchyPanelContainer extends Component {
             <this.HierarchyNodeMenu />
           </div>
         </AssetDropTarget>
-        {this.renderWarnings()}
       </div>
     );
   }

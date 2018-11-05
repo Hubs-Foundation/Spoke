@@ -221,8 +221,13 @@ export default class Project extends EventEmitter {
         .split("/")
         .slice(0, -1)
         .join("/");
-      const { name, author } = await this.readJSON(`${baseUri}/meta.json`);
-      return `${name} by ${author}`;
+      const { name, author, attribution } = await this.readJSON(`${baseUri}/meta.json`);
+      if (attribution) {
+        return attribution;
+      } else {
+        // Legacy
+        return { name, author };
+      }
     } catch (e) {
       return null;
     }

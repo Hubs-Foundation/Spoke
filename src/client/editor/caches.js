@@ -61,7 +61,7 @@ class GLTFCache extends Cache {
       );
     }
     return this._cache.get(absoluteURL).then(gltf => {
-      const clonedGLTF = { scene: cloneObject3D(gltf.scene) };
+      const clonedGLTF = { ...gltf, scene: cloneObject3D(gltf.scene) };
       clonedGLTF.scene.traverse(obj => {
         if (!obj.material) return;
         if (obj.material.clone) {

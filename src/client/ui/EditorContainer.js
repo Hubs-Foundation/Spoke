@@ -25,9 +25,8 @@ import ProgressDialog from "./dialogs/ProgressDialog";
 import PublishDialog from "./dialogs/PublishDialog";
 import UpdateRequiredDialog from "./dialogs/UpdateRequiredDialog";
 
-import ConflictError from "../editor/ConflictError";
 import AuthenticationError from "../editor/AuthenticationError";
-import { getUrlDirname, getUrlFilename } from "../utils/url-path";
+import { getUrlFilename } from "../utils/url-path";
 
 function isInputSelected() {
   const el = document.activeElement;
@@ -177,9 +176,9 @@ class EditorContainer extends Component {
             name: "Open Scene...",
             action: e => this.onOpenSceneDialog(e)
           },
-          this.props.editor.sceneInfo.uri
+          this.props.editor.sceneUri
             ? {
-                name: "Save " + getUrlFilename(this.props.editor.sceneInfo.uri),
+                name: "Save " + getUrlFilename(this.props.editor.sceneUri),
                 action: e => this.onSave(e)
               }
             : null,
@@ -197,7 +196,7 @@ class EditorContainer extends Component {
           },
           {
             name: "Generate Floor Plan",
-            action: e => this.onGenerateNavMesh(e)
+            action: e => this.onGenerateFloorPlan(e)
           },
           {
             name: "Open Scenes Folder...",
@@ -236,7 +235,7 @@ class EditorContainer extends Component {
     this.updateDocumentTitle();
 
     window.onbeforeunload = e => {
-      if (!this.props.editor.sceneModified()) {
+      if (!this.props.editor.sceneModified) {
         return undefined;
       }
 
@@ -352,7 +351,7 @@ class EditorContainer extends Component {
     this.onExportSceneDialog();
   };
 
-  onGenerateNavMesh = async e => {
+  onGenerateFloorPlan = async e => {
     e.preventDefault();
 
     this.showDialog(ProgressDialog, {
@@ -361,7 +360,7 @@ class EditorContainer extends Component {
     });
 
     try {
-      await this.props.editor.generateNavMesh();
+      await this.props.editor.generateFloorPlan();
       this.hideDialog();
     } catch (e) {
       console.error(e);
@@ -462,7 +461,7 @@ class EditorContainer extends Component {
   };
 
   updateDocumentTitle = () => {
-    const modified = this.props.editor.sceneModified() ? "*" : "";
+    const modified = this.props.editor.sceneModified ? "*" : "";
     document.title = `${modified}${this.props.editor.scene.name} | Spoke by Mozilla`;
   };
 
@@ -508,7 +507,7 @@ class EditorContainer extends Component {
   }
 
   confirmSceneChange = async () => {
-    if (!this.props.editor.sceneModified()) {
+    if (!this.props.editor.sceneModified) {
       return true;
     }
 
@@ -561,22 +560,22 @@ class EditorContainer extends Component {
   };
 
   saveOrSaveAsScene = async () => {
-    if (this.props.editor.sceneInfo.uri) {
-      return this.onSaveScene(this.props.editor.sceneInfo.uri);
+    if (this.props.editor.sceneUri) {
+      return this.onSaveScene(this.props.editor.sceneUri);
     } else {
       return this.onSaveSceneAsDialog();
     }
   };
 
   onSaveSceneAsDialog = async () => {
-    const initialPath = this.props.editor.sceneInfo.uri;
+    const initialPath = this.props.editor.sceneUri;
 
     const filePath = await this.waitForFile({
       title: "Save scene as...",
       filters: [".spoke"],
       extension: ".spoke",
       confirmButtonLabel: "Save",
-      initialPath: this.props.editor.sceneInfo.uri
+      initialPath: this.props.editor.sceneUri
     });
 
     if (filePath === null) return false;
@@ -612,103 +611,6 @@ class EditorContainer extends Component {
       });
 
       return false;
-    }
-  };
-
-  onExtendScene = async uri => {
-    if (!(await this.confirmSceneChange())) return;
-
-    this.showDialog(ProgressDialog, {
-      title: "Extending Prefab",
-      message: "Extending prefab..."
-    });
-
-    try {
-      await this.props.editor.extendScene(uri);
-      this.hideDialog();
-    } catch (e) {
-      console.error(e);
-
-      this.showDialog(ErrorDialog, {
-        title: "Error extending prefab.",
-        message: e.message || "There was an error when extending the prefab."
-      });
-    }
-  };
-
-  onEditPrefab = async (object, path) => {
-    this.showDialog(ProgressDialog, {
-      title: "Opening Prefab",
-      message: "Opening prefab..."
-    });
-
-    try {
-      await this.props.editor.editScenePrefab(object, path);
-      this.hideDialog();
-    } catch (e) {
-      console.error(e);
-
-      this.showDialog(ErrorDialog, {
-        title: "Error opening prefab.",
-        message: e.message || "There was an error when opening the prefab."
-      });
-    }
-  };
-
-  onPopScene = async () => {
-    if (!(await this.confirmSceneChange())) return;
-    this.props.editor.popScene();
-  };
-
-  onCreatePrefabFromGLTF = async gltfPath => {
-    try {
-      const initialPath = getUrlDirname(gltfPath);
-      const defaultFileName = getUrlFilename(gltfPath);
-
-      const outputPath = await this.waitForFile({
-        title: "Save prefab as...",
-        filters: [".spoke"],
-        extension: ".spoke",
-        confirmButtonLabel: "Create Prefab",
-        initialPath,
-        defaultFileName
-      });
-
-      if (!outputPath) return null;
-
-      this.showDialog(ProgressDialog, {
-        title: "Creating Prefab",
-        message: "Creating prefab..."
-      });
-
-      await this.props.editor.createPrefabFromGLTF(gltfPath, outputPath);
-
-      this.hideDialog();
-
-      return outputPath;
-    } catch (e) {
-      if (e instanceof ConflictError) {
-        const result = await this.waitForConfirm({
-          title: "Resolve Node Conflicts",
-          message:
-            "We've found duplicate and/or missing node names in this file.\nWould you like to fix all conflicts?\n*This will modify the original file."
-        });
-
-        if (!result) return null;
-
-        if (await this.props.editor.fixConflictError(e)) {
-          return this.onCreatePrefabFromGLTF(gltfPath);
-        }
-      }
-
-      console.error(e);
-
-      this.showDialog(ErrorDialog, {
-        title: "Error Creating Prefab",
-        message: e.message || "There was an error when creating the prefab."
-      });
-
-      return null;
     }
   };
 
@@ -760,7 +662,7 @@ class EditorContainer extends Component {
   };
 
   onPublishScene = async () => {
-    if (this.props.editor.sceneModified() || this.props.editor.sceneIsDefault()) {
+    if (this.props.editor.sceneModified) {
       const willSaveChanges = await this.waitForConfirm({
         title: "Unsaved Chages",
         message: "Your scene must be saved before publishing.",
@@ -796,7 +698,7 @@ class EditorContainer extends Component {
       blob: screenshotBlob,
       cameraTransform: screenshotCameraTransform
     } = await this.props.editor.takeScreenshot();
-    const attribution = this.props.editor.getSceneAttribution();
+    const contentAttributions = this.props.editor.getSceneContentAttributions();
     const screenshotURL = URL.createObjectURL(screenshotBlob);
     const {
       name,
@@ -814,7 +716,7 @@ class EditorContainer extends Component {
 
     await this.showDialog(PublishDialog, {
       screenshotURL,
-      attribution,
+      contentAttributions,
       initialName: name || this.props.editor.scene.name,
       initialCreatorAttribution,
       initialDescription: description,
@@ -847,7 +749,7 @@ class EditorContainer extends Component {
           publishResult = await this.props.editor.publishScene(
             isNewScene ? null : sceneId,
             screenshotBlob,
-            attribution,
+            contentAttributions,
             publishProgress => {
               this.showDialog(ProgressDialog, {
                 title: "Publishing Scene",
@@ -890,10 +792,6 @@ class EditorContainer extends Component {
     onOpenScene: this.onOpenScene,
     onSaveSceneAsDialog: this.onSaveSceneAsDialog,
     onSaveScene: this.onSaveScene,
-    onExtendScene: this.onExtendScene,
-    onEditPrefab: this.onEditPrefab,
-    onPopScene: this.onPopScene,
-    onCreatePrefabFromGLTF: this.onCreatePrefabFromGLTF,
     onExportSceneDialog: this.onExportSceneDialog,
     onPublishScene: this.onPublishScene,
     onWriteFiles: this.onWriteFiles

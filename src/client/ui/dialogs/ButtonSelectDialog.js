@@ -11,7 +11,7 @@ export default class ButtonSelectDialog extends Component {
     options: PropTypes.arrayOf(
       PropTypes.shape({
         label: PropTypes.string.isRequired,
-        value: PropTypes.string.isRequired
+        value: PropTypes.any.isRequired
       })
     ),
     okLabel: PropTypes.string,
