@@ -129,7 +129,7 @@ export default function EditorNodeMixin(Object3DClass) {
       const nodes = [];
 
       if (this.constructor === nodeType) {
-        return nodes.push(this);
+        nodes.push(this);
       }
 
       for (const child of this.children) {

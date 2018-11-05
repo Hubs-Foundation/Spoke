@@ -289,9 +289,7 @@ export default class Editor {
       this.addObject(floorPlan);
     }
 
-    if (floorPlan.navMeshSrc) {
-      await this.project.remove(floorPlan.navMeshSrc);
-    }
+    const oldNavMeshPath = floorPlan.navMeshSrc;
 
     await floorPlan.generate(this.scene);
 
@@ -302,6 +300,10 @@ export default class Editor {
       );
       const path = await this.project.writeGeneratedBlob(`${floorPlan.navMesh.uuid}.glb`, glb);
       floorPlan.navMeshSrc = path;
+    }
+
+    if (oldNavMeshPath) {
+      await this.project.remove(oldNavMeshPath);
     }
   }
 

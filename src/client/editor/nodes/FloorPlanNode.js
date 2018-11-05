@@ -166,12 +166,24 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
 
     const modelNodes = scene.getNodesByType(ModelNode);
 
+    const meshes = [];
+
     for (const node of modelNodes) {
-      if (!node.includeInFloorPlan || !node.model) {
+      const model = node.model;
+
+      if (!node.includeInFloorPlan || !model) {
         continue;
       }
 
-      let geometry = node.geometry;
+      model.traverse(child => {
+        if (child.isMesh) {
+          meshes.push(child);
+        }
+      });
+    }
+
+    for (const mesh of meshes) {
+      let geometry = mesh.geometry;
       let attributes = geometry.attributes;
 
       if (!geometry.isBufferGeometry) {
@@ -185,7 +197,7 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
 
       const cloneGeometry = new THREE.BufferGeometry();
       cloneGeometry.addAttribute("position", geometry.attributes.position.clone());
-      cloneGeometry.applyMatrix(node.matrixWorld);
+      cloneGeometry.applyMatrix(mesh.matrixWorld);
       geometry = cloneGeometry;
 
       geometries.push(geometry);
