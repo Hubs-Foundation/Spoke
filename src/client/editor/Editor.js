@@ -14,7 +14,7 @@ import SetScaleCommand from "./commands/SetScaleCommand";
 import SetObjectPropertyCommand from "./commands/SetObjectPropertyCommand";
 
 import TextureCache from "./caches/TextureCache";
-import GLTFCache from "./caches/TextureCache";
+import GLTFCache from "./caches/GLTFCache";
 
 import getNameWithoutIndex from "./utils/getNameWithoutIndex";
 

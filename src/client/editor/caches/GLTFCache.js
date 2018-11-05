@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import Cache from "./Cache";
-import cloneObject3D from "./utils/cloneObject3D";
+import cloneObject3D from "../utils/cloneObject3D";
 
 export default class GLTFCache extends Cache {
   constructor(textureCache) {
