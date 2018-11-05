@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import NodeEditor from "./NodeEditor";
 import InputGroup from "../InputGroup";
 import ColorInput from "../inputs/ColorInput";
-import CompoundNumericInput from "../inputs/CompoundNumericInput";
+import NumericInput from "../inputs/NumericInput";
 import BooleanInput from "../inputs/BooleanInput";
 
 export default class DirectionalLightNodeEditor extends Component {
@@ -38,7 +38,7 @@ export default class DirectionalLightNodeEditor extends Component {
           <ColorInput value={node.color} onChange={this.onChangeColor} />
         </InputGroup>
         <InputGroup name="Intensity">
-          <CompoundNumericInput value={node.intensity} onChange={this.onChangeIntensity} />
+          <NumericInput value={node.intensity} onChange={this.onChangeIntensity} />
         </InputGroup>
         <InputGroup name="Cast Shadow">
           <BooleanInput value={node.castShadow} onChange={this.onChangeCastShadow} />

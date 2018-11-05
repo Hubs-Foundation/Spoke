@@ -4,7 +4,6 @@ import NodeEditor from "./NodeEditor";
 import InputGroup from "../InputGroup";
 import ColorInput from "../inputs/ColorInput";
 import BooleanInput from "../inputs/BooleanInput";
-import CompoundNumericInput from "../inputs/CompoundNumericInput";
 import NumericInput from "../inputs/NumericInput";
 
 export default class PointLightNodeEditor extends Component {
@@ -40,7 +39,7 @@ export default class PointLightNodeEditor extends Component {
           <ColorInput value={node.color} onChange={this.onChangeColor} />
         </InputGroup>
         <InputGroup name="Intensity">
-          <CompoundNumericInput value={node.intensity} onChange={this.onChangeIntensity} />
+          <NumericInput value={node.intensity} onChange={this.onChangeIntensity} />
         </InputGroup>
         <InputGroup name="Range">
           <NumericInput value={node.range} onChange={this.onChangeRange} />
