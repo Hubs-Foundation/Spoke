@@ -199,6 +199,9 @@ export default class Editor {
     this._addObject(new GroundPlaneNode());
 
     this.sceneModified = true;
+    this.sceneUri = null;
+
+    this.signals.sceneModified.dispatch();
 
     return scene;
   }
