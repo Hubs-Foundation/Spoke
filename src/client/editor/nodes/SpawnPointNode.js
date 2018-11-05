@@ -1,4 +1,4 @@
-import THREE from "../three";
+import * as THREE from "three";
 import EditorNodeMixin from "./EditorNodeMixin";
 import spawnPointModelUrl from "../../assets/spawn-point.glb";
 

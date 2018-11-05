@@ -1,4 +1,4 @@
-import THREE from "../three";
+import * as THREE from "three";
 
 export default class SpokeSpotLightHelper extends THREE.Object3D {
   constructor(light, color) {

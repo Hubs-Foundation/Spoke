@@ -1,8 +1,6 @@
 import signals from "signals";
-import { Socket } from "phoenix";
 import uuid from "uuid/v4";
-
-import THREE from "./three";
+import * as THREE from "three";
 import History from "./History";
 import Viewport from "./Viewport";
 
@@ -15,43 +13,23 @@ import SetRotationCommand from "./commands/SetRotationCommand";
 import SetScaleCommand from "./commands/SetScaleCommand";
 import SetObjectPropertyCommand from "./commands/SetObjectPropertyCommand";
 
-import { getUrlFilename } from "../utils/url-path";
-import { textureCache, gltfCache } from "./caches";
+import TextureCache from "./caches/TextureCache";
+import GLTFCache from "./caches/TextureCache";
+
 import getNameWithoutIndex from "./utils/getNameWithoutIndex";
 
-import DefaultNodeEditor from "../ui/node-editors/DefaultNodeEditor";
 import SceneNode from "./nodes/SceneNode";
-import SceneNodeEditor from "../ui/node-editors/SceneNodeEditor";
-import GroupNode from "./nodes/GroupNode";
-import GroupNodeEditor from "../ui/node-editors/GroupNodeEditor";
 import ModelNode from "./nodes/ModelNode";
-import ModelNodeEditor from "../ui/node-editors/ModelNodeEditor";
 import GroundPlaneNode from "./nodes/GroundPlaneNode";
-import GroundPlaneNodeEditor from "../ui/node-editors/GroundPlaneNodeEditor";
-import BoxColliderNode from "./nodes/BoxColliderNode";
-import BoxColliderNodeEditor from "../ui/node-editors/BoxColliderNodeEditor";
 import AmbientLightNode from "./nodes/AmbientLightNode";
-import AmbientLightNodeEditor from "../ui/node-editors/AmbientLightNodeEditor";
 import DirectionalLightNode from "./nodes/DirectionalLightNode";
-import DirectionalLightNodeEditor from "../ui/node-editors/DirectionalLightNodeEditor";
-import SpotLightNode from "./nodes/SpotLightNode";
-import SpotLightNodeEditor from "../ui/node-editors/SpotLightNodeEditor";
-import PointLightNode from "./nodes/PointLightNode";
-import PointLightNodeEditor from "../ui/node-editors/PointLightNodeEditor";
-import HemisphereLightNode from "./nodes/HemisphereLightNode";
-import HemisphereLightNodeEditor from "../ui/node-editors/HemisphereLightNodeEditor";
 import SpawnPointNode from "./nodes/SpawnPointNode";
-import SpawnPointNodeEditor from "../ui/node-editors/SpawnPointNodeEditor";
 import SkyboxNode from "./nodes/SkyboxNode";
-import SkyboxNodeEditor from "../ui/node-editors/SkyboxNodeEditor";
 import FloorPlanNode from "./nodes/FloorPlanNode";
-import FloorPlanNodeEditor from "../ui/node-editors/FloorPlanNodeEditor";
 
 export default class Editor {
   constructor(project) {
     this.project = project;
-
-    this.updateInfo = null;
 
     this.scene = null;
     this.sceneModified = false;
@@ -65,6 +43,9 @@ export default class Editor {
 
     this.nodeTypes = new Set();
     this.nodeEditors = new Map();
+
+    this.textureCache = new TextureCache();
+    this.gltfCache = new GLTFCache(this.textureCache);
 
     const Signal = signals.Signal;
 
@@ -110,20 +91,6 @@ export default class Editor {
     this.signals.objectSelected.add(this.onObjectSelected);
 
     this.history = new History(this);
-
-    this.registerNode(SceneNode, SceneNodeEditor);
-    this.registerNode(GroupNode, GroupNodeEditor);
-    this.registerNode(ModelNode, ModelNodeEditor);
-    this.registerNode(GroundPlaneNode, GroundPlaneNodeEditor);
-    this.registerNode(BoxColliderNode, BoxColliderNodeEditor);
-    this.registerNode(AmbientLightNode, AmbientLightNodeEditor);
-    this.registerNode(DirectionalLightNode, DirectionalLightNodeEditor);
-    this.registerNode(HemisphereLightNode, HemisphereLightNodeEditor);
-    this.registerNode(SpotLightNode, SpotLightNodeEditor);
-    this.registerNode(PointLightNode, PointLightNodeEditor);
-    this.registerNode(SpawnPointNode, SpawnPointNodeEditor);
-    this.registerNode(SkyboxNode, SkyboxNodeEditor);
-    this.registerNode(FloorPlanNode, FloorPlanNodeEditor);
   }
 
   onSceneGraphChanged = () => {
@@ -150,7 +117,7 @@ export default class Editor {
   };
 
   async init() {
-    const tasks = [this.retrieveUpdateInfo()];
+    const tasks = [this.project.retrieveUpdateInfo()];
 
     for (const NodeConstructor of this.nodeTypes) {
       tasks.push(NodeConstructor.load());
@@ -168,8 +135,8 @@ export default class Editor {
   }
 
   onFileChanged = uri => {
-    textureCache.evict(uri);
-    gltfCache.evict(uri);
+    this.textureCache.evict(uri);
+    this.gltfCache.evict(uri);
     if (uri === this.sceneUri && this.ignoreNextSceneFileChange) {
       this.ignoreNextSceneFileChange = false;
       return;
@@ -177,8 +144,8 @@ export default class Editor {
   };
 
   clearCaches() {
-    textureCache.disposeAndClear();
-    gltfCache.disposeAndClear();
+    this.textureCache.disposeAndClear();
+    this.gltfCache.disposeAndClear();
   }
 
   async loadNewScene() {
@@ -243,7 +210,7 @@ export default class Editor {
   }
 
   async loadGLTF(url) {
-    const gltf = await gltfCache.get(url);
+    const gltf = await this.gltfCache.get(url);
 
     if (gltf.scene === undefined) {
       throw new Error(`Error loading: ${url}. glTF file has no default scene.`);
@@ -257,7 +224,7 @@ export default class Editor {
   }
 
   async saveScene(sceneURI) {
-    let newSceneName = decodeURIComponent(getUrlFilename(sceneURI));
+    let newSceneName = decodeURIComponent(this.project.getUrlFilename(sceneURI));
 
     // Edge case: we may already have an object in the scene with this name. Our
     // code assumes all objects in the scene have unique names (including the scene itself)
@@ -543,7 +510,7 @@ export default class Editor {
   }
 
   getNodeEditor(node) {
-    return this.nodeEditors.get(node.constructor) || DefaultNodeEditor;
+    return this.nodeEditors.get(node.constructor);
   }
 
   setNodeProperty(node, propertyName, value) {
@@ -787,76 +754,5 @@ export default class Editor {
     onPublishProgress("");
 
     return { sceneUrl: res.url, sceneId: res.sceneId };
-  }
-
-  async _debugVerifyAuth(url) {
-    const params = new URLSearchParams(url);
-    const topic = params.get("auth_topic");
-    const token = params.get("auth_token");
-    const reticulumServer = process.env.RETICULUM_SERVER;
-    const socketUrl = `wss://${reticulumServer}/socket`;
-    const socket = new Socket(socketUrl, { params: { session_id: uuid() } });
-    socket.connect();
-    const channel = socket.channel(topic);
-    await new Promise((resolve, reject) =>
-      channel
-        .join()
-        .receive("ok", resolve)
-        .receive("error", reject)
-    );
-    channel.push("auth_verified", { token });
-  }
-
-  async startAuthentication(email) {
-    const reticulumServer = process.env.RETICULUM_SERVER;
-    const socketUrl = `wss://${reticulumServer}/socket`;
-    const socket = new Socket(socketUrl, { params: { session_id: uuid() } });
-    socket.connect();
-    const channel = socket.channel(`auth:${uuid()}`);
-    await new Promise((resolve, reject) =>
-      channel
-        .join()
-        .receive("ok", resolve)
-        .receive("error", reject)
-    );
-
-    const authComplete = new Promise(resolve =>
-      channel.on("auth_credentials", async ({ credentials }) => {
-        await fetch("/api/credentials", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ credentials })
-        });
-        resolve();
-      })
-    );
-
-    channel.push("auth_request", { email, origin: "spoke" });
-
-    return { authComplete };
-  }
-
-  async authenticated() {
-    return await fetch("/api/authenticated").then(r => r.ok);
-  }
-
-  /*
-   * Stores user info on disk.
-   * userInfo can be a partial object.
-   */
-  async setUserInfo(userInfo) {
-    return await fetch("/api/user_info", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify(userInfo)
-    });
-  }
-
-  async getUserInfo() {
-    return fetch("/api/user_info").then(r => r.json());
-  }
-
-  async retrieveUpdateInfo() {
-    this.updateInfo = await fetch("/api/update_info").then(r => r.json());
   }
 }

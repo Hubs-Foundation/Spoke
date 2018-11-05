@@ -1,5 +1,5 @@
-@import "../../common";
-@import "../../theme";
+@import "../styles/common";
+@import "../styles/theme";
 
 :local(.stringInput) {
   @include input;
