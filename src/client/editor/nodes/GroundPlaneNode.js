@@ -36,7 +36,16 @@ export default class GroundPlaneNode extends EditorNodeMixin(GroundPlane) {
     groundPlaneCollider.scale.set(4000, 0.01, 4000);
     groundPlaneCollider.userData.gltfExtensions = {
       HUBS_components: {
-        "box-collider": {}
+        "box-collider": {
+          // TODO: Remove exporting these properties. They are already included in the transform props.
+          position: groundPlaneCollider.position,
+          rotation: {
+            x: groundPlaneCollider.rotation.x,
+            y: groundPlaneCollider.rotation.y,
+            z: groundPlaneCollider.rotation.z
+          },
+          scale: groundPlaneCollider.scale
+        }
       }
     };
     this.add(groundPlaneCollider);
