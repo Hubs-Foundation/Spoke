@@ -150,11 +150,13 @@ export default class Editor {
 
   async loadNewScene() {
     this.clearCaches();
+    this.duplicateNameCounters.clear();
 
     const scene = new SceneNode();
     scene.name = "Untitled";
 
-    this.setScene(scene);
+    this.scene = scene;
+    this.sceneUri = null;
 
     this._addObject(new SkyboxNode());
     this._addObject(new AmbientLightNode());
@@ -165,9 +167,9 @@ export default class Editor {
     this._addObject(new SpawnPointNode());
     this._addObject(new GroundPlaneNode());
 
-    this.sceneModified = true;
-    this.sceneUri = null;
+    this.setScene(scene);
 
+    this.sceneModified = true;
     this.signals.sceneModified.dispatch();
 
     return scene;
@@ -175,6 +177,7 @@ export default class Editor {
 
   async openScene(uri) {
     this.clearCaches();
+    this.duplicateNameCounters.clear();
 
     const url = new URL(uri, window.location).href;
 
