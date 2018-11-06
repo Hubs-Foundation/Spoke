@@ -35,7 +35,7 @@ export default class AmbientLightNode extends EditorNodeMixin(THREE.AmbientLight
   }
 
   prepareForExport() {
-    const replacementObject = new THREE.Object3D();
+    const replacementObject = new THREE.Object3D().copy(this, false);
 
     replacementObject.userData.gltfExtensions = {
       HUBS_components: {

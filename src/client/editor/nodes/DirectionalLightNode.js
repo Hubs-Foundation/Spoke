@@ -72,7 +72,7 @@ export default class DirectionalLightNode extends EditorNodeMixin(PhysicalDirect
     this.remove(this.helper);
     this.remove(this.picker);
 
-    const replacementObject = new THREE.Object3D();
+    const replacementObject = new THREE.Object3D().copy(this, false);
 
     replacementObject.userData.gltfExtensions = {
       HUBS_components: {
