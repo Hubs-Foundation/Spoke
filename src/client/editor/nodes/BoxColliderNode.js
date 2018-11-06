@@ -49,7 +49,12 @@ export default class BoxColliderNode extends EditorNodeMixin(THREE.Object3D) {
   prepareForExport() {
     this.userData.gltfExtensions = {
       HUBS_components: {
-        "box-collider": {}
+        "box-collider": {
+          // TODO: Remove exporting these properties. They are already included in the transform props.
+          position: this.position,
+          rotation: this.rotation,
+          scale: this.scale
+        }
       }
     };
 
