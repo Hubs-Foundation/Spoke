@@ -1,4 +1,4 @@
-import * as THREE from "three";
+import THREE from "../../vendor/three";
 
 export default class PhysicalPointLight extends THREE.PointLight {
   constructor() {

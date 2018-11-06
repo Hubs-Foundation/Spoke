@@ -1,4 +1,4 @@
-import * as THREE from "three";
+import THREE from "../../vendor/three";
 import EditorNodeMixin from "./EditorNodeMixin";
 
 export default class BoxColliderNode extends EditorNodeMixin(THREE.Object3D) {

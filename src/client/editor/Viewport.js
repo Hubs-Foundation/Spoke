@@ -1,8 +1,9 @@
-import * as THREE from "three";
+import THREE from "../vendor/three";
 import SetPositionCommand from "./commands/SetPositionCommand";
 import SetRotationCommand from "./commands/SetRotationCommand";
 import SetScaleCommand from "./commands/SetScaleCommand";
 import GridHelper from "./helpers/GridHelper";
+import SpokeTransformControls from "./controls/SpokeTransformControls";
 
 /**
  * @author mrdoob / http://mrdoob.com/
@@ -79,7 +80,7 @@ export default class Viewport {
 
     requestAnimationFrame(render);
 
-    this._transformControls = new THREE.TransformControls(camera, canvas);
+    this._transformControls = new SpokeTransformControls(camera, canvas);
     this._transformControls.addEventListener("change", () => {
       const object = this._transformControls.object;
 

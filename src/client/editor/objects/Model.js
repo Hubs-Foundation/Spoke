@@ -1,4 +1,4 @@
-import * as THREE from "three";
+import THREE from "../../vendor/three";
 import cloneObject3D from "../utils/cloneObject3D";
 
 export default class Model extends THREE.Object3D {

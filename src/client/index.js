@@ -1,14 +1,6 @@
 import ReactDOM from "react-dom";
 import React from "react";
 
-const THREE = require("three");
-window.THREE = THREE;
-require("three/examples/js/BufferGeometryUtils");
-require("three/examples/js/controls/EditorControls");
-require("three/examples/js/controls/TransformControls");
-require("three/examples/js/exporters/GLTFExporter");
-require("three/examples/js/loaders/GLTFLoader");
-
 import App from "./ui/App";
 import Editor from "./editor/Editor";
 import Project from "./api/Project";

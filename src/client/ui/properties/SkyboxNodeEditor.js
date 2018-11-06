@@ -4,7 +4,7 @@ import NodeEditor from "./NodeEditor";
 import InputGroup from "../inputs/InputGroup";
 import NumericInput from "../inputs/NumericInput";
 import CompoundNumericInput from "../inputs/CompoundNumericInput";
-import * as THREE from "three";
+import THREE from "../../vendor/three";
 
 const { degToRad, radToDeg } = THREE.Math;
 

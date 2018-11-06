@@ -1,4 +1,4 @@
-import * as THREE from "three";
+import THREE from "../../vendor/three";
 /**
  * @author zz85 / https://github.com/zz85
  *

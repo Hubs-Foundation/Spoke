@@ -1,4 +1,4 @@
-import * as THREE from "three";
+import THREE from "../../vendor/three";
 import EditorNodeMixin from "./EditorNodeMixin";
 import GroundPlane from "../objects/GroundPlane";
 import serializeColor from "../utils/serializeColor";

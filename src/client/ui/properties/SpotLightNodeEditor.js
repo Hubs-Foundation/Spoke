@@ -5,7 +5,7 @@ import InputGroup from "../inputs/InputGroup";
 import ColorInput from "../inputs/ColorInput";
 import NumericInput from "../inputs/NumericInput";
 import BooleanInput from "../inputs/BooleanInput";
-import * as THREE from "three";
+import THREE from "../../vendor/three";
 
 const { degToRad, radToDeg } = THREE.Math;
 

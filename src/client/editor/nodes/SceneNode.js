@@ -1,4 +1,4 @@
-import * as THREE from "three";
+import THREE from "../../vendor/three";
 import EditorNodeMixin from "./EditorNodeMixin";
 import { setStaticMode, StaticModes, isStatic } from "../StaticMode";
 import sortEntities from "../utils/sortEntities";
