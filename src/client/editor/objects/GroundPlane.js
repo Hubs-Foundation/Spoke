@@ -1,4 +1,4 @@
-import * as THREE from "three";
+import THREE from "../../vendor/three";
 
 export default class GroundPlane extends THREE.Object3D {
   static _geometry = new THREE.CircleBufferGeometry(4000, 32);

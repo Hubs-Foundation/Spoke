@@ -1,5 +1,5 @@
 import Command from "./Command";
-import * as THREE from "three";
+import THREE from "../../vendor/three";
 
 /**
  * @author dforrer / https://github.com/dforrer

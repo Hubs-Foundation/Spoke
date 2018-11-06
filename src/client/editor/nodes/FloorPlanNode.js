@@ -1,5 +1,5 @@
 import EditorNodeMixin from "./EditorNodeMixin";
-import * as THREE from "three";
+import THREE from "../../vendor/three";
 import FloorPlan from "../objects/FloorPlan";
 import Recast from "../recast/recast.js";
 import ModelNode from "./ModelNode";

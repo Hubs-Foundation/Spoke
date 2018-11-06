@@ -1,4 +1,4 @@
-import * as THREE from "three";
+import THREE from "../../vendor/three";
 import EditorNodeMixin from "./EditorNodeMixin";
 import Picker from "../objects/Picker";
 import PhysicalPointLight from "../objects/PhysicalPointLight";

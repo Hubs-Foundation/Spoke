@@ -1,6 +1,6 @@
 import signals from "signals";
 import uuid from "uuid/v4";
-import * as THREE from "three";
+import THREE from "../vendor/three";
 import History from "./History";
 import Viewport from "./Viewport";
 
