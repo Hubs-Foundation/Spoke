@@ -161,7 +161,7 @@ export default class Editor {
     this._addObject(new SkyboxNode());
     this._addObject(new AmbientLightNode());
     const directionalLight = new DirectionalLightNode();
-    directionalLight.position.set(0, 10, 0);
+    directionalLight.position.set(-1, 3, 0);
     directionalLight.rotation.set(Math.PI * 0.5, Math.PI * (0.5 / 3.0), -Math.PI * 0.5);
     this._addObject(directionalLight);
     this._addObject(new SpawnPointNode());
