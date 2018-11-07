@@ -35,6 +35,10 @@ export default class Editor {
     this.sceneModified = false;
     this.sceneUri = null;
 
+    this.camera = new THREE.PerspectiveCamera(80, window.innerWidth / window.innerHeight, 0.2, 8000);
+    this.camera.layers.enable(1);
+    this.camera.name = "Camera";
+
     this.duplicateNameCounters = new Map();
 
     // TODO: Support multiple viewports
@@ -197,13 +201,9 @@ export default class Editor {
   setScene(scene) {
     this.scene = scene;
 
-    const camera = new THREE.PerspectiveCamera(80, window.innerWidth / window.innerHeight, 0.2, 8000);
-    camera.layers.enable(1);
-    camera.name = "Camera";
-    camera.position.set(0, 5, 10);
-    camera.lookAt(new THREE.Vector3());
-    this.scene.add(camera);
-    this.camera = camera;
+    this.camera.position.set(0, 5, 10);
+    this.camera.lookAt(new THREE.Vector3());
+    this.scene.add(this.camera);
 
     this.history.clear();
     this.deselect();
@@ -295,13 +295,9 @@ export default class Editor {
     clonedScene.removeUnusedObjects();
 
     // Add a preview camera to the exported GLB if there is a transform in the metadata.
-    const { previewCameraTransform } = this.getSceneMetadata();
-    if (previewCameraTransform) {
-      const previewCamera = this.camera.clone();
-      previewCamera.name = "scene-preview-camera";
-      previewCamera.applyMatrix(previewCameraTransform);
-      clonedScene.add(previewCamera);
-    }
+    const previewCamera = this.camera.clone();
+    previewCamera.name = "scene-preview-camera";
+    clonedScene.add(previewCamera);
 
     const animations = clonedScene.getAnimationClips();
 
