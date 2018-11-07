@@ -159,8 +159,12 @@ class App extends Component {
             action: () => this.onPublishScene()
           },
           {
-            name: "Export to GLTF...",
+            name: "Export as glTF ...",
             action: e => this.onExportScene(e)
+          },
+          {
+            name: "Export as binary glTF (.glb) ...",
+            action: e => this.onExportScene(e, true)
           },
           {
             name: "Generate Floor Plan",
@@ -308,7 +312,7 @@ class App extends Component {
     this.onOpenSceneDialog();
   };
 
-  onExportScene = e => {
+  onExportScene = (e, glb) => {
     e.preventDefault();
 
     // Disable when dialog is shown.
@@ -316,7 +320,7 @@ class App extends Component {
       return;
     }
 
-    this.onExportSceneDialog();
+    this.onExportSceneDialog(glb);
   };
 
   onGenerateFloorPlan = async e => {
@@ -582,11 +586,15 @@ class App extends Component {
     }
   };
 
-  onExportSceneDialog = async () => {
+  onExportSceneDialog = async glb => {
+    const { editor } = this.props;
+    const scene = editor.scene;
+    const fileName = glb ? scene.name + ".glb" : scene.name + "-Exported";
+
     const outputPath = await this.waitForFile({
       title: "Select the output directory",
-      directory: true,
-      defaultFileName: this.props.editor.scene.name + "-Exported",
+      directory: !glb,
+      defaultFileName: fileName,
       confirmButtonLabel: "Export scene"
     });
 
@@ -598,7 +606,12 @@ class App extends Component {
     });
 
     try {
-      await this.props.editor.exportScene(outputPath);
+      const glbBlob = await this.props.editor.exportScene(outputPath, glb);
+
+      if (glb) {
+        await this.props.editor.project.writeBlob(outputPath, glbBlob);
+      }
+
       this.hideDialog();
     } catch (e) {
       console.error(e);
