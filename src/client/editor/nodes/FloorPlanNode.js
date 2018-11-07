@@ -252,7 +252,7 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
       navGeo.setIndex(navIndex);
       navGeo.addAttribute("position", new THREE.Float32BufferAttribute(navPosition, 3));
 
-      heightfield = generateHeightfield(new THREE.Mesh(navGeo));
+      heightfield = await generateHeightfield(new THREE.Mesh(navGeo));
 
       finalGeos.push(navGeo);
     }
