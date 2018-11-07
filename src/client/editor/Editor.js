@@ -275,8 +275,14 @@ export default class Editor {
       floorPlan.navMeshSrc = path;
     }
 
+    // Remove the old nav mesh file
     if (oldNavMeshPath) {
       await this.project.remove(oldNavMeshPath);
+    }
+
+    // Save the scene so we don't break the reference to the nav mesh in the spoke file
+    if (this.sceneUri) {
+      await this.saveScene(this.sceneUri);
     }
   }
 
