@@ -1,5 +1,7 @@
 # Spoke (beta)
 
+[https://hubs.mozilla.com/spoke](https://hubs.mozilla.com/spoke)
+
 Easily create custom 3D environments for [Mozilla Hubs](https://hubs.mozilla.com).
 
 ## Development
@@ -10,6 +12,8 @@ Easily create custom 3D environments for [Mozilla Hubs](https://hubs.mozilla.com
 - `npm run dev`
 
 Then open http://localhost:9090.
+
+When running against a local self-signed cert reticulum server, you'll need to `export NODE_TLS_REJECT_UNAUTHORIZED=0` for publishing to work.
 
 ## Credits
 

@@ -1,4 +1,4 @@
-import Command from "../Command";
+import Command from "./Command";
 
 /**
  * @author dforrer / https://github.com/dforrer
@@ -25,11 +25,6 @@ export default class RemoveObjectCommand extends Command {
   }
 
   execute() {
-    const scope = this.editor;
-    this.object.traverse(function(child) {
-      scope.removeHelper(child);
-    });
-
     this.parent.remove(this.object);
 
     // Do not select scene
@@ -44,12 +39,6 @@ export default class RemoveObjectCommand extends Command {
   }
 
   undo() {
-    const scope = this.editor;
-
-    this.object.traverse(child => {
-      scope.addHelper(child, this.object);
-    });
-
     this.parent.children.splice(this.index, 0, this.object);
     this.object.parent = this.parent;
     this.editor.select(this.object);

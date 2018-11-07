@@ -1,5 +1,5 @@
-import THREE from "./three";
-import { isStatic, computeAndSetStaticModes } from "./StaticMode";
+import THREE from "../vendor/three";
+import { isStatic } from "./StaticMode";
 import asyncTraverse from "./utils/asyncTraverse";
 import keysEqual from "./utils/keysEqual";
 import hashImage from "./utils/hashImage";
@@ -65,7 +65,7 @@ export default class MeshCombinationGroup {
   };
 
   static async combineMeshes(rootObject) {
-    computeAndSetStaticModes(rootObject);
+    rootObject.computeAndSetStaticModes();
 
     const meshCombinationGroups = [];
 

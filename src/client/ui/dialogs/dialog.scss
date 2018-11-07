@@ -1,7 +1,7 @@
-@import "../../common";
-@import "../../theme";
-@import "../../global";
-@import "../../icons";
+@import "../styles/common";
+@import "../styles/theme";
+@import "../styles/global";
+@import "../styles/icons";
 
 :local(.dialogContainer) {
   display: flex;

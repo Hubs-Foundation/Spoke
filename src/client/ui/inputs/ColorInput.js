@@ -3,9 +3,14 @@ import PropTypes from "prop-types";
 import { SketchPicker } from "react-color";
 import { EditableInput } from "react-color/lib/components/common";
 import styles from "./ColorInput.scss";
-import csscolorNames from "css-color-names";
+import THREE from "../../vendor/three";
 
 export default class ColorInput extends Component {
+  static propTypes = {
+    value: PropTypes.object.isRequired,
+    onChange: PropTypes.func
+  };
+
   constructor(props) {
     super(props);
     this.state = {
@@ -47,49 +52,34 @@ export default class ColorInput extends Component {
     this.setState({ displayColorPicker: false });
   };
 
-  handleColorHexValue = () => {
-    const color = this.props.value;
-    return csscolorNames[color] ? csscolorNames[color] : color;
+  onChangeText = value => {
+    this.props.onChange(new THREE.Color(value));
   };
 
-  renderColorPicker = () => {
-    if (!this.state.displayColorPicker) {
-      return null;
-    }
-    const pos = {
-      left: this.state.pickerX,
-      bottom: this.state.pickerBottom
-    };
-    return (
-      <div style={pos} className={styles.popover}>
-        <div className={styles.cover} onClick={this.handleClose} />
-        <div className={styles.colorPicker}>
-          <SketchPicker
-            color={this.props.value}
-            disableAlpha={true}
-            onChange={color => this.props.onChange(color.hex)}
-          />
-        </div>
-      </div>
-    );
+  onChangePicker = ({ hex }) => {
+    this.props.onChange(new THREE.Color(hex));
   };
 
   render() {
+    const hexColor = "#" + this.props.value.getHexString();
+
     return (
       <div className={styles.colorInput}>
         <div className={styles.block} onClick={this.handleClick}>
-          <div className={styles.color} style={{ background: this.props.value }} />
+          <div className={styles.color} style={{ background: hexColor }} />
         </div>
         <div className={styles.colorInput}>
-          <EditableInput value={this.handleColorHexValue()} onChange={color => this.props.onChange(color)} />
+          <EditableInput value={hexColor} onChange={this.onChangeText} />
         </div>
-        {this.renderColorPicker()}
+        {this.state.displayColorPicker && (
+          <div style={{ left: this.state.pickerX, bottom: this.state.pickerBottom }} className={styles.popover}>
+            <div className={styles.cover} onClick={this.handleClose} />
+            <div className={styles.colorPicker}>
+              <SketchPicker color={hexColor} disableAlpha={true} onChange={this.onChangePicker} />
+            </div>
+          </div>
+        )}
       </div>
     );
   }
 }
-
-ColorInput.propTypes = {
-  value: PropTypes.string,
-  onChange: PropTypes.func
-};

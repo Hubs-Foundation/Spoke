@@ -1,4 +1,4 @@
-import Command from "../Command";
+import Command from "./Command";
 
 /**
  * @author dforrer / https://github.com/dforrer
@@ -36,12 +36,14 @@ export default class SetScaleCommand extends Command {
     this.object.scale.copy(this.newScale);
     this.object.updateMatrixWorld(true);
     this.editor.signals.objectChanged.dispatch(this.object);
+    this.editor.signals.transformChanged.dispatch(this.object);
   }
 
   undo() {
     this.object.scale.copy(this.oldScale);
     this.object.updateMatrixWorld(true);
     this.editor.signals.objectChanged.dispatch(this.object);
+    this.editor.signals.transformChanged.dispatch(this.object);
   }
 
   update(command) {

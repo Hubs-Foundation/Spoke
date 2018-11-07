@@ -1,7 +1,7 @@
 import React from "react";
 import PropTypes from "prop-types";
-import "../../vendor/react-select/index.scss";
 import Select from "react-select";
+import "../styles/vendor/react-select/index.scss";
 
 const staticStyle = {
   container: base => ({

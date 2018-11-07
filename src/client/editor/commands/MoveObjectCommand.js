@@ -1,5 +1,5 @@
-import Command from "../Command";
-import THREE from "../three";
+import Command from "./Command";
+import THREE from "../../vendor/three";
 
 /**
  * @author dforrer / https://github.com/dforrer
@@ -22,6 +22,7 @@ export default class MoveObjectCommand extends Command {
     this.name = "Move Object";
 
     this.object = object;
+    this.oldMatrix = this.object.matrix.clone();
     this.oldParent = object !== undefined ? object.parent : undefined;
     this.oldIndex = this.oldParent !== undefined ? this.oldParent.children.indexOf(this.object) : undefined;
     this.newParent = newParent;
@@ -55,11 +56,13 @@ export default class MoveObjectCommand extends Command {
   }
 
   undo() {
-    this.newParent.remove(this.object);
+    const object = this.object;
+    this.newParent.remove(object);
 
     const children = this.oldParent.children;
-    children.splice(this.oldIndex, 0, this.object);
-    this.object.parent = this.oldParent;
+    children.splice(this.oldIndex, 0, object);
+    object.parent = this.oldParent;
+    this.oldMatrix.decompose(object.position, object.quaternion, object.scale);
 
     this.editor.signals.sceneGraphChanged.dispatch();
   }

@@ -1,4 +1,4 @@
-import Command from "../Command";
+import Command from "./Command";
 
 /**
  * @author dforrer / https://github.com/dforrer
@@ -36,12 +36,14 @@ export default class SetRotationCommand extends Command {
     this.object.rotation.copy(this.newRotation);
     this.object.updateMatrixWorld(true);
     this.editor.signals.objectChanged.dispatch(this.object);
+    this.editor.signals.transformChanged.dispatch(this.object);
   }
 
   undo() {
     this.object.rotation.copy(this.oldRotation);
     this.object.updateMatrixWorld(true);
     this.editor.signals.objectChanged.dispatch(this.object);
+    this.editor.signals.transformChanged.dispatch(this.object);
   }
 
   update(command) {

@@ -1,8 +1,8 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
 import styles from "./dialog.scss";
-import Button from "../Button";
-import Header from "../Header";
+import Button from "../inputs/Button";
+import DialogHeader from "./DialogHeader";
 import StringInput from "../inputs/StringInput";
 import BooleanInput from "../inputs/BooleanInput";
 
@@ -11,7 +11,7 @@ export default class PublishDialog extends Component {
     hideDialog: PropTypes.func.isRequired,
     onCancel: PropTypes.func,
     screenshotURL: PropTypes.string,
-    attribution: PropTypes.string,
+    contentAttributions: PropTypes.array,
     onPublish: PropTypes.func,
     published: PropTypes.bool,
     sceneUrl: PropTypes.string,
@@ -49,15 +49,18 @@ export default class PublishDialog extends Component {
     e.preventDefault();
 
     if (this.props.onPublish) {
-      this.props.onPublish(this.state);
+      const publishState = { ...this.state };
+      publishState.name = publishState.name.trim();
+      publishState.creatorAttribution = publishState.creatorAttribution.trim();
+      this.props.onPublish(publishState);
     }
   };
 
   render() {
-    const { onCancel, hideDialog, screenshotURL, published, sceneUrl, attribution } = this.props;
+    const { onCancel, hideDialog, screenshotURL, published, sceneUrl, contentAttributions } = this.props;
     return (
       <div className={styles.dialogContainer}>
-        <Header title="Publish to Hubs" />
+        <DialogHeader title="Publish to Hubs" />
         <div className={styles.publishContainer}>
           <div className={styles.content}>
             <img className={styles.sceneThumbnail} src={screenshotURL} />
@@ -74,7 +77,7 @@ export default class PublishDialog extends Component {
                         title="Name must be between 4 and 64 characters and cannot contain underscores"
                         value={this.state.name}
                         className={styles.name}
-                        onChange={value => this.setState({ name: value.trim() })}
+                        onChange={name => this.setState({ name })}
                       />
                     </div>
                     <div className={styles.inputField}>
@@ -83,7 +86,7 @@ export default class PublishDialog extends Component {
                         id="creatorAttribution"
                         value={this.state.creatorAttribution}
                         className={styles.creatorAttribution}
-                        onChange={value => this.setState({ creatorAttribution: value.trim() })}
+                        onChange={value => this.setState({ creatorAttribution: value })}
                       />
                     </div>
                   </div>
@@ -162,10 +165,12 @@ export default class PublishDialog extends Component {
                 )}
               </form>
               {!published &&
-                attribution && (
+                contentAttributions && (
                   <div className={styles.attribution}>
                     <label>Model Attribution:</label>
-                    <p className={styles.attributionText}>{attribution}</p>
+                    <p className={styles.attributionText}>
+                      {contentAttributions.map(a => `${a.name} by ${a.author}\n`)}
+                    </p>
                   </div>
                 )}
             </div>

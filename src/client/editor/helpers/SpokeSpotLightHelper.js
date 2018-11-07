@@ -1,14 +1,10 @@
-import THREE from "../three";
+import THREE from "../../vendor/three";
 
 export default class SpokeSpotLightHelper extends THREE.Object3D {
   constructor(light, color) {
     super();
 
     this.light = light;
-    this.light.updateMatrixWorld();
-
-    this.matrix = light.matrixWorld;
-    this.matrixAutoUpdate = false;
 
     this.color = color;
 
@@ -28,9 +24,11 @@ export default class SpokeSpotLightHelper extends THREE.Object3D {
     const material = new THREE.LineBasicMaterial({ fog: false });
 
     this.outerCone = new THREE.LineSegments(geometry, material);
+    this.outerCone.layers.set(1);
     this.add(this.outerCone);
 
     this.innerCone = new THREE.LineSegments(geometry, material);
+    this.innerCone.layers.set(1);
     this.add(this.innerCone);
 
     this.update();

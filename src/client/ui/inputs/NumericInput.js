@@ -79,13 +79,14 @@ export default class NumericInput extends React.Component {
   }
 
   setValidValue(value) {
-    value = this.clamp(round(value));
-    this.lastValidValue = value;
+    const validValue = this.clamp(round(value));
+    this.lastValidValue = validValue;
+    return validValue;
   }
 
   setValidValueAndDispatch(value) {
-    this.setValidValue(value);
-    const parsedValue = this.parseValue(value);
+    const validValue = this.setValidValue(value);
+    const parsedValue = this.parseValue(validValue);
     this.props.onChange(parsedValue);
   }
 

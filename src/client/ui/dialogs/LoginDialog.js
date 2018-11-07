@@ -1,8 +1,8 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
 import styles from "./dialog.scss";
-import Button from "../Button";
-import Header from "../Header";
+import Button from "../inputs/Button";
+import DialogHeader from "./DialogHeader";
 import StringInput from "../inputs/StringInput";
 import BotImageUrl from "../../assets/LoginBot.png";
 import classNames from "classnames";
@@ -30,7 +30,7 @@ export default class LoginDialog extends Component {
     const { authStarted } = this.props;
     return (
       <div className={styles.dialogContainer}>
-        <Header title="Publish to Hubs" />
+        <DialogHeader title="Publish to Hubs" />
         <div className={styles.loginContainer}>
           {authStarted ? (
             <div className={classNames([styles.content, styles.contentFullHeight])}>
