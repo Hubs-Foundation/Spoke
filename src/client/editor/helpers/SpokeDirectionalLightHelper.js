@@ -22,15 +22,15 @@ export default class SpokeDirectionalLightHelper extends THREE.Object3D {
     const material = new THREE.LineBasicMaterial({ fog: false });
 
     this.lightPlane = new THREE.Line(geometry, material);
+    this.lightPlane.layers.set(1);
     this.add(this.lightPlane);
 
     geometry = new THREE.BufferGeometry();
     geometry.addAttribute("position", new THREE.Float32BufferAttribute([0, 0, 0, 0, 0, 1], 3));
 
     this.targetLine = new THREE.Line(geometry, material);
+    this.targetLine.layers.set(1);
     this.add(this.targetLine);
-
-    this.layers.set(1);
 
     this.update();
   }
