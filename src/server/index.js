@@ -19,6 +19,8 @@ const serve = require("koa-static");
 const sha = require("sha.js");
 const WebSocket = require("ws");
 const yauzl = require("yauzl");
+const logger = require("koa-logger");
+const proxy = require("koa-proxy");
 
 const packageJSON = require("../../package.json");
 
@@ -258,6 +260,8 @@ async function startServer(options) {
   if (process.env.NODE_ENV === "development") {
     console.log("Running in development environment");
 
+    app.use(logger());
+
     app.use(async (ctx, next) => {
       try {
         await next();
@@ -276,7 +280,7 @@ async function startServer(options) {
     try {
       const devMiddleware = await koaWebpack({
         compiler,
-        hotClient: opts.https ? false : { host: { server: "0.0.0.0", client: "*" } }
+        hotClient: false //opts.https ? false : { host: { server: "0.0.0.0", client: "*" } }
       });
       app.use(devMiddleware);
     } catch (e) {
@@ -287,6 +291,10 @@ async function startServer(options) {
   }
 
   const router = new Router();
+
+  const reticulumServer = "hubs.mozilla.com";
+  const mediaEndpoint = `https://${reticulumServer}/api/v1/media`;
+  const agent = process.env.NODE_ENV === "development" ? https.Agent({ rejectUnauthorized: false }) : null;
 
   router.get("/api/files", async ctx => {
     ctx.body = projectHierarchy;
@@ -302,6 +310,38 @@ async function startServer(options) {
         }
       })
     )
+  );
+
+  router.post("/api/media", koaBody(), async ctx => {
+    try {
+      const resp = await fetch(mediaEndpoint, {
+        agent,
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(ctx.request.body)
+      });
+
+      ctx.status = resp.status;
+
+      if (resp.status !== 200) {
+        return;
+      }
+
+      ctx.body = await resp.json();
+    } catch (err) {
+      console.error(err);
+      throw new Error("Error resolving media.");
+    }
+  });
+
+  app.use(
+    proxy({
+      host: "https://farspark.reticulum.io",
+      match: /^\/api\/farspark\//,
+      map: path => {
+        return path.replace(/^\/api\/farspark/, "");
+      }
+    })
   );
 
   router.post("/api/files/:filePath*", koaBody({ multipart: true, text: false }), async ctx => {
@@ -333,10 +373,6 @@ async function startServer(options) {
       hierarchy
     };
   });
-
-  const reticulumServer = "hubs.mozilla.com";
-  const mediaEndpoint = `https://${reticulumServer}/api/v1/media`;
-  const agent = process.env.NODE_ENV === "development" ? https.Agent({ rejectUnauthorized: false }) : null;
 
   router.post("/api/import", koaBody(), async ctx => {
     const origin = ctx.request.body.url;

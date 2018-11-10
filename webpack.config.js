@@ -51,6 +51,11 @@ module.exports = {
         test: /\.js$/,
         include: path.join(__dirname, "src", "client"),
         use: "babel-loader"
+      },
+      {
+        test: /\.worker\.js$/,
+        include: path.join(__dirname, "src", "client"),
+        loader: "worker-loader"
       }
     ]
   },
@@ -70,6 +75,6 @@ module.exports = {
     new webpack.DefinePlugin({
       SPOKE_VERSION: JSON.stringify(packageJSON.version)
     }),
-    new webpack.EnvironmentPlugin(["NODE_ENV", "RETICULUM_SERVER"])
+    new webpack.EnvironmentPlugin(["NODE_ENV", "RETICULUM_SERVER", "FARSPARK_SERVER"])
   ]
 };

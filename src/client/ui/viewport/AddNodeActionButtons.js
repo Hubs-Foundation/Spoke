@@ -32,6 +32,8 @@ import PointLightNode from "../../editor/nodes/PointLightNode";
 import PointLightNodeEditor from "../properties/PointLightNodeEditor";
 import SkyboxNode from "../../editor/nodes/SkyboxNode";
 import SkyboxNodeEditor from "../properties/SkyboxNodeEditor";
+import MediaNode from "../../editor/nodes/MediaNode";
+import MediaNodeEditor from "../properties/MediaNodeEditor";
 
 function AddButton({ label, iconClassName, onClick }) {
   return (
@@ -206,6 +208,11 @@ class AddNodeActionButtons extends Component {
               onClick={() => this.addNode(SpawnPointNode)}
             />
             <AddButton label="Light" iconClassName={PointLightNodeEditor.iconClassName} onClick={this.addLight} />
+            <AddButton
+              label={MediaNode.nodeName}
+              iconClassName={MediaNodeEditor.iconClassName}
+              onClick={() => this.addNode(MediaNode)}
+            />
             {!hasSkybox && (
               <AddButton
                 label={SkyboxNode.nodeName}

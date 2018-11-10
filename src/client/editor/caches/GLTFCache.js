@@ -1,6 +1,7 @@
 import THREE from "../../vendor/three";
 import Cache from "./Cache";
 import cloneObject3D from "../utils/cloneObject3D";
+import loadGLTF from "../utils/loadGLTF";
 
 export default class GLTFCache extends Cache {
   constructor(textureCache) {
@@ -13,17 +14,9 @@ export default class GLTFCache extends Cache {
     if (!this._cache.has(absoluteURL)) {
       this._cache.set(
         absoluteURL,
-        new Promise((resolve, reject) => {
-          const loader = new THREE.GLTFLoader();
-          loader.load(
-            absoluteURL,
-            gltf => {
-              gltf.scene.animations = gltf.animations;
-              resolve(gltf);
-            },
-            null,
-            reject
-          );
+        loadGLTF(absoluteURL).then(gltf => {
+          gltf.scene.animations = gltf.animations;
+          return gltf;
         })
       );
     }
