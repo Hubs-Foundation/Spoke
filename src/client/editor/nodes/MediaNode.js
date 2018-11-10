@@ -1,3 +1,4 @@
+import THREE from "../../vendor/three";
 import EditorNodeMixin from "./EditorNodeMixin";
 import Media from "../objects/Media";
 
@@ -27,5 +28,21 @@ export default class MediaNode extends EditorNodeMixin(Media) {
     });
 
     return json;
+  }
+
+  prepareForExport() {
+    const replacementObject = new THREE.Object3D().copy(this, false);
+
+    replacementObject.userData.gltfExtensions = {
+      HUBS_components: {
+        media: {
+          id: replacementObject.uuid,
+          src: this.src
+        }
+      }
+    };
+
+    this.parent.add(replacementObject);
+    this.parent.remove(this);
   }
 }
