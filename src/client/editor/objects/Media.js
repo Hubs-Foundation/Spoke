@@ -185,17 +185,21 @@ export default class Media extends THREE.Object3D {
       this.media = scene;
       this.add(this.media);
     }
+
+    this.src = src;
   }
 
   copy(source, recursive) {
     super.copy(source, false);
+
+    this.src = source.src;
 
     for (const child of source.children) {
       let clonedChild;
 
       if (child === source.media) {
         clonedChild = cloneObject3D(child);
-        this.setMedia(clonedChild);
+        this.media = clonedChild;
       } else if (recursive === true) {
         clonedChild = child.clone();
       }
