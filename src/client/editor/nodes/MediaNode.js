@@ -16,10 +16,6 @@ export default class MediaNode extends EditorNodeMixin(Media) {
     return node;
   }
 
-  onChange() {
-    this.setMedia(this.src);
-  }
-
   serialize() {
     const json = super.serialize();
 

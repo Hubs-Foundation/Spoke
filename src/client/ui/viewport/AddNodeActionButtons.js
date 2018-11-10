@@ -7,6 +7,9 @@ import { withDialog } from "../contexts/DialogContext";
 import { withSceneActions } from "../contexts/SceneActionsContext";
 import ButtonSelectDialog from "../dialogs/ButtonSelectDialog";
 import AddModelDialog from "../dialogs/AddModelDialog";
+import AddMediaDialog from "../dialogs/AddMediaDialog";
+import ProgressDialog from "../dialogs/ProgressDialog";
+import ErrorDialog from "../dialogs/ErrorDialog";
 import FileDialog from "../dialogs/FileDialog";
 import styles from "./AddNodeActionButtons.scss";
 
@@ -88,6 +91,36 @@ class AddNodeActionButtons extends Component {
             this.props.hideDialog();
           }
         });
+      },
+      onCancel: this.props.hideDialog
+    });
+
+    this.setState({ open: false });
+  };
+
+  addMedia = () => {
+    this.props.showDialog(AddMediaDialog, {
+      title: "Add Media",
+      message: "Enter the URL to an image or video.",
+      onURLEntered: async url => {
+        this.props.showDialog(ProgressDialog, {
+          title: "Loading Media",
+          message: `Loading media...`
+        });
+
+        try {
+          const node = new MediaNode();
+          await node.setMedia(url);
+          this.props.editor.addObject(node);
+
+          this.props.hideDialog();
+        } catch (e) {
+          console.error(e);
+          this.props.showDialog(ErrorDialog, {
+            title: "Error Loading Media",
+            message: e.message || "There was an unknown error."
+          });
+        }
       },
       onCancel: this.props.hideDialog
     });
@@ -211,7 +244,7 @@ class AddNodeActionButtons extends Component {
             <AddButton
               label={MediaNode.nodeName}
               iconClassName={MediaNodeEditor.iconClassName}
-              onClick={() => this.addNode(MediaNode)}
+              onClick={this.addMedia}
             />
             {!hasSkybox && (
               <AddButton
