@@ -334,7 +334,12 @@ async function startServer(options) {
     };
   });
 
-  const reticulumServer = "hubs.mozilla.com";
+  const reticulumServer = process.env.RETICULUM_SERVER || "hubs.mozilla.com";
+
+  if (process.env.RETICULUM_SERVER) {
+    console.log(`Using RETICULUM_SERVER: ${reticulumServer}\n`);
+  }
+
   const mediaEndpoint = `https://${reticulumServer}/api/v1/media`;
   const agent = process.env.NODE_ENV === "development" ? https.Agent({ rejectUnauthorized: false }) : null;
 
@@ -544,7 +549,12 @@ async function startServer(options) {
     }
 
     const json = await resp.json();
-    const { url, scene_id } = json.scenes[0];
+    const scene_id = json.scenes[0].scene_id;
+    let url = json.scenes[0].url;
+
+    if (process.env.HUBS_SERVER) {
+      url = `https://${process.env.HUBS_SERVER}/scene.html?scene_id=${scene_id}`;
+    }
 
     ctx.body = { url, sceneId: scene_id };
   });
