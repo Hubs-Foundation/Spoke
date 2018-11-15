@@ -6,7 +6,7 @@ export default class GroundPlane extends THREE.Object3D {
   constructor() {
     super();
 
-    const material = new THREE.MeshStandardMaterial({ roughness: 1, metalness: 0, color: "#4F3622" });
+    const material = new THREE.MeshStandardMaterial({ roughness: 1, metalness: 0, color: "#5DE336" });
     const mesh = new THREE.Mesh(GroundPlane._geometry, material);
     mesh.position.y = -0.05;
     mesh.rotation.x = -Math.PI / 2;
