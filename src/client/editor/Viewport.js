@@ -34,6 +34,7 @@ export default class Viewport {
       renderer.gammaFactor = 2.2;
       renderer.physicallyCorrectLights = true;
       renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
       renderer.autoClear = false;
       renderer.autoUpdateScene = false;
       renderer.setSize(width, height);

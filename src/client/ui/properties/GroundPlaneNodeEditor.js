@@ -3,6 +3,7 @@ import PropTypes from "prop-types";
 import NodeEditor from "./NodeEditor";
 import InputGroup from "../inputs/InputGroup";
 import ColorInput from "../inputs/ColorInput";
+import BooleanInput from "../inputs/BooleanInput";
 
 export default class GroundPlaneNodeEditor extends Component {
   static propTypes = {
@@ -16,6 +17,10 @@ export default class GroundPlaneNodeEditor extends Component {
     this.props.editor.setNodeProperty(this.props.node, "color", color);
   };
 
+  onChangeReceiveShadow = receiveShadow => {
+    this.props.editor.setNodeProperty(this.props.node, "receiveShadow", receiveShadow);
+  };
+
   render() {
     const node = this.props.node;
 
@@ -23,6 +28,9 @@ export default class GroundPlaneNodeEditor extends Component {
       <NodeEditor {...this.props} description="A flat ground plane that extends into the distance.">
         <InputGroup name="Color">
           <ColorInput value={node.color} onChange={this.onChangeColor} />
+        </InputGroup>
+        <InputGroup name="Receive Shadow">
+          <BooleanInput value={node.receiveShadow} onChange={this.onChangeReceiveShadow} />
         </InputGroup>
       </NodeEditor>
     );

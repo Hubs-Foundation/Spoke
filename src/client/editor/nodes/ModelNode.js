@@ -31,6 +31,13 @@ export default class ModelNode extends EditorNodeMixin(Model) {
       node.activeClipName = loopAnimationComponent.props.clip;
     }
 
+    const shadowComponent = json.components.find(c => c.name === "shadow");
+
+    if (shadowComponent) {
+      node.castShadow = shadowComponent.props.cast;
+      node.receiveShadow = shadowComponent.props.receive;
+    }
+
     return node;
   }
 
@@ -52,6 +59,14 @@ export default class ModelNode extends EditorNodeMixin(Model) {
         attribution: this.attribution,
         origin: this.origin,
         includeInFloorPlan: this.includeInFloorPlan
+      }
+    });
+
+    json.components.push({
+      name: "shadow",
+      props: {
+        cast: this.castShadow,
+        receive: this.receiveShadow
       }
     });
 
@@ -104,14 +119,19 @@ export default class ModelNode extends EditorNodeMixin(Model) {
   }
 
   prepareForExport() {
+    this.userData.gltfExtensions = {
+      HUBS_components: {
+        shadow: {
+          cast: this.castShadow,
+          receive: this.receiveShadow
+        }
+      }
+    };
+
     // TODO: Support exporting more than one active clip.
     if (this.clipActions.length > 0) {
-      this.userData.gltfExtensions = {
-        HUBS_components: {
-          "loop-animation": {
-            clip: this.clipActions[0].getClip().name
-          }
-        }
+      this.userData.gltfExtensions.HUBS_components["loop-animation"] = {
+        clip: this.clipActions[0].getClip().name
       };
     }
   }
