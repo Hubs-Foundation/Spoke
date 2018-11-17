@@ -4,6 +4,7 @@ import SetRotationCommand from "./commands/SetRotationCommand";
 import SetScaleCommand from "./commands/SetScaleCommand";
 import GridHelper from "./helpers/GridHelper";
 import SpokeTransformControls from "./controls/SpokeTransformControls";
+import resizeShadowCameraFrustum from "./utils/resizeShadowCameraFrustum";
 
 /**
  * @author mrdoob / http://mrdoob.com/
@@ -71,6 +72,12 @@ export default class Viewport {
     const render = () => {
       if (!this._skipRender) {
         editor.scene.updateMatrixWorld();
+
+        editor.scene.traverse(node => {
+          if (node.isDirectionalLight) {
+            resizeShadowCameraFrustum(node, editor.scene);
+          }
+        });
 
         renderer.render(editor.scene, camera);
         signals.sceneRendered.dispatch(renderer, editor.scene);
