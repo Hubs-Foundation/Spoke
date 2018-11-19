@@ -1,4 +1,5 @@
 import THREE from "../../vendor/three";
+import createShadowMapResolutionProxy from "../utils/createShadowMapResolutionProxy";
 
 export default class PhysicalSpotLight extends THREE.SpotLight {
   constructor() {
@@ -10,6 +11,7 @@ export default class PhysicalSpotLight extends THREE.SpotLight {
     this.castShadow = true;
     this.innerConeAngle = 0;
     this.outerConeAngle = Math.PI / 4;
+    this.shadowMapResolution = createShadowMapResolutionProxy(this);
   }
 
   get range() {

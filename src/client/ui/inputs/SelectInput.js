@@ -54,7 +54,13 @@ const staticStyle = {
 };
 
 export default function SelectInput({ value, options, onChange }) {
-  const selectedOption = options.find(o => o.value === value);
+  const selectedOption = options.find(o => {
+    if (o.value && o.value.equals) {
+      return o.value.equals(value);
+    } else {
+      return o.value === value;
+    }
+  });
 
   return (
     <Select

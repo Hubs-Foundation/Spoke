@@ -5,6 +5,7 @@ import InputGroup from "../inputs/InputGroup";
 import ColorInput from "../inputs/ColorInput";
 import BooleanInput from "../inputs/BooleanInput";
 import NumericInput from "../inputs/NumericInput";
+import ShadowMapResolutionInputGroup from "../input-groups/ShadowMapResolutionInputGroup";
 
 export default class PointLightNodeEditor extends Component {
   static propTypes = {
@@ -31,7 +32,7 @@ export default class PointLightNodeEditor extends Component {
   };
 
   render() {
-    const node = this.props.node;
+    const { node, editor } = this.props;
 
     return (
       <NodeEditor {...this.props} description="A light which emits in all directions from a single point.">
@@ -47,6 +48,7 @@ export default class PointLightNodeEditor extends Component {
         <InputGroup name="Cast Shadow">
           <BooleanInput value={node.castShadow} onChange={this.onChangeCastShadow} />
         </InputGroup>
+        <ShadowMapResolutionInputGroup node={node} editor={editor} />
       </NodeEditor>
     );
   }

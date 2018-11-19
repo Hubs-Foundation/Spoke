@@ -5,6 +5,7 @@ import InputGroup from "../inputs/InputGroup";
 import ColorInput from "../inputs/ColorInput";
 import NumericInput from "../inputs/NumericInput";
 import BooleanInput from "../inputs/BooleanInput";
+import ShadowMapResolutionInputGroup from "../input-groups/ShadowMapResolutionInputGroup";
 
 export default class DirectionalLightNodeEditor extends Component {
   static propTypes = {
@@ -27,7 +28,7 @@ export default class DirectionalLightNodeEditor extends Component {
   };
 
   render() {
-    const node = this.props.node;
+    const { node, editor } = this.props;
 
     return (
       <NodeEditor
@@ -43,6 +44,7 @@ export default class DirectionalLightNodeEditor extends Component {
         <InputGroup name="Cast Shadow">
           <BooleanInput value={node.castShadow} onChange={this.onChangeCastShadow} />
         </InputGroup>
+        <ShadowMapResolutionInputGroup node={node} editor={editor} />
       </NodeEditor>
     );
   }

@@ -13,12 +13,18 @@ export default class PointLightNode extends EditorNodeMixin(PhysicalPointLight) 
   static async deserialize(editor, json) {
     const node = await super.deserialize(editor, json);
 
-    const { color, intensity, range, castShadow } = json.components.find(c => c.name === "point-light").props;
+    const { color, intensity, range, castShadow, shadowMapResolution } = json.components.find(
+      c => c.name === "point-light"
+    ).props;
 
     node.color.set(color);
     node.intensity = intensity;
     node.range = range;
     node.castShadow = castShadow;
+
+    if (shadowMapResolution) {
+      node.shadowMapResolution.fromArray(shadowMapResolution);
+    }
 
     return node;
   }
@@ -63,7 +69,8 @@ export default class PointLightNode extends EditorNodeMixin(PhysicalPointLight) 
         color: serializeColor(this.color),
         intensity: this.intensity,
         range: this.range,
-        castShadow: this.castShadow
+        castShadow: this.castShadow,
+        shadowMapResolution: this.shadowMapResolution.toArray()
       }
     });
 
@@ -82,7 +89,8 @@ export default class PointLightNode extends EditorNodeMixin(PhysicalPointLight) 
           color: serializeColor(this.color),
           intensity: this.intensity,
           range: this.range,
-          castShadow: this.castShadow
+          castShadow: this.castShadow,
+          shadowMapResolution: this.shadowMapResolution.toArray()
         }
       }
     };

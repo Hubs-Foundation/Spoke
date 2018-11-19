@@ -6,6 +6,7 @@ import ColorInput from "../inputs/ColorInput";
 import NumericInput from "../inputs/NumericInput";
 import BooleanInput from "../inputs/BooleanInput";
 import THREE from "../../vendor/three";
+import ShadowMapResolutionInputGroup from "../input-groups/ShadowMapResolutionInputGroup";
 
 const { degToRad, radToDeg } = THREE.Math;
 
@@ -42,7 +43,7 @@ export default class SpotLightNodeEditor extends Component {
   };
 
   render() {
-    const node = this.props.node;
+    const { node, editor } = this.props;
 
     return (
       <NodeEditor
@@ -79,6 +80,7 @@ export default class SpotLightNodeEditor extends Component {
         <InputGroup name="Cast Shadow">
           <BooleanInput value={node.castShadow} onChange={this.onChangeCastShadow} />
         </InputGroup>
+        <ShadowMapResolutionInputGroup node={node} editor={editor} />
       </NodeEditor>
     );
   }
