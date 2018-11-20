@@ -34,6 +34,12 @@ export default class GLTFCache extends Cache {
         if (obj.material.clone) {
           obj.material = obj.material.clone();
 
+          // Remove MOZ_alt_materials extension from imported glTF models. It does not export properly.
+          const matData = obj.material.userData;
+          if (matData && matData.gltfExtensions && matData.gltfExtensions.MOZ_alt_materials) {
+            delete matData.gltfExtensions.MOZ_alt_materials;
+          }
+
           for (const key in obj.material) {
             const prop = obj.material[key];
             if (prop instanceof THREE.Texture) {
