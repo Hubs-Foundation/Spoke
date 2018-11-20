@@ -4,9 +4,8 @@ import NodeEditor from "./NodeEditor";
 import InputGroup from "../inputs/InputGroup";
 import ColorInput from "../inputs/ColorInput";
 import NumericInput from "../inputs/NumericInput";
-import BooleanInput from "../inputs/BooleanInput";
 import THREE from "../../vendor/three";
-import ShadowMapResolutionInputGroup from "../input-groups/ShadowMapResolutionInputGroup";
+import LightShadowProperties from "./LightShadowProperties";
 
 const { degToRad, radToDeg } = THREE.Math;
 
@@ -36,10 +35,6 @@ export default class SpotLightNodeEditor extends Component {
 
   onChangeRange = range => {
     this.props.editor.setNodeProperty(this.props.node, "range", range);
-  };
-
-  onChangeCastShadow = castShadow => {
-    this.props.editor.setNodeProperty(this.props.node, "castShadow", castShadow);
   };
 
   render() {
@@ -77,10 +72,7 @@ export default class SpotLightNodeEditor extends Component {
         <InputGroup name="Range">
           <NumericInput min={0} value={node.range} onChange={this.onChangeRange} />
         </InputGroup>
-        <InputGroup name="Cast Shadow">
-          <BooleanInput value={node.castShadow} onChange={this.onChangeCastShadow} />
-        </InputGroup>
-        <ShadowMapResolutionInputGroup node={node} editor={editor} />
+        <LightShadowProperties node={node} editor={editor} />
       </NodeEditor>
     );
   }

@@ -1,7 +1,8 @@
-import React, { Component } from "react";
+import React, { Component, Fragment } from "react";
 import PropTypes from "prop-types";
 import InputGroup from "../inputs/InputGroup";
 import SelectInput from "../inputs/SelectInput";
+import BooleanInput from "../inputs/BooleanInput";
 import THREE from "../../vendor/three";
 
 const ShadowMapResolutionOptions = [
@@ -27,7 +28,7 @@ const ShadowMapResolutionOptions = [
   }
 ];
 
-export default class ShadowMapResolutionInputGroup extends Component {
+export default class LightShadowProperties extends Component {
   static propTypes = {
     editor: PropTypes.object,
     node: PropTypes.object
@@ -37,15 +38,24 @@ export default class ShadowMapResolutionInputGroup extends Component {
     this.props.editor.setNodeProperty(this.props.node, "shadowMapResolution", shadowMapResolution);
   };
 
+  onChangeCastShadow = castShadow => {
+    this.props.editor.setNodeProperty(this.props.node, "castShadow", castShadow);
+  };
+
   render() {
     return (
-      <InputGroup name="Shadow Map Resolution">
-        <SelectInput
-          options={ShadowMapResolutionOptions}
-          value={this.props.node.shadowMapResolution}
-          onChange={this.onChangeShadowMapResolution}
-        />
-      </InputGroup>
+      <Fragment>
+        <InputGroup name="Cast Shadow">
+          <BooleanInput value={this.props.node.castShadow} onChange={this.onChangeCastShadow} />
+        </InputGroup>
+        <InputGroup name="Shadow Map Resolution">
+          <SelectInput
+            options={ShadowMapResolutionOptions}
+            value={this.props.node.shadowMapResolution}
+            onChange={this.onChangeShadowMapResolution}
+          />
+        </InputGroup>
+      </Fragment>
     );
   }
 }
