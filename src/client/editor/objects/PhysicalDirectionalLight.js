@@ -19,7 +19,7 @@ export default class PhysicalDirectionalLight extends THREE.DirectionalLight {
     this.intensity = source.intensity;
 
     this.target = source.target.clone();
-    this.shadow = source.shadow.clone();
+    this.shadow.copy(source.shadow);
 
     return this;
   }

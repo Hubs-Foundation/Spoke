@@ -27,7 +27,7 @@ export default class PhysicalPointLight extends THREE.PointLight {
     this.distance = source.distance;
     this.decay = source.decay;
 
-    this.shadow = source.shadow.clone();
+    this.shadow.copy(source.shadow);
 
     return this;
   }

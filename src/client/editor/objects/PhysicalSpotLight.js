@@ -53,7 +53,7 @@ export default class PhysicalSpotLight extends THREE.SpotLight {
 
     this.target = source.target.clone();
 
-    this.shadow = source.shadow.clone();
+    this.shadow.copy(source.shadow);
 
     return this;
   }
