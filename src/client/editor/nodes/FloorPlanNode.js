@@ -106,6 +106,10 @@ async function generateHeightfield(mesh) {
     }
   }
 
+  if (data.length === 0) {
+    return null;
+  }
+
   return { offset, distance, data };
 }
 
