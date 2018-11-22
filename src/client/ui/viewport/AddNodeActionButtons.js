@@ -6,6 +6,7 @@ import { withEditor } from "../contexts/EditorContext";
 import { withDialog } from "../contexts/DialogContext";
 import ButtonSelectDialog from "../dialogs/ButtonSelectDialog";
 import AddModelDialog from "../dialogs/AddModelDialog";
+import AddMediaDialog from "../dialogs/AddMediaDialog";
 import ProgressDialog from "../dialogs/ProgressDialog";
 import ErrorDialog from "../dialogs/ErrorDialog";
 import styles from "./AddNodeActionButtons.scss";
@@ -32,6 +33,8 @@ import PointLightNode from "../../editor/nodes/PointLightNode";
 import PointLightNodeEditor from "../properties/PointLightNodeEditor";
 import SkyboxNode from "../../editor/nodes/SkyboxNode";
 import SkyboxNodeEditor from "../properties/SkyboxNodeEditor";
+import ImageNode from "../../editor/nodes/ImageNode";
+import ImageNodeEditor from "../properties/ImageNodeEditor";
 
 function AddButton({ label, iconClassName, onClick }) {
   return (
@@ -109,6 +112,36 @@ class AddNodeActionButtons extends Component {
       onCancel: this.props.hideDialog
     });
 
+    this.setState({ open: false });
+  };
+
+  addMedia = () => {
+    this.props.showDialog(AddMediaDialog, {
+      title: "Add Media",
+      message: "Enter the URL to an image or video.",
+      onConfirm: async url => {
+        this.props.showDialog(ProgressDialog, {
+          title: "Loading Media",
+          message: `Loading media...`
+        });
+        try {
+          const contentType = await this.props.editor.project.getContentType(url);
+
+          if (contentType.startsWith("image/")) {
+            const image = new ImageNode(this.props.editor);
+            image.src = url;
+            this.props.editor.addObject(image);
+          }
+        } catch (e) {
+          console.error(e);
+          this.props.showDialog(ErrorDialog, {
+            title: "Error Loading Media",
+            message: e.message || "There was an unknown error."
+          });
+        }
+      },
+      onCancel: this.props.hideDialog
+    });
     this.setState({ open: false });
   };
 
@@ -225,6 +258,11 @@ class AddNodeActionButtons extends Component {
               onClick={() => this.addNode(SpawnPointNode)}
             />
             <AddButton label="Light" iconClassName={PointLightNodeEditor.iconClassName} onClick={this.addLight} />
+            <AddButton
+              label={ImageNode.nodeName}
+              iconClassName={ImageNodeEditor.iconClassName}
+              onClick={this.addMedia}
+            />
             {!hasSkybox && (
               <AddButton
                 label={SkyboxNode.nodeName}
