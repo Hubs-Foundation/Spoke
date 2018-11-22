@@ -132,12 +132,9 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
     const node = await super.deserialize(editor, json);
 
     const { src } = json.components.find(c => c.name === "gltf-model").props;
-    const absoluteURL = new URL(src, editor.sceneUri).href;
-    const { scene } = await editor.loadGLTF(absoluteURL);
-    const navMesh = scene.getObjectByProperty("type", "Mesh");
 
-    node.navMeshSrc = absoluteURL;
-    node.setNavMesh(navMesh);
+    const absoluteURL = new URL(src, editor.sceneUri).href;
+    await node.loadNavMesh(absoluteURL);
 
     const heightfield = json.components.find(c => c.name === "heightfield");
 
@@ -148,8 +145,8 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
     return node;
   }
 
-  constructor() {
-    super();
+  constructor(editor) {
+    super(editor);
     this.navMeshSrc = null;
   }
 
@@ -280,6 +277,19 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
     this.setNavMesh(navMesh);
 
     return this;
+  }
+
+  async loadNavMesh(src) {
+    try {
+      const { scene } = await this.editor.gltfCache.get(src);
+      const navMesh = scene.getObjectByProperty("type", "Mesh");
+      this.navMeshSrc = src;
+      this.setNavMesh(navMesh);
+    } catch (e) {
+      console.warn("Floor plan could not be loaded. Regenerating...");
+      await this.editor.generateFloorPlan();
+      return;
+    }
   }
 
   copy(source, recursive) {

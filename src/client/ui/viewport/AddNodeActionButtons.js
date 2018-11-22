@@ -4,10 +4,10 @@ import classNames from "classnames";
 
 import { withEditor } from "../contexts/EditorContext";
 import { withDialog } from "../contexts/DialogContext";
-import { withSceneActions } from "../contexts/SceneActionsContext";
 import ButtonSelectDialog from "../dialogs/ButtonSelectDialog";
 import AddModelDialog from "../dialogs/AddModelDialog";
-import FileDialog from "../dialogs/FileDialog";
+import ProgressDialog from "../dialogs/ProgressDialog";
+import ErrorDialog from "../dialogs/ErrorDialog";
 import styles from "./AddNodeActionButtons.scss";
 
 import GroupNode from "../../editor/nodes/GroupNode";
@@ -53,10 +53,8 @@ AddButton.propTypes = {
 class AddNodeActionButtons extends Component {
   static propTypes = {
     editor: PropTypes.object,
-    sceneActions: PropTypes.object,
     showDialog: PropTypes.func,
-    hideDialog: PropTypes.func,
-    onAddModelByURL: PropTypes.func
+    hideDialog: PropTypes.func
   };
 
   toggle = () => {
@@ -64,7 +62,7 @@ class AddNodeActionButtons extends Component {
   };
 
   addNode = NodeConstructor => {
-    const node = new NodeConstructor();
+    const node = new NodeConstructor(this.props.editor);
     this.props.editor.addObject(node);
     this.setState({ open: false });
   };
@@ -73,19 +71,40 @@ class AddNodeActionButtons extends Component {
     this.props.showDialog(AddModelDialog, {
       title: "Add Model",
       message: "Enter the URL to a Sketchfab model, a Poly model, or a GLTF/GLB file.",
-      onURLEntered: async url => {
-        return this.props.onAddModelByURL(url);
-      },
-      onFilePickerChosen: () => {
-        this.props.hideDialog();
-        this.props.showDialog(FileDialog, {
-          filters: [".glb", ".gltf"],
-          onCancel: this.props.hideDialog,
-          onConfirm: (uri, name) => {
-            this.props.editor.addGLTFModelNode(name, uri);
-            this.props.hideDialog();
-          }
+      onConfirm: async (uri, name) => {
+        const overrideName = name;
+
+        this.props.showDialog(ProgressDialog, {
+          title: "Loading Model",
+          message: `Loading Model...`
         });
+
+        try {
+          const node = new ModelNode(this.props.editor);
+          await node.load(uri);
+          node.name = overrideName || node.model.name || "Model";
+
+          this.props.editor.addObject(node);
+          this.props.hideDialog();
+        } catch (e) {
+          let message = e.message || "There was an unknown error.";
+
+          if (uri.indexOf("sketchfab.com") >= 0) {
+            message =
+              "Error adding model.\n\nNote: Sketchfab models must be marked as 'Downloadable' to be added to your scene.\n\nError: " +
+              e.message;
+          } else if (uri.indexOf("poly.google.com") >= 0) {
+            message =
+              "Error adding model.\n\nNote: Poly panoramas are not supported and 3D models must be GLTF 2.0.\n\nError: " +
+              e.message;
+          }
+
+          console.error(e);
+          this.props.showDialog(ErrorDialog, {
+            title: "Error Loading Model",
+            message
+          });
+        }
       },
       onCancel: this.props.hideDialog
     });
@@ -223,4 +242,4 @@ class AddNodeActionButtons extends Component {
   }
 }
 
-export default withEditor(withDialog(withSceneActions(AddNodeActionButtons)));
+export default withEditor(withDialog(AddNodeActionButtons));

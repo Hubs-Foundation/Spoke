@@ -10,8 +10,8 @@ export default class BoxColliderNode extends EditorNodeMixin(THREE.Object3D) {
 
   static _material = new THREE.Material();
 
-  constructor() {
-    super();
+  constructor(editor) {
+    super(editor);
 
     const boxMesh = new THREE.Mesh(BoxColliderNode._geometry, BoxColliderNode._material);
     const box = new THREE.BoxHelper(boxMesh, 0x00ff00);

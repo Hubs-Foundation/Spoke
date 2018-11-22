@@ -19,7 +19,6 @@ import GLTFCache from "./caches/GLTFCache";
 import getNameWithoutIndex from "./utils/getNameWithoutIndex";
 
 import SceneNode from "./nodes/SceneNode";
-import ModelNode from "./nodes/ModelNode";
 import GroundPlaneNode from "./nodes/GroundPlaneNode";
 import AmbientLightNode from "./nodes/AmbientLightNode";
 import DirectionalLightNode from "./nodes/DirectionalLightNode";
@@ -156,20 +155,20 @@ export default class Editor {
     this.clearCaches();
     this.duplicateNameCounters.clear();
 
-    const scene = new SceneNode();
+    const scene = new SceneNode(this);
     scene.name = "Untitled";
 
     this.scene = scene;
     this.sceneUri = null;
 
-    this._addObject(new SkyboxNode());
-    this._addObject(new AmbientLightNode());
-    const directionalLight = new DirectionalLightNode();
+    this._addObject(new SkyboxNode(this));
+    this._addObject(new AmbientLightNode(this));
+    const directionalLight = new DirectionalLightNode(this);
     directionalLight.position.set(-1, 3, 0);
     directionalLight.rotation.set(Math.PI * 0.5, Math.PI * (0.5 / 3.0), -Math.PI * 0.5);
     this._addObject(directionalLight);
-    this._addObject(new SpawnPointNode());
-    this._addObject(new GroundPlaneNode());
+    this._addObject(new SpawnPointNode(this));
+    this._addObject(new GroundPlaneNode(this));
 
     this.setScene(scene);
 
@@ -212,20 +211,6 @@ export default class Editor {
     this.sceneModified = false;
   }
 
-  async loadGLTF(url) {
-    const gltf = await this.gltfCache.get(url);
-
-    if (gltf.scene === undefined) {
-      throw new Error(`Error loading: ${url}. glTF file has no default scene.`);
-    }
-
-    if (!gltf.scene.name) {
-      gltf.scene.name = "Scene";
-    }
-
-    return gltf;
-  }
-
   async saveScene(sceneURI) {
     let newSceneName = decodeURIComponent(this.project.getUrlFilename(sceneURI));
 
@@ -258,7 +243,7 @@ export default class Editor {
     let floorPlan = this.scene.findNodeByType(FloorPlanNode);
 
     if (!floorPlan) {
-      floorPlan = new FloorPlanNode();
+      floorPlan = new FloorPlanNode(this);
       this.addObject(floorPlan);
     }
 
@@ -368,21 +353,6 @@ export default class Editor {
         }
       }
     }
-  }
-
-  async addGLTFModelNode(name, uri, originUri) {
-    const attribution = await this.project.getImportAttribution(uri);
-    const node = new ModelNode();
-    node.name = name;
-    await node.loadGLTF(this, uri);
-    node.attribution = JSON.stringify(attribution);
-    node.origin = originUri;
-    this.addObject(node);
-  }
-
-  async importGLTFIntoModelNode(url) {
-    const { uri: importedUri, name } = await this.project.import(url);
-    await this.addGLTFModelNode(name || "Model", importedUri, url);
   }
 
   addObject(object, parent) {
@@ -673,17 +643,9 @@ export default class Editor {
 
     this.scene.traverse(obj => {
       if (!(obj.isNode && obj.type === "Model")) return;
-      const attributionJson = obj.attribution;
-      if (!attributionJson) return;
+      const attribution = obj.attribution;
 
-      let attribution;
-      try {
-        attribution = JSON.parse(attributionJson);
-      } catch (e) {
-        // Legacy, might be a raw string left over before switch to JSON.
-        const [name, author] = attributionJson.split(" by ");
-        attribution = { name, author };
-      }
+      if (!attribution) return;
 
       if (attribution) {
         const attributionKey = attribution.url || `${attribution.name}_${attribution.author}`;

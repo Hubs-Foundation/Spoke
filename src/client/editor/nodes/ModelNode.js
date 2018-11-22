@@ -16,14 +16,25 @@ export default class ModelNode extends EditorNodeMixin(Model) {
   static async deserialize(editor, json) {
     const node = await super.deserialize(editor, json);
 
-    const { src, attribution, origin, includeInFloorPlan } = json.components.find(c => c.name === "gltf-model").props;
+    const { src, attribution, includeInFloorPlan, origin } = json.components.find(c => c.name === "gltf-model").props;
 
-    const absoluteURL = new URL(src, editor.sceneUri).href;
-    await node.loadGLTF(editor, absoluteURL);
+    let absoluteURL = new URL(src, editor.sceneUri).href;
 
-    node.attribution = attribution;
-    node.origin = origin;
-    node.includeInFloorPlan = includeInFloorPlan;
+    if (origin) {
+      absoluteURL = origin;
+    }
+
+    await node.load(absoluteURL);
+
+    // Legacy, might be a raw string left over before switch to JSON.
+    if (attribution && typeof attribution === "string") {
+      const [name, author] = attribution.split(" by ");
+      node.attribution = { name, author };
+    } else {
+      node.attribution = attribution;
+    }
+
+    node.includeInFloorPlan = includeInFloorPlan === undefined ? true : includeInFloorPlan;
 
     const loopAnimationComponent = json.components.find(c => c.name === "loop-animation");
 
@@ -34,12 +45,51 @@ export default class ModelNode extends EditorNodeMixin(Model) {
     return node;
   }
 
-  constructor() {
-    super();
-    this.src = null;
+  constructor(editor) {
+    super(editor);
     this.attribution = null;
-    this.origin = null;
     this.includeInFloorPlan = true;
+  }
+
+  async loadGLTF(src) {
+    const gltf = await this.editor.gltfCache.get(src);
+
+    const sketchfabExtras = gltf.asset && gltf.asset.extras;
+
+    if (!this.attribution && sketchfabExtras) {
+      const name = sketchfabExtras && sketchfabExtras.title;
+      const author = sketchfabExtras && sketchfabExtras.author.replace(/ \(http.+\)/, "");
+      gltf.scene.name = name;
+      this.attribution = { name, author };
+    }
+
+    return gltf;
+  }
+
+  async load(src) {
+    this._originalSrc = src;
+
+    const proxiedUrl = await this.editor.project.getProxiedUrl(src);
+
+    await super.load(proxiedUrl);
+
+    if (!this.model) {
+      return this;
+    }
+
+    setStaticMode(this.model, StaticModes.Static);
+
+    if (this.animations.length > 0) {
+      for (const animation of this.animations) {
+        for (const track of animation.tracks) {
+          const { nodeName } = THREE.PropertyBinding.parseTrackName(track.name);
+          const animatedNode = this.model.getObjectByName(nodeName);
+          setStaticMode(animatedNode, StaticModes.Dynamic);
+        }
+      }
+    }
+
+    return this;
   }
 
   serialize(sceneUri) {
@@ -48,9 +98,8 @@ export default class ModelNode extends EditorNodeMixin(Model) {
     json.components.push({
       name: "gltf-model",
       props: {
-        src: absoluteToRelativeURL(sceneUri, this.src),
+        src: absoluteToRelativeURL(sceneUri, this._originalSrc),
         attribution: this.attribution,
-        origin: this.origin,
         includeInFloorPlan: this.includeInFloorPlan
       }
     });
@@ -69,38 +118,9 @@ export default class ModelNode extends EditorNodeMixin(Model) {
 
   copy(source, recursive) {
     super.copy(source, recursive);
-    this.src = source.src;
     this.attribution = source.attribution;
-    this.origin = source.origin;
     this.includeInFloorPlan = source.includeInFloorPlan;
     return this;
-  }
-
-  async loadGLTF(editor, src) {
-    const { scene, animations } = await editor.loadGLTF(src);
-    this.src = src;
-    this.setModel(scene, animations);
-    return this;
-  }
-
-  setModel(model, animations) {
-    super.setModel(model, animations);
-
-    if (!this.model) {
-      return;
-    }
-
-    setStaticMode(this.model, StaticModes.Static);
-
-    if (this.animations.length > 0) {
-      for (const animation of this.animations) {
-        for (const track of animation.tracks) {
-          const { nodeName } = THREE.PropertyBinding.parseTrackName(track.name);
-          const animatedNode = this.model.getObjectByName(nodeName);
-          setStaticMode(animatedNode, StaticModes.Dynamic);
-        }
-      }
-    }
   }
 
   prepareForExport() {

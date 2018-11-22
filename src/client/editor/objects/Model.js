@@ -6,21 +6,39 @@ export default class Model extends THREE.Object3D {
     super();
     this.type = "Model";
 
-    this.model = null;
+    this._src = null;
     this.animations = [];
     this.clipActions = [];
-
     this._mixer = new THREE.AnimationMixer(this);
   }
 
-  setModel(object, animations) {
-    this.model = object;
+  get src() {
+    return this._src;
+  }
+
+  set src(value) {
+    this.load(value).catch(console.error);
+  }
+
+  loadGLTF(src) {
+    return new Promise((resolve, reject) => {
+      new THREE.GLTFLoader().load(src, resolve, null, reject);
+    });
+  }
+
+  async load(src) {
+    this._src = src;
+
+    const { scene, animations } = await this.loadGLTF(src);
 
     if (animations) {
       this.animations = this.animations.concat(animations);
     }
 
-    this.add(object);
+    this.model = scene;
+    this.add(scene);
+
+    return this;
   }
 
   get activeClip() {
@@ -81,7 +99,7 @@ export default class Model extends THREE.Object3D {
 
       if (child === source.model) {
         clonedChild = cloneObject3D(child);
-        this.setModel(clonedChild, source.animations);
+        this.model = clonedChild;
       } else if (recursive === true) {
         clonedChild = child.clone();
       }
@@ -90,6 +108,9 @@ export default class Model extends THREE.Object3D {
         this.add(clonedChild);
       }
     }
+
+    this.animations = this.animations.concat(source.animations);
+    this._src = source._src;
 
     for (const clipAction of source.clipActions) {
       this.addClipAction(clipAction.getClip().name);

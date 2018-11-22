@@ -16,9 +16,8 @@ const Router = require("koa-router");
 const selfsigned = require("selfsigned");
 const semver = require("semver");
 const serve = require("koa-static");
-const sha = require("sha.js");
 const WebSocket = require("ws");
-const yauzl = require("yauzl");
+const proxy = require("koa-proxy");
 
 const packageJSON = require("../../package.json");
 
@@ -133,28 +132,6 @@ async function pipeToFile(stream, filePath) {
   });
 }
 
-function extractZip(zipPath, basePath) {
-  return new Promise((resolve, reject) => {
-    yauzl.open(zipPath, { lazyEntries: true }, (err, zipFile) => {
-      if (err) reject(err);
-      zipFile.on("entry", async entry => {
-        if (/\/$/.test(entry.fileName)) {
-          await fs.ensureDir(path.join(basePath, entry.fileName));
-          zipFile.readEntry();
-        } else {
-          zipFile.openReadStream(entry, async (err, readStream) => {
-            if (err) reject(err);
-            await pipeToFile(readStream, path.join(basePath, entry.fileName));
-            zipFile.readEntry();
-          });
-        }
-      });
-      zipFile.on("end", resolve);
-      zipFile.readEntry();
-    });
-  });
-}
-
 async function startServer(options) {
   console.log(`${packageJSON.productName} configs stored at: "${envPaths("Spoke", { suffix: "" }).config}"\n`);
 
@@ -181,6 +158,20 @@ async function startServer(options) {
       const dest = path.join(projectPath, assetDir);
       await fs.copy(src, dest);
     }
+  }
+
+  const reticulumServer = process.env.RETICULUM_SERVER || "hubs.mozilla.com";
+  const mediaEndpoint = `https://${reticulumServer}/api/v1/media`;
+  const agent = process.env.NODE_ENV === "development" ? https.Agent({ rejectUnauthorized: false }) : null;
+
+  if (process.env.RETICULUM_SERVER) {
+    console.log(`Using RETICULUM_SERVER: ${reticulumServer}\n`);
+  }
+
+  const farsparkServer = process.env.FARSPARK_SERVER || "farspark.reticulum.io";
+
+  if (process.env.FARSPARK_SERVER) {
+    console.log(`Using FARSPARK_SERVER: ${farsparkServer}\n`);
   }
 
   const app = new Koa();
@@ -258,6 +249,9 @@ async function startServer(options) {
   if (process.env.NODE_ENV === "development") {
     console.log("Running in development environment");
 
+    const logger = require("koa-logger");
+    app.use(logger());
+
     app.use(async (ctx, next) => {
       try {
         await next();
@@ -276,7 +270,7 @@ async function startServer(options) {
     try {
       const devMiddleware = await koaWebpack({
         compiler,
-        hotClient: opts.https ? false : { host: { server: "0.0.0.0", client: "*" } }
+        hotClient: false
       });
       app.use(devMiddleware);
     } catch (e) {
@@ -334,75 +328,34 @@ async function startServer(options) {
     };
   });
 
-  const reticulumServer = process.env.RETICULUM_SERVER || "hubs.mozilla.com";
-
-  if (process.env.RETICULUM_SERVER) {
-    console.log(`Using RETICULUM_SERVER: ${reticulumServer}\n`);
-  }
-
-  const mediaEndpoint = `https://${reticulumServer}/api/v1/media`;
-  const agent = process.env.NODE_ENV === "development" ? https.Agent({ rejectUnauthorized: false }) : null;
-
-  router.post("/api/import", koaBody(), async ctx => {
-    const origin = ctx.request.body.url;
-    const originHash = new sha.sha256().update(origin).digest("hex");
-    const filePathBase = path.join(projectPath, "imported", originHash);
-
-    if (fs.existsSync(filePathBase)) {
-      const uri = pathToUri(projectPath, path.join(filePathBase, "scene.gltf"));
-      const { name } = await fs.readJSON(path.join(filePathBase, "meta.json"));
-      ctx.body = { uri, name };
-    } else {
+  router.post("/api/media", koaBody(), async ctx => {
+    try {
       const resp = await fetch(mediaEndpoint, {
         agent,
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ media: { url: origin, index: 0 } })
+        body: JSON.stringify(ctx.request.body)
       });
-
+      ctx.status = resp.status;
       if (resp.status !== 200) {
-        ctx.status = resp.status;
-        ctx.body = await resp.text();
         return;
       }
-
-      const { raw, meta } = await resp.json();
-
-      await fs.ensureDir(filePathBase);
-
-      let name, author;
-      const mediaResp = await fetch(raw, { agent });
-      const expected_content_type = (meta && meta.expected_content_type) || "";
-      if (expected_content_type.includes("gltf+zip")) {
-        const zipPath = `${filePathBase}.zip`;
-        await pipeToFile(mediaResp.body, zipPath);
-        await extractZip(zipPath, filePathBase);
-        await fs.remove(zipPath);
-
-        const sceneFilePath = path.join(filePathBase, "scene.gltf");
-        const gltf = await fs.readJSON(sceneFilePath);
-        const sketchfabExtras = gltf.asset && gltf.asset.extras;
-        name = sketchfabExtras && sketchfabExtras.title;
-        author = sketchfabExtras && sketchfabExtras.author.replace(/ \(http.+\)/, "");
-
-        const uri = pathToUri(projectPath, sceneFilePath);
-        ctx.body = { uri, name };
-      } else {
-        // If we don't have an expected_content_type, assume they are gltfs.
-        // We're calling these .gltf files, but they could be glbs.
-        const filePath = path.join(filePathBase, "scene.gltf");
-        await pipeToFile(mediaResp.body, filePath);
-        const uri = pathToUri(projectPath, filePath);
-        name = meta && meta.name;
-        author = meta && meta.author;
-        ctx.body = { uri, name };
-      }
-
-      const attribution = { url: origin, name, author };
-
-      await fs.writeJSON(path.join(filePathBase, "meta.json"), { ...meta, origin, attribution });
+      ctx.body = await resp.json();
+    } catch (err) {
+      console.error(err);
+      throw new Error("Error resolving media.");
     }
   });
+
+  app.use(
+    proxy({
+      host: `https://${farsparkServer}`,
+      match: /^\/api\/farspark\//,
+      map: path => {
+        return path.replace(/^\/api\/farspark/, "");
+      }
+    })
+  );
 
   function getConfigPath(filename) {
     return path.join(envPaths("Spoke", { suffix: "" }).config, filename);
