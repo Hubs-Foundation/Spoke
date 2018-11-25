@@ -8,7 +8,7 @@ export default class ImageNodeEditor extends Component {
     node: PropTypes.object
   };
 
-  static iconClassName = "fa-film";
+  static iconClassName = "fa-image";
 
   render() {
     return <NodeEditor description="Dynamically loads an image." {...this.props} />;

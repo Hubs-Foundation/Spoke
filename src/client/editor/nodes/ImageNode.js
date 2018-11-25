@@ -27,6 +27,10 @@ export default class ImageNode extends EditorNodeMixin(Image) {
     return this._canonicalUrl;
   }
 
+  set src(value) {
+    this.load(value).catch(console.error);
+  }
+
   loadTexture(src) {
     return this.editor.textureCache.get(src);
   }

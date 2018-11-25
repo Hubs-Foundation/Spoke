@@ -34,7 +34,7 @@ import PointLightNodeEditor from "../properties/PointLightNodeEditor";
 import SkyboxNode from "../../editor/nodes/SkyboxNode";
 import SkyboxNodeEditor from "../properties/SkyboxNodeEditor";
 import ImageNode from "../../editor/nodes/ImageNode";
-import ImageNodeEditor from "../properties/ImageNodeEditor";
+import VideoNode from "../../editor/nodes/VideoNode";
 
 function AddButton({ label, iconClassName, onClick }) {
   return (
@@ -129,9 +129,15 @@ class AddNodeActionButtons extends Component {
 
           if (contentType.startsWith("image/")) {
             const image = new ImageNode(this.props.editor);
-            image.src = url;
+            await image.load(url);
             this.props.editor.addObject(image);
+          } else if (contentType.startsWith("video/")) {
+            const video = new VideoNode(this.props.editor);
+            await video.load(url);
+            this.props.editor.addObject(video);
           }
+
+          this.props.hideDialog();
         } catch (e) {
           console.error(e);
           this.props.showDialog(ErrorDialog, {
@@ -258,11 +264,7 @@ class AddNodeActionButtons extends Component {
               onClick={() => this.addNode(SpawnPointNode)}
             />
             <AddButton label="Light" iconClassName={PointLightNodeEditor.iconClassName} onClick={this.addLight} />
-            <AddButton
-              label={ImageNode.nodeName}
-              iconClassName={ImageNodeEditor.iconClassName}
-              onClick={this.addMedia}
-            />
+            <AddButton label="Media" iconClassName="fa-film" onClick={this.addMedia} />
             {!hasSkybox && (
               <AddButton
                 label={SkyboxNode.nodeName}

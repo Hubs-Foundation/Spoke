@@ -33,6 +33,8 @@ import FloorPlanNode from "./editor/nodes/FloorPlanNode";
 import FloorPlanNodeEditor from "./ui/properties/FloorPlanNodeEditor";
 import ImageNode from "./editor/nodes/ImageNode";
 import ImageNodeEditor from "./ui/properties/ImageNodeEditor";
+import VideoNode from "./editor/nodes/VideoNode";
+import VideoNodeEditor from "./ui/properties/VideoNodeEditor";
 
 (async () => {
   // eslint-disable-next-line no-undef
@@ -60,6 +62,7 @@ import ImageNodeEditor from "./ui/properties/ImageNodeEditor";
   editor.registerNode(SkyboxNode, SkyboxNodeEditor);
   editor.registerNode(FloorPlanNode, FloorPlanNodeEditor);
   editor.registerNode(ImageNode, ImageNodeEditor);
+  editor.registerNode(VideoNode, VideoNodeEditor);
 
   await editor.init();
 

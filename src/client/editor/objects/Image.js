@@ -28,8 +28,11 @@ export default class Image extends THREE.Mesh {
 
     const material = this.material;
 
-    if (!src) {
+    if (material.map) {
       material.map.dispose();
+    }
+
+    if (!src) {
       material.map = null;
       return;
     }
