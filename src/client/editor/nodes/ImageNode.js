@@ -41,6 +41,14 @@ export default class ImageNode extends EditorNodeMixin(Image) {
     return super.load(proxiedUrl);
   }
 
+  copy(source, recursive) {
+    super.copy(source, recursive);
+
+    this._canonicalUrl = source._canonicalUrl;
+
+    return this;
+  }
+
   serialize() {
     const json = super.serialize();
 

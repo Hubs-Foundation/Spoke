@@ -78,6 +78,30 @@ export default class VideoNode extends EditorNodeMixin(Video) {
     return this._startTime;
   }
 
+  clone(recursive) {
+    return new this.constructor(this.editor, this.audioListener).copy(this, recursive);
+  }
+
+  copy(source, recursive) {
+    super.copy(source, false);
+
+    this._canonicalUrl = source._canonicalUrl;
+
+    for (const child of source.children) {
+      let clonedChild;
+
+      if (recursive === true && child !== this.audio) {
+        clonedChild = child.clone(recursive);
+      }
+
+      if (clonedChild) {
+        this.add(clonedChild);
+      }
+    }
+
+    return this;
+  }
+
   serialize() {
     const json = super.serialize();
 
@@ -129,6 +153,7 @@ export default class VideoNode extends EditorNodeMixin(Video) {
     };
 
     this.parent.add(replacementObject);
+    this.parent.remove(this);
     this.parent.remove(this);
   }
 }

@@ -82,6 +82,7 @@ export default class Video extends THREE.Mesh {
     }
 
     this.audio = audio;
+    this.add(audio);
     this._audioType = type;
   }
 
@@ -241,6 +242,10 @@ export default class Video extends THREE.Mesh {
         this.videoEl.pause();
       }
     }
+  }
+
+  clone(recursive) {
+    return new this.constructor(this.audioListener).copy(this, recursive);
   }
 
   copy(source, recursive) {
