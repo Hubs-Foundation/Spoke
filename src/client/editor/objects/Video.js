@@ -249,7 +249,30 @@ export default class Video extends THREE.Mesh {
   }
 
   copy(source, recursive) {
-    super.copy(source, recursive);
+    // Override Mesh's copy method and pass the recursive parameter so we can avoid cloning the audio object.
+    THREE.Object3D.prototype.copy.call(this, source, false);
+
+    this.drawMode = source.drawMode;
+
+    if (source.morphTargetInfluences !== undefined) {
+      this.morphTargetInfluences = source.morphTargetInfluences.slice();
+    }
+
+    if (source.morphTargetDictionary !== undefined) {
+      this.morphTargetDictionary = Object.assign({}, source.morphTargetDictionary);
+    }
+
+    for (const child of source.children) {
+      let clonedChild;
+
+      if (recursive === true && child !== this.audio) {
+        clonedChild = child.clone(recursive);
+      }
+
+      if (clonedChild) {
+        this.add(clonedChild);
+      }
+    }
 
     this.src = source.src;
     this.autoPlay = source.autoPlay;
