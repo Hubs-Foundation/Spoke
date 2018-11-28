@@ -136,6 +136,9 @@ export default class VideoNode extends EditorNodeMixin(Video) {
           coneInnerAngle: this.coneInnerAngle,
           coneOuterAngle: this.coneOuterAngle,
           coneOuterGain: this.coneOuterGain
+        },
+        networked: {
+          id: this.uuid
         }
       }
     };

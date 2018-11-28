@@ -69,6 +69,9 @@ export default class ImageNode extends EditorNodeMixin(Image) {
       HUBS_components: {
         image: {
           src: this._canonicalUrl
+        },
+        networked: {
+          id: this.uuid
         }
       }
     };
