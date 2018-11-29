@@ -24,7 +24,7 @@ export default class Project extends EventEmitter {
     this.updateInfo = null;
 
     // Max size in MB
-    this.maxUploadSize = 128;
+    this.maxUploadSize = 150;
 
     this.hierarchy = {
       name: "New Project",
