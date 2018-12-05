@@ -5,7 +5,7 @@ export default class PhysicalSpotLight extends THREE.SpotLight {
     super();
     this.position.set(0, 0, 0);
     this.decay = 2;
-    this.target.position.set(0, 0, 1);
+    this.target.position.set(0, 0, -1);
     this.add(this.target);
     this.castShadow = true;
     this.innerConeAngle = 0;

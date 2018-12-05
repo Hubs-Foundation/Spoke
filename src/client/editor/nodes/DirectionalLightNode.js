@@ -68,9 +68,17 @@ export default class DirectionalLightNode extends EditorNodeMixin(PhysicalDirect
     return json;
   }
 
-  prepareForExport() {
+  prepareForExport({ extensions }) {
     this.remove(this.helper);
     this.remove(this.picker);
+
+    if (!extensions.KHR_lights_punctual) {
+      extensions.KHR_lights_punctual = {
+        lights: []
+      };
+    }
+
+    const lights = extensions.KHR_lights_punctual.lights;
 
     const replacementObject = new THREE.Object3D().copy(this, false);
 
@@ -81,8 +89,17 @@ export default class DirectionalLightNode extends EditorNodeMixin(PhysicalDirect
           intensity: this.intensity,
           castShadow: this.castShadow
         }
+      },
+      KHR_lights_punctual: {
+        light: lights.length
       }
     };
+
+    lights.push({
+      type: "directional",
+      color: this.color.toArray(),
+      intensity: this.intensity
+    });
 
     this.parent.add(replacementObject);
     this.parent.remove(this);

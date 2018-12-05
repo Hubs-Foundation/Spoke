@@ -30,6 +30,7 @@ export default class SpokeDirectionalLightHelper extends THREE.Object3D {
 
     this.targetLine = new THREE.Line(geometry, material);
     this.targetLine.layers.set(1);
+    this.targetLine.rotateY(Math.PI);
     this.add(this.targetLine);
 
     this.update();

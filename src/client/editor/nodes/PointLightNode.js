@@ -70,9 +70,17 @@ export default class PointLightNode extends EditorNodeMixin(PhysicalPointLight) 
     return json;
   }
 
-  prepareForExport() {
+  prepareForExport({ extensions }) {
     this.remove(this.helper);
     this.remove(this.picker);
+
+    if (!extensions.KHR_lights_punctual) {
+      extensions.KHR_lights_punctual = {
+        lights: []
+      };
+    }
+
+    const lights = extensions.KHR_lights_punctual.lights;
 
     const replacementObject = new THREE.Object3D().copy(this, false);
 
@@ -84,8 +92,23 @@ export default class PointLightNode extends EditorNodeMixin(PhysicalPointLight) 
           range: this.range,
           castShadow: this.castShadow
         }
+      },
+      KHR_lights_punctual: {
+        light: lights.length
       }
     };
+
+    const pointLightDef = {
+      type: "point",
+      color: this.color.toArray(),
+      intensity: this.intensity
+    };
+
+    if (this.range > 0) {
+      pointLightDef.range = this.range;
+    }
+
+    lights.push(pointLightDef);
 
     this.parent.add(replacementObject);
     this.parent.remove(this);

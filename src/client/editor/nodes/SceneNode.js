@@ -102,7 +102,7 @@ export default class SceneNode extends EditorNodeMixin(THREE.Scene) {
     return sceneJson;
   }
 
-  prepareForExport() {
+  prepareForExport(gltf) {
     this.children = this.children.filter(c => c.isNode);
 
     const nodeList = [];
@@ -114,7 +114,7 @@ export default class SceneNode extends EditorNodeMixin(THREE.Scene) {
     });
 
     for (const node of nodeList) {
-      node.prepareForExport();
+      node.prepareForExport(gltf);
     }
   }
 

@@ -166,7 +166,7 @@ export default class Editor {
     this._addObject(new AmbientLightNode());
     const directionalLight = new DirectionalLightNode();
     directionalLight.position.set(-1, 3, 0);
-    directionalLight.rotation.set(Math.PI * 0.5, Math.PI * (0.5 / 3.0), -Math.PI * 0.5);
+    directionalLight.rotation.set(-Math.PI * 0.5, -Math.PI * (0.5 / 3.0), Math.PI * 0.5);
     this._addObject(directionalLight);
     this._addObject(new SpawnPointNode());
     this._addObject(new GroundPlaneNode());
@@ -289,8 +289,8 @@ export default class Editor {
   async exportScene(outputPath, glb) {
     const scene = this.scene;
     const clonedScene = scene.clone();
-
-    clonedScene.prepareForExport();
+    const rootExtensions = {};
+    clonedScene.prepareForExport({ extensions: rootExtensions });
     await clonedScene.combineMeshes();
     clonedScene.removeUnusedObjects();
 
@@ -310,6 +310,15 @@ export default class Editor {
         animations
       });
     });
+
+    if (rootExtensions) {
+      chunks.json.extensions = {};
+
+      for (const extensionName in rootExtensions) {
+        chunks.json.extensions[extensionName] = rootExtensions[extensionName];
+      }
+    }
+
     if (!glb) {
       const bufferDefs = chunks.json.buffers;
       if (bufferDefs && bufferDefs.length > 0 && bufferDefs[0].uri === undefined) {

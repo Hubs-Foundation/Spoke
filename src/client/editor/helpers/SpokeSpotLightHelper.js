@@ -25,10 +25,12 @@ export default class SpokeSpotLightHelper extends THREE.Object3D {
 
     this.outerCone = new THREE.LineSegments(geometry, material);
     this.outerCone.layers.set(1);
+    this.outerCone.rotateY(Math.PI);
     this.add(this.outerCone);
 
     this.innerCone = new THREE.LineSegments(geometry, material);
     this.innerCone.layers.set(1);
+    this.innerCone.rotateY(Math.PI);
     this.add(this.innerCone);
 
     this.update();
