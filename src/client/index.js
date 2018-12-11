@@ -1,5 +1,35 @@
 import ReactDOM from "react-dom";
 import React from "react";
+import runtime from "serviceworker-webpack-plugin/lib/runtime";
+import registerEvents from "serviceworker-webpack-plugin/lib/browser/registerEvents";
+
+if (
+  "serviceWorker" in navigator &&
+  (window.location.protocol === "https:" || window.location.hostname === "localhost")
+) {
+  const registration = runtime.register();
+
+  registerEvents(registration, {
+    onInstalled: e => {
+      console.log("ServiceWorker installed.", e);
+    },
+    onUpdateReady: e => {
+      console.log("ServiceWorker update ready.", e);
+    },
+
+    onUpdating: e => {
+      console.log("ServiceWorker updating.", e);
+    },
+    onUpdateFailed: e => {
+      console.log("ServiceWorker update failed.", e);
+    },
+    onUpdated: e => {
+      console.log("ServiceWorker updated.", e);
+    }
+  });
+} else {
+  console.warn("ServiceWorker not available. Spoke should be accessed via https or localhost.");
+}
 
 import App from "./ui/App";
 import Editor from "./editor/Editor";

@@ -5,11 +5,14 @@ const resolveUrlCache = new Map();
 async function resolveUrl(url, index) {
   const cacheKey = `${url}|${index}`;
   if (resolveUrlCache.has(cacheKey)) return resolveUrlCache.get(cacheKey);
-  const resolved = await fetch("/api/media", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ media: { url, index } })
-  }).then(r => r.json());
+  const apiUrl = new URL("/api/media", window.location);
+  const queryParams = new URLSearchParams([["url", url]]);
+  if (index) {
+    queryParams.append("index", index);
+  }
+  apiUrl.search = queryParams;
+  const response = await fetch(apiUrl);
+  const resolved = await response.json();
   resolveUrlCache.set(cacheKey, resolved);
   return resolved;
 }

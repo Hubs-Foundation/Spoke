@@ -328,13 +328,13 @@ async function startServer(options) {
     };
   });
 
-  router.post("/api/media", koaBody(), async ctx => {
+  router.get("/api/media", async ctx => {
     try {
       const resp = await fetch(mediaEndpoint, {
         agent,
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify(ctx.request.body)
+        body: JSON.stringify({ media: ctx.request.query })
       });
       ctx.status = resp.status;
       if (resp.status !== 200) {
