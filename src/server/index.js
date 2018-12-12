@@ -17,7 +17,6 @@ const selfsigned = require("selfsigned");
 const semver = require("semver");
 const serve = require("koa-static");
 const WebSocket = require("ws");
-const proxy = require("koa-proxy");
 
 const packageJSON = require("../../package.json");
 
@@ -166,12 +165,6 @@ async function startServer(options) {
 
   if (process.env.RETICULUM_SERVER) {
     console.log(`Using RETICULUM_SERVER: ${reticulumServer}\n`);
-  }
-
-  const farsparkServer = process.env.FARSPARK_SERVER || "farspark.reticulum.io";
-
-  if (process.env.FARSPARK_SERVER) {
-    console.log(`Using FARSPARK_SERVER: ${farsparkServer}\n`);
   }
 
   const app = new Koa();
@@ -340,6 +333,7 @@ async function startServer(options) {
       if (resp.status !== 200) {
         return;
       }
+      ctx.res.setHeader("Cache-Control", "no-cache");
       ctx.body = await resp.json();
     } catch (err) {
       console.error(err);
@@ -347,15 +341,44 @@ async function startServer(options) {
     }
   });
 
-  app.use(
-    proxy({
-      host: `https://${farsparkServer}`,
-      match: /^\/api\/farspark\//,
-      map: path => {
-        return path.replace(/^\/api\/farspark/, "");
+  router.get("/api/media", koaBody(), async ctx => {
+    try {
+      const resp = await fetch(mediaEndpoint, {
+        agent,
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(ctx.request.body)
+      });
+      ctx.status = resp.status;
+      if (resp.status !== 200) {
+        return;
       }
-    })
-  );
+      ctx.res.setHeader("Cache-Control", "no-cache");
+      ctx.body = await resp.json();
+    } catch (err) {
+      console.error(err);
+      throw new Error("Error resolving media.");
+    }
+  });
+
+  router.get("/api/cors-proxy", async ctx => {
+    const url = ctx.request.query.url;
+
+    if (!url) {
+      ctx.throw(400, "url parameter not specified");
+      return;
+    }
+
+    const proxiedRes = await fetch(url);
+
+    for (const [name, value] of proxiedRes.headers) {
+      ctx.res.setHeader(name, value);
+    }
+
+    ctx.res.setHeader("Cache-Control", "max-age=31536000");
+
+    ctx.body = proxiedRes.body;
+  });
 
   function getConfigPath(filename) {
     return path.join(envPaths("Spoke", { suffix: "" }).config, filename);

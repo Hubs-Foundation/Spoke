@@ -14,21 +14,12 @@ async function resolveUrl(url, index) {
   return resolved;
 }
 
-// thanks to https://developer.mozilla.org/en-US/docs/Web/API/WindowBase64/Base64_encoding_and_decoding
-function b64EncodeUnicode(str) {
-  // first we use encodeURIComponent to get percent-encoded UTF-8, then we convert the percent-encodings
-  // into raw bytes which can be fed into btoa.
-  const CHAR_RE = /%([0-9A-F]{2})/g;
-  return btoa(encodeURIComponent(str).replace(CHAR_RE, (_, p1) => String.fromCharCode("0x" + p1)));
-}
-
-function proxiedUrlFor(url, index) {
-  // farspark doesn't know how to read '=' base64 padding characters
-  const base64Url = b64EncodeUnicode(url).replace(/=+$/g, "");
-  // translate base64 + to - and / to _ for URL safety
-  const encodedUrl = base64Url.replace(/\+/g, "-").replace(/\//g, "_");
-  const method = index != null ? "extract" : "raw";
-  return new URL(`/api/farspark/0/${method}/0/0/0/${index || 0}/${encodedUrl}`, window.location).href;
+function proxiedUrlFor(url) {
+  const proxiedUrl = new URL(`/api/cors-proxy`, window.location);
+  const params = new URLSearchParams();
+  params.append("url", url);
+  proxiedUrl.search = params;
+  return proxiedUrl.href;
 }
 
 function getFilesFromSketchfabZip(src) {
@@ -74,7 +65,7 @@ export async function getContentType(url) {
   );
 }
 
-export async function farsparkUrl(src, index) {
+export async function proxyUrl(src, index) {
   const href = new URL(src, window.location).href;
   const result = await resolveUrl(href);
   const canonicalUrl = result.origin;

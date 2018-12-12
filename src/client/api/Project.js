@@ -2,7 +2,7 @@ import EventEmitter from "eventemitter3";
 import AuthenticationError from "./AuthenticationError";
 import { Socket } from "phoenix";
 import uuid from "uuid/v4";
-import { farsparkUrl, getContentType } from "./media";
+import { proxyUrl, getContentType } from "./media";
 
 export default class Project extends EventEmitter {
   constructor() {
@@ -58,7 +58,7 @@ export default class Project extends EventEmitter {
       return absoluteUrl;
     }
 
-    const { accessibleUrl } = await farsparkUrl(url, index);
+    const { accessibleUrl } = await proxyUrl(url, index);
 
     return accessibleUrl;
   }
