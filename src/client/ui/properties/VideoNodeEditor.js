@@ -24,6 +24,8 @@ export default class VideoNodeEditor extends Component {
     return value => this.props.editor.setNodeProperty(this.props.node, propName, value);
   }
 
+  onChangeControls = this.setProp("controls");
+
   onChangeAutoPlay = this.setProp("autoPlay");
 
   onChangeLoop = this.setProp("loop");
@@ -55,6 +57,9 @@ export default class VideoNodeEditor extends Component {
 
     return (
       <NodeEditor description="Dynamically loads an video." {...this.props}>
+        <InputGroup name="Controls">
+          <BooleanInput value={node.controls} onChange={this.onChangeControls} />
+        </InputGroup>
         <InputGroup name="Auto Play">
           <BooleanInput value={node.autoPlay} onChange={this.onChangeAutoPlay} />
         </InputGroup>

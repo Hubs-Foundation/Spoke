@@ -12,6 +12,7 @@ export default class VideoNode extends EditorNodeMixin(Video) {
 
     const {
       src,
+      controls,
       autoPlay,
       loop,
       startTime,
@@ -28,6 +29,7 @@ export default class VideoNode extends EditorNodeMixin(Video) {
     } = json.components.find(c => c.name === "video").props;
 
     await node.load(src);
+    node.controls = controls;
     node.autoPlay = autoPlay;
     node.loop = loop;
     node.startTime = startTime;
@@ -97,6 +99,7 @@ export default class VideoNode extends EditorNodeMixin(Video) {
       name: "video",
       props: {
         src: this._canonicalUrl,
+        controls: this.controls,
         autoPlay: this.autoPlay,
         loop: this.loop,
         startTime: this.startTime,
@@ -123,6 +126,7 @@ export default class VideoNode extends EditorNodeMixin(Video) {
       HUBS_components: {
         video: {
           src: this._canonicalUrl,
+          controls: this.controls,
           autoPlay: this.autoPlay,
           loop: this.loop,
           startTime: this.startTime,

@@ -31,6 +31,7 @@ export default class Video extends THREE.Mesh {
 
     this.audioListener = audioListener;
 
+    this.controls = true;
     this.startTime = 0;
     this.endTime = null;
     this.audioType = AudioType.PannerNode;
@@ -275,6 +276,7 @@ export default class Video extends THREE.Mesh {
     }
 
     this.src = source.src;
+    this.controls = source.controls;
     this.autoPlay = source.autoPlay;
     this.loop = source.loop;
     this.startTime = source.startTime;
@@ -287,7 +289,7 @@ export default class Video extends THREE.Mesh {
     this.maxDistance = source.maxDistance;
     this.coneInnerAngle = source.coneInnerAngle;
     this.coneOuterAngle = source.coneOuterAngle;
-    this.coneOuterGain = source.coneOuterAngle;
+    this.coneOuterGain = source.coneOuterGain;
 
     return this;
   }
