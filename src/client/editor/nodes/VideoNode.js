@@ -47,6 +47,7 @@ export default class VideoNode extends EditorNodeMixin(Video) {
     super(editor, editor.audioListener);
 
     this._canonicalUrl = null;
+    this._autoPlay = true;
   }
 
   get src() {
@@ -55,6 +56,14 @@ export default class VideoNode extends EditorNodeMixin(Video) {
 
   set src(value) {
     this.load(value).catch(console.error);
+  }
+
+  get autoPlay() {
+    return this._autoPlay;
+  }
+
+  set autoPlay(value) {
+    this._autoPlay = value;
   }
 
   async load(src) {

@@ -32,7 +32,6 @@ export default class Video extends THREE.Mesh {
     this.audioListener = audioListener;
 
     this.controls = true;
-    this.autoPlay = true;
     this.audioType = AudioType.PannerNode;
   }
 
