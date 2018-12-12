@@ -106,7 +106,8 @@ export default class VideoNode extends EditorNodeMixin(Video) {
         maxDistance: this.maxDistance,
         coneInnerAngle: this.coneInnerAngle,
         coneOuterAngle: this.coneOuterAngle,
-        coneOuterGain: this.coneOuterGain
+        coneOuterGain: this.coneOuterGain,
+        projection: "flat"
       }
     });
 
@@ -131,7 +132,8 @@ export default class VideoNode extends EditorNodeMixin(Video) {
           maxDistance: this.maxDistance,
           coneInnerAngle: this.coneInnerAngle,
           coneOuterAngle: this.coneOuterAngle,
-          coneOuterGain: this.coneOuterGain
+          coneOuterGain: this.coneOuterGain,
+          projection: "flat"
         },
         networked: {
           id: this.uuid
