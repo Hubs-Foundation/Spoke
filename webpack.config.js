@@ -9,7 +9,6 @@ if (process.env.NODE_ENV === "production") {
 
 const CopyWebpackPlugin = require("copy-webpack-plugin");
 const HTMLWebpackPlugin = require("html-webpack-plugin");
-const ServiceWorkerWebpackPlugin = require("serviceworker-webpack-plugin");
 const path = require("path");
 const packageJSON = require("./package.json");
 const webpack = require("webpack");
@@ -76,9 +75,6 @@ module.exports = {
     new webpack.DefinePlugin({
       SPOKE_VERSION: JSON.stringify(packageJSON.version)
     }),
-    new webpack.EnvironmentPlugin(["NODE_ENV", "RETICULUM_SERVER"]),
-    new ServiceWorkerWebpackPlugin({
-      entry: path.join(__dirname, "src", "client", "sw.js")
-    })
+    new webpack.EnvironmentPlugin(["NODE_ENV", "RETICULUM_SERVER"])
   ]
 };

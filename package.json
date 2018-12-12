@@ -90,7 +90,6 @@
     "request": "^2.88.0",
     "selfsigned": "^1.10.3",
     "semver": "^5.5.1",
-    "serviceworker-webpack-plugin": "^1.0.1",
     "signals": "^1.0.0",
     "three": "github:mozillareality/three.js#220c52eb20b5d8afce8aecc295283d7a7a1e0c62",
     "throttle-debounce": "^2.0.1",
