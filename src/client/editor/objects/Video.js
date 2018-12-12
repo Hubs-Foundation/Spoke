@@ -32,8 +32,7 @@ export default class Video extends THREE.Mesh {
     this.audioListener = audioListener;
 
     this.controls = true;
-    this.startTime = 0;
-    this.endTime = null;
+    this.autoPlay = true;
     this.audioType = AudioType.PannerNode;
   }
 
@@ -196,7 +195,6 @@ export default class Video extends THREE.Mesh {
   loadVideo(src) {
     return new Promise((resolve, reject) => {
       this.videoEl.src = src;
-      this.videoEl.currentTime = this.startTime;
 
       let cleanup = null;
 
@@ -229,20 +227,6 @@ export default class Video extends THREE.Mesh {
     this.material.needsUpdate = true;
 
     return this;
-  }
-
-  update() {
-    if (this.endTime && this.videoEl.currentTime >= this.endTime) {
-      if (this.video.loop) {
-        if (this.startTime) {
-          this.videoEl.currentTime = this.startTime;
-        } else {
-          this.videoEl.currentTime = 0;
-        }
-      } else {
-        this.videoEl.pause();
-      }
-    }
   }
 
   clone(recursive) {
@@ -279,8 +263,6 @@ export default class Video extends THREE.Mesh {
     this.controls = source.controls;
     this.autoPlay = source.autoPlay;
     this.loop = source.loop;
-    this.startTime = source.startTime;
-    this.endTime = source.endTime;
     this.audioType = source.audioType;
     this.volume = source.volume;
     this.distanceModel = source.distanceModel;

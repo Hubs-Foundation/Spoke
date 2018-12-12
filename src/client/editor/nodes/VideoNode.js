@@ -15,8 +15,6 @@ export default class VideoNode extends EditorNodeMixin(Video) {
       controls,
       autoPlay,
       loop,
-      startTime,
-      endTime,
       audioType,
       volume,
       distanceModel,
@@ -32,8 +30,6 @@ export default class VideoNode extends EditorNodeMixin(Video) {
     node.controls = controls;
     node.autoPlay = autoPlay;
     node.loop = loop;
-    node.startTime = startTime;
-    node.endTime = endTime;
     node.audioType = audioType;
     node.volume = volume;
     node.distanceModel = distanceModel;
@@ -51,7 +47,6 @@ export default class VideoNode extends EditorNodeMixin(Video) {
     super(editor, editor.audioListener);
 
     this._canonicalUrl = null;
-    this._startTime = 0;
   }
 
   get src() {
@@ -69,15 +64,6 @@ export default class VideoNode extends EditorNodeMixin(Video) {
     await super.load(proxiedUrl);
 
     return this;
-  }
-
-  set startTime(value) {
-    this.videoEl.currentTime = value;
-    this._startTime = value;
-  }
-
-  get startTime() {
-    return this._startTime;
   }
 
   clone(recursive) {
@@ -102,8 +88,6 @@ export default class VideoNode extends EditorNodeMixin(Video) {
         controls: this.controls,
         autoPlay: this.autoPlay,
         loop: this.loop,
-        startTime: this.startTime,
-        endTime: this.endTime,
         audioType: this.audioType,
         volume: this.volume,
         distanceModel: this.distanceModel,
@@ -129,8 +113,6 @@ export default class VideoNode extends EditorNodeMixin(Video) {
           controls: this.controls,
           autoPlay: this.autoPlay,
           loop: this.loop,
-          startTime: this.startTime,
-          endTime: this.endTime,
           audioType: this.audioType,
           volume: this.volume,
           distanceModel: this.distanceModel,

@@ -30,10 +30,6 @@ export default class VideoNodeEditor extends Component {
 
   onChangeLoop = this.setProp("loop");
 
-  onChangeStartTime = this.setProp("startTime");
-
-  onChangeEndTime = this.setProp("endTime");
-
   onChangeAudioType = this.setProp("audioType");
 
   onChangeVolume = this.setProp("volume");
@@ -65,17 +61,6 @@ export default class VideoNodeEditor extends Component {
         </InputGroup>
         <InputGroup name="Loop">
           <BooleanInput value={node.loop} onChange={this.onChangeLoop} />
-        </InputGroup>
-        <InputGroup name="Start Time">
-          <NumericInput min={0} value={node.startTime} onChange={this.onChangeStartTime} />
-        </InputGroup>
-        <InputGroup name="End Time">
-          <NumericInput
-            min={0}
-            max={node.duration || 0}
-            value={node.endTime || node.duration || 0}
-            onChange={this.onChangeEndTime}
-          />
         </InputGroup>
         <InputGroup name="Audio Type">
           <SelectInput options={audioTypeOptions} value={node.audioType} onChange={this.onChangeAudioType} />
