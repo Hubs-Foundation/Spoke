@@ -90,7 +90,7 @@ export default class Video extends THREE.Mesh {
   }
 
   set volume(value) {
-    this.audio.setVolume(value);
+    this.audio.gain.gain.value = value;
   }
 
   get distanceModel() {

@@ -48,6 +48,7 @@ export default class VideoNode extends EditorNodeMixin(Video) {
 
     this._canonicalUrl = null;
     this._autoPlay = true;
+    this.volume = 0.5;
   }
 
   get src() {
