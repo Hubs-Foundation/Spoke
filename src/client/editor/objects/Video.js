@@ -220,6 +220,12 @@ export default class Video extends THREE.Mesh {
   async load(src) {
     await this.loadVideo(src);
 
+    // TODO: Maintain aspect ratio when scaling in editor
+    const ratio = (this.videoEl.videoHeight || 1.0) / (this.videoEl.videoWidth || 1.0);
+    const width = Math.min(1.0, 1.0 / ratio);
+    const height = Math.min(1.0, ratio);
+    this.geometry.scale(width, height, 1);
+
     this.audioSource = this.audioListener.context.createMediaElementSource(this.videoEl);
     this.audio.setNodeSource(this.audioSource);
 
