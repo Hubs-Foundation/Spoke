@@ -23,7 +23,8 @@ export default class VideoNode extends EditorNodeMixin(Video) {
       maxDistance,
       coneInnerAngle,
       coneOuterAngle,
-      coneOuterGain
+      coneOuterGain,
+      projection
     } = json.components.find(c => c.name === "video").props;
 
     await node.load(src);
@@ -39,6 +40,7 @@ export default class VideoNode extends EditorNodeMixin(Video) {
     node.coneInnerAngle = coneInnerAngle;
     node.coneOuterAngle = coneOuterAngle;
     node.coneOuterGain = coneOuterGain;
+    node.projection = projection;
 
     return node;
   }
@@ -72,7 +74,7 @@ export default class VideoNode extends EditorNodeMixin(Video) {
     const proxiedUrl = await this.editor.project.getProxiedUrl(src);
 
     await super.load(proxiedUrl);
-
+    this.videoEl.currentTime = this.videoEl.duration / 2;
     return this;
   }
 
@@ -107,7 +109,7 @@ export default class VideoNode extends EditorNodeMixin(Video) {
         coneInnerAngle: this.coneInnerAngle,
         coneOuterAngle: this.coneOuterAngle,
         coneOuterGain: this.coneOuterGain,
-        projection: "flat"
+        projection: this.projection
       }
     });
 
@@ -133,7 +135,7 @@ export default class VideoNode extends EditorNodeMixin(Video) {
           coneInnerAngle: this.coneInnerAngle,
           coneOuterAngle: this.coneOuterAngle,
           coneOuterGain: this.coneOuterGain,
-          projection: "flat"
+          projection: this.projection
         },
         networked: {
           id: this.uuid

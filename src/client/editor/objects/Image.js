@@ -15,6 +15,7 @@ export default class Image extends THREE.Object3D {
     const material = new THREE.MeshBasicMaterial();
     material.side = THREE.DoubleSide;
     this._mesh = new THREE.Mesh(geometry, material);
+    this.add(this._mesh);
     this._texture = null;
   }
 
@@ -50,7 +51,7 @@ export default class Image extends THREE.Object3D {
       material.side = THREE.DoubleSide;
     }
 
-    material.map = this._mesh.material.map;
+    material.map = this._texture;
 
     this._projection = projection;
 
@@ -88,12 +89,12 @@ export default class Image extends THREE.Object3D {
     texture.minFilter = THREE.LinearFilter;
 
     if (texture.format === THREE.RGBAFormat) {
-      material.transparent = true;
+      this._mesh.material.transparent = true;
     }
 
     this._texture = texture;
-    material.map = texture;
-    material.needsUpdate = true;
+    this._mesh.material.map = texture;
+    this._mesh.material.needsUpdate = true;
 
     return this;
   }
@@ -101,26 +102,14 @@ export default class Image extends THREE.Object3D {
   copy(source, recursive) {
     super.copy(source, false);
 
-    this.remove(this._mesh);
-
     for (const child of source.children) {
-      let clonedChild;
-
-      if (child === source._mesh) {
-        clonedChild = child.clone();
-        this._mesh = clonedChild;
-      } else if (recursive === true) {
-        clonedChild = child.clone();
-      }
-
-      if (clonedChild) {
-        this.add(clonedChild);
+      if (recursive === true && child !== source._mesh) {
+        this.add(child.clone());
       }
     }
 
-    this._src = source._src;
-    this._texture = source._texture;
-    this._projection = source._projection;
+    this.projection = source.projection;
+    this.src = source.src;
 
     return this;
   }
