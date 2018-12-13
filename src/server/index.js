@@ -490,8 +490,6 @@ async function startServer(options) {
 
     const resp = await fetch(sceneEndpoint, { agent, method, headers, body });
 
-    console.log(resp);
-
     if (resp.status === 401) {
       ctx.status = 401;
       return;
