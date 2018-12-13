@@ -32,6 +32,7 @@ export default class Video extends THREE.Object3D {
     material.side = THREE.DoubleSide;
     this._mesh = new THREE.Mesh(geometry, material);
     this.add(this._mesh);
+    this._projection = "flat";
 
     this._src = null;
     videoEl.setAttribute("playsinline", "");
