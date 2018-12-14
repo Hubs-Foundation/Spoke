@@ -2,7 +2,7 @@ import THREE from "../../vendor/three";
 
 export const VideoProjection = {
   Flat: "flat",
-  Equirectangular: "equirectangular"
+  Equirectangular360: "360-equirectangular"
 };
 
 export const AudioType = {
@@ -237,7 +237,7 @@ export default class Video extends THREE.Object3D {
 
     let geometry;
 
-    if (projection === "equirectangular") {
+    if (projection === "360-equirectangular") {
       geometry = new THREE.SphereBufferGeometry(1, 64, 32);
       // invert the geometry on the x-axis so that all of the faces point inward
       geometry.scale(-1, 1, 1);
