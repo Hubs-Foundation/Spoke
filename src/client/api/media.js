@@ -16,9 +16,7 @@ async function resolveUrl(url, index) {
 
 function proxiedUrlFor(url) {
   const proxiedUrl = new URL(`/api/cors-proxy`, window.location);
-  const params = new URLSearchParams();
-  params.append("url", url);
-  proxiedUrl.search = params;
+  proxiedUrl.searchParams.set("url", url);
   return proxiedUrl.href;
 }
 
