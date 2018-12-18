@@ -49,8 +49,20 @@ export default class ModelNode extends EditorNodeMixin(Model) {
     super(editor);
     this.attribution = null;
     this.includeInFloorPlan = true;
+    this._canonicalUrl = null;
   }
 
+  // Overrides Model's src property and stores the original (non-resolved) url.
+  get src() {
+    return this._canonicalUrl;
+  }
+
+  // When getters are overridden you must also override the setter.
+  set src(value) {
+    this.load(value).catch(console.error);
+  }
+
+  // Overrides Model's loadGLTF method and uses the Editor's gltf cache.
   async loadGLTF(src) {
     const gltf = await this.editor.gltfCache.get(src);
 
@@ -66,12 +78,20 @@ export default class ModelNode extends EditorNodeMixin(Model) {
     return gltf;
   }
 
+  // Overrides Model's load method and resolves the src url before loading.
   async load(src) {
-    this._originalSrc = src;
+    this._canonicalUrl = src;
 
-    const proxiedUrl = await this.editor.project.getProxiedUrl(src);
+    const { accessibleUrl, files } = await this.editor.project.resolveMedia(src);
 
-    await super.load(proxiedUrl);
+    await super.load(accessibleUrl);
+
+    if (files) {
+      // Revoke any object urls from the SketchfabZipLoader.
+      for (const key in files) {
+        URL.revokeObjectURL(files[key]);
+      }
+    }
 
     if (!this.model) {
       return this;
@@ -98,7 +118,7 @@ export default class ModelNode extends EditorNodeMixin(Model) {
     json.components.push({
       name: "gltf-model",
       props: {
-        src: absoluteToRelativeURL(sceneUri, this._originalSrc),
+        src: absoluteToRelativeURL(sceneUri, this._canonicalUrl),
         attribution: this.attribution,
         includeInFloorPlan: this.includeInFloorPlan
       }

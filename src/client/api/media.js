@@ -5,30 +5,32 @@ const resolveUrlCache = new Map();
 async function resolveUrl(url, index) {
   const cacheKey = `${url}|${index}`;
   if (resolveUrlCache.has(cacheKey)) return resolveUrlCache.get(cacheKey);
-  const resolved = await fetch("/api/media", {
+
+  const response = await fetch("/api/media", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ media: { url, index } })
-  }).then(r => r.json());
+  });
+
+  if (!response.ok) {
+    const message = `Error resolving url "${url}":`;
+    try {
+      const body = await response.text();
+      throw new Error(message + " " + body);
+    } catch (e) {
+      throw new Error(message + " " + response.statusText);
+    }
+  }
+
+  const resolved = await response.json();
   resolveUrlCache.set(cacheKey, resolved);
   return resolved;
 }
 
-// thanks to https://developer.mozilla.org/en-US/docs/Web/API/WindowBase64/Base64_encoding_and_decoding
-function b64EncodeUnicode(str) {
-  // first we use encodeURIComponent to get percent-encoded UTF-8, then we convert the percent-encodings
-  // into raw bytes which can be fed into btoa.
-  const CHAR_RE = /%([0-9A-F]{2})/g;
-  return btoa(encodeURIComponent(str).replace(CHAR_RE, (_, p1) => String.fromCharCode("0x" + p1)));
-}
-
-function proxiedUrlFor(url, index) {
-  // farspark doesn't know how to read '=' base64 padding characters
-  const base64Url = b64EncodeUnicode(url).replace(/=+$/g, "");
-  // translate base64 + to - and / to _ for URL safety
-  const encodedUrl = base64Url.replace(/\+/g, "-").replace(/\//g, "_");
-  const method = index != null ? "extract" : "raw";
-  return new URL(`/api/farspark/0/${method}/0/0/0/${index || 0}/${encodedUrl}`, window.location).href;
+function proxiedUrlFor(url) {
+  const proxiedUrl = new URL(`/api/cors-proxy`, window.location);
+  proxiedUrl.searchParams.set("url", url);
+  return proxiedUrl.href;
 }
 
 function getFilesFromSketchfabZip(src) {
@@ -74,7 +76,7 @@ export async function getContentType(url) {
   );
 }
 
-export async function farsparkUrl(src, index) {
+export async function resolveMedia(src, index) {
   const href = new URL(src, window.location).href;
   const result = await resolveUrl(href);
   const canonicalUrl = result.origin;
@@ -86,8 +88,9 @@ export async function farsparkUrl(src, index) {
     (await fetchContentType(accessibleUrl));
 
   if (contentType === "model/gltf+zip") {
+    // TODO: Sketchfab object urls should be revoked after they are loaded by the glTF loader.
     const files = await getFilesFromSketchfabZip(accessibleUrl);
-    return { canonicalUrl, accessibleUrl: files["scene.gtlf"], contentType };
+    return { canonicalUrl, accessibleUrl: files["scene.gtlf"], contentType, files };
   }
 
   return { canonicalUrl, accessibleUrl, contentType };
