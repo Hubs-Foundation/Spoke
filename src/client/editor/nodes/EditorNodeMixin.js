@@ -22,7 +22,7 @@ export default function EditorNodeMixin(Object3DClass) {
     }
 
     static async deserialize(editor, json) {
-      const node = new this();
+      const node = new this(editor);
 
       const transformComponent = json.components.find(c => c.name === "transform");
 
@@ -39,9 +39,10 @@ export default function EditorNodeMixin(Object3DClass) {
       return node;
     }
 
-    constructor(...args) {
+    constructor(editor, ...args) {
       super(...args);
 
+      this.editor = editor;
       this.nodeName = this.constructor.nodeName;
       this.name = this.constructor.nodeName;
       this.isNode = true;
@@ -51,6 +52,10 @@ export default function EditorNodeMixin(Object3DClass) {
       this.staticMode = StaticModes.Inherits;
       this.originalStaticMode = null;
       this.saveParent = false;
+    }
+
+    clone(recursive) {
+      return new this.constructor(this.editor).copy(this, recursive);
     }
 
     onChange() {}

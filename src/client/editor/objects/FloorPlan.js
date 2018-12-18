@@ -23,7 +23,8 @@ export default class FloorPlan extends THREE.Object3D {
       let clonedChild;
 
       if (child === source.navMesh) {
-        this.setNavMesh(child.clone());
+        clonedChild = child.clone();
+        this.navMesh = clonedChild;
       } else if (recursive === true) {
         clonedChild = child.clone();
       }

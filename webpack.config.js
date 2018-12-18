@@ -51,6 +51,11 @@ module.exports = {
         test: /\.js$/,
         include: path.join(__dirname, "src", "client"),
         use: "babel-loader"
+      },
+      {
+        test: /\.worker\.js$/,
+        include: path.join(__dirname, "src", "client"),
+        loader: "worker-loader"
       }
     ]
   },

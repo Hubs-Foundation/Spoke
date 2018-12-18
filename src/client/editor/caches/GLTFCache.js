@@ -11,21 +11,17 @@ export default class GLTFCache extends Cache {
   get(url) {
     const absoluteURL = new URL(url, window.location).href;
     if (!this._cache.has(absoluteURL)) {
-      this._cache.set(
-        absoluteURL,
-        new Promise((resolve, reject) => {
-          const loader = new THREE.GLTFLoader();
-          loader.load(
-            absoluteURL,
-            gltf => {
-              gltf.scene.animations = gltf.animations;
-              resolve(gltf);
-            },
-            null,
-            reject
-          );
-        })
-      );
+      const gltfPromise = new Promise((resolve, reject) => {
+        new THREE.GLTFLoader().load(absoluteURL, resolve, null, reject);
+      }).then(gltf => {
+        if (!gltf.scene.name) {
+          gltf.scene.name = "Scene";
+        }
+        gltf.scene.animations = gltf.animations;
+        return gltf;
+      });
+
+      this._cache.set(absoluteURL, gltfPromise);
     }
     return this._cache.get(absoluteURL).then(gltf => {
       const clonedGLTF = { ...gltf, scene: cloneObject3D(gltf.scene) };

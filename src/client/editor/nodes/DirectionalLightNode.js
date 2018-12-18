@@ -28,8 +28,8 @@ export default class DirectionalLightNode extends EditorNodeMixin(PhysicalDirect
     return node;
   }
 
-  constructor() {
-    super();
+  constructor(editor) {
+    super(editor);
 
     this.picker = new Picker();
     this.add(this.picker);

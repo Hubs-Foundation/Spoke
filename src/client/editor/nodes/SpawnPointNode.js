@@ -11,8 +11,7 @@ export default class SpawnPointNode extends EditorNodeMixin(THREE.Object3D) {
 
   static async load() {
     const { scene } = await new Promise((resolve, reject) => {
-      const loader = new THREE.GLTFLoader();
-      loader.load(spawnPointModelUrl, resolve, null, reject);
+      new THREE.GLTFLoader().load(spawnPointModelUrl, resolve, null, reject);
     });
 
     scene.traverse(child => {
@@ -24,8 +23,8 @@ export default class SpawnPointNode extends EditorNodeMixin(THREE.Object3D) {
     spawnPointHelperModel = scene;
   }
 
-  constructor() {
-    super();
+  constructor(editor) {
+    super(editor);
     this.helper = spawnPointHelperModel.clone();
     this.add(this.helper);
   }
