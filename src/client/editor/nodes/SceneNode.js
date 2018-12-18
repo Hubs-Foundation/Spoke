@@ -116,14 +116,6 @@ export default class SceneNode extends EditorNodeMixin(THREE.Scene) {
     for (const node of nodeList) {
       node.prepareForExport();
     }
-
-    this.userData.gltfExtensions = {
-      HUBS_components: {
-        "scene-shadow": {
-          type: "pcfsoft"
-        }
-      }
-    };
   }
 
   async combineMeshes() {
