@@ -27,8 +27,8 @@ export default class SpotLightNode extends EditorNodeMixin(PhysicalSpotLight) {
     return node;
   }
 
-  constructor() {
-    super();
+  constructor(editor) {
+    super(editor);
 
     this.picker = new Picker();
     this.add(this.picker);

@@ -12,7 +12,7 @@ export default class SceneNode extends EditorNodeMixin(THREE.Scene) {
   static hideTransform = true;
 
   static async deserialize(editor, json) {
-    const scene = new SceneNode();
+    const scene = new SceneNode(editor);
 
     const { root, metadata, entities } = json;
 
@@ -54,8 +54,8 @@ export default class SceneNode extends EditorNodeMixin(THREE.Scene) {
     return scene;
   }
 
-  constructor() {
-    super();
+  constructor(editor) {
+    super(editor);
     this.url = null;
     this.metadata = {};
     setStaticMode(this, StaticModes.Static);

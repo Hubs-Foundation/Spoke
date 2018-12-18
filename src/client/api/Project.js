@@ -2,6 +2,7 @@ import EventEmitter from "eventemitter3";
 import AuthenticationError from "./AuthenticationError";
 import { Socket } from "phoenix";
 import uuid from "uuid/v4";
+import { resolveMedia, getContentType } from "./media";
 
 export default class Project extends EventEmitter {
   constructor() {
@@ -44,6 +45,20 @@ export default class Project extends EventEmitter {
 
   getURL(relativePath) {
     return new URL(relativePath, this.serverURL).href;
+  }
+
+  getContentType(url) {
+    return getContentType(url);
+  }
+
+  async resolveMedia(url, index) {
+    const absoluteUrl = new URL(url, window.location).href;
+
+    if (absoluteUrl.startsWith(this.serverURL)) {
+      return { accessibleUrl: absoluteUrl };
+    }
+
+    return await resolveMedia(url, index);
   }
 
   fetch(relativePath, options) {
@@ -205,39 +220,6 @@ export default class Project extends EventEmitter {
     await this.mkdir(`${basePath}generated`);
     await this.writeBlob(path, blob);
     return path;
-  }
-
-  async import(url) {
-    const resp = await fetch("/api/import", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ url })
-    });
-
-    if (resp.status !== 200) {
-      throw new Error(`Import failed for "${url}". ${await resp.text()}`);
-    }
-
-    return resp.json();
-  }
-
-  async getImportAttribution(uri) {
-    if (!uri.includes("/imported/")) return null;
-    try {
-      const baseUri = uri
-        .split("/")
-        .slice(0, -1)
-        .join("/");
-      const { name, author, attribution } = await this.readJSON(`${baseUri}/meta.json`);
-      if (attribution) {
-        return attribution;
-      } else {
-        // Legacy
-        return { name, author };
-      }
-    } catch (e) {
-      return null;
-    }
   }
 
   async uploadAndDelete(uri, onUploadProgress) {

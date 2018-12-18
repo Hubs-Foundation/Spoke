@@ -8,9 +8,6 @@ import { ContextMenu, MenuItem, ContextMenuTrigger, connectMenu } from "react-co
 import styles from "./HierarchyPanelContainer.scss";
 import { withEditor } from "../contexts/EditorContext";
 import { withDialog } from "../contexts/DialogContext";
-import { withSceneActions } from "../contexts/SceneActionsContext";
-import AssetDropTarget from "../explorer/AssetDropTarget";
-import ErrorDialog from "../dialogs/ErrorDialog";
 import DefaultNodeEditor from "../properties/DefaultNodeEditor";
 
 function collectNodeMenuProps({ node }) {
@@ -21,7 +18,6 @@ class HierarchyPanelContainer extends Component {
   static propTypes = {
     path: PropTypes.array,
     editor: PropTypes.object,
-    sceneActions: PropTypes.object,
     showDialog: PropTypes.func,
     hideDialog: PropTypes.func
   };
@@ -42,25 +38,6 @@ class HierarchyPanelContainer extends Component {
     editor.signals.objectChanged.add(this.rebuildNodeHierarchy);
     editor.signals.objectSelected.add(this.rebuildNodeHierarchy);
   }
-
-  onDropFile = async item => {
-    if (item.file) {
-      const file = item.file;
-
-      if (file.ext === ".gltf" || file.ext === ".glb") {
-        try {
-          this.props.editor.addGLTFModelNode(file.name, file.uri);
-        } catch (e) {
-          console.error(e);
-
-          this.props.showDialog(ErrorDialog, {
-            title: "Error adding model.",
-            message: e.message
-          });
-        }
-      }
-    }
-  };
 
   onChange = (tree, parent, node) => {
     if (!node) {
@@ -179,22 +156,20 @@ class HierarchyPanelContainer extends Component {
   render() {
     return (
       <div className={styles.hierarchyRoot}>
-        <AssetDropTarget onDropFile={this.onDropFile}>
-          <div className={styles.tree}>
-            <Tree
-              paddingLeft={8}
-              isNodeCollapsed={false}
-              draggable={true}
-              tree={this.state.tree}
-              renderNode={this.renderNode}
-              onChange={this.onChange}
-            />
-            <this.HierarchyNodeMenu />
-          </div>
-        </AssetDropTarget>
+        <div className={styles.tree}>
+          <Tree
+            paddingLeft={8}
+            isNodeCollapsed={false}
+            draggable={true}
+            tree={this.state.tree}
+            renderNode={this.renderNode}
+            onChange={this.onChange}
+          />
+          <this.HierarchyNodeMenu />
+        </div>
       </div>
     );
   }
 }
 
-export default withEditor(withDialog(withSceneActions(HierarchyPanelContainer)));
+export default withEditor(withDialog(HierarchyPanelContainer));
