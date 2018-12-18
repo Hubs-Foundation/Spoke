@@ -35,6 +35,8 @@ export default class Editor {
     this.sceneUri = null;
 
     this.camera = new THREE.PerspectiveCamera(80, window.innerWidth / window.innerHeight, 0.2, 8000);
+    this.audioListener = new THREE.AudioListener();
+    this.camera.add(this.audioListener);
     this.camera.layers.enable(1);
     this.camera.name = "Camera";
 

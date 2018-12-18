@@ -1,8 +1,6 @@
 import THREE from "../../vendor/three";
 import Cache from "./Cache";
 
-const textureLoader = new THREE.TextureLoader();
-
 export default class TextureCache extends Cache {
   constructor() {
     super();
@@ -15,7 +13,7 @@ export default class TextureCache extends Cache {
       this._cache.set(
         absoluteURL,
         new Promise((resolve, reject) => {
-          textureLoader.load(absoluteURL, resolve, null, reject);
+          this.textureLoader.load(absoluteURL, resolve, null, reject);
         })
       );
     }
