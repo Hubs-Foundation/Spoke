@@ -76,7 +76,7 @@ export async function getContentType(url) {
   );
 }
 
-export async function proxyUrl(src, index) {
+export async function resolveMedia(src, index) {
   const href = new URL(src, window.location).href;
   const result = await resolveUrl(href);
   const canonicalUrl = result.origin;
@@ -88,8 +88,9 @@ export async function proxyUrl(src, index) {
     (await fetchContentType(accessibleUrl));
 
   if (contentType === "model/gltf+zip") {
+    // TODO: Sketchfab object urls should be revoked after they are loaded by the glTF loader.
     const files = await getFilesFromSketchfabZip(accessibleUrl);
-    return { canonicalUrl, accessibleUrl: files["scene.gtlf"], contentType };
+    return { canonicalUrl, accessibleUrl: files["scene.gtlf"], contentType, files };
   }
 
   return { canonicalUrl, accessibleUrl, contentType };

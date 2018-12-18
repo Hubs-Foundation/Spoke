@@ -2,7 +2,7 @@ import EventEmitter from "eventemitter3";
 import AuthenticationError from "./AuthenticationError";
 import { Socket } from "phoenix";
 import uuid from "uuid/v4";
-import { proxyUrl, getContentType } from "./media";
+import { resolveMedia, getContentType } from "./media";
 
 export default class Project extends EventEmitter {
   constructor() {
@@ -51,16 +51,14 @@ export default class Project extends EventEmitter {
     return getContentType(url);
   }
 
-  async getProxiedUrl(url, index) {
+  async resolveMedia(url, index) {
     const absoluteUrl = new URL(url, window.location).href;
 
     if (absoluteUrl.startsWith(this.serverURL)) {
-      return absoluteUrl;
+      return { accessibleUrl: absoluteUrl };
     }
 
-    const { accessibleUrl } = await proxyUrl(url, index);
-
-    return accessibleUrl;
+    return await resolveMedia(url, index);
   }
 
   fetch(relativePath, options) {

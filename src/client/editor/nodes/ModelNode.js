@@ -69,9 +69,15 @@ export default class ModelNode extends EditorNodeMixin(Model) {
   async load(src) {
     this._originalSrc = src;
 
-    const proxiedUrl = await this.editor.project.getProxiedUrl(src);
+    const { accessibleUrl, files } = await this.editor.project.resolveMedia(src);
 
-    await super.load(proxiedUrl);
+    await super.load(accessibleUrl);
+
+    if (files) {
+      for (const key in files) {
+        URL.revokeObjectURL(files[key]);
+      }
+    }
 
     if (!this.model) {
       return this;
