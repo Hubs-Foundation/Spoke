@@ -1,12 +1,22 @@
 import THREE from "../../vendor/three";
 
-export default class Image extends THREE.Mesh {
+export const ImageProjection = {
+  Flat: "flat",
+  Equirectangular360: "360-equirectangular"
+};
+
+export default class Image extends THREE.Object3D {
   constructor() {
+    super();
+    this._src = null;
+    this._projection = "flat";
+
     const geometry = new THREE.PlaneGeometry();
     const material = new THREE.MeshBasicMaterial();
     material.side = THREE.DoubleSide;
-    super(geometry, material);
-    this._src = null;
+    this._mesh = new THREE.Mesh(geometry, material);
+    this.add(this._mesh);
+    this._texture = null;
   }
 
   get src() {
@@ -23,10 +33,38 @@ export default class Image extends THREE.Mesh {
     });
   }
 
+  get projection() {
+    return this._projection;
+  }
+
+  set projection(projection) {
+    const material = new THREE.MeshBasicMaterial();
+
+    let geometry;
+
+    if (projection === "360-equirectangular") {
+      geometry = new THREE.SphereBufferGeometry(1, 64, 32);
+      // invert the geometry on the x-axis so that all of the faces point inward
+      geometry.scale(-1, 1, 1);
+    } else {
+      geometry = new THREE.PlaneGeometry();
+      material.side = THREE.DoubleSide;
+    }
+
+    material.map = this._texture;
+
+    this._projection = projection;
+
+    // Replace existing mesh
+    this.remove(this._mesh);
+    this._mesh = new THREE.Mesh(geometry, material);
+    this.add(this._mesh);
+  }
+
   async load(src) {
     this._src = src;
 
-    const material = this.material;
+    const material = this._mesh.material;
 
     if (material.map) {
       material.map.dispose();
@@ -39,30 +77,39 @@ export default class Image extends THREE.Mesh {
 
     const texture = await this.loadTexture(src);
 
-    // TODO: Maintain aspect ratio when scaling in editor
-    const ratio = (texture.image.height || 1.0) / (texture.image.width || 1.0);
-    const width = Math.min(1.0, 1.0 / ratio);
-    const height = Math.min(1.0, ratio);
-    this.geometry.scale(width, height, 1);
+    if (this.projection === "flat") {
+      const ratio = (texture.image.height || 1.0) / (texture.image.width || 1.0);
+      const width = Math.min(1.0, 1.0 / ratio);
+      const height = Math.min(1.0, ratio);
+      this._mesh.scale.set(width, height, 1);
+    }
 
     // TODO: resize to maintain aspect ratio but still allow scaling.
     texture.encoding = THREE.sRGBEncoding;
     texture.minFilter = THREE.LinearFilter;
 
     if (texture.format === THREE.RGBAFormat) {
-      material.transparent = true;
+      this._mesh.material.transparent = true;
     }
 
-    material.map = texture;
-    material.needsUpdate = true;
+    this._texture = texture;
+    this._mesh.material.map = texture;
+    this._mesh.material.needsUpdate = true;
 
     return this;
   }
 
   copy(source, recursive) {
-    super.copy(source, recursive);
+    super.copy(source, false);
 
-    this._src = source._src;
+    for (const child of source.children) {
+      if (recursive === true && child !== source._mesh) {
+        this.add(child.clone());
+      }
+    }
+
+    this.projection = source.projection;
+    this.src = source.src;
 
     return this;
   }

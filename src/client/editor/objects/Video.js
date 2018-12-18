@@ -1,5 +1,10 @@
 import THREE from "../../vendor/three";
 
+export const VideoProjection = {
+  Flat: "flat",
+  Equirectangular360: "360-equirectangular"
+};
+
 export const AudioType = {
   Stereo: "stereo",
   PannerNode: "pannernode"
@@ -11,17 +16,23 @@ export const DistanceModelType = {
   Exponential: "exponential"
 };
 
-export default class Video extends THREE.Mesh {
+export default class Video extends THREE.Object3D {
   constructor(audioListener) {
+    super();
+
     const videoEl = document.createElement("video");
     const texture = new THREE.VideoTexture(videoEl);
     texture.minFilter = THREE.LinearFilter;
     texture.encoding = THREE.sRGBEncoding;
+    this._texture = texture;
+
     const geometry = new THREE.PlaneGeometry();
     const material = new THREE.MeshBasicMaterial();
     material.map = texture;
     material.side = THREE.DoubleSide;
-    super(geometry, material);
+    this._mesh = new THREE.Mesh(geometry, material);
+    this.add(this._mesh);
+    this._projection = "flat";
 
     this._src = null;
     videoEl.setAttribute("playsinline", "");
@@ -217,6 +228,34 @@ export default class Video extends THREE.Mesh {
     });
   }
 
+  get projection() {
+    return this._projection;
+  }
+
+  set projection(projection) {
+    const material = new THREE.MeshBasicMaterial();
+
+    let geometry;
+
+    if (projection === "360-equirectangular") {
+      geometry = new THREE.SphereBufferGeometry(1, 64, 32);
+      // invert the geometry on the x-axis so that all of the faces point inward
+      geometry.scale(-1, 1, 1);
+    } else {
+      geometry = new THREE.PlaneGeometry();
+      material.side = THREE.DoubleSide;
+    }
+
+    material.map = this._texture;
+
+    this._projection = projection;
+
+    // Replace existing mesh
+    this.remove(this._mesh);
+    this._mesh = new THREE.Mesh(geometry, material);
+    this.add(this._mesh);
+  }
+
   async load(src) {
     await this.loadVideo(src);
 
@@ -224,12 +263,12 @@ export default class Video extends THREE.Mesh {
     const ratio = (this.videoEl.videoHeight || 1.0) / (this.videoEl.videoWidth || 1.0);
     const width = Math.min(1.0, 1.0 / ratio);
     const height = Math.min(1.0, ratio);
-    this.geometry.scale(width, height, 1);
+    this._mesh.scale.set(width, height, 1);
 
     this.audioSource = this.audioListener.context.createMediaElementSource(this.videoEl);
     this.audio.setNodeSource(this.audioSource);
 
-    this.material.needsUpdate = true;
+    this._mesh.material.needsUpdate = true;
 
     return this;
   }
@@ -239,31 +278,15 @@ export default class Video extends THREE.Mesh {
   }
 
   copy(source, recursive) {
-    // Override Mesh's copy method and pass the recursive parameter so we can avoid cloning the audio object.
-    THREE.Object3D.prototype.copy.call(this, source, false);
-
-    this.drawMode = source.drawMode;
-
-    if (source.morphTargetInfluences !== undefined) {
-      this.morphTargetInfluences = source.morphTargetInfluences.slice();
-    }
-
-    if (source.morphTargetDictionary !== undefined) {
-      this.morphTargetDictionary = Object.assign({}, source.morphTargetDictionary);
-    }
+    super.copy(source, false);
 
     for (const child of source.children) {
-      let clonedChild;
-
-      if (recursive === true && child !== this.audio) {
-        clonedChild = child.clone(recursive);
-      }
-
-      if (clonedChild) {
-        this.add(clonedChild);
+      if (recursive === true && (child !== source._mesh && child !== source.audio)) {
+        this.add(child.clone());
       }
     }
 
+    this.projection = source.projection;
     this.src = source.src;
     this.controls = source.controls;
     this.autoPlay = source.autoPlay;

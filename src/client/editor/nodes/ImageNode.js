@@ -10,9 +10,10 @@ export default class ImageNode extends EditorNodeMixin(Image) {
   static async deserialize(editor, json) {
     const node = await super.deserialize(editor, json);
 
-    const { src } = json.components.find(c => c.name === "image").props;
+    const { src, projection } = json.components.find(c => c.name === "image").props;
 
     await node.load(src);
+    node.projection = projection;
 
     return node;
   }
@@ -55,7 +56,8 @@ export default class ImageNode extends EditorNodeMixin(Image) {
     json.components.push({
       name: "image",
       props: {
-        src: this._canonicalUrl
+        src: this._canonicalUrl,
+        projection: this.projection
       }
     });
 
@@ -68,7 +70,8 @@ export default class ImageNode extends EditorNodeMixin(Image) {
     replacementObject.userData.gltfExtensions = {
       HUBS_components: {
         image: {
-          src: this._canonicalUrl
+          src: this._canonicalUrl,
+          projection: this.projection
         },
         networked: {
           id: this.uuid

@@ -54,10 +54,8 @@ export default function EditorNodeMixin(Object3DClass) {
       this.saveParent = false;
     }
 
-    copy(source, recursive) {
-      super.copy(source, recursive);
-      this.editor = source.editor;
-      return this;
+    clone(recursive) {
+      return new this.constructor(this.editor).copy(this, recursive);
     }
 
     onChange() {}
