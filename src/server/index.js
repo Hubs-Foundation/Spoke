@@ -331,6 +331,8 @@ async function startServer(options) {
       });
       ctx.status = resp.status;
       if (resp.status !== 200) {
+        ctx.body = await resp.text();
+        ctx.status = resp.status;
         return;
       }
       ctx.res.setHeader("Cache-Control", "no-cache");
