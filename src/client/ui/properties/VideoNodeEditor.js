@@ -22,35 +22,22 @@ export default class VideoNodeEditor extends Component {
 
   static iconClassName = "fa-video";
 
-  setProp(propName) {
-    return value => this.props.editor.setNodeProperty(this.props.node, propName, value);
+  constructor(props) {
+    super(props);
+    const createPropSetter = propName => value => this.props.editor.setNodeProperty(this.props.node, propName, value);
+    this.onChangeControls = createPropSetter("controls");
+    this.onChangeAutoPlay = createPropSetter("autoPlay");
+    this.onChangeLoop = createPropSetter("loop");
+    this.onChangeAudioType = createPropSetter("audioType");
+    this.onChangeVolume = createPropSetter("volume");
+    this.onChangeDistanceModel = createPropSetter("distanceModel");
+    this.onChangeRolloffFactor = createPropSetter("rolloffFactor");
+    this.onChangeRefDistance = createPropSetter("refDistance");
+    this.onChangeMaxDistance = createPropSetter("maxDistance");
+    this.onChangeConeInnerAngle = createPropSetter("coneInnerAngle");
+    this.onChangeConeOuterAngle = createPropSetter("coneOuterAngle");
+    this.onChangeConeOuterGain = createPropSetter("coneOuterGain");
   }
-
-  onChangeProjection = this.setProp("projection");
-
-  onChangeControls = this.setProp("controls");
-
-  onChangeAutoPlay = this.setProp("autoPlay");
-
-  onChangeLoop = this.setProp("loop");
-
-  onChangeAudioType = this.setProp("audioType");
-
-  onChangeVolume = this.setProp("volume");
-
-  onChangeDistanceModel = this.setProp("distanceModel");
-
-  onChangeRolloffFactor = this.setProp("rolloffFactor");
-
-  onChangeRefDistance = this.setProp("refDistance");
-
-  onChangeMaxDistance = this.setProp("maxDistance");
-
-  onChangeConeInnerAngle = this.setProp("coneInnerAngle");
-
-  onChangeConeOuterAngle = this.setProp("coneOuterAngle");
-
-  onChangeConeOuterGain = this.setProp("coneOuterGain");
 
   render() {
     const node = this.props.node;

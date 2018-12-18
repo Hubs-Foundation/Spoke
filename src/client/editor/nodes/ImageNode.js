@@ -38,8 +38,8 @@ export default class ImageNode extends EditorNodeMixin(Image) {
 
   async load(src) {
     this._canonicalUrl = src;
-    const proxiedUrl = await this.editor.project.getProxiedUrl(src);
-    return super.load(proxiedUrl);
+    const { accessibleUrl } = await this.editor.project.resolveMedia(src);
+    return super.load(accessibleUrl);
   }
 
   copy(source, recursive) {

@@ -71,10 +71,9 @@ export default class VideoNode extends EditorNodeMixin(Video) {
 
   async load(src) {
     this._canonicalUrl = src;
-    const proxiedUrl = await this.editor.project.getProxiedUrl(src);
-
-    await super.load(proxiedUrl);
+    const { accessibleUrl } = await this.editor.project.resolveMedia(src);
     this.videoEl.currentTime = this.videoEl.duration / 2;
+    await super.load(accessibleUrl);
     return this;
   }
 
