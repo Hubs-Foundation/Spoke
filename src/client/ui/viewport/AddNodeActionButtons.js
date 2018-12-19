@@ -109,7 +109,9 @@ class AddNodeActionButtons extends Component {
           });
         }
       },
-      onCancel: this.props.hideDialog
+      onCancel: this.props.hideDialog,
+      showDialog: this.props.showDialog,
+      hideDialog: this.props.hideDialog
     });
 
     this.setState({ open: false });
