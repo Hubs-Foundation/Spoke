@@ -17,6 +17,8 @@ const selfsigned = require("selfsigned");
 const semver = require("semver");
 const serve = require("koa-static");
 const WebSocket = require("ws");
+const corsAnywhere = require("cors-anywhere");
+const { parse: parseUrl } = require("url");
 
 const packageJSON = require("../../package.json");
 
@@ -363,25 +365,6 @@ async function startServer(options) {
     }
   });
 
-  router.get("/api/cors-proxy", async ctx => {
-    const url = ctx.request.query.url;
-
-    if (!url) {
-      ctx.throw(400, "url parameter not specified");
-      return;
-    }
-
-    const proxiedRes = await fetch(url);
-
-    for (const [name, value] of proxiedRes.headers) {
-      ctx.res.setHeader(name, value);
-    }
-
-    ctx.res.setHeader("Cache-Control", "max-age=31536000");
-
-    ctx.body = proxiedRes.body;
-  });
-
   function getConfigPath(filename) {
     return path.join(envPaths("Spoke", { suffix: "" }).config, filename);
   }
@@ -667,7 +650,34 @@ async function startServer(options) {
     }
   });
 
-  server.listen(port, opts.host);
+  const callback = app.callback();
+
+  const proxy = corsAnywhere.createServer({
+    originWhitelist: [], // Allow all origins
+    requireHeaders: [], // Do not require any headers.
+    removeHeaders: [], // Do not remove any headers.
+    setHeaders: {
+      "cache-control": "max-age=31536000"
+    }
+  });
+
+  function handleCorsProxy(req, res) {
+    req.url = req.url.replace("/api/cors-proxy/", "/");
+    proxy.emit("request", req, res);
+  }
+
+  http
+    .createServer((req, res) => {
+      const { pathname } = parseUrl(req.url);
+
+      if (/^\/api\/cors-proxy\/.*/.test(pathname)) {
+        handleCorsProxy(req, res);
+        return;
+      }
+
+      callback(req, res);
+    })
+    .listen(port, opts.host);
 }
 
 module.exports = {
