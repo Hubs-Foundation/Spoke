@@ -172,6 +172,34 @@ async function startServer(options) {
   const app = new Koa();
 
   let server;
+
+  const callback = app.callback();
+
+  const proxy = corsAnywhere.createServer({
+    originWhitelist: [], // Allow all origins
+    requireHeaders: [], // Do not require any headers.
+    removeHeaders: [], // Do not remove any headers.
+    setHeaders: {
+      "cache-control": "max-age=31536000"
+    }
+  });
+
+  function handleCorsProxy(req, res) {
+    req.url = req.url.replace("/api/cors-proxy/", "/");
+    proxy.emit("request", req, res);
+  }
+
+  function requestHandler(req, res) {
+    const { pathname } = parseUrl(req.url);
+
+    if (/^\/api\/cors-proxy\/.*/.test(pathname)) {
+      handleCorsProxy(req, res);
+      return;
+    }
+
+    callback(req, res);
+  }
+
   if (opts.https) {
     if (!fs.existsSync(".certs/key.pem")) {
       console.log("Creating selfsigned certs");
@@ -185,10 +213,10 @@ async function startServer(options) {
         key: fs.readFileSync(path.join(".certs", "key.pem")),
         cert: fs.readFileSync(path.join(".certs", "cert.pem"))
       },
-      app.callback()
+      requestHandler
     );
   } else {
-    server = http.createServer(app.callback());
+    server = http.createServer(requestHandler);
   }
 
   const wss = new WebSocket.Server({ server });
@@ -650,34 +678,7 @@ async function startServer(options) {
     }
   });
 
-  const callback = app.callback();
-
-  const proxy = corsAnywhere.createServer({
-    originWhitelist: [], // Allow all origins
-    requireHeaders: [], // Do not require any headers.
-    removeHeaders: [], // Do not remove any headers.
-    setHeaders: {
-      "cache-control": "max-age=31536000"
-    }
-  });
-
-  function handleCorsProxy(req, res) {
-    req.url = req.url.replace("/api/cors-proxy/", "/");
-    proxy.emit("request", req, res);
-  }
-
-  http
-    .createServer((req, res) => {
-      const { pathname } = parseUrl(req.url);
-
-      if (/^\/api\/cors-proxy\/.*/.test(pathname)) {
-        handleCorsProxy(req, res);
-        return;
-      }
-
-      callback(req, res);
-    })
-    .listen(port, opts.host);
+  server.listen(port, opts.host);
 }
 
 module.exports = {
