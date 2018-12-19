@@ -35,9 +35,7 @@ async function resolveUrl(url, index) {
 }
 
 function proxiedUrlFor(url) {
-  const proxiedUrl = new URL(`/api/cors-proxy`, window.location);
-  proxiedUrl.searchParams.set("url", url);
-  return proxiedUrl.href;
+  return new URL(`/api/cors-proxy/${url}`, window.location).href;
 }
 
 function getFilesFromSketchfabZip(src) {
