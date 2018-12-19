@@ -279,6 +279,7 @@ export default class Viewport {
     signals.sceneSet.add(() => {
       this._screenshotRenderer.dispose();
       renderer.dispose();
+      controls.center.set(0, 0, 0);
       editor.scene.add(grid);
       editor.scene.add(selectionBox);
       editor.scene.add(this._transformControls);
