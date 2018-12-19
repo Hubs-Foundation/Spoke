@@ -3,8 +3,8 @@ import PropTypes from "prop-types";
 import NodeEditor from "./NodeEditor";
 import InputGroup from "../inputs/InputGroup";
 import ColorInput from "../inputs/ColorInput";
-import BooleanInput from "../inputs/BooleanInput";
 import NumericInput from "../inputs/NumericInput";
+import LightShadowProperties from "./LightShadowProperties";
 
 export default class PointLightNodeEditor extends Component {
   static propTypes = {
@@ -26,12 +26,8 @@ export default class PointLightNodeEditor extends Component {
     this.props.editor.setNodeProperty(this.props.node, "range", range);
   };
 
-  onChangeCastShadow = castShadow => {
-    this.props.editor.setNodeProperty(this.props.node, "castShadow", castShadow);
-  };
-
   render() {
-    const node = this.props.node;
+    const { node, editor } = this.props;
 
     return (
       <NodeEditor {...this.props} description="A light which emits in all directions from a single point.">
@@ -44,9 +40,7 @@ export default class PointLightNodeEditor extends Component {
         <InputGroup name="Range">
           <NumericInput min={0} value={node.range} onChange={this.onChangeRange} />
         </InputGroup>
-        <InputGroup name="Cast Shadow">
-          <BooleanInput value={node.castShadow} onChange={this.onChangeCastShadow} />
-        </InputGroup>
+        <LightShadowProperties node={node} editor={editor} />
       </NodeEditor>
     );
   }

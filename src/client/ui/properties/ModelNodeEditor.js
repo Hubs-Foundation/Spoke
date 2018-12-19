@@ -21,6 +21,14 @@ export default class ModelNodeEditor extends Component {
     this.props.editor.setNodeProperty(this.props.node, "includeInFloorPlan", includeInFloorPlan);
   };
 
+  onChangeCastShadow = castShadow => {
+    this.props.editor.setNodeProperty(this.props.node, "castShadow", castShadow);
+  };
+
+  onChangeReceiveShadow = receiveShadow => {
+    this.props.editor.setNodeProperty(this.props.node, "receiveShadow", receiveShadow);
+  };
+
   render() {
     const node = this.props.node;
     const activeClipName = node.activeClipName;
@@ -34,6 +42,12 @@ export default class ModelNodeEditor extends Component {
         </InputGroup>
         <InputGroup name="Include in Floor Plan">
           <BooleanInput value={node.includeInFloorPlan} onChange={this.onChangeIncludeInFloorPlan} />
+        </InputGroup>
+        <InputGroup name="Cast Shadow">
+          <BooleanInput value={node.castShadow} onChange={this.onChangeCastShadow} />
+        </InputGroup>
+        <InputGroup name="Receive Shadow">
+          <BooleanInput value={node.receiveShadow} onChange={this.onChangeReceiveShadow} />
         </InputGroup>
       </NodeEditor>
     );

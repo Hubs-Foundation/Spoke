@@ -4,7 +4,7 @@ import NodeEditor from "./NodeEditor";
 import InputGroup from "../inputs/InputGroup";
 import ColorInput from "../inputs/ColorInput";
 import NumericInput from "../inputs/NumericInput";
-import BooleanInput from "../inputs/BooleanInput";
+import LightShadowProperties from "./LightShadowProperties";
 
 export default class DirectionalLightNodeEditor extends Component {
   static propTypes = {
@@ -22,12 +22,8 @@ export default class DirectionalLightNodeEditor extends Component {
     this.props.editor.setNodeProperty(this.props.node, "intensity", intensity);
   };
 
-  onChangeCastShadow = castShadow => {
-    this.props.editor.setNodeProperty(this.props.node, "castShadow", castShadow);
-  };
-
   render() {
-    const node = this.props.node;
+    const { node, editor } = this.props;
 
     return (
       <NodeEditor
@@ -40,9 +36,7 @@ export default class DirectionalLightNodeEditor extends Component {
         <InputGroup name="Intensity">
           <NumericInput min={0} value={node.intensity} onChange={this.onChangeIntensity} />
         </InputGroup>
-        <InputGroup name="Cast Shadow">
-          <BooleanInput value={node.castShadow} onChange={this.onChangeCastShadow} />
-        </InputGroup>
+        <LightShadowProperties node={node} editor={editor} />
       </NodeEditor>
     );
   }

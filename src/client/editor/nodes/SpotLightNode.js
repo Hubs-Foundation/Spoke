@@ -13,9 +13,15 @@ export default class SpotLightNode extends EditorNodeMixin(PhysicalSpotLight) {
   static async deserialize(editor, json) {
     const node = await super.deserialize(editor, json);
 
-    const { color, intensity, range, innerConeAngle, outerConeAngle, castShadow } = json.components.find(
-      c => c.name === "spot-light"
-    ).props;
+    const {
+      color,
+      intensity,
+      range,
+      innerConeAngle,
+      outerConeAngle,
+      castShadow,
+      shadowMapResolution
+    } = json.components.find(c => c.name === "spot-light").props;
 
     node.color.set(color);
     node.intensity = intensity;
@@ -23,6 +29,10 @@ export default class SpotLightNode extends EditorNodeMixin(PhysicalSpotLight) {
     node.innerConeAngle = innerConeAngle;
     node.outerConeAngle = outerConeAngle;
     node.castShadow = castShadow;
+
+    if (shadowMapResolution) {
+      node.shadowMapResolution.fromArray(shadowMapResolution);
+    }
 
     return node;
   }
@@ -69,7 +79,8 @@ export default class SpotLightNode extends EditorNodeMixin(PhysicalSpotLight) {
         range: this.range,
         innerConeAngle: this.innerConeAngle,
         outerConeAngle: this.outerConeAngle,
-        castShadow: this.castShadow
+        castShadow: this.castShadow,
+        shadowMapResolution: this.shadowMapResolution.toArray()
       }
     });
 
@@ -90,7 +101,8 @@ export default class SpotLightNode extends EditorNodeMixin(PhysicalSpotLight) {
           range: this.range,
           innerConeAngle: this.innerConeAngle,
           outerConeAngle: this.outerConeAngle,
-          castShadow: this.castShadow
+          castShadow: this.castShadow,
+          shadowMapResolution: this.shadowMapResolution.toArray()
         }
       }
     };

@@ -1,4 +1,5 @@
 import THREE from "../../vendor/three";
+import createShadowMapResolutionProxy from "../utils/createShadowMapResolutionProxy";
 
 export default class PhysicalDirectionalLight extends THREE.DirectionalLight {
   constructor() {
@@ -7,6 +8,7 @@ export default class PhysicalDirectionalLight extends THREE.DirectionalLight {
     this.target.position.set(0, 0, 1);
     this.add(this.target);
     this.castShadow = true;
+    this.shadowMapResolution = createShadowMapResolutionProxy(this);
   }
 
   copy(source, recursive) {
@@ -17,7 +19,7 @@ export default class PhysicalDirectionalLight extends THREE.DirectionalLight {
     this.intensity = source.intensity;
 
     this.target = source.target.clone();
-    this.shadow = source.shadow.clone();
+    this.shadow.copy(source.shadow);
 
     return this;
   }

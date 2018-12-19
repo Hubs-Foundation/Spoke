@@ -15,6 +15,12 @@ export default class GroundPlaneNode extends EditorNodeMixin(GroundPlane) {
 
     node.color.set(color);
 
+    const shadowComponent = json.components.find(c => c.name === "shadow");
+
+    if (shadowComponent) {
+      node.receiveShadow = shadowComponent.props.receive;
+    }
+
     return node;
   }
 
@@ -25,6 +31,13 @@ export default class GroundPlaneNode extends EditorNodeMixin(GroundPlane) {
       name: "ground-plane",
       props: {
         color: serializeColor(this.color)
+      }
+    });
+
+    json.components.push({
+      name: "shadow",
+      props: {
+        receive: this.receiveShadow
       }
     });
 
@@ -49,5 +62,14 @@ export default class GroundPlaneNode extends EditorNodeMixin(GroundPlane) {
       }
     };
     this.add(groundPlaneCollider);
+
+    this.userData.gltfExtensions = {
+      HUBS_components: {
+        shadow: {
+          receive: this.receiveShadow,
+          cast: false
+        }
+      }
+    };
   }
 }

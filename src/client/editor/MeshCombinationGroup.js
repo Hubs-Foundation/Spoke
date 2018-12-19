@@ -118,6 +118,13 @@ export default class MeshCombinationGroup {
 
     const compareMaterial = MeshCombinationGroup.MaterialComparators[object.material.type];
 
+    if (
+      object.castShadow !== this.initialObject.castShadow ||
+      object.receiveShadow !== this.initialObject.receiveShadow
+    ) {
+      return false;
+    }
+
     if (!(compareMaterial && (await compareMaterial(this, this.initialObject.material, object.material)))) {
       return false;
     }
@@ -152,8 +159,14 @@ export default class MeshCombinationGroup {
     delete combinedGeometry.userData.mergedUserData;
     const combinedMesh = new THREE.Mesh(combinedGeometry, originalMesh.material);
     combinedMesh.name = "CombinedMesh";
-    combinedMesh.receiveShadow = originalMesh.receiveShadow;
-    combinedMesh.castShadow = originalMesh.castShadow;
+    combinedMesh.userData.gltfExtensions = {
+      HUBS_components: {
+        shadow: {
+          cast: originalMesh.castShadow,
+          receive: originalMesh.receiveShadow
+        }
+      }
+    };
 
     return combinedMesh;
   }
