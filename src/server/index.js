@@ -161,14 +161,6 @@ async function startServer(options) {
     }
   }
 
-  const reticulumServer = process.env.RETICULUM_SERVER || "hubs.mozilla.com";
-  const mediaEndpoint = `https://${reticulumServer}/api/v1/media`;
-  const agent = process.env.NODE_ENV === "development" ? https.Agent({ rejectUnauthorized: false }) : null;
-
-  if (process.env.RETICULUM_SERVER) {
-    console.log(`Using RETICULUM_SERVER: ${reticulumServer}\n`);
-  }
-
   const app = new Koa();
 
   let server;
@@ -301,6 +293,14 @@ async function startServer(options) {
     }
   } else {
     app.use(serve(path.join(__dirname, "..", "..", "public")));
+  }
+
+  const reticulumServer = process.env.RETICULUM_SERVER || "hubs.mozilla.com";
+  const mediaEndpoint = `https://${reticulumServer}/api/v1/media`;
+  const agent = process.env.NODE_ENV === "development" ? https.Agent({ rejectUnauthorized: false }) : null;
+
+  if (process.env.RETICULUM_SERVER) {
+    console.log(`Using RETICULUM_SERVER: ${reticulumServer}\n`);
   }
 
   const router = new Router();
