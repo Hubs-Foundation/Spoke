@@ -155,13 +155,11 @@ export default class Editor {
 
   async loadNewScene() {
     this.clearCaches();
-    this.duplicateNameCounters.clear();
+    this.sceneUri = null;
 
     const scene = new SceneNode(this);
     scene.name = "Untitled";
-
-    this.scene = scene;
-    this.sceneUri = null;
+    this.setScene(scene);
 
     this._addObject(new SkyboxNode(this));
     this._addObject(new AmbientLightNode(this));
@@ -172,8 +170,6 @@ export default class Editor {
     this._addObject(new SpawnPointNode(this));
     this._addObject(new GroundPlaneNode(this));
 
-    this.setScene(scene);
-
     this.sceneModified = true;
     this.signals.sceneModified.dispatch();
 
@@ -182,7 +178,6 @@ export default class Editor {
 
   async openScene(uri) {
     this.clearCaches();
-    this.duplicateNameCounters.clear();
 
     const url = new URL(uri, window.location).href;
 
@@ -201,6 +196,9 @@ export default class Editor {
 
   setScene(scene) {
     this.scene = scene;
+
+    this.duplicateNameCounters.clear();
+    this._addObjectToNameCounters(this.scene);
 
     this.camera.position.set(0, 5, 10);
     this.camera.lookAt(new THREE.Vector3());
@@ -361,9 +359,7 @@ export default class Editor {
     this.execute(new AddObjectCommand(object, parent));
   }
 
-  _addObject(object, parent) {
-    object.saveParent = true;
-
+  _addObjectToNameCounters(object) {
     object.traverse(child => {
       if (child.isNode) {
         const name = getNameWithoutIndex(child.name);
@@ -384,6 +380,12 @@ export default class Editor {
         child.name = name + suffix;
       }
     });
+  }
+
+  _addObject(object, parent) {
+    object.saveParent = true;
+
+    this._addObjectToNameCounters(object);
 
     if (parent !== undefined) {
       parent.add(object);
