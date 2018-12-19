@@ -25,6 +25,7 @@ export default class VideoNodeEditor extends Component {
   constructor(props) {
     super(props);
     const createPropSetter = propName => value => this.props.editor.setNodeProperty(this.props.node, propName, value);
+    this.onChangeProjection = createPropSetter("projection");
     this.onChangeControls = createPropSetter("controls");
     this.onChangeAutoPlay = createPropSetter("autoPlay");
     this.onChangeLoop = createPropSetter("loop");
