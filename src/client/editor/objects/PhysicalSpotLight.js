@@ -51,8 +51,6 @@ export default class PhysicalSpotLight extends THREE.SpotLight {
     this.penumbra = source.penumbra;
     this.decay = source.decay;
 
-    this.target = source.target.clone();
-
     this.shadow.copy(source.shadow);
 
     return this;
