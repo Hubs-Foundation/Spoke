@@ -32,6 +32,10 @@ export default class ImageNode extends EditorNodeMixin(Image) {
     this.load(value).catch(console.error);
   }
 
+  onChange() {
+    this.onResize();
+  }
+
   loadTexture(src) {
     return this.editor.textureCache.get(src);
   }

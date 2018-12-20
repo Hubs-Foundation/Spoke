@@ -77,12 +77,7 @@ export default class Image extends THREE.Object3D {
 
     const texture = await this.loadTexture(src);
 
-    if (this.projection === "flat") {
-      const ratio = (texture.image.height || 1.0) / (texture.image.width || 1.0);
-      const width = Math.min(1.0, 1.0 / ratio);
-      const height = Math.min(1.0, ratio);
-      this._mesh.scale.set(width, height, 1);
-    }
+    this.onResize();
 
     // TODO: resize to maintain aspect ratio but still allow scaling.
     texture.encoding = THREE.sRGBEncoding;
@@ -97,6 +92,15 @@ export default class Image extends THREE.Object3D {
     this._mesh.material.needsUpdate = true;
 
     return this;
+  }
+
+  onResize() {
+    if (this.projection === ImageProjection.Flat) {
+      const ratio = (this._texture.image.height || 1.0) / (this._texture.image.width || 1.0);
+      const width = Math.min(1.0, 1.0 / ratio);
+      const height = Math.min(1.0, ratio);
+      this._mesh.scale.set(width, height, 1);
+    }
   }
 
   copy(source, recursive) {

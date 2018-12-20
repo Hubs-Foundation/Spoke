@@ -77,6 +77,10 @@ export default class VideoNode extends EditorNodeMixin(Video) {
     return this;
   }
 
+  onChange() {
+    this.onResize();
+  }
+
   clone(recursive) {
     return new this.constructor(this.editor, this.audioListener).copy(this, recursive);
   }
