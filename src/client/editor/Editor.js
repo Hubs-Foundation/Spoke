@@ -170,6 +170,7 @@ export default class Editor {
     this._addObject(new SpawnPointNode(this));
     this._addObject(new GroundPlaneNode(this));
 
+    this.signals.sceneGraphChanged.dispatch();
     this.sceneModified = true;
     this.signals.sceneModified.dispatch();
 
