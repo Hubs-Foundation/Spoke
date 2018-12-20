@@ -153,6 +153,7 @@ export default class ModelNode extends EditorNodeMixin(Model) {
 
   copy(source, recursive) {
     super.copy(source, recursive);
+    this._canonicalUrl = source._canonicalUrl;
     this.attribution = source.attribution;
     this.includeInFloorPlan = source.includeInFloorPlan;
     return this;
