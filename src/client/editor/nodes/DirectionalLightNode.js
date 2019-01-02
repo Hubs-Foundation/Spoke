@@ -13,13 +13,15 @@ export default class DirectionalLightNode extends EditorNodeMixin(PhysicalDirect
   static async deserialize(editor, json) {
     const node = await super.deserialize(editor, json);
 
-    const { color, intensity, castShadow, shadowMapResolution } = json.components.find(
+    const { color, intensity, castShadow, shadowMapResolution, shadowBias, shadowRadius } = json.components.find(
       c => c.name === "directional-light"
     ).props;
 
     node.color.set(color);
     node.intensity = intensity;
     node.castShadow = castShadow;
+    node.shadowBias = shadowBias || 0;
+    node.shadowRadius = shadowRadius === undefined ? 1 : shadowRadius;
 
     if (shadowMapResolution) {
       node.shadowMapResolution.fromArray(shadowMapResolution);

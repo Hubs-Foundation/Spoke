@@ -17,6 +17,22 @@ export default class PhysicalPointLight extends THREE.PointLight {
     this.distance = value;
   }
 
+  get shadowBias() {
+    return -this.shadow.bias;
+  }
+
+  set shadowBias(value) {
+    this.shadow.bias = -value;
+  }
+
+  get shadowRadius() {
+    return this.shadow.radius;
+  }
+
+  set shadowRadius(value) {
+    this.shadow.radius = value;
+  }
+
   copy(source, recursive) {
     // Override PointLight's copy method and pass the recursive parameter so we can avoid cloning children.
     THREE.Object3D.prototype.copy.call(this, source, recursive);

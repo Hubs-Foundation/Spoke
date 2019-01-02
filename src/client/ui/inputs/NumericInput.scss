@@ -2,7 +2,8 @@
 
 :local(.numericInput) {
   display: flex;
-  width: 22%;
+  width: 100%;
+  max-width: 100px;
   color: $text;
   background-color: $input-background;
   border-radius: 4px;

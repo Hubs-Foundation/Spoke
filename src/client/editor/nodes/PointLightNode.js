@@ -13,7 +13,7 @@ export default class PointLightNode extends EditorNodeMixin(PhysicalPointLight) 
   static async deserialize(editor, json) {
     const node = await super.deserialize(editor, json);
 
-    const { color, intensity, range, castShadow, shadowMapResolution } = json.components.find(
+    const { color, intensity, range, castShadow, shadowMapResolution, shadowBias, shadowRadius } = json.components.find(
       c => c.name === "point-light"
     ).props;
 
@@ -21,6 +21,8 @@ export default class PointLightNode extends EditorNodeMixin(PhysicalPointLight) 
     node.intensity = intensity;
     node.range = range;
     node.castShadow = castShadow;
+    node.shadowBias = shadowBias || 0;
+    node.shadowRadius = shadowRadius === undefined ? 1 : shadowRadius;
 
     if (shadowMapResolution) {
       node.shadowMapResolution.fromArray(shadowMapResolution);
