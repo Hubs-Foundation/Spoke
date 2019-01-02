@@ -159,14 +159,12 @@ async function startServer(options) {
   const proxy = corsAnywhere.createServer({
     originWhitelist: [], // Allow all origins
     requireHeaders: [], // Do not require any headers.
-    removeHeaders: [], // Do not remove any headers.
-    setHeaders: {
-      "cache-control": "max-age=31536000"
-    }
+    removeHeaders: [] // Do not remove any headers.
   });
 
   function handleCorsProxy(req, res) {
     req.url = req.url.replace("/api/cors-proxy/", "/");
+    res.setHeader("Cache-Control", "max-age=31536000");
     proxy.emit("request", req, res);
   }
 
@@ -342,6 +340,7 @@ async function startServer(options) {
 
   router.post("/api/media", koaBody(), async ctx => {
     try {
+      const url = new URL(ctx.request.body.media.url);
       const resp = await fetch(mediaEndpoint, {
         agent,
         method: "POST",
@@ -354,27 +353,13 @@ async function startServer(options) {
         ctx.status = resp.status;
         return;
       }
-      ctx.res.setHeader("Cache-Control", "no-cache");
-      ctx.body = await resp.json();
-    } catch (err) {
-      console.error(err);
-      throw new Error("Error resolving media.");
-    }
-  });
 
-  router.get("/api/media", koaBody(), async ctx => {
-    try {
-      const resp = await fetch(mediaEndpoint, {
-        agent,
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify(ctx.request.body)
-      });
-      ctx.status = resp.status;
-      if (resp.status !== 200) {
-        return;
+      if (url.host === "sketchfab.com") {
+        ctx.res.setHeader("Cache-Control", "max-age=31536000");
+      } else {
+        ctx.res.setHeader("Cache-Control", "no-cache");
       }
-      ctx.res.setHeader("Cache-Control", "no-cache");
+
       ctx.body = await resp.json();
     } catch (err) {
       console.error(err);
