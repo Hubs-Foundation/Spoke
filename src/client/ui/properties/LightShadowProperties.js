@@ -68,7 +68,6 @@ export default class LightShadowProperties extends Component {
         </InputGroup>
         <InputGroup name="Shadow Bias">
           <NumericInput
-            min={0}
             mediumStep={0.00001}
             smallStep={0.0001}
             bigStep={0.001}
