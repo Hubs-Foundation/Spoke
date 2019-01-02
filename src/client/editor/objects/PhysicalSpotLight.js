@@ -40,11 +40,11 @@ export default class PhysicalSpotLight extends THREE.SpotLight {
   }
 
   get shadowBias() {
-    return -this.shadow.bias;
+    return this.shadow.bias;
   }
 
   set shadowBias(value) {
-    this.shadow.bias = -value;
+    this.shadow.bias = value;
   }
 
   get shadowRadius() {
