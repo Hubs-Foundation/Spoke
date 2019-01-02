@@ -11,6 +11,22 @@ export default class PhysicalDirectionalLight extends THREE.DirectionalLight {
     this.shadowMapResolution = createShadowMapResolutionProxy(this);
   }
 
+  get shadowBias() {
+    return this.shadow.bias;
+  }
+
+  set shadowBias(value) {
+    this.shadow.bias = value;
+  }
+
+  get shadowRadius() {
+    return this.shadow.radius;
+  }
+
+  set shadowRadius(value) {
+    this.shadow.radius = value;
+  }
+
   copy(source, recursive) {
     // Override DirectionalLight's copy method and pass the recursive parameter so we can avoid cloning children.
     THREE.Object3D.prototype.copy.call(this, source, recursive);

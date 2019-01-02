@@ -20,7 +20,9 @@ export default class SpotLightNode extends EditorNodeMixin(PhysicalSpotLight) {
       innerConeAngle,
       outerConeAngle,
       castShadow,
-      shadowMapResolution
+      shadowMapResolution,
+      shadowBias,
+      shadowRadius
     } = json.components.find(c => c.name === "spot-light").props;
 
     node.color.set(color);
@@ -29,6 +31,8 @@ export default class SpotLightNode extends EditorNodeMixin(PhysicalSpotLight) {
     node.innerConeAngle = innerConeAngle;
     node.outerConeAngle = outerConeAngle;
     node.castShadow = castShadow;
+    node.shadowBias = shadowBias || 0;
+    node.shadowRadius = shadowRadius === undefined ? 1 : shadowRadius;
 
     if (shadowMapResolution) {
       node.shadowMapResolution.fromArray(shadowMapResolution);

@@ -3,8 +3,9 @@ import PropTypes from "prop-types";
 
 import styles from "./NumericInput.scss";
 
-function round(value) {
-  return Math.round(value * 1000) / 1000;
+function round(value, precision) {
+  const p = 1 / precision;
+  return Math.round(value * p) / p;
 }
 
 function copyStepKeys({ ctrlKey, metaKey, shiftKey }) {
@@ -25,13 +26,16 @@ export default class NumericInput extends React.Component {
     max: PropTypes.number,
     format: PropTypes.func,
     parse: PropTypes.func,
-    onChange: PropTypes.func
+    onChange: PropTypes.func,
+    precision: PropTypes.number,
+    style: PropTypes.object
   };
 
   static defaultProps = {
     smallStep: 0.1,
     mediumStep: 1,
-    bigStep: 10
+    bigStep: 10,
+    precision: 0.001
   };
 
   constructor(props) {
@@ -79,7 +83,7 @@ export default class NumericInput extends React.Component {
   }
 
   setValidValue(value) {
-    const validValue = this.clamp(round(value));
+    const validValue = this.clamp(round(value, this.props.precision));
     this.lastValidValue = validValue;
     return validValue;
   }
@@ -184,13 +188,14 @@ export default class NumericInput extends React.Component {
     const currentStateIsDifferent = parseFloat(this.state.value.trim()) !== value;
     if (propValueChanged && currentStateIsDifferent) {
       this.setValidValue(value);
-      this.setState({ value: round(value).toString() });
+      this.setState({ value: round(value, this.props.precision).toString() });
     }
   }
 
   render() {
     return (
       <input
+        style={this.props.style}
         className={styles.numericInput}
         value={this.state.value}
         onKeyDown={this.onKeyDown}

@@ -75,11 +75,11 @@ export default class Vector3Input extends Component {
           </div>
         )}
         <div className={styles.label}>X:</div>
-        <NumericInput value={vx} onChange={this.onChangeX} />
+        <NumericInput style={{ width: "22%" }} value={vx} onChange={this.onChangeX} />
         <div className={styles.label}>Y:</div>
-        <NumericInput value={vy} onChange={this.onChangeY} />
+        <NumericInput style={{ width: "22%" }} value={vy} onChange={this.onChangeY} />
         <div className={styles.label}>Z:</div>
-        <NumericInput value={vz} onChange={this.onChangeZ} />
+        <NumericInput style={{ width: "22%" }} value={vz} onChange={this.onChangeZ} />
       </div>
     );
   }
