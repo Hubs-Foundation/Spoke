@@ -76,6 +76,7 @@ export default class Image extends THREE.Object3D {
     }
 
     const texture = await this.loadTexture(src);
+    this._texture = texture;
 
     this.onResize();
 
@@ -87,7 +88,6 @@ export default class Image extends THREE.Object3D {
       this._mesh.material.transparent = true;
     }
 
-    this._texture = texture;
     this._mesh.material.map = texture;
     this._mesh.material.needsUpdate = true;
 
