@@ -79,7 +79,7 @@ export default class ModelNode extends EditorNodeMixin(Model) {
       const name = sketchfabExtras && sketchfabExtras.title;
       const author = sketchfabExtras && sketchfabExtras.author.replace(/ \(http.+\)/, "");
       gltf.scene.name = name;
-      this.attribution = { name, author };
+      this.attribution = { name, author, url: this._canonicalUrl };
     }
 
     return gltf;
