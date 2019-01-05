@@ -36,15 +36,13 @@ export default class Viewport {
       renderer.physicallyCorrectLights = true;
       renderer.shadowMap.enabled = true;
       renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-      renderer.autoClear = false;
-      renderer.autoUpdateScene = false;
       renderer.setSize(width, height);
       return renderer;
     }
 
     const renderer = makeRenderer(canvas.parentElement.offsetWidth, canvas.parentElement.offsetHeight, canvas);
     renderer.setPixelRatio(window.devicePixelRatio);
-    this._renderer = renderer;
+    this.renderer = renderer;
 
     this._screenshotRenderer = makeRenderer(1920, 1080);
 
@@ -329,8 +327,6 @@ export default class Viewport {
 
       renderer.setSize(canvas.parentElement.offsetWidth, canvas.parentElement.offsetHeight);
     });
-
-    signals.viewportInitialized.dispatch(this);
   }
 
   takeScreenshot = async () => {

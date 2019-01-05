@@ -30,7 +30,7 @@ export default class Editor {
   constructor(project) {
     this.project = project;
 
-    this.scene = null;
+    this.scene = new SceneNode(this);
     this.sceneModified = false;
     this.sceneUri = null;
 
@@ -43,7 +43,7 @@ export default class Editor {
     this.duplicateNameCounters = new Map();
 
     // TODO: Support multiple viewports
-    this.viewports = [];
+    this.viewport = null;
     this.selected = null;
 
     this.nodeTypes = new Set();
@@ -129,14 +129,12 @@ export default class Editor {
     }
 
     await Promise.all(tasks);
-
-    this.loadNewScene();
   }
 
-  createViewport(canvas) {
-    const viewport = new Viewport(this, canvas);
-    this.viewports.push(viewport);
-    return viewport;
+  initializeViewport(canvas) {
+    this.viewport = new Viewport(this, canvas);
+    this.signals.viewportInitialized.dispatch(this.viewport);
+    this.loadNewScene();
   }
 
   onFileChanged = uri => {
@@ -599,6 +597,7 @@ export default class Editor {
     }
 
     this.execute(new RemoveObjectCommand(object));
+    object.onRemove();
   }
 
   deleteSelectedObject() {
@@ -665,7 +664,7 @@ export default class Editor {
 
   async takeScreenshot() {
     this.deselect();
-    return this.viewports[0].takeScreenshot();
+    return this.viewport.takeScreenshot();
   }
 
   async publishScene(sceneId, screenshotBlob, contentAttributions, onPublishProgress) {

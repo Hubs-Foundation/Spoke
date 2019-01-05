@@ -14,6 +14,9 @@ export default class SceneNode extends EditorNodeMixin(THREE.Scene) {
   static async deserialize(editor, json) {
     const scene = new SceneNode(editor);
 
+    // Needed so that editor.scene is set correctly when used in nodes deserialize methods.
+    editor.scene = scene;
+
     const { root, metadata, entities } = json;
 
     scene.name = root;
@@ -58,7 +61,23 @@ export default class SceneNode extends EditorNodeMixin(THREE.Scene) {
     super(editor);
     this.url = null;
     this.metadata = {};
+    this._environmentMap = null;
     setStaticMode(this, StaticModes.Static);
+  }
+
+  get environmentMap() {
+    return this._environmentMap;
+  }
+
+  updateEnvironmentMap(environmentMap) {
+    this._environmentMap = environmentMap;
+
+    this.traverse(object => {
+      if (object.material && object.material.isMeshStandardMaterial) {
+        object.material.envMap = environmentMap;
+        object.material.needsUpdate = true;
+      }
+    });
   }
 
   copy(source, recursive) {
@@ -66,6 +85,7 @@ export default class SceneNode extends EditorNodeMixin(THREE.Scene) {
 
     this.url = source.url;
     this.metadata = source.metadata;
+    this._environmentMap = source._environmentMap;
 
     return this;
   }

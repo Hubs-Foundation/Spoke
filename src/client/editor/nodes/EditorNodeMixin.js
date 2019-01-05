@@ -60,6 +60,8 @@ export default function EditorNodeMixin(Object3DClass) {
 
     onChange() {}
 
+    onRemove() {}
+
     onSelect() {}
 
     onDeselect() {}

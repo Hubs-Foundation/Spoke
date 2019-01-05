@@ -35,6 +35,31 @@ export default class SkyboxNode extends EditorNodeMixin(Sky) {
     return node;
   }
 
+  constructor(editor) {
+    super(editor);
+
+    this.skyScene = new THREE.Scene();
+    this.cubeCamera = new THREE.CubeCamera(1, 100000, 512);
+    this.skyScene.add(this.cubeCamera);
+
+    this.updateEnvironmentMap();
+  }
+
+  updateEnvironmentMap() {
+    this.skyScene.add(this.sky);
+    this.cubeCamera.update(this.editor.viewport.renderer, this.skyScene);
+    this.add(this.sky);
+    this.editor.scene.updateEnvironmentMap(this.cubeCamera.renderTarget.texture);
+  }
+
+  onChange() {
+    this.updateEnvironmentMap();
+  }
+
+  onRemove() {
+    this.editor.scene.updateEnvironmentMap(null);
+  }
+
   serialize() {
     const json = super.serialize();
 
