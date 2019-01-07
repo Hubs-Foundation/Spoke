@@ -64,6 +64,12 @@ export default class SkyboxNode extends EditorNodeMixin(Sky) {
     this.editor.scene.updateEnvironmentMap(null);
   }
 
+  copy(source, recursive) {
+    super.copy(source, recursive);
+    this.updateEnvironmentMap();
+    return this;
+  }
+
   serialize() {
     const json = super.serialize();
 
