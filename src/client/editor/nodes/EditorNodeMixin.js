@@ -66,6 +66,8 @@ export default function EditorNodeMixin(Object3DClass) {
 
     onDeselect() {}
 
+    onAfterFirstRender() {}
+
     serialize() {
       return {
         components: [

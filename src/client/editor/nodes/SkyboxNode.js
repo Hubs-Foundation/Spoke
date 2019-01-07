@@ -52,6 +52,10 @@ export default class SkyboxNode extends EditorNodeMixin(Sky) {
     this.editor.scene.updateEnvironmentMap(this.cubeCamera.renderTarget.texture);
   }
 
+  onAfterFirstRender() {
+    this.updateEnvironmentMap();
+  }
+
   onChange() {
     this.updateEnvironmentMap();
   }

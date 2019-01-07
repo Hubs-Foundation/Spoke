@@ -53,7 +53,7 @@ export default class SkyboxNodeEditor extends Component {
 
     return (
       <NodeEditor
-        description="Creates a visualization of an open sky and atmosphere around your scene."
+        description="Creates a visualization of an open sky and atmosphere around your scene. Also used as the environment map for your scene."
         {...this.props}
       >
         <InputGroup name="Turbidity">

@@ -190,6 +190,12 @@ export default class Editor {
 
     this.setScene(scene);
 
+    requestAnimationFrame(() => {
+      this.scene.traverse(node => {
+        node.onAfterFirstRender();
+      });
+    });
+
     return scene;
   }
 
