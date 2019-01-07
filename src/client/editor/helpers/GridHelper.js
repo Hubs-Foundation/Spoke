@@ -4,6 +4,8 @@ export default class GridHelper extends THREE.GridHelper {
   constructor() {
     super(30, 30, 0x444444, 0x888888);
 
+    this.name = "GridHelper";
+
     // Add more emphasized major grid lines
     const array = this.geometry.attributes.color.array;
 
