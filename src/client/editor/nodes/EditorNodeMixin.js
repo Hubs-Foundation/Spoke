@@ -58,6 +58,8 @@ export default function EditorNodeMixin(Object3DClass) {
       return new this.constructor(this.editor).copy(this, recursive);
     }
 
+    onAdd() {}
+
     onChange() {}
 
     onRemove() {}

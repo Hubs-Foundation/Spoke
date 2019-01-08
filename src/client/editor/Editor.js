@@ -387,16 +387,27 @@ export default class Editor {
     });
   }
 
-  _addObject(object, parent) {
+  _addObject(object, parent, index) {
     object.saveParent = true;
 
     this._addObjectToNameCounters(object);
 
     if (parent !== undefined) {
-      parent.add(object);
+      if (index !== undefined) {
+        parent.children.splice(index, 0, object);
+        object.parent = parent;
+      } else {
+        parent.add(object);
+      }
     } else {
       this.scene.add(object);
     }
+
+    object.traverse(child => {
+      if (child.isNode) {
+        child.onAdd();
+      }
+    });
   }
 
   moveObject(object, parent, before) {
@@ -424,13 +435,12 @@ export default class Editor {
             this.duplicateNameCounters.set(name, { objectCount: objectCount - 1, nextSuffix });
           }
         }
+
+        child.onRemove();
       }
     });
 
     object.parent.remove(object);
-
-    this.signals.objectRemoved.dispatch(object);
-    this.signals.sceneGraphChanged.dispatch();
   }
 
   clearSceneMetadata() {
@@ -603,7 +613,6 @@ export default class Editor {
     }
 
     this.execute(new RemoveObjectCommand(object));
-    object.onRemove();
   }
 
   deleteSelectedObject() {

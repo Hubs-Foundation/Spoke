@@ -41,10 +41,16 @@ export default class PointLightNode extends EditorNodeMixin(PhysicalPointLight) 
     this.add(this.helper);
   }
 
+  onAdd() {
+    this.helper.update();
+  }
+
+  onChange() {
+    this.helper.update();
+  }
+
   copy(source, recursive) {
     super.copy(source, false);
-
-    this.helper.update();
 
     if (recursive) {
       for (const child of source.children) {
@@ -56,10 +62,6 @@ export default class PointLightNode extends EditorNodeMixin(PhysicalPointLight) 
     }
 
     return this;
-  }
-
-  onChange() {
-    this.helper.update();
   }
 
   serialize() {

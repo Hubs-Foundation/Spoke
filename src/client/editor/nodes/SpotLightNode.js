@@ -51,10 +51,16 @@ export default class SpotLightNode extends EditorNodeMixin(PhysicalSpotLight) {
     this.add(this.helper);
   }
 
+  onAdd() {
+    this.helper.update();
+  }
+
+  onChange() {
+    this.helper.update();
+  }
+
   copy(source, recursive) {
     super.copy(source, false);
-
-    this.helper.update();
 
     if (recursive) {
       for (const child of source.children) {
@@ -66,10 +72,6 @@ export default class SpotLightNode extends EditorNodeMixin(PhysicalSpotLight) {
     }
 
     return this;
-  }
-
-  onChange() {
-    this.helper.update();
   }
 
   serialize() {

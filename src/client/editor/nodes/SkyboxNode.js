@@ -41,18 +41,13 @@ export default class SkyboxNode extends EditorNodeMixin(Sky) {
     this.skyScene = new THREE.Scene();
     this.cubeCamera = new THREE.CubeCamera(1, 100000, 512);
     this.skyScene.add(this.cubeCamera);
-
-    this.updateEnvironmentMap();
-  }
-
-  updateEnvironmentMap() {
-    this.skyScene.add(this.sky);
-    this.cubeCamera.update(this.editor.viewport.renderer, this.skyScene);
-    this.add(this.sky);
-    this.editor.scene.updateEnvironmentMap(this.cubeCamera.renderTarget.texture);
   }
 
   onAfterFirstRender() {
+    this.updateEnvironmentMap();
+  }
+
+  onAdd() {
     this.updateEnvironmentMap();
   }
 
@@ -64,10 +59,11 @@ export default class SkyboxNode extends EditorNodeMixin(Sky) {
     this.editor.scene.updateEnvironmentMap(null);
   }
 
-  copy(source, recursive) {
-    super.copy(source, recursive);
-    this.updateEnvironmentMap();
-    return this;
+  updateEnvironmentMap() {
+    this.skyScene.add(this.sky);
+    this.cubeCamera.update(this.editor.viewport.renderer, this.skyScene);
+    this.add(this.sky);
+    this.editor.scene.updateEnvironmentMap(this.cubeCamera.renderTarget.texture);
   }
 
   serialize() {
