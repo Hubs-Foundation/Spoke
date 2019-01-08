@@ -74,7 +74,9 @@ export default class PointLightNode extends EditorNodeMixin(PhysicalPointLight) 
         intensity: this.intensity,
         range: this.range,
         castShadow: this.castShadow,
-        shadowMapResolution: this.shadowMapResolution.toArray()
+        shadowMapResolution: this.shadowMapResolution.toArray(),
+        shadowBias: this.shadowBias,
+        shadowRadius: this.shadowRadius
       }
     });
 
@@ -94,7 +96,9 @@ export default class PointLightNode extends EditorNodeMixin(PhysicalPointLight) 
           intensity: this.intensity,
           range: this.range,
           castShadow: this.castShadow,
-          shadowMapResolution: this.shadowMapResolution.toArray()
+          shadowMapResolution: this.shadowMapResolution.toArray(),
+          shadowBias: this.shadowBias,
+          shadowRadius: this.shadowRadius
         }
       }
     };

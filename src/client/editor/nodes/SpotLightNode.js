@@ -86,7 +86,9 @@ export default class SpotLightNode extends EditorNodeMixin(PhysicalSpotLight) {
         innerConeAngle: this.innerConeAngle,
         outerConeAngle: this.outerConeAngle,
         castShadow: this.castShadow,
-        shadowMapResolution: this.shadowMapResolution.toArray()
+        shadowMapResolution: this.shadowMapResolution.toArray(),
+        shadowBias: this.shadowBias,
+        shadowRadius: this.shadowRadius
       }
     });
 
@@ -108,7 +110,9 @@ export default class SpotLightNode extends EditorNodeMixin(PhysicalSpotLight) {
           innerConeAngle: this.innerConeAngle,
           outerConeAngle: this.outerConeAngle,
           castShadow: this.castShadow,
-          shadowMapResolution: this.shadowMapResolution.toArray()
+          shadowMapResolution: this.shadowMapResolution.toArray(),
+          shadowBias: this.shadowBias,
+          shadowRadius: this.shadowRadius
         }
       }
     };

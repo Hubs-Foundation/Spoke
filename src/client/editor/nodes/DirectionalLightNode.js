@@ -72,7 +72,9 @@ export default class DirectionalLightNode extends EditorNodeMixin(PhysicalDirect
         color: serializeColor(this.color),
         intensity: this.intensity,
         castShadow: this.castShadow,
-        shadowMapResolution: this.shadowMapResolution.toArray()
+        shadowMapResolution: this.shadowMapResolution.toArray(),
+        shadowBias: this.shadowBias,
+        shadowRadius: this.shadowRadius
       }
     });
 
@@ -91,7 +93,9 @@ export default class DirectionalLightNode extends EditorNodeMixin(PhysicalDirect
           color: serializeColor(this.color),
           intensity: this.intensity,
           castShadow: this.castShadow,
-          shadowMapResolution: this.shadowMapResolution.toArray()
+          shadowMapResolution: this.shadowMapResolution.toArray(),
+          shadowBias: this.shadowBias,
+          shadowRadius: this.shadowRadius
         }
       }
     };
