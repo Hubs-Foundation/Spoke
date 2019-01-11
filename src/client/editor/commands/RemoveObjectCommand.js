@@ -25,25 +25,16 @@ export default class RemoveObjectCommand extends Command {
   }
 
   execute() {
-    this.parent.remove(this.object);
-
-    // Do not select scene
-    if (this.parent.parent !== null) {
-      this.editor.select(this.parent);
-    } else {
-      this.editor.deselect();
-    }
-
+    this.editor.removeObject(this.object);
     this.editor.signals.objectRemoved.dispatch(this.object);
     this.editor.signals.sceneGraphChanged.dispatch();
+    this.editor.deselect();
   }
 
   undo() {
-    this.parent.children.splice(this.index, 0, this.object);
-    this.object.parent = this.parent;
-    this.editor.select(this.object);
-
+    this.editor._addObject(this.object, this.parent, this.index);
     this.editor.signals.objectAdded.dispatch(this.object);
     this.editor.signals.sceneGraphChanged.dispatch();
+    this.editor.select(this.object);
   }
 }

@@ -41,10 +41,16 @@ export default class PointLightNode extends EditorNodeMixin(PhysicalPointLight) 
     this.add(this.helper);
   }
 
+  onAdd() {
+    this.helper.update();
+  }
+
+  onChange() {
+    this.helper.update();
+  }
+
   copy(source, recursive) {
     super.copy(source, false);
-
-    this.helper.update();
 
     if (recursive) {
       for (const child of source.children) {
@@ -58,10 +64,6 @@ export default class PointLightNode extends EditorNodeMixin(PhysicalPointLight) 
     return this;
   }
 
-  onChange() {
-    this.helper.update();
-  }
-
   serialize() {
     const json = super.serialize();
 
@@ -72,7 +74,9 @@ export default class PointLightNode extends EditorNodeMixin(PhysicalPointLight) 
         intensity: this.intensity,
         range: this.range,
         castShadow: this.castShadow,
-        shadowMapResolution: this.shadowMapResolution.toArray()
+        shadowMapResolution: this.shadowMapResolution.toArray(),
+        shadowBias: this.shadowBias,
+        shadowRadius: this.shadowRadius
       }
     });
 
@@ -92,7 +96,9 @@ export default class PointLightNode extends EditorNodeMixin(PhysicalPointLight) 
           intensity: this.intensity,
           range: this.range,
           castShadow: this.castShadow,
-          shadowMapResolution: this.shadowMapResolution.toArray()
+          shadowMapResolution: this.shadowMapResolution.toArray(),
+          shadowBias: this.shadowBias,
+          shadowRadius: this.shadowRadius
         }
       }
     };
