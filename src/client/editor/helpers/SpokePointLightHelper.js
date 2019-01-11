@@ -1,4 +1,5 @@
 import THREE from "../../vendor/three";
+import { addIsHelperFlag } from "./utils";
 
 export default class SpokePointLightHelper extends THREE.Mesh {
   constructor(light, sphereSize) {
@@ -25,6 +26,7 @@ export default class SpokePointLightHelper extends THREE.Mesh {
     this.layers.set(1);
 
     this.update();
+    addIsHelperFlag(this);
   }
 
   dispose() {

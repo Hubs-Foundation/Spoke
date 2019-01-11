@@ -1,6 +1,5 @@
 import THREE from "../../vendor/three";
 import EditorNodeMixin from "./EditorNodeMixin";
-import Picker from "../objects/Picker";
 import PhysicalSpotLight from "../objects/PhysicalSpotLight";
 import SpokeSpotLightHelper from "../helpers/SpokeSpotLightHelper";
 import serializeColor from "../utils/serializeColor";
@@ -44,10 +43,8 @@ export default class SpotLightNode extends EditorNodeMixin(PhysicalSpotLight) {
   constructor(editor) {
     super(editor);
 
-    this.picker = new Picker();
-    this.add(this.picker);
-
     this.helper = new SpokeSpotLightHelper(this);
+    this.helper.visible = false;
     this.add(this.helper);
   }
 
@@ -58,7 +55,7 @@ export default class SpotLightNode extends EditorNodeMixin(PhysicalSpotLight) {
 
     if (recursive) {
       for (const child of source.children) {
-        if (child !== this.helper && child !== this.picker) {
+        if (child !== this.helper) {
           const clonedChild = child.clone();
           this.add(clonedChild);
         }
@@ -70,6 +67,14 @@ export default class SpotLightNode extends EditorNodeMixin(PhysicalSpotLight) {
 
   onChange() {
     this.helper.update();
+  }
+
+  onSelect() {
+    this.helper.visible = true;
+  }
+
+  onDeselect() {
+    this.helper.visible = false;
   }
 
   serialize() {
@@ -93,7 +98,6 @@ export default class SpotLightNode extends EditorNodeMixin(PhysicalSpotLight) {
 
   prepareForExport() {
     this.remove(this.helper);
-    this.remove(this.picker);
 
     const replacementObject = new THREE.Object3D().copy(this, false);
 

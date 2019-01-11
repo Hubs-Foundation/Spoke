@@ -1,4 +1,5 @@
 import THREE from "../../vendor/three";
+import { addIsHelperFlag } from "./utils";
 
 export default class GridHelper extends THREE.GridHelper {
   constructor() {
@@ -16,5 +17,7 @@ export default class GridHelper extends THREE.GridHelper {
     }
 
     this.layers.set(1);
+
+    addIsHelperFlag(this);
   }
 }

@@ -5,6 +5,7 @@ import SetScaleCommand from "./commands/SetScaleCommand";
 import GridHelper from "./helpers/GridHelper";
 import SpokeTransformControls from "./controls/SpokeTransformControls";
 import resizeShadowCameraFrustum from "./utils/resizeShadowCameraFrustum";
+import OutlinePass from "./renderer/OutlinePass";
 
 /**
  * @author mrdoob / http://mrdoob.com/
@@ -49,17 +50,13 @@ export default class Viewport {
     const effectComposer = new THREE.EffectComposer(renderer);
     const renderPass = new THREE.RenderPass(editor.scene, editor.camera);
     effectComposer.addPass(renderPass);
-    const outlinePass = new THREE.OutlinePass(
+    const outlinePass = new OutlinePass(
       new THREE.Vector2(canvas.parentElement.offsetWidth, canvas.parentElement.offsetHeight),
       editor.scene,
       editor.camera,
       selectedObjects
     );
-    outlinePass.edgeStrength = 3.0;
-    outlinePass.edgeGlow = 0.0;
-    outlinePass.edgeThickness = 1.0;
-    outlinePass.pulsePeriod = 0;
-    outlinePass.usePatternTexture = false;
+    outlinePass.edgeColor = new THREE.Color("#006EFF");
     outlinePass.renderToScreen = true;
     effectComposer.addPass(outlinePass);
 
@@ -307,7 +304,16 @@ export default class Viewport {
         !(object.constructor && object.constructor.hideTransform)
       ) {
         this._transformControls.attach(object);
-        selectedObjects[0] = this._transformControls.object;
+      }
+
+      const selectedObject = this._transformControls.object;
+
+      if (selectedObject) {
+        selectedObjects[0] = selectedObject;
+      } else {
+        while (selectedObjects.length) {
+          selectedObjects.pop();
+        }
       }
     });
 
