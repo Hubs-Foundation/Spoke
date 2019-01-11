@@ -40,7 +40,7 @@ export default class SkyboxNode extends EditorNodeMixin(Sky) {
 
     this.skyScene = new THREE.Scene();
     this.cubeCamera = new THREE.CubeCamera(1, 100000, 512);
-    this.cubeCamera.rotation.set(0, Math.PI, 0);
+    this.cubeCamera.scale(-1, 1, 1);
     this.skyScene.add(this.cubeCamera);
   }
 
