@@ -116,6 +116,13 @@ export default class ModelNode extends EditorNodeMixin(Model) {
       }
     }
 
+    this.model.traverse(object => {
+      if (object.material && object.material.isMeshStandardMaterial) {
+        object.material.envMap = this.editor.scene.environmentMap;
+        object.material.needsUpdate = true;
+      }
+    });
+
     return this;
   }
 

@@ -35,6 +35,8 @@ import ImageNode from "./editor/nodes/ImageNode";
 import ImageNodeEditor from "./ui/properties/ImageNodeEditor";
 import VideoNode from "./editor/nodes/VideoNode";
 import VideoNodeEditor from "./ui/properties/VideoNodeEditor";
+import SpawnerNode from "./editor/nodes/SpawnerNode";
+import SpawnerNodeEditor from "./ui/properties/SpawnerNodeEditor";
 
 (async () => {
   // eslint-disable-next-line no-undef
@@ -63,6 +65,7 @@ import VideoNodeEditor from "./ui/properties/VideoNodeEditor";
   editor.registerNode(FloorPlanNode, FloorPlanNodeEditor);
   editor.registerNode(ImageNode, ImageNodeEditor);
   editor.registerNode(VideoNode, VideoNodeEditor);
+  editor.registerNode(SpawnerNode, SpawnerNodeEditor);
 
   await editor.init();
 

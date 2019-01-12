@@ -37,6 +37,10 @@ export default class DirectionalLightNode extends EditorNodeMixin(PhysicalDirect
     this.add(this.helper);
   }
 
+  onAdd() {
+    this.helper.update();
+  }
+
   onChange() {
     this.helper.update();
   }
@@ -51,8 +55,6 @@ export default class DirectionalLightNode extends EditorNodeMixin(PhysicalDirect
 
   copy(source, recursive) {
     super.copy(source, false);
-
-    this.helper.update();
 
     if (recursive) {
       for (const child of source.children) {
@@ -75,7 +77,9 @@ export default class DirectionalLightNode extends EditorNodeMixin(PhysicalDirect
         color: serializeColor(this.color),
         intensity: this.intensity,
         castShadow: this.castShadow,
-        shadowMapResolution: this.shadowMapResolution.toArray()
+        shadowMapResolution: this.shadowMapResolution.toArray(),
+        shadowBias: this.shadowBias,
+        shadowRadius: this.shadowRadius
       }
     });
 
@@ -93,7 +97,9 @@ export default class DirectionalLightNode extends EditorNodeMixin(PhysicalDirect
           color: serializeColor(this.color),
           intensity: this.intensity,
           castShadow: this.castShadow,
-          shadowMapResolution: this.shadowMapResolution.toArray()
+          shadowMapResolution: this.shadowMapResolution.toArray(),
+          shadowBias: this.shadowBias,
+          shadowRadius: this.shadowRadius
         }
       }
     };

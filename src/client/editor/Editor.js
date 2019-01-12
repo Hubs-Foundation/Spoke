@@ -30,7 +30,7 @@ export default class Editor {
   constructor(project) {
     this.project = project;
 
-    this.scene = null;
+    this.scene = new SceneNode(this);
     this.sceneModified = false;
     this.sceneUri = null;
 
@@ -43,7 +43,7 @@ export default class Editor {
     this.duplicateNameCounters = new Map();
 
     // TODO: Support multiple viewports
-    this.viewports = [];
+    this.viewport = null;
     this.selected = null;
 
     this.nodeTypes = new Set();
@@ -129,14 +129,12 @@ export default class Editor {
     }
 
     await Promise.all(tasks);
-
-    this.loadNewScene();
   }
 
-  createViewport(canvas) {
-    const viewport = new Viewport(this, canvas);
-    this.viewports.push(viewport);
-    return viewport;
+  initializeViewport(canvas) {
+    this.viewport = new Viewport(this, canvas);
+    this.signals.viewportInitialized.dispatch(this.viewport);
+    this.loadNewScene();
   }
 
   onFileChanged = uri => {
@@ -191,6 +189,12 @@ export default class Editor {
     const scene = await SceneNode.deserialize(this, json);
 
     this.setScene(scene);
+
+    this.scene.traverse(node => {
+      if (node.isNode) {
+        node.onAfterFirstRender();
+      }
+    });
 
     return scene;
   }
@@ -383,16 +387,27 @@ export default class Editor {
     });
   }
 
-  _addObject(object, parent) {
+  _addObject(object, parent, index) {
     object.saveParent = true;
 
     this._addObjectToNameCounters(object);
 
     if (parent !== undefined) {
-      parent.add(object);
+      if (index !== undefined) {
+        parent.children.splice(index, 0, object);
+        object.parent = parent;
+      } else {
+        parent.add(object);
+      }
     } else {
       this.scene.add(object);
     }
+
+    object.traverse(child => {
+      if (child.isNode) {
+        child.onAdd();
+      }
+    });
   }
 
   moveObject(object, parent, before) {
@@ -420,13 +435,12 @@ export default class Editor {
             this.duplicateNameCounters.set(name, { objectCount: objectCount - 1, nextSuffix });
           }
         }
+
+        child.onRemove();
       }
     });
 
     object.parent.remove(object);
-
-    this.signals.objectRemoved.dispatch(object);
-    this.signals.sceneGraphChanged.dispatch();
   }
 
   clearSceneMetadata() {
@@ -665,7 +679,7 @@ export default class Editor {
 
   async takeScreenshot() {
     this.deselect();
-    return this.viewports[0].takeScreenshot();
+    return this.viewport.takeScreenshot();
   }
 
   async publishScene(sceneId, screenshotBlob, contentAttributions, onPublishProgress) {

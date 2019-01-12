@@ -21,7 +21,7 @@ class ViewportPanelContainer extends Component {
   }
 
   componentDidMount() {
-    this.props.editor.createViewport(this.canvasRef.current);
+    this.props.editor.initializeViewport(this.canvasRef.current);
   }
 
   render() {

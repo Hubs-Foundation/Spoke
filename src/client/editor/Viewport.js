@@ -43,7 +43,7 @@ export default class Viewport {
 
     const renderer = makeRenderer(canvas.parentElement.offsetWidth, canvas.parentElement.offsetHeight, canvas);
     renderer.setPixelRatio(window.devicePixelRatio);
-    this._renderer = renderer;
+    this.renderer = renderer;
 
     const selectedObjects = [];
 
@@ -334,8 +334,6 @@ export default class Viewport {
       renderer.setSize(canvas.parentElement.offsetWidth, canvas.parentElement.offsetHeight);
       effectComposer.setSize(canvas.parentElement.offsetWidth, canvas.parentElement.offsetHeight);
     });
-
-    signals.viewportInitialized.dispatch(this);
   }
 
   takeScreenshot = async () => {

@@ -48,10 +48,16 @@ export default class SpotLightNode extends EditorNodeMixin(PhysicalSpotLight) {
     this.add(this.helper);
   }
 
+  onAdd() {
+    this.helper.update();
+  }
+
+  onChange() {
+    this.helper.update();
+  }
+
   copy(source, recursive) {
     super.copy(source, false);
-
-    this.helper.update();
 
     if (recursive) {
       for (const child of source.children) {
@@ -63,18 +69,6 @@ export default class SpotLightNode extends EditorNodeMixin(PhysicalSpotLight) {
     }
 
     return this;
-  }
-
-  onChange() {
-    this.helper.update();
-  }
-
-  onSelect() {
-    this.helper.visible = true;
-  }
-
-  onDeselect() {
-    this.helper.visible = false;
   }
 
   serialize() {
@@ -89,7 +83,9 @@ export default class SpotLightNode extends EditorNodeMixin(PhysicalSpotLight) {
         innerConeAngle: this.innerConeAngle,
         outerConeAngle: this.outerConeAngle,
         castShadow: this.castShadow,
-        shadowMapResolution: this.shadowMapResolution.toArray()
+        shadowMapResolution: this.shadowMapResolution.toArray(),
+        shadowBias: this.shadowBias,
+        shadowRadius: this.shadowRadius
       }
     });
 
@@ -110,7 +106,9 @@ export default class SpotLightNode extends EditorNodeMixin(PhysicalSpotLight) {
           innerConeAngle: this.innerConeAngle,
           outerConeAngle: this.outerConeAngle,
           castShadow: this.castShadow,
-          shadowMapResolution: this.shadowMapResolution.toArray()
+          shadowMapResolution: this.shadowMapResolution.toArray(),
+          shadowBias: this.shadowBias,
+          shadowRadius: this.shadowRadius
         }
       }
     };

@@ -25,7 +25,6 @@ export default class AddObjectCommand extends Command {
 
   execute() {
     this.editor._addObject(this.object, this.parent);
-
     this.editor.signals.objectAdded.dispatch(this.object);
     this.editor.signals.sceneGraphChanged.dispatch();
     this.editor.select(this.object);
@@ -33,8 +32,7 @@ export default class AddObjectCommand extends Command {
 
   undo() {
     this.editor.removeObject(this.object);
-
-    this.editor.signals.objectAdded.dispatch(this.object);
+    this.editor.signals.objectRemoved.dispatch(this.object);
     this.editor.signals.sceneGraphChanged.dispatch();
     this.editor.deselect();
   }
