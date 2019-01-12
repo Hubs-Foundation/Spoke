@@ -1,3 +1,2 @@
-desktop/app/**/*.js
-desktop/node_modules/
 src/client/editor/recast/recast.js
+src/client/vendor/TransformControls.js

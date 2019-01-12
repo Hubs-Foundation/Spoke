@@ -1,6 +1,5 @@
 import THREE from "../../vendor/three";
 import EditorNodeMixin from "./EditorNodeMixin";
-import Picker from "../objects/Picker";
 import PhysicalPointLight from "../objects/PhysicalPointLight";
 import SpokePointLightHelper from "../helpers/SpokePointLightHelper";
 import serializeColor from "../utils/serializeColor";
@@ -34,10 +33,8 @@ export default class PointLightNode extends EditorNodeMixin(PhysicalPointLight) 
   constructor(editor) {
     super(editor);
 
-    this.picker = new Picker();
-    this.add(this.picker);
-
     this.helper = new SpokePointLightHelper(this);
+    this.helper.visible = false;
     this.add(this.helper);
   }
 
@@ -54,7 +51,7 @@ export default class PointLightNode extends EditorNodeMixin(PhysicalPointLight) 
 
     if (recursive) {
       for (const child of source.children) {
-        if (child !== this.helper && child !== this.picker) {
+        if (child !== this.helper) {
           const clonedChild = child.clone();
           this.add(clonedChild);
         }
@@ -85,7 +82,6 @@ export default class PointLightNode extends EditorNodeMixin(PhysicalPointLight) 
 
   prepareForExport() {
     this.remove(this.helper);
-    this.remove(this.picker);
 
     const replacementObject = new THREE.Object3D().copy(this, false);
 

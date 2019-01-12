@@ -5,6 +5,7 @@ import SetScaleCommand from "./commands/SetScaleCommand";
 import GridHelper from "./helpers/GridHelper";
 import SpokeTransformControls from "./controls/SpokeTransformControls";
 import resizeShadowCameraFrustum from "./utils/resizeShadowCameraFrustum";
+import OutlinePass from "./renderer/OutlinePass";
 
 /**
  * @author mrdoob / http://mrdoob.com/
@@ -44,6 +45,21 @@ export default class Viewport {
     renderer.setPixelRatio(window.devicePixelRatio);
     this.renderer = renderer;
 
+    const selectedObjects = [];
+
+    const effectComposer = new THREE.EffectComposer(renderer);
+    const renderPass = new THREE.RenderPass(editor.scene, editor.camera);
+    effectComposer.addPass(renderPass);
+    const outlinePass = new OutlinePass(
+      new THREE.Vector2(canvas.parentElement.offsetWidth, canvas.parentElement.offsetHeight),
+      editor.scene,
+      editor.camera,
+      selectedObjects
+    );
+    outlinePass.edgeColor = new THREE.Color("#006EFF");
+    outlinePass.renderToScreen = true;
+    effectComposer.addPass(outlinePass);
+
     this._screenshotRenderer = makeRenderer(1920, 1080);
 
     editor.scene.background = new THREE.Color(0xaaaaaa);
@@ -53,14 +69,6 @@ export default class Viewport {
 
     const grid = new GridHelper();
     editor.scene.add(grid);
-
-    const box = new THREE.Box3();
-
-    const selectionBox = new THREE.BoxHelper();
-    selectionBox.material.depthTest = false;
-    selectionBox.material.transparent = true;
-    selectionBox.visible = false;
-    editor.scene.add(selectionBox);
 
     let objectPositionOnDown = null;
     let objectRotationOnDown = null;
@@ -76,8 +84,8 @@ export default class Viewport {
             resizeShadowCameraFrustum(node, editor.scene);
           }
         });
-
-        renderer.render(editor.scene, camera);
+        this._transformControls.update();
+        effectComposer.render();
         signals.sceneRendered.dispatch(renderer, editor.scene);
       }
 
@@ -91,7 +99,6 @@ export default class Viewport {
       const object = this._transformControls.object;
 
       if (object !== undefined) {
-        selectionBox.setFromObject(object);
         signals.transformChanged.dispatch(object);
       }
     });
@@ -277,15 +284,17 @@ export default class Viewport {
     signals.sceneSet.add(() => {
       this._screenshotRenderer.dispose();
       renderer.dispose();
+      renderPass.scene = editor.scene;
+      renderPass.camera = editor.camera;
+      outlinePass.renderScene = editor.scene;
+      outlinePass.renderCamera = editor.camera;
       controls.center.set(0, 0, 0);
       editor.scene.add(grid);
-      editor.scene.add(selectionBox);
       editor.scene.add(this._transformControls);
       editor.scene.background = new THREE.Color(0xaaaaaa);
     });
 
     signals.objectSelected.add(object => {
-      selectionBox.visible = false;
       this._transformControls.detach();
 
       if (
@@ -294,14 +303,17 @@ export default class Viewport {
         object !== camera &&
         !(object.constructor && object.constructor.hideTransform)
       ) {
-        box.setFromObject(object);
-
-        if (box.isEmpty() === false) {
-          selectionBox.setFromObject(object);
-          selectionBox.visible = true;
-        }
-
         this._transformControls.attach(object);
+      }
+
+      const selectedObject = this._transformControls.object;
+
+      if (selectedObject) {
+        selectedObjects[0] = selectedObject;
+      } else {
+        while (selectedObjects.length) {
+          selectedObjects.pop();
+        }
       }
     });
 
@@ -310,12 +322,6 @@ export default class Viewport {
     });
 
     signals.objectChanged.add(object => {
-      if (editor.selected === object) {
-        box.setFromObject(object);
-        selectionBox.visible = !box.isEmpty();
-        selectionBox.setFromObject(object);
-      }
-
       if (object instanceof THREE.PerspectiveCamera) {
         object.updateProjectionMatrix();
       }
@@ -326,6 +332,7 @@ export default class Viewport {
       camera.updateProjectionMatrix();
 
       renderer.setSize(canvas.parentElement.offsetWidth, canvas.parentElement.offsetHeight);
+      effectComposer.setSize(canvas.parentElement.offsetWidth, canvas.parentElement.offsetHeight);
     });
   }
 

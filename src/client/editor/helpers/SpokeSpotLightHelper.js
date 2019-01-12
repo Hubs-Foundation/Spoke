@@ -1,4 +1,5 @@
 import THREE from "../../vendor/three";
+import { addIsHelperFlag } from "./utils";
 
 export default class SpokeSpotLightHelper extends THREE.Object3D {
   constructor(light, color) {
@@ -32,6 +33,7 @@ export default class SpokeSpotLightHelper extends THREE.Object3D {
     this.add(this.innerCone);
 
     this.update();
+    addIsHelperFlag(this);
   }
 
   dispose() {

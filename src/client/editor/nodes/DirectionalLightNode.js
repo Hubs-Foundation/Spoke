@@ -1,6 +1,5 @@
 import THREE from "../../vendor/three";
 import EditorNodeMixin from "./EditorNodeMixin";
-import Picker from "../objects/Picker";
 import PhysicalDirectionalLight from "../objects/PhysicalDirectionalLight";
 import SpokeDirectionalLightHelper from "../helpers/SpokeDirectionalLightHelper";
 import serializeColor from "../utils/serializeColor";
@@ -33,10 +32,8 @@ export default class DirectionalLightNode extends EditorNodeMixin(PhysicalDirect
   constructor(editor) {
     super(editor);
 
-    this.picker = new Picker();
-    this.add(this.picker);
-
     this.helper = new SpokeDirectionalLightHelper(this);
+    this.helper.visible = false;
     this.add(this.helper);
   }
 
@@ -48,12 +45,20 @@ export default class DirectionalLightNode extends EditorNodeMixin(PhysicalDirect
     this.helper.update();
   }
 
+  onSelect() {
+    this.helper.visible = true;
+  }
+
+  onDeselect() {
+    this.helper.visible = false;
+  }
+
   copy(source, recursive) {
     super.copy(source, false);
 
     if (recursive) {
       for (const child of source.children) {
-        if (child !== this.helper && child !== this.picker) {
+        if (child !== this.helper) {
           const clonedChild = child.clone();
           this.add(clonedChild);
         }
@@ -83,7 +88,6 @@ export default class DirectionalLightNode extends EditorNodeMixin(PhysicalDirect
 
   prepareForExport() {
     this.remove(this.helper);
-    this.remove(this.picker);
 
     const replacementObject = new THREE.Object3D().copy(this, false);
 
