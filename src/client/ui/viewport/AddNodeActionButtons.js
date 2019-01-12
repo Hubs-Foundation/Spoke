@@ -35,6 +35,8 @@ import SkyboxNode from "../../editor/nodes/SkyboxNode";
 import SkyboxNodeEditor from "../properties/SkyboxNodeEditor";
 import ImageNode from "../../editor/nodes/ImageNode";
 import VideoNode from "../../editor/nodes/VideoNode";
+import SpawnerNode from "../../editor/nodes/SpawnerNode";
+import SpawnerNodeEditor from "../properties/SpawnerNodeEditor";
 
 function AddButton({ label, iconClassName, onClick }) {
   return (
@@ -144,6 +146,38 @@ class AddNodeActionButtons extends Component {
           console.error(e);
           this.props.showDialog(ErrorDialog, {
             title: "Error Loading Media",
+            message: e.message || "There was an unknown error."
+          });
+        }
+      },
+      onCancel: this.props.hideDialog
+    });
+    this.setState({ open: false });
+  };
+
+  addSpawner = () => {
+    this.props.showDialog(AddMediaDialog, {
+      title: "Add Spawner",
+      message: "Enter the URL to a glTF model.",
+      onConfirm: async url => {
+        this.props.showDialog(ProgressDialog, {
+          title: "Loading Model",
+          message: `Loading model...`
+        });
+        try {
+          const contentType = await this.props.editor.project.getContentType(url);
+
+          if (contentType.startsWith("model/")) {
+            const spawner = new SpawnerNode(this.props.editor);
+            await spawner.load(url);
+            this.props.editor.addObject(spawner);
+          }
+
+          this.props.hideDialog();
+        } catch (e) {
+          console.error(e);
+          this.props.showDialog(ErrorDialog, {
+            title: "Error Loading Model",
             message: e.message || "There was an unknown error."
           });
         }
@@ -267,6 +301,7 @@ class AddNodeActionButtons extends Component {
             />
             <AddButton label="Light" iconClassName={PointLightNodeEditor.iconClassName} onClick={this.addLight} />
             <AddButton label="Media" iconClassName="fa-film" onClick={this.addMedia} />
+            <AddButton label="Spawner" iconClassName={SpawnerNodeEditor.iconClassName} onClick={this.addSpawner} />
             {!hasSkybox && (
               <AddButton
                 label={SkyboxNode.nodeName}
