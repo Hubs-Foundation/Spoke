@@ -104,6 +104,19 @@ export default class ModelNode extends EditorNodeMixin(Model) {
       return this;
     }
 
+    this.updateStaticModes();
+
+    this.model.traverse(object => {
+      if (object.material && object.material.isMeshStandardMaterial) {
+        object.material.envMap = this.editor.scene.environmentMap;
+        object.material.needsUpdate = true;
+      }
+    });
+
+    return this;
+  }
+
+  updateStaticModes() {
     setStaticMode(this.model, StaticModes.Static);
 
     if (this.animations.length > 0) {
@@ -115,15 +128,6 @@ export default class ModelNode extends EditorNodeMixin(Model) {
         }
       }
     }
-
-    this.model.traverse(object => {
-      if (object.material && object.material.isMeshStandardMaterial) {
-        object.material.envMap = this.editor.scene.environmentMap;
-        object.material.needsUpdate = true;
-      }
-    });
-
-    return this;
   }
 
   serialize(sceneUri) {
@@ -160,6 +164,7 @@ export default class ModelNode extends EditorNodeMixin(Model) {
 
   copy(source, recursive) {
     super.copy(source, recursive);
+    this.updateStaticModes();
     this._canonicalUrl = source._canonicalUrl;
     this.attribution = source.attribution;
     this.includeInFloorPlan = source.includeInFloorPlan;
