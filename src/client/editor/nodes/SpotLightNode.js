@@ -56,6 +56,14 @@ export default class SpotLightNode extends EditorNodeMixin(PhysicalSpotLight) {
     this.helper.update();
   }
 
+  onSelect() {
+    this.helper.visible = true;
+  }
+
+  onDeselect() {
+    this.helper.visible = false;
+  }
+
   copy(source, recursive) {
     super.copy(source, false);
 
