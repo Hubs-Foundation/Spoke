@@ -9,11 +9,16 @@ function getNameWithoutIndex(name) {
   return cacheName;
 }
 
-function isDuplicateName(scene, name) {
+function isDuplicateName(scene, name, withoutIndex) {
   let foundDuplicate = false;
   scene.traverse(object => {
     if (foundDuplicate) return;
-    foundDuplicate = object.isNode && object.name === name;
+    if (!object.isNode) return;
+    if (withoutIndex) {
+      foundDuplicate = getNameWithoutIndex(object.name) === name;
+    } else {
+      foundDuplicate = object.name === name;
+    }
   });
   return foundDuplicate;
 }
@@ -21,7 +26,7 @@ function isDuplicateName(scene, name) {
 export default function makeUniqueName(scene, object) {
   const nameWithoutIndex = getNameWithoutIndex(object.name);
 
-  if (isDuplicateName(scene, nameWithoutIndex)) {
+  if (isDuplicateName(scene, nameWithoutIndex, true)) {
     let counter = 1;
     let curName = nameWithoutIndex + " " + counter;
 
