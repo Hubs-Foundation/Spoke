@@ -20,7 +20,6 @@ import getNameWithoutIndex from "./utils/getNameWithoutIndex";
 
 import SceneNode from "./nodes/SceneNode";
 import GroundPlaneNode from "./nodes/GroundPlaneNode";
-import AmbientLightNode from "./nodes/AmbientLightNode";
 import DirectionalLightNode from "./nodes/DirectionalLightNode";
 import SpawnPointNode from "./nodes/SpawnPointNode";
 import SkyboxNode from "./nodes/SkyboxNode";
@@ -160,13 +159,18 @@ export default class Editor {
     this.setScene(scene);
 
     this._addObject(new SkyboxNode(this));
-    this._addObject(new AmbientLightNode(this));
     const directionalLight = new DirectionalLightNode(this);
     directionalLight.position.set(-1, 3, 0);
     directionalLight.rotation.set(Math.PI * 0.5, Math.PI * (0.5 / 3.0), -Math.PI * 0.5);
     this._addObject(directionalLight);
     this._addObject(new SpawnPointNode(this));
     this._addObject(new GroundPlaneNode(this));
+
+    this.scene.traverse(node => {
+      if (node.isNode) {
+        node.onRendererChanged();
+      }
+    });
 
     this.signals.sceneGraphChanged.dispatch();
     this.sceneModified = true;
@@ -192,7 +196,7 @@ export default class Editor {
 
     this.scene.traverse(node => {
       if (node.isNode) {
-        node.onAfterFirstRender();
+        node.onRendererChanged();
       }
     });
 

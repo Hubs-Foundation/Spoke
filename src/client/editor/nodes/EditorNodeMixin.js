@@ -68,7 +68,7 @@ export default function EditorNodeMixin(Object3DClass) {
 
     onDeselect() {}
 
-    onAfterFirstRender() {}
+    onRendererChanged() {}
 
     serialize() {
       return {

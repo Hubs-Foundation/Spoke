@@ -337,7 +337,10 @@ export default class Viewport {
   }
 
   takeScreenshot = async () => {
-    const { _screenshotRenderer: renderer, _camera: camera } = this;
+    const { _screenshotRenderer, _camera: camera } = this;
+
+    const originalRenderer = this.renderer;
+    this.renderer = _screenshotRenderer;
 
     this._skipRender = true;
     const prevAspect = camera.aspect;
@@ -345,17 +348,35 @@ export default class Viewport {
     camera.updateProjectionMatrix();
 
     camera.layers.disable(1);
-    renderer.render(this._editor.scene, camera);
+
+    _screenshotRenderer.render(this._editor.scene, camera);
+
+    this._editor.scene.traverse(child => {
+      if (child.isNode) {
+        child.onRendererChanged();
+      }
+    });
+
+    _screenshotRenderer.render(this._editor.scene, camera);
+
     camera.layers.enable(1);
 
     camera.updateMatrixWorld();
     const cameraTransform = camera.matrixWorld.clone();
 
-    const blob = await getCanvasBlob(renderer.domElement);
+    const blob = await getCanvasBlob(_screenshotRenderer.domElement);
 
     camera.aspect = prevAspect;
     camera.updateProjectionMatrix();
     this._skipRender = false;
+
+    this.renderer = originalRenderer;
+
+    this._editor.scene.traverse(child => {
+      if (child.isNode) {
+        child.onRendererChanged();
+      }
+    });
 
     return { blob, cameraTransform };
   };
