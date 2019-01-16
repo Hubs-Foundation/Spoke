@@ -19,6 +19,7 @@ const serve = require("koa-static");
 const WebSocket = require("ws");
 const corsAnywhere = require("cors-anywhere");
 const { parse: parseUrl } = require("url");
+const rewrite = require("koa-rewrite");
 
 const packageJSON = require("../../package.json");
 
@@ -247,6 +248,8 @@ async function startServer(options) {
 
     ws.send(message);
   });
+
+  app.use(rewrite(/^\/scenes/, "/"));
 
   if (process.env.NODE_ENV === "development") {
     console.log("Running in development environment");

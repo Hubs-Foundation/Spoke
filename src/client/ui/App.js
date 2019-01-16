@@ -204,6 +204,9 @@ class App extends Component {
     this.props.editor.signals.windowResize.dispatch();
     this.props.editor.signals.sceneModified.add(this.onSceneModified);
     this.props.editor.signals.editorError.add(this.onEditorError);
+
+    this.onPopState();
+
     this.updateDocumentTitle();
 
     window.onbeforeunload = e => {
@@ -217,11 +220,24 @@ class App extends Component {
       e.returnValue = dialogText;
       return dialogText;
     };
+
+    window.addEventListener("popstate", this.onPopState);
   }
 
   componentWillUnmount() {
     window.removeEventListener("resize", this.onWindowResize, false);
   }
+
+  onPopState = () => {
+    const pathname = window.location.pathname;
+
+    if (pathname.startsWith("/scenes")) {
+      const scenePath = "/api/files" + pathname.replace(/^\/scenes/, "") + ".spoke";
+      this.onOpenScene(scenePath, true);
+    } else {
+      this.props.editor.loadNewScene();
+    }
+  };
 
   onWindowResize = () => {
     this.props.editor.signals.windowResize.dispatch();
@@ -492,6 +508,7 @@ class App extends Component {
   onNewScene = async () => {
     if (!(await this.confirmSceneChange())) return;
     this.props.editor.loadNewScene();
+    history.pushState(null, "Spoke by Mozilla", "/");
   };
 
   onOpenSceneDialog = async () => {
@@ -507,10 +524,16 @@ class App extends Component {
     await this.onOpenScene(filePath);
   };
 
-  onOpenScene = async uri => {
-    if (!this.confirmSceneChange()) {
+  onOpenScene = async (uri, skipPushState) => {
+    if (!(await this.confirmSceneChange())) {
       this.hideDialog();
       return;
+    }
+
+    if (!skipPushState) {
+      const scenePath = uri.replace(/^\/api\/files/, "\\scenes").replace(".spoke", "");
+      const pageTitle = "Spoke by Mozilla";
+      history.pushState(null, pageTitle, scenePath);
     }
 
     this.showDialog(ProgressDialog, {

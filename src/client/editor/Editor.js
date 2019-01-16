@@ -134,7 +134,6 @@ export default class Editor {
   initializeViewport(canvas) {
     this.viewport = new Viewport(this, canvas);
     this.signals.viewportInitialized.dispatch(this.viewport);
-    this.loadNewScene();
   }
 
   onFileChanged = uri => {
