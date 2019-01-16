@@ -7,7 +7,6 @@ import Viewport from "./Viewport";
 import AddObjectCommand from "./commands/AddObjectCommand";
 import MoveObjectCommand from "./commands/MoveObjectCommand";
 import RemoveObjectCommand from "./commands/RemoveObjectCommand";
-import SetNameCommand from "./commands/SetNameCommand";
 import SetPositionCommand from "./commands/SetPositionCommand";
 import SetRotationCommand from "./commands/SetRotationCommand";
 import SetScaleCommand from "./commands/SetScaleCommand";
@@ -16,8 +15,6 @@ import SetObjectPropertyCommand from "./commands/SetObjectPropertyCommand";
 import TextureCache from "./caches/TextureCache";
 import GLTFCache from "./caches/GLTFCache";
 
-import getNameWithoutIndex from "./utils/getNameWithoutIndex";
-
 import SceneNode from "./nodes/SceneNode";
 import GroundPlaneNode from "./nodes/GroundPlaneNode";
 import AmbientLightNode from "./nodes/AmbientLightNode";
@@ -25,6 +22,8 @@ import DirectionalLightNode from "./nodes/DirectionalLightNode";
 import SpawnPointNode from "./nodes/SpawnPointNode";
 import SkyboxNode from "./nodes/SkyboxNode";
 import FloorPlanNode from "./nodes/FloorPlanNode";
+
+import makeUniqueName from "./utils/makeUniqueName";
 
 export default class Editor {
   constructor(project) {
@@ -39,8 +38,6 @@ export default class Editor {
     this.camera.add(this.audioListener);
     this.camera.layers.enable(1);
     this.camera.name = "Camera";
-
-    this.duplicateNameCounters = new Map();
 
     // TODO: Support multiple viewports
     this.viewport = null;
@@ -186,7 +183,7 @@ export default class Editor {
 
     this.sceneUri = url;
 
-    const scene = await SceneNode.deserialize(this, json);
+    const scene = await SceneNode.loadScene(this, json);
 
     this.setScene(scene);
 
@@ -201,9 +198,6 @@ export default class Editor {
 
   setScene(scene) {
     this.scene = scene;
-
-    this.duplicateNameCounters.clear();
-    this._addObjectToNameCounters(this.scene);
 
     this.camera.position.set(0, 5, 10);
     this.camera.lookAt(new THREE.Vector3());
@@ -364,33 +358,8 @@ export default class Editor {
     this.execute(new AddObjectCommand(object, parent));
   }
 
-  _addObjectToNameCounters(object) {
-    object.traverse(child => {
-      if (child.isNode) {
-        const name = getNameWithoutIndex(child.name);
-        const counter = this.duplicateNameCounters.get(name);
-        let objectCount, nextSuffix, suffix;
-
-        if (counter) {
-          objectCount = counter.objectCount + 1;
-          suffix = " " + counter.nextSuffix;
-          nextSuffix = counter.nextSuffix + 1;
-        } else {
-          objectCount = 1;
-          suffix = "";
-          nextSuffix = 1;
-        }
-
-        this.duplicateNameCounters.set(name, { objectCount, nextSuffix });
-        child.name = name + suffix;
-      }
-    });
-  }
-
   _addObject(object, parent, index) {
     object.saveParent = true;
-
-    this._addObjectToNameCounters(object);
 
     if (parent !== undefined) {
       if (index !== undefined) {
@@ -423,19 +392,6 @@ export default class Editor {
 
     object.traverse(child => {
       if (child.isNode) {
-        const name = getNameWithoutIndex(object.name);
-        const counter = this.duplicateNameCounters.get(name);
-
-        if (counter) {
-          const { objectCount, nextSuffix } = counter;
-
-          if (objectCount <= 1) {
-            this.duplicateNameCounters.delete(name);
-          } else {
-            this.duplicateNameCounters.set(name, { objectCount: objectCount - 1, nextSuffix });
-          }
-        }
-
         child.onRemove();
       }
     });
@@ -460,44 +416,6 @@ export default class Editor {
     this.signals.transformModeChanged.dispatch(mode);
   }
 
-  setObjectName(object, name) {
-    const prevName = getNameWithoutIndex(object.name);
-    const prevCounter = this.duplicateNameCounters.get(prevName);
-
-    if (prevCounter) {
-      const prevObjectCount = prevCounter.objectCount;
-      if (prevObjectCount <= 1) {
-        this.duplicateNameCounters.delete(prevName);
-      } else {
-        this.duplicateNameCounters.set(prevName, {
-          objectCount: prevCounter.objectCount - 1,
-          nextSuffix: prevCounter.nextSuffix
-        });
-      }
-    }
-
-    const nextName = getNameWithoutIndex(name);
-    const nextCounter = this.duplicateNameCounters.get(nextName);
-
-    let objectCount, nextSuffix, suffix;
-
-    if (nextCounter) {
-      objectCount = nextCounter.objectCount + 1;
-      suffix = " " + nextCounter.nextSuffix;
-      nextSuffix = nextCounter.nextSuffix + 1;
-    } else {
-      objectCount = 1;
-      suffix = "";
-      nextSuffix = 1;
-    }
-
-    this.duplicateNameCounters.set(nextName, { objectCount, nextSuffix });
-
-    object.name = nextName + suffix;
-
-    this.signals.objectChanged.dispatch(object);
-  }
-
   registerNode(nodeConstructor, nodeEditor) {
     this.nodeTypes.add(nodeConstructor);
     this.nodeEditors.set(nodeConstructor, nodeEditor);
@@ -511,9 +429,6 @@ export default class Editor {
     let command;
 
     switch (propertyName) {
-      case "name":
-        command = new SetNameCommand(node, value);
-        break;
       case "position":
         command = new SetPositionCommand(node, value);
         break;
@@ -629,6 +544,9 @@ export default class Editor {
     }
 
     const clone = object.clone();
+
+    makeUniqueName(this.scene, clone);
+
     this.execute(new AddObjectCommand(clone, object.parent));
   }
 

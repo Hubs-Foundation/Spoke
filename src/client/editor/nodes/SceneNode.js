@@ -2,30 +2,57 @@ import THREE from "../../vendor/three";
 import EditorNodeMixin from "./EditorNodeMixin";
 import { setStaticMode, StaticModes, isStatic } from "../StaticMode";
 import sortEntities from "../utils/sortEntities";
-import getNodeWithName from "../utils/getNodeWithName";
 import MeshCombinationGroup from "../MeshCombinationGroup";
 import GroupNode from "./GroupNode";
+import getNodeWithUUID from "../utils/getNodeWithUUID";
+
+// Migrate v1 spoke scene to v2
+function migrateV1ToV2(json) {
+  const { root, metadata, entities } = json;
+
+  // Generate UUIDs for all existing entity names.
+  const rootUUID = THREE.Math.generateUUID();
+  const nameToUUID = { [root]: rootUUID };
+  for (const name in entities) {
+    nameToUUID[name] = THREE.Math.generateUUID();
+  }
+
+  // Replace names with uuids in entities and add the name property.
+  const newEntities = { [rootUUID]: { name: root } };
+  for (const [name, entity] of Object.entries(entities)) {
+    const uuid = nameToUUID[name];
+    newEntities[uuid] = Object.assign({}, entity, {
+      name,
+      parent: nameToUUID[entity.parent]
+    });
+  }
+
+  return {
+    version: 2,
+    root: nameToUUID[root],
+    entities: newEntities,
+    metadata
+  };
+}
 
 export default class SceneNode extends EditorNodeMixin(THREE.Scene) {
   static nodeName = "Scene";
 
   static hideTransform = true;
 
-  static async deserialize(editor, json) {
-    const scene = new SceneNode(editor);
-
-    // Needed so that editor.scene is set correctly when used in nodes deserialize methods.
-    editor.scene = scene;
+  static async loadScene(editor, json) {
+    if (!json.version) {
+      json = migrateV1ToV2(json);
+    }
 
     const { root, metadata, entities } = json;
 
-    scene.name = root;
-    scene.metadata = metadata;
+    let scene = null;
 
     const sortedEntities = sortEntities(entities);
 
-    for (const entityName of sortedEntities) {
-      const entity = entities[entityName];
+    for (const entityId of sortedEntities) {
+      const entity = entities[entityId];
 
       let EntityNodeConstructor;
 
@@ -37,24 +64,40 @@ export default class SceneNode extends EditorNodeMixin(THREE.Scene) {
       }
 
       if (!EntityNodeConstructor) {
-        throw new Error(`No node constructor found for entity "${entityName}"`);
-      }
-
-      const parent = getNodeWithName(scene, entity.parent);
-
-      if (!parent) {
-        throw new Error(`Node "${entityName}" specifies parent "${entity.parent}", but was not found.`);
+        throw new Error(`No node constructor found for entity "${entity.name}"`);
       }
 
       const node = await EntityNodeConstructor.deserialize(editor, entity);
-      node.name = entityName;
-      node.onChange();
+      node.uuid = entityId;
 
-      parent.children.splice(entity.index, 0, node);
-      node.parent = parent;
+      if (entity.parent) {
+        const parent = getNodeWithUUID(scene, entity.parent);
+
+        if (!parent) {
+          throw new Error(
+            `Node "${entity.name}" with uuid "${entity.uuid}" specifies parent "${entity.parent}", but was not found.`
+          );
+        }
+
+        parent.children.splice(entity.index, 0, node);
+        node.parent = parent;
+      } else if (entityId === root) {
+        scene = node;
+        scene.metadata = metadata;
+        // Needed so that editor.scene is set correctly when used in nodes deserialize methods.
+        editor.scene = scene;
+      } else {
+        throw new Error(`Node "${entity.name}" with uuid "${entity.uuid}" does not specify a parent.`);
+      }
+
+      node.onChange();
     }
 
     return scene;
+  }
+
+  static shouldDeserialize(entityJson) {
+    return entityJson.parent === undefined;
   }
 
   constructor(editor) {
@@ -92,9 +135,14 @@ export default class SceneNode extends EditorNodeMixin(THREE.Scene) {
 
   serialize(sceneUri) {
     const sceneJson = {
-      root: this.name,
+      version: 2,
+      root: this.uuid,
       metadata: this.metadata,
-      entities: {}
+      entities: {
+        [this.uuid]: {
+          name: this.name
+        }
+      }
     };
 
     this.traverse(child => {
@@ -103,7 +151,7 @@ export default class SceneNode extends EditorNodeMixin(THREE.Scene) {
       }
 
       const entityJson = child.serialize(sceneUri);
-      entityJson.parent = child.parent.name;
+      entityJson.parent = child.parent.uuid;
 
       let index = 0;
 
@@ -116,7 +164,7 @@ export default class SceneNode extends EditorNodeMixin(THREE.Scene) {
       }
 
       entityJson.index = index;
-      sceneJson.entities[child.name] = entityJson;
+      sceneJson.entities[child.uuid] = entityJson;
     });
 
     return sceneJson;
