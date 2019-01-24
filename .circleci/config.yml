@@ -7,6 +7,7 @@ jobs:
     steps:
       - checkout
       - run:
+          name: Install Chrome Beta
           command: |
             sudo apt-get update
             sudo apt-get install lsb-release libappindicator3-1
@@ -15,13 +16,5 @@ jobs:
             rm google-chrome.deb
             echo 'export CHROME_PATH=/opt/google/chrome-beta/google-chrome-beta' >> $BASH_ENV
             source $BASH_ENV
-      - restore_cache:
-          keys:
-          - v1-dependencies-{{ checksum "package-lock.json" }}
-          - v1-dependencies-
       - run: npm ci
-      - save_cache:
-          paths:
-            - node_modules
-          key: v1-dependencies-{{ checksum "package-lock.json" }}
       - run: npm test

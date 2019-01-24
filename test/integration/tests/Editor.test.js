@@ -43,7 +43,7 @@ describe("Editor", () => {
       let scene;
 
       before(async function() {
-        this.timeout(20000);
+        this.timeout(30000);
 
         const project = new Project();
         const editor = new Editor(project);
