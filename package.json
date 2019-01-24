@@ -37,7 +37,7 @@
   "release-it": {
     "scripts": {
       "beforeStart": "npm run test && rimraf ./release",
-      "beforeBump": "npm run binaries",
+      "afterBump": "npm run binaries",
       "after-release": "rimraf ./release"
     },
     "npm": {
