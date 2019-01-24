@@ -29,12 +29,13 @@
     "binaries": "npm run build && node package.js",
     "precommit": "lint-staged",
     "lint": "eslint ./src",
-    "test": "ava",
-    "e2e": "node ./test/e2e/index.js"
+    "test": "npm run test:unit && npm run test:integration",
+    "test:unit": "ava",
+    "test:integration": "node ./test/integration/index.js"
   },
   "ava": {
     "files": [
-      "./test"
+      "./test/unit"
     ],
     "sources": [
       "src/**/*.js"
@@ -42,7 +43,7 @@
     "require": [
       "babel-register",
       "esm",
-      "./test/helpers/browser-env-entry.js"
+      "./test/unit/helpers/browser-env-entry.js"
     ]
   },
   "lint-staged": {

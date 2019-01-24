@@ -1,5 +1,5 @@
 import test from "ava";
-import Project from "../../../src/client/api/Project";
+import Project from "../../../../src/client/api/Project";
 
 const fileUrl = "https://hubs.local:9090/api/files/directory/file.png";
 const fileUrlWithQS = "https://hubs.local:9090/api/files/directory/file.png?size=large";
