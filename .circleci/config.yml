@@ -5,11 +5,11 @@ jobs:
       - image: circleci/node:10-browsers
     working_directory: ~/repo
     steps:
+      - checkout
       - run:
           command: |
             wget https://dl.google.com/linux/direct/google-chrome-beta_current_amd64.deb
             sudo dpkg -i google-chrome-beta_current_amd64.deb; sudo apt-get -fy install
-      - checkout
       - restore_cache:
           keys:
           - v1-dependencies-{{ checksum "package-lock.json" }}
