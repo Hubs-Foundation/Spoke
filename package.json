@@ -27,10 +27,7 @@
     "dev": "cross-env NODE_ENV=development node ./bin/spoke --no-open example",
     "build": "cross-env NODE_ENV=production webpack --mode production",
     "binaries": "npm run build && node package.js",
-    "beforeStart": "npm run test && rimraf ./release",
-    "beforeBump": "npm run binaries",
     "release": "release-it",
-    "after-release": "rimraf ./release",
     "precommit": "lint-staged",
     "lint": "eslint ./src",
     "test": "npm run test:unit && npm run test:integration",
@@ -38,6 +35,11 @@
     "test:integration": "node ./test/integration/index.js"
   },
   "release-it": {
+    "scripts": {
+      "beforeStart": "npm run test && rimraf ./release",
+      "beforeBump": "npm run binaries",
+      "after-release": "rimraf ./release"
+    },
     "npm": {
       "publish": false
     },
@@ -47,6 +49,7 @@
     },
     "github": {
       "release": true,
+      "releaseName": "v${version}",
       "assets": [
         "release/*.zip"
       ],
