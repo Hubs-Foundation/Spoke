@@ -31,34 +31,27 @@ async function main() {
   // Run server in development mode.
   process.env.NODE_ENV = "development";
 
-  async function createServerPromise() {
-    await new Promise((resolve, reject) => {
-      webpack(webpackConfig).run((err, stats) => {
-        if (err) return reject(err);
-        resolve(stats);
-      });
+  console.log("Compiling webpack bundke...\n");
+  await new Promise((resolve, reject) => {
+    webpack(webpackConfig).run((err, stats) => {
+      if (err) return reject(err);
+      resolve(stats);
     });
+  });
 
-    return await startServer({
-      https,
-      host,
-      port,
-      serverFilePath,
-      projectPath: path.join(__dirname, "project"),
-      publicPath: webpackOutputPath
-    });
-  }
-
-  const serverPromise = createServerPromise();
+  const server = await startServer({
+    https,
+    host,
+    port,
+    serverFilePath,
+    projectPath: path.join(__dirname, "project"),
+    publicPath: webpackOutputPath
+  });
 
   const chromePath = process.env.CHROME_PATH || getChrome();
-  const browserPromise = puppeteer.launch({ executablePath: chromePath });
-
-  console.log("Compiling webpack bundle and launching Puppeteer...\n");
+  console.log("Launching Puppeteer...\n");
   console.log(`CHROME_PATH=${chromePath}`);
-
-  const [server, browser] = await Promise.all([serverPromise, browserPromise]);
-
+  const browser = await puppeteer.launch({ executablePath: chromePath });
   console.log("Loading page...\n");
 
   const page = await browser.newPage();
@@ -85,8 +78,8 @@ async function main() {
 
   const url = `http${https ? "s" : ""}://${host}:${port}`;
 
-  await page.goto(url);
-  await page.waitForSelector("#mocha");
+  await page.goto(url, { timeout: 10000 });
+  await page.waitForSelector("#mocha", { timeout: 10000 });
 
   console.log("Page loaded. Running tests...");
 
