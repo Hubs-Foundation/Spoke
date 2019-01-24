@@ -11,7 +11,8 @@ jobs:
             wget https://dl.google.com/linux/direct/google-chrome-beta_current_amd64.deb
             sudo dpkg -i google-chrome-beta_current_amd64.deb
             sudo apt-get -fy install
-            export CHROME_PATH=/opt/google/chrome-beta/google-chrome-beta
+            echo 'export CHROME_PATH=/opt/google/chrome-beta/google-chrome-beta' >> $BASH_ENV
+            source $BASH_ENV
       - restore_cache:
           keys:
           - v1-dependencies-{{ checksum "package-lock.json" }}
