@@ -51,7 +51,10 @@ async function main() {
   const chromePath = process.env.CHROME_PATH || getChrome();
   console.log("Launching Puppeteer...\n");
   console.log(`CHROME_PATH=${chromePath}`);
-  const browser = await puppeteer.launch({ executablePath: chromePath });
+  const browser = await puppeteer.launch({
+    executablePath: chromePath,
+    args: ["--ignore-gpu-blacklist"]
+  });
   console.log("Loading page...\n");
 
   const page = await browser.newPage();

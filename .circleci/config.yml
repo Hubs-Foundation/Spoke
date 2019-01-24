@@ -15,7 +15,6 @@ jobs:
             sudo sed -i 's|HERE/chrome"|HERE/chrome" --no-sandbox|g' /opt/google/chrome-beta/google-chrome-beta
             rm google-chrome.deb
             echo 'export CHROME_PATH=/opt/google/chrome-beta/google-chrome-beta' >> $BASH_ENV
-            echo 'export DEBUG=puppeteer:*' >> $BASH_ENV
             source $BASH_ENV
       - restore_cache:
           keys:
