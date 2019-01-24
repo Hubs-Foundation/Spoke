@@ -26,7 +26,7 @@
     "start": "cross-env NODE_ENV=development node ./bin/spoke",
     "dev": "cross-env NODE_ENV=development node ./bin/spoke --no-open example",
     "build": "cross-env NODE_ENV=production webpack --mode production",
-    "binaries": "npm run build && node package.js",
+    "binaries": "rimraf ./release && npm run build && node package.js",
     "release": "release-it",
     "precommit": "lint-staged",
     "lint": "eslint ./src",
@@ -36,9 +36,8 @@
   },
   "release-it": {
     "scripts": {
-      "beforeStart": "npm run test && rimraf ./release",
-      "afterBump": "npm run binaries",
-      "after-release": "rimraf ./release"
+      "beforeStart": "npm run test",
+      "afterBump": "npm run binaries"
     },
     "npm": {
       "publish": false
