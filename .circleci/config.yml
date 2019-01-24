@@ -5,6 +5,10 @@ jobs:
       - image: circleci/node:10-browsers
     working_directory: ~/repo
     steps:
+      - run:
+          command: |
+            wget https://dl.google.com/linux/direct/google-chrome-beta_current_amd64.deb
+            dpkg -i google-chrome-beta_current_amd64.deb; apt-get -fy install
       - checkout
       - restore_cache:
           keys:
