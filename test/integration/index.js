@@ -51,7 +51,7 @@ async function main() {
 
   const serverPromise = createServerPromise();
 
-  const chromePath = getChrome();
+  const chromePath = process.env.CHROME_PATH || getChrome();
   const browserPromise = puppeteer.launch({ executablePath: chromePath });
 
   console.log("Compiling webpack bundle and launching Puppeteer...\n");
