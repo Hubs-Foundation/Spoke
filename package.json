@@ -27,7 +27,7 @@
     "dev": "cross-env NODE_ENV=development node ./bin/spoke --no-open example",
     "build": "cross-env NODE_ENV=production webpack --mode production",
     "binaries": "npm run build && node package.js",
-    "beforeStart": "npm run test",
+    "beforeStart": "npm run test && rimraf ./release",
     "beforeBump": "npm run binaries",
     "release": "release-it",
     "after-release": "rimraf ./release",
@@ -36,6 +36,20 @@
     "test": "npm run test:unit && npm run test:integration",
     "test:unit": "ava",
     "test:integration": "node ./test/integration/index.js"
+  },
+  "release-it": {
+    "npm": {
+      "publish": false
+    },
+    "git": {
+      "commitMessage": "v${version}",
+      "tagName": "v${version}"
+    },
+    "github": {
+      "release": true,
+      "assets": ["release/*.zip"],
+      "tokenRef": "SPOKE_GITHUB_TOKEN"
+    }
   },
   "ava": {
     "files": [
