@@ -31,7 +31,7 @@ async function main() {
   // Run server in development mode.
   process.env.NODE_ENV = "development";
 
-  console.log("Compiling webpack bundke...\n");
+  console.log("Compiling webpack bundle...\n");
   await new Promise((resolve, reject) => {
     webpack(webpackConfig).run((err, stats) => {
       if (err) return reject(err);
