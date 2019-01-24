@@ -1,6 +1,7 @@
 const path = require("path");
-const puppeteer = require("puppeteer");
+const puppeteer = require("puppeteer-core");
 const webpack = require("webpack");
+const getChrome = require("get-chrome");
 const { startServer } = require("../../src/server/index");
 const webpackConfig = require("../../webpack.config");
 
@@ -27,28 +28,38 @@ async function main() {
   const webpackOutputPath = path.join(__dirname, "public");
   webpackConfig.output.path = webpackOutputPath;
 
-  await new Promise((resolve, reject) => {
-    webpack(webpackConfig).run((err, stats) => {
-      if (err) return reject(err);
-      resolve(stats);
-    });
-  });
-
   // Run server in development mode.
   process.env.NODE_ENV = "development";
 
-  const server = await startServer({
-    https,
-    host,
-    port,
-    serverFilePath,
-    projectPath: path.join(__dirname, "project"),
-    publicPath: webpackOutputPath
-  });
+  async function createServerPromise() {
+    await new Promise((resolve, reject) => {
+      webpack(webpackConfig).run((err, stats) => {
+        if (err) return reject(err);
+        resolve(stats);
+      });
+    });
 
-  console.log("Launching Puppeteer...\n");
+    return await startServer({
+      https,
+      host,
+      port,
+      serverFilePath,
+      projectPath: path.join(__dirname, "project"),
+      publicPath: webpackOutputPath
+    });
+  }
 
-  const browser = await puppeteer.launch();
+  const serverPromise = createServerPromise();
+
+  const chromePath = getChrome();
+  const browserPromise = puppeteer.launch({ executablePath: chromePath });
+
+  console.log("Compiling webpack bundle and launching Puppeteer...\n");
+
+  const [server, browser] = await Promise.all([serverPromise, browserPromise]);
+
+  console.log("Loading page...\n");
+
   const page = await browser.newPage();
 
   const uncaughtErrors = [];

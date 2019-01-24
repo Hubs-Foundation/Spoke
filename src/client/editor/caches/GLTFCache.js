@@ -1,6 +1,7 @@
 import THREE from "../../vendor/three";
 import Cache from "./Cache";
 import cloneObject3D from "../utils/cloneObject3D";
+import eventToMessage from "../utils/eventToMessage";
 
 export default class GLTFCache extends Cache {
   constructor(textureCache) {
@@ -12,7 +13,9 @@ export default class GLTFCache extends Cache {
     const absoluteURL = new URL(url, window.location).href;
     if (!this._cache.has(absoluteURL)) {
       const gltfPromise = new Promise((resolve, reject) => {
-        new THREE.GLTFLoader().load(absoluteURL, resolve, null, reject);
+        new THREE.GLTFLoader().load(absoluteURL, resolve, null, e => {
+          reject(new Error(`Error loading glTF model with url: ${absoluteURL}. ${eventToMessage(e)}`));
+        });
       }).then(gltf => {
         if (!gltf.scene.name) {
           gltf.scene.name = "Scene";

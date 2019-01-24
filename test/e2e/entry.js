@@ -7,7 +7,8 @@ sourceMapSupport.install();
 mocha.setup({
   ui: "bdd",
   reporter: "spec",
-  useColors: true
+  useColors: true,
+  fullTrace: true
 });
 
 const req = require.context("./tests", true, /\.test\.js$/);

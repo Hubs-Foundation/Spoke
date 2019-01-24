@@ -1,4 +1,5 @@
 import THREE from "../../vendor/three";
+import eventToMessage from "../utils/eventToMessage";
 
 export const ImageProjection = {
   Flat: "flat",
@@ -29,7 +30,7 @@ export default class Image extends THREE.Object3D {
 
   loadTexture(src) {
     return new Promise((resolve, reject) => {
-      new THREE.TextureLoader().load(src, resolve, null, () => reject(`Error loading Image "${src}"`));
+      new THREE.TextureLoader().load(src, resolve, null, e => reject(`Error loading Image. ${eventToMessage(e)}`));
     });
   }
 

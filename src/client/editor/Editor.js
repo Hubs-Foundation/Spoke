@@ -24,6 +24,7 @@ import SkyboxNode from "./nodes/SkyboxNode";
 import FloorPlanNode from "./nodes/FloorPlanNode";
 
 import makeUniqueName from "./utils/makeUniqueName";
+import eventToMessage from "./utils/eventToMessage";
 
 export default class Editor {
   constructor(project) {
@@ -32,6 +33,7 @@ export default class Editor {
     this.scene = new SceneNode(this);
     this.sceneModified = false;
     this.sceneUri = null;
+    this.saveOnGenerateFloorPlan = true;
 
     this.camera = new THREE.PerspectiveCamera(80, window.innerWidth / window.innerHeight, 0.2, 8000);
     this.audioListener = new THREE.AudioListener();
@@ -211,17 +213,7 @@ export default class Editor {
   }
 
   async saveScene(sceneURI) {
-    let newSceneName = decodeURIComponent(this.project.getUrlFilename(sceneURI));
-
-    // Edge case: we may already have an object in the scene with this name. Our
-    // code assumes all objects in the scene have unique names (including the scene itself)
-    // so add a suffix.
-
-    while (this.scene.getObjectByName(newSceneName)) {
-      newSceneName += " Scene";
-    }
-
-    this.scene.name = newSceneName;
+    this.scene.name = decodeURIComponent(this.project.getUrlFilename(sceneURI));
 
     const serializedScene = this.scene.serialize(sceneURI);
 
@@ -238,8 +230,8 @@ export default class Editor {
     this.signals.sceneModified.dispatch();
   }
 
-  async generateFloorPlan() {
-    let floorPlan = this.scene.findNodeByType(FloorPlanNode);
+  async generateFloorPlan(existingFloorPlan) {
+    let floorPlan = existingFloorPlan || this.scene.findNodeByType(FloorPlanNode);
 
     if (!floorPlan) {
       floorPlan = new FloorPlanNode(this);
@@ -248,12 +240,20 @@ export default class Editor {
 
     const oldNavMeshPath = floorPlan.navMeshSrc;
 
+    // TODO: If FloorPlan is not the last node loaded it will not generate a FloorPlan for the entire scene.
     await floorPlan.generate(this.scene);
 
     if (floorPlan.navMesh) {
       const exporter = new THREE.GLTFExporter();
       const glb = await new Promise((resolve, reject) =>
-        exporter.parse(floorPlan.navMesh, resolve, reject, { mode: "glb" })
+        exporter.parse(
+          floorPlan.navMesh,
+          resolve,
+          e => {
+            reject(new Error(`Error exporting glTF. ${eventToMessage(e)}`));
+          },
+          { mode: "glb" }
+        )
       );
       const path = await this.project.writeGeneratedBlob(`${floorPlan.navMesh.uuid}.glb`, glb);
       floorPlan.navMeshSrc = path;
@@ -265,7 +265,7 @@ export default class Editor {
     }
 
     // Save the scene so we don't break the reference to the nav mesh in the spoke file
-    if (this.sceneUri) {
+    if (this.sceneUri && this.saveOnGenerateFloorPlan) {
       await this.saveScene(this.sceneUri);
     }
   }
@@ -288,11 +288,18 @@ export default class Editor {
     const exporter = new THREE.GLTFExporter();
     // TODO: export animations
     const chunks = await new Promise((resolve, reject) => {
-      exporter.parseChunks(clonedScene, resolve, reject, {
-        mode: glb ? "glb" : "gltf",
-        onlyVisible: false,
-        animations
-      });
+      exporter.parseChunks(
+        clonedScene,
+        resolve,
+        e => {
+          reject(new Error(`Error exporting scene. ${eventToMessage(e)}`));
+        },
+        {
+          mode: glb ? "glb" : "gltf",
+          onlyVisible: false,
+          animations
+        }
+      );
     });
     if (!glb) {
       const bufferDefs = chunks.json.buffers;
@@ -328,7 +335,11 @@ export default class Editor {
       }
     }
     if (glb) {
-      return await new Promise((resolve, reject) => exporter.createGLBBlob(chunks, resolve, reject));
+      return await new Promise((resolve, reject) => {
+        exporter.createGLBBlob(chunks, resolve, e => {
+          reject(new Error(`Error creating glb blob. ${eventToMessage(e)}`));
+        });
+      });
     } else {
       // Export current editor scene using THREE.GLTFExporter
       const { json, buffers, images } = chunks;
