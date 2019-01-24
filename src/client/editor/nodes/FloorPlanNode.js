@@ -291,7 +291,7 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
       this.setNavMesh(navMesh);
     } catch (e) {
       console.warn("Floor plan could not be loaded. Regenerating...");
-      await this.editor.generateFloorPlan();
+      await this.editor.generateFloorPlan(this);
       return;
     }
   }

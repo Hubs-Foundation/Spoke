@@ -1,5 +1,6 @@
 import THREE from "../../vendor/three";
 import cloneObject3D from "../utils/cloneObject3D";
+import eventToMessage from "../utils/eventToMessage";
 
 export default class Model extends THREE.Object3D {
   constructor() {
@@ -24,7 +25,9 @@ export default class Model extends THREE.Object3D {
 
   loadGLTF(src) {
     return new Promise((resolve, reject) => {
-      new THREE.GLTFLoader().load(src, resolve, null, reject);
+      new THREE.GLTFLoader().load(src, resolve, null, e => {
+        reject(new Error(`Error loading Model. ${eventToMessage(e)}`));
+      });
     });
   }
 

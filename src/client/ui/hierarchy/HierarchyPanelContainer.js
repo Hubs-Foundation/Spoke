@@ -64,7 +64,7 @@ class HierarchyPanelContainer extends Component {
     this.props.editor.moveObject(object, newParent.object, newBefore);
   };
 
-  onMouseDownNode = (e, node) => {
+  onMouseUpNode = (e, node) => {
     // Prevent double click on right click.
     if (e.button !== 0) {
       this.setState({ singleClicked: null });
@@ -114,7 +114,7 @@ class HierarchyPanelContainer extends Component {
           className: classNames("node", {
             "is-active": this.props.editor.selected && node.object.id === this.props.editor.selected.id
           }),
-          onMouseDown: e => this.onMouseDownNode(e, node)
+          onMouseUp: e => this.onMouseUpNode(e, node)
         }}
         holdToDisplay={-1}
         id="hierarchy-node-menu"

@@ -1,6 +1,7 @@
 import THREE from "../../vendor/three";
 import EditorNodeMixin from "./EditorNodeMixin";
 import spawnPointModelUrl from "../../assets/spawn-point.glb";
+import eventToMessage from "../utils/eventToMessage";
 
 let spawnPointHelperModel = null;
 
@@ -11,7 +12,9 @@ export default class SpawnPointNode extends EditorNodeMixin(THREE.Object3D) {
 
   static async load() {
     const { scene } = await new Promise((resolve, reject) => {
-      new THREE.GLTFLoader().load(spawnPointModelUrl, resolve, null, reject);
+      new THREE.GLTFLoader().load(spawnPointModelUrl, resolve, null, e => {
+        reject(new Error(`Error loading SpawnPointNode helper with url: ${spawnPointModelUrl}. ${eventToMessage(e)}`));
+      });
     });
 
     scene.traverse(child => {

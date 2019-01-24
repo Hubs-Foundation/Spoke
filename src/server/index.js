@@ -251,7 +251,9 @@ async function startServer(options) {
 
   app.use(rewrite(/^\/scenes/, "/"));
 
-  if (process.env.NODE_ENV === "development") {
+  if (opts.publicPath || process.env.NODE_ENV !== "development") {
+    app.use(serve(opts.publicPath || path.join(__dirname, "..", "..", "public")));
+  } else {
     console.log("Running in development environment");
 
     const logger = require("koa-logger");
@@ -281,8 +283,6 @@ async function startServer(options) {
     } catch (e) {
       throw e;
     }
-  } else {
-    app.use(serve(path.join(__dirname, "..", "..", "public")));
   }
 
   const reticulumServer = process.env.RETICULUM_SERVER || "hubs.mozilla.com";
@@ -639,7 +639,7 @@ async function startServer(options) {
   });
 
   server.on("close", e => {
-    console.log("Server Closed", e);
+    console.log("Server Closed", e ? e : "");
   });
 
   server.on("listening", () => {
@@ -656,6 +656,8 @@ async function startServer(options) {
   });
 
   server.listen(port, opts.host);
+
+  return server;
 }
 
 module.exports = {

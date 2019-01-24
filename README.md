@@ -1,5 +1,7 @@
 # Spoke (beta)
 
+[![CircleCI](https://circleci.com/gh/MozillaReality/Spoke.svg?style=svg)](https://circleci.com/gh/MozillaReality/Spoke)
+
 [https://hubs.mozilla.com/spoke](https://hubs.mozilla.com/spoke)
 
 Easily create custom 3D environments for [Mozilla Hubs](https://hubs.mozilla.com).

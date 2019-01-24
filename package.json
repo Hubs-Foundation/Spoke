@@ -3,7 +3,7 @@
   "private": true,
   "productName": "Spoke",
   "license": "MPL-2.0",
-  "version": "0.7.7",
+  "version": "0.7.10",
   "engines": {
     "node": ">=10",
     "npm": ">=6.4"
@@ -26,14 +26,38 @@
     "start": "cross-env NODE_ENV=development node ./bin/spoke",
     "dev": "cross-env NODE_ENV=development node ./bin/spoke --no-open example",
     "build": "cross-env NODE_ENV=production webpack --mode production",
-    "binaries": "npm run build && node package.js",
+    "binaries": "rimraf ./release && npm run build && node package.js",
+    "release": "release-it",
     "precommit": "lint-staged",
     "lint": "eslint ./src",
-    "test": "ava"
+    "test": "npm run test:unit && npm run test:integration",
+    "test:unit": "ava",
+    "test:integration": "node ./test/integration/index.js"
+  },
+  "release-it": {
+    "scripts": {
+      "beforeStart": "npm run test",
+      "afterBump": "npm run binaries"
+    },
+    "npm": {
+      "publish": false
+    },
+    "git": {
+      "commitMessage": "v${version}",
+      "tagName": "v${version}"
+    },
+    "github": {
+      "release": true,
+      "releaseName": "v${version}",
+      "assets": [
+        "release/*.zip"
+      ],
+      "tokenRef": "SPOKE_GITHUB_TOKEN"
+    }
   },
   "ava": {
     "files": [
-      "./test"
+      "./test/unit"
     ],
     "sources": [
       "src/**/*.js"
@@ -41,7 +65,7 @@
     "require": [
       "babel-register",
       "esm",
-      "./test/helpers/browser-env-entry.js"
+      "./test/unit/helpers/browser-env-entry.js"
     ]
   },
   "lint-staged": {
@@ -111,6 +135,7 @@
     "babel-preset-env": "^1.7.0",
     "babel-preset-react": "^6.24.1",
     "browser-env": "^3.2.5",
+    "chai": "^4.2.0",
     "copy-webpack-plugin": "^4.5.2",
     "cross-env": "^5.2.0",
     "css-loader": "^0.28.11",
@@ -121,16 +146,22 @@
     "eslint-plugin-react": "^7.8.2",
     "esm": "^3.0.79",
     "file-loader": "^1.1.11",
+    "get-chrome": "0.0.2",
     "html-webpack-plugin": "^3.2.0",
     "husky": "^0.14.3",
     "koa-logger": "^3.2.0",
     "koa-webpack": "^5.0.2",
     "lint-staged": "^7.2.0",
+    "mocha": "^5.2.0",
     "node-sass": "^4.9.1",
     "np": "^3.0.4",
     "pkg": "^4.3.4",
     "prettier": "^1.13.4",
+    "puppeteer-core": "^1.11.0",
+    "release-it": "^10.0.4",
+    "rimraf": "^2.6.3",
     "sass-loader": "^7.0.1",
+    "source-map-support": "^0.5.10",
     "style-loader": "^0.21.0",
     "webpack": "^4.9.1",
     "webpack-cli": "^3.1.2",

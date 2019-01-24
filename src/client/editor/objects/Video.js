@@ -1,4 +1,5 @@
 import THREE from "../../vendor/three";
+import eventToMessage from "../utils/eventToMessage";
 
 export const VideoProjection = {
   Flat: "flat",
@@ -215,7 +216,7 @@ export default class Video extends THREE.Object3D {
 
       const onError = e => {
         cleanup();
-        reject(e);
+        reject(new Error(`Video "${this.videoEl.src}" failed to load. ${eventToMessage(e)}`));
       };
 
       cleanup = () => {
