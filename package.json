@@ -47,7 +47,9 @@
     },
     "github": {
       "release": true,
-      "assets": ["release/*.zip"],
+      "assets": [
+        "release/*.zip"
+      ],
       "tokenRef": "SPOKE_GITHUB_TOKEN"
     }
   },
