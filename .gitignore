@@ -15,3 +15,5 @@ release/spoke-macos
 release/spoke-win.exe
 release/*.zip
 bin/.spoke-server
+test/integration/.spoke-server
+test/integration/project/generated

@@ -1,30 +1,30 @@
 export default function sortEntities(entitiesObj) {
   // Sort entities by insertion order
-  const sortedEntityNames = [];
+  const sortedEntityIds = [];
   let entitiesToSort = [];
 
   // First add entities without parents
-  for (const entityName in entitiesObj) {
-    const entity = entitiesObj[entityName];
+  for (const entityId in entitiesObj) {
+    const entity = entitiesObj[entityId];
 
     if (!entity.parent || !entitiesObj[entity.parent]) {
-      sortedEntityNames.push(entityName);
+      sortedEntityIds.push(entityId);
     } else {
-      entitiesToSort.push(entityName);
+      entitiesToSort.push(entityId);
     }
   }
 
   // Then group all entities by their parent
   const entitiesByParent = {};
 
-  for (const entityName of entitiesToSort) {
-    const entity = entitiesObj[entityName];
+  for (const entityId of entitiesToSort) {
+    const entity = entitiesObj[entityId];
 
     if (!entitiesByParent[entity.parent]) {
       entitiesByParent[entity.parent] = [];
     }
 
-    entitiesByParent[entity.parent].push(entityName);
+    entitiesByParent[entity.parent].push(entityId);
   }
 
   // Then sort child entities by their index
@@ -44,20 +44,20 @@ export default function sortEntities(entitiesObj) {
       return;
     }
 
-    children.forEach(childName => sortedEntityNames.push(childName));
+    children.forEach(childName => sortedEntityIds.push(childName));
 
     for (const childName of children) {
       addEntities(childName);
     }
   }
 
-  // Clone sortedEntityNames so we can iterate over the initial entities and modify the array
-  entitiesToSort = sortedEntityNames.concat();
+  // Clone sortedEntityIds so we can iterate over the initial entities and modify the array
+  entitiesToSort = sortedEntityIds.concat();
 
   // Then recursively iterate over the child entities.
-  for (const entityName of entitiesToSort) {
-    addEntities(entityName);
+  for (const entityId of entitiesToSort) {
+    addEntities(entityId);
   }
 
-  return sortedEntityNames;
+  return sortedEntityIds;
 }

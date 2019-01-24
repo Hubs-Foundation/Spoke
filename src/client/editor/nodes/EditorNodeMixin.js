@@ -24,17 +24,18 @@ export default function EditorNodeMixin(Object3DClass) {
     static async deserialize(editor, json) {
       const node = new this(editor);
 
-      const transformComponent = json.components.find(c => c.name === "transform");
+      node.name = json.name;
 
-      if (!transformComponent) {
-        throw new Error("Node has no transform component");
+      if (json.components) {
+        const transformComponent = json.components.find(c => c.name === "transform");
+
+        if (transformComponent) {
+          const { position, rotation, scale } = transformComponent.props;
+          node.position.set(position.x, position.y, position.z);
+          node.rotation.set(rotation.x, rotation.y, rotation.z);
+          node.scale.set(scale.x, scale.y, scale.z);
+        }
       }
-
-      const { position, rotation, scale } = transformComponent.props;
-
-      node.position.set(position.x, position.y, position.z);
-      node.rotation.set(rotation.x, rotation.y, rotation.z);
-      node.scale.set(scale.x, scale.y, scale.z);
 
       return node;
     }
@@ -72,6 +73,7 @@ export default function EditorNodeMixin(Object3DClass) {
 
     serialize() {
       return {
+        name: this.name,
         components: [
           {
             name: "transform",

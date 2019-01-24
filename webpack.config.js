@@ -73,7 +73,8 @@ module.exports = {
       favicon: "src/client/assets/favicon.ico"
     }),
     new webpack.DefinePlugin({
-      SPOKE_VERSION: JSON.stringify(packageJSON.version)
+      SPOKE_VERSION: JSON.stringify(packageJSON.version),
+      __REACT_DEVTOOLS_GLOBAL_HOOK__: "({ isDisabled: true })"
     }),
     new webpack.EnvironmentPlugin(["NODE_ENV", "RETICULUM_SERVER"])
   ]
