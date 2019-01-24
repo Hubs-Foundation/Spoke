@@ -52,6 +52,7 @@ async function main() {
   console.log("Launching Puppeteer...\n");
   console.log(`CHROME_PATH=${chromePath}`);
   const browser = await puppeteer.launch({
+    headless: false,
     executablePath: chromePath,
     args: ["--no-sandbox", "--disable-setuid-sandbox", "--ignore-gpu-blacklist"]
   });
