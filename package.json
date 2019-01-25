@@ -3,7 +3,7 @@
   "private": true,
   "productName": "Spoke",
   "license": "MPL-2.0",
-  "version": "0.7.10",
+  "version": "0.7.11",
   "engines": {
     "node": ">=10",
     "npm": ">=6.4"
