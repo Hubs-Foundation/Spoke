@@ -159,7 +159,8 @@ describe("Editor", () => {
         expect(model1.src, "model1.src").to.equal(
           "https://asset-bundles-prod.reticulum.io/interactables/Ducky/DuckyMesh-438ff8e022.gltf"
         );
-        expect(model1.includeInFloorPlan, "model1.includeInFloorPlan").to.equal(true);
+        expect(model1.walkable, "model1.walkable").to.equal(true);
+        expect(model1.collidable, "model1.collidable").to.equal(true);
         expect(model1.castShadow, "model1.castShadow").to.equal(true);
         expect(model1.receiveShadow, "model1.receiveShadow").to.equal(true);
         expect(model1.animations.length, "model1.animations.length").to.equal(0);
@@ -167,7 +168,8 @@ describe("Editor", () => {
         expect(model2.name, "model2.name").to.equal("Ceiling Fan");
         expect(scene.children.indexOf(model2), "model2 index").to.equal(6);
         expect(model2.src, "model2.src").to.equal("https://sketchfab.com/models/ec2c6087d4824211abc827f2a4c2b578");
-        expect(model2.includeInFloorPlan, "model2.includeInFloorPlan").to.equal(false);
+        expect(model2.walkable, "model2.walkable").to.equal(false);
+        expect(model2.collidable, "model2.collidable").to.equal(false);
         expect(model2.castShadow, "model2.castShadow").to.equal(false);
         expect(model2.receiveShadow, "model2.receiveShadow").to.equal(false);
         expect(model2.animations.length, "model2.animations.length").to.equal(1);
