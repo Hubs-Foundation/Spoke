@@ -4,6 +4,7 @@ import PropertyGroup from "./PropertyGroup";
 import InputGroup from "../inputs/InputGroup";
 import Vector3Input from "../inputs/Vector3Input";
 import EulerInput from "../inputs/EulerInput";
+import BooleanInput from "../inputs/BooleanInput";
 
 export default class TransformPropertyGroup extends Component {
   static propTypes = {
@@ -21,10 +22,12 @@ export default class TransformPropertyGroup extends Component {
 
   componentDidMount() {
     this.props.editor.signals.transformChanged.add(this.onTransformChanged);
+    this.props.editor.signals.objectChanged.add(this.onTransformChanged);
   }
 
   componentWillUnmount() {
     this.props.editor.signals.transformChanged.remove(this.onTransformChanged);
+    this.props.editor.signals.objectChanged.remove(this.onTransformChanged);
   }
 
   onTransformChanged = () => {
@@ -43,6 +46,10 @@ export default class TransformPropertyGroup extends Component {
     this.props.editor.setNodeProperty(this.props.node, "scale", value);
   };
 
+  onChangeVisible = value => {
+    this.props.editor.setNodeProperty(this.props.node, "visible", value);
+  };
+
   render() {
     const { node } = this.props;
 
@@ -56,6 +63,9 @@ export default class TransformPropertyGroup extends Component {
         </InputGroup>
         <InputGroup name="Scale">
           <Vector3Input uniformScaling value={node.scale} onChange={this.onChangeScale} />
+        </InputGroup>
+        <InputGroup name="Visible">
+          <BooleanInput value={node.visible} onChange={this.onChangeVisible} />
         </InputGroup>
       </PropertyGroup>
     );

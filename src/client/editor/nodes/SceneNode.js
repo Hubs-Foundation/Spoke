@@ -35,6 +35,41 @@ function migrateV1ToV2(json) {
   };
 }
 
+function migrateV2ToV3(json) {
+  json.version = 3;
+
+  for (const entityId in json.entities) {
+    const entity = json.entities[entityId];
+
+    if (!entity.components) {
+      continue;
+    }
+
+    entity.components.push({
+      name: "visible",
+      props: {
+        value: true
+      }
+    });
+
+    const modelComponent = entity.components.find(c => c.name === "gltf-model");
+
+    if (modelComponent && modelComponent.props.includeInFloorPlan) {
+      entity.components.push({
+        name: "collidable",
+        props: {}
+      });
+
+      entity.components.push({
+        name: "walkable",
+        props: {}
+      });
+    }
+  }
+
+  return json;
+}
+
 export default class SceneNode extends EditorNodeMixin(THREE.Scene) {
   static nodeName = "Scene";
 
@@ -43,6 +78,10 @@ export default class SceneNode extends EditorNodeMixin(THREE.Scene) {
   static async loadScene(editor, json) {
     if (!json.version) {
       json = migrateV1ToV2(json);
+    }
+
+    if (json.version === 2) {
+      json = migrateV2ToV3(json);
     }
 
     const { root, metadata, entities } = json;
@@ -133,9 +172,9 @@ export default class SceneNode extends EditorNodeMixin(THREE.Scene) {
     return this;
   }
 
-  serialize(sceneUri) {
+  serialize() {
     const sceneJson = {
-      version: 2,
+      version: 3,
       root: this.uuid,
       metadata: this.metadata,
       entities: {
@@ -150,7 +189,7 @@ export default class SceneNode extends EditorNodeMixin(THREE.Scene) {
         return;
       }
 
-      const entityJson = child.serialize(sceneUri);
+      const entityJson = child.serialize();
       entityJson.parent = child.parent.uuid;
 
       let index = 0;

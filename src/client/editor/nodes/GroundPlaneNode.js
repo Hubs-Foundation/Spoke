@@ -1,7 +1,6 @@
 import THREE from "../../vendor/three";
 import EditorNodeMixin from "./EditorNodeMixin";
 import GroundPlane from "../objects/GroundPlane";
-import serializeColor from "../utils/serializeColor";
 
 export default class GroundPlaneNode extends EditorNodeMixin(GroundPlane) {
   static legacyComponentName = "ground-plane";
@@ -21,30 +20,36 @@ export default class GroundPlaneNode extends EditorNodeMixin(GroundPlane) {
       node.receiveShadow = shadowComponent.props.receive;
     }
 
+    node.walkable = !!json.components.find(c => c.name === "walkable");
+
     return node;
   }
 
+  constructor(editor) {
+    super(editor);
+    this.walkable = true;
+  }
+
   serialize() {
-    const json = super.serialize();
-
-    json.components.push({
-      name: "ground-plane",
-      props: {
-        color: serializeColor(this.color)
-      }
-    });
-
-    json.components.push({
-      name: "shadow",
-      props: {
+    const components = {
+      "ground-plane": {
+        color: this.color
+      },
+      shadow: {
         receive: this.receiveShadow
       }
-    });
+    };
 
-    return json;
+    if (this.walkable) {
+      components.walkable = {};
+    }
+
+    return super.serialize(components);
   }
 
   prepareForExport() {
+    super.prepareForExport();
+
     const groundPlaneCollider = new THREE.Object3D();
     groundPlaneCollider.scale.set(4000, 0.01, 4000);
     groundPlaneCollider.userData.gltfExtensions = {
@@ -63,13 +68,9 @@ export default class GroundPlaneNode extends EditorNodeMixin(GroundPlane) {
     };
     this.add(groundPlaneCollider);
 
-    this.userData.gltfExtensions = {
-      HUBS_components: {
-        shadow: {
-          receive: this.receiveShadow,
-          cast: false
-        }
-      }
-    };
+    this.addGLTFComponent("shadow", {
+      receive: this.receiveShadow,
+      cast: false
+    });
   }
 }

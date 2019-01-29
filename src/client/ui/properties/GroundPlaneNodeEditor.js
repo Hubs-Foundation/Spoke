@@ -21,6 +21,10 @@ export default class GroundPlaneNodeEditor extends Component {
     this.props.editor.setNodeProperty(this.props.node, "receiveShadow", receiveShadow);
   };
 
+  onChangeWalkable = walkable => {
+    this.props.editor.setNodeProperty(this.props.node, "walkable", walkable);
+  };
+
   render() {
     const node = this.props.node;
 
@@ -31,6 +35,9 @@ export default class GroundPlaneNodeEditor extends Component {
         </InputGroup>
         <InputGroup name="Receive Shadow">
           <BooleanInput value={node.receiveShadow} onChange={this.onChangeReceiveShadow} />
+        </InputGroup>
+        <InputGroup name="Walkable">
+          <BooleanInput value={this.props.node.walkable} onChange={this.onChangeWalkable} />
         </InputGroup>
       </NodeEditor>
     );

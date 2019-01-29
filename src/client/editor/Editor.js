@@ -218,13 +218,19 @@ export default class Editor {
   async saveScene(sceneURI) {
     this.scene.name = decodeURIComponent(this.project.getUrlFilename(sceneURI));
 
-    const serializedScene = this.scene.serialize(sceneURI);
-
-    this.ignoreNextSceneFileChange = true;
-
-    await this.project.writeJSON(sceneURI, serializedScene);
-
+    const oldSceneURI = sceneURI;
     this.sceneUri = sceneURI;
+
+    try {
+      const serializedScene = this.scene.serialize();
+
+      this.ignoreNextSceneFileChange = true;
+
+      await this.project.writeJSON(sceneURI, serializedScene);
+    } catch (e) {
+      this.sceneUri = oldSceneURI;
+      throw e;
+    }
 
     this.signals.sceneGraphChanged.dispatch();
 
@@ -652,8 +658,18 @@ export default class Editor {
     onPublishProgress("uploading");
 
     const sceneFileUri = this.project.getAbsoluteURI(`generated/${uuid()}.spoke`);
-    const serializedScene = this.scene.serialize(sceneFileUri);
-    await this.project.writeJSON(sceneFileUri, serializedScene);
+    const oldSceneURI = this.sceneUri;
+    this.sceneUri = sceneFileUri;
+
+    try {
+      const serializedScene = this.scene.serialize();
+      await this.project.writeJSON(sceneFileUri, serializedScene);
+    } catch (e) {
+      throw e;
+    } finally {
+      this.sceneUri = oldSceneURI;
+    }
+
     const { id: sceneFileId, token: sceneFileToken } = await this.project.uploadAndDelete(sceneFileUri);
 
     onPublishProgress(`${sceneId ? "updating" : "creating"} scene`);

@@ -1,4 +1,3 @@
-import THREE from "../../vendor/three";
 import EditorNodeMixin from "./EditorNodeMixin";
 import Image from "../objects/Image";
 
@@ -55,35 +54,23 @@ export default class ImageNode extends EditorNodeMixin(Image) {
   }
 
   serialize() {
-    const json = super.serialize();
-
-    json.components.push({
-      name: "image",
-      props: {
+    return super.serialize({
+      image: {
         src: this._canonicalUrl,
         projection: this.projection
       }
     });
-
-    return json;
   }
 
   prepareForExport() {
-    const replacementObject = new THREE.Object3D().copy(this, false);
-
-    replacementObject.userData.gltfExtensions = {
-      HUBS_components: {
-        image: {
-          src: this._canonicalUrl,
-          projection: this.projection
-        },
-        networked: {
-          id: this.uuid
-        }
-      }
-    };
-
-    this.parent.add(replacementObject);
-    this.parent.remove(this);
+    super.prepareForExport();
+    this.addGLTFComponent("image", {
+      src: this._canonicalUrl,
+      projection: this.projection
+    });
+    this.addGLTFComponent("networked", {
+      id: this.uuid
+    });
+    this.replaceObject();
   }
 }

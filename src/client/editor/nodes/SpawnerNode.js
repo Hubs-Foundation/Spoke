@@ -1,4 +1,3 @@
-import THREE from "../../vendor/three";
 import Model from "../objects/Model";
 import EditorNodeMixin from "./EditorNodeMixin";
 import absoluteToRelativeURL from "../utils/absoluteToRelativeURL";
@@ -62,17 +61,12 @@ export default class SpawnerNode extends EditorNodeMixin(Model) {
     return this;
   }
 
-  serialize(sceneUri) {
-    const json = super.serialize();
-
-    json.components.push({
-      name: "spawner",
-      props: {
-        src: absoluteToRelativeURL(sceneUri, this._canonicalUrl)
+  serialize() {
+    return super.serialize({
+      spawner: {
+        src: absoluteToRelativeURL(this.editor.sceneUri, this._canonicalUrl)
       }
     });
-
-    return json;
   }
 
   copy(source, recursive) {
@@ -82,17 +76,10 @@ export default class SpawnerNode extends EditorNodeMixin(Model) {
   }
 
   prepareForExport() {
-    const replacementObject = new THREE.Object3D().copy(this, false);
-
-    replacementObject.userData.gltfExtensions = {
-      HUBS_components: {
-        spawner: {
-          src: this._canonicalUrl
-        }
-      }
-    };
-
-    this.parent.add(replacementObject);
-    this.parent.remove(this);
+    super.prepareForExport();
+    this.addGLTFComponent("spawner", {
+      src: this._canonicalUrl
+    });
+    this.replaceObject();
   }
 }
