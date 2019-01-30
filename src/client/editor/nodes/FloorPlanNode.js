@@ -249,7 +249,6 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
   }
 
   onSelect() {
-    console.log("onSelect navMesh", this.navMesh);
     if (this.navMesh) {
       this.navMesh.visible = true;
     }
