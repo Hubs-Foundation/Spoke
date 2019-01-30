@@ -65,6 +65,15 @@ function migrateV2ToV3(json) {
         props: {}
       });
     }
+
+    const groundPlaneComponent = entity.components.find(c => c.name === "ground-plane");
+
+    if (groundPlaneComponent) {
+      entity.components.push({
+        name: "walkable",
+        props: {}
+      });
+    }
   }
 
   return json;
