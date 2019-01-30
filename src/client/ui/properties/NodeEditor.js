@@ -33,9 +33,11 @@ export default class NodeEditor extends Component {
         <div className={styles.propertiesHeader}>
           <div className={styles.propertiesPanelTopBar}>
             <NameInputGroup node={node} editor={editor} />
-            <InputGroup name="Visible" className={styles.visibleInputGroup}>
-              <BooleanInput value={node.visible} onChange={this.onChangeVisible} />
-            </InputGroup>
+            {node.nodeName !== "Scene" && (
+              <InputGroup name="Visible" className={styles.visibleInputGroup}>
+                <BooleanInput value={node.visible} onChange={this.onChangeVisible} />
+              </InputGroup>
+            )}
           </div>
           {!node.hideTransform && <TransformPropertyGroup node={node} editor={editor} />}
         </div>
