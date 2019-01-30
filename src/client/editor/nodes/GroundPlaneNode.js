@@ -28,6 +28,29 @@ export default class GroundPlaneNode extends EditorNodeMixin(GroundPlane) {
   constructor(editor) {
     super(editor);
     this.walkable = true;
+    this.walkableMesh = new THREE.Mesh(new THREE.CircleBufferGeometry(1, 32), new THREE.MeshBasicMaterial());
+    this.walkableMesh.scale.set(100, 100, 100);
+    this.walkableMesh.position.y = -0.05;
+    this.walkableMesh.rotation.x = -Math.PI / 2;
+    this.walkableMesh.visible = false;
+    this.add(this.walkableMesh);
+  }
+
+  copy(source, recursive) {
+    super.copy(source, false);
+
+    if (recursive) {
+      for (const child of source.children) {
+        if (child !== this.walkableMesh) {
+          const clonedChild = child.clone();
+          this.add(clonedChild);
+        }
+      }
+    }
+
+    this.walkable = source.walkable;
+
+    return this;
   }
 
   serialize() {
@@ -51,7 +74,7 @@ export default class GroundPlaneNode extends EditorNodeMixin(GroundPlane) {
     super.prepareForExport();
 
     const groundPlaneCollider = new THREE.Object3D();
-    groundPlaneCollider.scale.set(4000, 0.01, 4000);
+    groundPlaneCollider.scale.copy(this.walkableMesh.scale.x, 0.1, this.walkableMesh.scale.z);
     groundPlaneCollider.userData.gltfExtensions = {
       HUBS_components: {
         "box-collider": {

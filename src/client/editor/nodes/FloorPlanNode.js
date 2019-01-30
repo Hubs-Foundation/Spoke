@@ -166,11 +166,11 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
   constructor(editor) {
     super(editor);
     this.autoCellSize = true;
-    this.cellSize = 1;
+    this.cellSize = 0.166;
     this.cellHeight = 0.1;
-    this.agentHeight = 1.0;
-    this.agentRadius = 0.0001;
-    this.agentMaxClimb = 0.5;
+    this.agentHeight = 1.7;
+    this.agentRadius = 0.5;
+    this.agentMaxClimb = 0.3;
     this.agentMaxSlope = 45;
     this.regionMinSize = 4;
   }
@@ -220,10 +220,12 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
 
     const area = size.x * size.z;
 
+    // Tuned to produce cell sizes from ~0.5 to ~1.5 for areas from ~200 to ~350,000.
+    const cellSize = this.autoCellSize ? Math.pow(area, 1 / 3) / 50 : this.cellSize;
+
     const objMeshStr = recast.build(
-      // Tuned to produce cell sizes from ~0.5 to ~1.5 for areas from ~200 to ~350,000.
-      this.autoCellSize ? Math.pow(area, 1 / 3) / 50 : this.cellSize,
-      this.cellHeight,
+      cellSize, // cellSize
+      this.cellHeight, // cellHeight
       this.agentHeight,
       this.agentRadius,
       this.agentMaxClimb,
@@ -276,6 +278,12 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
     const collidableMeshes = [];
     const walkableMeshes = [];
 
+    const groundPlaneNode = this.editor.scene.findNodeByType(GroundPlaneNode);
+
+    if (groundPlaneNode && groundPlaneNode.walkable) {
+      walkableMeshes.push(groundPlaneNode.walkableMesh);
+    }
+
     const modelNodes = this.editor.scene.getNodesByType(ModelNode);
 
     for (const node of modelNodes) {
@@ -312,21 +320,7 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
 
     const walkableGeometry = mergeMeshGeometries(walkableMeshes);
     const walkableNavGeometry = this.generateNavGeometry(walkableGeometry);
-    let finalWalkableGeometry = walkableNavGeometry;
-
-    const groundPlaneNode = this.editor.scene.findNodeByType(GroundPlaneNode);
-
-    if (groundPlaneNode && groundPlaneNode.walkable) {
-      const groundPlaneMesh = groundPlaneNode.mesh;
-      const origGroundPlaneGeo = groundPlaneMesh.geometry;
-      const groundPlaneGeo = new THREE.BufferGeometry();
-      groundPlaneGeo.setIndex(origGroundPlaneGeo.index);
-      groundPlaneGeo.addAttribute("position", origGroundPlaneGeo.attributes.position.clone());
-      groundPlaneGeo.applyMatrix(groundPlaneMesh.matrixWorld);
-      finalWalkableGeometry = THREE.BufferGeometryUtils.mergeBufferGeometries([walkableNavGeometry, groundPlaneGeo]);
-    }
-
-    const navMesh = new THREE.Mesh(finalWalkableGeometry, new THREE.MeshBasicMaterial({ color: 0x0000ff }));
+    const navMesh = new THREE.Mesh(walkableNavGeometry, new THREE.MeshBasicMaterial({ color: 0x0000ff }));
 
     if (this.editor.selected !== this) {
       navMesh.visible = false;
