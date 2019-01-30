@@ -26,7 +26,7 @@ export default class BoxColliderNode extends EditorNodeMixin(THREE.Object3D) {
     box.layers.set(1);
     this.helper = box;
     this.add(box);
-    this.walkable = true;
+    this.walkable = false;
   }
 
   copy(source, recursive) {
