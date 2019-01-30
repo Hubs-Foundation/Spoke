@@ -48,23 +48,14 @@ export default class SpawnPointNode extends EditorNodeMixin(THREE.Object3D) {
   }
 
   serialize() {
-    const json = super.serialize();
-
-    json.components.push({
-      name: "spawn-point",
-      props: {}
+    return super.serialize({
+      "spawn-point": {}
     });
-
-    return json;
   }
 
   prepareForExport() {
+    super.prepareForExport();
     this.remove(this.helper);
-
-    this.userData.gltfExtensions = {
-      HUBS_components: {
-        "spawn-point": {}
-      }
-    };
+    this.addGLTFComponent("spawn-point", {});
   }
 }

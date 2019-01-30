@@ -1,8 +1,6 @@
-import THREE from "../../vendor/three";
 import EditorNodeMixin from "./EditorNodeMixin";
 import PhysicalDirectionalLight from "../objects/PhysicalDirectionalLight";
 import SpokeDirectionalLightHelper from "../helpers/SpokeDirectionalLightHelper";
-import serializeColor from "../utils/serializeColor";
 
 export default class DirectionalLightNode extends EditorNodeMixin(PhysicalDirectionalLight) {
   static legacyComponentName = "directional-light";
@@ -69,12 +67,9 @@ export default class DirectionalLightNode extends EditorNodeMixin(PhysicalDirect
   }
 
   serialize() {
-    const json = super.serialize();
-
-    json.components.push({
-      name: "directional-light",
-      props: {
-        color: serializeColor(this.color),
+    return super.serialize({
+      "directional-light": {
+        color: this.color,
         intensity: this.intensity,
         castShadow: this.castShadow,
         shadowMapResolution: this.shadowMapResolution.toArray(),
@@ -82,29 +77,19 @@ export default class DirectionalLightNode extends EditorNodeMixin(PhysicalDirect
         shadowRadius: this.shadowRadius
       }
     });
-
-    return json;
   }
 
   prepareForExport() {
+    super.prepareForExport();
     this.remove(this.helper);
-
-    const replacementObject = new THREE.Object3D().copy(this, false);
-
-    replacementObject.userData.gltfExtensions = {
-      HUBS_components: {
-        "directional-light": {
-          color: serializeColor(this.color),
-          intensity: this.intensity,
-          castShadow: this.castShadow,
-          shadowMapResolution: this.shadowMapResolution.toArray(),
-          shadowBias: this.shadowBias,
-          shadowRadius: this.shadowRadius
-        }
-      }
-    };
-
-    this.parent.add(replacementObject);
-    this.parent.remove(this);
+    this.addGLTFComponent("directional-light", {
+      color: this.color,
+      intensity: this.intensity,
+      castShadow: this.castShadow,
+      shadowMapResolution: this.shadowMapResolution.toArray(),
+      shadowBias: this.shadowBias,
+      shadowRadius: this.shadowRadius
+    });
+    this.replaceObject();
   }
 }

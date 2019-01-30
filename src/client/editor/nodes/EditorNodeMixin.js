@@ -6,6 +6,8 @@ import {
   isInherits,
   isStatic
 } from "../StaticMode";
+import THREE from "../../vendor/three";
+import serializeColor from "../utils/serializeColor";
 
 export default function EditorNodeMixin(Object3DClass) {
   return class extends Object3DClass {
@@ -34,6 +36,12 @@ export default function EditorNodeMixin(Object3DClass) {
           node.position.set(position.x, position.y, position.z);
           node.rotation.set(rotation.x, rotation.y, rotation.z);
           node.scale.set(scale.x, scale.y, scale.z);
+        }
+
+        const visibleComponent = json.components.find(c => c.name === "visible");
+
+        if (visibleComponent) {
+          node.visible = visibleComponent.props.visible;
         }
       }
 
@@ -71,8 +79,8 @@ export default function EditorNodeMixin(Object3DClass) {
 
     onRendererChanged() {}
 
-    serialize() {
-      return {
+    serialize(components) {
+      const entityJson = {
         name: this.name,
         components: [
           {
@@ -94,12 +102,85 @@ export default function EditorNodeMixin(Object3DClass) {
                 z: this.scale.z
               }
             }
+          },
+          {
+            name: "visible",
+            props: {
+              visible: this.visible
+            }
           }
         ]
       };
+
+      if (components) {
+        for (const componentName in components) {
+          const serializedProps = {};
+          const componentProps = components[componentName];
+
+          for (const propName in componentProps) {
+            const propValue = componentProps[propName];
+
+            if (propValue instanceof THREE.Color) {
+              serializedProps[propName] = serializeColor(propValue);
+            } else {
+              serializedProps[propName] = propValue;
+            }
+          }
+
+          entityJson.components.push({
+            name: componentName,
+            props: serializedProps
+          });
+        }
+      }
+
+      return entityJson;
     }
 
-    prepareForExport() {}
+    prepareForExport() {
+      if (!this.visible) {
+        this.addGLTFComponent("visible", {
+          visible: this.visible
+        });
+      }
+    }
+
+    addGLTFComponent(name, props) {
+      if (!this.userData.gltfExtensions || !this.userData.gltfExtensions.HUBS_components) {
+        this.userData.gltfExtensions = {
+          HUBS_components: {}
+        };
+      }
+
+      if (props !== undefined && typeof props !== "object") {
+        throw new Error("glTF component props must be an object or undefined");
+      }
+
+      const componentProps = {};
+
+      for (const key in props) {
+        const value = props[key];
+
+        if (value instanceof THREE.Color) {
+          componentProps[key] = serializeColor(value);
+        } else {
+          componentProps[key] = value;
+        }
+      }
+
+      this.userData.gltfExtensions.HUBS_components[name] = props;
+    }
+
+    replaceObject(replacementObject) {
+      replacementObject = replacementObject || new THREE.Object3D().copy(this, false);
+
+      if (this.userData.gltfExtensions && this.userData.gltfExtensions.HUBS_components) {
+        replacementObject.userData.gltfExtensions.HUBS_components = this.userData.gltfExtensions.HUBS_components;
+      }
+
+      this.parent.add(replacementObject);
+      this.parent.remove(this);
+    }
 
     computeStaticMode() {
       return computeStaticMode(this);

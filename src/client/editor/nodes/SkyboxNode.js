@@ -75,11 +75,8 @@ export default class SkyboxNode extends EditorNodeMixin(Sky) {
   }
 
   serialize() {
-    const json = super.serialize();
-
-    json.components.push({
-      name: "skybox",
-      props: {
+    return super.serialize({
+      skybox: {
         turbidity: this.turbidity,
         rayleigh: this.rayleigh,
         luminance: this.luminance,
@@ -90,29 +87,20 @@ export default class SkyboxNode extends EditorNodeMixin(Sky) {
         distance: this.distance
       }
     });
-
-    return json;
   }
 
   prepareForExport() {
-    const replacementObject = new THREE.Object3D().copy(this, false);
-
-    replacementObject.userData.gltfExtensions = {
-      HUBS_components: {
-        skybox: {
-          turbidity: this.turbidity,
-          rayleigh: this.rayleigh,
-          luminance: this.luminance,
-          mieCoefficient: this.mieCoefficient,
-          mieDirectionalG: this.mieDirectionalG,
-          inclination: this.inclination,
-          azimuth: this.azimuth,
-          distance: this.distance
-        }
-      }
-    };
-
-    this.parent.add(replacementObject);
-    this.parent.remove(this);
+    super.prepareForExport();
+    this.addGLTFComponent("skybox", {
+      turbidity: this.turbidity,
+      rayleigh: this.rayleigh,
+      luminance: this.luminance,
+      mieCoefficient: this.mieCoefficient,
+      mieDirectionalG: this.mieDirectionalG,
+      inclination: this.inclination,
+      azimuth: this.azimuth,
+      distance: this.distance
+    });
+    this.replaceObject();
   }
 }

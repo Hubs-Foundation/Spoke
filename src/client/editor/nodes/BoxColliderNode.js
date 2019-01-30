@@ -10,6 +10,14 @@ export default class BoxColliderNode extends EditorNodeMixin(THREE.Object3D) {
 
   static _material = new THREE.Material();
 
+  static async deserialize(editor, json) {
+    const node = await super.deserialize(editor, json);
+
+    node.walkable = !!json.components.find(c => c.name === "walkable");
+
+    return node;
+  }
+
   constructor(editor) {
     super(editor);
 
@@ -18,6 +26,7 @@ export default class BoxColliderNode extends EditorNodeMixin(THREE.Object3D) {
     box.layers.set(1);
     this.helper = box;
     this.add(box);
+    this.walkable = false;
   }
 
   copy(source, recursive) {
@@ -32,36 +41,35 @@ export default class BoxColliderNode extends EditorNodeMixin(THREE.Object3D) {
       }
     }
 
+    this.walkable = source.walkable;
+
     return this;
   }
 
   serialize() {
-    const json = super.serialize();
+    const components = {
+      "box-collider": {}
+    };
 
-    json.components.push({
-      name: "box-collider",
-      props: {}
-    });
+    if (this.walkable) {
+      components.walkable = {};
+    }
 
-    return json;
+    return super.serialize(components);
   }
 
   prepareForExport() {
-    this.userData.gltfExtensions = {
-      HUBS_components: {
-        "box-collider": {
-          // TODO: Remove exporting these properties. They are already included in the transform props.
-          position: this.position,
-          rotation: {
-            x: this.rotation.x,
-            y: this.rotation.y,
-            z: this.rotation.z
-          },
-          scale: this.scale
-        }
-      }
-    };
-
+    super.prepareForExport();
     this.remove(this.helper);
+    this.addGLTFComponent("box-collider", {
+      // TODO: Remove exporting these properties. They are already included in the transform props.
+      position: this.position,
+      rotation: {
+        x: this.rotation.x,
+        y: this.rotation.y,
+        z: this.rotation.z
+      },
+      scale: this.scale
+    });
   }
 }

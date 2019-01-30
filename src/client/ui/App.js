@@ -167,10 +167,6 @@ class App extends Component {
             action: e => this.onExportScene(e, true)
           },
           {
-            name: "Generate Floor Plan",
-            action: e => this.onGenerateFloorPlan(e)
-          },
-          {
             name: "Open Scenes Folder...",
             action: () => this.props.editor.project.openProjectDirectory()
           }
@@ -201,6 +197,7 @@ class App extends Component {
   };
 
   componentDidMount() {
+    this.props.editor.project.watch();
     this.props.editor.signals.windowResize.dispatch();
     this.props.editor.signals.sceneModified.add(this.onSceneModified);
     this.props.editor.signals.editorError.add(this.onEditorError);
@@ -337,26 +334,6 @@ class App extends Component {
     }
 
     this.onExportSceneDialog(glb);
-  };
-
-  onGenerateFloorPlan = async e => {
-    e.preventDefault();
-
-    this.showDialog(ProgressDialog, {
-      title: "Generating Floor Plan",
-      message: "Generating floor plan..."
-    });
-
-    try {
-      await this.props.editor.generateFloorPlan();
-      this.hideDialog();
-    } catch (e) {
-      console.error(e);
-      this.showDialog(ErrorDialog, {
-        title: "Error Generating Floor Plan",
-        message: e.message || "There was an unknown error."
-      });
-    }
   };
 
   onTranslateTool = e => {

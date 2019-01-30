@@ -1,8 +1,6 @@
-import THREE from "../../vendor/three";
 import EditorNodeMixin from "./EditorNodeMixin";
 import PhysicalSpotLight from "../objects/PhysicalSpotLight";
 import SpokeSpotLightHelper from "../helpers/SpokeSpotLightHelper";
-import serializeColor from "../utils/serializeColor";
 
 export default class SpotLightNode extends EditorNodeMixin(PhysicalSpotLight) {
   static legacyComponentName = "spot-light";
@@ -80,12 +78,9 @@ export default class SpotLightNode extends EditorNodeMixin(PhysicalSpotLight) {
   }
 
   serialize() {
-    const json = super.serialize();
-
-    json.components.push({
-      name: "spot-light",
-      props: {
-        color: serializeColor(this.color),
+    return super.serialize({
+      "spot-light": {
+        color: this.color,
         intensity: this.intensity,
         range: this.range,
         innerConeAngle: this.innerConeAngle,
@@ -96,32 +91,22 @@ export default class SpotLightNode extends EditorNodeMixin(PhysicalSpotLight) {
         shadowRadius: this.shadowRadius
       }
     });
-
-    return json;
   }
 
   prepareForExport() {
+    super.prepareForExport();
     this.remove(this.helper);
-
-    const replacementObject = new THREE.Object3D().copy(this, false);
-
-    replacementObject.userData.gltfExtensions = {
-      HUBS_components: {
-        "spot-light": {
-          color: serializeColor(this.color),
-          intensity: this.intensity,
-          range: this.range,
-          innerConeAngle: this.innerConeAngle,
-          outerConeAngle: this.outerConeAngle,
-          castShadow: this.castShadow,
-          shadowMapResolution: this.shadowMapResolution.toArray(),
-          shadowBias: this.shadowBias,
-          shadowRadius: this.shadowRadius
-        }
-      }
-    };
-
-    this.parent.add(replacementObject);
-    this.parent.remove(this);
+    this.addGLTFComponent("spot-light", {
+      color: this.color,
+      intensity: this.intensity,
+      range: this.range,
+      innerConeAngle: this.innerConeAngle,
+      outerConeAngle: this.outerConeAngle,
+      castShadow: this.castShadow,
+      shadowMapResolution: this.shadowMapResolution.toArray(),
+      shadowBias: this.shadowBias,
+      shadowRadius: this.shadowRadius
+    });
+    this.replaceObject();
   }
 }

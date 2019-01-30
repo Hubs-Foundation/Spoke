@@ -1,6 +1,5 @@
 import THREE from "../../vendor/three";
 import EditorNodeMixin from "./EditorNodeMixin";
-import serializeColor from "../utils/serializeColor";
 
 export default class AmbientLightNode extends EditorNodeMixin(THREE.AmbientLight) {
   static legacyComponentName = "ambient-light";
@@ -21,32 +20,20 @@ export default class AmbientLightNode extends EditorNodeMixin(THREE.AmbientLight
   }
 
   serialize() {
-    const json = super.serialize();
-
-    json.components.push({
-      name: "ambient-light",
-      props: {
-        color: serializeColor(this.color),
+    return super.serialize({
+      "ambient-light": {
+        color: this.color,
         intensity: this.intensity
       }
     });
-
-    return json;
   }
 
   prepareForExport() {
-    const replacementObject = new THREE.Object3D().copy(this, false);
-
-    replacementObject.userData.gltfExtensions = {
-      HUBS_components: {
-        "ambient-light": {
-          color: serializeColor(this.color),
-          intensity: this.intensity
-        }
-      }
-    };
-
-    this.parent.add(replacementObject);
-    this.parent.remove(this);
+    super.prepareForExport();
+    this.addGLTFComponent("ambient-light", {
+      color: this.color,
+      intensity: this.intensity
+    });
+    this.replaceObject();
   }
 }

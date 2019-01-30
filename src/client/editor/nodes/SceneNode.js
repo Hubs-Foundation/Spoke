@@ -35,6 +35,69 @@ function migrateV1ToV2(json) {
   };
 }
 
+function migrateV2ToV3(json) {
+  json.version = 3;
+
+  for (const entityId in json.entities) {
+    const entity = json.entities[entityId];
+
+    if (!entity.components) {
+      continue;
+    }
+
+    entity.components.push({
+      name: "visible",
+      props: {
+        value: true
+      }
+    });
+
+    const modelComponent = entity.components.find(c => c.name === "gltf-model");
+    const navMeshComponent = entity.components.find(c => c.name === "nav-mesh");
+
+    if (!navMeshComponent && modelComponent && modelComponent.props.includeInFloorPlan) {
+      entity.components.push({
+        name: "collidable",
+        props: {}
+      });
+
+      entity.components.push({
+        name: "walkable",
+        props: {}
+      });
+    }
+
+    const groundPlaneComponent = entity.components.find(c => c.name === "ground-plane");
+
+    if (groundPlaneComponent) {
+      entity.components.push({
+        name: "walkable",
+        props: {}
+      });
+    }
+
+    if (modelComponent && navMeshComponent) {
+      entity.components = [
+        {
+          name: "floor-plan",
+          props: {
+            autoCellSize: true,
+            cellSize: 1,
+            cellHeight: 0.1,
+            agentHeight: 1.0,
+            agentRadius: 0.0001,
+            agentMaxClimb: 0.5,
+            agentMaxSlope: 45,
+            regionMinSize: 4
+          }
+        }
+      ];
+    }
+  }
+
+  return json;
+}
+
 export default class SceneNode extends EditorNodeMixin(THREE.Scene) {
   static nodeName = "Scene";
 
@@ -43,6 +106,10 @@ export default class SceneNode extends EditorNodeMixin(THREE.Scene) {
   static async loadScene(editor, json) {
     if (!json.version) {
       json = migrateV1ToV2(json);
+    }
+
+    if (json.version === 2) {
+      json = migrateV2ToV3(json);
     }
 
     const { root, metadata, entities } = json;
@@ -133,9 +200,9 @@ export default class SceneNode extends EditorNodeMixin(THREE.Scene) {
     return this;
   }
 
-  serialize(sceneUri) {
+  serialize() {
     const sceneJson = {
-      version: 2,
+      version: 3,
       root: this.uuid,
       metadata: this.metadata,
       entities: {
@@ -150,7 +217,7 @@ export default class SceneNode extends EditorNodeMixin(THREE.Scene) {
         return;
       }
 
-      const entityJson = child.serialize(sceneUri);
+      const entityJson = child.serialize();
       entityJson.parent = child.parent.uuid;
 
       let index = 0;

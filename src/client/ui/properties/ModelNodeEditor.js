@@ -17,8 +17,12 @@ export default class ModelNodeEditor extends Component {
     this.props.editor.setNodeProperty(this.props.node, "activeClipName", activeClipName);
   };
 
-  onChangeIncludeInFloorPlan = includeInFloorPlan => {
-    this.props.editor.setNodeProperty(this.props.node, "includeInFloorPlan", includeInFloorPlan);
+  onChangeCollidable = collidable => {
+    this.props.editor.setNodeProperty(this.props.node, "collidable", collidable);
+  };
+
+  onChangeWalkable = walkable => {
+    this.props.editor.setNodeProperty(this.props.node, "walkable", walkable);
   };
 
   onChangeCastShadow = castShadow => {
@@ -40,8 +44,11 @@ export default class ModelNodeEditor extends Component {
         <InputGroup name="Loop Animation">
           <SelectInput options={clipOptions} value={activeClipName} onChange={this.onChangeAnimation} />
         </InputGroup>
-        <InputGroup name="Include in Floor Plan">
-          <BooleanInput value={node.includeInFloorPlan} onChange={this.onChangeIncludeInFloorPlan} />
+        <InputGroup name="Collidable">
+          <BooleanInput value={node.collidable} onChange={this.onChangeCollidable} />
+        </InputGroup>
+        <InputGroup name="Walkable">
+          <BooleanInput value={node.walkable} onChange={this.onChangeWalkable} />
         </InputGroup>
         <InputGroup name="Cast Shadow">
           <BooleanInput value={node.castShadow} onChange={this.onChangeCastShadow} />

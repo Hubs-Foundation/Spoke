@@ -37,6 +37,16 @@
   padding: 8px 0;
 }
 
+:local(.visibleInputGroup) {
+  display: flex;
+  flex: 0;
+  
+  & > label {
+    width: auto !important;
+    padding-right: 8px;
+  }
+}
+
 :local(.topBarName) {
   label {
     width: auto !important;

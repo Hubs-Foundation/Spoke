@@ -7,16 +7,12 @@ import absoluteToRelativeURL from "../utils/absoluteToRelativeURL";
 export default class ModelNode extends EditorNodeMixin(Model) {
   static nodeName = "Model";
 
-  static shouldDeserialize(entityJson) {
-    const gltfModelComponent = entityJson.components.find(c => c.name === "gltf-model");
-    const navMeshComponent = entityJson.components.find(c => c.name === "nav-mesh");
-    return gltfModelComponent && !navMeshComponent;
-  }
+  static legacyComponentName = "gltf-model";
 
   static async deserialize(editor, json) {
     const node = await super.deserialize(editor, json);
 
-    const { src, attribution, includeInFloorPlan, origin } = json.components.find(c => c.name === "gltf-model").props;
+    const { src, attribution, origin } = json.components.find(c => c.name === "gltf-model").props;
 
     let absoluteURL = new URL(src, editor.sceneUri).href;
 
@@ -34,7 +30,8 @@ export default class ModelNode extends EditorNodeMixin(Model) {
       node.attribution = attribution;
     }
 
-    node.includeInFloorPlan = includeInFloorPlan === undefined ? true : includeInFloorPlan;
+    node.collidable = !!json.components.find(c => c.name === "collidable");
+    node.walkable = !!json.components.find(c => c.name === "walkable");
 
     const loopAnimationComponent = json.components.find(c => c.name === "loop-animation");
 
@@ -55,8 +52,9 @@ export default class ModelNode extends EditorNodeMixin(Model) {
   constructor(editor) {
     super(editor);
     this.attribution = null;
-    this.includeInFloorPlan = true;
     this._canonicalUrl = null;
+    this.collidable = true;
+    this.walkable = true;
   }
 
   // Overrides Model's src property and stores the original (non-resolved) url.
@@ -130,36 +128,33 @@ export default class ModelNode extends EditorNodeMixin(Model) {
     }
   }
 
-  serialize(sceneUri) {
-    const json = super.serialize();
-
-    json.components.push({
-      name: "gltf-model",
-      props: {
-        src: absoluteToRelativeURL(sceneUri, this._canonicalUrl),
-        attribution: this.attribution,
-        includeInFloorPlan: this.includeInFloorPlan
-      }
-    });
-
-    json.components.push({
-      name: "shadow",
-      props: {
+  serialize() {
+    const components = {
+      "gltf-model": {
+        src: absoluteToRelativeURL(this.editor.sceneUri, this._canonicalUrl),
+        attribution: this.attribution
+      },
+      shadow: {
         cast: this.castShadow,
         receive: this.receiveShadow
       }
-    });
+    };
 
     if (this.clipActions.length > 0) {
-      json.components.push({
-        name: "loop-animation",
-        props: {
-          clip: this.clipActions[0].getClip().name
-        }
-      });
+      components["loop-animation"] = {
+        clip: this.clipActions[0].getClip().name
+      };
     }
 
-    return json;
+    if (this.collidable) {
+      components.collidable = {};
+    }
+
+    if (this.walkable) {
+      components.walkable = {};
+    }
+
+    return super.serialize(components);
   }
 
   copy(source, recursive) {
@@ -167,25 +162,23 @@ export default class ModelNode extends EditorNodeMixin(Model) {
     this.updateStaticModes();
     this._canonicalUrl = source._canonicalUrl;
     this.attribution = source.attribution;
-    this.includeInFloorPlan = source.includeInFloorPlan;
+    this.collidable = source.collidable;
+    this.walkable = source.walkable;
     return this;
   }
 
   prepareForExport() {
-    this.userData.gltfExtensions = {
-      HUBS_components: {
-        shadow: {
-          cast: this.castShadow,
-          receive: this.receiveShadow
-        }
-      }
-    };
+    super.prepareForExport();
+    this.addGLTFComponent("shadow", {
+      cast: this.castShadow,
+      receive: this.receiveShadow
+    });
 
     // TODO: Support exporting more than one active clip.
     if (this.clipActions.length > 0) {
-      this.userData.gltfExtensions.HUBS_components["loop-animation"] = {
+      this.addGLTFComponent("loop-animation", {
         clip: this.clipActions[0].getClip().name
-      };
+      });
     }
   }
 }

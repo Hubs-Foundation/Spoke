@@ -1,8 +1,6 @@
-import THREE from "../../vendor/three";
 import EditorNodeMixin from "./EditorNodeMixin";
 import PhysicalPointLight from "../objects/PhysicalPointLight";
 import SpokePointLightHelper from "../helpers/SpokePointLightHelper";
-import serializeColor from "../utils/serializeColor";
 
 export default class PointLightNode extends EditorNodeMixin(PhysicalPointLight) {
   static legacyComponentName = "point-light";
@@ -70,12 +68,9 @@ export default class PointLightNode extends EditorNodeMixin(PhysicalPointLight) 
   }
 
   serialize() {
-    const json = super.serialize();
-
-    json.components.push({
-      name: "point-light",
-      props: {
-        color: serializeColor(this.color),
+    return super.serialize({
+      "point-light": {
+        color: this.color,
         intensity: this.intensity,
         range: this.range,
         castShadow: this.castShadow,
@@ -84,30 +79,20 @@ export default class PointLightNode extends EditorNodeMixin(PhysicalPointLight) 
         shadowRadius: this.shadowRadius
       }
     });
-
-    return json;
   }
 
   prepareForExport() {
+    super.prepareForExport();
     this.remove(this.helper);
-
-    const replacementObject = new THREE.Object3D().copy(this, false);
-
-    replacementObject.userData.gltfExtensions = {
-      HUBS_components: {
-        "point-light": {
-          color: serializeColor(this.color),
-          intensity: this.intensity,
-          range: this.range,
-          castShadow: this.castShadow,
-          shadowMapResolution: this.shadowMapResolution.toArray(),
-          shadowBias: this.shadowBias,
-          shadowRadius: this.shadowRadius
-        }
-      }
-    };
-
-    this.parent.add(replacementObject);
-    this.parent.remove(this);
+    this.addGLTFComponent("point-light", {
+      color: this.color,
+      intensity: this.intensity,
+      range: this.range,
+      castShadow: this.castShadow,
+      shadowMapResolution: this.shadowMapResolution.toArray(),
+      shadowBias: this.shadowBias,
+      shadowRadius: this.shadowRadius
+    });
+    this.replaceObject();
   }
 }

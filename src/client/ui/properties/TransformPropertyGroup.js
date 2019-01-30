@@ -21,10 +21,12 @@ export default class TransformPropertyGroup extends Component {
 
   componentDidMount() {
     this.props.editor.signals.transformChanged.add(this.onTransformChanged);
+    this.props.editor.signals.objectChanged.add(this.onTransformChanged);
   }
 
   componentWillUnmount() {
     this.props.editor.signals.transformChanged.remove(this.onTransformChanged);
+    this.props.editor.signals.objectChanged.remove(this.onTransformChanged);
   }
 
   onTransformChanged = () => {

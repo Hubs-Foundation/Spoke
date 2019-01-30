@@ -1,4 +1,3 @@
-import THREE from "../../vendor/three";
 import EditorNodeMixin from "./EditorNodeMixin";
 import Video from "../objects/Video";
 
@@ -94,11 +93,8 @@ export default class VideoNode extends EditorNodeMixin(Video) {
   }
 
   serialize() {
-    const json = super.serialize();
-
-    json.components.push({
-      name: "video",
-      props: {
+    return super.serialize({
+      video: {
         src: this._canonicalUrl,
         controls: this.controls,
         autoPlay: this.autoPlay,
@@ -115,38 +111,29 @@ export default class VideoNode extends EditorNodeMixin(Video) {
         projection: this.projection
       }
     });
-
-    return json;
   }
 
   prepareForExport() {
-    const replacementObject = new THREE.Object3D().copy(this, false);
-
-    replacementObject.userData.gltfExtensions = {
-      HUBS_components: {
-        video: {
-          src: this._canonicalUrl,
-          controls: this.controls,
-          autoPlay: this.autoPlay,
-          loop: this.loop,
-          audioType: this.audioType,
-          volume: this.volume,
-          distanceModel: this.distanceModel,
-          rolloffFactor: this.rolloffFactor,
-          refDistance: this.refDistance,
-          maxDistance: this.maxDistance,
-          coneInnerAngle: this.coneInnerAngle,
-          coneOuterAngle: this.coneOuterAngle,
-          coneOuterGain: this.coneOuterGain,
-          projection: this.projection
-        },
-        networked: {
-          id: this.uuid
-        }
-      }
-    };
-
-    this.parent.add(replacementObject);
-    this.parent.remove(this);
+    super.prepareForExport();
+    this.addGLTFComponent("video", {
+      src: this._canonicalUrl,
+      controls: this.controls,
+      autoPlay: this.autoPlay,
+      loop: this.loop,
+      audioType: this.audioType,
+      volume: this.volume,
+      distanceModel: this.distanceModel,
+      rolloffFactor: this.rolloffFactor,
+      refDistance: this.refDistance,
+      maxDistance: this.maxDistance,
+      coneInnerAngle: this.coneInnerAngle,
+      coneOuterAngle: this.coneOuterAngle,
+      coneOuterGain: this.coneOuterGain,
+      projection: this.projection
+    });
+    this.addGLTFComponent("networked", {
+      id: this.uuid
+    });
+    this.replaceObject();
   }
 }
