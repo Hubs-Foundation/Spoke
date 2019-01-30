@@ -4,6 +4,8 @@ import styles from "./PropertiesPanelContainer.scss";
 import PropertyGroup from "./PropertyGroup";
 import TransformPropertyGroup from "./TransformPropertyGroup";
 import NameInputGroup from "./NameInputGroup";
+import InputGroup from "../inputs/InputGroup";
+import BooleanInput from "../inputs/BooleanInput";
 
 export default class NodeEditor extends Component {
   static propTypes = {
@@ -19,6 +21,10 @@ export default class NodeEditor extends Component {
     hideTransform: false
   };
 
+  onChangeVisible = value => {
+    this.props.editor.setNodeProperty(this.props.node, "visible", value);
+  };
+
   render() {
     const { node, description, editor, children } = this.props;
 
@@ -27,6 +33,9 @@ export default class NodeEditor extends Component {
         <div className={styles.propertiesHeader}>
           <div className={styles.propertiesPanelTopBar}>
             <NameInputGroup node={node} editor={editor} />
+            <InputGroup name="Visible" className={styles.visibleInputGroup}>
+              <BooleanInput value={node.visible} onChange={this.onChangeVisible} />
+            </InputGroup>
           </div>
           {!node.hideTransform && <TransformPropertyGroup node={node} editor={editor} />}
         </div>
