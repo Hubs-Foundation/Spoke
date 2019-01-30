@@ -4,7 +4,6 @@ import FloorPlan from "../objects/FloorPlan";
 import Recast from "../recast/recast.js";
 import ModelNode from "./ModelNode";
 import GroundPlaneNode from "./GroundPlaneNode";
-import absoluteToRelativeURL from "../utils/absoluteToRelativeURL";
 import BoxColliderNode from "./BoxColliderNode";
 
 let recast = null;
@@ -56,92 +55,6 @@ function mergeMeshGeometries(meshes) {
   }
 
   return THREE.BufferGeometryUtils.mergeBufferGeometries([geometry, flippedGeometry]);
-}
-
-function generateNavGeometry(geometry) {
-  if (!recast) {
-    throw new Error("Recast module unavailable or not yet loaded.");
-  }
-
-  if (!geometry.attributes.position || geometry.attributes.position.count === 0) {
-    const emptyGeometry = new THREE.BufferGeometry();
-    emptyGeometry.setIndex([]);
-    emptyGeometry.addAttribute("position", new THREE.Float32BufferAttribute([], 3));
-    return emptyGeometry;
-  }
-
-  const box = new THREE.Box3().setFromBufferAttribute(geometry.attributes.position);
-  const size = new THREE.Vector3();
-  box.getSize(size);
-  if (Math.max(size.x, size.y, size.z) > 2000) {
-    throw new Error(
-      `Scene is too large (${size.x.toFixed(3)} x ${size.y.toFixed(3)} x ${size.z.toFixed(3)}) ` +
-        `to generate a floor plan.\n` +
-        `You can un-check the "walkable" checkbox on models to exclude them from the floor plan.`
-    );
-  }
-
-  const positions = geometry.attributes.position.array;
-  const indices = new Int32Array(positions.length / 3);
-  for (let i = 0; i < indices.length; i++) {
-    indices[i] = i;
-  }
-
-  recast.loadArray(positions, indices);
-
-  const area = size.x * size.z;
-  // Tuned to produce cell sizes from ~0.5 to ~1.5 for areas from ~200 to ~350,000.
-  const cellSize = Math.pow(area, 1 / 3) / 50;
-
-  const objMeshStr = recast.build(
-    cellSize,
-    0.1, // cellHeight
-    1.0, // agentHeight
-    0.0001, // agentRadius
-    0.5, // agentMaxClimb
-    45, // agentMaxSlope
-    4, // regionMinSize
-    20, // regionMergeSize
-    12, // edgeMaxLen
-    1, // edgeMaxError
-    3, // vertsPerPoly
-    16, //detailSampleDist
-    1 // detailSampleMaxError
-  );
-
-  const navPositions = [];
-  const navIndices = [];
-
-  // TODO; Dumb that recast returns an OBJ formatted string. We should have it return an array.
-  const objLines = objMeshStr.split("@");
-
-  for (const line of objLines) {
-    const trimmedLine = line.trim();
-
-    if (trimmedLine.length === 0) {
-      continue;
-    }
-
-    const values = trimmedLine.split(" ");
-
-    if (values[0] === "v") {
-      navPositions.push(Number(values[1]));
-      navPositions.push(Number(values[2]));
-      navPositions.push(Number(values[3]));
-    } else if (values[0] === "f") {
-      navIndices.push(Number(values[1] - 1));
-      navIndices.push(Number(values[2] - 1));
-      navIndices.push(Number(values[3] - 1));
-    } else {
-      throw new Error(`Invalid objMesh line "${line}"`);
-    }
-  }
-
-  const navGeometry = new THREE.BufferGeometry();
-  navGeometry.setIndex(navIndices);
-  navGeometry.addAttribute("position", new THREE.Float32BufferAttribute(navPositions, 3));
-
-  return navGeometry;
 }
 
 async function yieldFor(ms) {
@@ -210,11 +123,9 @@ async function generateHeightfield(geometry) {
 export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
   static nodeName = "Floor Plan";
 
-  static shouldDeserialize(entityJson) {
-    const gltfModelComponent = entityJson.components.find(c => c.name === "gltf-model");
-    const navMeshComponent = entityJson.components.find(c => c.name === "nav-mesh");
-    return gltfModelComponent && navMeshComponent;
-  }
+  static legacyComponentName = "floor-plan";
+
+  static hideTransform = true;
 
   static load() {
     // Recast() doesn't actually return a promise so we wrap it in one.
@@ -229,23 +140,39 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
   static async deserialize(editor, json) {
     const node = await super.deserialize(editor, json);
 
-    const { src } = json.components.find(c => c.name === "gltf-model").props;
+    const {
+      autoCellSize,
+      cellSize,
+      cellHeight,
+      agentHeight,
+      agentRadius,
+      agentMaxClimb,
+      agentMaxSlope,
+      regionMinSize
+    } = json.components.find(c => c.name === "floor-plan").props;
 
-    const absoluteURL = new URL(src, editor.sceneUri).href;
-    await node.loadNavMesh(absoluteURL);
-
-    const heightfield = json.components.find(c => c.name === "heightfield");
-
-    if (heightfield) {
-      node.heightfield = heightfield.props;
-    }
+    node.autoCellSize = autoCellSize;
+    node.cellSize = cellSize;
+    node.cellHeight = cellHeight;
+    node.agentHeight = agentHeight;
+    node.agentRadius = agentRadius;
+    node.agentMaxClimb = agentMaxClimb;
+    node.agentMaxSlope = agentMaxSlope;
+    node.regionMinSize = regionMinSize;
 
     return node;
   }
 
   constructor(editor) {
     super(editor);
-    this.navMeshSrc = null;
+    this.autoCellSize = true;
+    this.cellSize = 1;
+    this.cellHeight = 0.1;
+    this.agentHeight = 1.0;
+    this.agentRadius = 0.0001;
+    this.agentMaxClimb = 0.5;
+    this.agentMaxSlope = 45;
+    this.regionMinSize = 4;
   }
 
   onSelect() {
@@ -260,11 +187,96 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
     }
   }
 
-  async generate(scene) {
+  generateNavGeometry(geometry) {
+    if (!recast) {
+      throw new Error("Recast module unavailable or not yet loaded.");
+    }
+
+    if (!geometry.attributes.position || geometry.attributes.position.count === 0) {
+      const emptyGeometry = new THREE.BufferGeometry();
+      emptyGeometry.setIndex([]);
+      emptyGeometry.addAttribute("position", new THREE.Float32BufferAttribute([], 3));
+      return emptyGeometry;
+    }
+
+    const box = new THREE.Box3().setFromBufferAttribute(geometry.attributes.position);
+    const size = new THREE.Vector3();
+    box.getSize(size);
+    if (Math.max(size.x, size.y, size.z) > 2000) {
+      throw new Error(
+        `Scene is too large (${size.x.toFixed(3)} x ${size.y.toFixed(3)} x ${size.z.toFixed(3)}) ` +
+          `to generate a floor plan.\n` +
+          `You can un-check the "walkable" checkbox on models to exclude them from the floor plan.`
+      );
+    }
+
+    const positions = geometry.attributes.position.array;
+    const indices = new Int32Array(positions.length / 3);
+    for (let i = 0; i < indices.length; i++) {
+      indices[i] = i;
+    }
+
+    recast.loadArray(positions, indices);
+
+    const area = size.x * size.z;
+
+    const objMeshStr = recast.build(
+      // Tuned to produce cell sizes from ~0.5 to ~1.5 for areas from ~200 to ~350,000.
+      this.autoCellSize ? Math.pow(area, 1 / 3) / 50 : this.cellSize,
+      this.cellHeight,
+      this.agentHeight,
+      this.agentRadius,
+      this.agentMaxClimb,
+      this.agentMaxSlope,
+      this.regionMinSize,
+      20, // regionMergeSize
+      12, // edgeMaxLen
+      1, // edgeMaxError
+      3, // vertsPerPoly
+      16, // detailSampleDist
+      1 // detailSampleMaxError
+    );
+
+    const navPositions = [];
+    const navIndices = [];
+
+    // TODO; Dumb that recast returns an OBJ formatted string. We should have it return an array.
+    const objLines = objMeshStr.split("@");
+
+    for (const line of objLines) {
+      const trimmedLine = line.trim();
+
+      if (trimmedLine.length === 0) {
+        continue;
+      }
+
+      const values = trimmedLine.split(" ");
+
+      if (values[0] === "v") {
+        navPositions.push(Number(values[1]));
+        navPositions.push(Number(values[2]));
+        navPositions.push(Number(values[3]));
+      } else if (values[0] === "f") {
+        navIndices.push(Number(values[1] - 1));
+        navIndices.push(Number(values[2] - 1));
+        navIndices.push(Number(values[3] - 1));
+      } else {
+        throw new Error(`Invalid objMesh line "${line}"`);
+      }
+    }
+
+    const navGeometry = new THREE.BufferGeometry();
+    navGeometry.setIndex(navIndices);
+    navGeometry.addAttribute("position", new THREE.Float32BufferAttribute(navPositions, 3));
+
+    return navGeometry;
+  }
+
+  async generate() {
     const collidableMeshes = [];
     const walkableMeshes = [];
 
-    const modelNodes = scene.getNodesByType(ModelNode);
+    const modelNodes = this.editor.scene.getNodesByType(ModelNode);
 
     for (const node of modelNodes) {
       const model = node.model;
@@ -286,7 +298,7 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
       });
     }
 
-    const boxColliderNodes = scene.getNodesByType(BoxColliderNode);
+    const boxColliderNodes = this.editor.scene.getNodesByType(BoxColliderNode);
 
     for (const node of boxColliderNodes) {
       if (node.walkable) {
@@ -299,10 +311,10 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
     }
 
     const walkableGeometry = mergeMeshGeometries(walkableMeshes);
-    const walkableNavGeometry = generateNavGeometry(walkableGeometry);
+    const walkableNavGeometry = this.generateNavGeometry(walkableGeometry);
     let finalWalkableGeometry = walkableNavGeometry;
 
-    const groundPlaneNode = scene.findNodeByType(GroundPlaneNode);
+    const groundPlaneNode = this.editor.scene.findNodeByType(GroundPlaneNode);
 
     if (groundPlaneNode && groundPlaneNode.walkable) {
       const groundPlaneMesh = groundPlaneNode.mesh;
@@ -323,47 +335,38 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
     this.setNavMesh(navMesh);
 
     const heightfieldGeometry = mergeMeshGeometries(collidableMeshes);
-    const collidableNavGeometry = generateNavGeometry(heightfieldGeometry);
+    const collidableNavGeometry = this.generateNavGeometry(heightfieldGeometry);
     this.heightfield = await generateHeightfield(collidableNavGeometry);
 
     return this;
   }
 
-  async loadNavMesh(src) {
-    try {
-      const { scene } = await this.editor.gltfCache.get(src);
-      const navMesh = scene.getObjectByProperty("type", "Mesh");
-      this.navMeshSrc = src;
-      if (this.editor.selected !== this) {
-        navMesh.visible = false;
-      }
-      this.setNavMesh(navMesh);
-    } catch (e) {
-      console.warn("Floor plan could not be loaded. Regenerating...");
-      await this.editor.generateFloorPlan(this);
-      return;
-    }
-  }
-
   copy(source, recursive) {
     super.copy(source, recursive);
-    this.navMeshSrc = source.navMeshSrc;
+    this.autoCellSize = source.autoCellSize;
+    this.cellSize = source.cellSize;
+    this.cellHeight = source.cellHeight;
+    this.agentHeight = source.agentHeight;
+    this.agentRadius = source.agentRadius;
+    this.agentMaxClimb = source.agentMaxClimb;
+    this.agentMaxSlope = source.agentMaxSlope;
+    this.regionMinSize = source.regionMinSize;
     return this;
   }
 
   serialize() {
-    const components = {
-      "gltf-model": {
-        src: absoluteToRelativeURL(this.editor.sceneUri, this.navMeshSrc)
-      },
-      "nav-mesh": {}
-    };
-
-    if (this.heightfield) {
-      components.heightfield = this.heightfield;
-    }
-
-    return super.serialize(components);
+    return super.serialize({
+      "floor-plan": {
+        autoCellSize: this.autoCellSize,
+        cellSize: this.cellSize,
+        cellHeight: this.cellHeight,
+        agentHeight: this.agentHeight,
+        agentRadius: this.agentRadius,
+        agentMaxClimb: this.agentMaxClimb,
+        agentMaxSlope: this.agentMaxSlope,
+        regionMinSize: this.regionMinSize
+      }
+    });
   }
 
   prepareForExport() {
@@ -372,6 +375,7 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
     material.transparent = true;
     material.opacity = 0;
     this.addGLTFComponent("visible", { visible: false });
+    this.addGLTFComponent("nav-mesh", {});
 
     if (this.heightfield) {
       this.addGLTFComponent("heightfield", this.heightfield);

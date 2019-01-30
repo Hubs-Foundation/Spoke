@@ -53,8 +53,9 @@ function migrateV2ToV3(json) {
     });
 
     const modelComponent = entity.components.find(c => c.name === "gltf-model");
+    const navMeshComponent = entity.components.find(c => c.name === "nav-mesh");
 
-    if (modelComponent && modelComponent.props.includeInFloorPlan) {
+    if (!navMeshComponent && modelComponent && modelComponent.props.includeInFloorPlan) {
       entity.components.push({
         name: "collidable",
         props: {}
@@ -73,6 +74,24 @@ function migrateV2ToV3(json) {
         name: "walkable",
         props: {}
       });
+    }
+
+    if (modelComponent && navMeshComponent) {
+      entity.components = [
+        {
+          name: "floor-plan",
+          props: {
+            autoCellSize: true,
+            cellSize: 1,
+            cellHeight: 0.1,
+            agentHeight: 1.0,
+            agentRadius: 0.0001,
+            agentMaxClimb: 0.5,
+            agentMaxSlope: 45,
+            regionMinSize: 4
+          }
+        }
+      ];
     }
   }
 

@@ -37,6 +37,8 @@ import ImageNode from "../../editor/nodes/ImageNode";
 import VideoNode from "../../editor/nodes/VideoNode";
 import SpawnerNode from "../../editor/nodes/SpawnerNode";
 import SpawnerNodeEditor from "../properties/SpawnerNodeEditor";
+import FloorPlanNode from "../../editor/nodes/FloorPlanNode";
+import FloorPlanNodeEditor from "../properties/FloorPlanNodeEditor";
 
 function AddButton({ label, iconClassName, onClick }) {
   return (
@@ -251,7 +253,8 @@ class AddNodeActionButtons extends Component {
   getSingletonNodeState() {
     return {
       hasSkybox: !!this.props.editor.scene.findNodeByType(SkyboxNode),
-      hasGroundPlane: !!this.props.editor.scene.findNodeByType(GroundPlaneNode)
+      hasGroundPlane: !!this.props.editor.scene.findNodeByType(GroundPlaneNode),
+      hasFloorPlan: !!this.props.editor.scene.findNodeByType(FloorPlanNode)
     };
   }
 
@@ -266,7 +269,7 @@ class AddNodeActionButtons extends Component {
       [styles.fabClosed]: !this.state.open
     };
 
-    const { open, hasSkybox, hasGroundPlane } = this.state;
+    const { open, hasSkybox, hasGroundPlane, hasFloorPlan } = this.state;
 
     return (
       <div className={styles.addNodeActionButtons}>
@@ -292,6 +295,13 @@ class AddNodeActionButtons extends Component {
                 label={GroundPlaneNode.nodeName}
                 iconClassName={GroundPlaneNodeEditor.iconClassName}
                 onClick={() => this.addNode(GroundPlaneNode)}
+              />
+            )}
+            {!hasFloorPlan && (
+              <AddButton
+                label={FloorPlanNode.nodeName}
+                iconClassName={FloorPlanNodeEditor.iconClassName}
+                onClick={() => this.addNode(FloorPlanNode)}
               />
             )}
             <AddButton

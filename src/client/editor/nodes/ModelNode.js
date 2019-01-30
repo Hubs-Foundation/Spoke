@@ -7,11 +7,7 @@ import absoluteToRelativeURL from "../utils/absoluteToRelativeURL";
 export default class ModelNode extends EditorNodeMixin(Model) {
   static nodeName = "Model";
 
-  static shouldDeserialize(entityJson) {
-    const gltfModelComponent = entityJson.components.find(c => c.name === "gltf-model");
-    const navMeshComponent = entityJson.components.find(c => c.name === "nav-mesh");
-    return gltfModelComponent && !navMeshComponent;
-  }
+  static legacyComponentName = "gltf-model";
 
   static async deserialize(editor, json) {
     const node = await super.deserialize(editor, json);

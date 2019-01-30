@@ -32,7 +32,6 @@ export default class Editor {
     this.scene = new SceneNode(this);
     this.sceneModified = false;
     this.sceneUri = null;
-    this.saveOnGenerateFloorPlan = true;
 
     this.camera = new THREE.PerspectiveCamera(80, window.innerWidth / window.innerHeight, 0.2, 8000);
     this.audioListener = new THREE.AudioListener();
@@ -163,6 +162,7 @@ export default class Editor {
     this._addObject(directionalLight);
     this._addObject(new SpawnPointNode(this));
     this._addObject(new GroundPlaneNode(this));
+    this._addObject(new FloorPlanNode(this));
 
     this.scene.traverse(node => {
       if (node.isNode) {
@@ -237,46 +237,6 @@ export default class Editor {
     this.sceneModified = false;
 
     this.signals.sceneModified.dispatch();
-  }
-
-  async generateFloorPlan(existingFloorPlan) {
-    let floorPlan = existingFloorPlan || this.scene.findNodeByType(FloorPlanNode);
-
-    if (!floorPlan) {
-      floorPlan = new FloorPlanNode(this);
-      this.addObject(floorPlan);
-    }
-
-    const oldNavMeshPath = floorPlan.navMeshSrc;
-
-    // TODO: If FloorPlan is not the last node loaded it will not generate a FloorPlan for the entire scene.
-    await floorPlan.generate(this.scene);
-
-    if (floorPlan.navMesh) {
-      const exporter = new THREE.GLTFExporter();
-      const glb = await new Promise((resolve, reject) =>
-        exporter.parse(
-          floorPlan.navMesh,
-          resolve,
-          e => {
-            reject(new Error(`Error exporting glTF. ${eventToMessage(e)}`));
-          },
-          { mode: "glb" }
-        )
-      );
-      const path = await this.project.writeGeneratedBlob(`${floorPlan.navMesh.uuid}.glb`, glb);
-      floorPlan.navMeshSrc = path;
-    }
-
-    // Remove the old nav mesh file
-    if (oldNavMeshPath) {
-      await this.project.remove(oldNavMeshPath);
-    }
-
-    // Save the scene so we don't break the reference to the nav mesh in the spoke file
-    if (this.sceneUri && this.saveOnGenerateFloorPlan) {
-      await this.saveScene(this.sceneUri);
-    }
   }
 
   async exportScene(outputPath, glb) {
@@ -621,9 +581,12 @@ export default class Editor {
   }
 
   async publishScene(sceneId, screenshotBlob, contentAttributions, onPublishProgress) {
-    onPublishProgress("generating floor plan");
+    const floorPlanNode = this.scene.findNodeByType(FloorPlanNode);
 
-    await this.generateFloorPlan();
+    if (floorPlanNode) {
+      onPublishProgress("generating floor plan");
+      await floorPlanNode.generate();
+    }
 
     await this.project.mkdir(this.project.getAbsoluteURI("generated"));
 
