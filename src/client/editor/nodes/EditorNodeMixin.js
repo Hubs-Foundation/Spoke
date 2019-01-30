@@ -41,7 +41,7 @@ export default function EditorNodeMixin(Object3DClass) {
         const visibleComponent = json.components.find(c => c.name === "visible");
 
         if (visibleComponent) {
-          node.visible = visibleComponent.props.value;
+          node.visible = visibleComponent.props.visible;
         }
       }
 
@@ -106,7 +106,7 @@ export default function EditorNodeMixin(Object3DClass) {
           {
             name: "visible",
             props: {
-              value: this.visible
+              visible: this.visible
             }
           }
         ]
