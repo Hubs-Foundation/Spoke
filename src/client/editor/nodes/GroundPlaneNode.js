@@ -90,6 +90,7 @@ export default class GroundPlaneNode extends EditorNodeMixin(GroundPlane) {
       }
     };
     this.add(groundPlaneCollider);
+    this.remove(this.walkableMesh);
 
     this.addGLTFComponent("shadow", {
       receive: this.receiveShadow,
