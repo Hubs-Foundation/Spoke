@@ -560,7 +560,11 @@ class App extends Component {
       this.props.editor.clearSceneMetadata();
     }
 
-    return await this.onSaveScene(filePath);
+    await this.onSaveScene(filePath);
+
+    const scenePath = filePath.replace(/^\/api\/files/, "\\scenes").replace(".spoke", "");
+    const pageTitle = "Spoke by Mozilla";
+    history.pushState(null, pageTitle, scenePath);
   };
 
   onSaveScene = async sceneURI => {
