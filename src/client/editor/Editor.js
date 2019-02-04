@@ -241,6 +241,13 @@ export default class Editor {
 
   async exportScene(outputPath, glb) {
     const scene = this.scene;
+
+    const floorPlanNode = scene.findNodeByType(FloorPlanNode);
+
+    if (floorPlanNode) {
+      await floorPlanNode.generate();
+    }
+
     const clonedScene = scene.clone();
 
     clonedScene.prepareForExport();
@@ -581,13 +588,6 @@ export default class Editor {
   }
 
   async publishScene(sceneId, screenshotBlob, contentAttributions, onPublishProgress) {
-    const floorPlanNode = this.scene.findNodeByType(FloorPlanNode);
-
-    if (floorPlanNode) {
-      onPublishProgress("generating floor plan");
-      await floorPlanNode.generate();
-    }
-
     await this.project.mkdir(this.project.getAbsoluteURI("generated"));
 
     const { name, creatorAttribution, description, allowRemixing, allowPromotion } = this.getSceneMetadata();
