@@ -98,6 +98,38 @@ function migrateV2ToV3(json) {
   return json;
 }
 
+function migrateV3ToV4(json) {
+  json.version = 4;
+
+  for (const entityId in json.entities) {
+    const entity = json.entities[entityId];
+
+    if (!entity.components) {
+      continue;
+    }
+
+    const visibleComponent = entity.components.find(c => c.name === "visible");
+
+    if (visibleComponent) {
+      if (visibleComponent.props.visible !== undefined) {
+        continue;
+      }
+
+      if (visibleComponent.props.value !== undefined) {
+        visibleComponent.props = {
+          visible: visibleComponent.props.value
+        };
+      } else {
+        visibleComponent.props = {
+          visible: true
+        };
+      }
+    }
+  }
+
+  return json;
+}
+
 export default class SceneNode extends EditorNodeMixin(THREE.Scene) {
   static nodeName = "Scene";
 
@@ -110,6 +142,10 @@ export default class SceneNode extends EditorNodeMixin(THREE.Scene) {
 
     if (json.version === 2) {
       json = migrateV2ToV3(json);
+    }
+
+    if (json.version === 3) {
+      json = migrateV3ToV4(json);
     }
 
     const { root, metadata, entities } = json;
