@@ -74,7 +74,7 @@ export default class GroundPlaneNode extends EditorNodeMixin(GroundPlane) {
     super.prepareForExport();
 
     const groundPlaneCollider = new THREE.Object3D();
-    groundPlaneCollider.scale.copy(this.walkableMesh.scale.x, 0.1, this.walkableMesh.scale.z);
+    groundPlaneCollider.scale.set(this.walkableMesh.scale.x, 0.1, this.walkableMesh.scale.z);
     groundPlaneCollider.userData.gltfExtensions = {
       HUBS_components: {
         "box-collider": {
