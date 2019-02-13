@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import PropTypes from "prop-types";
 import classNames from "classnames";
 
+import { withSettings } from "../contexts/SettingsContext";
 import { withEditor } from "../contexts/EditorContext";
 import { withDialog } from "../contexts/DialogContext";
 import ButtonSelectDialog from "../dialogs/ButtonSelectDialog";
@@ -39,6 +40,8 @@ import SpawnerNode from "../../editor/nodes/SpawnerNode";
 import SpawnerNodeEditor from "../properties/SpawnerNodeEditor";
 import FloorPlanNode from "../../editor/nodes/FloorPlanNode";
 import FloorPlanNodeEditor from "../properties/FloorPlanNodeEditor";
+import TriggerVolumeNode from "../../editor/nodes/TriggerVolumeNode";
+import TriggerVolumeNodeEditor from "../properties/TriggerVolumeNodeEditor";
 
 function AddButton({ label, iconClassName, onClick }) {
   return (
@@ -61,7 +64,8 @@ class AddNodeActionButtons extends Component {
   static propTypes = {
     editor: PropTypes.object,
     showDialog: PropTypes.func,
-    hideDialog: PropTypes.func
+    hideDialog: PropTypes.func,
+    settings: PropTypes.object
   };
 
   toggle = () => {
@@ -269,6 +273,7 @@ class AddNodeActionButtons extends Component {
       [styles.fabClosed]: !this.state.open
     };
 
+    const settings = this.props.settings;
     const { open, hasSkybox, hasGroundPlane, hasFloorPlan } = this.state;
 
     return (
@@ -319,6 +324,13 @@ class AddNodeActionButtons extends Component {
                 onClick={() => this.addNode(SkyboxNode)}
               />
             )}
+            {settings.enableExperimentalFeatures && (
+              <AddButton
+                label={TriggerVolumeNode.nodeName}
+                iconClassName={TriggerVolumeNodeEditor.iconClassName}
+                onClick={() => this.addNode(TriggerVolumeNode)}
+              />
+            )}
           </div>
         )}
         <button onClick={this.toggle} className={classNames(fabClassNames)}>
@@ -329,4 +341,4 @@ class AddNodeActionButtons extends Component {
   }
 }
 
-export default withEditor(withDialog(AddNodeActionButtons));
+export default withSettings(withEditor(withDialog(AddNodeActionButtons)));

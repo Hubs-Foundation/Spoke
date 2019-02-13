@@ -11,6 +11,7 @@ import SetPositionCommand from "./commands/SetPositionCommand";
 import SetRotationCommand from "./commands/SetRotationCommand";
 import SetScaleCommand from "./commands/SetScaleCommand";
 import SetObjectPropertyCommand from "./commands/SetObjectPropertyCommand";
+import MultiCmdsCommand from "./commands/MultiCmdsCommand";
 
 import TextureCache from "./caches/TextureCache";
 import GLTFCache from "./caches/GLTFCache";
@@ -412,25 +413,31 @@ export default class Editor {
     return this.nodeEditors.get(node.constructor);
   }
 
-  setNodeProperty(node, propertyName, value) {
-    let command;
-
+  _getSetNodePropertyCommand(node, propertyName, value) {
     switch (propertyName) {
       case "position":
-        command = new SetPositionCommand(node, value);
-        break;
+        return new SetPositionCommand(node, value);
       case "rotation":
-        command = new SetRotationCommand(node, value);
-        break;
+        return new SetRotationCommand(node, value);
       case "scale":
-        command = new SetScaleCommand(node, value);
-        break;
+        return new SetScaleCommand(node, value);
       default:
-        command = new SetObjectPropertyCommand(node, propertyName, value);
-        break;
+        return new SetObjectPropertyCommand(node, propertyName, value);
     }
+  }
 
+  setNodeProperty(node, propertyName, value) {
+    const command = this._getSetNodePropertyCommand(node, propertyName, value);
     this.execute(command);
+    node.onChange();
+  }
+
+  setNodeProperties(node, properties) {
+    const commands = Object.entries(properties).map(([key, value]) =>
+      this._getSetNodePropertyCommand(node, key, value)
+    );
+    const multiCmd = new MultiCmdsCommand(commands);
+    this.execute(multiCmd);
     node.onChange();
   }
 

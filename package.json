@@ -74,7 +74,7 @@
     ]
   },
   "dependencies": {
-    "@fortawesome/fontawesome-free": "^5.2.0",
+    "@fortawesome/fontawesome-free": "^5.7.2",
     "@mozillareality/react-dnd-html5-backend": "^5.1.11",
     "@robertlong/react-ui-tree": "github:robertlong/react-ui-tree#dev",
     "async-exit-hook": "^2.0.1",
