@@ -1,18 +1,6 @@
 import THREE from "../../vendor/three";
 import EditorNodeMixin from "./EditorNodeMixin";
 
-// TODO: actually use the right inputs for the specified property name
-function parseValue(str) {
-  if (str === "true") {
-    return true;
-  } else if (str === "false") {
-    return false;
-  } else if (!isNaN(str) && !isNaN(parseFloat(str))) {
-    return parseFloat(str);
-  }
-  return str;
-}
-
 export default class TriggerVolumeNode extends EditorNodeMixin(THREE.Object3D) {
   static legacyComponentName = "trigger-volume";
 
@@ -103,10 +91,10 @@ export default class TriggerVolumeNode extends EditorNodeMixin(THREE.Object3D) {
       target: this.target,
       enterComponent: this.enterComponent,
       enterProperty: this.enterProperty,
-      enterValue: parseValue(this.enterValue),
+      enterValue: this.enterValue,
       leaveComponent: this.leaveComponent,
       leaveProperty: this.leaveProperty,
-      leaveValue: parseValue(this.leaveValue)
+      leaveValue: this.leaveValue
     });
   }
 }
