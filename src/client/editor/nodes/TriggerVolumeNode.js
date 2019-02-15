@@ -1,6 +1,16 @@
 import THREE from "../../vendor/three";
 import EditorNodeMixin from "./EditorNodeMixin";
 
+const requiredProperties = [
+  "target",
+  "enterComponent",
+  "enterProperty",
+  "enterValue",
+  "leaveComponent",
+  "leaveProperty",
+  "leaveValue"
+];
+
 export default class TriggerVolumeNode extends EditorNodeMixin(THREE.Object3D) {
   static legacyComponentName = "trigger-volume";
 
@@ -83,12 +93,20 @@ export default class TriggerVolumeNode extends EditorNodeMixin(THREE.Object3D) {
   prepareForExport() {
     super.prepareForExport();
     this.remove(this.helper);
+
+    for (const prop of requiredProperties) {
+      if (this[prop] === null || this[prop] === undefined) {
+        console.warn(`TriggerVolumeNode: property "${prop}" is required. Skipping...`);
+        return;
+      }
+    }
+
     const scale = new THREE.Vector3();
     this.getWorldScale(scale);
 
     this.addGLTFComponent("trigger-volume", {
       size: { x: scale.x, y: scale.y, z: scale.z },
-      target: this.target,
+      target: this.gltfIndexForUUID(this.target),
       enterComponent: this.enterComponent,
       enterProperty: this.enterProperty,
       enterValue: this.enterValue,

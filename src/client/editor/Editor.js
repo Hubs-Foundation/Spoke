@@ -25,6 +25,8 @@ import FloorPlanNode from "./nodes/FloorPlanNode";
 
 import makeUniqueName from "./utils/makeUniqueName";
 import eventToMessage from "./utils/eventToMessage";
+import cloneObject3D from "./utils/cloneObject3D";
+import isEmptyObject from "./utils/isEmptyObject";
 
 export default class Editor {
   constructor(project) {
@@ -249,7 +251,7 @@ export default class Editor {
       await floorPlanNode.generate();
     }
 
-    const clonedScene = scene.clone();
+    const clonedScene = cloneObject3D(scene, true);
 
     clonedScene.prepareForExport();
     await clonedScene.combineMeshes();
@@ -311,6 +313,42 @@ export default class Editor {
         textureDef.source = imageIndexMap.get(textureDef.source);
       }
     }
+
+    const nodeDefs = chunks.json.nodes;
+    if (nodeDefs) {
+      const uuidToIndexMap = {};
+
+      for (let i = 0; i < nodeDefs.length; i++) {
+        const nodeDef = nodeDefs[i];
+
+        if (nodeDef.extras && nodeDef.extras.MOZ_spoke_uuid) {
+          uuidToIndexMap[nodeDef.extras.MOZ_spoke_uuid] = i;
+          delete nodeDef.extras.MOZ_spoke_uuid;
+
+          if (isEmptyObject(nodeDef.extras)) {
+            delete nodeDef.extras;
+          }
+        }
+      }
+
+      for (const nodeDef of nodeDefs) {
+        if (nodeDef.extensions && nodeDef.extensions.HUBS_components) {
+          const components = nodeDef.extensions.HUBS_components;
+          for (const componentName in components) {
+            const component = components[componentName];
+
+            for (const propertyName in component) {
+              const property = component[propertyName];
+
+              if (typeof property === "object" && property.__gltfIndexForUUID) {
+                component[propertyName] = uuidToIndexMap[property.__gltfIndexForUUID];
+              }
+            }
+          }
+        }
+      }
+    }
+
     if (glb) {
       return await new Promise((resolve, reject) => {
         exporter.createGLBBlob(chunks, resolve, e => {

@@ -11,8 +11,8 @@ const componentOptions = [
 ];
 
 const propertyOptions = [
-  { label: "paused", value: "paused", component: "video", input: BooleanInput },
-  { label: "paused", value: "paused", component: "animation-loop", input: BooleanInput }
+  { label: "paused", value: "paused", component: "video", input: BooleanInput, default: false },
+  { label: "paused", value: "paused", component: "animation-loop", input: BooleanInput, default: false }
 ];
 
 export default class TriggerVolumeNodeEditor extends Component {
@@ -54,9 +54,10 @@ export default class TriggerVolumeNodeEditor extends Component {
 
   onChangeEnterProperty = value => {
     const { node, editor } = this.props;
+    const options = propertyOptions.find(o => o.value === value);
     editor.setNodeProperties(node, {
       enterProperty: value,
-      enterValue: null
+      enterValue: options ? options.default : null
     });
   };
 
@@ -76,9 +77,10 @@ export default class TriggerVolumeNodeEditor extends Component {
 
   onChangeLeaveProperty = value => {
     const { node, editor } = this.props;
+    const options = propertyOptions.find(o => o.value === value);
     editor.setNodeProperties(node, {
       leaveProperty: value,
-      leaveValue: null
+      leaveValue: options ? options.default : null
     });
   };
 
@@ -92,7 +94,7 @@ export default class TriggerVolumeNodeEditor extends Component {
 
     this.props.editor.scene.traverse(o => {
       if (o.isNode) {
-        options.push({ label: o.name, value: o.name, nodeName: o.nodeName });
+        options.push({ label: o.name, value: o.uuid, nodeName: o.nodeName });
       }
     });
 

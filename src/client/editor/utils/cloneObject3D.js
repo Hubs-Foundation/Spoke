@@ -9,7 +9,7 @@ function parallelTraverse(a, b, callback) {
   }
 }
 
-export default function cloneObject3D(source) {
+export default function cloneObject3D(source, preserveUUIDs) {
   const cloneLookup = new Map();
 
   const clone = source.clone();
@@ -23,6 +23,10 @@ export default function cloneObject3D(source) {
 
     if (curNode.animations) {
       clonedNode.animations = curNode.animations;
+    }
+
+    if (preserveUUIDs) {
+      clonedNode.uuid = curNode.uuid;
     }
 
     if (!curNode.isSkinnedMesh) return;
