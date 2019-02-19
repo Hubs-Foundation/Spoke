@@ -9,7 +9,7 @@ export default function CompoundNumericInput({ value, onChange, ...extras }) {
   return (
     <div className={styles.compound}>
       <Slider className={styles.slider} min={min} max={max} value={value} step={step} onChange={onChange} />
-      <NumericInput value={value} onChange={onChange} {...extras} />
+      <NumericInput {...extras} value={value} onChange={onChange} />
     </div>
   );
 }

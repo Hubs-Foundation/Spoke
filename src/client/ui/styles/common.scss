@@ -30,6 +30,11 @@
   &:focus {
     border-color: $blue;
   }
+
+  &:disabled {
+    background-color: $disabled;
+    color: $disabled-text;
+  }
 }
 
 :local(.disabled) {
