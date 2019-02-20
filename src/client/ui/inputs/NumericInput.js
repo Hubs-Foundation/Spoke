@@ -193,9 +193,24 @@ export default class NumericInput extends React.Component {
   }
 
   render() {
+    const {
+      value,
+      mediumStep,
+      smallStep,
+      bigStep,
+      min,
+      max,
+      format,
+      parse,
+      onChange,
+      precision,
+      style,
+      ...rest
+    } = this.props;
+
     return (
       <input
-        style={this.props.style}
+        {...rest}
         className={styles.numericInput}
         value={this.state.value}
         onKeyDown={this.onKeyDown}

@@ -59,7 +59,7 @@ export default class Vector3Input extends Component {
   onChangeZ = z => this.onChange("z", z);
 
   render() {
-    const { uniformScaling, value } = this.props;
+    const { uniformScaling, value, ...rest } = this.props;
     const { uniformEnabled } = this.state;
     const vx = value ? value.x : 0;
     const vy = value ? value.y : 0;
@@ -75,11 +75,11 @@ export default class Vector3Input extends Component {
           </div>
         )}
         <div className={styles.label}>X:</div>
-        <NumericInput style={{ width: "22%" }} value={vx} onChange={this.onChangeX} />
+        <NumericInput {...rest} style={{ width: "22%" }} value={vx} onChange={this.onChangeX} />
         <div className={styles.label}>Y:</div>
-        <NumericInput style={{ width: "22%" }} value={vy} onChange={this.onChangeY} />
+        <NumericInput {...rest} style={{ width: "22%" }} value={vy} onChange={this.onChangeY} />
         <div className={styles.label}>Z:</div>
-        <NumericInput style={{ width: "22%" }} value={vz} onChange={this.onChangeZ} />
+        <NumericInput {...rest} style={{ width: "22%" }} value={vz} onChange={this.onChangeZ} />
       </div>
     );
   }

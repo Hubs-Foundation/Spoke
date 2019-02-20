@@ -11,6 +11,7 @@ import SetPositionCommand from "./commands/SetPositionCommand";
 import SetRotationCommand from "./commands/SetRotationCommand";
 import SetScaleCommand from "./commands/SetScaleCommand";
 import SetObjectPropertyCommand from "./commands/SetObjectPropertyCommand";
+import MultiCmdsCommand from "./commands/MultiCmdsCommand";
 
 import TextureCache from "./caches/TextureCache";
 import GLTFCache from "./caches/GLTFCache";
@@ -24,6 +25,8 @@ import FloorPlanNode from "./nodes/FloorPlanNode";
 
 import makeUniqueName from "./utils/makeUniqueName";
 import eventToMessage from "./utils/eventToMessage";
+import cloneObject3D from "./utils/cloneObject3D";
+import isEmptyObject from "./utils/isEmptyObject";
 
 export default class Editor {
   constructor(project) {
@@ -248,7 +251,7 @@ export default class Editor {
       await floorPlanNode.generate();
     }
 
-    const clonedScene = scene.clone();
+    const clonedScene = cloneObject3D(scene, true);
 
     clonedScene.prepareForExport();
     await clonedScene.combineMeshes();
@@ -310,6 +313,42 @@ export default class Editor {
         textureDef.source = imageIndexMap.get(textureDef.source);
       }
     }
+
+    const nodeDefs = chunks.json.nodes;
+    if (nodeDefs) {
+      const uuidToIndexMap = {};
+
+      for (let i = 0; i < nodeDefs.length; i++) {
+        const nodeDef = nodeDefs[i];
+
+        if (nodeDef.extras && nodeDef.extras.MOZ_spoke_uuid) {
+          uuidToIndexMap[nodeDef.extras.MOZ_spoke_uuid] = i;
+          delete nodeDef.extras.MOZ_spoke_uuid;
+
+          if (isEmptyObject(nodeDef.extras)) {
+            delete nodeDef.extras;
+          }
+        }
+      }
+
+      for (const nodeDef of nodeDefs) {
+        if (nodeDef.extensions && nodeDef.extensions.HUBS_components) {
+          const components = nodeDef.extensions.HUBS_components;
+          for (const componentName in components) {
+            const component = components[componentName];
+
+            for (const propertyName in component) {
+              const property = component[propertyName];
+
+              if (typeof property === "object" && property.__gltfIndexForUUID) {
+                component[propertyName] = uuidToIndexMap[property.__gltfIndexForUUID];
+              }
+            }
+          }
+        }
+      }
+    }
+
     if (glb) {
       return await new Promise((resolve, reject) => {
         exporter.createGLBBlob(chunks, resolve, e => {
@@ -412,25 +451,31 @@ export default class Editor {
     return this.nodeEditors.get(node.constructor);
   }
 
-  setNodeProperty(node, propertyName, value) {
-    let command;
-
+  _getSetNodePropertyCommand(node, propertyName, value) {
     switch (propertyName) {
       case "position":
-        command = new SetPositionCommand(node, value);
-        break;
+        return new SetPositionCommand(node, value);
       case "rotation":
-        command = new SetRotationCommand(node, value);
-        break;
+        return new SetRotationCommand(node, value);
       case "scale":
-        command = new SetScaleCommand(node, value);
-        break;
+        return new SetScaleCommand(node, value);
       default:
-        command = new SetObjectPropertyCommand(node, propertyName, value);
-        break;
+        return new SetObjectPropertyCommand(node, propertyName, value);
     }
+  }
 
+  setNodeProperty(node, propertyName, value) {
+    const command = this._getSetNodePropertyCommand(node, propertyName, value);
     this.execute(command);
+    node.onChange();
+  }
+
+  setNodeProperties(node, properties) {
+    const commands = Object.entries(properties).map(([key, value]) =>
+      this._getSetNodePropertyCommand(node, key, value)
+    );
+    const multiCmd = new MultiCmdsCommand(commands);
+    this.execute(multiCmd);
     node.onChange();
   }
 

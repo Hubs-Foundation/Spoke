@@ -61,7 +61,9 @@ export default class ColorInput extends Component {
   };
 
   render() {
-    const hexColor = "#" + this.props.value.getHexString();
+    const { value, onChange, ...rest } = this.props;
+
+    const hexColor = "#" + value.getHexString();
 
     return (
       <div className={styles.colorInput}>
@@ -69,13 +71,13 @@ export default class ColorInput extends Component {
           <div className={styles.color} style={{ background: hexColor }} />
         </div>
         <div className={styles.colorInput}>
-          <EditableInput value={hexColor} onChange={this.onChangeText} />
+          <EditableInput {...rest} value={hexColor} onChange={this.onChangeText} />
         </div>
         {this.state.displayColorPicker && (
           <div style={{ left: this.state.pickerX, bottom: this.state.pickerBottom }} className={styles.popover}>
             <div className={styles.cover} onClick={this.handleClose} />
             <div className={styles.colorPicker}>
-              <SketchPicker color={hexColor} disableAlpha={true} onChange={this.onChangePicker} />
+              <SketchPicker {...rest} color={hexColor} disableAlpha={true} onChange={this.onChangePicker} />
             </div>
           </div>
         )}

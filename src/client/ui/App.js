@@ -15,6 +15,7 @@ import HierarchyPanelContainer from "./hierarchy/HierarchyPanelContainer";
 import PropertiesPanelContainer from "./properties/PropertiesPanelContainer";
 import ViewportPanelContainer from "./viewport/ViewportPanelContainer";
 
+import { defaultSettings, SettingsContextProvider } from "./contexts/SettingsContext";
 import { EditorContextProvider } from "./contexts/EditorContext";
 import { DialogContextProvider } from "./contexts/DialogContext";
 import { SceneActionsContextProvider } from "./contexts/SceneActionsContext";
@@ -37,7 +38,7 @@ function isInputSelected() {
 
 class App extends Component {
   static propTypes = {
-    editor: PropTypes.object
+    editor: PropTypes.object.isRequired
   };
 
   constructor(props) {
@@ -53,7 +54,17 @@ class App extends Component {
       dialogProps = props.editor.project.updateInfo;
     }
 
+    let settings = defaultSettings;
+    const storedSettings = localStorage.getItem("spoke-settings");
+    if (storedSettings) {
+      settings = JSON.parse(storedSettings);
+    }
+
     this.state = {
+      settingsContext: {
+        settings,
+        updateSetting: this.updateSetting
+      },
       registeredPanels: {
         hierarchy: {
           component: HierarchyPanelContainer,
@@ -126,8 +137,7 @@ class App extends Component {
         duplicate: this.onDuplicate,
         snapTool: this.onSnapTool,
         spaceTool: this.onSpaceTool
-      },
-      toolbarMenu: this.generateToolbarMenu()
+      }
     };
   }
 
@@ -190,6 +200,21 @@ class App extends Component {
           {
             name: "Join us on Discord",
             action: () => window.open("https://discord.gg/XzrGUY8")
+          }
+        ]
+      },
+      {
+        name: "Developer",
+        items: [
+          {
+            name: this.state.settingsContext.settings.enableExperimentalFeatures
+              ? "Disable Experimental Features"
+              : "Enable Experimental Features",
+            action: () =>
+              this.updateSetting(
+                "enableExperimentalFeatures",
+                !this.state.settingsContext.settings.enableExperimentalFeatures
+              )
           }
         ]
       }
@@ -429,6 +454,17 @@ class App extends Component {
     const modified = this.props.editor.sceneModified ? "*" : "";
     document.title = `${modified}${this.props.editor.scene.name} | Spoke by Mozilla`;
   };
+
+  updateSetting(key, value) {
+    const settings = Object.assign(this.state.settingsContext.settings, { [key]: value });
+    localStorage.setItem("spoke-settings", JSON.stringify(settings));
+    this.setState({
+      settingsContext: {
+        ...this.state.settingsContext,
+        settings
+      }
+    });
+  }
 
   /**
    *  Scene Actions
@@ -793,46 +829,48 @@ class App extends Component {
   };
 
   render() {
-    const { openModal, toolbarMenu, DialogComponent, dialogProps } = this.state;
-
+    const { openModal, DialogComponent, dialogProps, settingsContext } = this.state;
     const { editor } = this.props;
+    const toolbarMenu = this.generateToolbarMenu();
 
     return (
       <DragDropContextProvider backend={HTML5Backend}>
         <HotKeys keyMap={this.state.keyMap} handlers={this.state.globalHotKeyHandlers} className={styles.flexColumn}>
-          <EditorContextProvider value={editor}>
-            <DialogContextProvider value={this.dialogContext}>
-              <SceneActionsContextProvider value={this.sceneActionsContext}>
-                <ToolBar menu={toolbarMenu} editor={editor} sceneActions={this.sceneActionsContext} />
-                <MosaicWithoutDragDropContext
-                  className="mosaic-theme"
-                  renderTile={this.renderPanel}
-                  initialValue={this.state.initialPanels}
-                  onChange={this.onPanelChange}
-                />
-                <Modal
-                  ariaHideApp={false}
-                  isOpen={!!openModal}
-                  onRequestClose={this.onCloseModal}
-                  shouldCloseOnOverlayClick={openModal && openModal.shouldCloseOnOverlayClick}
-                  className="Modal"
-                  overlayClassName="Overlay"
-                >
-                  {openModal && <openModal.component {...openModal.props} />}
-                </Modal>
-                <Modal
-                  ariaHideApp={false}
-                  isOpen={!!DialogComponent}
-                  onRequestClose={this.hideDialog}
-                  shouldCloseOnOverlayClick={false}
-                  className="Modal"
-                  overlayClassName="Overlay"
-                >
-                  {DialogComponent && <DialogComponent {...dialogProps} hideDialog={this.hideDialog} />}
-                </Modal>
-              </SceneActionsContextProvider>
-            </DialogContextProvider>
-          </EditorContextProvider>
+          <SettingsContextProvider value={settingsContext}>
+            <EditorContextProvider value={editor}>
+              <DialogContextProvider value={this.dialogContext}>
+                <SceneActionsContextProvider value={this.sceneActionsContext}>
+                  <ToolBar menu={toolbarMenu} editor={editor} sceneActions={this.sceneActionsContext} />
+                  <MosaicWithoutDragDropContext
+                    className="mosaic-theme"
+                    renderTile={this.renderPanel}
+                    initialValue={this.state.initialPanels}
+                    onChange={this.onPanelChange}
+                  />
+                  <Modal
+                    ariaHideApp={false}
+                    isOpen={!!openModal}
+                    onRequestClose={this.onCloseModal}
+                    shouldCloseOnOverlayClick={openModal && openModal.shouldCloseOnOverlayClick}
+                    className="Modal"
+                    overlayClassName="Overlay"
+                  >
+                    {openModal && <openModal.component {...openModal.props} />}
+                  </Modal>
+                  <Modal
+                    ariaHideApp={false}
+                    isOpen={!!DialogComponent}
+                    onRequestClose={this.hideDialog}
+                    shouldCloseOnOverlayClick={false}
+                    className="Modal"
+                    overlayClassName="Overlay"
+                  >
+                    {DialogComponent && <DialogComponent {...dialogProps} hideDialog={this.hideDialog} />}
+                  </Modal>
+                </SceneActionsContextProvider>
+              </DialogContextProvider>
+            </EditorContextProvider>
+          </SettingsContextProvider>
         </HotKeys>
       </DragDropContextProvider>
     );

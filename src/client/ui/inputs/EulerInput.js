@@ -34,11 +34,11 @@ export default class EulerInput extends Component {
     return (
       <div className={styles.inputGroup}>
         <div className={styles.label}>X:</div>
-        <NumericInput style={{ width: "22%" }} value={vx} onChange={x => this.onChange(x, vy, vz)} {...rest} />
+        <NumericInput {...rest} style={{ width: "22%" }} value={vx} onChange={x => this.onChange(x, vy, vz)} />
         <div className={styles.label}>Y:</div>
-        <NumericInput style={{ width: "22%" }} value={vy} onChange={y => this.onChange(vx, y, vz)} {...rest} />
+        <NumericInput {...rest} style={{ width: "22%" }} value={vy} onChange={y => this.onChange(vx, y, vz)} />
         <div className={styles.label}>Z:</div>
-        <NumericInput style={{ width: "22%" }} value={vz} onChange={z => this.onChange(vx, vy, z)} {...rest} />
+        <NumericInput {...rest} style={{ width: "22%" }} value={vz} onChange={z => this.onChange(vx, vy, z)} />
       </div>
     );
   }

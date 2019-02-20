@@ -24,4 +24,9 @@
     @extend .fas;
     content: fa-content($fa-var-check);
   }
+
+  input:disabled ~ label {
+    background-color: $disabled;
+    color: $disabled-text;
+  }
 }

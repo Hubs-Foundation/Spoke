@@ -138,6 +138,8 @@ export default function EditorNodeMixin(Object3DClass) {
     }
 
     prepareForExport() {
+      this.userData.MOZ_spoke_uuid = this.uuid;
+
       if (!this.visible) {
         this.addGLTFComponent("visible", {
           visible: this.visible
@@ -146,10 +148,12 @@ export default function EditorNodeMixin(Object3DClass) {
     }
 
     addGLTFComponent(name, props) {
-      if (!this.userData.gltfExtensions || !this.userData.gltfExtensions.HUBS_components) {
-        this.userData.gltfExtensions = {
-          HUBS_components: {}
-        };
+      if (!this.userData.gltfExtensions) {
+        this.userData.gltfExtensions = {};
+      }
+
+      if (!this.userData.gltfExtensions.HUBS_components) {
+        this.userData.gltfExtensions.HUBS_components = {};
       }
 
       if (props !== undefined && typeof props !== "object") {
@@ -174,12 +178,18 @@ export default function EditorNodeMixin(Object3DClass) {
     replaceObject(replacementObject) {
       replacementObject = replacementObject || new THREE.Object3D().copy(this, false);
 
+      replacementObject.uuid = this.uuid;
+
       if (this.userData.gltfExtensions && this.userData.gltfExtensions.HUBS_components) {
         replacementObject.userData.gltfExtensions.HUBS_components = this.userData.gltfExtensions.HUBS_components;
       }
 
       this.parent.add(replacementObject);
       this.parent.remove(this);
+    }
+
+    gltfIndexForUUID(nodeUUID) {
+      return { __gltfIndexForUUID: nodeUUID };
     }
 
     computeStaticMode() {

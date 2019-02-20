@@ -25,9 +25,11 @@ export default class BooleanInput extends Component {
   };
 
   render() {
+    const { value, onChange, ...rest } = this.props;
+
     return (
       <div className={styles.booleanInput}>
-        <input id={this.checkboxId} type="checkbox" checked={this.props.value} onChange={this.onChange} />
+        <input {...rest} id={this.checkboxId} type="checkbox" checked={value} onChange={this.onChange} />
         <label htmlFor={this.checkboxId} />
       </div>
     );
