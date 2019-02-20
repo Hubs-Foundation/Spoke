@@ -14,11 +14,11 @@ const componentOptions = [
     propertyOptions: [{ label: "paused", value: "paused", component: "video", input: BooleanInput, default: false }]
   },
   {
-    label: "animation-loop",
-    value: "animation-loop",
+    label: "loop-animation",
+    value: "loop-animation",
     nodeNames: ["Model"],
     propertyOptions: [
-      { label: "paused", value: "paused", component: "animation-loop", input: BooleanInput, default: false }
+      { label: "paused", value: "paused", component: "loop-animation", input: BooleanInput, default: false }
     ]
   }
 ];
