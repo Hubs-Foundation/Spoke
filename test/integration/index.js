@@ -2,14 +2,13 @@ const path = require("path");
 const puppeteer = require("puppeteer-core");
 const webpack = require("webpack");
 const getChrome = require("get-chrome");
-const { startServer } = require("../../src/server/index");
+const { startServer } = require("../../src/server/Server");
 const webpackConfig = require("../../webpack.config");
 
 async function main() {
   const https = false;
   const host = "localhost";
   const port = 9091;
-  const serverFilePath = path.join(__dirname, ".spoke-server");
 
   webpackConfig.target = "web";
 
@@ -39,12 +38,10 @@ async function main() {
     });
   });
 
-  const server = await startServer({
+  const server = await startServer(path.join(__dirname, "project"), {
     https,
     host,
     port,
-    serverFilePath,
-    projectPath: path.join(__dirname, "project"),
     publicPath: webpackOutputPath
   });
 

@@ -8,12 +8,8 @@
     "node": ">=10",
     "npm": ">=6.4"
   },
-  "bin": {
-    "spoke": "bin/spoke"
-  },
   "main": "lib/server/index.js",
   "files": [
-    "bin/",
     "lib/",
     "public/",
     "LICENSE"
@@ -23,37 +19,13 @@
     "url": "https://github.com/MozillaReality/spoke.git"
   },
   "scripts": {
-    "start": "cross-env NODE_ENV=development node ./bin/spoke",
-    "dev": "cross-env NODE_ENV=development node ./bin/spoke --no-open example",
+    "start": "cross-env NODE_ENV=development node ./src/server",
     "build": "cross-env NODE_ENV=production webpack --mode production",
-    "binaries": "rimraf ./release && npm run build && node package.js",
-    "release": "release-it",
     "precommit": "lint-staged",
     "lint": "eslint ./src",
     "test": "npm run test:unit && npm run test:integration",
     "test:unit": "ava",
     "test:integration": "node ./test/integration/index.js"
-  },
-  "release-it": {
-    "scripts": {
-      "beforeStart": "npm run test",
-      "afterBump": "npm run binaries"
-    },
-    "npm": {
-      "publish": false
-    },
-    "git": {
-      "commitMessage": "v${version}",
-      "tagName": "v${version}"
-    },
-    "github": {
-      "release": true,
-      "releaseName": "v${version}",
-      "assets": [
-        "release/*.zip"
-      ],
-      "tokenRef": "SPOKE_GITHUB_TOKEN"
-    }
   },
   "ava": {
     "files": [
@@ -76,17 +48,13 @@
   "dependencies": {
     "@fortawesome/fontawesome-free": "^5.7.2",
     "@robertlong/react-ui-tree": "github:robertlong/react-ui-tree#dev",
-    "async-exit-hook": "^2.0.1",
     "classnames": "^2.2.5",
-    "commander": "^2.19.0",
     "env-paths": "^1.0.0",
     "eventemitter3": "^3.1.0",
-    "fast-deep-equal": "^2.0.1",
     "form-data": "^2.3.3",
     "fs-extra": "^6.0.1",
     "glob-promise": "^3.4.0",
     "html-dir-content": "^0.1.3",
-    "is-wsl": "^1.1.0",
     "jszip": "^3.2.0",
     "koa": "^2.7.0",
     "koa-body": "^4.0.8",
@@ -95,7 +63,6 @@
     "koa-rewrite": "^3.0.1",
     "koa-router": "^7.4.0",
     "koa-static": "^5.0.0",
-    "node-fetch": "^2.3.0",
     "phoenix": "^1.4.1",
     "prop-types": "^15.7.2",
     "rc-slider": "^8.6.6",
@@ -148,18 +115,13 @@
     "lint-staged": "^7.3.0",
     "mocha": "^5.2.0",
     "node-sass": "^4.11.0",
-    "np": "^3.1.0",
-    "pkg": "^4.3.7",
     "prettier": "^1.16.4",
     "puppeteer-core": "^1.13.0",
-    "release-it": "^10.2.0",
-    "rimraf": "^2.6.3",
     "sass-loader": "^7.1.0",
     "source-map-support": "^0.5.10",
     "style-loader": "^0.21.0",
     "webpack": "^4.29.6",
     "webpack-cli": "^3.2.3",
-    "worker-loader": "^2.0.0",
-    "yazl": "^2.5.1"
+    "worker-loader": "^2.0.0"
   }
 }

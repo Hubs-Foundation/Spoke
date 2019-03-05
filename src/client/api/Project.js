@@ -196,28 +196,6 @@ export default class Project extends EventEmitter {
     return json;
   }
 
-  async mkdir(relativePath) {
-    const res = await this.fetch(relativePath + "?mkdir=true", { method: "POST" });
-
-    const json = await res.json();
-
-    return json;
-  }
-
-  async openFile(relativePath) {
-    const res = await this.fetch(relativePath + "?open=true", {
-      method: "POST"
-    });
-
-    const json = await res.json();
-
-    return json;
-  }
-
-  async openProjectDirectory() {
-    return this.openFile(this.projectDirectoryPath);
-  }
-
   getProjects() {
     return this.readJSON("/api/projects");
   }
