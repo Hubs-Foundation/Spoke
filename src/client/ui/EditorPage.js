@@ -168,12 +168,8 @@ export default class EditorPage extends Component {
             action: () => this.onPublishScene()
           },
           {
-            name: "Export as glTF ...",
-            action: e => this.onExportScene(e)
-          },
-          {
             name: "Export as binary glTF (.glb) ...",
-            action: e => this.onExportScene(e, true)
+            action: e => this.onExportScene(e)
           },
           {
             name: "Open Scenes Folder...",
@@ -350,7 +346,7 @@ export default class EditorPage extends Component {
     this.onSaveSceneAsDialog();
   };
 
-  onExportScene = (e, glb) => {
+  onExportScene = e => {
     e.preventDefault();
 
     // Disable when dialog is shown.
@@ -358,7 +354,7 @@ export default class EditorPage extends Component {
       return;
     }
 
-    this.onExportSceneDialog(glb);
+    this.onExportSceneDialog();
   };
 
   onTranslateTool = e => {
