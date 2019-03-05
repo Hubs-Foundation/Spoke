@@ -17,7 +17,6 @@ const corsAnywhere = require("cors-anywhere");
 const { parse: parseUrl } = require("url");
 const rewrite = require("koa-rewrite");
 const glob = require("glob-promise");
-const koaProxy = require("koa-proxy");
 
 const packageJSON = require("../../package.json");
 
@@ -168,23 +167,12 @@ async function startServer(options) {
   }
 
   const reticulumServer = process.env.RETICULUM_SERVER || "hubs.mozilla.com";
-  const mediaEndpoint = `https://${reticulumServer}/api/v1/media`;
-  const agent = process.env.NODE_ENV === "development" ? https.Agent({ rejectUnauthorized: false }) : null;
 
   if (process.env.RETICULUM_SERVER) {
     console.log(`Using RETICULUM_SERVER: ${reticulumServer}\n`);
   }
 
   const router = new Router();
-
-  app.use(
-    koaProxy({
-      url: mediaEndpoint,
-      match: /^\/api\/media/,
-      map: () => "/api/v1/media",
-      suppressRequestHeaders: ["host"]
-    })
-  );
 
   app.use(
     mount(
@@ -225,23 +213,6 @@ async function startServer(options) {
     };
   });
 
-  function getConfigPath(filename) {
-    return path.join(envPaths("Spoke", { suffix: "" }).config, filename);
-  }
-
-  function getUserInfoPath() {
-    return getConfigPath("spoke-user-info.json");
-  }
-
-  async function getUserInfo() {
-    const userInfoPath = getUserInfoPath();
-    if (fs.existsSync(userInfoPath)) {
-      return await fs.readJSON(userInfoPath);
-    } else {
-      return {};
-    }
-  }
-
   router.get("/api/projects", async ctx => {
     const paths = await glob(path.join(projectPath, "**/*.spoke"));
 
@@ -259,104 +230,6 @@ async function startServer(options) {
         url
       };
     });
-  });
-
-  router.get("/api/user_info", koaBody(), async ctx => {
-    ctx.body = await getUserInfo();
-  });
-
-  router.post("/api/user_info", koaBody(), async ctx => {
-    const userInfoPath = getUserInfoPath();
-    await fs.ensureDir(path.dirname(userInfoPath));
-    const currentUserInfo = await getUserInfo();
-    await fs.writeJSON(userInfoPath, { ...currentUserInfo, ...ctx.request.body });
-    ctx.status = 200;
-  });
-
-  function getCredentialsPath() {
-    return getConfigPath("spoke-credentials.json");
-  }
-
-  router.post("/api/credentials", koaBody(), async ctx => {
-    const credentialsPath = getCredentialsPath();
-    await fs.ensureDir(path.dirname(credentialsPath));
-    await fs.writeJSON(credentialsPath, { credentials: ctx.request.body.credentials });
-    ctx.status = 200;
-  });
-
-  async function getCredentials() {
-    const credentialsPath = getCredentialsPath();
-    if (fs.existsSync(credentialsPath)) {
-      const json = await fs.readJSON(credentialsPath);
-      return (json && json.credentials) || null;
-    }
-    return null;
-  }
-
-  router.get("/api/authenticated", koaBody(), async ctx => {
-    const authenticated = !!(await getCredentials());
-    ctx.status = authenticated ? 200 : 401;
-  });
-
-  router.post("/api/scene", koaBody(), async ctx => {
-    const params = ctx.request.body;
-    const sceneParams = {
-      screenshot_file_id: params.screenshotId,
-      screenshot_file_token: params.screenshotToken,
-      model_file_id: params.glbId,
-      model_file_token: params.glbToken,
-      scene_file_id: params.sceneFileId,
-      scene_file_token: params.sceneFileToken,
-      allow_remixing: params.allowRemixing,
-      allow_promotion: params.allowPromotion,
-      name: params.name,
-      description: params.description,
-      attributions: params.attributions
-    };
-
-    const sceneId = params.sceneId;
-
-    const credentials = await getCredentials();
-    if (!credentials) {
-      ctx.status = 401;
-      return;
-    }
-
-    const headers = {
-      "content-type": "application/json",
-      authorization: `Bearer ${credentials}`
-    };
-    const body = JSON.stringify({ scene: sceneParams });
-
-    let sceneEndpoint = `https://${reticulumServer}/api/v1/scenes`;
-    let method = "POST";
-    if (sceneId) {
-      sceneEndpoint = `${sceneEndpoint}/${sceneId}`;
-      method = "PATCH";
-    }
-
-    const resp = await fetch(sceneEndpoint, { agent, method, headers, body });
-
-    if (resp.status === 401) {
-      ctx.status = 401;
-      return;
-    }
-
-    if (resp.status !== 200) {
-      ctx.status = resp.status;
-      ctx.body = await resp.text();
-      return;
-    }
-
-    const json = await resp.json();
-    const scene_id = json.scenes[0].scene_id;
-    let url = json.scenes[0].url;
-
-    if (process.env.HUBS_SERVER) {
-      url = `https://${process.env.HUBS_SERVER}/scene.html?scene_id=${scene_id}`;
-    }
-
-    ctx.body = { url, sceneId: scene_id };
   });
 
   const nodePlatformToAssetPlatform = {

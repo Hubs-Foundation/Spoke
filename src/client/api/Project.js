@@ -13,7 +13,7 @@ async function resolveUrl(url, index) {
   const cacheKey = `${url}|${index}`;
   if (resolveUrlCache.has(cacheKey)) return resolveUrlCache.get(cacheKey);
 
-  const response = await fetch("/api/media", {
+  const response = await fetch(`https://${process.env.RETICULUM_SERVER}/api/v1/media`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ media: { url, index } })
@@ -191,7 +191,7 @@ export default class Project extends EventEmitter {
     return new Promise((resolve, reject) => {
       const request = new XMLHttpRequest();
 
-      request.open("post", `/api/media`, true);
+      request.open("post", `https://${process.env.RETICULUM_SERVER}/api/v1/media`, true);
 
       request.upload.addEventListener("progress", e => {
         if (onUploadProgress) {
@@ -221,11 +221,42 @@ export default class Project extends EventEmitter {
       delete params.sceneId;
     }
 
-    const resp = await fetch("/api/scene", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify(params)
-    });
+    const sceneParams = {
+      screenshot_file_id: params.screenshotId,
+      screenshot_file_token: params.screenshotToken,
+      model_file_id: params.glbId,
+      model_file_token: params.glbToken,
+      scene_file_id: params.sceneFileId,
+      scene_file_token: params.sceneFileToken,
+      allow_remixing: params.allowRemixing,
+      allow_promotion: params.allowPromotion,
+      name: params.name,
+      description: params.description,
+      attributions: params.attributions
+    };
+
+    const sceneId = params.sceneId;
+
+    const credentials = localStorage.getItem("spoke-credentials");
+
+    if (!credentials) {
+      throw new AuthenticationError();
+    }
+
+    const headers = {
+      "content-type": "application/json",
+      authorization: `Bearer ${credentials}`
+    };
+    const body = JSON.stringify({ scene: sceneParams });
+
+    let sceneEndpoint = `https://${process.env.RETICULUM_SERVER}/api/v1/scenes`;
+    let method = "POST";
+    if (sceneId) {
+      sceneEndpoint = `${sceneEndpoint}/${sceneId}`;
+      method = "PATCH";
+    }
+
+    const resp = await fetch(sceneEndpoint, { method, headers, body });
 
     if (resp.status === 401) {
       throw new AuthenticationError();
@@ -235,7 +266,18 @@ export default class Project extends EventEmitter {
       throw new Error(`Scene creation failed. ${await resp.text()}`);
     }
 
-    return resp.json();
+    const json = await resp.json();
+    const newSceneId = json.scenes[0].scene_id;
+    let url = json.scenes[0].url;
+
+    if (process.env.HUBS_SERVER) {
+      url = `https://${process.env.HUBS_SERVER}/scene.html?scene_id=${newSceneId}`;
+    }
+
+    return {
+      url,
+      sceneId
+    };
   }
 
   async startAuthentication(email) {
@@ -252,12 +294,8 @@ export default class Project extends EventEmitter {
     );
 
     const authComplete = new Promise(resolve =>
-      channel.on("auth_credentials", async ({ credentials }) => {
-        await fetch("/api/credentials", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ credentials })
-        });
+      channel.on("auth_credentials", ({ credentials }) => {
+        localStorage.setItem("spoke-credentials", credentials);
         resolve();
       })
     );
@@ -268,23 +306,19 @@ export default class Project extends EventEmitter {
   }
 
   async authenticated() {
-    return await fetch("/api/authenticated").then(r => r.ok);
+    return localStorage.getItem("spoke-credentials") !== null;
   }
 
   /*
    * Stores user info on disk.
    * userInfo can be a partial object.
    */
-  async setUserInfo(userInfo) {
-    return await fetch("/api/user_info", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify(userInfo)
-    });
+  setUserInfo(userInfo) {
+    localStorage.setItem("spoke-user-info", JSON.stringify(userInfo));
   }
 
-  async getUserInfo() {
-    return fetch("/api/user_info").then(r => r.json());
+  getUserInfo() {
+    return JSON.parse(localStorage.getItem("spoke-user-info"));
   }
 
   async retrieveUpdateInfo() {
