@@ -1,5 +1,4 @@
 import signals from "signals";
-import uuid from "uuid/v4";
 import THREE from "../vendor/three";
 import History from "./History";
 import Viewport from "./Viewport";
@@ -589,8 +588,6 @@ export default class Editor {
   }
 
   async publishScene(sceneId, screenshotBlob, contentAttributions, onPublishProgress) {
-    await this.project.mkdir(this.project.getAbsoluteURI("generated"));
-
     const { name, creatorAttribution, description, allowRemixing, allowPromotion } = this.getSceneMetadata();
 
     const attributions = {
@@ -600,7 +597,6 @@ export default class Editor {
 
     onPublishProgress("exporting scene");
 
-    const glbUri = this.project.getAbsoluteURI(`generated/${uuid()}.glb`);
     const glbBlob = await this.exportScene(null, true);
     const size = glbBlob.size / 1024 / 1024;
     const maxSize = this.project.maxUploadSize;
@@ -610,31 +606,40 @@ export default class Editor {
 
     onPublishProgress("uploading");
 
-    const screenshotUri = this.project.getAbsoluteURI(`generated/${uuid()}.jpg`);
-    await this.project.writeBlob(screenshotUri, screenshotBlob);
-    const { id: screenshotId, token: screenshotToken } = await this.project.uploadAndDelete(screenshotUri);
+    const screenshotFormData = new FormData();
+    screenshotFormData.set("media", screenshotBlob);
+    const {
+      file_id: screenshotId,
+      meta: { access_token: screenshotToken }
+    } = await this.project.upload(screenshotFormData);
 
-    await this.project.writeBlob(glbUri, glbBlob);
-    const { id: glbId, token: glbToken } = await this.project.uploadAndDelete(glbUri, uploadProgress => {
+    const glbFormData = new FormData();
+    glbFormData.set("media", glbBlob);
+    const {
+      file_id: glbId,
+      meta: { access_token: glbToken }
+    } = await this.project.upload(glbFormData, uploadProgress => {
       onPublishProgress(`uploading ${Math.floor(uploadProgress * 100)}%`);
     });
 
     onPublishProgress("uploading");
 
-    const sceneFileUri = this.project.getAbsoluteURI(`generated/${uuid()}.spoke`);
-    const oldSceneURI = this.sceneUri;
-    this.sceneUri = sceneFileUri;
+    let sceneBlob;
 
     try {
       const serializedScene = this.scene.serialize();
-      await this.project.writeJSON(sceneFileUri, serializedScene);
+      sceneBlob = new Blob([JSON.stringify(serializedScene)], { type: "application/json" });
     } catch (e) {
       throw e;
-    } finally {
-      this.sceneUri = oldSceneURI;
     }
 
-    const { id: sceneFileId, token: sceneFileToken } = await this.project.uploadAndDelete(sceneFileUri);
+    const sceneFormData = new FormData();
+    sceneFormData.set("media", sceneBlob);
+
+    const {
+      file_id: sceneFileId,
+      meta: { access_token: sceneFileToken }
+    } = await this.project.upload(sceneFormData);
 
     onPublishProgress(`${sceneId ? "updating" : "creating"} scene`);
 

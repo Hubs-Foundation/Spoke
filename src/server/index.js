@@ -9,16 +9,15 @@ const Koa = require("koa");
 const koaBody = require("koa-body");
 const mount = require("koa-mount");
 const path = require("path");
-const request = require("request");
 const Router = require("koa-router");
 const selfsigned = require("selfsigned");
 const semver = require("semver");
 const serve = require("koa-static");
-const WebSocket = require("ws");
 const corsAnywhere = require("cors-anywhere");
 const { parse: parseUrl } = require("url");
 const rewrite = require("koa-rewrite");
 const glob = require("glob-promise");
+const koaProxy = require("koa-proxy");
 
 const packageJSON = require("../../package.json");
 
@@ -39,10 +38,6 @@ function openFile(target) {
 
   args.push(target);
   childProcess.spawn(cmd, args).unref();
-}
-
-function uriToPath(projectPath, path) {
-  return path.replace("/api/files", projectPath);
 }
 
 async function pipeToFile(stream, filePath) {
@@ -136,25 +131,6 @@ async function startServer(options) {
     server = http.createServer(requestHandler);
   }
 
-  const wss = new WebSocket.Server({ server });
-
-  // wss error needs to be handled or else it will crash the process if the server errors.
-  wss.on("error", e => {
-    console.log("WebSocket Server Error", e.toString());
-  });
-
-  wss.on("close", e => {
-    console.log("WebSocket Server Closed", e);
-  });
-
-  function broadcast(json) {
-    const message = JSON.stringify(json);
-
-    for (const client of wss.clients) {
-      client.send(message);
-    }
-  }
-
   app.use(rewrite(/^\/projects/, "/"));
 
   if (opts.publicPath || process.env.NODE_ENV !== "development") {
@@ -202,6 +178,15 @@ async function startServer(options) {
   const router = new Router();
 
   app.use(
+    koaProxy({
+      url: mediaEndpoint,
+      match: /^\/api\/media/,
+      map: () => "/api/v1/media",
+      suppressRequestHeaders: ["host"]
+    })
+  );
+
+  app.use(
     mount(
       "/api/files/",
       serve(projectPath, {
@@ -238,35 +223,6 @@ async function startServer(options) {
     ctx.body = {
       success: true
     };
-  });
-
-  router.post("/api/media", koaBody(), async ctx => {
-    try {
-      const url = new URL(ctx.request.body.media.url);
-      const resp = await fetch(mediaEndpoint, {
-        agent,
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify(ctx.request.body)
-      });
-      ctx.status = resp.status;
-      if (resp.status !== 200) {
-        ctx.body = await resp.text();
-        ctx.status = resp.status;
-        return;
-      }
-
-      if (url.host === "sketchfab.com") {
-        ctx.res.setHeader("Cache-Control", "max-age=31536000");
-      } else {
-        ctx.res.setHeader("Cache-Control", "no-cache");
-      }
-
-      ctx.body = await resp.json();
-    } catch (err) {
-      console.error(err);
-      throw new Error("Error resolving media.");
-    }
   });
 
   function getConfigPath(filename) {
@@ -340,46 +296,6 @@ async function startServer(options) {
   router.get("/api/authenticated", koaBody(), async ctx => {
     const authenticated = !!(await getCredentials());
     ctx.status = authenticated ? 200 : 401;
-  });
-
-  router.post("/api/upload", koaBody(), async ctx => {
-    (async () => {
-      try {
-        const { uri } = ctx.request.body;
-        const path = uriToPath(projectPath, uri);
-
-        const fileSize = fs.statSync(path).size;
-        const fileStream = fs.createReadStream(path);
-
-        const req = request
-          .post(mediaEndpoint, { formData: { media: fileStream } }, async (err, resp, body) => {
-            await fs.remove(path);
-
-            if (err) {
-              broadcast({ type: "uploadComplete", uploadInfo: { err: err.toString() } });
-              return;
-            }
-
-            if (resp.statusCode !== 200) {
-              broadcast({ type: "uploadComplete", uploadInfo: { err: body } });
-              return;
-            }
-
-            const { file_id, meta } = JSON.parse(body);
-            broadcast({ type: "uploadComplete", uploadInfo: { id: file_id, token: meta.access_token } });
-          })
-          .on("drain", () => {
-            const { bytesWritten } = req.req.connection;
-            const percent = bytesWritten / fileSize;
-            broadcast({ type: "uploadProgress", uploadProgress: percent });
-          });
-      } catch (e) {
-        await fs.remove(path);
-        broadcast({ type: "uploadComplete", uploadInfo: { err: e.toString() } });
-      }
-    })();
-
-    ctx.status = 200;
   });
 
   router.post("/api/scene", koaBody(), async ctx => {

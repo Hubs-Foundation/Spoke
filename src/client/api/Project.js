@@ -77,44 +77,16 @@ export default class Project extends EventEmitter {
 
     this.serverURL = protocol + "//" + host;
 
-    if (protocol === "http:") {
-      this.wsServerURL = "ws://" + host;
-    } else {
-      this.wsServerURL = "wss://" + host;
-    }
-
     this.projectDirectoryPath = "/api/files/";
-
-    this.ws = new WebSocket(this.wsServerURL);
-    this.ws.addEventListener("message", this._onWebsocketMessage);
-    this.ws.addEventListener("error", this._onWebsocketError);
-    this.ws.addEventListener("close", e => {
-      console.log("WebSocket closed", e);
-    });
 
     this.updateInfo = null;
 
     // Max size in MB
     this.maxUploadSize = 128;
-
-    this.hierarchy = {
-      name: "New Project",
-      files: [],
-      uri: this.projectDirectoryPath,
-      children: []
-    };
-  }
-
-  getRelativeURI(uri) {
-    return uri.substring(uri.indexOf(this.projectDirectoryPath) + this.projectDirectoryPath.length);
   }
 
   getAbsoluteURI(relativeUri) {
     return this.projectDirectoryPath + relativeUri;
-  }
-
-  getURL(relativePath) {
-    return new URL(relativePath, this.serverURL).href;
   }
 
   async getContentType(url) {
@@ -155,7 +127,8 @@ export default class Project extends EventEmitter {
   }
 
   fetch(relativePath, options) {
-    return fetch(this.getURL(relativePath), options);
+    const url = new URL(relativePath, this.serverURL).href;
+    return fetch(url, options);
   }
 
   async writeBlob(relativePath, blob) {
@@ -167,14 +140,6 @@ export default class Project extends EventEmitter {
     const json = await res.json();
 
     return json;
-  }
-
-  async readBlob(relativePath) {
-    const res = await this.fetch(relativePath);
-
-    const blob = await res.blob();
-
-    return blob;
   }
 
   async readJSON(relativePath) {
@@ -190,31 +155,6 @@ export default class Project extends EventEmitter {
       method: "POST",
       body: JSON.stringify(data)
     });
-
-    const json = await res.json();
-
-    return json;
-  }
-
-  async writeFiles(relativePath, files) {
-    const formData = new FormData();
-
-    for (const [index, file] of files.entries()) {
-      formData.append("file" + index, file);
-    }
-
-    const res = await this.fetch(relativePath, {
-      method: "POST",
-      body: formData
-    });
-
-    const json = await res.json();
-
-    return json;
-  }
-
-  async remove(relativePath) {
-    const res = await this.fetch(relativePath + "?remove=true", { method: "POST" });
 
     const json = await res.json();
 
@@ -247,51 +187,33 @@ export default class Project extends EventEmitter {
     return this.readJSON("/api/projects");
   }
 
-  _onWebsocketMessage = event => {
-    const json = JSON.parse(event.data);
+  upload(formData, onUploadProgress) {
+    return new Promise((resolve, reject) => {
+      const request = new XMLHttpRequest();
 
-    if (json.type === "uploadProgress") {
-      this.emit(json.type, json.uploadProgress);
-    } else if (json.type === "uploadComplete") {
-      this.emit(json.type, json.uploadInfo);
-    } else if (json.type !== undefined && json.path !== undefined) {
-      this.emit(json.type, json.path);
-    }
-  };
+      request.open("post", `/api/media`, true);
 
-  _onWebsocketError = error => {
-    console.log(error);
-  };
-
-  async uploadAndDelete(uri, onUploadProgress) {
-    if (onUploadProgress) {
-      this.on("uploadProgress", onUploadProgress);
-    }
-
-    const uploadComplete = new Promise((resolve, reject) => {
-      this.once("uploadComplete", uploadInfo => {
+      request.upload.addEventListener("progress", e => {
         if (onUploadProgress) {
-          this.off("uploadProgress", onUploadProgress);
-        }
-        if (uploadInfo.err) {
-          reject(new Error(`Upload failed for "${uri}". ${uploadInfo.err}`));
-        } else {
-          resolve(uploadInfo);
+          onUploadProgress(e.loaded / e.total);
         }
       });
+
+      request.addEventListener("error", e => {
+        reject(new Error(`Upload failed ${e}`));
+      });
+
+      request.addEventListener("load", () => {
+        if (request.status < 300) {
+          const response = JSON.parse(request.responseText);
+          resolve(response);
+        } else {
+          reject(new Error(`Upload failed ${request.statusText}`));
+        }
+      });
+
+      request.send(formData);
     });
-
-    const resp = await fetch("/api/upload", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ uri })
-    });
-
-    if (resp.status !== 200) {
-      throw new Error(`Upload failed for "${uri}". ${await resp.text()}`);
-    }
-
-    return uploadComplete;
   }
 
   async createOrUpdateScene(params) {
@@ -314,24 +236,6 @@ export default class Project extends EventEmitter {
     }
 
     return resp.json();
-  }
-
-  async _debugVerifyAuth(url) {
-    const params = new URLSearchParams(url);
-    const topic = params.get("auth_topic");
-    const token = params.get("auth_token");
-    const reticulumServer = process.env.RETICULUM_SERVER;
-    const socketUrl = `wss://${reticulumServer}/socket`;
-    const socket = new Socket(socketUrl, { params: { session_id: uuid() } });
-    socket.connect();
-    const channel = socket.channel(topic);
-    await new Promise((resolve, reject) =>
-      channel
-        .join()
-        .receive("ok", resolve)
-        .receive("error", reject)
-    );
-    channel.push("auth_verified", { token });
   }
 
   async startAuthentication(email) {
@@ -387,23 +291,7 @@ export default class Project extends EventEmitter {
     this.updateInfo = await fetch("/api/update_info").then(r => r.json());
   }
 
-  getUrlDirname(url) {
-    const { pathname } = new URL(url, window.location);
-
-    let lastSlashIndex = pathname.lastIndexOf("/");
-
-    if (lastSlashIndex === -1) {
-      lastSlashIndex = 0;
-    }
-
-    if (pathname.indexOf(".", lastSlashIndex) === -1 && lastSlashIndex !== pathname.length - 1) {
-      return pathname;
-    }
-
-    return pathname.substring(0, lastSlashIndex);
-  }
-
-  getUrlBasename(url) {
+  getUrlFilename(url) {
     let pathname = new URL(url, window.location).pathname;
 
     if (pathname.endsWith("/")) {
@@ -416,11 +304,7 @@ export default class Project extends EventEmitter {
       lastSlashIndex = 0;
     }
 
-    return pathname.substring(lastSlashIndex + 1);
-  }
-
-  getUrlFilename(url) {
-    const basename = this.getUrlBasename(url);
+    const basename = pathname.substring(lastSlashIndex + 1);
 
     const lastPeriodIndex = basename.lastIndexOf(".");
 
@@ -429,22 +313,5 @@ export default class Project extends EventEmitter {
     }
 
     return basename.substring(0, lastPeriodIndex);
-  }
-
-  getUrlExtname(url) {
-    const basename = this.getUrlBasename(url);
-
-    const lastPeriodIndex = basename.lastIndexOf(".");
-
-    if (lastPeriodIndex === -1) {
-      return null;
-    }
-
-    return basename.substring(lastPeriodIndex);
-  }
-
-  close() {
-    this.ws.close();
-    return Promise.resolve(this);
   }
 }

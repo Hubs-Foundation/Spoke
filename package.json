@@ -92,6 +92,7 @@
     "koa": "^2.7.0",
     "koa-body": "^4.0.8",
     "koa-mount": "^3.0.0",
+    "koa-proxy": "^0.9.0",
     "koa-rewrite": "^3.0.1",
     "koa-router": "^7.4.0",
     "koa-static": "^5.0.0",
@@ -110,13 +111,11 @@
     "react-router-dom": "^4.3.1",
     "react-select": "^2.4.1",
     "react-toggle": "^4.0.2",
-    "request": "^2.88.0",
     "selfsigned": "^1.10.4",
     "semver": "^5.6.0",
     "signals": "^1.0.0",
     "three": "github:mozillareality/three.js#220c52eb20b5d8afce8aecc295283d7a7a1e0c62",
-    "uuid": "^3.3.2",
-    "ws": "^5.2.2"
+    "uuid": "^3.3.2"
   },
   "devDependencies": {
     "ava": "^0.25.0",
