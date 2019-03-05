@@ -17,7 +17,7 @@ export default class TextInputDialog extends Component {
   };
 
   static defaultProps = {
-    okLabel: "Add",
+    okLabel: "Ok",
     cancelLabel: "Cancel"
   };
 
@@ -51,7 +51,7 @@ export default class TextInputDialog extends Component {
             <div className={styles.contentRows}>
               <p>{this.props.message}</p>
               <div className={styles.fieldRow}>
-                <StringInput value={this.state.name} onChange={this.handleChange} autoFocus />
+                <StringInput value={this.state.value} onChange={this.handleChange} autoFocus />
               </div>
             </div>
           </div>

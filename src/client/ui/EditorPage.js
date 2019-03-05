@@ -232,6 +232,15 @@ export default class EditorPage extends Component {
     this.loadProject(projectId);
   };
 
+  componentDidUpdate(prevProps) {
+    const { projectId } = this.props.match.params;
+    const { projectId: prevProjectId } = prevProps.match.params;
+
+    if (projectId !== prevProjectId && this.props.editor.viewport) {
+      this.loadProject(projectId);
+    }
+  }
+
   async loadProject(projectId) {
     if (projectId === "new") {
       this.props.editor.loadNewScene();
@@ -493,8 +502,7 @@ export default class EditorPage extends Component {
   }
 
   onNewScene = async () => {
-    this.props.editor.loadNewScene();
-    history.pushState(null, "Spoke by Mozilla", "/");
+    this.props.history.push("/projects/new");
   };
 
   saveOrSaveAsScene = async () => {
@@ -510,6 +518,7 @@ export default class EditorPage extends Component {
 
     const fileName = await this.waitForInput({
       title: "Save scene as...",
+      okLabel: "Save",
       message: "Enter a name for your scene",
       initialValue: scene.name
     });
@@ -522,9 +531,9 @@ export default class EditorPage extends Component {
       this.props.editor.clearSceneMetadata();
     }
 
-    await this.onSaveScene(fileName);
+    await this.onSaveScene(`/api/files/${fileName}.spoke`);
 
-    history.pushState(null, `${fileName} | Spoke by Mozilla`, `/projects/${fileName}`);
+    this.props.history.push(`/projects/${fileName}`);
   };
 
   onSaveScene = async sceneURI => {
