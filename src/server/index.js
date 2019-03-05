@@ -11,8 +11,6 @@ const path = require("path");
 const Router = require("koa-router");
 const selfsigned = require("selfsigned");
 const serve = require("koa-static");
-const corsAnywhere = require("cors-anywhere");
-const { parse: parseUrl } = require("url");
 const rewrite = require("koa-rewrite");
 const glob = require("glob-promise");
 
@@ -84,30 +82,7 @@ async function startServer(options) {
 
   let server;
 
-  const callback = app.callback();
-
-  const proxy = corsAnywhere.createServer({
-    originWhitelist: [], // Allow all origins
-    requireHeaders: [], // Do not require any headers.
-    removeHeaders: [] // Do not remove any headers.
-  });
-
-  function handleCorsProxy(req, res) {
-    req.url = req.url.replace("/api/cors-proxy/", "/");
-    res.setHeader("Cache-Control", "max-age=31536000");
-    proxy.emit("request", req, res);
-  }
-
-  function requestHandler(req, res) {
-    const { pathname } = parseUrl(req.url);
-
-    if (/^\/api\/cors-proxy\/.*/.test(pathname)) {
-      handleCorsProxy(req, res);
-      return;
-    }
-
-    callback(req, res);
-  }
+  const requestHandler = app.callback();
 
   if (opts.https) {
     if (!fs.existsSync(".certs/key.pem")) {

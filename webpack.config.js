@@ -76,6 +76,13 @@ module.exports = {
       SPOKE_VERSION: JSON.stringify(packageJSON.version),
       __REACT_DEVTOOLS_GLOBAL_HOOK__: "({ isDisabled: true })"
     }),
-    new webpack.EnvironmentPlugin(["NODE_ENV", "RETICULUM_SERVER"])
+    new webpack.EnvironmentPlugin([
+      "NODE_ENV",
+      "RETICULUM_SERVER",
+      "FARSPARK_SERVER",
+      "HUBS_SERVER",
+      "CORS_PROXY_SERVER",
+      "NON_CORS_PROXY_DOMAINS"
+    ])
   ]
 };

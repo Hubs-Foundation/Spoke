@@ -34,9 +34,46 @@ async function resolveUrl(url, index) {
   return resolved;
 }
 
-function proxiedUrlFor(url) {
-  return new URL(`/api/cors-proxy/${url}`, window.location).href;
+// thanks to https://developer.mozilla.org/en-US/docs/Web/API/WindowBase64/Base64_encoding_and_decoding
+function b64EncodeUnicode(str) {
+  // first we use encodeURIComponent to get percent-encoded UTF-8, then we convert the percent-encodings
+  // into raw bytes which can be fed into btoa.
+  const CHAR_RE = /%([0-9A-F]{2})/g;
+  return btoa(encodeURIComponent(str).replace(CHAR_RE, (_, p1) => String.fromCharCode("0x" + p1)));
 }
+
+const farsparkEncodeUrl = url => {
+  // farspark doesn't know how to read '=' base64 padding characters
+  // translate base64 + to - and / to _ for URL safety
+  return b64EncodeUnicode(url)
+    .replace(/=+$/g, "")
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_");
+};
+
+const nonCorsProxyDomains = (process.env.NON_CORS_PROXY_DOMAINS || "").split(",");
+if (process.env.CORS_PROXY_SERVER) {
+  nonCorsProxyDomains.push(process.env.CORS_PROXY_SERVER);
+}
+
+export const proxiedUrlFor = (url, index) => {
+  if (!(url.startsWith("http:") || url.startsWith("https:"))) return url;
+
+  // Skip known domains that do not require CORS proxying.
+  try {
+    const parsedUrl = new URL(url);
+    if (nonCorsProxyDomains.find(domain => parsedUrl.hostname.endsWith(domain))) return url;
+  } catch (e) {
+    // Ignore
+  }
+
+  if (index != null || !process.env.CORS_PROXY_SERVER) {
+    const method = index != null ? "extract" : "raw";
+    return `https://${process.env.FARSPARK_SERVER}/0/${method}/0/0/0/${index || 0}/${farsparkEncodeUrl(url)}`;
+  } else {
+    return `https://${process.env.CORS_PROXY_SERVER}/${url}`;
+  }
+};
 
 function getFilesFromSketchfabZip(src) {
   return new Promise((resolve, reject) => {

@@ -79,7 +79,6 @@
     "async-exit-hook": "^2.0.1",
     "classnames": "^2.2.5",
     "commander": "^2.19.0",
-    "cors-anywhere": "^0.4.1",
     "env-paths": "^1.0.0",
     "eventemitter3": "^3.1.0",
     "fast-deep-equal": "^2.0.1",
