@@ -4,7 +4,6 @@ import styles from "./dialog.scss";
 import Button from "../inputs/Button";
 import StringInput from "../inputs/StringInput";
 import DialogHeader from "./DialogHeader";
-import FileDialog from "./FileDialog";
 
 const DEFAULT_OBJECT_URL = "https://asset-bundles-prod.reticulum.io/interactables/Ducky/DuckyMesh-438ff8e022.gltf";
 
@@ -16,15 +15,13 @@ export default class AddModelDialog extends Component {
     cancelLabel: PropTypes.string,
     onCancel: PropTypes.func,
     onConfirm: PropTypes.func,
-    chooseFileLabel: PropTypes.string,
     showDialog: PropTypes.func,
     hideDialog: PropTypes.func
   };
 
   static defaultProps = {
     okLabel: "Add",
-    cancelLabel: "Cancel",
-    chooseFileLabel: "Choose File..."
+    cancelLabel: "Cancel"
   };
 
   state = {
@@ -48,16 +45,6 @@ export default class AddModelDialog extends Component {
     }
   };
 
-  onFilePickerChosen = () => {
-    this.props.showDialog(FileDialog, {
-      filters: [".glb", ".gltf"],
-      onCancel: this.props.hideDialog,
-      onConfirm: (uri, name) => {
-        this.props.onConfirm(uri, name);
-      }
-    });
-  };
-
   onSubmit = () => {
     this.props.onConfirm(this.state.url || DEFAULT_OBJECT_URL);
   };
@@ -78,9 +65,6 @@ export default class AddModelDialog extends Component {
               <p>{this.props.message}</p>
               <div className={styles.fieldRow}>
                 <StringInput value={this.state.url} onChange={this.handleChange} autoFocus />
-                <Button type="button" onClick={this.onFilePickerChosen}>
-                  {this.props.chooseFileLabel}
-                </Button>
               </div>
             </div>
           </div>

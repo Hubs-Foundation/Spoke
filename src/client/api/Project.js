@@ -85,7 +85,12 @@ export default class Project extends EventEmitter {
 
     this.projectDirectoryPath = "/api/files/";
 
-    this.ws = null;
+    this.ws = new WebSocket(this.wsServerURL);
+    this.ws.addEventListener("message", this._onWebsocketMessage);
+    this.ws.addEventListener("error", this._onWebsocketError);
+    this.ws.addEventListener("close", e => {
+      console.log("WebSocket closed", e);
+    });
 
     this.updateInfo = null;
 
@@ -161,8 +166,6 @@ export default class Project extends EventEmitter {
 
     const json = await res.json();
 
-    this.updateHierarchy(json.hierarchy);
-
     return json;
   }
 
@@ -190,8 +193,6 @@ export default class Project extends EventEmitter {
 
     const json = await res.json();
 
-    this.updateHierarchy(json.hierarchy);
-
     return json;
   }
 
@@ -209,8 +210,6 @@ export default class Project extends EventEmitter {
 
     const json = await res.json();
 
-    this.updateHierarchy(json.hierarchy);
-
     return json;
   }
 
@@ -219,8 +218,6 @@ export default class Project extends EventEmitter {
 
     const json = await res.json();
 
-    this.updateHierarchy(json.hierarchy);
-
     return json;
   }
 
@@ -228,8 +225,6 @@ export default class Project extends EventEmitter {
     const res = await this.fetch(relativePath + "?mkdir=true", { method: "POST" });
 
     const json = await res.json();
-
-    this.updateHierarchy(json.hierarchy);
 
     return json;
   }
@@ -248,22 +243,14 @@ export default class Project extends EventEmitter {
     return this.openFile(this.projectDirectoryPath);
   }
 
-  updateHierarchy(hierarchy) {
-    this.hierarchy = hierarchy;
-    this.emit("projectHierarchyChanged", this.hierarchy);
+  getProjects() {
+    return this.readJSON("/api/projects");
   }
 
   _onWebsocketMessage = event => {
     const json = JSON.parse(event.data);
 
-    if (json.type === "projectHierarchyChanged") {
-      if (this.watchPromise) {
-        this.watchPromise.resolve(json.hierarchy);
-        this.watchPromise = undefined;
-      }
-
-      this.updateHierarchy(json.hierarchy);
-    } else if (json.type === "uploadProgress") {
+    if (json.type === "uploadProgress") {
       this.emit(json.type, json.uploadProgress);
     } else if (json.type === "uploadComplete") {
       this.emit(json.type, json.uploadInfo);
@@ -273,42 +260,8 @@ export default class Project extends EventEmitter {
   };
 
   _onWebsocketError = error => {
-    if (this.watchPromise) {
-      this.watchPromise.reject(error);
-      this.watchPromise = undefined;
-    } else {
-      throw error;
-    }
+    console.log(error);
   };
-
-  watch() {
-    if (this.ws) {
-      return Promise.resolve(this.hierarchy);
-    }
-
-    return new Promise((resolve, reject) => {
-      this.watchPromise = { resolve, reject };
-      this.ws = new WebSocket(this.wsServerURL);
-      this.ws.addEventListener("message", this._onWebsocketMessage);
-      this.ws.addEventListener("error", this._onWebsocketError);
-      this.ws.addEventListener("close", e => {
-        console.log("WebSocket closed", e);
-      });
-    });
-  }
-
-  unwatch() {
-    this.ws.close();
-    return Promise.resolve(this);
-  }
-
-  async writeGeneratedBlob(fileName, blob) {
-    const basePath = this.projectDirectoryPath;
-    const path = `${basePath}generated/${fileName}`;
-    await this.mkdir(`${basePath}generated`);
-    await this.writeBlob(path, blob);
-    return path;
-  }
 
   async uploadAndDelete(uri, onUploadProgress) {
     if (onUploadProgress) {

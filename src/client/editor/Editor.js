@@ -80,17 +80,11 @@ export default class Editor {
 
       windowResize: new Signal(),
 
-      historyChanged: new Signal(),
-
-      fileChanged: new Signal()
+      historyChanged: new Signal()
     };
 
     this._ignoreSceneModification = false;
     this.ignoreNextSceneFileChange = false;
-    this.project.addListener("change", path => {
-      this.signals.fileChanged.dispatch(path);
-    });
-    this.signals.fileChanged.add(this.onFileChanged);
     this.signals.sceneGraphChanged.add(this.onSceneGraphChanged);
     this.signals.objectChanged.add(this.onObjectChanged);
     this.signals.objectSelected.add(this.onObjectSelected);
@@ -135,15 +129,6 @@ export default class Editor {
     this.viewport = new Viewport(this, canvas);
     this.signals.viewportInitialized.dispatch(this.viewport);
   }
-
-  onFileChanged = uri => {
-    this.textureCache.evict(uri);
-    this.gltfCache.evict(uri);
-    if (uri === this.sceneUri && this.ignoreNextSceneFileChange) {
-      this.ignoreNextSceneFileChange = false;
-      return;
-    }
-  };
 
   clearCaches() {
     this.textureCache.disposeAndClear();
@@ -242,7 +227,7 @@ export default class Editor {
     this.signals.sceneModified.dispatch();
   }
 
-  async exportScene(outputPath, glb) {
+  async exportScene() {
     const scene = this.scene;
 
     const floorPlanNode = scene.findNodeByType(FloorPlanNode);
@@ -274,18 +259,13 @@ export default class Editor {
           reject(new Error(`Error exporting scene. ${eventToMessage(e)}`));
         },
         {
-          mode: glb ? "glb" : "gltf",
+          mode: "glb",
           onlyVisible: false,
           animations
         }
       );
     });
-    if (!glb) {
-      const bufferDefs = chunks.json.buffers;
-      if (bufferDefs && bufferDefs.length > 0 && bufferDefs[0].uri === undefined) {
-        bufferDefs[0].uri = clonedScene.name + ".bin";
-      }
-    }
+
     // De-duplicate images.
     const imageDefs = chunks.json.images;
     if (imageDefs && imageDefs.length > 0) {
@@ -349,35 +329,11 @@ export default class Editor {
       }
     }
 
-    if (glb) {
-      return await new Promise((resolve, reject) => {
-        exporter.createGLBBlob(chunks, resolve, e => {
-          reject(new Error(`Error creating glb blob. ${eventToMessage(e)}`));
-        });
+    return await new Promise((resolve, reject) => {
+      exporter.createGLBBlob(chunks, resolve, e => {
+        reject(new Error(`Error creating glb blob. ${eventToMessage(e)}`));
       });
-    } else {
-      // Export current editor scene using THREE.GLTFExporter
-      const { json, buffers, images } = chunks;
-      // Ensure the output directory exists
-      await this.project.mkdir(outputPath);
-      // Write the .gltf file
-      const gltfPath = outputPath + "/" + scene.name + ".gltf";
-      await this.project.writeJSON(gltfPath, json);
-      // Write .bin files
-      for (const [index, buffer] of buffers.entries()) {
-        if (buffer !== undefined) {
-          const bufferName = json.buffers[index].uri;
-          await this.project.writeBlob(outputPath + "/" + bufferName, buffer);
-        }
-      }
-      // Write image files
-      for (const [index, image] of images.entries()) {
-        if (image !== undefined) {
-          const imageName = json.images[index].uri;
-          await this.project.writeBlob(outputPath + "/" + imageName, image);
-        }
-      }
-    }
+    });
   }
 
   addObject(object, parent) {

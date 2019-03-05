@@ -9,7 +9,6 @@ import RendererStats from "./RendererStats";
 class ViewportPanelContainer extends Component {
   static propTypes = {
     editor: PropTypes.object,
-    sceneActions: PropTypes.object,
     showDialog: PropTypes.func,
     hideDialog: PropTypes.func
   };

@@ -1,6 +1,4 @@
 const childProcess = require("child_process");
-const chokidar = require("chokidar");
-const debounce = require("lodash/debounce");
 const envPaths = require("env-paths");
 const fetch = require("node-fetch");
 const fs = require("fs-extra");
@@ -20,6 +18,7 @@ const WebSocket = require("ws");
 const corsAnywhere = require("cors-anywhere");
 const { parse: parseUrl } = require("url");
 const rewrite = require("koa-rewrite");
+const glob = require("glob-promise");
 
 const packageJSON = require("../../package.json");
 
@@ -42,69 +41,8 @@ function openFile(target) {
   childProcess.spawn(cmd, args).unref();
 }
 
-function pathToUri(projectPath, path) {
-  return path.replace(projectPath, "/api/files").replace(/\\/g, "/");
-}
-
 function uriToPath(projectPath, path) {
   return path.replace("/api/files", projectPath);
-}
-
-async function getProjectHierarchy(projectPath) {
-  async function buildProjectNode(filePath, name, ext, isDirectory, uri) {
-    if (!isDirectory) {
-      return {
-        name,
-        ext,
-        uri,
-        isDirectory
-      };
-    }
-
-    const children = [];
-    const files = [];
-
-    const directoryEntries = await fs.readdir(filePath);
-
-    for (const childEntry of directoryEntries) {
-      // eslint-disable-next-line no-useless-escape
-      if (/(^|\/)\.[^\/\.]/g.test(childEntry)) {
-        continue;
-      }
-
-      const childPath = path.resolve(filePath, childEntry);
-      const { base, ext } = path.parse(childPath);
-      const stats = await fs.stat(childPath);
-
-      const childNode = await buildProjectNode(
-        childPath,
-        base,
-        ext,
-        stats.isDirectory(),
-        pathToUri(projectPath, childPath)
-      );
-
-      if (childNode.isDirectory) {
-        children.push(childNode);
-      }
-
-      files.push(childNode);
-    }
-
-    return {
-      name,
-      uri,
-      children,
-      files,
-      isDirectory: true
-    };
-  }
-
-  const projectName = path.parse(projectPath).name;
-
-  const projectHierarchy = await buildProjectNode(projectPath, projectName, undefined, true, "/api/files");
-
-  return projectHierarchy;
 }
 
 async function pipeToFile(stream, filePath) {
@@ -141,7 +79,6 @@ async function startServer(options) {
   let port = opts.port;
 
   const projectPath = path.resolve(opts.projectPath);
-  const projectDirName = path.basename(projectPath);
 
   await fs.ensureDir(projectPath);
 
@@ -218,38 +155,7 @@ async function startServer(options) {
     }
   }
 
-  let projectHierarchy = await getProjectHierarchy(projectPath);
-
-  const debouncedBroadcastHierarchy = debounce(async () => {
-    projectHierarchy = await getProjectHierarchy(projectPath);
-    broadcast({
-      type: "projectHierarchyChanged",
-      hierarchy: projectHierarchy
-    });
-  }, 1000);
-
-  chokidar
-    .watch(opts.projectPath, {
-      alwaysWriteFinish: true
-    })
-    .on("all", (type, filePath) => {
-      broadcast({
-        type,
-        path: pathToUri(projectDirName, filePath)
-      });
-      debouncedBroadcastHierarchy();
-    });
-
-  wss.on("connection", ws => {
-    const message = JSON.stringify({
-      type: "projectHierarchyChanged",
-      hierarchy: projectHierarchy
-    });
-
-    ws.send(message);
-  });
-
-  app.use(rewrite(/^\/scenes/, "/"));
+  app.use(rewrite(/^\/projects/, "/"));
 
   if (opts.publicPath || process.env.NODE_ENV !== "development") {
     app.use(serve(opts.publicPath || path.join(__dirname, "..", "..", "public")));
@@ -295,10 +201,6 @@ async function startServer(options) {
 
   const router = new Router();
 
-  router.get("/api/files", async ctx => {
-    ctx.body = projectHierarchy;
-  });
-
   app.use(
     mount(
       "/api/files/",
@@ -333,11 +235,8 @@ async function startServer(options) {
       await pipeToFile(ctx.req, filePath);
     }
 
-    const hierarchy = await getProjectHierarchy(projectPath);
-
     ctx.body = {
-      success: true,
-      hierarchy
+      success: true
     };
   });
 
@@ -386,6 +285,25 @@ async function startServer(options) {
       return {};
     }
   }
+
+  router.get("/api/projects", async ctx => {
+    const paths = await glob(path.join(projectPath, "**/*.spoke"));
+
+    ctx.body = paths.map(absolutePath => {
+      const url = absolutePath
+        .replace(projectPath, "/projects")
+        .replace(/\\/g, "/")
+        .replace(".spoke", "");
+
+      const name = url.split("/").pop();
+
+      return {
+        name,
+        thumbnail: null,
+        url
+      };
+    });
+  });
 
   router.get("/api/user_info", koaBody(), async ctx => {
     ctx.body = await getUserInfo();
