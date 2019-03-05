@@ -247,11 +247,18 @@ class AddNodeActionButtons extends Component {
 
   constructor(props) {
     super(props);
-    this.props.editor.signals.sceneGraphChanged.add(this.updateSingletonState);
     this.state = {
       open: true,
       ...this.getSingletonNodeState()
     };
+  }
+
+  componentDidMount() {
+    this.props.editor.signals.sceneGraphChanged.add(this.updateSingletonState);
+  }
+
+  componentWillUnmount() {
+    this.props.editor.signals.sceneGraphChanged.remove(this.updateSingletonState);
   }
 
   getSingletonNodeState() {

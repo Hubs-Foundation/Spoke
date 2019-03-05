@@ -21,8 +21,8 @@ function getCanvasBlob(canvas) {
 
 export default class Viewport {
   constructor(editor, canvas) {
-    this._editor = editor;
-    this._canvas = canvas;
+    this.editor = editor;
+    this.canvas = canvas;
     const signals = editor.signals;
 
     function makeRenderer(width, height, canvas) {
@@ -45,38 +45,38 @@ export default class Viewport {
     renderer.setPixelRatio(window.devicePixelRatio);
     this.renderer = renderer;
 
-    const selectedObjects = [];
+    this.selectedObjects = [];
 
-    const effectComposer = new THREE.EffectComposer(renderer);
-    const renderPass = new THREE.RenderPass(editor.scene, editor.camera);
+    const effectComposer = (this.effectComposer = new THREE.EffectComposer(renderer));
+    const renderPass = (this.renderPass = new THREE.RenderPass(editor.scene, editor.camera));
     effectComposer.addPass(renderPass);
-    const outlinePass = new OutlinePass(
+    const outlinePass = (this.outlinePass = new OutlinePass(
       new THREE.Vector2(canvas.parentElement.offsetWidth, canvas.parentElement.offsetHeight),
       editor.scene,
       editor.camera,
-      selectedObjects
-    );
+      this.selectedObjects
+    ));
     outlinePass.edgeColor = new THREE.Color("#006EFF");
     outlinePass.renderToScreen = true;
     effectComposer.addPass(outlinePass);
 
-    this._screenshotRenderer = makeRenderer(1920, 1080);
+    this.screenshotRenderer = makeRenderer(1920, 1080);
 
     editor.scene.background = new THREE.Color(0xaaaaaa);
 
     const camera = editor.camera;
-    this._camera = camera;
+    this.camera = camera;
 
-    const grid = new GridHelper();
+    const grid = (this.grid = new GridHelper());
     editor.scene.add(grid);
 
-    let objectPositionOnDown = null;
-    let objectRotationOnDown = null;
-    let objectScaleOnDown = null;
+    this.objectPositionOnDown = null;
+    this.objectRotationOnDown = null;
+    this.objectScaleOnDown = null;
 
-    this._skipRender = false;
+    this.skipRender = false;
     const render = () => {
-      if (!this._skipRender) {
+      if (!this.skipRender) {
         editor.scene.updateMatrixWorld();
 
         editor.scene.traverse(node => {
@@ -84,24 +84,18 @@ export default class Viewport {
             resizeShadowCameraFrustum(node, editor.scene);
           }
         });
-        this._transformControls.update();
+        this.transformControls.update();
         effectComposer.render();
         signals.sceneRendered.dispatch(renderer, editor.scene);
       }
 
-      requestAnimationFrame(render);
+      this.rafId = requestAnimationFrame(render);
     };
 
-    requestAnimationFrame(render);
+    this.rafId = requestAnimationFrame(render);
 
-    this._transformControls = new SpokeTransformControls(camera, canvas);
-    this._transformControls.addEventListener("change", () => {
-      const object = this._transformControls.object;
-
-      if (object !== undefined) {
-        signals.transformChanged.dispatch(object);
-      }
-    });
+    this.transformControls = new SpokeTransformControls(camera, canvas);
+    this.transformControls.addEventListener("change", this.onTransformControlsChanged);
 
     this.snapEnabled = true;
     this.snapValues = {
@@ -111,268 +105,290 @@ export default class Viewport {
     this.currentSpace = "world";
     this.updateSnapSettings();
 
-    editor.scene.add(this._transformControls);
+    editor.scene.add(this.transformControls);
 
     // object picking
 
-    const raycaster = new THREE.Raycaster();
-    const mouse = new THREE.Vector2();
+    this.raycaster = new THREE.Raycaster();
+    this.mouse = new THREE.Vector2();
 
     // events
 
-    function getIntersectingNode(point, scene) {
-      mouse.set(point.x * 2 - 1, -(point.y * 2) + 1);
+    this.onDownPosition = new THREE.Vector2();
+    this.onUpPosition = new THREE.Vector2();
+    this.onDoubleClickPosition = new THREE.Vector2();
 
-      raycaster.setFromCamera(mouse, camera);
-
-      const results = raycaster.intersectObject(scene, true);
-
-      if (results.length > 0) {
-        for (const { object } of results) {
-          let curObject = object;
-
-          while (curObject) {
-            if (curObject.isNode) {
-              break;
-            }
-
-            curObject = curObject.parent;
-          }
-
-          if (curObject && curObject !== editor.scene) {
-            return curObject;
-          }
-        }
-      }
-
-      return null;
-    }
-
-    const onDownPosition = new THREE.Vector2();
-    const onUpPosition = new THREE.Vector2();
-    const onDoubleClickPosition = new THREE.Vector2();
-
-    function getMousePosition(dom, x, y) {
-      const rect = dom.getBoundingClientRect();
-      return [(x - rect.left) / rect.width, (y - rect.top) / rect.height];
-    }
-
-    function handleClick() {
-      if (onDownPosition.distanceTo(onUpPosition) === 0) {
-        const node = getIntersectingNode(onUpPosition, editor.scene);
-
-        if (node) {
-          editor.select(node);
-        } else {
-          editor.deselect();
-        }
-      }
-    }
-
-    function onMouseUp(event) {
-      const array = getMousePosition(canvas, event.clientX, event.clientY);
-      onUpPosition.fromArray(array);
-
-      handleClick();
-
-      document.removeEventListener("mouseup", onMouseUp, false);
-    }
-
-    function onMouseDown(event) {
-      event.preventDefault();
-
-      canvas.focus();
-
-      const array = getMousePosition(canvas, event.clientX, event.clientY);
-      onDownPosition.fromArray(array);
-
-      document.addEventListener("mouseup", onMouseUp, false);
-    }
-
-    function onTouchEnd(event) {
-      const touch = event.changedTouches[0];
-
-      const array = getMousePosition(canvas, touch.clientX, touch.clientY);
-      onUpPosition.fromArray(array);
-
-      handleClick();
-
-      document.removeEventListener("touchend", onTouchEnd, false);
-    }
-
-    function onTouchStart(event) {
-      const touch = event.changedTouches[0];
-
-      const array = getMousePosition(canvas, touch.clientX, touch.clientY);
-      onDownPosition.fromArray(array);
-
-      document.addEventListener("touchend", onTouchEnd, false);
-    }
-
-    function onDoubleClick(event) {
-      const array = getMousePosition(canvas, event.clientX, event.clientY);
-      onDoubleClickPosition.fromArray(array);
-
-      const node = getIntersectingNode(onDoubleClickPosition, editor.scene);
-
-      if (node) {
-        editor.focus(node);
-      }
-    }
-
-    canvas.addEventListener("mousedown", onMouseDown, false);
-    canvas.addEventListener("touchstart", onTouchStart, false);
-    canvas.addEventListener("dblclick", onDoubleClick, false);
+    canvas.addEventListener("mousedown", this.onCanvasMouseDown, false);
+    canvas.addEventListener("touchstart", this.onCanvasTouchStart, false);
+    canvas.addEventListener("dblclick", this.onCanvasDoubleClick, false);
 
     // controls need to be added *after* main logic,
     // otherwise controls.enabled doesn't work.
 
     const controls = new THREE.EditorControls(camera, canvas);
     controls.zoomSpeed = 0.02;
+    this.controls = controls;
 
-    this._transformControls.addEventListener("mouseDown", () => {
-      const object = this._transformControls.object;
-
-      objectPositionOnDown = object.position.clone();
-      objectRotationOnDown = object.rotation.clone();
-      objectScaleOnDown = object.scale.clone();
-
-      controls.enabled = false;
-    });
-    this._transformControls.addEventListener("mouseUp", () => {
-      const object = this._transformControls.object;
-
-      if (object !== undefined) {
-        switch (this._transformControls.getMode()) {
-          case "translate":
-            if (!objectPositionOnDown.equals(object.position)) {
-              editor.execute(new SetPositionCommand(object, object.position, objectPositionOnDown));
-            }
-
-            break;
-
-          case "rotate":
-            if (!objectRotationOnDown.equals(object.rotation)) {
-              editor.execute(new SetRotationCommand(object, object.rotation, objectRotationOnDown));
-            }
-
-            break;
-
-          case "scale":
-            if (!objectScaleOnDown.equals(object.scale)) {
-              editor.execute(new SetScaleCommand(object, object.scale, objectScaleOnDown));
-            }
-
-            break;
-        }
-      }
-
-      controls.enabled = true;
-    });
+    this.transformControls.addEventListener("mouseDown", this.onTransformMouseDown);
+    this.transformControls.addEventListener("mouseUp", this.onTransformMouseUp);
 
     // signals
 
-    signals.transformModeChanged.add(mode => {
-      this._transformControls.setMode(mode);
-    });
-
+    signals.transformModeChanged.add(this.onTransformModeChanged);
     signals.snapToggled.add(this.toggleSnap);
     signals.snapValueChanged.add(this.setSnapValue);
-
     signals.spaceChanged.add(this.toggleSpace);
-
-    signals.sceneSet.add(() => {
-      this._screenshotRenderer.dispose();
-      renderer.dispose();
-      renderPass.scene = editor.scene;
-      renderPass.camera = editor.camera;
-      outlinePass.renderScene = editor.scene;
-      outlinePass.renderCamera = editor.camera;
-      controls.center.set(0, 0, 0);
-      editor.scene.add(grid);
-      editor.scene.add(this._transformControls);
-      editor.scene.background = new THREE.Color(0xaaaaaa);
-    });
-
-    signals.objectSelected.add(object => {
-      this._transformControls.detach();
-
-      if (
-        object !== null &&
-        object !== editor.scene &&
-        object !== camera &&
-        !(object.constructor && object.constructor.hideTransform)
-      ) {
-        this._transformControls.attach(object);
-      }
-
-      const selectedObject = this._transformControls.object;
-
-      if (selectedObject) {
-        selectedObjects[0] = selectedObject;
-      } else {
-        while (selectedObjects.length) {
-          selectedObjects.pop();
-        }
-      }
-    });
-
-    signals.objectFocused.add(function(object) {
-      controls.focus(object);
-    });
-
-    signals.objectChanged.add(object => {
-      if (object instanceof THREE.PerspectiveCamera) {
-        object.updateProjectionMatrix();
-      }
-    });
-
-    signals.windowResize.add(function() {
-      camera.aspect = canvas.parentElement.offsetWidth / canvas.parentElement.offsetHeight;
-      camera.updateProjectionMatrix();
-
-      renderer.setSize(canvas.parentElement.offsetWidth, canvas.parentElement.offsetHeight);
-      effectComposer.setSize(canvas.parentElement.offsetWidth, canvas.parentElement.offsetHeight);
-    });
+    signals.sceneSet.add(this.onSceneSet);
+    signals.objectSelected.add(this.onObjectSelected);
+    signals.objectFocused.add(this.onObjectFocused);
+    signals.objectChanged.add(this.onObjectChanged);
+    signals.windowResize.add(this.onWindowResized);
   }
 
+  getIntersectingNode(point, scene) {
+    this.mouse.set(point.x * 2 - 1, -(point.y * 2) + 1);
+
+    this.raycaster.setFromCamera(this.mouse, this.camera);
+
+    const results = this.raycaster.intersectObject(scene, true);
+
+    if (results.length > 0) {
+      for (const { object } of results) {
+        let curObject = object;
+
+        while (curObject) {
+          if (curObject.isNode) {
+            break;
+          }
+
+          curObject = curObject.parent;
+        }
+
+        if (curObject && curObject !== this.editor.scene) {
+          return curObject;
+        }
+      }
+    }
+
+    return null;
+  }
+
+  getMousePosition(dom, x, y) {
+    const rect = dom.getBoundingClientRect();
+    return [(x - rect.left) / rect.width, (y - rect.top) / rect.height];
+  }
+
+  handleClick() {
+    if (this.onDownPosition.distanceTo(this.onUpPosition) === 0) {
+      const node = this.getIntersectingNode(this.onUpPosition, this.editor.scene);
+
+      if (node) {
+        this.editor.select(node);
+      } else {
+        this.editor.deselect();
+      }
+    }
+  }
+
+  onTransformControlsChanged = () => {
+    const object = this.transformControls.object;
+
+    if (object !== undefined) {
+      this.editor.signals.transformChanged.dispatch(object);
+    }
+  };
+
+  onCanvasMouseDown = event => {
+    event.preventDefault();
+
+    this.canvas.focus();
+
+    const array = this.getMousePosition(this.canvas, event.clientX, event.clientY);
+    this.onDownPosition.fromArray(array);
+
+    document.addEventListener("mouseup", this.onCanvasMouseUp, false);
+  };
+
+  onCanvasMouseUp = event => {
+    const array = this.getMousePosition(this.canvas, event.clientX, event.clientY);
+    this.onUpPosition.fromArray(array);
+
+    this.handleClick();
+
+    document.removeEventListener("mouseup", this.onCanvasMouseUp, false);
+  };
+
+  onCanvasTouchStart = event => {
+    const touch = event.changedTouches[0];
+
+    const array = this.getMousePosition(this.canvas, touch.clientX, touch.clientY);
+    this.onDownPosition.fromArray(array);
+
+    document.addEventListener("touchend", this.onCanvasTouchEnd, false);
+  };
+
+  onCanvasTouchEnd = event => {
+    const touch = event.changedTouches[0];
+
+    const array = this.getMousePosition(this.canvas, touch.clientX, touch.clientY);
+    this.onUpPosition.fromArray(array);
+
+    this.handleClick();
+
+    document.removeEventListener("touchend", this.onCanvasTouchEnd, false);
+  };
+
+  onCanvasDoubleClick = event => {
+    const array = this.getMousePosition(this.canvas, event.clientX, event.clientY);
+    this.onDoubleClickPosition.fromArray(array);
+
+    const node = this.getIntersectingNode(this.onDoubleClickPosition, this.editor.scene);
+
+    if (node) {
+      this.editor.focus(node);
+    }
+  };
+
+  onTransformMouseDown = () => {
+    const object = this.transformControls.object;
+
+    this.objectPositionOnDown = object.position.clone();
+    this.objectRotationOnDown = object.rotation.clone();
+    this.objectScaleOnDown = object.scale.clone();
+
+    this.controls.enabled = false;
+  };
+
+  onTransformMouseUp = () => {
+    const object = this.transformControls.object;
+
+    if (object !== undefined) {
+      switch (this.transformControls.getMode()) {
+        case "translate":
+          if (!this.objectPositionOnDown.equals(object.position)) {
+            this.editor.execute(new SetPositionCommand(object, object.position, this.objectPositionOnDown));
+          }
+
+          break;
+
+        case "rotate":
+          if (!this.objectRotationOnDown.equals(object.rotation)) {
+            this.editor.execute(new SetRotationCommand(object, object.rotation, this.objectRotationOnDown));
+          }
+
+          break;
+
+        case "scale":
+          if (!this.objectScaleOnDown.equals(object.scale)) {
+            this.editor.execute(new SetScaleCommand(object, object.scale, this.objectScaleOnDown));
+          }
+
+          break;
+      }
+    }
+
+    this.controls.enabled = true;
+  };
+
+  onTransformModeChanged = mode => {
+    this.transformControls.setMode(mode);
+  };
+
+  onSceneSet = () => {
+    const renderer = this.renderer;
+    this.screenshotRenderer.dispose();
+    renderer.dispose();
+    this.renderPass.scene = this.editor.scene;
+    this.renderPass.camera = this.editor.camera;
+    this.outlinePass.renderScene = this.editor.scene;
+    this.outlinePass.renderCamera = this.editor.camera;
+    this.controls.center.set(0, 0, 0);
+    this.editor.scene.add(this.grid);
+    this.editor.scene.add(this.transformControls);
+    this.editor.scene.background = new THREE.Color(0xaaaaaa);
+  };
+
+  onObjectSelected = object => {
+    this.transformControls.detach();
+
+    if (
+      object !== null &&
+      object !== this.editor.scene &&
+      object !== this.camera &&
+      !(object.constructor && object.constructor.hideTransform)
+    ) {
+      this.transformControls.attach(object);
+    }
+
+    const selectedObject = this.transformControls.object;
+
+    if (selectedObject) {
+      this.selectedObjects[0] = selectedObject;
+    } else {
+      while (this.selectedObjects.length) {
+        this.selectedObjects.pop();
+      }
+    }
+  };
+
+  onObjectFocused = object => {
+    this.controls.focus(object);
+  };
+
+  onObjectChanged = object => {
+    if (object instanceof THREE.PerspectiveCamera) {
+      object.updateProjectionMatrix();
+    }
+  };
+
+  onWindowResized = () => {
+    const camera = this.camera;
+    const canvas = this.canvas;
+
+    camera.aspect = canvas.parentElement.offsetWidth / canvas.parentElement.offsetHeight;
+    camera.updateProjectionMatrix();
+
+    this.renderer.setSize(canvas.parentElement.offsetWidth, canvas.parentElement.offsetHeight);
+    this.effectComposer.setSize(canvas.parentElement.offsetWidth, canvas.parentElement.offsetHeight);
+  };
+
   takeScreenshot = async () => {
-    const { _screenshotRenderer, _camera: camera } = this;
+    const { screenshotRenderer, camera } = this;
 
     const originalRenderer = this.renderer;
-    this.renderer = _screenshotRenderer;
+    this.renderer = screenshotRenderer;
 
-    this._skipRender = true;
+    this.skipRender = true;
     const prevAspect = camera.aspect;
     camera.aspect = 1920 / 1080;
     camera.updateProjectionMatrix();
 
     camera.layers.disable(1);
 
-    _screenshotRenderer.render(this._editor.scene, camera);
+    screenshotRenderer.render(this.editor.scene, camera);
 
-    this._editor.scene.traverse(child => {
+    this.editor.scene.traverse(child => {
       if (child.isNode) {
         child.onRendererChanged();
       }
     });
 
-    _screenshotRenderer.render(this._editor.scene, camera);
+    screenshotRenderer.render(this.editor.scene, camera);
 
     camera.layers.enable(1);
 
     camera.updateMatrixWorld();
     const cameraTransform = camera.matrixWorld.clone();
 
-    const blob = await getCanvasBlob(_screenshotRenderer.domElement);
+    const blob = await getCanvasBlob(screenshotRenderer.domElement);
 
     camera.aspect = prevAspect;
     camera.updateProjectionMatrix();
-    this._skipRender = false;
+    this.skipRender = false;
 
     this.renderer = originalRenderer;
 
-    this._editor.scene.traverse(child => {
+    this.editor.scene.traverse(child => {
       if (child.isNode) {
         child.onRendererChanged();
       }
@@ -388,7 +404,7 @@ export default class Viewport {
 
   toggleSpace = () => {
     this.currentSpace = this.currentSpace === "world" ? "local" : "world";
-    this._transformControls.setSpace(this.currentSpace);
+    this.transformControls.setSpace(this.currentSpace);
   };
 
   setSnapValue = ({ type, value }) => {
@@ -407,7 +423,28 @@ export default class Viewport {
   };
 
   updateSnapSettings() {
-    this._transformControls.setTranslationSnap(this.snapEnabled ? this.snapValues.translationSnap : null);
-    this._transformControls.setRotationSnap(this.snapEnabled ? this.snapValues.rotationSnap : null);
+    this.transformControls.setTranslationSnap(this.snapEnabled ? this.snapValues.translationSnap : null);
+    this.transformControls.setRotationSnap(this.snapEnabled ? this.snapValues.rotationSnap : null);
+  }
+
+  dispose() {
+    const { canvas, transformControls, editor } = this;
+    const signals = editor.signals;
+    canvas.removeEventListener("mousedown", this.onCanvasMouseDown, false);
+    canvas.removeEventListener("touchstart", this.onCanvasTouchStart, false);
+    canvas.removeEventListener("dblclick", this.onCanvasDoubleClick, false);
+    transformControls.removeEventListener("change", this.onTransformControlsChanged);
+    transformControls.removeEventListener("mouseDown", this.onTransformMouseDown);
+    transformControls.removeEventListener("mouseUp", this.onTransformMouseUp);
+    signals.transformModeChanged.remove(this.onTransformModeChanged);
+    signals.snapToggled.remove(this.toggleSnap);
+    signals.snapValueChanged.remove(this.setSnapValue);
+    signals.spaceChanged.remove(this.toggleSpace);
+    signals.sceneSet.remove(this.onSceneSet);
+    signals.objectSelected.remove(this.onObjectSelected);
+    signals.objectFocused.remove(this.onObjectFocused);
+    signals.objectChanged.remove(this.onObjectChanged);
+    signals.windowResize.remove(this.onWindowResized);
+    cancelAnimationFrame(this.rafId);
   }
 }

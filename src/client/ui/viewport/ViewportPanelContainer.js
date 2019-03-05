@@ -23,6 +23,10 @@ class ViewportPanelContainer extends Component {
     this.props.editor.initializeViewport(this.canvasRef.current);
   }
 
+  componentWillUnmount() {
+    this.props.editor.viewport.dispose();
+  }
+
   render() {
     return (
       <div className={styles.viewportPanelContainer}>

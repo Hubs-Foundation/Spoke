@@ -70,21 +70,30 @@ export default class ToolBar extends Component {
       toolButtonSelected: "translate",
       updateNotificationDismissed: false
     };
-    props.editor.signals.transformModeChanged.add(mode => {
-      this._updateToolBarStatus(mode);
-    });
-
-    props.editor.signals.spaceChanged.add(() => {
-      this._updateToggle(this.state.spaceToggle);
-    });
-
-    props.editor.signals.snapToggled.add(() => {
-      this._updateToggle(this.state.snapToggle);
-    });
   }
 
-  _updateToggle = toggle => {
-    const current = toggle;
+  componentDidMount() {
+    const editor = this.props.editor;
+    editor.signals.transformModeChanged.add(this._updateToolBarStatus);
+    editor.signals.spaceChanged.add(this._updateSpaceToggle);
+    editor.signals.snapToggled.add(this._updateSnapToggle);
+  }
+
+  componentWillUnmount() {
+    const editor = this.props.editor;
+    editor.signals.transformModeChanged.remove(this._updateToolBarStatus);
+    editor.signals.spaceChanged.remove(this._updateSpaceToggle);
+    editor.signals.snapToggled.remove(this._updateSnapToggle);
+  }
+
+  _updateSnapToggle = () => {
+    const current = this.state.snapToggle;
+    current.isChecked = !current.isChecked;
+    this.setState({ current });
+  };
+
+  _updateSpaceToggle = () => {
+    const current = this.state.spaceToggle;
     current.isChecked = !current.isChecked;
     this.setState({ current });
   };

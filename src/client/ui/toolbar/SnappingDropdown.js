@@ -17,12 +17,21 @@ export default class SnappingDropdown extends React.Component {
       snapMoveValue: 0,
       snapRotateValue: 0
     };
-    this.props.editor.signals.viewportInitialized.add(viewport => {
-      this.setState({
-        snapMoveValue: viewport.snapValues.translationSnap,
-        snapRotateValue: (viewport.snapValues.rotationSnap || 0) * RAD2DEG
-      });
+  }
+
+  componentDidMount() {
+    this.props.editor.signals.viewportInitialized.add(this.onViewportInitialized);
+  }
+
+  onViewportInitialized = viewport => {
+    this.setState({
+      snapMoveValue: viewport.snapValues.translationSnap,
+      snapRotateValue: (viewport.snapValues.rotationSnap || 0) * RAD2DEG
     });
+  };
+
+  componentWillUnmount() {
+    this.props.editor.signals.viewportInitialized.remove(this.onViewportInitialized);
   }
 
   handleClickOutside() {

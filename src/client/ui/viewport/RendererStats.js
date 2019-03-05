@@ -14,27 +14,33 @@ class RendererStats extends Component {
   }
 
   componentDidMount() {
-    this.props.editor.signals.sceneRendered.add((renderer, scene) => {
-      if (scene !== this.props.editor.scene) {
-        return; // don't do anything with rendering information from the helper scene
-      }
-      const materials = new Set();
-      scene.traverse(node => {
-        if (node.material) {
-          if (Array.isArray(node.material)) {
-            for (const mat of node.material) {
-              materials.add(mat);
-            }
-          } else {
-            materials.add(node.material);
+    this.props.editor.signals.sceneRendered.add(this.onSceneRendered);
+  }
+
+  onSceneRendered = (renderer, scene) => {
+    if (scene !== this.props.editor.scene) {
+      return; // don't do anything with rendering information from the helper scene
+    }
+    const materials = new Set();
+    scene.traverse(node => {
+      if (node.material) {
+        if (Array.isArray(node.material)) {
+          for (const mat of node.material) {
+            materials.add(mat);
           }
+        } else {
+          materials.add(node.material);
         }
-      });
-      this.setState({
-        materials: materials.size,
-        tris: renderer.info.render.triangles
-      });
+      }
     });
+    this.setState({
+      materials: materials.size,
+      tris: renderer.info.render.triangles
+    });
+  };
+
+  componentWillUnmount() {
+    this.props.editor.signals.sceneRendered.remove(this.onSceneRendered);
   }
 
   formatQuantity(n) {

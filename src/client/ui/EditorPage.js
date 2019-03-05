@@ -224,19 +224,13 @@ export default class EditorPage extends Component {
     this.props.editor.signals.windowResize.dispatch();
     this.props.editor.signals.sceneModified.add(this.onSceneModified);
     this.props.editor.signals.editorError.add(this.onEditorError);
+    this.props.editor.signals.viewportInitialized.add(this.onViewportInitialized);
+  }
 
+  onViewportInitialized = () => {
     const { projectId } = this.props.match.params;
     this.loadProject(projectId);
-  }
-
-  componentDidUpdate(prevProps) {
-    const { projectId } = this.props.match.params;
-    const { projectId: prevProjectId } = prevProps.match.params;
-
-    if (projectId !== prevProjectId) {
-      this.loadProject(projectId);
-    }
-  }
+  };
 
   async loadProject(projectId) {
     if (projectId === "new") {
@@ -265,6 +259,9 @@ export default class EditorPage extends Component {
 
   componentWillUnmount() {
     window.removeEventListener("resize", this.onWindowResize, false);
+    this.props.editor.signals.sceneModified.remove(this.onSceneModified);
+    this.props.editor.signals.editorError.remove(this.onEditorError);
+    this.props.editor.signals.viewportInitialized.remove(this.onViewportInitialized);
   }
 
   onWindowResize = () => {
@@ -560,12 +557,14 @@ export default class EditorPage extends Component {
     });
 
     try {
-      const glbBlob = await this.props.editor.exportScene();
+      const editor = this.props.editor;
+
+      const glbBlob = await editor.exportScene();
 
       this.hideDialog();
 
       const el = document.createElement("a");
-      el.download = true;
+      el.download = editor.scene.name + ".glb";
       el.href = URL.createObjectURL(glbBlob);
       el.click();
     } catch (e) {
@@ -717,8 +716,6 @@ export default class EditorPage extends Component {
     const { DialogComponent, dialogProps, settingsContext } = this.state;
     const { editor } = this.props;
     const toolbarMenu = this.generateToolbarMenu();
-
-    console.log(Prompt, editor.sceneModified, editor.scene.name);
 
     const modified = this.props.editor.sceneModified ? "*" : "";
 

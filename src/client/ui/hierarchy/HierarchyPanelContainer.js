@@ -31,12 +31,22 @@ class HierarchyPanelContainer extends Component {
     };
 
     this.doubleClickTimeout = null;
+  }
 
+  componentDidMount() {
     const editor = this.props.editor;
     editor.signals.sceneSet.add(this.rebuildNodeHierarchy);
     editor.signals.sceneGraphChanged.add(this.rebuildNodeHierarchy);
     editor.signals.objectChanged.add(this.rebuildNodeHierarchy);
     editor.signals.objectSelected.add(this.rebuildNodeHierarchy);
+  }
+
+  componentWillUnmount() {
+    const editor = this.props.editor;
+    editor.signals.sceneSet.remove(this.rebuildNodeHierarchy);
+    editor.signals.sceneGraphChanged.remove(this.rebuildNodeHierarchy);
+    editor.signals.objectChanged.remove(this.rebuildNodeHierarchy);
+    editor.signals.objectSelected.remove(this.rebuildNodeHierarchy);
   }
 
   onChange = (tree, parent, node) => {
