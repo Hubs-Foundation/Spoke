@@ -115,7 +115,7 @@ export default class Editor {
   };
 
   async init() {
-    const tasks = [this.project.retrieveUpdateInfo()];
+    const tasks = [];
 
     for (const NodeConstructor of this.nodeTypes) {
       tasks.push(NodeConstructor.load());

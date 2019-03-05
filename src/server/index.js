@@ -1,6 +1,5 @@
 const childProcess = require("child_process");
 const envPaths = require("env-paths");
-const fetch = require("node-fetch");
 const fs = require("fs-extra");
 const http = require("http");
 const https = require("https");
@@ -11,7 +10,6 @@ const mount = require("koa-mount");
 const path = require("path");
 const Router = require("koa-router");
 const selfsigned = require("selfsigned");
-const semver = require("semver");
 const serve = require("koa-static");
 const corsAnywhere = require("cors-anywhere");
 const { parse: parseUrl } = require("url");
@@ -166,12 +164,6 @@ async function startServer(options) {
     }
   }
 
-  const reticulumServer = process.env.RETICULUM_SERVER || "hubs.mozilla.com";
-
-  if (process.env.RETICULUM_SERVER) {
-    console.log(`Using RETICULUM_SERVER: ${reticulumServer}\n`);
-  }
-
   const router = new Router();
 
   app.use(
@@ -230,100 +222,6 @@ async function startServer(options) {
         url
       };
     });
-  });
-
-  const nodePlatformToAssetPlatform = {
-    win32: "win",
-    darwin: "macos",
-    linux: "linux"
-  };
-  function getDownloadUrlForCurrentPlatform(assets) {
-    const assetPlatform = nodePlatformToAssetPlatform[process.platform];
-    return assets.find(asset => asset.name.includes(assetPlatform)).downloadUrl;
-  }
-
-  const updateInfoTimeout = 2000;
-
-  async function fetchReleases(after) {
-    // Read-only, public access token.
-    const token = "de8cbfb4cc0281c7b731c891df431016c29b0ace";
-
-    const resp = await fetch("https://api.github.com/graphql", {
-      timeout: updateInfoTimeout,
-      method: "POST",
-      headers: { authorization: `bearer ${token}` },
-      body: JSON.stringify({
-        query: `
-          {
-            repository(owner: "mozillareality", name: "spoke") {
-              releases(
-                orderBy: { field: CREATED_AT, direction: DESC },
-                first: 5,
-                ${after ? `after: "${after}"` : ""}
-              ) {
-                nodes {
-                  isPrerelease,
-                  isDraft,
-                  tag { name },
-                  releaseAssets(last: 3) {
-                    nodes { name, downloadUrl }
-                  }
-                },
-                pageInfo { endCursor, hasNextPage }
-              }
-            }
-          }
-        `
-      })
-    });
-
-    if (resp.status !== 200) return;
-
-    const result = await resp.json();
-    if (!result || !result.data) return;
-
-    return result.data.repository.releases;
-  }
-
-  async function getLatestRelease() {
-    let release, hasNextPage, after;
-    do {
-      const releases = await fetchReleases(after);
-      if (!releases) return;
-      release = releases.nodes.find(release => !release.isDraft);
-      hasNextPage = releases.pageInfo.hasNextPage;
-      after = releases.pageInfo.endCursor;
-    } while (!release && hasNextPage);
-
-    if (!release) return;
-
-    return {
-      version: release.tag.name,
-      downloadUrl: getDownloadUrlForCurrentPlatform(release.releaseAssets.nodes)
-    };
-  }
-
-  router.get("/api/update_info", koaBody(), async ctx => {
-    try {
-      // This endpoint doesn't exist yet but we query it for future use.
-      const configEndpoint = `https://${reticulumServer}/api/v1/configs/spoke`;
-      const { min_spoke_version } = await fetch(configEndpoint, { timeout: updateInfoTimeout })
-        .then(r => r.json())
-        .catch(() => ({}));
-
-      const latestRelease = (await getLatestRelease()) || {};
-
-      ctx.body = {
-        updateAvailable: latestRelease.version && semver.gt(latestRelease.version, packageJSON.version),
-        updateRequired: min_spoke_version && semver.gt(min_spoke_version, packageJSON.version),
-        latestVersion: latestRelease.version,
-        downloadUrl: latestRelease.downloadUrl
-      };
-    } catch (e) {
-      console.log("Update info check failed", e);
-      ctx.body = {};
-      return;
-    }
   });
 
   app.use(router.routes());

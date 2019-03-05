@@ -112,7 +112,6 @@
     "react-select": "^2.4.1",
     "react-toggle": "^4.0.2",
     "selfsigned": "^1.10.4",
-    "semver": "^5.6.0",
     "signals": "^1.0.0",
     "three": "github:mozillareality/three.js#220c52eb20b5d8afce8aecc295283d7a7a1e0c62",
     "uuid": "^3.3.2"

@@ -79,8 +79,6 @@ export default class Project extends EventEmitter {
 
     this.projectDirectoryPath = "/api/files/";
 
-    this.updateInfo = null;
-
     // Max size in MB
     this.maxUploadSize = 128;
   }
@@ -319,10 +317,6 @@ export default class Project extends EventEmitter {
 
   getUserInfo() {
     return JSON.parse(localStorage.getItem("spoke-user-info"));
-  }
-
-  async retrieveUpdateInfo() {
-    this.updateInfo = await fetch("/api/update_info").then(r => r.json());
   }
 
   getUrlFilename(url) {

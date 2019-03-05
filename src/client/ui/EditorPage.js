@@ -23,7 +23,6 @@ import ErrorDialog from "./dialogs/ErrorDialog";
 import LoginDialog from "./dialogs/LoginDialog";
 import ProgressDialog from "./dialogs/ProgressDialog";
 import PublishDialog from "./dialogs/PublishDialog";
-import UpdateRequiredDialog from "./dialogs/UpdateRequiredDialog";
 
 import AuthenticationError from "../api/AuthenticationError";
 import TextInputDialog from "./dialogs/TextInputDialog";
@@ -45,14 +44,6 @@ export default class EditorPage extends Component {
     super(props);
 
     window.addEventListener("resize", this.onWindowResize, false);
-
-    let dialogProps = {};
-    let DialogComponent = null;
-
-    if (props.editor.project.updateInfo.updateRequired) {
-      DialogComponent = UpdateRequiredDialog;
-      dialogProps = props.editor.project.updateInfo;
-    }
 
     let settings = defaultSettings;
     const storedSettings = localStorage.getItem("spoke-settings");
@@ -105,8 +96,8 @@ export default class EditorPage extends Component {
         },
         splitPercentage: 75
       },
-      DialogComponent,
-      dialogProps,
+      DialogComponent: null,
+      dialogProps: {},
       keyMap: {
         translateTool: "w",
         rotateTool: "e",
