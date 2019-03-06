@@ -1,3 +1,5 @@
+import recastWasm from "./recast.wasm";
+
 const Recast = (function() {
   const _scriptDir = typeof document !== "undefined" && document.currentScript ? document.currentScript.src : undefined;
   return function(Recast) {
@@ -261,7 +263,7 @@ const Recast = (function() {
           ? new Promise(function(b) {
               b(a());
             })
-          : fetch(f, { credentials: "same-origin" })
+          : fetch(recastWasm, { credentials: "same-origin" })
               .then(function(a) {
                 if (!a.ok) throw "failed to load wasm binary file at '" + f + "'";
                 return a.arrayBuffer();
@@ -324,7 +326,7 @@ const Recast = (function() {
           }
         c.wasmBinary || "function" !== typeof WebAssembly.instantiateStreaming || H(f) || "function" !== typeof fetch
           ? g(e)
-          : WebAssembly.instantiateStreaming(fetch(f, { credentials: "same-origin" }), h)
+          : WebAssembly.instantiateStreaming(fetch(recastWasm, { credentials: "same-origin" }), h)
               .then(e)
               .catch(function(a) {
                 u("wasm streaming compile failed: " + a);
@@ -1053,12 +1055,12 @@ const Recast = (function() {
                             2047 >= d
                               ? a + 2
                               : 65535 >= d
-                                ? a + 3
-                                : 2097151 >= d
-                                  ? a + 4
-                                  : 67108863 >= d
-                                    ? a + 5
-                                    : a + 6);
+                              ? a + 3
+                              : 2097151 >= d
+                              ? a + 4
+                              : 67108863 >= d
+                              ? a + 5
+                              : a + 6);
                     }
                     return a;
                   }
@@ -1306,9 +1308,5 @@ const Recast = (function() {
     return Recast;
   };
 })();
-if (typeof exports === "object" && typeof module === "object") module.exports = Recast;
-else if (typeof define === "function" && define["amd"])
-  define([], function() {
-    return Recast;
-  });
-else if (typeof exports === "object") exports["Recast"] = Recast;
+
+export default Recast;

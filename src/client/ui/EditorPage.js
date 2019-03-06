@@ -18,6 +18,8 @@ import { defaultSettings, SettingsContextProvider } from "./contexts/SettingsCon
 import { EditorContextProvider } from "./contexts/EditorContext";
 import { DialogContextProvider } from "./contexts/DialogContext";
 
+import { createEditor } from "../config";
+
 import ConfirmDialog from "./dialogs/ConfirmDialog";
 import ErrorDialog from "./dialogs/ErrorDialog";
 import LoginDialog from "./dialogs/LoginDialog";
@@ -35,7 +37,7 @@ function isInputSelected() {
 
 export default class EditorPage extends Component {
   static propTypes = {
-    editor: PropTypes.object.isRequired,
+    project: PropTypes.object.isRequired,
     match: PropTypes.object.isRequired,
     history: PropTypes.object.isRequired
   };
@@ -51,7 +53,13 @@ export default class EditorPage extends Component {
       settings = JSON.parse(storedSettings);
     }
 
+    const editor = createEditor(props.project);
+    window.editor = editor;
+    const editorInitPromise = editor.init();
+
     this.state = {
+      editor,
+      editorInitPromise,
       settingsContext: {
         settings,
         updateSetting: this.updateSetting
@@ -144,9 +152,9 @@ export default class EditorPage extends Component {
             name: "Open Scene...",
             action: e => this.onOpen(e)
           },
-          this.props.editor.sceneUri
+          this.state.editor.sceneUri
             ? {
-                name: "Save " + this.props.editor.project.getUrlFilename(this.props.editor.sceneUri),
+                name: "Save " + this.props.project.getUrlFilename(this.state.editor.sceneUri),
                 action: e => this.onSave(e)
               }
             : null,
@@ -164,7 +172,7 @@ export default class EditorPage extends Component {
           },
           {
             name: "Open Scenes Folder...",
-            action: () => this.props.editor.project.openProjectDirectory()
+            action: () => this.props.project.openProjectDirectory()
           }
         ].filter(x => x !== null)
       },
@@ -208,29 +216,38 @@ export default class EditorPage extends Component {
   };
 
   componentDidMount() {
-    this.props.editor.signals.windowResize.dispatch();
-    this.props.editor.signals.sceneModified.add(this.onSceneModified);
-    this.props.editor.signals.editorError.add(this.onEditorError);
-    this.props.editor.signals.viewportInitialized.add(this.onViewportInitialized);
-  }
-
-  onViewportInitialized = () => {
+    this.state.editor.signals.windowResize.dispatch();
+    this.state.editor.signals.sceneModified.add(this.onSceneModified);
+    this.state.editor.signals.editorError.add(this.onEditorError);
     const { projectId } = this.props.match.params;
-    this.loadProject(projectId);
-  };
+
+    this.state.editorInitPromise
+      .then(() => {
+        this.loadProject(projectId);
+      })
+      .catch(e => {
+        console.error(e);
+      });
+  }
 
   componentDidUpdate(prevProps) {
     const { projectId } = this.props.match.params;
     const { projectId: prevProjectId } = prevProps.match.params;
 
-    if (projectId !== prevProjectId && this.props.editor.viewport) {
-      this.loadProject(projectId);
+    if (projectId !== prevProjectId && this.state.editor.viewport) {
+      this.state.editorInitPromise
+        .then(() => {
+          this.loadProject(projectId);
+        })
+        .catch(e => {
+          console.error(e);
+        });
     }
   }
 
   async loadProject(projectId) {
     if (projectId === "new") {
-      this.props.editor.loadNewScene();
+      this.state.editor.loadNewScene();
     } else {
       const scenePath = "/api/files/" + projectId + ".spoke";
 
@@ -240,7 +257,7 @@ export default class EditorPage extends Component {
       });
 
       try {
-        await this.props.editor.openScene(scenePath);
+        await this.state.editor.openScene(scenePath);
         this.hideDialog();
       } catch (e) {
         console.error(e);
@@ -255,17 +272,17 @@ export default class EditorPage extends Component {
 
   componentWillUnmount() {
     window.removeEventListener("resize", this.onWindowResize, false);
-    this.props.editor.signals.sceneModified.remove(this.onSceneModified);
-    this.props.editor.signals.editorError.remove(this.onEditorError);
-    this.props.editor.signals.viewportInitialized.remove(this.onViewportInitialized);
+    this.state.editor.signals.sceneModified.remove(this.onSceneModified);
+    this.state.editor.signals.editorError.remove(this.onEditorError);
+    this.state.editor.signals.viewportInitialized.remove(this.onViewportInitialized);
   }
 
   onWindowResize = () => {
-    this.props.editor.signals.windowResize.dispatch();
+    this.state.editor.signals.windowResize.dispatch();
   };
 
   onPanelChange = () => {
-    this.props.editor.signals.windowResize.dispatch();
+    this.state.editor.signals.windowResize.dispatch();
   };
 
   /**
@@ -299,7 +316,7 @@ export default class EditorPage extends Component {
       return;
     }
 
-    this.props.editor.undo();
+    this.state.editor.undo();
   };
 
   onRedo = () => {
@@ -307,7 +324,7 @@ export default class EditorPage extends Component {
       return;
     }
 
-    this.props.editor.redo();
+    this.state.editor.redo();
   };
 
   onOpen = e => {
@@ -354,7 +371,7 @@ export default class EditorPage extends Component {
     }
 
     e.preventDefault();
-    this.props.editor.signals.transformModeChanged.dispatch("translate");
+    this.state.editor.signals.transformModeChanged.dispatch("translate");
   };
 
   onRotateTool = e => {
@@ -363,7 +380,7 @@ export default class EditorPage extends Component {
     }
 
     e.preventDefault();
-    this.props.editor.signals.transformModeChanged.dispatch("rotate");
+    this.state.editor.signals.transformModeChanged.dispatch("rotate");
   };
 
   onScaleTool = e => {
@@ -372,7 +389,7 @@ export default class EditorPage extends Component {
     }
 
     e.preventDefault();
-    this.props.editor.signals.transformModeChanged.dispatch("scale");
+    this.state.editor.signals.transformModeChanged.dispatch("scale");
   };
 
   onFocusSelection = e => {
@@ -381,7 +398,7 @@ export default class EditorPage extends Component {
     }
 
     e.preventDefault();
-    this.props.editor.focusSelection();
+    this.state.editor.focusSelection();
   };
 
   onDuplicate = e => {
@@ -390,7 +407,7 @@ export default class EditorPage extends Component {
     }
 
     e.preventDefault();
-    this.props.editor.duplicateSelectedObject();
+    this.state.editor.duplicateSelectedObject();
     return false;
   };
 
@@ -400,7 +417,7 @@ export default class EditorPage extends Component {
     }
 
     e.preventDefault();
-    this.props.editor.deleteSelectedObject();
+    this.state.editor.deleteSelectedObject();
   };
 
   onSnapTool = e => {
@@ -409,7 +426,7 @@ export default class EditorPage extends Component {
     }
 
     e.preventDefault();
-    this.props.editor.signals.snapToggled.dispatch();
+    this.state.editor.signals.snapToggled.dispatch();
   };
 
   onSpaceTool = e => {
@@ -418,7 +435,7 @@ export default class EditorPage extends Component {
     }
 
     e.preventDefault();
-    this.props.editor.signals.spaceChanged.dispatch();
+    this.state.editor.signals.spaceChanged.dispatch();
   };
 
   /**
@@ -493,15 +510,15 @@ export default class EditorPage extends Component {
   };
 
   saveOrSaveAsScene = async () => {
-    if (this.props.editor.sceneUri) {
-      return this.onSaveScene(this.props.editor.sceneUri);
+    if (this.state.editor.sceneUri) {
+      return this.onSaveScene(this.state.editor.sceneUri);
     } else {
       return this.onSaveSceneAsDialog();
     }
   };
 
   onSaveSceneAsDialog = async () => {
-    const scene = this.props.editor.scene;
+    const scene = this.state.editor.scene;
 
     const fileName = await this.waitForInput({
       title: "Save scene as...",
@@ -515,7 +532,7 @@ export default class EditorPage extends Component {
     if (fileName !== scene.name) {
       // When we save the scene to a new file, clear the metadata
       // used for publishing so it ends up as a new scene in Hubs.
-      this.props.editor.clearSceneMetadata();
+      this.state.editor.clearSceneMetadata();
     }
 
     await this.onSaveScene(`/api/files/${fileName}.spoke`);
@@ -530,7 +547,7 @@ export default class EditorPage extends Component {
     });
 
     try {
-      await this.props.editor.saveScene(sceneURI);
+      await this.state.editor.saveScene(sceneURI);
       this.hideDialog();
 
       return true;
@@ -553,7 +570,7 @@ export default class EditorPage extends Component {
     });
 
     try {
-      const editor = this.props.editor;
+      const editor = this.state.editor;
 
       const glbBlob = await editor.exportScene();
 
@@ -574,7 +591,7 @@ export default class EditorPage extends Component {
   };
 
   onPublishScene = async () => {
-    if (this.props.editor.sceneModified) {
+    if (this.state.editor.sceneModified) {
       const willSaveChanges = await this.waitForConfirm({
         title: "Unsaved Changes",
         message: "Your scene must be saved before publishing.",
@@ -587,7 +604,7 @@ export default class EditorPage extends Component {
       if (!savedOk) return;
     }
 
-    if (await this.props.editor.project.authenticated()) {
+    if (await this.props.project.authenticated()) {
       this._showPublishDialog();
     } else {
       this._showLoginDialog();
@@ -597,7 +614,7 @@ export default class EditorPage extends Component {
   _showLoginDialog = () => {
     this.showDialog(LoginDialog, {
       onLogin: async email => {
-        const { authComplete } = await this.props.editor.project.startAuthentication(email);
+        const { authComplete } = await this.props.project.startAuthentication(email);
         this.showDialog(LoginDialog, { authStarted: true });
         await authComplete;
         this._showPublishDialog();
@@ -609,8 +626,8 @@ export default class EditorPage extends Component {
     const {
       blob: screenshotBlob,
       cameraTransform: screenshotCameraTransform
-    } = await this.props.editor.takeScreenshot();
-    const contentAttributions = this.props.editor.getSceneContentAttributions();
+    } = await this.state.editor.takeScreenshot();
+    const contentAttributions = this.state.editor.getSceneContentAttributions();
     const screenshotURL = URL.createObjectURL(screenshotBlob);
     const {
       name,
@@ -619,17 +636,17 @@ export default class EditorPage extends Component {
       allowRemixing,
       allowPromotion,
       sceneId
-    } = this.props.editor.getSceneMetadata();
+    } = this.state.editor.getSceneMetadata();
 
     let initialCreatorAttribution = creatorAttribution;
     if (!initialCreatorAttribution || initialCreatorAttribution.length === 0) {
-      initialCreatorAttribution = (await this.props.editor.project.getUserInfo()).creatorAttribution;
+      initialCreatorAttribution = (await this.props.project.getUserInfo()).creatorAttribution;
     }
 
     await this.showDialog(PublishDialog, {
       screenshotURL,
       contentAttributions,
-      initialName: name || this.props.editor.scene.name,
+      initialName: name || this.state.editor.scene.name,
       initialCreatorAttribution,
       initialDescription: description,
       initialAllowRemixing: allowRemixing,
@@ -645,7 +662,7 @@ export default class EditorPage extends Component {
           message: "Publishing scene..."
         });
 
-        this.props.editor.setSceneMetadata({
+        this.state.editor.setSceneMetadata({
           name,
           creatorAttribution,
           description,
@@ -654,11 +671,11 @@ export default class EditorPage extends Component {
           previewCameraTransform: screenshotCameraTransform
         });
 
-        await this.props.editor.project.setUserInfo({ creatorAttribution });
+        await this.props.project.setUserInfo({ creatorAttribution });
 
         let publishResult;
         try {
-          publishResult = await this.props.editor.publishScene(
+          publishResult = await this.state.editor.publishScene(
             isNewScene ? null : sceneId,
             screenshotBlob,
             contentAttributions,
@@ -670,7 +687,7 @@ export default class EditorPage extends Component {
             }
           );
 
-          this.props.editor.setSceneMetadata({ sceneUrl: publishResult.sceneUrl, sceneId: publishResult.sceneId });
+          this.state.editor.setSceneMetadata({ sceneUrl: publishResult.sceneUrl, sceneId: publishResult.sceneId });
 
           await this.saveOrSaveAsScene();
 
@@ -710,10 +727,10 @@ export default class EditorPage extends Component {
 
   render() {
     const { DialogComponent, dialogProps, settingsContext } = this.state;
-    const { editor } = this.props;
+    const { editor } = this.state;
     const toolbarMenu = this.generateToolbarMenu();
 
-    const modified = this.props.editor.sceneModified ? "*" : "";
+    const modified = this.state.editor.sceneModified ? "*" : "";
 
     return (
       <HotKeys keyMap={this.state.keyMap} handlers={this.state.globalHotKeyHandlers} className={styles.flexColumn}>
@@ -737,7 +754,7 @@ export default class EditorPage extends Component {
               >
                 {DialogComponent && <DialogComponent {...dialogProps} hideDialog={this.hideDialog} />}
               </Modal>
-              <DocumentTitle title={`${modified}${this.props.editor.scene.name} | Spoke by Mozilla`} />
+              <DocumentTitle title={`${modified}${this.state.editor.scene.name} | Spoke by Mozilla`} />
               <Prompt
                 message={`${
                   editor.scene.name

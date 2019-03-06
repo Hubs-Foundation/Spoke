@@ -7,7 +7,6 @@ if (process.env.NODE_ENV === "production") {
   dotenv.config({ path: ".env.defaults" });
 }
 
-const CopyWebpackPlugin = require("copy-webpack-plugin");
 const HTMLWebpackPlugin = require("html-webpack-plugin");
 const path = require("path");
 const packageJSON = require("./package.json");
@@ -56,6 +55,12 @@ module.exports = {
         test: /\.worker\.js$/,
         include: path.join(__dirname, "src", "client"),
         loader: "worker-loader"
+      },
+      {
+        test: /\.wasm$/,
+        type: "javascript/auto",
+        include: path.join(__dirname, "src", "client"),
+        loader: "file-loader"
       }
     ]
   },
@@ -67,7 +72,6 @@ module.exports = {
   },
 
   plugins: [
-    new CopyWebpackPlugin([{ from: "src/client/editor/recast/recast.wasm", to: "recast.wasm" }]),
     new HTMLWebpackPlugin({
       title: packageJSON.productName,
       favicon: "src/client/assets/favicon.ico"

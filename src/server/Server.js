@@ -106,6 +106,9 @@ async function startServer(projectPath, options = {}) {
     try {
       const devMiddleware = await koaWebpack({
         compiler,
+        // devMiddleware: {
+        //   mimeTypes: { "application/wasm": ["wasm"] }
+        // },
         hotClient: false
       });
       app.use(devMiddleware);

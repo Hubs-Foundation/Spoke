@@ -117,6 +117,19 @@ export default class Editor {
   async init() {
     const tasks = [];
 
+    if (!this.viewport) {
+      tasks.push(
+        new Promise(resolve => {
+          let initialized = null;
+          initialized = () => {
+            this.signals.viewportInitialized.remove(initialized);
+            resolve();
+          };
+          this.signals.viewportInitialized.add(initialized);
+        })
+      );
+    }
+
     for (const NodeConstructor of this.nodeTypes) {
       tasks.push(NodeConstructor.load());
     }

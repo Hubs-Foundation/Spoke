@@ -4,7 +4,7 @@ import PropTypes from "prop-types";
 
 export default class ProjectsPage extends Component {
   static propTypes = {
-    editor: PropTypes.object.isRequired
+    project: PropTypes.object.isRequired
   };
 
   constructor(props) {
@@ -16,7 +16,7 @@ export default class ProjectsPage extends Component {
   }
 
   componentDidMount() {
-    this.props.editor.project.getProjects().then(projects => this.setState({ projects }));
+    this.props.project.getProjects().then(projects => this.setState({ projects }));
   }
 
   render() {

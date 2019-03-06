@@ -1,24 +1,21 @@
 {
   "presets": [
-    "react",
+    "@babel/preset-react",
     [
-      "env",
+      "@babel/preset-env",
       {
-        "exclude": ["transform-regenerator"],
-        "useBuiltins": true
+        "targets": [
+          ">0.25%",
+          "not ie 11",
+          "not op_mini all"
+        ]
       }
     ]
   ],
   "plugins": [
-    [
-      "react-intl",
-      { "messagesDir": "./public/messages", "enforceDescriptions": false }
-    ],
-    "transform-react-jsx-img-import",
-    "transform-class-properties",
-    "transform-object-rest-spread",
-    ["babel-plugin-transform-builtin-extend", {
-      "globals": ["Error"]
-    }]
+    "@babel/plugin-proposal-class-properties",
+    "@babel/plugin-proposal-object-rest-spread",
+    "@babel/plugin-syntax-dynamic-import",
+    "@babel/plugin-transform-runtime"
   ]
 }
