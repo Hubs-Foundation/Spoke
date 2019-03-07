@@ -66,6 +66,7 @@ export default class MeshCombinationGroup {
 
   static async combineMeshes(rootObject) {
     rootObject.computeAndSetStaticModes();
+    rootObject.computeAndSetVisible();
 
     const meshCombinationGroups = [];
 
@@ -119,6 +120,7 @@ export default class MeshCombinationGroup {
     const compareMaterial = MeshCombinationGroup.MaterialComparators[object.material.type];
 
     if (
+      object.visible !== this.initialObject.visible ||
       object.castShadow !== this.initialObject.castShadow ||
       object.receiveShadow !== this.initialObject.receiveShadow
     ) {
@@ -161,6 +163,9 @@ export default class MeshCombinationGroup {
     combinedMesh.name = "CombinedMesh";
     combinedMesh.userData.gltfExtensions = {
       HUBS_components: {
+        visible: {
+          visible: originalMesh.visible
+        },
         shadow: {
           cast: originalMesh.castShadow,
           receive: originalMesh.receiveShadow
