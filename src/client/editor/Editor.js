@@ -28,12 +28,11 @@ import cloneObject3D from "./utils/cloneObject3D";
 import isEmptyObject from "./utils/isEmptyObject";
 
 export default class Editor {
-  constructor(project) {
-    this.project = project;
+  constructor(api) {
+    this.api = api;
 
     this.scene = new SceneNode(this);
     this.sceneModified = false;
-    this.sceneUri = null;
 
     this.camera = new THREE.PerspectiveCamera(80, window.innerWidth / window.innerHeight, 0.2, 8000);
     this.audioListener = new THREE.AudioListener();
@@ -149,7 +148,6 @@ export default class Editor {
 
   async loadNewScene() {
     this.clearCaches();
-    this.sceneUri = null;
 
     const scene = new SceneNode(this);
     scene.name = "Untitled";
@@ -177,18 +175,10 @@ export default class Editor {
     return scene;
   }
 
-  async openScene(uri) {
+  async loadProject(json) {
     this.clearCaches();
 
-    const url = new URL(uri, window.location).href;
-
-    const sceneResponse = await fetch(url);
-
-    const json = await sceneResponse.json();
-
-    this.sceneUri = url;
-
-    const scene = await SceneNode.loadScene(this, json);
+    const scene = await SceneNode.loadProject(this, json);
 
     this.setScene(scene);
 
@@ -213,30 +203,6 @@ export default class Editor {
     this.signals.sceneSet.dispatch();
     this.signals.sceneGraphChanged.dispatch();
     this.sceneModified = false;
-  }
-
-  async saveScene(sceneURI) {
-    this.scene.name = decodeURIComponent(this.project.getUrlFilename(sceneURI));
-
-    const oldSceneURI = sceneURI;
-    this.sceneUri = sceneURI;
-
-    try {
-      const serializedScene = this.scene.serialize();
-
-      this.ignoreNextSceneFileChange = true;
-
-      await this.project.writeJSON(sceneURI, serializedScene);
-    } catch (e) {
-      this.sceneUri = oldSceneURI;
-      throw e;
-    }
-
-    this.signals.sceneGraphChanged.dispatch();
-
-    this.sceneModified = false;
-
-    this.signals.sceneModified.dispatch();
   }
 
   async exportScene() {
@@ -391,19 +357,6 @@ export default class Editor {
     });
 
     object.parent.remove(object);
-  }
-
-  clearSceneMetadata() {
-    this.scene.metadata = {};
-  }
-
-  setSceneMetadata(newMetadata) {
-    const existingMetadata = this.scene.metadata || {};
-    this.scene.metadata = Object.assign(existingMetadata, newMetadata);
-  }
-
-  getSceneMetadata() {
-    return this.scene.metadata;
   }
 
   setTransformMode(mode) {
@@ -574,105 +527,8 @@ export default class Editor {
     this.history.redo();
   }
 
-  getSceneContentAttributions() {
-    const contentAttributions = [];
-    const seenAttributions = new Set();
-
-    this.scene.traverse(obj => {
-      if (!(obj.isNode && obj.type === "Model")) return;
-      const attribution = obj.attribution;
-
-      if (!attribution) return;
-
-      if (attribution) {
-        const attributionKey = attribution.url || `${attribution.name}_${attribution.author}`;
-        if (seenAttributions.has(attributionKey)) return;
-        seenAttributions.add(attributionKey);
-        contentAttributions.push(attribution);
-      }
-    });
-
-    return contentAttributions;
-  }
-
   async takeScreenshot() {
     this.deselect();
     return this.viewport.takeScreenshot();
-  }
-
-  async publishScene(sceneId, screenshotBlob, contentAttributions, onPublishProgress) {
-    const { name, creatorAttribution, description, allowRemixing, allowPromotion } = this.getSceneMetadata();
-
-    const attributions = {
-      creator: creatorAttribution,
-      content: contentAttributions
-    };
-
-    onPublishProgress("exporting scene");
-
-    const glbBlob = await this.exportScene(null, true);
-    const size = glbBlob.size / 1024 / 1024;
-    const maxSize = this.project.maxUploadSize;
-    if (size > maxSize) {
-      throw new Error(`Scene is too large (${size.toFixed(2)}MB) to publish. Maximum size is ${maxSize}MB.`);
-    }
-
-    onPublishProgress("uploading");
-
-    const screenshotFormData = new FormData();
-    screenshotFormData.set("media", screenshotBlob);
-    const {
-      file_id: screenshotId,
-      meta: { access_token: screenshotToken }
-    } = await this.project.upload(screenshotFormData);
-
-    const glbFormData = new FormData();
-    glbFormData.set("media", glbBlob);
-    const {
-      file_id: glbId,
-      meta: { access_token: glbToken }
-    } = await this.project.upload(glbFormData, uploadProgress => {
-      onPublishProgress(`uploading ${Math.floor(uploadProgress * 100)}%`);
-    });
-
-    onPublishProgress("uploading");
-
-    let sceneBlob;
-
-    try {
-      const serializedScene = this.scene.serialize();
-      sceneBlob = new Blob([JSON.stringify(serializedScene)], { type: "application/json" });
-    } catch (e) {
-      throw e;
-    }
-
-    const sceneFormData = new FormData();
-    sceneFormData.set("media", sceneBlob);
-
-    const {
-      file_id: sceneFileId,
-      meta: { access_token: sceneFileToken }
-    } = await this.project.upload(sceneFormData);
-
-    onPublishProgress(`${sceneId ? "updating" : "creating"} scene`);
-
-    const res = await this.project.createOrUpdateScene({
-      sceneId,
-      screenshotId,
-      screenshotToken,
-      glbId,
-      glbToken,
-      sceneFileId,
-      sceneFileToken,
-      name,
-      description,
-      attributions,
-      allowRemixing,
-      allowPromotion
-    });
-
-    onPublishProgress("");
-
-    return { sceneUrl: res.url, sceneId: res.sceneId };
   }
 }

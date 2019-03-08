@@ -35,8 +35,8 @@ import SpawnerNodeEditor from "./ui/properties/SpawnerNodeEditor";
 import TriggerVolumeNode from "./editor/nodes/TriggerVolumeNode";
 import TriggerVolumeNodeEditor from "./ui/properties/TriggerVolumeNodeEditor";
 
-export function createEditor(project) {
-  const editor = new Editor(project);
+export function createEditor(api) {
+  const editor = new Editor(api);
   editor.registerNode(SceneNode, SceneNodeEditor);
   editor.registerNode(GroupNode, GroupNodeEditor);
   editor.registerNode(ModelNode, ModelNodeEditor);

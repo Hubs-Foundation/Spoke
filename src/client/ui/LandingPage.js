@@ -1,12 +1,7 @@
 import React, { Component } from "react";
 import { Link } from "react-router-dom";
-import PropTypes from "prop-types";
 
 export default class LandingPage extends Component {
-  static propTypes = {
-    project: PropTypes.object.isRequired
-  };
-
   render() {
     return (
       <div>

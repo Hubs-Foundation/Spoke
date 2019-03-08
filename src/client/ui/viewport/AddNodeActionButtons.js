@@ -135,7 +135,7 @@ class AddNodeActionButtons extends Component {
           message: `Loading media...`
         });
         try {
-          const contentType = await this.props.editor.project.getContentType(url);
+          const contentType = await this.props.editor.api.getContentType(url);
 
           if (contentType.startsWith("image/")) {
             const image = new ImageNode(this.props.editor);
@@ -171,7 +171,7 @@ class AddNodeActionButtons extends Component {
           message: `Loading model...`
         });
         try {
-          const contentType = await this.props.editor.project.getContentType(url);
+          const contentType = await this.props.editor.api.getContentType(url);
 
           if (contentType.startsWith("model/")) {
             const spawner = new SpawnerNode(this.props.editor);

@@ -1,10 +1,10 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
-import styles from "./dialog.scss";
-import Button from "../inputs/Button";
-import DialogHeader from "./DialogHeader";
-import StringInput from "../inputs/StringInput";
-import BooleanInput from "../inputs/BooleanInput";
+import styles from "../ui/dialogs/dialog.scss";
+import DialogHeader from "../ui/dialogs/DialogHeader";
+import Button from "../ui/inputs/Button";
+import StringInput from "../ui/inputs/StringInput";
+import BooleanInput from "../ui/inputs/BooleanInput";
 
 export default class PublishDialog extends Component {
   static propTypes = {

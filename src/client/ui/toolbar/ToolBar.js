@@ -13,7 +13,7 @@ export default class ToolBar extends Component {
   static propTypes = {
     menu: PropTypes.array,
     editor: PropTypes.object,
-    onPublishScene: PropTypes.func
+    onPublish: PropTypes.func
   };
 
   constructor(props) {
@@ -204,7 +204,7 @@ export default class ToolBar extends Component {
           </ToolToggle>
         </div>
         <div className={styles.spacer} />
-        <Button className={styles.publishButton} onClick={this.props.onPublishScene}>
+        <Button className={styles.publishButton} onClick={this.props.onPublish}>
           Publish to Hubs...
         </Button>
         <ContextMenu id="menu">

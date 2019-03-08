@@ -2,7 +2,7 @@ import ReactDOM from "react-dom";
 import React from "react";
 
 import App from "./ui/App";
-import Project from "./api/Project";
+import Api from "./api/Api";
 
 (async () => {
   // eslint-disable-next-line no-undef
@@ -12,7 +12,7 @@ import Project from "./api/Project";
   rootEl.id = "app";
   document.body.appendChild(rootEl);
 
-  const project = new Project();
+  const api = new Api();
 
-  ReactDOM.render(<App project={project} />, rootEl);
+  ReactDOM.render(<App api={api} />, rootEl);
 })().catch(e => console.error(e));

@@ -41,7 +41,7 @@ export default class ImageNode extends EditorNodeMixin(Image) {
 
   async load(src) {
     this._canonicalUrl = src;
-    const { accessibleUrl } = await this.editor.project.resolveMedia(src);
+    const { accessibleUrl } = await this.editor.api.resolveMedia(src);
     return super.load(accessibleUrl);
   }
 

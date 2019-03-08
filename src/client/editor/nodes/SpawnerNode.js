@@ -1,6 +1,5 @@
 import Model from "../objects/Model";
 import EditorNodeMixin from "./EditorNodeMixin";
-import absoluteToRelativeURL from "../utils/absoluteToRelativeURL";
 
 export default class SpawnerNode extends EditorNodeMixin(Model) {
   static legacyComponentName = "spawner";
@@ -10,15 +9,9 @@ export default class SpawnerNode extends EditorNodeMixin(Model) {
   static async deserialize(editor, json) {
     const node = await super.deserialize(editor, json);
 
-    const { src, origin } = json.components.find(c => c.name === "spawner").props;
+    const { src } = json.components.find(c => c.name === "spawner").props;
 
-    let absoluteURL = new URL(src, editor.sceneUri).href;
-
-    if (origin) {
-      absoluteURL = origin;
-    }
-
-    await node.load(absoluteURL);
+    await node.load(src);
 
     return node;
   }
@@ -47,7 +40,7 @@ export default class SpawnerNode extends EditorNodeMixin(Model) {
   async load(src) {
     this._canonicalUrl = src;
 
-    const { accessibleUrl, files } = await this.editor.project.resolveMedia(src);
+    const { accessibleUrl, files } = await this.editor.api.resolveMedia(src);
 
     await super.load(accessibleUrl);
 
@@ -64,7 +57,7 @@ export default class SpawnerNode extends EditorNodeMixin(Model) {
   serialize() {
     return super.serialize({
       spawner: {
-        src: absoluteToRelativeURL(this.editor.sceneUri, this._canonicalUrl)
+        src: this._canonicalUrl
       }
     });
   }

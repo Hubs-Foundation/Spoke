@@ -1,10 +1,11 @@
 import React, { Component } from "react";
 import { Link } from "react-router-dom";
 import PropTypes from "prop-types";
+import { withApi } from "./contexts/ApiContext";
 
-export default class ProjectsPage extends Component {
+class ProjectsPage extends Component {
   static propTypes = {
-    project: PropTypes.object.isRequired
+    api: PropTypes.object.isRequired
   };
 
   constructor(props) {
@@ -16,7 +17,7 @@ export default class ProjectsPage extends Component {
   }
 
   componentDidMount() {
-    this.props.project.getProjects().then(projects => this.setState({ projects }));
+    this.props.api.getProjects().then(projects => this.setState({ projects }));
   }
 
   render() {
@@ -36,3 +37,5 @@ export default class ProjectsPage extends Component {
     );
   }
 }
+
+export default withApi(ProjectsPage);

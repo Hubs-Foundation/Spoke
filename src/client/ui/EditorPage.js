@@ -14,20 +14,15 @@ import HierarchyPanelContainer from "./hierarchy/HierarchyPanelContainer";
 import PropertiesPanelContainer from "./properties/PropertiesPanelContainer";
 import ViewportPanelContainer from "./viewport/ViewportPanelContainer";
 
+import { withApi } from "./contexts/ApiContext";
 import { defaultSettings, SettingsContextProvider } from "./contexts/SettingsContext";
 import { EditorContextProvider } from "./contexts/EditorContext";
 import { DialogContextProvider } from "./contexts/DialogContext";
 
 import { createEditor } from "../config";
 
-import ConfirmDialog from "./dialogs/ConfirmDialog";
 import ErrorDialog from "./dialogs/ErrorDialog";
-import LoginDialog from "./dialogs/LoginDialog";
 import ProgressDialog from "./dialogs/ProgressDialog";
-import PublishDialog from "./dialogs/PublishDialog";
-
-import AuthenticationError from "../api/AuthenticationError";
-import TextInputDialog from "./dialogs/TextInputDialog";
 
 function isInputSelected() {
   const el = document.activeElement;
@@ -35,11 +30,25 @@ function isInputSelected() {
   return el.isContentEditable || nodeName === "INPUT" || nodeName === "SELECT" || nodeName === "TEXTAREA";
 }
 
-export default class EditorPage extends Component {
+function wrapHotkeyHandler(component, handler) {
+  return e => {
+    e.preventDefault();
+
+    // Disable when dialog is shown.
+    if (component.state.DialogComponent !== null) {
+      return;
+    }
+
+    handler();
+  };
+}
+
+class EditorPage extends Component {
   static propTypes = {
-    project: PropTypes.object.isRequired,
+    api: PropTypes.object.isRequired,
     match: PropTypes.object.isRequired,
-    history: PropTypes.object.isRequired
+    history: PropTypes.object.isRequired,
+    location: PropTypes.object.isRequired
   };
 
   constructor(props) {
@@ -53,7 +62,7 @@ export default class EditorPage extends Component {
       settings = JSON.parse(storedSettings);
     }
 
-    const editor = createEditor(props.project);
+    const editor = createEditor(props.api);
     window.editor = editor;
     const editorInitPromise = editor.init();
 
@@ -116,7 +125,6 @@ export default class EditorPage extends Component {
         delete: ["del", "backspace"],
         duplicate: ["ctrl+d", "command+d"],
         save: ["ctrl+s", "command+s"],
-        saveAs: ["ctrl+shift+s", "command+shift+s"],
         open: ["ctrl+o", "command+o"],
         undo: ["ctrl+z", "command+z"],
         redo: ["ctrl+shift+z", "command+shift+z"]
@@ -125,9 +133,8 @@ export default class EditorPage extends Component {
         undo: this.onUndo,
         redo: this.onRedo,
         delete: this.onDelete,
-        save: this.onSave,
-        saveAs: this.onSaveAs,
-        open: this.onOpen,
+        save: wrapHotkeyHandler(this, this.onSaveProject),
+        open: wrapHotkeyHandler(this, this.onOpenProject),
         translateTool: this.onTranslateTool,
         rotateTool: this.onRotateTool,
         scaleTool: this.onScaleTool,
@@ -145,36 +152,26 @@ export default class EditorPage extends Component {
         name: "File",
         items: [
           {
-            name: "New Scene",
-            action: e => this.onNewScene(e)
+            name: "New Project",
+            action: this.onNewProject
           },
           {
-            name: "Open Scene...",
-            action: e => this.onOpen(e)
+            name: "Open Project...",
+            action: this.onOpenProject
           },
-          this.state.editor.sceneUri
-            ? {
-                name: "Save " + this.props.project.getUrlFilename(this.state.editor.sceneUri),
-                action: e => this.onSave(e)
-              }
-            : null,
           {
-            name: "Save Scene As...",
-            action: e => this.onSaveAs(e)
+            name: `Save Project`,
+            action: this.onSaveProject
           },
           {
             name: "Publish to Hubs...",
-            action: () => this.onPublishScene()
+            action: this.onPublishProject
           },
           {
             name: "Export as binary glTF (.glb) ...",
-            action: e => this.onExportScene(e)
-          },
-          {
-            name: "Open Scenes Folder...",
-            action: () => this.props.project.openProjectDirectory()
+            action: this.onExportProject
           }
-        ].filter(x => x !== null)
+        ]
       },
       {
         name: "Help",
@@ -245,31 +242,6 @@ export default class EditorPage extends Component {
     }
   }
 
-  async loadProject(projectId) {
-    if (projectId === "new") {
-      this.state.editor.loadNewScene();
-    } else {
-      const scenePath = "/api/files/" + projectId + ".spoke";
-
-      this.showDialog(ProgressDialog, {
-        title: "Opening Scene",
-        message: "Opening scene..."
-      });
-
-      try {
-        await this.state.editor.openScene(scenePath);
-        this.hideDialog();
-      } catch (e) {
-        console.error(e);
-
-        this.showDialog(ErrorDialog, {
-          title: "Error opening scene.",
-          message: e.message || "There was an error when opening the scene."
-        });
-      }
-    }
-  }
-
   componentWillUnmount() {
     window.removeEventListener("resize", this.onWindowResize, false);
     this.state.editor.signals.sceneModified.remove(this.onSceneModified);
@@ -325,44 +297,6 @@ export default class EditorPage extends Component {
     }
 
     this.state.editor.redo();
-  };
-
-  onOpen = e => {
-    e.preventDefault();
-    this.props.history.push("/projects");
-  };
-
-  onSave = async e => {
-    e.preventDefault();
-
-    // Disable when dialog is shown.
-    if (this.state.DialogComponent !== null) {
-      return;
-    }
-
-    return this.saveOrSaveAsScene();
-  };
-
-  onSaveAs = e => {
-    e.preventDefault();
-
-    // Disable when dialog is shown.
-    if (this.state.DialogComponent !== null) {
-      return;
-    }
-
-    this.onSaveSceneAsDialog();
-  };
-
-  onExportScene = e => {
-    e.preventDefault();
-
-    // Disable when dialog is shown.
-    if (this.state.DialogComponent !== null) {
-      return;
-    }
-
-    this.onExportSceneDialog();
   };
 
   onTranslateTool = e => {
@@ -465,108 +399,72 @@ export default class EditorPage extends Component {
   }
 
   /**
-   *  Scene Actions
+   *  Project Actions
    */
 
-  waitForInput(options) {
-    return new Promise(resolve => {
-      const props = Object.assign(
-        {
-          onConfirm: value => resolve(value),
-          onCancel: () => {
-            this.hideDialog();
-            resolve(null);
-          }
-        },
-        options
-      );
+  async loadProject(projectId) {
+    if (projectId === "new") {
+      this.state.editor.loadNewScene();
+    } else {
+      this.showDialog(ProgressDialog, {
+        title: "Loading Project",
+        message: "Loading project..."
+      });
 
-      this.showDialog(TextInputDialog, props);
-    });
+      try {
+        const { project } = await this.props.api.getProject(projectId);
+        await this.state.editor.loadProject(project);
+        this.hideDialog();
+      } catch (e) {
+        console.error(e);
+
+        this.showDialog(ErrorDialog, {
+          title: "Error loading project.",
+          message: e.message || "There was an error when loading the project."
+        });
+      }
+    }
   }
 
-  waitForConfirm(options) {
-    return new Promise(resolve => {
-      const props = Object.assign(
-        {
-          onConfirm: () => {
-            this.hideDialog();
-            resolve(true);
-          },
-          onCancel: () => {
-            this.hideDialog();
-            resolve(false);
-          }
-        },
-        options
-      );
-
-      this.showDialog(ConfirmDialog, props);
-    });
-  }
-
-  onNewScene = async () => {
+  onNewProject = async () => {
     this.props.history.push("/projects/new");
   };
 
-  saveOrSaveAsScene = async () => {
-    if (this.state.editor.sceneUri) {
-      return this.onSaveScene(this.state.editor.sceneUri);
-    } else {
-      return this.onSaveSceneAsDialog();
-    }
+  onOpenProject = () => {
+    this.props.history.push("/projects");
   };
 
-  onSaveSceneAsDialog = async () => {
-    const scene = this.state.editor.scene;
-
-    const fileName = await this.waitForInput({
-      title: "Save scene as...",
-      okLabel: "Save",
-      message: "Enter a name for your scene",
-      initialValue: scene.name
-    });
-
-    if (fileName === null) return false;
-
-    if (fileName !== scene.name) {
-      // When we save the scene to a new file, clear the metadata
-      // used for publishing so it ends up as a new scene in Hubs.
-      this.state.editor.clearSceneMetadata();
-    }
-
-    await this.onSaveScene(`/api/files/${fileName}.spoke`);
-
-    this.props.history.push(`/projects/${fileName}`);
-  };
-
-  onSaveScene = async sceneURI => {
+  onSaveProject = async () => {
     this.showDialog(ProgressDialog, {
-      title: "Saving Scene",
-      message: "Saving scene..."
+      title: "Saving Project",
+      message: "Saving project..."
     });
 
     try {
-      await this.state.editor.saveScene(sceneURI);
+      const { projectId } = this.props.match.params;
+      const editor = this.state.editor;
+      const result = await this.props.api.saveProject(projectId, editor, this.showDialog, this.hideDialog);
+      editor.sceneModified = false;
+
       this.hideDialog();
 
-      return true;
+      return result;
     } catch (e) {
       console.error(e);
 
       this.showDialog(ErrorDialog, {
-        title: "Error Saving Scene",
-        message: e.message || "There was an error when saving the scene."
+        title: "Error Saving Project",
+        message: e.message || "There was an error when saving the project."
       });
 
-      return false;
+      return null;
     }
   };
 
-  onExportSceneDialog = async () => {
+  onExportProject = async () => {
     this.showDialog(ProgressDialog, {
-      title: "Exporting Scene",
-      message: "Exporting scene..."
+      title: "Exporting Project",
+      message: "Exporting project..."
     });
 
     try {
@@ -584,135 +482,23 @@ export default class EditorPage extends Component {
       console.error(e);
 
       this.showDialog(ErrorDialog, {
-        title: "Error Exporting Scene",
-        message: e.message || "There was an error when exporting the scene."
+        title: "Error Exporting Project",
+        message: e.message || "There was an error when exporting the project."
       });
     }
   };
 
-  onPublishScene = async () => {
-    if (this.state.editor.sceneModified) {
-      const willSaveChanges = await this.waitForConfirm({
-        title: "Unsaved Changes",
-        message: "Your scene must be saved before publishing.",
-        confirmLabel: "Save"
+  onPublishProject = async () => {
+    try {
+      const { projectId } = this.props.match.params;
+      await this.props.api.publishProject(projectId, this.state.editor, this.showDialog, this.hideDialog);
+    } catch (e) {
+      console.error(e);
+      this.showDialog(ErrorDialog, {
+        title: "Error Publishing Project",
+        message: e.message || "There was an unknown error."
       });
-
-      if (!willSaveChanges) return;
-
-      const savedOk = await this.saveOrSaveAsScene();
-      if (!savedOk) return;
     }
-
-    if (await this.props.project.authenticated()) {
-      this._showPublishDialog();
-    } else {
-      this._showLoginDialog();
-    }
-  };
-
-  _showLoginDialog = () => {
-    this.showDialog(LoginDialog, {
-      onLogin: async email => {
-        const { authComplete } = await this.props.project.startAuthentication(email);
-        this.showDialog(LoginDialog, { authStarted: true });
-        await authComplete;
-        this._showPublishDialog();
-      }
-    });
-  };
-
-  _showPublishDialog = async () => {
-    const {
-      blob: screenshotBlob,
-      cameraTransform: screenshotCameraTransform
-    } = await this.state.editor.takeScreenshot();
-    const contentAttributions = this.state.editor.getSceneContentAttributions();
-    const screenshotURL = URL.createObjectURL(screenshotBlob);
-    const {
-      name,
-      creatorAttribution,
-      description,
-      allowRemixing,
-      allowPromotion,
-      sceneId
-    } = this.state.editor.getSceneMetadata();
-
-    let initialCreatorAttribution = creatorAttribution;
-    if (!initialCreatorAttribution || initialCreatorAttribution.length === 0) {
-      initialCreatorAttribution = (await this.props.project.getUserInfo()).creatorAttribution;
-    }
-
-    await this.showDialog(PublishDialog, {
-      screenshotURL,
-      contentAttributions,
-      initialName: name || this.state.editor.scene.name,
-      initialCreatorAttribution,
-      initialDescription: description,
-      initialAllowRemixing: allowRemixing,
-      initialAllowPromotion: allowPromotion,
-      isNewScene: !sceneId,
-      onCancel: () => {
-        URL.revokeObjectURL(screenshotURL);
-        this.hideDialog();
-      },
-      onPublish: async ({ name, creatorAttribution, description, allowRemixing, allowPromotion, isNewScene }) => {
-        this.showDialog(ProgressDialog, {
-          title: "Publishing Scene",
-          message: "Publishing scene..."
-        });
-
-        this.state.editor.setSceneMetadata({
-          name,
-          creatorAttribution,
-          description,
-          allowRemixing,
-          allowPromotion,
-          previewCameraTransform: screenshotCameraTransform
-        });
-
-        await this.props.project.setUserInfo({ creatorAttribution });
-
-        let publishResult;
-        try {
-          publishResult = await this.state.editor.publishScene(
-            isNewScene ? null : sceneId,
-            screenshotBlob,
-            contentAttributions,
-            publishProgress => {
-              this.showDialog(ProgressDialog, {
-                title: "Publishing Scene",
-                message: `Publishing scene${publishProgress ? ` [${publishProgress}]` : ""}...`
-              });
-            }
-          );
-
-          this.state.editor.setSceneMetadata({ sceneUrl: publishResult.sceneUrl, sceneId: publishResult.sceneId });
-
-          await this.saveOrSaveAsScene();
-
-          this.showDialog(PublishDialog, {
-            screenshotURL,
-            initialName: name,
-            initialCreatorAttribution: creatorAttribution,
-            published: true,
-            sceneUrl: publishResult.sceneUrl
-          });
-        } catch (e) {
-          console.error(e);
-          if (e instanceof AuthenticationError) {
-            this._showLoginDialog();
-          } else {
-            this.showDialog(ErrorDialog, {
-              title: "Error Publishing Scene",
-              message: e.message || "There was an unknown error."
-            });
-          }
-        } finally {
-          URL.revokeObjectURL(screenshotURL);
-        }
-      }
-    });
   };
 
   renderPanel = (panelId, path) => {
@@ -730,14 +516,14 @@ export default class EditorPage extends Component {
     const { editor } = this.state;
     const toolbarMenu = this.generateToolbarMenu();
 
-    const modified = this.state.editor.sceneModified ? "*" : "";
+    const modified = editor.sceneModified ? "*" : "";
 
     return (
       <HotKeys keyMap={this.state.keyMap} handlers={this.state.globalHotKeyHandlers} className={styles.flexColumn}>
         <SettingsContextProvider value={settingsContext}>
           <EditorContextProvider value={editor}>
             <DialogContextProvider value={this.dialogContext}>
-              <ToolBar menu={toolbarMenu} editor={editor} onPublishScene={this.onPublishScene} />
+              <ToolBar menu={toolbarMenu} editor={editor} onPublish={this.onPublishProject} />
               <Mosaic
                 className="mosaic-theme"
                 renderTile={this.renderPanel}
@@ -754,7 +540,7 @@ export default class EditorPage extends Component {
               >
                 {DialogComponent && <DialogComponent {...dialogProps} hideDialog={this.hideDialog} />}
               </Modal>
-              <DocumentTitle title={`${modified}${this.state.editor.scene.name} | Spoke by Mozilla`} />
+              <DocumentTitle title={`${modified}${editor.scene.name} | Spoke by Mozilla`} />
               <Prompt
                 message={`${
                   editor.scene.name
@@ -768,3 +554,5 @@ export default class EditorPage extends Component {
     );
   }
 }
+
+export default withApi(EditorPage);
