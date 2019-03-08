@@ -1,39 +1,39 @@
-import THREE from "../../../src/client/vendor/three";
-import Project from "../../../src/client/api/Project";
-import Editor from "../../../src/client/editor/Editor";
+import THREE from "../../../src/vendor/three";
+import Api from "../../../src/api/Api";
+import Editor from "../../../src/editor/Editor";
 
-import SceneNode from "../../../src/client/editor/nodes/SceneNode";
-import SceneNodeEditor from "../../../src/client/ui/properties/SceneNodeEditor";
-import GroupNode from "../../../src/client/editor/nodes/GroupNode";
-import GroupNodeEditor from "../../../src/client/ui/properties/GroupNodeEditor";
-import ModelNode from "../../../src/client/editor/nodes/ModelNode";
-import ModelNodeEditor from "../../../src/client/ui/properties/ModelNodeEditor";
-import GroundPlaneNode from "../../../src/client/editor/nodes/GroundPlaneNode";
-import GroundPlaneNodeEditor from "../../../src/client/ui/properties/GroundPlaneNodeEditor";
-import BoxColliderNode from "../../../src/client/editor/nodes/BoxColliderNode";
-import BoxColliderNodeEditor from "../../../src/client/ui/properties/BoxColliderNodeEditor";
-import AmbientLightNode from "../../../src/client/editor/nodes/AmbientLightNode";
-import AmbientLightNodeEditor from "../../../src/client/ui/properties/AmbientLightNodeEditor";
-import DirectionalLightNode from "../../../src/client/editor/nodes/DirectionalLightNode";
-import DirectionalLightNodeEditor from "../../../src/client/ui/properties/DirectionalLightNodeEditor";
-import SpotLightNode from "../../../src/client/editor/nodes/SpotLightNode";
-import SpotLightNodeEditor from "../../../src/client/ui/properties/SpotLightNodeEditor";
-import PointLightNode from "../../../src/client/editor/nodes/PointLightNode";
-import PointLightNodeEditor from "../../../src/client/ui/properties/PointLightNodeEditor";
-import HemisphereLightNode from "../../../src/client/editor/nodes/HemisphereLightNode";
-import HemisphereLightNodeEditor from "../../../src/client/ui/properties/HemisphereLightNodeEditor";
-import SpawnPointNode from "../../../src/client/editor/nodes/SpawnPointNode";
-import SpawnPointNodeEditor from "../../../src/client/ui/properties/SpawnPointNodeEditor";
-import SkyboxNode from "../../../src/client/editor/nodes/SkyboxNode";
-import SkyboxNodeEditor from "../../../src/client/ui/properties/SkyboxNodeEditor";
-import FloorPlanNode from "../../../src/client/editor/nodes/FloorPlanNode";
-import FloorPlanNodeEditor from "../../../src/client/ui/properties/FloorPlanNodeEditor";
-import ImageNode from "../../../src/client/editor/nodes/ImageNode";
-import ImageNodeEditor from "../../../src/client/ui/properties/ImageNodeEditor";
-import VideoNode from "../../../src/client/editor/nodes/VideoNode";
-import VideoNodeEditor from "../../../src/client/ui/properties/VideoNodeEditor";
-import SpawnerNode from "../../../src/client/editor/nodes/SpawnerNode";
-import SpawnerNodeEditor from "../../../src/client/ui/properties/SpawnerNodeEditor";
+import SceneNode from "../../../src/editor/nodes/SceneNode";
+import SceneNodeEditor from "../../../src/ui/properties/SceneNodeEditor";
+import GroupNode from "../../../src/editor/nodes/GroupNode";
+import GroupNodeEditor from "../../../src/ui/properties/GroupNodeEditor";
+import ModelNode from "../../../src/editor/nodes/ModelNode";
+import ModelNodeEditor from "../../../src/ui/properties/ModelNodeEditor";
+import GroundPlaneNode from "../../../src/editor/nodes/GroundPlaneNode";
+import GroundPlaneNodeEditor from "../../../src/ui/properties/GroundPlaneNodeEditor";
+import BoxColliderNode from "../../../src/editor/nodes/BoxColliderNode";
+import BoxColliderNodeEditor from "../../../src/ui/properties/BoxColliderNodeEditor";
+import AmbientLightNode from "../../../src/editor/nodes/AmbientLightNode";
+import AmbientLightNodeEditor from "../../../src/ui/properties/AmbientLightNodeEditor";
+import DirectionalLightNode from "../../../src/editor/nodes/DirectionalLightNode";
+import DirectionalLightNodeEditor from "../../../src/ui/properties/DirectionalLightNodeEditor";
+import SpotLightNode from "../../../src/editor/nodes/SpotLightNode";
+import SpotLightNodeEditor from "../../../src/ui/properties/SpotLightNodeEditor";
+import PointLightNode from "../../../src/editor/nodes/PointLightNode";
+import PointLightNodeEditor from "../../../src/ui/properties/PointLightNodeEditor";
+import HemisphereLightNode from "../../../src/editor/nodes/HemisphereLightNode";
+import HemisphereLightNodeEditor from "../../../src/ui/properties/HemisphereLightNodeEditor";
+import SpawnPointNode from "../../../src/editor/nodes/SpawnPointNode";
+import SpawnPointNodeEditor from "../../../src/ui/properties/SpawnPointNodeEditor";
+import SkyboxNode from "../../../src/editor/nodes/SkyboxNode";
+import SkyboxNodeEditor from "../../../src/ui/properties/SkyboxNodeEditor";
+import FloorPlanNode from "../../../src/editor/nodes/FloorPlanNode";
+import FloorPlanNodeEditor from "../../../src/ui/properties/FloorPlanNodeEditor";
+import ImageNode from "../../../src/editor/nodes/ImageNode";
+import ImageNodeEditor from "../../../src/ui/properties/ImageNodeEditor";
+import VideoNode from "../../../src/editor/nodes/VideoNode";
+import VideoNodeEditor from "../../../src/ui/properties/VideoNodeEditor";
+import SpawnerNode from "../../../src/editor/nodes/SpawnerNode";
+import SpawnerNodeEditor from "../../../src/ui/properties/SpawnerNodeEditor";
 
 import { expect } from "chai";
 
@@ -45,10 +45,8 @@ describe("Editor", () => {
       before(async function() {
         this.timeout(30000);
 
-        const project = new Project();
-        const editor = new Editor(project);
-        // Don't save the scene when regenerating the floorplan so that the .spoke file is not overwritten.
-        editor.saveOnGenerateFloorPlan = false;
+        const api = new Api();
+        const editor = new Editor(api);
 
         editor.registerNode(SceneNode, SceneNodeEditor);
         editor.registerNode(GroupNode, GroupNodeEditor);
@@ -75,7 +73,7 @@ describe("Editor", () => {
 
         editor.initializeViewport(canvas);
 
-        scene = await editor.openScene("./api/files/V1TestScene.spoke");
+        scene = await editor.loadProject("./api/files/V1TestScene.spoke");
       });
 
       it("should load the SceneNode", async function() {

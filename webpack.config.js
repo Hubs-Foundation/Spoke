@@ -7,19 +7,89 @@ if (process.env.NODE_ENV === "production") {
   dotenv.config({ path: ".env.defaults" });
 }
 
+const fs = require("fs");
+const selfsigned = require("selfsigned");
+const cors = require("cors");
 const HTMLWebpackPlugin = require("html-webpack-plugin");
 const path = require("path");
 const packageJSON = require("./package.json");
 const webpack = require("webpack");
 
+function createHTTPSConfig() {
+  // Generate certs for the local webpack-dev-server.
+  if (fs.existsSync(path.join(__dirname, "certs"))) {
+    const key = fs.readFileSync(path.join(__dirname, "certs", "key.pem"));
+    const cert = fs.readFileSync(path.join(__dirname, "certs", "cert.pem"));
+
+    return { key, cert };
+  } else {
+    const pems = selfsigned.generate(
+      [
+        {
+          name: "commonName",
+          value: "localhost"
+        }
+      ],
+      {
+        days: 365,
+        algorithm: "sha256",
+        extensions: [
+          {
+            name: "subjectAltName",
+            altNames: [
+              {
+                type: 2,
+                value: "localhost"
+              },
+              {
+                type: 2,
+                value: "hubs.local"
+              }
+            ]
+          }
+        ]
+      }
+    );
+
+    fs.mkdirSync(path.join(__dirname, "certs"));
+    fs.writeFileSync(path.join(__dirname, "certs", "cert.pem"), pems.cert);
+    fs.writeFileSync(path.join(__dirname, "certs", "key.pem"), pems.private);
+
+    return {
+      key: pems.private,
+      cert: pems.cert
+    };
+  }
+}
+
+const defaultHostName = "hubs.local";
+const host = process.env.HOST_IP || defaultHostName;
+
 module.exports = {
   mode: process.env.NODE_ENV ? "development" : "production",
 
   entry: {
-    app: ["./src/client/index.js"]
+    app: ["./src/index.js"]
   },
 
   devtool: process.env.NODE_ENV === "production" ? "source-map" : "inline-source-map",
+
+  devServer: {
+    https: createHTTPSConfig(),
+    historyApiFallback: true,
+    port: 9090,
+    host: process.env.HOST_IP || "0.0.0.0",
+    public: `${host}:9090`,
+    useLocalIp: true,
+    allowedHosts: [host],
+    headers: {
+      "Access-Control-Allow-Origin": "*"
+    },
+    before: function(app) {
+      // be flexible with people accessing via a local reticulum on another port
+      app.use(cors({ origin: /hubs\.local(:\d*)?$/ }));
+    }
+  },
 
   output: {
     path: path.join(__dirname, "public"),
@@ -39,7 +109,7 @@ module.exports = {
       },
       {
         test: /\.scss$/,
-        include: path.join(__dirname, "src", "client"),
+        include: path.join(__dirname, "src"),
         use: [
           "style-loader",
           { loader: "css-loader", options: { localIdentName: "[name]__[local]__[hash:base64:5]" } },
@@ -48,18 +118,18 @@ module.exports = {
       },
       {
         test: /\.js$/,
-        include: path.join(__dirname, "src", "client"),
+        include: path.join(__dirname, "src"),
         use: "babel-loader"
       },
       {
         test: /\.worker\.js$/,
-        include: path.join(__dirname, "src", "client"),
+        include: path.join(__dirname, "src"),
         loader: "worker-loader"
       },
       {
         test: /\.wasm$/,
         type: "javascript/auto",
-        include: path.join(__dirname, "src", "client"),
+        include: path.join(__dirname, "src"),
         loader: "file-loader"
       }
     ]
@@ -74,7 +144,7 @@ module.exports = {
   plugins: [
     new HTMLWebpackPlugin({
       title: packageJSON.productName,
-      favicon: "src/client/assets/favicon.ico"
+      favicon: "src/assets/favicon.ico"
     }),
     new webpack.DefinePlugin({
       SPOKE_VERSION: JSON.stringify(packageJSON.version),

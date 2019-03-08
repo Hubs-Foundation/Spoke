@@ -1,2 +1,2 @@
-src/client/editor/recast/recast.js
-src/client/vendor/TransformControls.js
+src/editor/recast/recast.js
+src/vendor/TransformControls.js

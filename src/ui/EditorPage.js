@@ -413,7 +413,13 @@ class EditorPage extends Component {
 
       try {
         const { project } = await this.props.api.getProject(projectId);
-        await this.state.editor.loadProject(project);
+
+        if (!project) {
+          this.state.editor.loadNewScene();
+        } else {
+          await this.state.editor.loadProject(project);
+        }
+
         this.hideDialog();
       } catch (e) {
         console.error(e);

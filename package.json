@@ -19,7 +19,7 @@
     "url": "https://github.com/MozillaReality/spoke.git"
   },
   "scripts": {
-    "start": "cross-env NODE_ENV=development node ./src/server",
+    "start": "cross-env NODE_ENV=development webpack-dev-server --mode development",
     "build": "cross-env NODE_ENV=production webpack --mode production",
     "precommit": "lint-staged",
     "lint": "eslint ./src",
@@ -78,7 +78,6 @@
     "react-router-dom": "^4.3.1",
     "react-select": "^2.4.1",
     "react-toggle": "^4.0.2",
-    "selfsigned": "^1.10.4",
     "signals": "^1.0.0",
     "three": "github:mozillareality/three.js#220c52eb20b5d8afce8aecc295283d7a7a1e0c62",
     "uuid": "^3.3.2"
@@ -98,6 +97,7 @@
     "browser-env": "^3.2.6",
     "chai": "^4.2.0",
     "copy-webpack-plugin": "^5.0.0",
+    "cors": "^2.8.5",
     "cross-env": "^5.2.0",
     "css-loader": "^0.28.11",
     "dotenv": "^6.2.0",
@@ -118,10 +118,12 @@
     "prettier": "^1.16.4",
     "puppeteer-core": "^1.13.0",
     "sass-loader": "^7.1.0",
+    "selfsigned": "^1.10.4",
     "source-map-support": "^0.5.10",
     "style-loader": "^0.21.0",
     "webpack": "^4.28.4",
     "webpack-cli": "^3.2.3",
+    "webpack-dev-server": "^3.2.1",
     "worker-loader": "^2.0.0"
   }
 }

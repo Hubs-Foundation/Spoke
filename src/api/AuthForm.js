@@ -13,6 +13,7 @@ export default class AuthForm extends Component {
 
   onSubmit = e => {
     e.preventDefault();
+    console.log("onsubmit");
     this.props.onSubmit(this.state.email);
   };
 
@@ -26,7 +27,7 @@ export default class AuthForm extends Component {
         {this.props.error && <p>{this.props.error}</p>}
         <label>
           Email:
-          <input type="email" placeholder="Your email address" value={this.state.email} onChange={this.handleChange} />
+          <input type="email" placeholder="Your email address" value={this.state.email} onChange={this.onEmailChange} />
         </label>
         <p>
           By proceeding, you agree to the{" "}
@@ -36,7 +37,8 @@ export default class AuthForm extends Component {
           and{" "}
           <a rel="noopener noreferrer" target="_blank" href="https://github.com/mozilla/hubs/blob/master/PRIVACY.md">
             privacy notice
-          </a>.
+          </a>
+          .
         </p>
         <button type="submit">next</button>
       </form>

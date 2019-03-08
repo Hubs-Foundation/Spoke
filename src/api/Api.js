@@ -156,12 +156,54 @@ export default class Project extends EventEmitter {
     return localStorage.getItem("spoke-credentials") !== null;
   }
 
-  getProjects() {
-    return this.fetchJSON(`https://${process.env.RETICULUM_SERVER}/api/v1/projects`);
+  async getProjects() {
+    const credentials = localStorage.getItem("spoke-credentials");
+
+    const headers = {
+      "content-type": "application/json",
+      authorization: `Bearer ${credentials}`
+    };
+
+    const response = await fetch(`https://${process.env.RETICULUM_SERVER}/api/v1/projects`, { headers });
+
+    const json = await response.json();
+
+    if (!Array.isArray(json.projects)) {
+      throw new Error(`Error fetching projects: ${json.error || "Unknown error."}`);
+    }
+
+    return json.projects.map(project => ({
+      id: project.project_id,
+      name: project.name,
+      thumbnailUrl: project.thumbnail_url
+    }));
   }
 
-  getProject(projectId) {
-    return this.fetchJSON(`https://${process.env.RETICULUM_SERVER}/api/v1/projects/${projectId}`);
+  async getProject(projectId) {
+    const credentials = localStorage.getItem("spoke-credentials");
+
+    const headers = {
+      "content-type": "application/json",
+      authorization: `Bearer ${credentials}`
+    };
+
+    const response = await fetch(`https://${process.env.RETICULUM_SERVER}/api/v1/projects/${projectId}`, { headers });
+
+    const json = await response.json();
+
+    let project = null;
+
+    if (json.project_url) {
+      const projectFileResponse = await fetch(json.project_url, { headers });
+      project = await projectFileResponse.json();
+    }
+
+    return {
+      id: json.project_id,
+      name: json.name,
+      thumbnailUrl: json.thumbnail_url,
+      project
+    };
   }
 
   async getContentType(url) {
@@ -259,11 +301,13 @@ export default class Project extends EventEmitter {
     };
 
     const body = JSON.stringify({
-      name: editor.scene.name,
-      thumbnail_file_id,
-      thumbnail_file_token,
-      project_file_id,
-      project_file_token
+      project: {
+        name: editor.scene.name,
+        thumbnail_file_id,
+        thumbnail_file_token,
+        project_file_id,
+        project_file_token
+      }
     });
 
     const projectEndpoint = `https://${process.env.RETICULUM_SERVER}/api/v1/projects/${projectId}`;
@@ -290,7 +334,7 @@ export default class Project extends EventEmitter {
     }
   }
 
-  async publishProject(projectId, editor, location, showDialog, hideDialog) {
+  async publishProject(projectId, editor, showDialog, hideDialog) {
     let screenshotURL;
 
     try {
@@ -298,7 +342,7 @@ export default class Project extends EventEmitter {
 
       // Save the scene if it has been modified.
       if (editor.sceneModified) {
-        await this.saveProject();
+        await this.saveProject(projectId, editor, showDialog, hideDialog);
       }
 
       // Ensure the user is authenticated before continuing.
@@ -319,7 +363,11 @@ export default class Project extends EventEmitter {
       const userInfo = this.getUserInfo();
 
       let initialCreatorAttribution = creatorAttribution;
-      if (!initialCreatorAttribution || initialCreatorAttribution.length === 0) {
+      if (
+        (!initialCreatorAttribution || initialCreatorAttribution.length === 0) &&
+        userInfo &&
+        userInfo.creatorAttribution
+      ) {
         initialCreatorAttribution = userInfo.creatorAttribution;
       }
 
@@ -327,7 +375,7 @@ export default class Project extends EventEmitter {
 
       // Display the publish dialog and wait for the user to submit / cancel
       const publishParams = await new Promise(resolve => {
-        this.showDialog(PublishDialog, {
+        showDialog(PublishDialog, {
           screenshotURL,
           contentAttributions,
           initialName: name || editor.scene.name,
@@ -390,32 +438,25 @@ export default class Project extends EventEmitter {
       });
 
       // Upload the screenshot file
-      const screenshotFormData = new FormData();
-      screenshotFormData.set("media", screenshotBlob);
       const {
         file_id: screenshotId,
         meta: { access_token: screenshotToken }
-      } = await this.upload(screenshotFormData);
+      } = await this.upload(screenshotBlob);
 
-      const glbFormData = new FormData();
-      glbFormData.set("media", glbBlob);
       const {
         file_id: glbId,
         meta: { access_token: glbToken }
-      } = await this.upload(glbFormData, uploadProgress => {
+      } = await this.upload(glbBlob, uploadProgress => {
         showDialog(ProgressDialog, {
           title: "Publishing Scene",
           message: `Uploading scene: ${Math.floor(uploadProgress * 100)}%`
         });
       });
 
-      const sceneFormData = new FormData();
-      sceneFormData.set("media", sceneBlob);
-
       const {
         file_id: sceneFileId,
         meta: { access_token: sceneFileToken }
-      } = await this.upload(sceneFormData);
+      } = await this.upload(sceneBlob);
 
       const sceneParams = {
         screenshot_file_id: screenshotId,
@@ -424,13 +465,13 @@ export default class Project extends EventEmitter {
         model_file_token: glbToken,
         scene_file_id: sceneFileId,
         scene_file_token: sceneFileToken,
-        allow_remixing: allowRemixing,
-        allow_promotion: allowPromotion,
-        name,
-        description,
+        allow_remixing: publishParams.allowRemixing,
+        allow_promotion: publishParams.allowPromotion,
+        name: publishParams.name,
+        description: publishParams.description,
         attributions: {
-          creator: creatorAttribution,
-          content: contentAttributions
+          creator: publishParams.creatorAttribution,
+          content: publishParams.contentAttributions
         }
       };
 
@@ -456,7 +497,7 @@ export default class Project extends EventEmitter {
           showDialog(LoginDialog, {
             onSuccess: async () => {
               try {
-                await this.publish(editor, location, showDialog, hideDialog);
+                await this.publish(editor, showDialog, hideDialog);
                 resolve();
               } catch (e) {
                 reject(e);
@@ -475,12 +516,12 @@ export default class Project extends EventEmitter {
       let sceneUrl = json.scenes[0].url;
 
       if (process.env.HUBS_SERVER) {
-        sceneUrl = `https://${process.env.HUBS_SERVER}/scene.html?scene_id=${newSceneId}`;
+        sceneUrl = `https://${process.env.HUBS_SERVER}/scenes/${newSceneId}`;
       }
 
-      editor.setSceneMetadata({ sceneUrl, sceneId });
+      scene.setMetadata({ sceneUrl, sceneId });
 
-      await this.saveProject(editor, showDialog, hideDialog);
+      await this.saveProject(projectId, editor, showDialog, hideDialog);
 
       showDialog(PublishDialog, {
         screenshotURL,

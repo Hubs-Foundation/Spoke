@@ -116,7 +116,8 @@ export default class PublishDialog extends Component {
                             rel="noopener noreferrer"
                           >
                             Remixing
-                          </a>&nbsp;with
+                          </a>
+                          &nbsp;with
                           <br />
                           Creative Commons&nbsp;
                           <a
@@ -164,15 +165,12 @@ export default class PublishDialog extends Component {
                   </div>
                 )}
               </form>
-              {!published &&
-                contentAttributions && (
-                  <div className={styles.attribution}>
-                    <label>Model Attribution:</label>
-                    <p className={styles.attributionText}>
-                      {contentAttributions.map(a => `${a.name} by ${a.author}\n`)}
-                    </p>
-                  </div>
-                )}
+              {!published && contentAttributions && (
+                <div className={styles.attribution}>
+                  <label>Model Attribution:</label>
+                  <p className={styles.attributionText}>{contentAttributions.map(a => `${a.name} by ${a.author}\n`)}</p>
+                </div>
+              )}
             </div>
           </div>
         </div>

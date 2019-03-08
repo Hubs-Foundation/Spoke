@@ -19,7 +19,8 @@ class AuthPage extends Component {
 
   render() {
     if (this.state.redirectToReferrer) {
-      const from = this.props.location.state.from || "/projects";
+      const location = this.props.location;
+      const from = location.state ? location.state.from : "/projects";
       return <Redirect to={from} />;
     }
 

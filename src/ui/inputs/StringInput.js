@@ -8,6 +8,8 @@ const StringInput = React.forwardRef(({ className, onChange, ...rest }, ref) => 
   return <input {...rest} ref={ref} onChange={e => onChange(e.target.value, e)} className={fullClassName} />;
 });
 
+StringInput.displayName = "StringInput";
+
 StringInput.defaultProps = {
   value: "",
   onChange: () => {},

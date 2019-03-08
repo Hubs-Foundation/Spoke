@@ -22,10 +22,12 @@ export default class AuthContainer extends Component {
       .authenticate(email)
       .then(this.props.onSuccess)
       .catch(this.onError);
+
+    this.setState({ mailSent: true });
   };
 
   onError = err => {
-    this.setState({ error: err.message || "Error signing in. Please try again." });
+    this.setState({ mailSent: false, error: err.message || "Error signing in. Please try again." });
   };
 
   render() {
