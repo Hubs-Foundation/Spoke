@@ -17,6 +17,9 @@
     width: 100%;
     margin-top: 4px;
     font-weight: bold;
+    display: flex;
+    justify-content: center;
+    pointer-events: none;
 
     a {
       color: white;
@@ -26,7 +29,7 @@
 
   :local(.logoContent) {
     display: flex;
-    justify-content: center;
+    pointer-events: all;
 
     img {
       width: 32px;
