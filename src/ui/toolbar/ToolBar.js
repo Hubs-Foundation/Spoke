@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
 import { showMenu, ContextMenu, MenuItem, SubMenu } from "react-contextmenu";
+import { Link } from "react-router-dom";
 
 import ToolButton from "./ToolButton";
 import Button from "../inputs/Button";
@@ -171,10 +172,10 @@ export default class ToolBar extends Component {
     return (
       <div className={styles.toolbar}>
         <div className={styles.logo}>
-          <div className={styles.logoContent}>
+          <Link to="/" className={styles.logoContent}>
             <img src={SpokeIcon} />
             <div>spoke</div>
-          </div>
+          </Link>
         </div>
         <div className={styles.toolbtns}>{this.renderToolButtons(toolButtons)}</div>
         <div className={styles.tooltoggles}>
