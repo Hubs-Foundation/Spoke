@@ -156,6 +156,10 @@ export default class Project extends EventEmitter {
     return localStorage.getItem("spoke-credentials") !== null;
   }
 
+  logout() {
+    localStorage.removeItem("spoke-credentials");
+  }
+
   async getProjects() {
     const credentials = localStorage.getItem("spoke-credentials");
 

@@ -6,6 +6,7 @@ import "./styles/global.scss";
 import styles from "./styles/common.scss";
 
 import AuthenticatedRoute from "./routes/AuthenticatedRoute";
+import LogoutRoute from "./routes/LogoutRoute";
 import { ApiContextProvider } from "./contexts/ApiContext";
 
 const LandingPage = lazy(() => import("./LandingPage"));
@@ -27,6 +28,7 @@ export default class App extends Component {
           <Suspense fallback="loading..." className={styles.flexColumn}>
             <Route path="/" exact component={LandingPage} />
             <Route path="/login" exact component={AuthPage} />
+            <Route path="/logout" exact component={LogoutRoute} />
             <Switch>
               <AuthenticatedRoute path="/projects" exact component={ProjectsPage} />
               <AuthenticatedRoute path="/projects/new" exact component={ProjectsPage} />
