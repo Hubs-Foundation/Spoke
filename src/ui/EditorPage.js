@@ -246,7 +246,6 @@ class EditorPage extends Component {
     window.removeEventListener("resize", this.onWindowResize, false);
     this.state.editor.signals.sceneModified.remove(this.onSceneModified);
     this.state.editor.signals.editorError.remove(this.onEditorError);
-    this.state.editor.signals.viewportInitialized.remove(this.onViewportInitialized);
   }
 
   onWindowResize = () => {
