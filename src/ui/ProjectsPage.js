@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import { Link } from "react-router-dom";
 import PropTypes from "prop-types";
 import { withApi } from "./contexts/ApiContext";
+import NavBar from "./NavBar";
 
 class ProjectsPage extends Component {
   static propTypes = {
@@ -31,20 +32,23 @@ class ProjectsPage extends Component {
     const { error, projects } = this.state;
 
     return (
-      <div>
-        <h1>Projects</h1>
-        <Link to="/projects/new">New Project</Link>
-        <div>
-          {error
-            ? error.message || "There was an unknown error."
-            : projects.map(project => (
-                <Link key={project.id} to={`/projects/${project.id}`}>
-                  <img src={project.thumbnailUrl} />
-                  <div>{project.name}</div>
-                </Link>
-              ))}
-        </div>
-      </div>
+      <>
+        <NavBar />
+        <main>
+          <h1>Projects</h1>
+          <Link to="/projects/new">New Project</Link>
+          <div>
+            {error
+              ? error.message || "There was an unknown error."
+              : projects.map(project => (
+                  <Link key={project.id} to={`/projects/${project.id}`}>
+                    <img src={project.thumbnailUrl} />
+                    <div>{project.name}</div>
+                  </Link>
+                ))}
+          </div>
+        </main>
+      </>
     );
   }
 }
