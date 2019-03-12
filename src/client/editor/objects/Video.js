@@ -2,7 +2,7 @@ import THREE from "../../vendor/three";
 import eventToMessage from "../utils/eventToMessage";
 import Hls from "hls.js/dist/hls.light";
 import isHLS from "../utils/isHLS";
-import mediaErrorImageUrl from "../../assets/media-error.gif";
+import mediaErrorImageUrl from "../../assets/media-error.png";
 
 export const VideoProjection = {
   Flat: "flat",
@@ -275,17 +275,18 @@ export default class Video extends THREE.Object3D {
   }
 
   async load(src) {
+    let texture;
+
     try {
-      await this.loadVideo(src);
+      texture = await this.loadVideo(src);
     } catch (err) {
-      const texture = await new Promise((resolve, reject) => {
+      texture = await new Promise((resolve, reject) => {
         new THREE.TextureLoader().load(mediaErrorImageUrl, resolve, null, e =>
           reject(`Error loading error image. ${eventToMessage(e)}`)
         );
       });
       texture.format = THREE.RGBAFormat;
-      texture.encoding = THREE.sRGBEncoding;
-      texture.minFilter = THREE.LinearFilter;
+      texture.magFilter = THREE.NearestFilter;
       this._texture = texture;
     }
 
@@ -293,6 +294,10 @@ export default class Video extends THREE.Object3D {
 
     this.audioSource = this.audioListener.context.createMediaElementSource(this.videoEl);
     this.audio.setNodeSource(this.audioSource);
+
+    if (this._texture.format === THREE.RGBAFormat) {
+      this._mesh.material.transparent = true;
+    }
 
     this._mesh.material.needsUpdate = true;
 

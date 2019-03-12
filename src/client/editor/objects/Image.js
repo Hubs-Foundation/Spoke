@@ -1,6 +1,6 @@
 import THREE from "../../vendor/three";
 import eventToMessage from "../utils/eventToMessage";
-import mediaErrorImageUrl from "../../assets/media-error.gif";
+import mediaErrorImageUrl from "../../assets/media-error.png";
 
 export const ImageProjection = {
   Flat: "flat",
@@ -82,6 +82,8 @@ export default class Image extends THREE.Object3D {
       texture = await this.loadTexture(src);
     } catch (err) {
       texture = await this.loadTexture(mediaErrorImageUrl);
+      texture.format = THREE.RGBAFormat;
+      texture.magFilter = THREE.NearestFilter;
     }
 
     this._texture = texture;

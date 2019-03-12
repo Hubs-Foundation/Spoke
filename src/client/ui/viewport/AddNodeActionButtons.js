@@ -44,6 +44,8 @@ import FloorPlanNode from "../../editor/nodes/FloorPlanNode";
 import FloorPlanNodeEditor from "../properties/FloorPlanNodeEditor";
 import TriggerVolumeNode from "../../editor/nodes/TriggerVolumeNode";
 import TriggerVolumeNodeEditor from "../properties/TriggerVolumeNodeEditor";
+import LinkNode from "../../editor/nodes/LinkNode";
+import LinkNodeEditor from "../properties/LinkNodeEditor";
 
 function AddButton({ label, iconClassName, onClick }) {
   return (
@@ -141,6 +143,11 @@ class AddNodeActionButtons extends Component {
           value: VideoNode,
           iconClassName: VideoNodeEditor.iconClassName,
           label: VideoNode.nodeName
+        },
+        {
+          value: LinkNode,
+          iconClassName: LinkNodeEditor.iconClassName,
+          label: LinkNode.nodeName
         }
       ],
       onSelect: MediaNode => {
@@ -154,7 +161,13 @@ class AddNodeActionButtons extends Component {
             });
             try {
               const media = new MediaNode(this.props.editor);
-              await media.load(url);
+
+              if (media.load) {
+                await media.load(url);
+              } else {
+                media.href = url;
+              }
+
               this.props.editor.addObject(media);
               this.props.hideDialog();
             } catch (e) {
