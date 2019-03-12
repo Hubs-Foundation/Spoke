@@ -1,5 +1,8 @@
 import THREE from "../../vendor/three";
 import eventToMessage from "../utils/eventToMessage";
+import Hls from "hls.js/dist/hls.light";
+import isHLS from "../utils/isHLS";
+import mediaErrorImageUrl from "../../assets/media-error.png";
 
 export const VideoProjection = {
   Flat: "flat",
@@ -45,6 +48,8 @@ export default class Video extends THREE.Object3D {
 
     this.controls = true;
     this.audioType = AudioType.PannerNode;
+
+    this.hls = null;
   }
 
   get duration() {
@@ -205,7 +210,19 @@ export default class Video extends THREE.Object3D {
 
   loadVideo(src) {
     return new Promise((resolve, reject) => {
-      this.videoEl.src = src;
+      if (isHLS(src)) {
+        if (!this.hls) {
+          this.hls = new Hls();
+        }
+
+        this.hls.loadSource(src);
+        this.hls.attachMedia(this.videoEl);
+        this.hls.on(Hls.Events.MANIFEST_PARSED, () => {
+          this.hls.startLoad(-1);
+        });
+      } else {
+        this.videoEl.src = src;
+      }
 
       let cleanup = null;
 
@@ -220,11 +237,11 @@ export default class Video extends THREE.Object3D {
       };
 
       cleanup = () => {
-        this.videoEl.removeEventListener("loadedmetadata", onLoadedMetadata);
+        this.videoEl.removeEventListener("loadeddata", onLoadedMetadata);
         this.videoEl.removeEventListener("error", onError);
       };
 
-      this.videoEl.addEventListener("loadedmetadata", onLoadedMetadata);
+      this.videoEl.addEventListener("loadeddata", onLoadedMetadata);
       this.videoEl.addEventListener("error", onError);
     });
   }
@@ -258,12 +275,29 @@ export default class Video extends THREE.Object3D {
   }
 
   async load(src) {
-    await this.loadVideo(src);
+    let texture;
+
+    try {
+      texture = await this.loadVideo(src);
+    } catch (err) {
+      texture = await new Promise((resolve, reject) => {
+        new THREE.TextureLoader().load(mediaErrorImageUrl, resolve, null, e =>
+          reject(`Error loading error image. ${eventToMessage(e)}`)
+        );
+      });
+      texture.format = THREE.RGBAFormat;
+      texture.magFilter = THREE.NearestFilter;
+      this._texture = texture;
+    }
 
     this.onResize();
 
     this.audioSource = this.audioListener.context.createMediaElementSource(this.videoEl);
     this.audio.setNodeSource(this.audioSource);
+
+    if (this._texture.format === THREE.RGBAFormat) {
+      this._mesh.material.transparent = true;
+    }
 
     this._mesh.material.needsUpdate = true;
 

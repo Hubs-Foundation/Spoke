@@ -35,13 +35,17 @@ import PointLightNodeEditor from "../properties/PointLightNodeEditor";
 import SkyboxNode from "../../editor/nodes/SkyboxNode";
 import SkyboxNodeEditor from "../properties/SkyboxNodeEditor";
 import ImageNode from "../../editor/nodes/ImageNode";
+import ImageNodeEditor from "../properties/ImageNodeEditor";
 import VideoNode from "../../editor/nodes/VideoNode";
+import VideoNodeEditor from "../properties/VideoNodeEditor";
 import SpawnerNode from "../../editor/nodes/SpawnerNode";
 import SpawnerNodeEditor from "../properties/SpawnerNodeEditor";
 import FloorPlanNode from "../../editor/nodes/FloorPlanNode";
 import FloorPlanNodeEditor from "../properties/FloorPlanNodeEditor";
 import TriggerVolumeNode from "../../editor/nodes/TriggerVolumeNode";
 import TriggerVolumeNodeEditor from "../properties/TriggerVolumeNodeEditor";
+import LinkNode from "../../editor/nodes/LinkNode";
+import LinkNodeEditor from "../properties/LinkNodeEditor";
 
 function AddButton({ label, iconClassName, onClick }) {
   return (
@@ -126,35 +130,56 @@ class AddNodeActionButtons extends Component {
   };
 
   addMedia = () => {
-    this.props.showDialog(AddMediaDialog, {
+    this.props.showDialog(ButtonSelectDialog, {
       title: "Add Media",
-      message: "Enter the URL to an image or video.",
-      onConfirm: async url => {
-        this.props.showDialog(ProgressDialog, {
-          title: "Loading Media",
-          message: `Loading media...`
-        });
-        try {
-          const contentType = await this.props.editor.project.getContentType(url);
-
-          if (contentType.startsWith("image/")) {
-            const image = new ImageNode(this.props.editor);
-            await image.load(url);
-            this.props.editor.addObject(image);
-          } else if (contentType.startsWith("video/")) {
-            const video = new VideoNode(this.props.editor);
-            await video.load(url);
-            this.props.editor.addObject(video);
-          }
-
-          this.props.hideDialog();
-        } catch (e) {
-          console.error(e);
-          this.props.showDialog(ErrorDialog, {
-            title: "Error Loading Media",
-            message: e.message || "There was an unknown error."
-          });
+      message: "Choose the type of media to add.",
+      options: [
+        {
+          value: ImageNode,
+          iconClassName: ImageNodeEditor.iconClassName,
+          label: ImageNode.nodeName
+        },
+        {
+          value: VideoNode,
+          iconClassName: VideoNodeEditor.iconClassName,
+          label: VideoNode.nodeName
+        },
+        {
+          value: LinkNode,
+          iconClassName: LinkNodeEditor.iconClassName,
+          label: LinkNode.nodeName
         }
+      ],
+      onSelect: MediaNode => {
+        this.props.showDialog(AddMediaDialog, {
+          title: "Add Media",
+          message: `Enter the URL for the ${MediaNode.nodeName.toLowerCase()}.`,
+          onConfirm: async url => {
+            this.props.showDialog(ProgressDialog, {
+              title: "Loading Media",
+              message: `Loading media...`
+            });
+            try {
+              const media = new MediaNode(this.props.editor);
+
+              if (media.load) {
+                await media.load(url);
+              } else {
+                media.href = url;
+              }
+
+              this.props.editor.addObject(media);
+              this.props.hideDialog();
+            } catch (e) {
+              console.error(e);
+              this.props.showDialog(ErrorDialog, {
+                title: "Error Loading Media",
+                message: e.message || "There was an unknown error."
+              });
+            }
+          },
+          onCancel: this.props.hideDialog
+        });
       },
       onCancel: this.props.hideDialog
     });

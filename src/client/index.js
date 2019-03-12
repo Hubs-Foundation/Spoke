@@ -39,6 +39,8 @@ import SpawnerNode from "./editor/nodes/SpawnerNode";
 import SpawnerNodeEditor from "./ui/properties/SpawnerNodeEditor";
 import TriggerVolumeNode from "./editor/nodes/TriggerVolumeNode";
 import TriggerVolumeNodeEditor from "./ui/properties/TriggerVolumeNodeEditor";
+import LinkNode from "./editor/nodes/LinkNode";
+import LinkNodeEditor from "./ui/properties/LinkNodeEditor";
 
 (async () => {
   // eslint-disable-next-line no-undef
@@ -69,6 +71,7 @@ import TriggerVolumeNodeEditor from "./ui/properties/TriggerVolumeNodeEditor";
   editor.registerNode(VideoNode, VideoNodeEditor);
   editor.registerNode(SpawnerNode, SpawnerNodeEditor);
   editor.registerNode(TriggerVolumeNode, TriggerVolumeNodeEditor);
+  editor.registerNode(LinkNode, LinkNodeEditor);
 
   await editor.init();
 

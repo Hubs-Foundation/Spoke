@@ -1,5 +1,8 @@
 import EditorNodeMixin from "./EditorNodeMixin";
 import Video from "../objects/Video";
+import { buildAbsoluteURL } from "url-toolkit";
+import Hls from "hls.js/dist/hls.light";
+import isHLS from "../utils/isHLS";
 
 export default class VideoNode extends EditorNodeMixin(Video) {
   static legacyComponentName = "video";
@@ -70,9 +73,43 @@ export default class VideoNode extends EditorNodeMixin(Video) {
 
   async load(src) {
     this._canonicalUrl = src;
-    const { accessibleUrl } = await this.editor.project.resolveMedia(src);
-    await super.load(accessibleUrl);
-    this.videoEl.currentTime = this.videoEl.duration / 2;
+
+    try {
+      const { accessibleUrl } = await this.editor.project.resolveMedia(src);
+
+      const isHls = isHLS(src);
+
+      if (isHls) {
+        const corsProxyPrefix = `http://localhost:9090/api/cors-proxy/`;
+        const baseUrl = src.startsWith(corsProxyPrefix) ? src.substring(corsProxyPrefix.length) : src;
+        this.hls = new Hls({
+          xhrSetup: (xhr, u) => {
+            if (u.startsWith(corsProxyPrefix)) {
+              u = u.substring(corsProxyPrefix.length);
+            }
+
+            // HACK HLS.js resolves relative urls internally, but our CORS proxying screws it up. Resolve relative to the original unproxied url.
+            // TODO extend HLS.js to allow overriding of its internal resolving instead
+            if (!u.startsWith("http")) {
+              u = buildAbsoluteURL(baseUrl, u.startsWith("/") ? u : `/${u}`);
+            }
+
+            xhr.open("GET", new URL(`/api/cors-proxy/${u}`, window.location).href);
+          }
+        });
+      }
+
+      await super.load(accessibleUrl);
+
+      if (isHls && this.hls) {
+        this.hls.stopLoad();
+      } else if (this.videoEl.duration) {
+        this.videoEl.currentTime = this.videoEl.duration / 2;
+      }
+    } catch (e) {
+      console.error(e);
+    }
+
     return this;
   }
 
