@@ -65,7 +65,7 @@ const CommonKnownContentTypes = {
 };
 
 function guessContentType(url) {
-  const extension = new URL(url).pathname.split(".").pop();
+  const extension = new URL(url, window.location).pathname.split(".").pop();
   return CommonKnownContentTypes[extension];
 }
 
@@ -132,7 +132,7 @@ export default class Project extends EventEmitter {
     }
 
     const result = await resolveUrl(absoluteUrl);
-    const canonicalUrl = result.origin;
+    const canonicalUrl = new URL(result.origin, window.location).href;
     const accessibleUrl = proxiedUrlFor(canonicalUrl, index);
 
     const contentType =
