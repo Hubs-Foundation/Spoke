@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
+import styles from "./AuthForm.scss";
 
 export default class AuthForm extends Component {
   static propTypes = {
@@ -13,7 +14,6 @@ export default class AuthForm extends Component {
 
   onSubmit = e => {
     e.preventDefault();
-    console.log("onsubmit");
     this.props.onSubmit(this.state.email);
   };
 
@@ -23,13 +23,10 @@ export default class AuthForm extends Component {
 
   render() {
     return (
-      <form onSubmit={this.onSubmit}>
-        {this.props.error && <p>{this.props.error}</p>}
-        <label>
-          Email:
-          <input type="email" placeholder="Your email address" value={this.state.email} onChange={this.onEmailChange} />
-        </label>
-        <p>
+      <form className={styles.authForm} onSubmit={this.onSubmit}>
+        {this.props.error && <p className={styles.error}>{this.props.error}</p>}
+        <input type="email" placeholder="Email" value={this.state.email} onChange={this.onEmailChange} />
+        <p className={styles.legalText}>
           By proceeding, you agree to the{" "}
           <a rel="noopener noreferrer" target="_blank" href="https://github.com/mozilla/hubs/blob/master/TERMS.md">
             terms of use
@@ -40,7 +37,7 @@ export default class AuthForm extends Component {
           </a>
           .
         </p>
-        <button type="submit">next</button>
+        <button type="submit">Send Magic Link</button>
       </form>
     );
   }

@@ -130,7 +130,6 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
   static load() {
     // Recast() doesn't actually return a promise so we wrap it in one.
     return new Promise(resolve => {
-      console.log(Recast);
       Recast().then(r => {
         recast = r;
         resolve();

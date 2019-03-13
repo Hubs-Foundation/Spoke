@@ -2,6 +2,7 @@ import React from "react";
 import PropTypes from "prop-types";
 import styles from "./dialog.scss";
 import Button from "../inputs/Button";
+import ProgressBar from "../inputs/ProgressBar";
 import DialogHeader from "./DialogHeader";
 
 export const PROGRESS_DIALOG_DELAY = 500;
@@ -12,11 +13,7 @@ export default function ProgressDialog({ title, message, cancelable, onCancel, c
       <DialogHeader title={title} />
       <div className={styles.progressContainer}>
         <div className={styles.message}>{message}</div>
-        <div className={[styles.loadingBarContainer, styles.animate].join(" ")}>
-          <span>
-            <span />
-          </span>
-        </div>
+        <ProgressBar />
       </div>
       {cancelable && (
         <div className={styles.bottom}>

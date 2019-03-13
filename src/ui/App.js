@@ -31,7 +31,6 @@ export default class App extends Component {
             <Route path="/logout" exact component={LogoutRoute} />
             <Switch>
               <AuthenticatedRoute path="/projects" exact component={ProjectsPage} />
-              <AuthenticatedRoute path="/projects/new" exact component={ProjectsPage} />
               <AuthenticatedRoute path="/projects/:projectId" component={EditorPage} />
             </Switch>
           </Suspense>

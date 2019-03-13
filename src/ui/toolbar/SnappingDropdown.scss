@@ -28,17 +28,23 @@
   }
 
   :local(.list) {
-    padding: 4px 0px;
+    padding: 8px 0px;
     background-color: $background;
     border-radius: 4px;
     list-style-type: none;
     width: 200px;
     position: absolute;
-    top: 18px;
+    top: 20px;
     box-shadow: $shadow-30;
+
     :local(.listItem) {
-      margin: 4px;
-      display: inline-block;
+      display: flex;
+      margin: 0 4px 8px 4px;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+
       :local(.snappingInput) {
         label {
           width: 60%;

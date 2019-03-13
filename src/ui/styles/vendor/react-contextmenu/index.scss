@@ -30,6 +30,7 @@
   text-align: inherit;
   white-space: nowrap;
   display: flex;
+  flex: 1;
   justify-content: space-between;
   color: $text;
 }
@@ -40,7 +41,6 @@
   background-color: $selected;
   border-color: transparent;
   text-decoration: none;
-  width: calc(100% - 16px);
 }
 
 .react-contextmenu-item.react-contextmenu-item--disabled,

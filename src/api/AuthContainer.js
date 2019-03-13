@@ -14,25 +14,30 @@ export default class AuthContainer extends Component {
   state = {
     error: null,
     emailSent: false,
+    email: null,
     redirectToReferrer: false
   };
 
   onSubmit = email => {
+    if (email.trim().length === 0) {
+      return;
+    }
+
     this.props.api
       .authenticate(email)
       .then(this.props.onSuccess)
       .catch(this.onError);
 
-    this.setState({ mailSent: true });
+    this.setState({ mailSent: true, email });
   };
 
   onError = err => {
-    this.setState({ mailSent: false, error: err.message || "Error signing in. Please try again." });
+    this.setState({ mailSent: false, email: null, error: err.message || "Error signing in. Please try again." });
   };
 
   render() {
     if (this.state.mailSent) {
-      return <AuthEmailSentMessage />;
+      return <AuthEmailSentMessage email={this.state.email} />;
     }
 
     return <AuthForm error={this.state.error} onSubmit={this.onSubmit} />;

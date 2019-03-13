@@ -9,14 +9,19 @@
 
   label {
     @include input;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 16px;
-    height: 16px;
-    margin: 4px 0;
     padding: 0;
+    width: 18px;
+    height: 18px;
+    margin: 4px;
     cursor: pointer;
+    position: relative;
+    display: block;
+  }
+
+  input ~ label:before {
+    position: absolute;
+    top: 3px;
+    left: 2px;
   }
 
   input:checked ~ label:before {

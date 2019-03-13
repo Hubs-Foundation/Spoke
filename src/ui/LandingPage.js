@@ -11,7 +11,7 @@ export default class LandingPage extends Component {
     return (
       <>
         <NavBar />
-        <main className={styles.main}>
+        <main>
           <section className={styles.heroSection}>
             <div className={styles.heroContainer}>
               <div className={styles.heroLeft}>
@@ -30,7 +30,7 @@ export default class LandingPage extends Component {
                 </Link>
               </div>
               <div className={styles.heroRight}>
-                <video playsInline loop autoPlay>
+                <video playsInline loop autoPlay muted>
                   <source src={landingVideoMp4} type="video/mp4" />
                   <source src={landingVideoWebm} type="video/webm" />
                 </video>

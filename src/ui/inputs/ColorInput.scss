@@ -1,3 +1,4 @@
+@import "../styles/common";
 @import "../styles/theme";
 
 :local(.colorInput){
@@ -16,8 +17,7 @@
     border-bottom: 1px solid $border;
     cursor: pointer;
     width: 20%;
-
-
+    height: 24px;
 
     :local(.color) {
       width: 100%;
@@ -42,15 +42,8 @@
   }
 
   :local(.colorInput) input {
-    border: none;
-    color: $text;
-    background-color: $input-background;
+    @include input;
     border-radius: 0px 4px 4px 0px;
-    border: 1px solid $border;
-    padding: 0;
-    padding-left: 6px;
-    height: 22px;
-    width: 8em;
   }
 
   &:hover {

@@ -2,6 +2,8 @@ import React, { Component } from "react";
 import { Redirect } from "react-router-dom";
 import PropTypes from "prop-types";
 import { withApi } from "./contexts/ApiContext";
+import styles from "./AuthPage.scss";
+import NavBar from "./NavBar";
 
 class AuthPage extends Component {
   static propTypes = {
@@ -27,10 +29,17 @@ class AuthPage extends Component {
     const AuthContainer = this.props.api.getAuthContainer();
 
     return (
-      <div>
-        <h1>Login</h1>
-        <AuthContainer {...this.props} onSuccess={this.onSuccess} />
-      </div>
+      <>
+        <NavBar />
+        <main>
+          <section className={styles.loginSection}>
+            <div className={styles.loginContainer}>
+              <h1>Login</h1>
+              <AuthContainer {...this.props} onSuccess={this.onSuccess} />
+            </div>
+          </section>
+        </main>
+      </>
     );
   }
 }

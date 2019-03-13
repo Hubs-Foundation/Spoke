@@ -1,0 +1,21 @@
+@import "./styles/theme";
+
+:local(.loginSection) {
+  padding: 100px 0;
+}
+
+:local(.loginContainer) {
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  margin: 0 auto;
+  max-width: 480px;
+  background: $panel;
+  border-radius: 8px;
+
+  h1 {
+    font-size: 3em;
+    margin-bottom: 0.8em;
+    text-align: center;
+  }
+}

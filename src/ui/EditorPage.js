@@ -6,7 +6,7 @@ import Modal from "react-modal";
 import { Prompt } from "react-router-dom";
 import DocumentTitle from "react-document-title";
 
-import styles from "./styles/common.scss";
+import styles from "./EditorPage.scss";
 
 import ToolBar from "./toolbar/ToolBar";
 
@@ -403,7 +403,7 @@ class EditorPage extends Component {
 
   async loadProject(projectId) {
     if (projectId === "new") {
-      this.state.editor.loadNewScene();
+      await this.state.editor.loadNewScene();
     } else {
       this.showDialog(ProgressDialog, {
         title: "Loading Project",
@@ -524,7 +524,7 @@ class EditorPage extends Component {
     const modified = editor.sceneModified ? "*" : "";
 
     return (
-      <HotKeys keyMap={this.state.keyMap} handlers={this.state.globalHotKeyHandlers} className={styles.flexColumn}>
+      <HotKeys keyMap={this.state.keyMap} handlers={this.state.globalHotKeyHandlers} className={styles.editorContainer}>
         <SettingsContextProvider value={settingsContext}>
           <EditorContextProvider value={editor}>
             <DialogContextProvider value={this.dialogContext}>

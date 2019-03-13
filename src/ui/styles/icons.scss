@@ -14,6 +14,10 @@ $fa-font-path: "~@fortawesome/fontawesome-free/webfonts";
     padding: 0 8px;
   }
 
+  .fas {
+    box-sizing: content-box;
+  }
+
   .icon-node {
     &:before {
       @include regularIcon;
