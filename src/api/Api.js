@@ -288,7 +288,7 @@ export default class Project extends EventEmitter {
       });
     }
 
-    const { blob: thumbnailBlob } = await editor.takeScreenshot();
+    const { blob: thumbnailBlob } = await editor.takeScreenshot(512, 320);
     const {
       file_id: thumbnail_file_id,
       meta: { access_token: thumbnail_file_token }

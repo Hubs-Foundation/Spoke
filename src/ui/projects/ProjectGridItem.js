@@ -14,7 +14,9 @@ export default class ProjectGrid extends Component {
     return (
       <Link className={styles.projectGridItem} to={`/projects/${project.projectId}`}>
         <div className={styles.thumbnailContainer}>
-          <div className={styles.thumbnail} style={{ backgroundImage: `url(${project.thumbnailUrl})` }} />
+          {project.thumbnailUrl && (
+            <div className={styles.thumbnail} style={{ backgroundImage: `url(${project.thumbnailUrl})` }} />
+          )}
         </div>
         <div className={styles.titleContainer}>
           <h3>{project.name}</h3>

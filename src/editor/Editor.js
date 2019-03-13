@@ -527,8 +527,8 @@ export default class Editor {
     this.history.redo();
   }
 
-  async takeScreenshot() {
+  async takeScreenshot(width, height) {
     this.deselect();
-    return this.viewport.takeScreenshot();
+    return this.viewport.takeScreenshot(width, height);
   }
 }

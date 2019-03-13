@@ -61,6 +61,7 @@ export default class Viewport {
     effectComposer.addPass(outlinePass);
 
     this.screenshotRenderer = makeRenderer(1920, 1080);
+    this.thumbnailRenderer = makeRenderer(512, 320);
 
     editor.scene.background = new THREE.Color(0xaaaaaa);
 
@@ -352,7 +353,7 @@ export default class Viewport {
     this.effectComposer.setSize(canvas.parentElement.offsetWidth, canvas.parentElement.offsetHeight);
   };
 
-  takeScreenshot = async () => {
+  takeScreenshot = async (width = 1920, height = 1080) => {
     const { screenshotRenderer, camera } = this;
 
     const originalRenderer = this.renderer;
@@ -360,10 +361,12 @@ export default class Viewport {
 
     this.skipRender = true;
     const prevAspect = camera.aspect;
-    camera.aspect = 1920 / 1080;
+    camera.aspect = width / height;
     camera.updateProjectionMatrix();
 
     camera.layers.disable(1);
+
+    screenshotRenderer.setSize(width, height, true);
 
     screenshotRenderer.render(this.editor.scene, camera);
 

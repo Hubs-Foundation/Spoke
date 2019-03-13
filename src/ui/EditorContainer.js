@@ -420,6 +420,7 @@ export default class EditorContainer extends Component {
       }
     } else {
       await this.state.editor.loadNewScene();
+      await this.props.api.saveProject(this.props.projectId, this.state.editor, this.showDialog, this.hideDialog);
     }
   }
 
