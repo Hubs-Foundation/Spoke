@@ -148,15 +148,15 @@ export default class EditorContainer extends Component {
   generateToolbarMenu = () => {
     return [
       {
+        name: "Back to Projects",
+        action: this.onOpenProject
+      },
+      {
         name: "File",
         items: [
           {
             name: "New Project",
             action: this.onNewProject
-          },
-          {
-            name: "Open Project...",
-            action: this.onOpenProject
           },
           {
             name: `Save Project`,
