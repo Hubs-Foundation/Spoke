@@ -1,8 +1,8 @@
 import React, { Component } from "react";
 import { Link } from "react-router-dom";
 import PropTypes from "prop-types";
-import { withApi } from "./contexts/ApiContext";
-import NavBar from "./NavBar";
+import { withApi } from "../contexts/ApiContext";
+import NavBar from "../navigation/NavBar";
 
 class ProjectsPage extends Component {
   static propTypes = {

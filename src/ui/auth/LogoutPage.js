@@ -3,7 +3,7 @@ import { Redirect } from "react-router-dom";
 import PropTypes from "prop-types";
 import { withApi } from "../contexts/ApiContext";
 
-class LogoutRoute extends Component {
+class LogoutPage extends Component {
   static propTypes = {
     api: PropTypes.object.isRequired
   };
@@ -17,4 +17,4 @@ class LogoutRoute extends Component {
   }
 }
 
-export default withApi(LogoutRoute);
+export default withApi(LogoutPage);

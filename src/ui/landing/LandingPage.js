@@ -1,10 +1,10 @@
 import React, { Component } from "react";
 import { Link } from "react-router-dom";
 import styles from "./LandingPage.scss";
-import spokeLogo from "../assets/spoke-logo.png";
-import landingVideoMp4 from "../assets/video/landing-video.mp4";
-import landingVideoWebm from "../assets/video/landing-video.webm";
-import NavBar from "./NavBar";
+import spokeLogo from "../../assets/spoke-logo.png";
+import landingVideoMp4 from "../../assets/video/landing-video.mp4";
+import landingVideoWebm from "../../assets/video/landing-video.webm";
+import NavBar from "../navigation/NavBar";
 
 export default class LandingPage extends Component {
   render() {

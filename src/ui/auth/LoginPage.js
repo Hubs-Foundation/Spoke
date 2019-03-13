@@ -1,11 +1,11 @@
 import React, { Component } from "react";
 import { Redirect } from "react-router-dom";
 import PropTypes from "prop-types";
-import { withApi } from "./contexts/ApiContext";
+import { withApi } from "../contexts/ApiContext";
 import styles from "./AuthPage.scss";
-import NavBar from "./NavBar";
+import NavBar from "../navigation/NavBar";
 
-class AuthPage extends Component {
+class LoginPage extends Component {
   static propTypes = {
     location: PropTypes.object.isRequired,
     api: PropTypes.object.isRequired
@@ -44,4 +44,4 @@ class AuthPage extends Component {
   }
 }
 
-export default withApi(AuthPage);
+export default withApi(LoginPage);

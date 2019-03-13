@@ -5,14 +5,16 @@ import PropTypes from "prop-types";
 import "./styles/global.scss";
 import styles from "./styles/common.scss";
 
-import AuthenticatedRoute from "./routes/AuthenticatedRoute";
-import LogoutRoute from "./routes/LogoutRoute";
 import { ApiContextProvider } from "./contexts/ApiContext";
 
-const LandingPage = lazy(() => import("./LandingPage"));
-const AuthPage = lazy(() => import("./AuthPage"));
-const ProjectsPage = lazy(() => import("./ProjectsPage"));
-const EditorPage = lazy(() => import("./EditorPage"));
+import AuthenticatedRoute from "./auth/AuthenticatedRoute";
+
+const LandingPage = lazy(() => import("./landing/LandingPage"));
+const LoginPage = lazy(() => import("./auth/LoginPage"));
+const LogoutPage = lazy(() => import("./auth/LogoutPage"));
+const ProjectsPage = lazy(() => import("./projects/ProjectsPage"));
+const ProjectPage = lazy(() => import("./projects/ProjectPage"));
+const NewProjectPage = lazy(() => import("./projects/NewProjectPage"));
 
 export default class App extends Component {
   static propTypes = {
@@ -27,11 +29,12 @@ export default class App extends Component {
         <Router>
           <Suspense fallback="loading..." className={styles.flexColumn}>
             <Route path="/" exact component={LandingPage} />
-            <Route path="/login" exact component={AuthPage} />
-            <Route path="/logout" exact component={LogoutRoute} />
+            <Route path="/login" exact component={LoginPage} />
+            <Route path="/logout" exact component={LogoutPage} />
             <Switch>
               <AuthenticatedRoute path="/projects" exact component={ProjectsPage} />
-              <AuthenticatedRoute path="/projects/:projectId" component={EditorPage} />
+              <AuthenticatedRoute path="/projects/new" exact component={NewProjectPage} />
+              <AuthenticatedRoute path="/projects/:projectId" component={ProjectPage} />
             </Switch>
           </Suspense>
         </Router>

@@ -256,7 +256,9 @@ export default class Project extends EventEmitter {
     };
 
     const body = JSON.stringify({
-      name: projectName
+      project: {
+        name: projectName
+      }
     });
 
     const projectEndpoint = `https://${process.env.RETICULUM_SERVER}/api/v1/projects`;
@@ -271,7 +273,9 @@ export default class Project extends EventEmitter {
       throw new Error(`Project creation failed. ${await resp.text()}`);
     }
 
-    return resp.project_id;
+    const json = await resp.json();
+
+    return { projectId: json.project_id };
   }
 
   async saveProject(projectId, editor, showDialog, hideDialog) {

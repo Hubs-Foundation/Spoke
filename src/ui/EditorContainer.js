@@ -6,7 +6,7 @@ import Modal from "react-modal";
 import { Prompt } from "react-router-dom";
 import DocumentTitle from "react-document-title";
 
-import styles from "./EditorPage.scss";
+import styles from "./EditorContainer.scss";
 
 import ToolBar from "./toolbar/ToolBar";
 
@@ -14,7 +14,6 @@ import HierarchyPanelContainer from "./hierarchy/HierarchyPanelContainer";
 import PropertiesPanelContainer from "./properties/PropertiesPanelContainer";
 import ViewportPanelContainer from "./viewport/ViewportPanelContainer";
 
-import { withApi } from "./contexts/ApiContext";
 import { defaultSettings, SettingsContextProvider } from "./contexts/SettingsContext";
 import { EditorContextProvider } from "./contexts/EditorContext";
 import { DialogContextProvider } from "./contexts/DialogContext";
@@ -43,12 +42,12 @@ function wrapHotkeyHandler(component, handler) {
   };
 }
 
-class EditorPage extends Component {
+export default class EditorContainer extends Component {
   static propTypes = {
     api: PropTypes.object.isRequired,
-    match: PropTypes.object.isRequired,
-    history: PropTypes.object.isRequired,
-    location: PropTypes.object.isRequired
+    projectId: PropTypes.string.isRequired,
+    project: PropTypes.object,
+    history: PropTypes.object.isRequired
   };
 
   constructor(props) {
@@ -216,11 +215,10 @@ class EditorPage extends Component {
     this.state.editor.signals.windowResize.dispatch();
     this.state.editor.signals.sceneModified.add(this.onSceneModified);
     this.state.editor.signals.editorError.add(this.onEditorError);
-    const { projectId } = this.props.match.params;
 
     this.state.editorInitPromise
       .then(() => {
-        this.loadProject(projectId);
+        this.loadProject(this.props.project);
       })
       .catch(e => {
         console.error(e);
@@ -228,13 +226,13 @@ class EditorPage extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    const { projectId } = this.props.match.params;
-    const { projectId: prevProjectId } = prevProps.match.params;
+    const { projectId } = this.props;
+    const { projectId: prevProjectId } = prevProps;
 
     if (projectId !== prevProjectId && this.state.editor.viewport) {
       this.state.editorInitPromise
         .then(() => {
-          this.loadProject(projectId);
+          this.loadProject(this.props.project);
         })
         .catch(e => {
           console.error(e);
@@ -401,23 +399,15 @@ class EditorPage extends Component {
    *  Project Actions
    */
 
-  async loadProject(projectId) {
-    if (projectId === "new") {
-      await this.state.editor.loadNewScene();
-    } else {
+  async loadProject(project) {
+    if (project) {
       this.showDialog(ProgressDialog, {
         title: "Loading Project",
         message: "Loading project..."
       });
 
       try {
-        const { project } = await this.props.api.getProject(projectId);
-
-        if (!project) {
-          this.state.editor.loadNewScene();
-        } else {
-          await this.state.editor.loadProject(project);
-        }
+        await this.state.editor.loadProject(project);
 
         this.hideDialog();
       } catch (e) {
@@ -428,6 +418,8 @@ class EditorPage extends Component {
           message: e.message || "There was an error when loading the project."
         });
       }
+    } else {
+      await this.state.editor.loadNewScene();
     }
   }
 
@@ -446,9 +438,8 @@ class EditorPage extends Component {
     });
 
     try {
-      const { projectId } = this.props.match.params;
       const editor = this.state.editor;
-      const result = await this.props.api.saveProject(projectId, editor, this.showDialog, this.hideDialog);
+      const result = await this.props.api.saveProject(this.props.projectId, editor, this.showDialog, this.hideDialog);
       editor.sceneModified = false;
 
       this.hideDialog();
@@ -495,8 +486,7 @@ class EditorPage extends Component {
 
   onPublishProject = async () => {
     try {
-      const { projectId } = this.props.match.params;
-      await this.props.api.publishProject(projectId, this.state.editor, this.showDialog, this.hideDialog);
+      await this.props.api.publishProject(this.props.projectId, this.state.editor, this.showDialog, this.hideDialog);
     } catch (e) {
       console.error(e);
       this.showDialog(ErrorDialog, {
@@ -559,5 +549,3 @@ class EditorPage extends Component {
     );
   }
 }
-
-export default withApi(EditorPage);
