@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import { Redirect } from "react-router-dom";
 import PropTypes from "prop-types";
 import { withApi } from "../contexts/ApiContext";
-import styles from "./AuthPage.scss";
+import styles from "./LoginPage.scss";
 import NavBar from "../navigation/NavBar";
 
 class LoginPage extends Component {

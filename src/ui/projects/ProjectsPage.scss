@@ -1,0 +1,47 @@
+@import "../styles/theme";
+
+:local(.projectsSection) {
+  padding: 100px 0;
+}
+
+:local(.projectsContainer) {
+  display: flex;
+  flex-direction: column;
+  margin: 0 auto;
+  max-width: 1200px;
+  padding: 0 20px;
+}
+
+:local(.projectsHeader) {
+  margin-bottom: 36px;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  h1 {
+    font-size: 36px;
+  }
+
+  a {
+    border-radius: 4px;
+    background: $blue;
+    color: $text;
+    text-align: center;
+    text-decoration: none;
+    padding: 1em;
+    display: inline-block;
+    line-height: 1em;
+    height: 3em;
+  
+    &:hover {
+      color: $text;
+      background-color: $blue-pressed;
+    }
+  
+    &:active {
+      color: $text;
+      background-color: $blue-pressed;
+    }
+  }
+}

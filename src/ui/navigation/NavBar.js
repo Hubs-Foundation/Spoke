@@ -1,9 +1,9 @@
 import React, { Component } from "react";
 import { Link } from "react-router-dom";
 import PropTypes from "prop-types";
-import { withApi } from "./contexts/ApiContext";
+import { withApi } from "../contexts/ApiContext";
 import styles from "./NavBar.scss";
-import spokeIcon from "../assets/spoke-icon.png";
+import spokeIcon from "../../assets/spoke-icon.png";
 
 class NavBar extends Component {
   static propTypes = {

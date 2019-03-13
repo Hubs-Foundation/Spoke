@@ -177,7 +177,7 @@ export default class Project extends EventEmitter {
     }
 
     return json.projects.map(project => ({
-      id: project.project_id,
+      projectId: project.project_id,
       name: project.name,
       thumbnailUrl: project.thumbnail_url
     }));
