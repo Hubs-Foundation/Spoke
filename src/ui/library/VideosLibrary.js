@@ -1,12 +1,11 @@
 import React, { Component } from "react";
-import { withEditor } from "../contexts/EditorContext";
 import PropTypes from "prop-types";
 import VideoNode from "../../editor/nodes/VideoNode";
 import MediaSearchPanel from "./MediaSearchPanel";
 
-class VideosLibrary extends Component {
+export default class VideosLibrary extends Component {
   static propTypes = {
-    editor: PropTypes.object.isRequired
+    onSelectItem: PropTypes.func.isRequired
   };
 
   state = {
@@ -29,15 +28,10 @@ class VideosLibrary extends Component {
   };
 
   onSelect = item => {
-    const editor = this.props.editor;
-    const node = new VideoNode(editor);
-    node.src = item.url;
-    editor.addObject(node);
+    this.props.onSelectItem(VideoNode, { src: item.url });
   };
 
   render() {
     return <MediaSearchPanel onSelect={this.onSelect} sources={this.state.sources} />;
   }
 }
-
-export default withEditor(VideosLibrary);

@@ -40,6 +40,10 @@ export default class Model extends THREE.Object3D {
       this.animations = this.animations.concat(animations);
     }
 
+    if (this.model) {
+      this.remove(this.model);
+    }
+
     this.model = scene;
     this.add(scene);
 

@@ -4,6 +4,7 @@ import NodeEditor from "./NodeEditor";
 import SelectInput from "../inputs/SelectInput";
 import InputGroup from "../inputs/InputGroup";
 import BooleanInput from "../inputs/BooleanInput";
+import ModelInput from "../inputs/ModelInput";
 
 export default class ModelNodeEditor extends Component {
   static propTypes = {
@@ -14,6 +15,10 @@ export default class ModelNodeEditor extends Component {
   static iconClassName = "fa-cube";
 
   static description = "A 3D model in your scene, loaded from a GLTF URL or file.";
+
+  onChangeSrc = src => {
+    this.props.editor.setNodeProperty(this.props.node, "src", src);
+  };
 
   onChangeAnimation = activeClipName => {
     this.props.editor.setNodeProperty(this.props.node, "activeClipName", activeClipName);
@@ -43,6 +48,9 @@ export default class ModelNodeEditor extends Component {
 
     return (
       <NodeEditor description={ModelNodeEditor.description} {...this.props}>
+        <InputGroup name="Model">
+          <ModelInput value={node.src} onChange={this.onChangeSrc} />
+        </InputGroup>
         <InputGroup name="Loop Animation">
           <SelectInput options={clipOptions} value={activeClipName} onChange={this.onChangeAnimation} />
         </InputGroup>

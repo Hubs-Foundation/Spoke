@@ -1,12 +1,11 @@
 import React, { Component } from "react";
-import { withEditor } from "../contexts/EditorContext";
 import PropTypes from "prop-types";
 import ModelNode from "../../editor/nodes/ModelNode";
 import MediaSearchPanel from "./MediaSearchPanel";
 
-class ModelsLibrary extends Component {
+export default class ModelsLibrary extends Component {
   static propTypes = {
-    editor: PropTypes.object.isRequired
+    onSelectItem: PropTypes.func.isRequired
   };
 
   state = {
@@ -31,15 +30,10 @@ class ModelsLibrary extends Component {
   };
 
   onSelect = item => {
-    const editor = this.props.editor;
-    const node = new ModelNode(editor);
-    node.src = item.url;
-    editor.addObject(node);
+    this.props.onSelectItem(ModelNode, { src: item.url });
   };
 
   render() {
     return <MediaSearchPanel onSelect={this.onSelect} sources={this.state.sources} />;
   }
 }
-
-export default withEditor(ModelsLibrary);

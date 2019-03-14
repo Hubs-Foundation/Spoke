@@ -7,6 +7,7 @@ import SelectInput from "../inputs/SelectInput";
 import NumericInput from "../inputs/NumericInput";
 import CompoundNumericInput from "../inputs/CompoundNumericInput";
 import { AudioType, DistanceModelType, VideoProjection } from "../../editor/objects/Video";
+import VideoInput from "../inputs/VideoInput";
 
 const videoProjectionOptions = Object.values(VideoProjection).map(v => ({ label: v, value: v }));
 
@@ -27,6 +28,7 @@ export default class VideoNodeEditor extends Component {
   constructor(props) {
     super(props);
     const createPropSetter = propName => value => this.props.editor.setNodeProperty(this.props.node, propName, value);
+    this.onChangeSrc = createPropSetter("src");
     this.onChangeProjection = createPropSetter("projection");
     this.onChangeControls = createPropSetter("controls");
     this.onChangeAutoPlay = createPropSetter("autoPlay");
@@ -47,6 +49,9 @@ export default class VideoNodeEditor extends Component {
 
     return (
       <NodeEditor description={VideoNodeEditor.description} {...this.props}>
+        <InputGroup name="Video">
+          <VideoInput value={node.src} onChange={this.onChangeSrc} />
+        </InputGroup>
         <InputGroup name="Projection">
           <SelectInput options={videoProjectionOptions} value={node.projection} onChange={this.onChangeProjection} />
         </InputGroup>

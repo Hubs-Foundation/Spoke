@@ -8,7 +8,8 @@ import LibraryGridScrollContainer from "./LibraryGridScrollContainer";
 
 class ComponentsLibrary extends Component {
   static propTypes = {
-    editor: PropTypes.object.isRequired
+    editor: PropTypes.object.isRequired,
+    onSelectItem: PropTypes.func.isRequired
   };
 
   constructor(props) {
@@ -37,9 +38,7 @@ class ComponentsLibrary extends Component {
   }
 
   onSelect = item => {
-    const editor = this.props.editor;
-    const node = new item.node(editor);
-    editor.addObject(node);
+    this.props.onSelectItem(item.node);
   };
 
   renderTooltip = nodeName => {

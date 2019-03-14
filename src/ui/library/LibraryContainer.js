@@ -7,8 +7,14 @@ import ModelsLibrary from "./ModelsLibrary";
 import VideosLibrary from "./VideosLibrary";
 import ImagesLibrary from "./ImagesLibrary";
 import MyFilesLibrary from "./MyFilesLibrary";
+import { withEditor } from "../contexts/EditorContext";
+import PropTypes from "prop-types";
 
-export default class LibraryContainer extends Component {
+class LibraryContainer extends Component {
+  static propTypes = {
+    editor: PropTypes.object.isRequired
+  };
+
   state = {
     selected: null,
     items: [
@@ -51,6 +57,21 @@ export default class LibraryContainer extends Component {
     ]
   };
 
+  onSelectItem = (NodeType, props) => {
+    const editor = this.props.editor;
+    const node = new NodeType(editor);
+
+    if (props) {
+      for (const propName in props) {
+        if (props.hasOwnProperty(propName)) {
+          node[propName] = props[propName];
+        }
+      }
+    }
+
+    editor.addObject(node);
+  };
+
   onSelect = item => {
     this.setState({
       selected: item === this.state.selected ? null : item
@@ -63,9 +84,13 @@ export default class LibraryContainer extends Component {
 
     return (
       <div className={styles.libraryContainer}>
-        <div className={styles.libraryPanelContainer}>{Component && <Component />}</div>
+        <div className={styles.libraryPanelContainer}>
+          {Component && <Component onSelectItem={this.onSelectItem} />}
+        </div>
         <LibraryToolbar items={items} selected={selected} onSelect={this.onSelect} />
       </div>
     );
   }
 }
+
+export default withEditor(LibraryContainer);
