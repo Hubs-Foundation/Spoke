@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import styles from "./ProjectGridItem.scss";
 import { Link } from "react-router-dom";
 
-export default class ProjectGrid extends Component {
+export default class ProjectGridItem extends Component {
   static propTypes = {
     project: PropTypes.object.isRequired
   };

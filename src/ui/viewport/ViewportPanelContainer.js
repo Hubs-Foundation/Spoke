@@ -3,8 +3,7 @@ import PropTypes from "prop-types";
 import Viewport from "./Viewport";
 import { withEditor } from "../contexts/EditorContext";
 import styles from "./ViewportPanelContainer.scss";
-import AddNodeActionButtons from "./AddNodeActionButtons";
-import RendererStats from "./RendererStats";
+import LibraryContainer from "../library/LibraryContainer";
 
 class ViewportPanelContainer extends Component {
   static propTypes = {
@@ -31,8 +30,9 @@ class ViewportPanelContainer extends Component {
     return (
       <div className={styles.viewportPanelContainer}>
         <Viewport ref={this.canvasRef} />
-        <AddNodeActionButtons />
-        <RendererStats />
+        <div className={styles.libraryToolbarContainer}>
+          <LibraryContainer />
+        </div>
       </div>
     );
   }

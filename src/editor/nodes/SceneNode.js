@@ -135,6 +135,8 @@ export default class SceneNode extends EditorNodeMixin(THREE.Scene) {
 
   static hideTransform = true;
 
+  static canCreate = false;
+
   static async loadProject(editor, json) {
     if (!json.version) {
       json = migrateV1ToV2(json);

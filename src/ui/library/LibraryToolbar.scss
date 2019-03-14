@@ -1,0 +1,10 @@
+:local(.libraryToolbar) {
+  display: flex;
+  height: 32px;
+  justify-content: center;
+  pointer-events: none;
+
+  & > * {
+    pointer-events: all;
+  }
+}

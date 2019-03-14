@@ -15,6 +15,8 @@ export default function EditorNodeMixin(Object3DClass) {
 
     static hideTransform = false;
 
+    static canCreate = true;
+
     static async load() {
       return Promise.resolve();
     }
