@@ -12,16 +12,16 @@ export default class BoxColliderNodeEditor extends Component {
 
   static iconClassName = "fa-hand-paper";
 
+  static description =
+    "An invisible box that objects will bounce off of or rest on top of.\nWithout colliders, objects will fall through floors and go through walls.";
+
   onChangeWalkable = walkable => {
     this.props.editor.setNodeProperty(this.props.node, "walkable", walkable);
   };
 
   render() {
     return (
-      <NodeEditor
-        {...this.props}
-        description="An invisible box that objects will bounce off of or rest on top of.\nWithout colliders, objects will fall through floors and go through walls."
-      >
+      <NodeEditor {...this.props} description={BoxColliderNodeEditor.description}>
         <InputGroup name="Walkable">
           <BooleanInput value={this.props.node.walkable} onChange={this.onChangeWalkable} />
         </InputGroup>

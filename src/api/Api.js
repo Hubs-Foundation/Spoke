@@ -247,6 +247,36 @@ export default class Project extends EventEmitter {
     return { canonicalUrl, accessibleUrl, contentType };
   }
 
+  async searchMedia(source, query, filter, cursor, signal) {
+    const url = new URL(`https://${process.env.RETICULUM_SERVER}/api/v1/media/search`);
+
+    const params = url.searchParams;
+
+    if (query) {
+      params.set("q", query);
+    }
+
+    params.set("source", source);
+
+    if (filter) {
+      params.set("filter", filter);
+    }
+
+    if (cursor) {
+      params.set("cursor", cursor);
+    }
+
+    const resp = await fetch(url, { signal });
+
+    const json = await resp.json();
+
+    return {
+      results: json.entries,
+      suggestions: json.suggestions,
+      nextCursor: json.meta.next_cursor
+    };
+  }
+
   async createProject(projectName) {
     const credentials = localStorage.getItem("spoke-credentials");
 

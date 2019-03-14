@@ -14,6 +14,8 @@ export default class DirectionalLightNodeEditor extends Component {
 
   static iconClassName = "fa-bolt";
 
+  static description = "A light which illuminates the entire scene, but emits along a single direction.";
+
   onChangeColor = color => {
     this.props.editor.setNodeProperty(this.props.node, "color", color);
   };
@@ -26,10 +28,7 @@ export default class DirectionalLightNodeEditor extends Component {
     const { node, editor } = this.props;
 
     return (
-      <NodeEditor
-        {...this.props}
-        description="A light which illuminates the entire scene, but emits along a single direction."
-      >
+      <NodeEditor {...this.props} description={DirectionalLightNodeEditor.description}>
         <InputGroup name="Color">
           <ColorInput value={node.color} onChange={this.onChangeColor} />
         </InputGroup>

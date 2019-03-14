@@ -13,6 +13,8 @@ export default class AmbientLightNodeEditor extends Component {
 
   static iconClassName = "fa-sun";
 
+  static description = "A light which illuminates all objects in your scene.";
+
   onChangeColor = color => {
     this.props.editor.setNodeProperty(this.props.node, "color", color);
   };
@@ -25,7 +27,7 @@ export default class AmbientLightNodeEditor extends Component {
     const node = this.props.node;
 
     return (
-      <NodeEditor {...this.props} description="A light which illuminates all objects in your scene.">
+      <NodeEditor {...this.props} description={AmbientLightNodeEditor.description}>
         <InputGroup name="Color">
           <ColorInput value={node.color} onChange={this.onChangeColor} />
         </InputGroup>

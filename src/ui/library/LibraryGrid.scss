@@ -5,3 +5,7 @@
   grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
   padding: 10px;
 }
+
+:local(.tooltip) {
+  max-width: 200px;
+}

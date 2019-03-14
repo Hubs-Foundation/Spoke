@@ -13,6 +13,8 @@ export default class GroundPlaneNodeEditor extends Component {
 
   static iconClassName = "fa-square-full";
 
+  static description = "A flat ground plane that extends into the distance.";
+
   onChangeColor = color => {
     this.props.editor.setNodeProperty(this.props.node, "color", color);
   };
@@ -29,7 +31,7 @@ export default class GroundPlaneNodeEditor extends Component {
     const node = this.props.node;
 
     return (
-      <NodeEditor {...this.props} description="A flat ground plane that extends into the distance.">
+      <NodeEditor {...this.props} description={GroundPlaneNodeEditor.description}>
         <InputGroup name="Color">
           <ColorInput value={node.color} onChange={this.onChangeColor} />
         </InputGroup>

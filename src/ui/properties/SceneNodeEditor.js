@@ -10,7 +10,9 @@ export default class SceneNodeEditor extends Component {
 
   static iconClassName = "fa-cubes";
 
+  static description = "The root object of the scene.";
+
   render() {
-    return <NodeEditor {...this.props} description="The root object of the scene." />;
+    return <NodeEditor {...this.props} description={SceneNodeEditor.description} />;
   }
 }

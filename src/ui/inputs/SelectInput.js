@@ -24,6 +24,14 @@ const staticStyle = {
     ...base,
     padding: "0 4px 0 0"
   }),
+  clearIndicator: base => ({
+    ...base,
+    padding: "0",
+    width: "16px",
+    height: "16px",
+    alignItems: "center",
+    paddingTop: "1px"
+  }),
   menu: base => ({
     ...base,
     borderRadius: "4px",
@@ -51,7 +59,9 @@ const staticStyle = {
 
 export default function SelectInput({ value, options, onChange, placeholder, disabled, error, ...rest }) {
   const selectedOption = options.find(o => {
-    if (o.value && o.value.equals) {
+    if (o === null) {
+      return o;
+    } else if (o.value && o.value.equals) {
       return o.value.equals(value);
     } else {
       return o.value === value;
@@ -74,7 +84,7 @@ export default function SelectInput({ value, options, onChange, placeholder, dis
       components={{ IndicatorSeparator: () => null }}
       placeholder={placeholder}
       options={options}
-      onChange={option => onChange(option.value, option)}
+      onChange={option => onChange(option && option.value, option)}
       isDisabled={disabled}
     />
   );

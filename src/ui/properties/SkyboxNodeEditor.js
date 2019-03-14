@@ -16,6 +16,9 @@ export default class SkyboxNodeEditor extends Component {
 
   static iconClassName = "fa-cloud";
 
+  static description =
+    "Creates a visualization of an open sky and atmosphere around your scene. Also used as the environment map for your scene.";
+
   onChangeTurbidity = turbidity => {
     this.props.editor.setNodeProperty(this.props.node, "turbidity", turbidity);
   };
@@ -52,10 +55,7 @@ export default class SkyboxNodeEditor extends Component {
     const node = this.props.node;
 
     return (
-      <NodeEditor
-        description="Creates a visualization of an open sky and atmosphere around your scene. Also used as the environment map for your scene."
-        {...this.props}
-      >
+      <NodeEditor description={SkyboxNodeEditor.description} {...this.props}>
         <InputGroup name="Turbidity">
           <CompoundNumericInput min={1} max={20} value={node.turbidity} onChange={this.onChangeTurbidity} />
         </InputGroup>

@@ -10,7 +10,9 @@ export default class SpawnerNodeEditor extends Component {
 
   static iconClassName = "fa-magic";
 
+  static description = "Spawns a model as an interactable object.";
+
   render() {
-    return <NodeEditor {...this.props} description="Spawns a model as an interactable object." />;
+    return <NodeEditor {...this.props} description={SpawnerNodeEditor.description} />;
   }
 }

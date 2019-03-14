@@ -22,6 +22,8 @@ export default class VideoNodeEditor extends Component {
 
   static iconClassName = "fa-video";
 
+  static description = "Dynamically loads an video.";
+
   constructor(props) {
     super(props);
     const createPropSetter = propName => value => this.props.editor.setNodeProperty(this.props.node, propName, value);
@@ -44,7 +46,7 @@ export default class VideoNodeEditor extends Component {
     const node = this.props.node;
 
     return (
-      <NodeEditor description="Dynamically loads an video." {...this.props}>
+      <NodeEditor description={VideoNodeEditor.description} {...this.props}>
         <InputGroup name="Projection">
           <SelectInput options={videoProjectionOptions} value={node.projection} onChange={this.onChangeProjection} />
         </InputGroup>

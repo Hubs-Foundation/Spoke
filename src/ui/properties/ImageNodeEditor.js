@@ -15,6 +15,8 @@ export default class ImageNodeEditor extends Component {
 
   static iconClassName = "fa-image";
 
+  static description = "Dynamically loads an image.";
+
   onChangeProjection = value => {
     this.props.editor.setNodeProperty(this.props.node, "projection", value);
   };
@@ -22,7 +24,7 @@ export default class ImageNodeEditor extends Component {
   render() {
     const { node } = this.props;
     return (
-      <NodeEditor description="Dynamically loads an image." {...this.props}>
+      <NodeEditor description={ImageNodeEditor.description} {...this.props}>
         <InputGroup name="Projection">
           <SelectInput options={imageProjectionOptions} value={node.projection} onChange={this.onChangeProjection} />
         </InputGroup>

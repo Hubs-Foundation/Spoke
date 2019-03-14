@@ -96,7 +96,7 @@ export default class Image extends THREE.Object3D {
   }
 
   onResize() {
-    if (this.projection === ImageProjection.Flat) {
+    if (this._texture && this.projection === ImageProjection.Flat) {
       const ratio = (this._texture.image.height || 1.0) / (this._texture.image.width || 1.0);
       const width = Math.min(1.0, 1.0 / ratio);
       const height = Math.min(1.0, ratio);

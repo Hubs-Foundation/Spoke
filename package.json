@@ -73,6 +73,7 @@
     "react-document-title": "^2.0.3",
     "react-dom": "^16.8.3",
     "react-hotkeys": "^1.1.4",
+    "react-infinite-scroller": "^1.2.4",
     "react-modal": "^3.8.1",
     "react-mosaic-component": "^2.1.0",
     "react-router-dom": "^4.4.0-beta.7",

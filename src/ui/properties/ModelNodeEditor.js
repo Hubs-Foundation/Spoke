@@ -13,6 +13,8 @@ export default class ModelNodeEditor extends Component {
 
   static iconClassName = "fa-cube";
 
+  static description = "A 3D model in your scene, loaded from a GLTF URL or file.";
+
   onChangeAnimation = activeClipName => {
     this.props.editor.setNodeProperty(this.props.node, "activeClipName", activeClipName);
   };
@@ -40,7 +42,7 @@ export default class ModelNodeEditor extends Component {
     clipOptions.unshift({ label: "None", value: null });
 
     return (
-      <NodeEditor description="A 3D model in your scene, loaded from a GLTF URL or file." {...this.props}>
+      <NodeEditor description={ModelNodeEditor.description} {...this.props}>
         <InputGroup name="Loop Animation">
           <SelectInput options={clipOptions} value={activeClipName} onChange={this.onChangeAnimation} />
         </InputGroup>

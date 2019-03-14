@@ -31,6 +31,8 @@ export default class TriggerVolumeNodeEditor extends Component {
 
   static iconClassName = "fa-running";
 
+  static description = "Sets a property on the target object on enter and leave.";
+
   constructor(props) {
     super(props);
 
@@ -140,7 +142,7 @@ export default class TriggerVolumeNodeEditor extends Component {
     const LeaveInput = leavePropertyOption && leavePropertyOption.input;
 
     return (
-      <NodeEditor description="Sets a property on the target object on enter and leave." {...this.props}>
+      <NodeEditor description={TriggerVolumeNodeEditor.description} {...this.props}>
         <InputGroup name="Target">
           <SelectInput
             error={targetNotFound}

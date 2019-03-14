@@ -14,6 +14,8 @@ export default class PointLightNodeEditor extends Component {
 
   static iconClassName = "fa-lightbulb";
 
+  static description = "A light which emits in all directions from a single point.";
+
   onChangeColor = color => {
     this.props.editor.setNodeProperty(this.props.node, "color", color);
   };
@@ -30,7 +32,7 @@ export default class PointLightNodeEditor extends Component {
     const { node, editor } = this.props;
 
     return (
-      <NodeEditor {...this.props} description="A light which emits in all directions from a single point.">
+      <NodeEditor {...this.props} description={PointLightNodeEditor.description}>
         <InputGroup name="Color">
           <ColorInput value={node.color} onChange={this.onChangeColor} />
         </InputGroup>

@@ -10,12 +10,10 @@ export default class SpawnPointNodeEditor extends Component {
 
   static iconClassName = "fa-street-view";
 
+  static description =
+    "A point where people will appear when they enter your scene.\nThe icon in the Viewport represents the actual size of an avatar.";
+
   render() {
-    return (
-      <NodeEditor
-        description="A point where people will appear when they enter your scene.\nThe icon in the Viewport represents the actual size of an avatar."
-        {...this.props}
-      />
-    );
+    return <NodeEditor description={SpawnPointNodeEditor.description} {...this.props} />;
   }
 }

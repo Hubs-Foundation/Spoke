@@ -20,6 +20,8 @@ class FloorPlanNodeEditor extends Component {
 
   static iconClassName = "fa-shoe-prints";
 
+  static description = "Sets the walkable surface area in your scene.";
+
   constructor(props) {
     super(props);
     const createPropSetter = propName => value => this.props.editor.setNodeProperty(this.props.node, propName, value);
@@ -55,7 +57,7 @@ class FloorPlanNodeEditor extends Component {
     const node = this.props.node;
 
     return (
-      <NodeEditor {...this.props} description="Sets the walkable surface area in your scene.">
+      <NodeEditor {...this.props} description={FloorPlanNodeEditor.description}>
         <InputGroup name="Auto Cell Size">
           <BooleanInput value={node.autoCellSize} onChange={this.onChangeAutoCellSize} />
         </InputGroup>
@@ -92,4 +94,5 @@ class FloorPlanNodeEditor extends Component {
 
 const FloorPlanNodeEditorContainer = withDialog(FloorPlanNodeEditor);
 FloorPlanNodeEditorContainer.iconClassName = FloorPlanNodeEditor.iconClassName;
+FloorPlanNodeEditorContainer.description = FloorPlanNodeEditor.description;
 export default FloorPlanNodeEditorContainer;

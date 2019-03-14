@@ -4,6 +4,7 @@ import LibraryPanel from "./LibraryPanel";
 import LibraryGrid from "./LibraryGrid";
 import { withEditor } from "../contexts/EditorContext";
 import styles from "./ComponentsLibrary.scss";
+import LibraryGridScrollContainer from "./LibraryGridScrollContainer";
 
 class ComponentsLibrary extends Component {
   static propTypes = {
@@ -25,6 +26,7 @@ class ComponentsLibrary extends Component {
       items.push({
         id: nodeType.nodeName,
         node: nodeType,
+        description: nodeEditor.description,
         iconClassName: nodeEditor.iconClassName
       });
     }
@@ -40,10 +42,16 @@ class ComponentsLibrary extends Component {
     editor.addObject(node);
   };
 
+  renderTooltip = nodeName => {
+    const item = this.state.items.find(i => i.id === nodeName);
+    return item && item.description;
+  };
+
   renderItem = item => {
     return (
       <div className={styles.componentsLibraryItem}>
         <i className={`fas ${item.iconClassName}`} />
+        <div>{item.id}</div>
       </div>
     );
   };
@@ -51,7 +59,14 @@ class ComponentsLibrary extends Component {
   render() {
     return (
       <LibraryPanel>
-        <LibraryGrid items={this.state.items} onSelect={this.onSelect} renderItem={this.renderItem} />
+        <LibraryGridScrollContainer>
+          <LibraryGrid
+            items={this.state.items}
+            onSelect={this.onSelect}
+            renderTooltip={this.renderTooltip}
+            renderItem={this.renderItem}
+          />
+        </LibraryGridScrollContainer>
       </LibraryPanel>
     );
   }

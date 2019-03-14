@@ -17,6 +17,8 @@ export default class SpotLightNodeEditor extends Component {
 
   static iconClassName = "fa-bullseye";
 
+  static description = "A light which emits along a direction, illuminating objects within a cone.";
+
   onChangeColor = color => {
     this.props.editor.setNodeProperty(this.props.node, "color", color);
   };
@@ -41,10 +43,7 @@ export default class SpotLightNodeEditor extends Component {
     const { node, editor } = this.props;
 
     return (
-      <NodeEditor
-        {...this.props}
-        description="A light which emits along a direction, illuminating objects within a cone."
-      >
+      <NodeEditor {...this.props} description={SpotLightNodeEditor.description}>
         <InputGroup name="Color">
           <ColorInput value={node.color} onChange={this.onChangeColor} />
         </InputGroup>

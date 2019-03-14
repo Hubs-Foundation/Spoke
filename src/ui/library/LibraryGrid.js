@@ -8,14 +8,15 @@ export default class LibraryGrid extends Component {
   static propTypes = {
     items: PropTypes.arrayOf(
       PropTypes.shape({
-        id: PropTypes.string.isRequired,
+        id: PropTypes.any.isRequired,
         thumbnailUrl: PropTypes.string
       })
     ).isRequired,
     onSelect: PropTypes.func.isRequired,
     tooltipId: PropTypes.string,
     renderItem: PropTypes.func,
-    renderTooltip: PropTypes.func
+    renderTooltip: PropTypes.func,
+    children: PropTypes.node
   };
 
   static defaultProps = {
@@ -31,7 +32,8 @@ export default class LibraryGrid extends Component {
         {items.map(item => (
           <LibraryGridItem key={item.id} item={item} onClick={onSelect} renderItem={renderItem} tooltipId={tooltipId} />
         ))}
-        {renderTooltip && <Tooltip id={tooltipId} getContent={this.renderTooltip} />}
+        {this.props.children}
+        {renderTooltip && <Tooltip className={styles.tooltip} id={tooltipId} getContent={renderTooltip} />}
       </div>
     );
   }
