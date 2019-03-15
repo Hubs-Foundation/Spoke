@@ -30,6 +30,7 @@ import isEmptyObject from "./utils/isEmptyObject";
 export default class Editor {
   constructor(api) {
     this.api = api;
+    this.projectId = null;
 
     this.scene = new SceneNode(this);
     this.sceneModified = false;

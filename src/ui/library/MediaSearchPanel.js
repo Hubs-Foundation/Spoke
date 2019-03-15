@@ -15,7 +15,8 @@ class MediaSearchPanel extends Component {
     editor: PropTypes.object.isRequired,
     api: PropTypes.object.isRequired,
     sources: PropTypes.array.isRequired,
-    onSelect: PropTypes.func.isRequired
+    onSelect: PropTypes.func.isRequired,
+    toolbar: PropTypes.node
   };
 
   constructor(props) {
@@ -60,6 +61,12 @@ class MediaSearchPanel extends Component {
     }
 
     this.search(e.target.value, this.state.selectedSourceId, this.state.selectedFilter);
+  };
+
+  addItem = item => {
+    this.setState({
+      results: [item, ...this.state.results]
+    });
   };
 
   search = (value, sourceId, filter, cursor = 0) => {
@@ -129,9 +136,8 @@ class MediaSearchPanel extends Component {
     const filters = source.filters || [];
 
     const items = results.map(result => ({
-      id: result.id,
-      thumbnailUrl: result.images.preview.url,
-      url: result.url
+      ...result,
+      thumbnailUrl: result.images.preview.url
     }));
 
     const sourceOptions = sources.map(s => ({ label: s.label, value: s.id }));
@@ -165,6 +171,7 @@ class MediaSearchPanel extends Component {
               </a>
             </span>
           </span>
+          {source && source.renderToolbar && source.renderToolbar(selectedSourceId, selectedFilter, this.addItem)}
         </div>
         <LibraryGridScrollContainer>
           <InfiniteScroll

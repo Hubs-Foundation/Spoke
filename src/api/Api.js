@@ -609,6 +609,49 @@ export default class Project extends EventEmitter {
     });
   }
 
+  async uploadProjectFile(projectId, file, showDialog, hideDialog) {
+    const {
+      file_id,
+      meta: { access_token }
+    } = await this.upload(file, uploadProgress => {
+      showDialog(ProgressDialog, {
+        title: "Uploading File",
+        message: `Uploading file: ${Math.floor(uploadProgress * 100)}%`
+      });
+    });
+
+    const credentials = localStorage.getItem("spoke-credentials");
+
+    const headers = {
+      "content-type": "application/json",
+      authorization: `Bearer ${credentials}`
+    };
+
+    const body = JSON.stringify({
+      project_file: {
+        name: file.name,
+        file_id,
+        access_token
+      }
+    });
+
+    const projectFileEndpoint = `https://${process.env.RETICULUM_SERVER}/api/v1/projects/${projectId}/files`;
+
+    const resp = await fetch(projectFileEndpoint, { method: "POST", headers, body });
+
+    const json = await resp.json();
+
+    hideDialog();
+
+    return {
+      id: json.project_file_id,
+      name: json.name,
+      url: json.file_url,
+      contentType: json.content_type,
+      contentLength: json.content_length
+    };
+  }
+
   setUserInfo(userInfo) {
     localStorage.setItem("spoke-user-info", JSON.stringify(userInfo));
   }

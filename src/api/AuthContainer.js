@@ -1,12 +1,12 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
+import { withApi } from "../ui/contexts/ApiContext";
 
 import AuthEmailSentMessage from "./AuthEmailSentMessage";
 import AuthForm from "./AuthForm";
 
-export default class AuthContainer extends Component {
+class AuthContainer extends Component {
   static propTypes = {
-    location: PropTypes.object.isRequired,
     api: PropTypes.object.isRequired,
     onSuccess: PropTypes.func.isRequired
   };
@@ -14,8 +14,7 @@ export default class AuthContainer extends Component {
   state = {
     error: null,
     emailSent: false,
-    email: null,
-    redirectToReferrer: false
+    email: null
   };
 
   onSubmit = email => {
@@ -28,18 +27,20 @@ export default class AuthContainer extends Component {
       .then(this.props.onSuccess)
       .catch(this.onError);
 
-    this.setState({ mailSent: true, email });
+    this.setState({ emailSent: true, email });
   };
 
   onError = err => {
-    this.setState({ mailSent: false, email: null, error: err.message || "Error signing in. Please try again." });
+    this.setState({ emailSent: false, email: null, error: err.message || "Error signing in. Please try again." });
   };
 
   render() {
-    if (this.state.mailSent) {
+    if (this.state.emailSent) {
       return <AuthEmailSentMessage email={this.state.email} />;
     }
 
     return <AuthForm error={this.state.error} onSubmit={this.onSubmit} />;
   }
 }
+
+export default withApi(AuthContainer);

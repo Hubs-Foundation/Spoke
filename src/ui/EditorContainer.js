@@ -408,6 +408,7 @@ export default class EditorContainer extends Component {
 
       try {
         await this.state.editor.loadProject(project);
+        this.state.editor.projectId = this.props.projectId;
 
         this.hideDialog();
       } catch (e) {
@@ -421,6 +422,7 @@ export default class EditorContainer extends Component {
     } else {
       await this.state.editor.loadNewScene();
       await this.props.api.saveProject(this.props.projectId, this.state.editor, this.showDialog, this.hideDialog);
+      this.state.editor.projectId = this.props.projectId;
     }
   }
 
