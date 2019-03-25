@@ -557,7 +557,7 @@ export default class Project extends EventEmitter {
         sceneUrl = `https://${process.env.HUBS_SERVER}/scenes/${newSceneId}`;
       }
 
-      scene.setMetadata({ sceneUrl, sceneId });
+      scene.setMetadata({ sceneUrl, sceneId: newSceneId });
 
       await this.saveProject(projectId, editor, showDialog, hideDialog);
 
