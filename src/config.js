@@ -34,6 +34,8 @@ import SpawnerNode from "./editor/nodes/SpawnerNode";
 import SpawnerNodeEditor from "./ui/properties/SpawnerNodeEditor";
 import TriggerVolumeNode from "./editor/nodes/TriggerVolumeNode";
 import TriggerVolumeNodeEditor from "./ui/properties/TriggerVolumeNodeEditor";
+import LinkNode from "./editor/nodes/LinkNode";
+import LinkNodeEditor from "./ui/properties/LinkNodeEditor";
 
 export function createEditor(api) {
   const editor = new Editor(api);
@@ -54,5 +56,6 @@ export function createEditor(api) {
   editor.registerNode(VideoNode, VideoNodeEditor);
   editor.registerNode(SpawnerNode, SpawnerNodeEditor);
   editor.registerNode(TriggerVolumeNode, TriggerVolumeNodeEditor);
+  editor.registerNode(LinkNode, LinkNodeEditor);
   return editor;
 }

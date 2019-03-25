@@ -202,6 +202,14 @@ export default function EditorNodeMixin(Object3DClass) {
       return computeAndSetStaticModes(this);
     }
 
+    computeAndSetVisible() {
+      this.traverse(object => {
+        if (object.parent && !object.parent.visible) {
+          object.visible = false;
+        }
+      });
+    }
+
     isInherits() {
       return isInherits(this);
     }
