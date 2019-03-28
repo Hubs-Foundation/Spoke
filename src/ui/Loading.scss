@@ -1,0 +1,13 @@
+:local(.loading) {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  width: 100vw;
+
+  svg {
+    margin-bottom: 20px;
+  }
+}

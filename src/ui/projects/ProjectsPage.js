@@ -8,7 +8,8 @@ import ProjectGrid from "./ProjectGrid";
 
 class ProjectsPage extends Component {
   static propTypes = {
-    api: PropTypes.object.isRequired
+    api: PropTypes.object.isRequired,
+    history: PropTypes.object.isRequired
   };
 
   constructor(props) {
@@ -26,6 +27,13 @@ class ProjectsPage extends Component {
       .then(projects => this.setState({ projects }))
       .catch(error => {
         console.error(error);
+
+        if (error.response && error.response.status === 401) {
+          // User has an invalid auth token. Prompt them to login again.
+          this.props.api.logout();
+          return this.props.history.push("/login", { from: "/projects" });
+        }
+
         this.setState({ error });
       });
   }

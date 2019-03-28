@@ -2,6 +2,8 @@ import React, { Component } from "react";
 import PropTypes from "prop-types";
 import { withApi } from "../contexts/ApiContext";
 import EditorContainer from "../EditorContainer";
+import Loading from "../Loading";
+import Error from "../Error";
 
 class ProjectPage extends Component {
   static propTypes = {
@@ -39,6 +41,12 @@ class ProjectPage extends Component {
         this.setState({ loading: false, project });
       })
       .catch(err => {
+        if (err.response && err.response.status === 401) {
+          // User has an invalid auth token.
+          return this.props.history.push("/projects");
+        }
+
+        console.log(err.response);
         this.setState({ loading: false, error: err.message || "An unknown error occurred when loading the project" });
       });
   }
@@ -48,11 +56,11 @@ class ProjectPage extends Component {
     const { loading, error, project } = this.state;
 
     if (loading) {
-      return <div>Loading project...</div>;
+      return <Loading message="Loading project..." />;
     }
 
     if (error) {
-      return <div>{error}</div>;
+      return <Error message={error} />;
     }
 
     return <EditorContainer api={api} history={history} projectId={match.params.projectId} project={project} />;

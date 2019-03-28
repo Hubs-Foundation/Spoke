@@ -5,6 +5,9 @@ import PropTypes from "prop-types";
 import "./styles/global.scss";
 import styles from "./styles/common.scss";
 
+import Loading from "./Loading";
+import Error from "./Error";
+
 import { ApiContextProvider } from "./contexts/ApiContext";
 
 import AuthenticatedRoute from "./auth/AuthenticatedRoute";
@@ -27,14 +30,15 @@ export default class App extends Component {
     return (
       <ApiContextProvider value={api}>
         <Router>
-          <Suspense fallback="loading..." className={styles.flexColumn}>
-            <Route path="/" exact component={LandingPage} />
-            <Route path="/login" exact component={LoginPage} />
-            <Route path="/logout" exact component={LogoutPage} />
+          <Suspense fallback={<Loading message="Loading..." />} className={styles.flexColumn}>
             <Switch>
+              <Route path="/" exact component={LandingPage} />
+              <Route path="/login" exact component={LoginPage} />
+              <Route path="/logout" exact component={LogoutPage} />
               <AuthenticatedRoute path="/projects" exact component={ProjectsPage} />
               <AuthenticatedRoute path="/projects/new" exact component={NewProjectPage} />
               <AuthenticatedRoute path="/projects/:projectId" component={ProjectPage} />
+              <Route render={() => <Error message="Page not found." />} />
             </Switch>
           </Suspense>
         </Router>

@@ -2,10 +2,13 @@ import React, { Component } from "react";
 import PropTypes from "prop-types";
 import { withApi } from "../contexts/ApiContext";
 import { Redirect } from "react-router-dom";
+import Loading from "../Loading";
+import Error from "../Error";
 
 class NewProjectPage extends Component {
   static propTypes = {
-    api: PropTypes.object.isRequired
+    api: PropTypes.object.isRequired,
+    history: PropTypes.object.isRequired
   };
 
   state = {
@@ -21,6 +24,12 @@ class NewProjectPage extends Component {
         this.setState({ loading: false, projectId });
       })
       .catch(err => {
+        if (err.response && err.response.status === 401) {
+          // User has an invalid auth token. Prompt them to login again.
+          this.props.api.logout();
+          return this.props.history.push("/login", { from: "/projects/new" });
+        }
+
         this.setState({
           loading: false,
           error: err.message || "An unknown error occurred while trying to create a new project."
@@ -32,11 +41,11 @@ class NewProjectPage extends Component {
     const { loading, error, projectId } = this.state;
 
     if (loading) {
-      return <div>Creating project...</div>;
+      return <Loading message="Creating project..." />;
     }
 
     if (error) {
-      return <div>{error}</div>;
+      return <Error message="error" />;
     }
 
     return <Redirect to={`/projects/${projectId}`} />;

@@ -18,7 +18,7 @@ async function resolveUrl(url, index) {
   const cacheKey = `${url}|${index}`;
   if (resolveUrlCache.has(cacheKey)) return resolveUrlCache.get(cacheKey);
 
-  const response = await fetch(`https://${process.env.RETICULUM_SERVER}/api/v1/media`, {
+  const response = await this.fetch(`https://${process.env.RETICULUM_SERVER}/api/v1/media`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ media: { url, index } })
@@ -92,7 +92,7 @@ function getFilesFromSketchfabZip(src) {
 }
 
 function fetchContentType(accessibleUrl) {
-  return fetch(accessibleUrl, { method: "HEAD" }).then(r => r.headers.get("content-type"));
+  return this.fetch(accessibleUrl, { method: "HEAD" }).then(r => r.headers.get("content-type"));
 }
 
 const CommonKnownContentTypes = {
@@ -175,7 +175,7 @@ export default class Project extends EventEmitter {
       authorization: `Bearer ${credentials}`
     };
 
-    const response = await fetch(`https://${process.env.RETICULUM_SERVER}/api/v1/projects`, { headers });
+    const response = await this.fetch(`https://${process.env.RETICULUM_SERVER}/api/v1/projects`, { headers });
 
     const json = await response.json();
 
@@ -198,14 +198,16 @@ export default class Project extends EventEmitter {
       authorization: `Bearer ${credentials}`
     };
 
-    const response = await fetch(`https://${process.env.RETICULUM_SERVER}/api/v1/projects/${projectId}`, { headers });
+    const response = await this.fetch(`https://${process.env.RETICULUM_SERVER}/api/v1/projects/${projectId}`, {
+      headers
+    });
 
     const json = await response.json();
 
     let project = null;
 
     if (json.project_url) {
-      const projectFileResponse = await fetch(json.project_url, { headers });
+      const projectFileResponse = await this.fetch(json.project_url, { headers });
       project = await projectFileResponse.json();
     }
 
@@ -288,7 +290,7 @@ export default class Project extends EventEmitter {
       authorization: `Bearer ${credentials}`
     };
 
-    const resp = await fetch(url, { headers, signal });
+    const resp = await this.fetch(url, { headers, signal });
 
     const json = await resp.json();
 
@@ -315,7 +317,7 @@ export default class Project extends EventEmitter {
 
     const projectEndpoint = `https://${process.env.RETICULUM_SERVER}/api/v1/projects`;
 
-    const resp = await fetch(projectEndpoint, { method: "POST", headers, body });
+    const resp = await this.fetch(projectEndpoint, { method: "POST", headers, body });
 
     if (resp.status === 401) {
       throw new Error("Not authenticated");
@@ -372,7 +374,7 @@ export default class Project extends EventEmitter {
 
     const projectEndpoint = `https://${process.env.RETICULUM_SERVER}/api/v1/projects/${projectId}`;
 
-    const resp = await fetch(projectEndpoint, { method: "PATCH", headers, body });
+    const resp = await this.fetch(projectEndpoint, { method: "PATCH", headers, body });
 
     if (resp.status === 401) {
       return await new Promise((resolve, reject) => {
@@ -550,7 +552,7 @@ export default class Project extends EventEmitter {
         method = "PATCH";
       }
 
-      const resp = await fetch(sceneEndpoint, { method, headers, body });
+      const resp = await this.fetch(sceneEndpoint, { method, headers, body });
 
       if (resp.status === 401) {
         return await new Promise((resolve, reject) => {
@@ -638,7 +640,7 @@ export default class Project extends EventEmitter {
       "content-type": "application/json",
       authorization: `Bearer ${credentials}`
     };
-    const resp = await fetch(projectAssetsEndpoint, { headers });
+    const resp = await this.fetch(projectAssetsEndpoint, { headers });
     const json = await resp.json();
 
     // TODO: Filter assets server-side
@@ -704,7 +706,7 @@ export default class Project extends EventEmitter {
 
     const projectAssetsEndpoint = `https://${process.env.RETICULUM_SERVER}/api/v1/projects/${projectId}/assets`;
 
-    const resp = await fetch(projectAssetsEndpoint, { method: "POST", headers, body });
+    const resp = await this.fetch(projectAssetsEndpoint, { method: "POST", headers, body });
 
     const json = await resp.json();
 
@@ -732,13 +734,15 @@ export default class Project extends EventEmitter {
     return JSON.parse(localStorage.getItem("spoke-user-info"));
   }
 
-  fetch(relativePath, options) {
-    const url = new URL(relativePath, this.serverURL).href;
-    return fetch(url, options);
-  }
+  async fetch(url, options) {
+    const res = await fetch(url, options);
 
-  async fetchJSON(url) {
-    const response = await this.fetch(url);
-    return response.json();
+    if (res.ok) {
+      return res;
+    }
+
+    const err = new Error("Network Error: " + res.statusText);
+    err.response = res;
+    throw err;
   }
 }
