@@ -2,11 +2,11 @@ import React, { Component } from "react";
 import LibraryToolbar from "./LibraryToolbar";
 import styles from "./LibraryContainer.scss";
 import ComponentsLibrary from "./ComponentsLibrary";
-import PrimitivesLibrary from "./PrimitivesLibrary";
+//import PrimitivesLibrary from "./PrimitivesLibrary";
 import ModelsLibrary from "./ModelsLibrary";
 import VideosLibrary from "./VideosLibrary";
 import ImagesLibrary from "./ImagesLibrary";
-import MyFilesLibrary from "./MyFilesLibrary";
+import AssetsLibrary from "./AssetsLibrary";
 import { withEditor } from "../contexts/EditorContext";
 import PropTypes from "prop-types";
 
@@ -25,11 +25,17 @@ class LibraryContainer extends Component {
         component: ComponentsLibrary
       },
       {
-        id: "primitives",
-        label: "Primitives",
-        iconClassName: "fa-cube",
-        component: PrimitivesLibrary
+        id: "assets",
+        label: "Assets",
+        iconClassName: "fa-folder",
+        component: AssetsLibrary
       },
+      // {
+      //   id: "primitives",
+      //   label: "Primitives",
+      //   iconClassName: "fa-cube",
+      //   component: PrimitivesLibrary
+      // },
       {
         id: "models",
         label: "Models",
@@ -47,12 +53,6 @@ class LibraryContainer extends Component {
         label: "Images",
         iconClassName: "fa-image",
         component: ImagesLibrary
-      },
-      {
-        id: "files",
-        label: "My Files",
-        iconClassName: "fa-folder",
-        component: MyFilesLibrary
       }
     ]
   };

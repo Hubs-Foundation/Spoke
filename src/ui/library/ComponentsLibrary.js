@@ -1,10 +1,8 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
 import LibraryPanel from "./LibraryPanel";
-import LibraryGrid from "./LibraryGrid";
 import { withEditor } from "../contexts/EditorContext";
 import styles from "./ComponentsLibrary.scss";
-import LibraryGridScrollContainer from "./LibraryGridScrollContainer";
 
 class ComponentsLibrary extends Component {
   static propTypes = {
@@ -57,16 +55,12 @@ class ComponentsLibrary extends Component {
 
   render() {
     return (
-      <LibraryPanel>
-        <LibraryGridScrollContainer>
-          <LibraryGrid
-            items={this.state.items}
-            onSelect={this.onSelect}
-            renderTooltip={this.renderTooltip}
-            renderItem={this.renderItem}
-          />
-        </LibraryGridScrollContainer>
-      </LibraryPanel>
+      <LibraryPanel
+        items={this.state.items}
+        onSelect={this.onSelect}
+        renderTooltip={this.renderTooltip}
+        renderItem={this.renderItem}
+      />
     );
   }
 }

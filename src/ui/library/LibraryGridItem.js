@@ -5,8 +5,8 @@ import styles from "./LibraryGridItem.scss";
 function renderItem(item) {
   return (
     <div className={styles.thumbnailContainer}>
-      {item.thumbnailUrl && (
-        <div className={styles.thumbnail} style={{ backgroundImage: `url(${item.thumbnailUrl})` }} />
+      {item.images && item.images.preview && (
+        <div className={styles.thumbnail} style={{ backgroundImage: `url(${item.images.preview.url})` }} />
       )}
     </div>
   );

@@ -1,0 +1,15 @@
+@import "../styles/theme";
+@import "../styles/common";
+
+:local(.searchContainer) {
+  display: flex;
+  flex: 1;
+  align-items: center;
+
+  input {
+    @include input;
+    margin-right: 8px;
+    max-width: 300px;
+    flex: 1;
+  }
+}

@@ -6,6 +6,8 @@ import AuthContainer from "./AuthContainer";
 import LoginDialog from "./LoginDialog";
 import PublishDialog from "./PublishDialog";
 import ProgressDialog from "../ui/dialogs/ProgressDialog";
+import Fuse from "fuse.js";
+import jwtDecode from "jwt-decode";
 
 // Media related functions should be kept up to date with Hubs media-utils:
 // https://github.com/mozilla/hubs/blob/master/src/utils/media-utils.js
@@ -156,6 +158,11 @@ export default class Project extends EventEmitter {
     return localStorage.getItem("spoke-credentials") !== null;
   }
 
+  getAccountId() {
+    const credentials = localStorage.getItem("spoke-credentials");
+    return jwtDecode(credentials).sub;
+  }
+
   logout() {
     localStorage.removeItem("spoke-credentials");
   }
@@ -247,26 +254,41 @@ export default class Project extends EventEmitter {
     return { canonicalUrl, accessibleUrl, contentType };
   }
 
-  async searchMedia(source, query, filter, cursor, signal) {
+  async searchMedia(source, params, cursor, signal) {
     const url = new URL(`https://${process.env.RETICULUM_SERVER}/api/v1/media/search`);
 
-    const params = url.searchParams;
+    const searchParams = url.searchParams;
 
-    if (query) {
-      params.set("q", query);
+    searchParams.set("source", source);
+
+    if (source === "assets") {
+      searchParams.set("user", this.getAccountId());
     }
 
-    params.set("source", source);
+    if (params.type) {
+      searchParams.set("type", params.type);
+    }
 
-    if (filter) {
-      params.set("filter", filter);
+    if (params.query) {
+      searchParams.set("q", params.query);
+    }
+
+    if (params.filter) {
+      searchParams.set("filter", params.filter);
     }
 
     if (cursor) {
-      params.set("cursor", cursor);
+      searchParams.set("cursor", cursor);
     }
 
-    const resp = await fetch(url, { signal });
+    const credentials = localStorage.getItem("spoke-credentials");
+
+    const headers = {
+      "content-type": "application/json",
+      authorization: `Bearer ${credentials}`
+    };
+
+    const resp = await fetch(url, { headers, signal });
 
     const json = await resp.json();
 
@@ -609,7 +631,54 @@ export default class Project extends EventEmitter {
     });
   }
 
-  async uploadProjectFile(projectId, file, showDialog, hideDialog) {
+  async getProjectAssets(projectId, params) {
+    const credentials = localStorage.getItem("spoke-credentials");
+    const projectAssetsEndpoint = `https://${process.env.RETICULUM_SERVER}/api/v1/projects/${projectId}/assets`;
+    const headers = {
+      "content-type": "application/json",
+      authorization: `Bearer ${credentials}`
+    };
+    const resp = await fetch(projectAssetsEndpoint, { headers });
+    const json = await resp.json();
+
+    // TODO: Filter assets server-side
+    let assets = json.assets;
+
+    console.log(assets, params);
+
+    if (params.filter !== "all") {
+      assets = assets.filter(a => a.type === params.filter);
+    }
+
+    if (params.q) {
+      const options = {
+        shouldSort: true,
+        threshold: 0.6,
+        location: 0,
+        distance: 100,
+        maxPatternLength: 32,
+        minMatchCharLength: 1,
+        keys: ["name"]
+      };
+      const fuse = new Fuse(assets, options);
+      assets = fuse.search("a");
+    }
+
+    assets = assets.map(asset => ({
+      id: asset.asset_id,
+      name: asset.name,
+      url: asset.file_url,
+      type: asset.type,
+      attributions: {},
+      images: {
+        preview: { url: null }
+      }
+    }));
+
+    return { results: assets, nextCursor: 0 };
+  }
+
+  async uploadProjectAsset(projectId, file, showDialog, hideDialog) {
     const {
       file_id,
       meta: { access_token }
@@ -628,27 +697,32 @@ export default class Project extends EventEmitter {
     };
 
     const body = JSON.stringify({
-      project_file: {
+      asset: {
         name: file.name,
         file_id,
         access_token
       }
     });
 
-    const projectFileEndpoint = `https://${process.env.RETICULUM_SERVER}/api/v1/projects/${projectId}/files`;
+    const projectAssetsEndpoint = `https://${process.env.RETICULUM_SERVER}/api/v1/projects/${projectId}/assets`;
 
-    const resp = await fetch(projectFileEndpoint, { method: "POST", headers, body });
+    const resp = await fetch(projectAssetsEndpoint, { method: "POST", headers, body });
 
     const json = await resp.json();
 
     hideDialog();
 
+    const asset = json.assets[0];
+
     return {
-      id: json.project_file_id,
-      name: json.name,
-      url: json.file_url,
-      contentType: json.content_type,
-      contentLength: json.content_length
+      id: asset.asset_id,
+      name: asset.name,
+      url: asset.file_url,
+      type: asset.type,
+      attributions: {},
+      images: {
+        preview: { url: null }
+      }
     };
   }
 
