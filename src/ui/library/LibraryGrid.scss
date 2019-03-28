@@ -1,3 +1,5 @@
+@import "../styles/common";
+
 :local(.libraryGrid) {
   display: grid;
   grid-gap: 10px;
@@ -8,4 +10,7 @@
 
 :local(.tooltip) {
   max-width: 200px;
+  overflow: hidden;
+  overflow-wrap: break-word;
+  @include no-select;
 }

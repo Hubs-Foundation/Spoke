@@ -30,11 +30,11 @@ class AssetsLibrary extends Component {
           label: "Assets",
           defaultType: "all",
           typeOptions: [
-            { label: "All", value: "all" },
             { label: "Models", value: "model" },
             { label: "Images", value: "image" },
             { label: "Videos", value: "video" }
           ],
+          typeIsClearable: true,
           searchPlaceholder: "Search my assets...",
           legal: "Search by Mozilla Hubs",
           privacyPolicyUrl: "https://github.com/mozilla/hubs/blob/master/PRIVACY.md",
@@ -43,13 +43,12 @@ class AssetsLibrary extends Component {
         {
           value: "project_assets",
           label: "Project Assets",
-          defaultType: "all",
           typeOptions: [
-            { label: "All", value: "all" },
             { label: "Models", value: "model" },
             { label: "Images", value: "image" },
             { label: "Videos", value: "video" }
           ],
+          typeIsClearable: true,
           searchPlaceholder: "Search project assets...",
           legal: "Search by Mozilla Hubs",
           privacyPolicyUrl: "https://github.com/mozilla/hubs/blob/master/PRIVACY.md",

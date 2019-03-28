@@ -644,7 +644,7 @@ export default class Project extends EventEmitter {
     // TODO: Filter assets server-side
     let assets = json.assets;
 
-    if (params.type !== "all") {
+    if (params.type) {
       assets = assets.filter(a => a.type === params.type);
     }
 

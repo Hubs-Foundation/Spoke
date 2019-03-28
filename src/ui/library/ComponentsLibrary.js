@@ -2,7 +2,6 @@ import React, { Component } from "react";
 import PropTypes from "prop-types";
 import LibraryPanel from "./LibraryPanel";
 import { withEditor } from "../contexts/EditorContext";
-import styles from "./ComponentsLibrary.scss";
 
 class ComponentsLibrary extends Component {
   static propTypes = {
@@ -24,6 +23,7 @@ class ComponentsLibrary extends Component {
 
       items.push({
         id: nodeType.nodeName,
+        name: nodeType.nodeName,
         node: nodeType,
         description: nodeEditor.description,
         iconClassName: nodeEditor.iconClassName
@@ -44,24 +44,8 @@ class ComponentsLibrary extends Component {
     return item && item.description;
   };
 
-  renderItem = item => {
-    return (
-      <div className={styles.componentsLibraryItem}>
-        <i className={`fas ${item.iconClassName}`} />
-        <div>{item.id}</div>
-      </div>
-    );
-  };
-
   render() {
-    return (
-      <LibraryPanel
-        items={this.state.items}
-        onSelect={this.onSelect}
-        renderTooltip={this.renderTooltip}
-        renderItem={this.renderItem}
-      />
-    );
+    return <LibraryPanel items={this.state.items} onSelect={this.onSelect} renderTooltip={this.renderTooltip} />;
   }
 }
 

@@ -150,7 +150,7 @@ class LibrarySearchContainer extends Component {
   renderTooltip = id => {
     const item = this.state.items.find(r => r.id == id);
 
-    if (!item || item.name == null) {
+    if (!item || !item.name) {
       return null;
     }
 
@@ -170,6 +170,7 @@ class LibrarySearchContainer extends Component {
       filterOptions,
       filterIsClearable,
       typeOptions,
+      typeIsClearable,
       searchPlaceholder,
       legal,
       privacyPolicyUrl,
@@ -192,7 +193,13 @@ class LibrarySearchContainer extends Component {
         )}
         {typeOptions && typeOptions.length > 1 && (
           <span className={styles.filterInputContainer}>
-            <SelectInput placeholder="Type..." options={typeOptions} value={type} onChange={this.onChangeType} />
+            <SelectInput
+              placeholder="Type..."
+              isClearable={typeIsClearable}
+              options={typeOptions}
+              value={type}
+              onChange={this.onChangeType}
+            />
           </span>
         )}
         {filterOptions && filterOptions.length > 1 && (
