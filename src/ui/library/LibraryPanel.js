@@ -33,7 +33,7 @@ export default class LibraryPanel extends Component {
 
     return (
       <div className={styles.libraryPanel}>
-        <div className={styles.searchBar}>{children}</div>
+        {children && <div className={styles.searchBar}>{children}</div>}
         <LibraryGridScrollContainer>
           <InfiniteScroll pageStart={0} loadMore={onLoadMore} hasMore={hasMore} threshold={50} useWindow={false}>
             <LibraryGrid items={items} onSelect={onSelect} renderTooltip={renderTooltip} renderItem={renderItem}>

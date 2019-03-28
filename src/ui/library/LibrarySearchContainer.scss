@@ -18,6 +18,7 @@
 
   input {
     @include input;
+    height: 25px;
     margin-right: 8px;
     max-width: 300px;
     flex: 1;
