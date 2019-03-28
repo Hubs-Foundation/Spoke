@@ -1,6 +1,16 @@
 @import "../styles/theme";
 @import "../styles/common";
 
+:local(.sourceInputContainer) {
+  width: 100px;
+  height: 24px;
+}
+
+:local(.filterInputContainer) {
+  width: 100px;
+  height: 24px;
+}
+
 :local(.searchContainer) {
   display: flex;
   flex: 1;

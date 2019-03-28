@@ -644,13 +644,11 @@ export default class Project extends EventEmitter {
     // TODO: Filter assets server-side
     let assets = json.assets;
 
-    console.log(assets, params);
-
-    if (params.filter !== "all") {
-      assets = assets.filter(a => a.type === params.filter);
+    if (params.type !== "all") {
+      assets = assets.filter(a => a.type === params.type);
     }
 
-    if (params.q) {
+    if (params.query) {
       const options = {
         shouldSort: true,
         threshold: 0.6,
@@ -661,7 +659,7 @@ export default class Project extends EventEmitter {
         keys: ["name"]
       };
       const fuse = new Fuse(assets, options);
-      assets = fuse.search("a");
+      assets = fuse.search(params.query);
     }
 
     assets = assets.map(asset => ({

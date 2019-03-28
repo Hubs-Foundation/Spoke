@@ -1,12 +1,26 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
 import LibraryPanel from "./LibraryPanel";
-import LibrarySourceInput from "./LibrarySourceInput";
+import SelectInput from "../inputs/SelectInput";
+import FileInput from "../inputs/FileInput";
 import { withApi } from "../contexts/ApiContext";
+import { withEditor } from "../contexts/EditorContext";
+import { withDialog } from "../contexts/DialogContext";
+import styles from "./LibrarySearchContainer.scss";
+
+const filterFileTypes = {
+  all: ".png,.jpeg,.jpg,.gif,.mp4,.glb,image/png,image/jpeg,image/gif,video/mp4,model/gltf-binary",
+  images: ".png,.jpeg,.jpg,.gif,image/png, image/jpeg, image/gif",
+  videos: ".mp4,video/mp4",
+  models: ".glb,model/gltf-binary"
+};
 
 class LibrarySearchContainer extends Component {
   static propTypes = {
     api: PropTypes.object.isRequired,
+    editor: PropTypes.object.isRequired,
+    showDialog: PropTypes.func.isRequired,
+    hideDialog: PropTypes.func.isRequired,
     sources: PropTypes.arrayOf(
       PropTypes.shape({
         value: PropTypes.string.isRequired,
@@ -22,32 +36,58 @@ class LibrarySearchContainer extends Component {
   constructor(props) {
     super(props);
 
+    const { value: selectedSourceId, defaultFilter: filter, defaultType: type } = props.sources[0];
+
     this.state = {
       nextCursor: null,
       cursor: 0,
-      hasMore: true,
       loading: true,
-      selectedSourceId: props.sources[0].value,
+      selectedSourceId,
       items: [],
-      params: null,
+      filter,
+      type,
+      query: "",
       abortController: null
     };
   }
 
+  componentDidMount() {
+    this.update({});
+  }
+
   onChangeSource = selectedSourceId => {
+    const { defaultFilter, defaultType } = this.props.sources.find(source => source.value === selectedSourceId);
+
     this.update({
       selectedSourceId,
-      params: null,
+      filter: defaultFilter,
+      type: defaultType,
+      query: "",
       items: [],
       loading: true,
-      hasMore: true,
       cursor: 0,
       nextCursor: null
     });
   };
 
-  onChangeSearchParams = params => {
-    this.update({ params, items: [], loading: true, hasMore: true, cursor: 0, nextCursor: null });
+  onChangeFilter = filter => {
+    this.update({ filter, items: [], loading: true, cursor: 0, nextCursor: null });
+  };
+
+  onChangeType = type => {
+    this.update({ type, items: [], loading: true, cursor: 0, nextCursor: null });
+  };
+
+  onChangeQuery = e => {
+    this.update({ query: e.target.value, items: [], loading: true, cursor: 0, nextCursor: null });
+  };
+
+  onUpload = files => {
+    const { api, editor, showDialog, hideDialog } = this.props;
+    api
+      .uploadProjectAsset(editor.projectId, files[0], showDialog, hideDialog)
+      .then(this.onAddItem)
+      .catch(console.error);
   };
 
   onLoadMore = () => {
@@ -55,15 +95,14 @@ class LibrarySearchContainer extends Component {
       return;
     }
 
-    this.update({ loading: true, cursor: this.state.nextCursor, hasMore: this.state.cursor < this.state.nextCursor });
+    this.update({ loading: true, cursor: this.state.nextCursor });
   };
 
   update(updateState) {
-    console.log("update", updateState);
     const nextState = Object.assign({}, this.state, updateState);
 
     const { sources } = this.props;
-    const { selectedSourceId, params, cursor } = nextState;
+    const { selectedSourceId, filter, type, query, cursor } = nextState;
     const selectedSource = sources.find(source => source.value === selectedSourceId);
 
     if (this.state.abortController) {
@@ -72,20 +111,16 @@ class LibrarySearchContainer extends Component {
 
     this.setState(nextState);
 
-    if (!params) {
-      return;
-    }
-
     const abortController = new AbortController();
 
     if (selectedSource.onSearch) {
       selectedSource
-        .onSearch(selectedSourceId, params, cursor, abortController.signal)
+        .onSearch(selectedSourceId, { filter, type, query }, cursor, abortController.signal)
         .then(this.onResults)
         .catch(this.onError);
     } else {
       this.props.api
-        .searchMedia(selectedSourceId, params, cursor, abortController.signal)
+        .searchMedia(selectedSourceId, { filter, type, query }, cursor, abortController.signal)
         .then(this.onResults)
         .catch(this.onError);
     }
@@ -107,7 +142,6 @@ class LibrarySearchContainer extends Component {
   };
 
   onAddItem = item => {
-    console.log(item);
     this.setState({
       items: [item, ...this.state.items]
     });
@@ -131,14 +165,20 @@ class LibrarySearchContainer extends Component {
 
   render() {
     const { onSelect, sources } = this.props;
-    const { hasMore, loading, selectedSourceId, items } = this.state;
-    const selectedSource = sources.find(source => source.value === selectedSourceId);
-    const SourceToolbar = selectedSource.toolbar;
-    const toolbarProps = selectedSource.toolbarProps || {};
+    const { nextCursor, loading, selectedSourceId, filter, type, query, items } = this.state;
+    const {
+      filterOptions,
+      filterIsClearable,
+      typeOptions,
+      searchPlaceholder,
+      legal,
+      privacyPolicyUrl,
+      upload
+    } = sources.find(source => source.value === selectedSourceId);
 
     return (
       <LibraryPanel
-        hasMore={hasMore}
+        hasMore={!!nextCursor}
         onLoadMore={this.onLoadMore}
         onSelect={onSelect}
         items={items}
@@ -146,12 +186,44 @@ class LibrarySearchContainer extends Component {
         renderTooltip={this.renderTooltip}
       >
         {sources.length > 1 && (
-          <LibrarySourceInput options={sources} value={selectedSourceId} onChange={this.onChangeSource} />
+          <span className={styles.sourceInputContainer}>
+            <SelectInput options={sources} value={selectedSourceId} onChange={this.onChangeSource} />
+          </span>
         )}
-        <SourceToolbar onChangeSearchParams={this.onChangeSearchParams} onAddItem={this.onAddItem} {...toolbarProps} />
+        {typeOptions && typeOptions.length > 1 && (
+          <span className={styles.filterInputContainer}>
+            <SelectInput placeholder="Type..." options={typeOptions} value={type} onChange={this.onChangeType} />
+          </span>
+        )}
+        {filterOptions && filterOptions.length > 1 && (
+          <span className={styles.filterInputContainer}>
+            <SelectInput
+              placeholder="Filter..."
+              isClearable={filterIsClearable}
+              options={filterOptions}
+              value={filter}
+              onChange={this.onChangeFilter}
+            />
+          </span>
+        )}
+        <span className={styles.searchContainer}>
+          <input placeholder={searchPlaceholder} value={query} onChange={this.onChangeQuery} />
+          <span>
+            {legal}
+            {privacyPolicyUrl && (
+              <>
+                <span> | </span>
+                <a rel="noopener noreferrer" href={privacyPolicyUrl}>
+                  Privacy Policy
+                </a>
+              </>
+            )}
+          </span>
+        </span>
+        {upload && <FileInput accept={filterFileTypes[filter]} onChange={this.onUpload} />}
       </LibraryPanel>
     );
   }
 }
 
-export default withApi(LibrarySearchContainer);
+export default withApi(withEditor(withDialog(LibrarySearchContainer)));

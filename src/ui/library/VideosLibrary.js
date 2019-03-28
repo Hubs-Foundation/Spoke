@@ -2,8 +2,6 @@ import React, { Component } from "react";
 import PropTypes from "prop-types";
 import VideoNode from "../../editor/nodes/VideoNode";
 import LibrarySearchContainer from "./LibrarySearchContainer";
-import BaseSearchToolbar from "./BaseSearchToolbar";
-import AssetSearchToolbar from "./AssetSearchToolbar";
 import { withApi } from "../contexts/ApiContext";
 import { withEditor } from "../contexts/EditorContext";
 
@@ -22,47 +20,37 @@ class VideosLibrary extends Component {
         {
           value: "bing_videos",
           label: "Videos",
-          toolbar: BaseSearchToolbar,
-          toolbarProps: {
-            searchPlaceholder: "Search videos...",
-            legal: "Search by Bing",
-            privacyPolicyUrl: "https://privacy.microsoft.com/en-us/privacystatement"
-          }
+          searchPlaceholder: "Search videos...",
+          legal: "Search by Bing",
+          privacyPolicyUrl: "https://privacy.microsoft.com/en-us/privacystatement"
         },
         {
           value: "twitch",
           label: "Twitch",
-          toolbar: BaseSearchToolbar,
-          toolbarProps: {
-            searchPlaceholder: "Search channels...",
-            legal: "Search by Twitch",
-            privacyPolicyUrl: "https://www.twitch.tv/p/legal/privacy-policy/"
-          }
+          searchPlaceholder: "Search channels...",
+          legal: "Search by Twitch",
+          privacyPolicyUrl: "https://www.twitch.tv/p/legal/privacy-policy/"
         },
         {
           value: "assets",
           label: "Assets",
-          toolbar: AssetSearchToolbar,
-          toolbarProps: {
-            defaultFilter: "video",
-            filterOptions: [{ label: "Videos", value: "video" }],
-            searchPlaceholder: "Search my assets...",
-            legal: "Search by Mozilla Hubs",
-            privacyPolicyUrl: "https://github.com/mozilla/hubs/blob/master/PRIVACY.md"
-          }
+          defaultType: "video",
+          typeOptions: [{ label: "Videos", value: "video" }],
+          searchPlaceholder: "Search my assets...",
+          legal: "Search by Mozilla Hubs",
+          privacyPolicyUrl: "https://github.com/mozilla/hubs/blob/master/PRIVACY.md",
+          upload: true
         },
         {
           value: "project_assets",
           label: "Project Assets",
-          toolbar: AssetSearchToolbar,
-          toolbarProps: {
-            defaultFilter: "video",
-            filterOptions: [{ label: "Videos", value: "video" }],
-            searchPlaceholder: "Search project assets...",
-            legal: "Search by Mozilla Hubs",
-            privacyPolicyUrl: "https://github.com/mozilla/hubs/blob/master/PRIVACY.md"
-          },
-          onSearch: (source, params) => props.api.getProjectAssets(props.editor.projectId, params)
+          defaultType: "video",
+          typeOptions: [{ label: "Videos", value: "video" }],
+          searchPlaceholder: "Search project assets...",
+          legal: "Search by Mozilla Hubs",
+          privacyPolicyUrl: "https://github.com/mozilla/hubs/blob/master/PRIVACY.md",
+          onSearch: (source, params) => props.api.getProjectAssets(props.editor.projectId, params),
+          upload: true
         }
       ]
     };
