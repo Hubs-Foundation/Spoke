@@ -14,6 +14,8 @@ const requiredProperties = [
 export default class TriggerVolumeNode extends EditorNodeMixin(THREE.Object3D) {
   static legacyComponentName = "trigger-volume";
 
+  static experimental = true;
+
   static nodeName = "Trigger Volume";
 
   static _geometry = new THREE.BoxBufferGeometry();
