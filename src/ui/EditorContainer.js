@@ -190,6 +190,14 @@ export default class EditorContainer extends Component {
           {
             name: "Join us on Discord",
             action: () => window.open("https://discord.gg/XzrGUY8")
+          },
+          {
+            name: "Terms of Use",
+            action: () => window.open("https://github.com/mozilla/hubs/blob/master/TERMS.md")
+          },
+          {
+            name: "Privacy Notice",
+            action: () => window.open("https://github.com/mozilla/hubs/blob/master/PRIVACY.md")
           }
         ]
       },
