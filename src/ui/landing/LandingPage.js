@@ -5,6 +5,7 @@ import spokeLogo from "../../assets/spoke-logo.png";
 import landingVideoMp4 from "../../assets/video/landing-video.mp4";
 import landingVideoWebm from "../../assets/video/landing-video.webm";
 import NavBar from "../navigation/NavBar";
+import Footer from "../navigation/Footer";
 
 export default class LandingPage extends Component {
   render() {
@@ -38,6 +39,7 @@ export default class LandingPage extends Component {
             </div>
           </section>
         </main>
+        <Footer />
       </>
     );
   }

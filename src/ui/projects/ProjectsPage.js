@@ -5,6 +5,7 @@ import { withApi } from "../contexts/ApiContext";
 import NavBar from "../navigation/NavBar";
 import styles from "./ProjectsPage.scss";
 import ProjectGrid from "./ProjectGrid";
+import Footer from "../navigation/Footer";
 
 class ProjectsPage extends Component {
   static propTypes = {
@@ -59,6 +60,7 @@ class ProjectsPage extends Component {
             </div>
           </section>
         </main>
+        <Footer />
       </>
     );
   }

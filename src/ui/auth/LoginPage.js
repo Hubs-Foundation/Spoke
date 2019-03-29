@@ -4,6 +4,7 @@ import PropTypes from "prop-types";
 import { withApi } from "../contexts/ApiContext";
 import styles from "./LoginPage.scss";
 import NavBar from "../navigation/NavBar";
+import Footer from "../navigation/Footer";
 
 class LoginPage extends Component {
   static propTypes = {
@@ -39,6 +40,7 @@ class LoginPage extends Component {
             </div>
           </section>
         </main>
+        <Footer />
       </>
     );
   }
