@@ -45,7 +45,7 @@ export default class ModelNode extends EditorNodeMixin(Model) {
   constructor(editor) {
     super(editor);
     this.attribution = null;
-    this._canonicalUrl = null;
+    this._canonicalUrl = "";
     this.collidable = true;
     this.walkable = true;
   }
@@ -78,7 +78,7 @@ export default class ModelNode extends EditorNodeMixin(Model) {
 
   // Overrides Model's load method and resolves the src url before loading.
   async load(src) {
-    this._canonicalUrl = src;
+    this._canonicalUrl = src || "";
 
     const { accessibleUrl, files } = await this.editor.api.resolveMedia(src);
 

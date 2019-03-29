@@ -14,31 +14,6 @@ import jwtDecode from "jwt-decode";
 
 const resolveUrlCache = new Map();
 
-async function resolveUrl(url, index) {
-  const cacheKey = `${url}|${index}`;
-  if (resolveUrlCache.has(cacheKey)) return resolveUrlCache.get(cacheKey);
-
-  const response = await this.fetch(`https://${process.env.RETICULUM_SERVER}/api/v1/media`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ media: { url, index } })
-  });
-
-  if (!response.ok) {
-    const message = `Error resolving url "${url}":`;
-    try {
-      const body = await response.text();
-      throw new Error(message + " " + body);
-    } catch (e) {
-      throw new Error(message + " " + response.statusText);
-    }
-  }
-
-  const resolved = await response.json();
-  resolveUrlCache.set(cacheKey, resolved);
-  return resolved;
-}
-
 // thanks to https://developer.mozilla.org/en-US/docs/Web/API/WindowBase64/Base64_encoding_and_decoding
 function b64EncodeUnicode(str) {
   // first we use encodeURIComponent to get percent-encoded UTF-8, then we convert the percent-encodings
@@ -61,15 +36,23 @@ if (process.env.CORS_PROXY_SERVER) {
   nonCorsProxyDomains.push(process.env.CORS_PROXY_SERVER);
 }
 
-export const proxiedUrlFor = (url, index) => {
-  if (!(url.startsWith("http:") || url.startsWith("https:"))) return url;
-
+function shouldCorsProxy(url) {
   // Skip known domains that do not require CORS proxying.
   try {
     const parsedUrl = new URL(url);
-    if (nonCorsProxyDomains.find(domain => parsedUrl.hostname.endsWith(domain))) return url;
+    if (nonCorsProxyDomains.find(domain => parsedUrl.hostname.endsWith(domain))) return false;
   } catch (e) {
     // Ignore
+  }
+
+  return true;
+}
+
+export const proxiedUrlFor = (url, index) => {
+  if (!(url.startsWith("http:") || url.startsWith("https:"))) return url;
+
+  if (!shouldCorsProxy(url)) {
+    return url;
   }
 
   if (index != null || !process.env.CORS_PROXY_SERVER) {
@@ -89,10 +72,6 @@ function getFilesFromSketchfabZip(src) {
     };
     worker.postMessage(src);
   });
-}
-
-function fetchContentType(accessibleUrl) {
-  return this.fetch(accessibleUrl, { method: "HEAD" }).then(r => r.headers.get("content-type"));
 }
 
 const CommonKnownContentTypes = {
@@ -219,15 +198,48 @@ export default class Project extends EventEmitter {
     };
   }
 
+  async resolveUrl(url, index) {
+    if (!shouldCorsProxy(url)) {
+      return { origin: url };
+    }
+
+    const cacheKey = `${url}|${index}`;
+    if (resolveUrlCache.has(cacheKey)) return resolveUrlCache.get(cacheKey);
+
+    const response = await this.fetch(`https://${process.env.RETICULUM_SERVER}/api/v1/media`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ media: { url, index } })
+    });
+
+    if (!response.ok) {
+      const message = `Error resolving url "${url}":`;
+      try {
+        const body = await response.text();
+        throw new Error(message + " " + body);
+      } catch (e) {
+        throw new Error(message + " " + response.statusText);
+      }
+    }
+
+    const resolved = await response.json();
+    resolveUrlCache.set(cacheKey, resolved);
+    return resolved;
+  }
+
+  fetchContentType(accessibleUrl) {
+    return this.fetch(accessibleUrl, { method: "HEAD" }).then(r => r.headers.get("content-type"));
+  }
+
   async getContentType(url) {
-    const result = await resolveUrl(url);
+    const result = await this.resolveUrl(url);
     const canonicalUrl = result.origin;
     const accessibleUrl = proxiedUrlFor(canonicalUrl);
 
     return (
       (result.meta && result.meta.expected_content_type) ||
       guessContentType(canonicalUrl) ||
-      (await fetchContentType(accessibleUrl))
+      (await this.fetchContentType(accessibleUrl))
     );
   }
 
@@ -238,14 +250,14 @@ export default class Project extends EventEmitter {
       return { accessibleUrl: absoluteUrl };
     }
 
-    const result = await resolveUrl(absoluteUrl);
+    const result = await this.resolveUrl(absoluteUrl);
     const canonicalUrl = result.origin;
     const accessibleUrl = proxiedUrlFor(canonicalUrl, index);
 
     const contentType =
       (result.meta && result.meta.expected_content_type) ||
       guessContentType(canonicalUrl) ||
-      (await fetchContentType(accessibleUrl));
+      (await this.fetchContentType(accessibleUrl));
 
     if (contentType === "model/gltf+zip") {
       // TODO: Sketchfab object urls should be revoked after they are loaded by the glTF loader.

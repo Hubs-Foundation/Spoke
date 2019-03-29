@@ -32,6 +32,16 @@ class VideosLibrary extends Component {
           privacyPolicyUrl: "https://www.twitch.tv/p/legal/privacy-policy/"
         },
         {
+          value: "tenor",
+          label: "GIFs",
+          defaultFilter: "trending",
+          filterOptions: [{ label: "Trending", id: "trending" }],
+          filterIsClearable: true,
+          searchPlaceholder: "Search gifs...",
+          legal: "Search by Tenor",
+          privacyPolicyUrl: "https://tenor.com/legal-privacy"
+        },
+        {
           value: "assets",
           label: "Assets",
           defaultType: "video",

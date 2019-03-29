@@ -1,6 +1,6 @@
 import THREE from "../../vendor/three";
 import eventToMessage from "../utils/eventToMessage";
-import mediaErrorImageUrl from "../../assets/media-error.png";
+import loadErrorTexture from "../utils/loadErrorTexture";
 
 export const ImageProjection = {
   Flat: "flat",
@@ -78,27 +78,30 @@ export default class Image extends THREE.Object3D {
     }
 
     let texture;
+
     try {
-      texture = await this.loadTexture(src);
+      if (src) {
+        texture = await this.loadTexture(src);
+        // TODO: resize to maintain aspect ratio but still allow scaling.
+        texture.encoding = THREE.sRGBEncoding;
+        texture.minFilter = THREE.LinearFilter;
+      } else {
+        texture = await loadErrorTexture();
+      }
     } catch (err) {
-      texture = await this.loadTexture(mediaErrorImageUrl);
-      texture.format = THREE.RGBAFormat;
-      texture.magFilter = THREE.NearestFilter;
+      texture = await loadErrorTexture();
+      console.warn(`Error loading image node with src: "${src}": "${err.message || "unknown error"}"`);
     }
 
     this._texture = texture;
 
     this.onResize();
 
-    // TODO: resize to maintain aspect ratio but still allow scaling.
-    texture.encoding = THREE.sRGBEncoding;
-    texture.minFilter = THREE.LinearFilter;
-
     if (texture.format === THREE.RGBAFormat) {
       this._mesh.material.transparent = true;
     }
 
-    this._mesh.material.map = texture;
+    this._mesh.material.map = this._texture;
     this._mesh.material.needsUpdate = true;
 
     return this;

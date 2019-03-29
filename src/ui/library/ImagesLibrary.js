@@ -25,16 +25,6 @@ class ImagesLibrary extends Component {
           privacyPolicyUrl: "https://privacy.microsoft.com/en-us/privacystatement"
         },
         {
-          value: "tenor",
-          label: "Gifs",
-          defaultFilter: "trending",
-          filterOptions: [{ label: "Trending", id: "trending" }],
-          filterIsClearable: true,
-          searchPlaceholder: "Search gifs...",
-          legal: "Search by Tenor",
-          privacyPolicyUrl: "https://tenor.com/legal-privacy"
-        },
-        {
           value: "assets",
           label: "Assets",
           defaultType: "image",

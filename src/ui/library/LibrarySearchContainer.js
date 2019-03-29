@@ -10,9 +10,9 @@ import styles from "./LibrarySearchContainer.scss";
 
 const filterFileTypes = {
   all: ".png,.jpeg,.jpg,.gif,.mp4,.glb,image/png,image/jpeg,image/gif,video/mp4,model/gltf-binary",
-  images: ".png,.jpeg,.jpg,.gif,image/png, image/jpeg, image/gif",
-  videos: ".mp4,video/mp4",
-  models: ".glb,model/gltf-binary"
+  image: ".png,.jpeg,.jpg,.gif,image/png, image/jpeg, image/gif",
+  video: ".mp4,video/mp4",
+  model: ".glb,model/gltf-binary"
 };
 
 class LibrarySearchContainer extends Component {
@@ -227,7 +227,7 @@ class LibrarySearchContainer extends Component {
             )}
           </span>
         </span>
-        {upload && <FileInput accept={filterFileTypes[filter]} onChange={this.onUpload} />}
+        {upload && <FileInput accept={filterFileTypes[type || "all"]} onChange={this.onUpload} />}
       </LibraryPanel>
     );
   }

@@ -16,16 +16,6 @@ class LibraryInput extends Component {
     hideDialog: PropTypes.func.isRequired
   };
 
-  static getDerivedStateFromProps(props, state) {
-    if (props.value !== state.value) {
-      return {
-        value: props.value
-      };
-    }
-
-    return null;
-  }
-
   constructor(props) {
     super(props);
 
@@ -34,12 +24,18 @@ class LibraryInput extends Component {
     };
   }
 
+  componentDidUpdate(prevProps) {
+    if (this.props.value !== prevProps.value && this.props.value !== this.state.value) {
+      this.setState({ value: this.props.value });
+    }
+  }
+
   onChange = value => {
     this.setState({ value });
   };
 
-  onBlur = () => {
-    this.props.onChange(this.state.value);
+  onBlur = e => {
+    this.props.onChange(e.target.value);
   };
 
   onOpenDialog = () => {

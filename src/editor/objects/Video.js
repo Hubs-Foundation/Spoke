@@ -2,7 +2,7 @@ import THREE from "../../vendor/three";
 import eventToMessage from "../utils/eventToMessage";
 import Hls from "hls.js/dist/hls.light";
 import isHLS from "../utils/isHLS";
-import mediaErrorImageUrl from "../../assets/media-error.png";
+import loadErrorTexture from "../utils/loadErrorTexture";
 
 export const VideoProjection = {
   Flat: "flat",
@@ -25,14 +25,14 @@ export default class Video extends THREE.Object3D {
     super();
 
     const videoEl = document.createElement("video");
-    const texture = new THREE.VideoTexture(videoEl);
-    texture.minFilter = THREE.LinearFilter;
-    texture.encoding = THREE.sRGBEncoding;
-    this._texture = texture;
+    this._videoTexture = new THREE.VideoTexture(videoEl);
+    this._videoTexture.minFilter = THREE.LinearFilter;
+    this._videoTexture.encoding = THREE.sRGBEncoding;
+    this._texture = this._videoTexture;
 
     const geometry = new THREE.PlaneGeometry();
     const material = new THREE.MeshBasicMaterial();
-    material.map = texture;
+    material.map = this._texture;
     material.side = THREE.DoubleSide;
     this._mesh = new THREE.Mesh(geometry, material);
     this.add(this._mesh);
@@ -228,7 +228,7 @@ export default class Video extends THREE.Object3D {
 
       const onLoadedMetadata = () => {
         cleanup();
-        resolve();
+        resolve(this._videoTexture);
       };
 
       const onError = e => {
@@ -278,17 +278,17 @@ export default class Video extends THREE.Object3D {
     let texture;
 
     try {
-      texture = await this.loadVideo(src);
+      if (src) {
+        texture = await this.loadVideo(src);
+      } else {
+        texture = await loadErrorTexture();
+      }
     } catch (err) {
-      texture = await new Promise((resolve, reject) => {
-        new THREE.TextureLoader().load(mediaErrorImageUrl, resolve, null, e =>
-          reject(`Error loading error image. ${eventToMessage(e)}`)
-        );
-      });
-      texture.format = THREE.RGBAFormat;
-      texture.magFilter = THREE.NearestFilter;
-      this._texture = texture;
+      texture = await loadErrorTexture();
+      console.warn(`Error loading video node with src: "${src}": "${err.message || "unknown error"}"`);
     }
+
+    this._texture = texture;
 
     this.onResize();
 
@@ -299,6 +299,7 @@ export default class Video extends THREE.Object3D {
       this._mesh.material.transparent = true;
     }
 
+    this._mesh.material.map = this._texture;
     this._mesh.material.needsUpdate = true;
 
     return this;

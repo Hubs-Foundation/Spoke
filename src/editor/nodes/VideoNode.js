@@ -50,7 +50,7 @@ export default class VideoNode extends EditorNodeMixin(Video) {
   constructor(editor) {
     super(editor, editor.audioListener);
 
-    this._canonicalUrl = null;
+    this._canonicalUrl = "";
     this._autoPlay = true;
     this.volume = 0.5;
   }
@@ -72,7 +72,7 @@ export default class VideoNode extends EditorNodeMixin(Video) {
   }
 
   async load(src) {
-    this._canonicalUrl = src;
+    this._canonicalUrl = src || "";
 
     try {
       const { accessibleUrl } = await this.editor.api.resolveMedia(src);
@@ -104,7 +104,7 @@ export default class VideoNode extends EditorNodeMixin(Video) {
       if (isHls && this.hls) {
         this.hls.stopLoad();
       } else if (this.videoEl.duration) {
-        this.videoEl.currentTime = this.videoEl.duration / 2;
+        this.videoEl.currentTime = 1;
       }
     } catch (e) {
       console.error(e);

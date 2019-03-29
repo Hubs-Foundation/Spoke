@@ -20,7 +20,7 @@ export default class ImageNode extends EditorNodeMixin(Image) {
   constructor(editor) {
     super(editor);
 
-    this._canonicalUrl = null;
+    this._canonicalUrl = "";
   }
 
   get src() {
@@ -40,7 +40,7 @@ export default class ImageNode extends EditorNodeMixin(Image) {
   }
 
   async load(src) {
-    this._canonicalUrl = src;
+    this._canonicalUrl = src || "";
 
     try {
       const { accessibleUrl } = await this.editor.api.resolveMedia(src);
