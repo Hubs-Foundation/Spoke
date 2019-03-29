@@ -44,6 +44,20 @@ class ProjectsPage extends Component {
   render() {
     const { error, loading, projects } = this.state;
 
+    let content;
+
+    if (loading) {
+      content = (
+        <div className={styles.loadingContainer}>
+          <Loading message="Loading projects..." />
+        </div>
+      );
+    } else if (error) {
+      content = <div className={styles.error}>{error.message || "There was an unknown error."}</div>;
+    } else {
+      content = <ProjectGrid projects={projects} />;
+    }
+
     return (
       <>
         <NavBar />
@@ -54,12 +68,7 @@ class ProjectsPage extends Component {
                 <h1>Projects</h1>
                 <Link to="/projects/new">New Project</Link>
               </div>
-              {loading && <Loading message="Loading projects..." />}
-              {error ? (
-                <div className={styles.error}>{error.message || "There was an unknown error."}</div>
-              ) : (
-                <ProjectGrid projects={projects} />
-              )}
+              {content}
             </div>
           </section>
         </main>

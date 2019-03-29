@@ -2,10 +2,13 @@
 
 :local(.projectsSection) {
   padding: 100px 0;
+  display: flex;
+  flex: 1;
 }
 
 :local(.projectsContainer) {
   display: flex;
+  flex: 1;
   flex-direction: column;
   margin: 0 auto;
   max-width: 1200px;
@@ -44,4 +47,13 @@
       background-color: $blue-pressed;
     }
   }
+}
+
+:local(.loadingContainer) {
+  display: flex;
+  flex: 1;
+}
+
+:local(.error) {
+  color: $red;
 }
