@@ -6,6 +6,7 @@ import NavBar from "../navigation/NavBar";
 import styles from "./ProjectsPage.scss";
 import ProjectGrid from "./ProjectGrid";
 import Footer from "../navigation/Footer";
+import Loading from "../Loading";
 
 class ProjectsPage extends Component {
   static propTypes = {
@@ -18,6 +19,7 @@ class ProjectsPage extends Component {
 
     this.state = {
       projects: [],
+      loading: true,
       error: null
     };
   }
@@ -25,7 +27,7 @@ class ProjectsPage extends Component {
   componentDidMount() {
     this.props.api
       .getProjects()
-      .then(projects => this.setState({ projects }))
+      .then(projects => this.setState({ projects, loading: false }))
       .catch(error => {
         console.error(error);
 
@@ -35,12 +37,12 @@ class ProjectsPage extends Component {
           return this.props.history.push("/login", { from: "/projects" });
         }
 
-        this.setState({ error });
+        this.setState({ error, loading: false });
       });
   }
 
   render() {
-    const { error, projects } = this.state;
+    const { error, loading, projects } = this.state;
 
     return (
       <>
@@ -52,6 +54,7 @@ class ProjectsPage extends Component {
                 <h1>Projects</h1>
                 <Link to="/projects/new">New Project</Link>
               </div>
+              {loading && <Loading message="Loading projects..." />}
               {error ? (
                 <div className={styles.error}>{error.message || "There was an unknown error."}</div>
               ) : (
