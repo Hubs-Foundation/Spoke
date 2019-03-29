@@ -47,7 +47,7 @@ class ImagesLibrary extends Component {
         {
           value: "project_assets",
           label: "Project Assets",
-          defaultType: "all",
+          defaultType: "image",
           typeOptions: [{ label: "Images", value: "image" }],
           searchPlaceholder: "Search project assets...",
           legal: "Search by Mozilla Hubs",

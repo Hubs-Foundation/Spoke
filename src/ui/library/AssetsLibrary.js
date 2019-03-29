@@ -28,7 +28,6 @@ class AssetsLibrary extends Component {
         {
           value: "assets",
           label: "Assets",
-          defaultType: "all",
           typeOptions: [
             { label: "Models", value: "model" },
             { label: "Images", value: "image" },
