@@ -84,9 +84,11 @@ class LibraryContainer extends Component {
 
     return (
       <div className={styles.libraryContainer}>
-        <div className={styles.libraryPanelContainer}>
-          {Component && <Component onSelectItem={this.onSelectItem} />}
-        </div>
+        {Component && (
+          <div className={styles.libraryPanelContainer}>
+            <Component onSelectItem={this.onSelectItem} />
+          </div>
+        )}
         <LibraryToolbar items={items} selected={selected} onSelect={this.onSelect} />
       </div>
     );
