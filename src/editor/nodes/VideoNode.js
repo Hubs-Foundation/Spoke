@@ -29,7 +29,7 @@ export default class VideoNode extends EditorNodeMixin(Video) {
       projection
     } = json.components.find(c => c.name === "video").props;
 
-    await node.load(src);
+    node.src = src;
     node.controls = controls;
     node.autoPlay = autoPlay;
     node.loop = loop;
@@ -72,6 +72,7 @@ export default class VideoNode extends EditorNodeMixin(Video) {
   }
 
   async load(src) {
+    this.showLoadingCube();
     this._canonicalUrl = src || "";
 
     try {
@@ -109,6 +110,8 @@ export default class VideoNode extends EditorNodeMixin(Video) {
     } catch (e) {
       console.error(e);
     }
+
+    this.hideLoadingCube();
 
     return this;
   }

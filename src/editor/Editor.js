@@ -22,6 +22,8 @@ import SpawnPointNode from "./nodes/SpawnPointNode";
 import SkyboxNode from "./nodes/SkyboxNode";
 import FloorPlanNode from "./nodes/FloorPlanNode";
 
+import LoadingCube from "./objects/LoadingCube";
+
 import makeUniqueName from "./utils/makeUniqueName";
 import eventToMessage from "./utils/eventToMessage";
 import cloneObject3D from "./utils/cloneObject3D";
@@ -129,6 +131,8 @@ export default class Editor {
         })
       );
     }
+
+    tasks.push(LoadingCube.load());
 
     for (const NodeConstructor of this.nodeTypes) {
       tasks.push(NodeConstructor.load());

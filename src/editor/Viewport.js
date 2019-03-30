@@ -76,13 +76,21 @@ export default class Viewport {
     this.objectScaleOnDown = null;
 
     this.skipRender = false;
+
+    this.clock = new THREE.Clock();
+
     const render = () => {
       if (!this.skipRender) {
+        const delta = this.clock.getDelta();
         editor.scene.updateMatrixWorld();
 
         editor.scene.traverse(node => {
           if (node.isDirectionalLight) {
             resizeShadowCameraFrustum(node, editor.scene);
+          }
+
+          if (node.isNode) {
+            node.onUpdate(delta);
           }
         });
         this.transformControls.update();

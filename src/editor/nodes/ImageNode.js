@@ -11,7 +11,7 @@ export default class ImageNode extends EditorNodeMixin(Image) {
 
     const { src, projection } = json.components.find(c => c.name === "image").props;
 
-    await node.load(src);
+    node.src = src;
     node.projection = projection;
 
     return node;
@@ -40,6 +40,7 @@ export default class ImageNode extends EditorNodeMixin(Image) {
   }
 
   async load(src) {
+    this.showLoadingCube();
     this._canonicalUrl = src || "";
 
     try {
@@ -48,6 +49,8 @@ export default class ImageNode extends EditorNodeMixin(Image) {
     } catch (e) {
       console.error(e);
     }
+
+    this.hideLoadingCube();
 
     return this;
   }

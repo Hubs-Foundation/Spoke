@@ -8,6 +8,7 @@ import {
 } from "../StaticMode";
 import THREE from "../../vendor/three";
 import serializeColor from "../utils/serializeColor";
+import LoadingCube from "../objects/LoadingCube";
 
 export default function EditorNodeMixin(Object3DClass) {
   return class extends Object3DClass {
@@ -63,10 +64,33 @@ export default function EditorNodeMixin(Object3DClass) {
       this.staticMode = StaticModes.Inherits;
       this.originalStaticMode = null;
       this.saveParent = false;
+      this.loadingCube = null;
     }
 
     clone(recursive) {
       return new this.constructor(this.editor).copy(this, recursive);
+    }
+
+    copy(source, recursive) {
+      super.copy(source, false);
+
+      for (const child of source.children) {
+        if (child === this.loadingCube) {
+          continue;
+        }
+
+        if (recursive === true) {
+          this.add(child.clone());
+        }
+      }
+
+      return this;
+    }
+
+    onUpdate(dt) {
+      if (this.loadingCube) {
+        this.loadingCube.update(dt);
+      }
     }
 
     onAdd() {}
@@ -208,6 +232,19 @@ export default function EditorNodeMixin(Object3DClass) {
           object.visible = false;
         }
       });
+    }
+
+    showLoadingCube() {
+      if (!this.loadingCube) {
+        this.loadingCube = new LoadingCube();
+        this.add(this.loadingCube);
+      }
+    }
+
+    hideLoadingCube() {
+      if (this.loadingCube) {
+        this.remove(this.loadingCube);
+      }
     }
 
     isInherits() {

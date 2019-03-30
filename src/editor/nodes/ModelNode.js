@@ -13,7 +13,7 @@ export default class ModelNode extends EditorNodeMixin(Model) {
 
     const { src, attribution } = json.components.find(c => c.name === "gltf-model").props;
 
-    await node.load(src);
+    node.src = src;
 
     // Legacy, might be a raw string left over before switch to JSON.
     if (attribution && typeof attribution === "string") {
@@ -78,6 +78,8 @@ export default class ModelNode extends EditorNodeMixin(Model) {
 
   // Overrides Model's load method and resolves the src url before loading.
   async load(src) {
+    this.showLoadingCube();
+
     this._canonicalUrl = src || "";
 
     const { accessibleUrl, files } = await this.editor.api.resolveMedia(src);
@@ -103,6 +105,8 @@ export default class ModelNode extends EditorNodeMixin(Model) {
         object.material.needsUpdate = true;
       }
     });
+
+    this.hideLoadingCube();
 
     return this;
   }
