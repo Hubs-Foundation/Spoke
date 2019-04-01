@@ -143,12 +143,11 @@ module.exports = {
 
   plugins: [
     new HTMLWebpackPlugin({
-      title: packageJSON.productName,
+      template: path.join(__dirname, "src", "index.html"),
       favicon: "src/assets/favicon.ico"
     }),
     new webpack.DefinePlugin({
-      SPOKE_VERSION: JSON.stringify(packageJSON.version),
-      __REACT_DEVTOOLS_GLOBAL_HOOK__: "({ isDisabled: true })"
+      SPOKE_VERSION: JSON.stringify(packageJSON.version)
     }),
     new webpack.EnvironmentPlugin({
       NODE_ENV: "development",
