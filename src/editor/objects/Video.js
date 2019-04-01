@@ -208,9 +208,9 @@ export default class Video extends THREE.Object3D {
     }
   }
 
-  loadVideo(src) {
+  loadVideo(src, contentType) {
     return new Promise((resolve, reject) => {
-      if (isHLS(src)) {
+      if (isHLS(src, contentType)) {
         if (!this.hls) {
           this.hls = new Hls();
         }
@@ -274,12 +274,12 @@ export default class Video extends THREE.Object3D {
     this.add(this._mesh);
   }
 
-  async load(src) {
+  async load(src, contentType) {
     let texture;
 
     try {
       if (src) {
-        texture = await this.loadVideo(src);
+        texture = await this.loadVideo(src, contentType);
       } else {
         texture = await loadErrorTexture();
       }

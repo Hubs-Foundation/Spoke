@@ -77,9 +77,9 @@ export default class VideoNode extends EditorNodeMixin(Video) {
     this._canonicalUrl = src || "";
 
     try {
-      const { accessibleUrl } = await this.editor.api.resolveMedia(src);
+      const { accessibleUrl, contentType } = await this.editor.api.resolveMedia(src);
 
-      const isHls = isHLS(src);
+      const isHls = isHLS(src, contentType);
 
       if (isHls) {
         const corsProxyPrefix = `http://localhost:9090/api/cors-proxy/`;
@@ -101,7 +101,7 @@ export default class VideoNode extends EditorNodeMixin(Video) {
         });
       }
 
-      await super.load(accessibleUrl);
+      await super.load(accessibleUrl, contentType);
 
       if (isHls && this.hls) {
         this.hls.stopLoad();
