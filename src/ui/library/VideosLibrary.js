@@ -9,7 +9,9 @@ class VideosLibrary extends Component {
   static propTypes = {
     editor: PropTypes.object.isRequired,
     api: PropTypes.object.isRequired,
-    onSelectItem: PropTypes.func.isRequired
+    onSelectItem: PropTypes.func.isRequired,
+    uploadMultiple: PropTypes.bool,
+    onAfterUpload: PropTypes.func
   };
 
   constructor(props) {
@@ -67,11 +69,24 @@ class VideosLibrary extends Component {
   }
 
   onSelect = item => {
-    this.props.onSelectItem(VideoNode, { src: item.url });
+    const props = { src: item.url };
+
+    if (item.name) {
+      props.name = item.name;
+    }
+
+    this.props.onSelectItem(VideoNode, props);
   };
 
   render() {
-    return <LibrarySearchContainer sources={this.state.sources} onSelect={this.onSelect} />;
+    return (
+      <LibrarySearchContainer
+        sources={this.state.sources}
+        onSelect={this.onSelect}
+        uploadMultiple={this.props.uploadMultiple}
+        onAfterUpload={this.props.onAfterUpload}
+      />
+    );
   }
 }
 

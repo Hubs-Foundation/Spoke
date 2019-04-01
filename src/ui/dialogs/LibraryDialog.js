@@ -9,6 +9,7 @@ export default class LibraryDialog extends Component {
   static propTypes = {
     title: PropTypes.string.isRequired,
     component: PropTypes.elementType.isRequired,
+    componentProps: PropTypes.object,
     onSelectItem: PropTypes.func.isRequired,
     hideDialog: PropTypes.func.isRequired
   };
@@ -30,7 +31,7 @@ export default class LibraryDialog extends Component {
       <div className={styles.libraryDialog}>
         <DialogHeader title={this.props.title} />
         <div className={styles.content}>
-          <LibraryComponent onSelectItem={this.onSelectItem} />
+          <LibraryComponent onSelectItem={this.onSelectItem} {...this.props.componentProps} />
         </div>
         <div className={styles.bottom}>
           <Button className={styles.cancel} onClick={this.onCancel}>

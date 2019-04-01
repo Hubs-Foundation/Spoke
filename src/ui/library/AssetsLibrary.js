@@ -17,7 +17,9 @@ class AssetsLibrary extends Component {
   static propTypes = {
     editor: PropTypes.object.isRequired,
     api: PropTypes.object.isRequired,
-    onSelectItem: PropTypes.func.isRequired
+    onSelectItem: PropTypes.func.isRequired,
+    uploadMultiple: PropTypes.bool,
+    onAfterUpload: PropTypes.func
   };
 
   constructor(props) {
@@ -62,12 +64,25 @@ class AssetsLibrary extends Component {
     const nodeType = assetTypeToNode[item.type];
 
     if (nodeType) {
-      this.props.onSelectItem(nodeType, { src: item.url });
+      const props = { src: item.url };
+
+      if (item.name) {
+        props.name = item.name;
+      }
+
+      this.props.onSelectItem(nodeType, props);
     }
   };
 
   render() {
-    return <LibrarySearchContainer sources={this.state.sources} onSelect={this.onSelect} />;
+    return (
+      <LibrarySearchContainer
+        sources={this.state.sources}
+        onSelect={this.onSelect}
+        uploadMultiple={this.props.uploadMultiple}
+        onAfterUpload={this.props.onAfterUpload}
+      />
+    );
   }
 }
 

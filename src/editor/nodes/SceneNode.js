@@ -161,7 +161,6 @@ export default class SceneNode extends EditorNodeMixin(THREE.Scene) {
       dependencies.push(
         promise.then(res => {
           dependencyCount++;
-          console.log(dependencyCount / dependencies.length);
           if (onProgress) {
             onProgress(dependencyCount, dependencies.length);
           }

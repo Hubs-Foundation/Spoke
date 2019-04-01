@@ -42,6 +42,12 @@ class LibraryInput extends Component {
     this.props.showDialog(LibraryDialog, {
       title: this.props.dialogTitle,
       component: this.props.component,
+      componentProps: {
+        uploadMultiple: false,
+        onAfterUpload: items => {
+          this.props.onChange(items[0].url);
+        }
+      },
       onSelectItem: this.onSelectItem
     });
   };

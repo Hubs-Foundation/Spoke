@@ -7,6 +7,7 @@ import { withApi } from "../contexts/ApiContext";
 import { withEditor } from "../contexts/EditorContext";
 import { withDialog } from "../contexts/DialogContext";
 import styles from "./LibrarySearchContainer.scss";
+import ErrorDialog from "../dialogs/ErrorDialog";
 
 const filterFileTypes = {
   all: ".png,.jpeg,.jpg,.gif,.mp4,.glb,image/png,image/jpeg,image/gif,video/mp4,model/gltf-binary",
@@ -30,7 +31,9 @@ class LibrarySearchContainer extends Component {
         onSearch: PropTypes.func
       })
     ).isRequired,
-    onSelect: PropTypes.func.isRequired
+    onSelect: PropTypes.func.isRequired,
+    uploadMultiple: PropTypes.bool,
+    onAfterUpload: PropTypes.func
   };
 
   constructor(props) {
@@ -82,12 +85,29 @@ class LibrarySearchContainer extends Component {
     this.update({ query: e.target.value, items: [], loading: true, cursor: 0, nextCursor: null });
   };
 
-  onUpload = files => {
+  onUpload = async files => {
     const { api, editor, showDialog, hideDialog } = this.props;
-    api
-      .uploadProjectAsset(editor.projectId, files[0], showDialog, hideDialog)
-      .then(this.onAddItem)
-      .catch(console.error);
+
+    const items = [];
+
+    for (const file of files) {
+      try {
+        const item = await api.uploadProjectAsset(editor.projectId, file, showDialog, hideDialog);
+        items.push(item);
+        this.onAddItem(item);
+      } catch (err) {
+        console.error(err);
+        showDialog(ErrorDialog, {
+          title: "Upload Error",
+          message: `Error uploading file: ${err.message || "There was an unknown error."}`
+        });
+        return;
+      }
+    }
+
+    if (this.props.onAfterUpload) {
+      this.props.onAfterUpload(items);
+    }
   };
 
   onLoadMore = () => {
@@ -164,7 +184,7 @@ class LibrarySearchContainer extends Component {
   };
 
   render() {
-    const { onSelect, sources } = this.props;
+    const { onSelect, sources, uploadMultiple } = this.props;
     const { nextCursor, loading, selectedSourceId, filter, type, query, items } = this.state;
     const {
       filterOptions,
@@ -227,7 +247,9 @@ class LibrarySearchContainer extends Component {
             )}
           </span>
         </span>
-        {upload && <FileInput accept={filterFileTypes[type || "all"]} onChange={this.onUpload} />}
+        {upload && (
+          <FileInput accept={filterFileTypes[type || "all"]} multiple={uploadMultiple} onChange={this.onUpload} />
+        )}
       </LibraryPanel>
     );
   }

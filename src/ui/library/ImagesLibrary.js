@@ -9,7 +9,9 @@ class ImagesLibrary extends Component {
   static propTypes = {
     onSelectItem: PropTypes.func.isRequired,
     editor: PropTypes.object.isRequired,
-    api: PropTypes.object.isRequired
+    api: PropTypes.object.isRequired,
+    uploadMultiple: PropTypes.bool,
+    onAfterUpload: PropTypes.func
   };
 
   constructor(props) {
@@ -50,11 +52,24 @@ class ImagesLibrary extends Component {
   }
 
   onSelect = item => {
-    this.props.onSelectItem(ImageNode, { src: item.url });
+    const props = { src: item.url };
+
+    if (item.name) {
+      props.name = item.name;
+    }
+
+    this.props.onSelectItem(ImageNode, props);
   };
 
   render() {
-    return <LibrarySearchContainer sources={this.state.sources} onSelect={this.onSelect} />;
+    return (
+      <LibrarySearchContainer
+        sources={this.state.sources}
+        onSelect={this.onSelect}
+        uploadMultiple={this.props.uploadMultiple}
+        onAfterUpload={this.props.onAfterUpload}
+      />
+    );
   }
 }
 
