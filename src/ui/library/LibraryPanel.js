@@ -35,7 +35,7 @@ export default class LibraryPanel extends Component {
       <div className={styles.libraryPanel}>
         {children && <div className={styles.searchBar}>{children}</div>}
         <LibraryGridScrollContainer>
-          <InfiniteScroll pageStart={0} loadMore={onLoadMore} hasMore={hasMore} threshold={50} useWindow={false}>
+          <InfiniteScroll pageStart={0} loadMore={onLoadMore} hasMore={hasMore} threshold={100} useWindow={false}>
             <LibraryGrid items={items} onSelect={onSelect} renderTooltip={renderTooltip} renderItem={renderItem}>
               {loading && <div className={styles.loadingItem}>Loading...</div>}
             </LibraryGrid>
