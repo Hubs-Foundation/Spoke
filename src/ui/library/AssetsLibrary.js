@@ -28,20 +28,6 @@ class AssetsLibrary extends Component {
     this.state = {
       sources: [
         {
-          value: "assets",
-          label: "Assets",
-          typeOptions: [
-            { label: "Models", value: "model" },
-            { label: "Images", value: "image" },
-            { label: "Videos", value: "video" }
-          ],
-          typeIsClearable: true,
-          searchPlaceholder: "Search my assets...",
-          legal: "Search by Mozilla Hubs",
-          privacyPolicyUrl: "https://github.com/mozilla/hubs/blob/master/PRIVACY.md",
-          upload: true
-        },
-        {
           value: "project_assets",
           label: "Project Assets",
           typeOptions: [
@@ -54,6 +40,20 @@ class AssetsLibrary extends Component {
           legal: "Search by Mozilla Hubs",
           privacyPolicyUrl: "https://github.com/mozilla/hubs/blob/master/PRIVACY.md",
           onSearch: (source, params) => props.api.getProjectAssets(props.editor.projectId, params),
+          upload: true
+        },
+        {
+          value: "assets",
+          label: "Assets",
+          typeOptions: [
+            { label: "Models", value: "model" },
+            { label: "Images", value: "image" },
+            { label: "Videos", value: "video" }
+          ],
+          typeIsClearable: true,
+          searchPlaceholder: "Search my assets...",
+          legal: "Search by Mozilla Hubs",
+          privacyPolicyUrl: "https://github.com/mozilla/hubs/blob/master/PRIVACY.md",
           upload: true
         }
       ]

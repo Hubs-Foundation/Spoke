@@ -44,16 +44,6 @@ class VideosLibrary extends Component {
           privacyPolicyUrl: "https://tenor.com/legal-privacy"
         },
         {
-          value: "assets",
-          label: "Assets",
-          defaultType: "video",
-          typeOptions: [{ label: "Videos", value: "video" }],
-          searchPlaceholder: "Search my assets...",
-          legal: "Search by Mozilla Hubs",
-          privacyPolicyUrl: "https://github.com/mozilla/hubs/blob/master/PRIVACY.md",
-          upload: true
-        },
-        {
           value: "project_assets",
           label: "Project Assets",
           defaultType: "video",
@@ -62,6 +52,16 @@ class VideosLibrary extends Component {
           legal: "Search by Mozilla Hubs",
           privacyPolicyUrl: "https://github.com/mozilla/hubs/blob/master/PRIVACY.md",
           onSearch: (source, params) => props.api.getProjectAssets(props.editor.projectId, params),
+          upload: true
+        },
+        {
+          value: "assets",
+          label: "Assets",
+          defaultType: "video",
+          typeOptions: [{ label: "Videos", value: "video" }],
+          searchPlaceholder: "Search my assets...",
+          legal: "Search by Mozilla Hubs",
+          privacyPolicyUrl: "https://github.com/mozilla/hubs/blob/master/PRIVACY.md",
           upload: true
         }
       ]

@@ -69,16 +69,6 @@ class ModelsLibrary extends Component {
           privacyPolicyUrl: "https://policies.google.com/privacy"
         },
         {
-          value: "assets",
-          label: "Assets",
-          defaultType: "model",
-          typeOptions: [{ label: "Models", value: "model" }],
-          searchPlaceholder: "Search my assets...",
-          legal: "Search by Mozilla Hubs",
-          privacyPolicyUrl: "https://github.com/mozilla/hubs/blob/master/PRIVACY.md",
-          upload: true
-        },
-        {
           value: "project_assets",
           label: "Project Assets",
           defaultType: "model",
@@ -87,6 +77,16 @@ class ModelsLibrary extends Component {
           legal: "Search by Mozilla Hubs",
           privacyPolicyUrl: "https://github.com/mozilla/hubs/blob/master/PRIVACY.md",
           onSearch: (source, params) => props.api.getProjectAssets(props.editor.projectId, params),
+          upload: true
+        },
+        {
+          value: "assets",
+          label: "Assets",
+          defaultType: "model",
+          typeOptions: [{ label: "Models", value: "model" }],
+          searchPlaceholder: "Search my assets...",
+          legal: "Search by Mozilla Hubs",
+          privacyPolicyUrl: "https://github.com/mozilla/hubs/blob/master/PRIVACY.md",
           upload: true
         }
       ]
