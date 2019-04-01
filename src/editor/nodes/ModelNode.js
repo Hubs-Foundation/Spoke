@@ -8,12 +8,12 @@ export default class ModelNode extends EditorNodeMixin(Model) {
 
   static legacyComponentName = "gltf-model";
 
-  static async deserialize(editor, json) {
+  static async deserialize(editor, json, loadAsync) {
     const node = await super.deserialize(editor, json);
 
     const { src, attribution } = json.components.find(c => c.name === "gltf-model").props;
 
-    node.src = src;
+    loadAsync(node.load(src));
 
     // Legacy, might be a raw string left over before switch to JSON.
     if (attribution && typeof attribution === "string") {

@@ -415,7 +415,14 @@ export default class EditorContainer extends Component {
       });
 
       try {
-        await this.state.editor.loadProject(project);
+        await this.state.editor.loadProject(project, (dependenciesLoaded, totalDependencies) => {
+          const loadingProgress = Math.floor((dependenciesLoaded / totalDependencies) * 100);
+          this.showDialog(ProgressDialog, {
+            title: "Loading Project",
+            message: `Loading project: ${loadingProgress}%`
+          });
+        });
+
         this.state.editor.projectId = this.props.projectId;
 
         this.hideDialog();

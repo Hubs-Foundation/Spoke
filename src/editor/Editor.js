@@ -180,10 +180,10 @@ export default class Editor {
     return scene;
   }
 
-  async loadProject(json) {
+  async loadProject(json, onProgress) {
     this.clearCaches();
 
-    const scene = await SceneNode.loadProject(this, json);
+    const scene = await SceneNode.loadProject(this, json, onProgress);
 
     this.setScene(scene);
 

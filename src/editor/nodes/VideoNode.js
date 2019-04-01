@@ -9,7 +9,7 @@ export default class VideoNode extends EditorNodeMixin(Video) {
 
   static nodeName = "Video";
 
-  static async deserialize(editor, json) {
+  static async deserialize(editor, json, loadAsync) {
     const node = await super.deserialize(editor, json);
 
     const {
@@ -29,7 +29,8 @@ export default class VideoNode extends EditorNodeMixin(Video) {
       projection
     } = json.components.find(c => c.name === "video").props;
 
-    node.src = src;
+    loadAsync(node.load(src));
+
     node.controls = controls;
     node.autoPlay = autoPlay;
     node.loop = loop;

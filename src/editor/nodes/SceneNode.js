@@ -137,7 +137,7 @@ export default class SceneNode extends EditorNodeMixin(THREE.Scene) {
 
   static canCreate = false;
 
-  static async loadProject(editor, json) {
+  static async loadProject(editor, json, onProgress) {
     if (!json.version) {
       json = migrateV1ToV2(json);
     }
@@ -153,6 +153,22 @@ export default class SceneNode extends EditorNodeMixin(THREE.Scene) {
     const { root, metadata, entities } = json;
 
     let scene = null;
+
+    const dependencies = [];
+    let dependencyCount = 0;
+
+    function loadAsync(promise) {
+      dependencies.push(
+        promise.then(res => {
+          dependencyCount++;
+          console.log(dependencyCount / dependencies.length);
+          if (onProgress) {
+            onProgress(dependencyCount, dependencies.length);
+          }
+          return res;
+        })
+      );
+    }
 
     const sortedEntities = sortEntities(entities);
 
@@ -172,7 +188,7 @@ export default class SceneNode extends EditorNodeMixin(THREE.Scene) {
         throw new Error(`No node constructor found for entity "${entity.name}"`);
       }
 
-      const node = await EntityNodeConstructor.deserialize(editor, entity);
+      const node = await EntityNodeConstructor.deserialize(editor, entity, loadAsync);
       node.uuid = entityId;
 
       if (entity.parent) {
@@ -197,6 +213,8 @@ export default class SceneNode extends EditorNodeMixin(THREE.Scene) {
 
       node.onChange();
     }
+
+    await Promise.all(dependencies);
 
     return scene;
   }

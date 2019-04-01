@@ -6,12 +6,13 @@ export default class ImageNode extends EditorNodeMixin(Image) {
 
   static nodeName = "Image";
 
-  static async deserialize(editor, json) {
+  static async deserialize(editor, json, loadAsync) {
     const node = await super.deserialize(editor, json);
 
     const { src, projection } = json.components.find(c => c.name === "image").props;
 
-    node.src = src;
+    loadAsync(node.load(src));
+
     node.projection = projection;
 
     return node;
