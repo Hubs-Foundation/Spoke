@@ -6,19 +6,19 @@ export default class SpawnerNode extends EditorNodeMixin(Model) {
 
   static nodeName = "Spawner";
 
-  static async deserialize(editor, json) {
+  static async deserialize(editor, json, loadAsync) {
     const node = await super.deserialize(editor, json);
 
     const { src } = json.components.find(c => c.name === "spawner").props;
 
-    await node.load(src);
+    loadAsync(node.load(src));
 
     return node;
   }
 
   constructor(editor) {
     super(editor);
-    this._canonicalUrl = null;
+    this._canonicalUrl = "";
   }
 
   // Overrides Model's src property and stores the original (non-resolved) url.
@@ -38,18 +38,37 @@ export default class SpawnerNode extends EditorNodeMixin(Model) {
 
   // Overrides Model's load method and resolves the src url before loading.
   async load(src) {
-    this._canonicalUrl = src;
+    this.showLoadingCube();
 
-    const { accessibleUrl, files } = await this.editor.api.resolveMedia(src);
+    this._canonicalUrl = src || "";
 
-    await super.load(accessibleUrl);
+    try {
+      const { accessibleUrl, files } = await this.editor.api.resolveMedia(src);
 
-    if (files) {
-      // Revoke any object urls from the SketchfabZipLoader.
-      for (const key in files) {
-        URL.revokeObjectURL(files[key]);
+      await super.load(accessibleUrl);
+
+      if (files) {
+        // Revoke any object urls from the SketchfabZipLoader.
+        for (const key in files) {
+          URL.revokeObjectURL(files[key]);
+        }
       }
+    } catch (e) {
+      console.error(e);
     }
+
+    this.hideLoadingCube();
+
+    if (!this.model) {
+      return this;
+    }
+
+    this.model.traverse(object => {
+      if (object.material && object.material.isMeshStandardMaterial) {
+        object.material.envMap = this.editor.scene.environmentMap;
+        object.material.needsUpdate = true;
+      }
+    });
 
     return this;
   }
