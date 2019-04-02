@@ -29,7 +29,7 @@ export default class App extends Component {
 
     return (
       <ApiContextProvider value={api}>
-        <Router>
+        <Router basename="/spoke-dev">
           <Suspense fallback={<Loading message="Loading..." />} className={styles.flexColumn}>
             <Switch>
               <Route path="/" exact component={LandingPage} />
