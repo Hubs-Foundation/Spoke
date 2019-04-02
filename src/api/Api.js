@@ -692,6 +692,8 @@ export default class Project extends EventEmitter {
     return { results: assets, nextCursor: 0 };
   }
 
+  lastUploadProjectAssetRequest = 0;
+
   async uploadProjectAsset(projectId, editor, file, showDialog, hideDialog) {
     let thumbnailTask;
 
@@ -737,6 +739,12 @@ export default class Project extends EventEmitter {
       }
     ] = await Promise.all([thumbnailTask, uploadTask]);
 
+    const delta = Date.now() - this.lastUploadProjectAssetRequest;
+
+    if (delta < 1100) {
+      await new Promise(resolve => setTimeout(resolve, 1100 - delta));
+    }
+
     const credentials = localStorage.getItem("spoke-credentials");
 
     const headers = {
@@ -763,6 +771,8 @@ export default class Project extends EventEmitter {
     hideDialog();
 
     const asset = json.assets[0];
+
+    this.lastUploadProjectAssetRequest = Date.now();
 
     return {
       id: asset.asset_id,

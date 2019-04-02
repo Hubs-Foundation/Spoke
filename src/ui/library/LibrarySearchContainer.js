@@ -36,6 +36,10 @@ class LibrarySearchContainer extends Component {
     onAfterUpload: PropTypes.func
   };
 
+  static defaultProps = {
+    uploadMultiple: true
+  };
+
   constructor(props) {
     super(props);
 
