@@ -82,16 +82,22 @@ export default class ModelNode extends EditorNodeMixin(Model) {
 
     this._canonicalUrl = src || "";
 
-    const { accessibleUrl, files } = await this.editor.api.resolveMedia(src);
+    try {
+      const { accessibleUrl, files } = await this.editor.api.resolveMedia(src);
 
-    await super.load(accessibleUrl);
+      await super.load(accessibleUrl);
 
-    if (files) {
-      // Revoke any object urls from the SketchfabZipLoader.
-      for (const key in files) {
-        URL.revokeObjectURL(files[key]);
+      if (files) {
+        // Revoke any object urls from the SketchfabZipLoader.
+        for (const key in files) {
+          URL.revokeObjectURL(files[key]);
+        }
       }
+    } catch (e) {
+      console.error(e);
     }
+
+    this.hideLoadingCube();
 
     if (!this.model) {
       return this;
@@ -105,8 +111,6 @@ export default class ModelNode extends EditorNodeMixin(Model) {
         object.material.needsUpdate = true;
       }
     });
-
-    this.hideLoadingCube();
 
     return this;
   }
