@@ -72,15 +72,11 @@ export default function EditorNodeMixin(Object3DClass) {
     }
 
     copy(source, recursive) {
-      super.copy(source, false);
+      super.copy(source, recursive);
 
-      for (const child of source.children) {
-        if (child === this.loadingCube) {
-          continue;
-        }
-
-        if (recursive === true) {
-          this.add(child.clone());
+      for (const child of this.children) {
+        if (child instanceof LoadingCube) {
+          this.remove(child);
         }
       }
 
