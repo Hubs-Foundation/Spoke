@@ -92,7 +92,7 @@ class LibrarySearchContainer extends Component {
 
     for (const file of files) {
       try {
-        const item = await api.uploadProjectAsset(editor.projectId, file, showDialog, hideDialog);
+        const item = await api.uploadProjectAsset(editor.projectId, editor, file, showDialog, hideDialog);
         items.push(item);
         this.onAddItem(item);
       } catch (err) {

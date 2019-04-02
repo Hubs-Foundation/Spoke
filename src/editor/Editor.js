@@ -28,6 +28,7 @@ import makeUniqueName from "./utils/makeUniqueName";
 import eventToMessage from "./utils/eventToMessage";
 import cloneObject3D from "./utils/cloneObject3D";
 import isEmptyObject from "./utils/isEmptyObject";
+import { loadEnvironmentMap } from "./utils/EnvironmentMap";
 
 export default class Editor {
   constructor(api) {
@@ -132,6 +133,7 @@ export default class Editor {
       );
     }
 
+    tasks.push(loadEnvironmentMap());
     tasks.push(LoadingCube.load());
 
     for (const NodeConstructor of this.nodeTypes) {
@@ -535,5 +537,9 @@ export default class Editor {
   async takeScreenshot(width, height) {
     this.deselect();
     return this.viewport.takeScreenshot(width, height);
+  }
+
+  generateThumbnail(object, width, height) {
+    return this.viewport.generateThumbnail(object, width, height);
   }
 }

@@ -8,6 +8,8 @@ import PublishDialog from "./PublishDialog";
 import ProgressDialog from "../ui/dialogs/ProgressDialog";
 import Fuse from "fuse.js";
 import jwtDecode from "jwt-decode";
+import THREE from "../vendor/three.js";
+import { generateImageFileThumbnail, generateVideoFileThumbnail } from "../editor/utils/thumbnails";
 
 // Media related functions should be kept up to date with Hubs media-utils:
 // https://github.com/mozilla/hubs/blob/master/src/utils/media-utils.js
@@ -683,23 +685,57 @@ export default class Project extends EventEmitter {
       type: asset.type,
       attributions: {},
       images: {
-        preview: { url: null }
+        preview: { url: asset.thumbnail_url }
       }
     }));
 
     return { results: assets, nextCursor: 0 };
   }
 
-  async uploadProjectAsset(projectId, file, showDialog, hideDialog) {
-    const {
-      file_id,
-      meta: { access_token }
-    } = await this.upload(file, uploadProgress => {
+  async uploadProjectAsset(projectId, editor, file, showDialog, hideDialog) {
+    let thumbnailTask;
+
+    if (file.name.endsWith(".glb")) {
+      thumbnailTask = (async () => {
+        const url = URL.createObjectURL(file);
+        const gltf = await new Promise((resolve, reject) =>
+          new THREE.GLTFLoader().load(url, resolve, undefined, reject)
+        );
+        URL.revokeObjectURL(url);
+        const blob = await editor.generateThumbnail(gltf.scene);
+        return this.upload(blob);
+      })();
+    } else if ([".png", ".jpg", ".jpeg", ".gif", ".webp"].some(ext => file.name.endsWith(ext))) {
+      thumbnailTask = (async () => {
+        const blob = await generateImageFileThumbnail(file);
+        return this.upload(blob);
+      })();
+    } else if (file.name.endsWith(".mp4")) {
+      thumbnailTask = (async () => {
+        const blob = await generateVideoFileThumbnail(file);
+        return this.upload(blob);
+      })();
+    } else {
+      throw new Error(`Unsupported file type for file: "${file.name}". File must be an image, video, or glb model.`);
+    }
+
+    const uploadTask = this.upload(file, uploadProgress => {
       showDialog(ProgressDialog, {
         title: "Uploading File",
         message: `Uploading file: ${Math.floor(uploadProgress * 100)}%`
       });
     });
+
+    const [
+      {
+        file_id: thumbnail_file_id,
+        meta: { access_token: thumbnail_access_token }
+      },
+      {
+        file_id: asset_file_id,
+        meta: { access_token: asset_access_token }
+      }
+    ] = await Promise.all([thumbnailTask, uploadTask]);
 
     const credentials = localStorage.getItem("spoke-credentials");
 
@@ -711,8 +747,10 @@ export default class Project extends EventEmitter {
     const body = JSON.stringify({
       asset: {
         name: file.name,
-        file_id,
-        access_token
+        file_id: asset_file_id,
+        access_token: asset_access_token,
+        thumbnail_file_id,
+        thumbnail_access_token
       }
     });
 
@@ -733,7 +771,7 @@ export default class Project extends EventEmitter {
       type: asset.type,
       attributions: {},
       images: {
-        preview: { url: null }
+        preview: { url: asset.thumbnail_url }
       }
     };
   }

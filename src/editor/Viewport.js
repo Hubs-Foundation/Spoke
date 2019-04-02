@@ -6,18 +6,13 @@ import GridHelper from "./helpers/GridHelper";
 import SpokeTransformControls from "./controls/SpokeTransformControls";
 import resizeShadowCameraFrustum from "./utils/resizeShadowCameraFrustum";
 import OutlinePass from "./renderer/OutlinePass";
+import { environmentMap } from "./utils/EnvironmentMap";
+import { traverseMaterials } from "./utils/materials";
+import { getCanvasBlob } from "./utils/thumbnails";
 
 /**
  * @author mrdoob / http://mrdoob.com/
  */
-
-function getCanvasBlob(canvas) {
-  if (canvas.msToBlob) {
-    return Promise.resolve(canvas.msToBlob());
-  } else {
-    return new Promise(resolve => canvas.toBlob(resolve, "image/jpeg", 0.9));
-  }
-}
 
 export default class Viewport {
   constructor(editor, canvas) {
@@ -25,9 +20,9 @@ export default class Viewport {
     this.canvas = canvas;
     const signals = editor.signals;
 
-    function makeRenderer(width, height, canvas) {
+    function makeRenderer(width, height, options = {}) {
       const renderer = new THREE.WebGLRenderer({
-        canvas,
+        ...options,
         antialias: true,
         preserveDrawingBuffer: true
       });
@@ -41,7 +36,7 @@ export default class Viewport {
       return renderer;
     }
 
-    const renderer = makeRenderer(canvas.parentElement.offsetWidth, canvas.parentElement.offsetHeight, canvas);
+    const renderer = makeRenderer(canvas.parentElement.offsetWidth, canvas.parentElement.offsetHeight, { canvas });
     renderer.setPixelRatio(window.devicePixelRatio);
     this.renderer = renderer;
 
@@ -61,7 +56,7 @@ export default class Viewport {
     effectComposer.addPass(outlinePass);
 
     this.screenshotRenderer = makeRenderer(1920, 1080);
-    this.thumbnailRenderer = makeRenderer(512, 320);
+    this.thumbnailRenderer = makeRenderer(512, 512, { alpha: true });
 
     editor.scene.background = new THREE.Color(0xaaaaaa);
 
@@ -406,6 +401,56 @@ export default class Viewport {
     });
 
     return { blob, cameraTransform };
+  };
+
+  generateThumbnail = async (object, width = 256, height = 256) => {
+    const scene = new THREE.Scene();
+    scene.add(object);
+
+    const light1 = new THREE.AmbientLight(0xffffff, 0.3);
+    scene.add(light1);
+
+    const light2 = new THREE.DirectionalLight(0xffffff, 0.8 * Math.PI);
+    light2.position.set(0.5, 0, 0.866);
+    scene.add(light2);
+
+    const camera = new THREE.PerspectiveCamera();
+    scene.add(camera);
+
+    traverseMaterials(object, material => {
+      if (material.isMeshStandardMaterial || material.isGLTFSpecularGlossinessMaterial) {
+        material.envMap = environmentMap;
+        material.needsUpdate = true;
+      }
+    });
+
+    object.updateMatrixWorld();
+
+    const box = new THREE.Box3().setFromObject(object);
+    const size = box.getSize(new THREE.Vector3()).length();
+    const center = box.getCenter(new THREE.Vector3());
+
+    object.position.x += object.position.x - center.x;
+    object.position.y += object.position.y - center.y;
+    object.position.z += object.position.z - center.z;
+
+    camera.near = size / 100;
+    camera.far = size * 100;
+    camera.aspect = width / height;
+    camera.updateProjectionMatrix();
+
+    camera.position.copy(center);
+    camera.position.x += size;
+    camera.position.y += size / 2;
+    camera.position.z += size;
+    camera.lookAt(center);
+
+    this.thumbnailRenderer.setSize(width, height, true);
+    this.thumbnailRenderer.render(scene, camera);
+
+    const blob = await getCanvasBlob(this.thumbnailRenderer.domElement);
+
+    return blob;
   };
 
   toggleSnap = () => {
