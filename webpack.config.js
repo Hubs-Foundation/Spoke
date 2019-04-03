@@ -92,27 +92,49 @@ module.exports = {
   },
 
   output: {
-    path: path.join(__dirname, "public"),
-    filename: `[name].js`,
-    publicPath: "/"
+    filename: "assets/[name]-[chunkhash].js",
+    publicPath: process.env.BASE_ASSETS_PATH || ""
   },
 
   module: {
     rules: [
       {
         test: /\.(png|jpg|jpeg|gif|svg|woff|woff2|ttf|eot|glb|mp4|webm)(\?.*$|$)/,
-        use: "file-loader"
+        use: {
+          loader: "file-loader",
+          options: {
+            name: "[path][name]-[hash].[ext]",
+            context: path.join(__dirname, "src")
+          }
+        }
       },
       {
         test: /\.css$/,
-        use: ["style-loader", "css-loader"]
+        use: [
+          "style-loader",
+          {
+            loader: "css-loader",
+            options: {
+              name: "[path][name]-[hash].[ext]",
+              localIdentName: "[name]__[local]__[hash:base64:5]",
+              camelCase: true
+            }
+          }
+        ]
       },
       {
         test: /\.scss$/,
         include: path.join(__dirname, "src"),
         use: [
           "style-loader",
-          { loader: "css-loader", options: { localIdentName: "[name]__[local]__[hash:base64:5]" } },
+          {
+            loader: "css-loader",
+            options: {
+              name: "[path][name]-[hash].[ext]",
+              localIdentName: "[name]__[local]__[hash:base64:5]",
+              camelCase: true
+            }
+          },
           "sass-loader"
         ]
       },
@@ -124,13 +146,24 @@ module.exports = {
       {
         test: /\.worker\.js$/,
         include: path.join(__dirname, "src"),
-        loader: "worker-loader"
+        loader: "worker-loader",
+        options: {
+          name: "assets/js/[name]-[hash].js",
+          publicPath: "/",
+          inline: true
+        }
       },
       {
         test: /\.wasm$/,
         type: "javascript/auto",
         include: path.join(__dirname, "src"),
-        loader: "file-loader"
+        use: {
+          loader: "file-loader",
+          options: {
+            outputPath: "assets/wasm",
+            name: "[name]-[hash].[ext]"
+          }
+        }
       }
     ]
   },
@@ -144,7 +177,7 @@ module.exports = {
   plugins: [
     new HTMLWebpackPlugin({
       template: path.join(__dirname, "src", "index.html"),
-      favicon: "src/assets/favicon.ico"
+      favicon: "src/assets/favicon-spoke.ico"
     }),
     new webpack.DefinePlugin({
       SPOKE_VERSION: JSON.stringify(packageJSON.version)
@@ -155,6 +188,7 @@ module.exports = {
       FARSPARK_SERVER: undefined,
       HUBS_SERVER: undefined,
       CORS_PROXY_SERVER: null,
+      BASE_ASSETS_PATH: "",
       NON_CORS_PROXY_DOMAINS: ""
     }),
     new webpack.IgnorePlugin({
