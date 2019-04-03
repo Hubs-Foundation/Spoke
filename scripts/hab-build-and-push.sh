@@ -30,7 +30,7 @@ npm rebuild node-sass # HACK sometimes node-sass build fails
 npm rebuild node-sass # HACK sometimes node-sass build fails
 npm run build
 mkdir -p dist/pages
-mv public/*.html dist/pages
+mv dist/*.html dist/pages
 
 # we need to upload wasm blobs with wasm content type explicitly because, unlike all our
 # other assets, AWS's built-in MIME type dictionary doesn't know about that one
