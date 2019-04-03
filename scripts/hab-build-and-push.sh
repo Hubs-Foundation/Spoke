@@ -34,7 +34,7 @@ mv public/*.html dist/pages
 
 # we need to upload wasm blobs with wasm content type explicitly because, unlike all our
 # other assets, AWS's built-in MIME type dictionary doesn't know about that one
-aws s3 sync --acl public-read --cache-control "max-age=31556926" --include "*" --exclude "*.wasm" public "$TARGET_S3_URL/spoke/assets"
+aws s3 sync --acl public-read --cache-control "max-age=31556926" --include "*" --exclude "*.wasm" dist/assets "$TARGET_S3_URL/spoke/assets"
 aws s3 sync --acl public-read --cache-control "max-age=31556926" --exclude "*" --include "*.wasm" --content-type "application/wasm" dist/assets "$TARGET_S3_URL/spoke/assets"
 
 aws s3 sync --acl public-read --cache-control "no-cache" --delete dist/pages "$TARGET_S3_URL/spoke/pages/latest"
