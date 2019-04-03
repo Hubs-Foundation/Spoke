@@ -94,7 +94,7 @@ module.exports = {
   output: {
     path: path.join(__dirname, "public"),
     filename: `[name].js`,
-    publicPath: "/"
+    publicPath: process.env.BASE_ASSETS_PATH || ""
   },
 
   module: {
@@ -155,6 +155,7 @@ module.exports = {
       FARSPARK_SERVER: undefined,
       HUBS_SERVER: undefined,
       CORS_PROXY_SERVER: null,
+      BASE_ASSETS_PATH: "",
       NON_CORS_PROXY_DOMAINS: ""
     }),
     new webpack.IgnorePlugin({
