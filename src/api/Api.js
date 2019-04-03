@@ -15,6 +15,7 @@ import { generateImageFileThumbnail, generateVideoFileThumbnail } from "../edito
 // https://github.com/mozilla/hubs/blob/master/src/utils/media-utils.js
 
 const resolveUrlCache = new Map();
+const RETICULUM_SERVER = process.env.RETICULUM_SERVER || document.location.hostname;
 
 // thanks to https://developer.mozilla.org/en-US/docs/Web/API/WindowBase64/Base64_encoding_and_decoding
 function b64EncodeUnicode(str) {
@@ -111,7 +112,7 @@ export default class Project extends EventEmitter {
   }
 
   async authenticate(email) {
-    const reticulumServer = process.env.RETICULUM_SERVER;
+    const reticulumServer = RETICULUM_SERVER;
     const socketUrl = `wss://${reticulumServer}/socket`;
     const socket = new Socket(socketUrl, { params: { session_id: uuid() } });
     socket.connect();
@@ -156,7 +157,7 @@ export default class Project extends EventEmitter {
       authorization: `Bearer ${credentials}`
     };
 
-    const response = await this.fetch(`https://${process.env.RETICULUM_SERVER}/api/v1/projects`, { headers });
+    const response = await this.fetch(`https://${RETICULUM_SERVER}/api/v1/projects`, { headers });
 
     const json = await response.json();
 
@@ -179,7 +180,7 @@ export default class Project extends EventEmitter {
       authorization: `Bearer ${credentials}`
     };
 
-    const response = await this.fetch(`https://${process.env.RETICULUM_SERVER}/api/v1/projects/${projectId}`, {
+    const response = await this.fetch(`https://${RETICULUM_SERVER}/api/v1/projects/${projectId}`, {
       headers
     });
 
@@ -208,7 +209,7 @@ export default class Project extends EventEmitter {
     const cacheKey = `${url}|${index}`;
     if (resolveUrlCache.has(cacheKey)) return resolveUrlCache.get(cacheKey);
 
-    const response = await this.fetch(`https://${process.env.RETICULUM_SERVER}/api/v1/media`, {
+    const response = await this.fetch(`https://${RETICULUM_SERVER}/api/v1/media`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ media: { url, index } })
@@ -271,7 +272,7 @@ export default class Project extends EventEmitter {
   }
 
   async searchMedia(source, params, cursor, signal) {
-    const url = new URL(`https://${process.env.RETICULUM_SERVER}/api/v1/media/search`);
+    const url = new URL(`https://${RETICULUM_SERVER}/api/v1/media/search`);
 
     const searchParams = url.searchParams;
 
@@ -329,7 +330,7 @@ export default class Project extends EventEmitter {
       }
     });
 
-    const projectEndpoint = `https://${process.env.RETICULUM_SERVER}/api/v1/projects`;
+    const projectEndpoint = `https://${RETICULUM_SERVER}/api/v1/projects`;
 
     const resp = await this.fetch(projectEndpoint, { method: "POST", headers, body });
 
@@ -386,7 +387,7 @@ export default class Project extends EventEmitter {
       }
     });
 
-    const projectEndpoint = `https://${process.env.RETICULUM_SERVER}/api/v1/projects/${projectId}`;
+    const projectEndpoint = `https://${RETICULUM_SERVER}/api/v1/projects/${projectId}`;
 
     const resp = await this.fetch(projectEndpoint, { method: "PATCH", headers, body });
 
@@ -559,7 +560,7 @@ export default class Project extends EventEmitter {
       };
       const body = JSON.stringify({ scene: sceneParams });
 
-      let sceneEndpoint = `https://${process.env.RETICULUM_SERVER}/api/v1/scenes`;
+      let sceneEndpoint = `https://${RETICULUM_SERVER}/api/v1/scenes`;
       let method = "POST";
       if (sceneId) {
         sceneEndpoint = `${sceneEndpoint}/${sceneId}`;
@@ -619,7 +620,7 @@ export default class Project extends EventEmitter {
     return new Promise((resolve, reject) => {
       const request = new XMLHttpRequest();
 
-      request.open("post", `https://${process.env.RETICULUM_SERVER}/api/v1/media`, true);
+      request.open("post", `https://${RETICULUM_SERVER}/api/v1/media`, true);
 
       request.upload.addEventListener("progress", e => {
         if (onUploadProgress) {
@@ -649,7 +650,7 @@ export default class Project extends EventEmitter {
 
   async getProjectAssets(projectId, params) {
     const credentials = localStorage.getItem("spoke-credentials");
-    const projectAssetsEndpoint = `https://${process.env.RETICULUM_SERVER}/api/v1/projects/${projectId}/assets`;
+    const projectAssetsEndpoint = `https://${RETICULUM_SERVER}/api/v1/projects/${projectId}/assets`;
     const headers = {
       "content-type": "application/json",
       authorization: `Bearer ${credentials}`
@@ -762,7 +763,7 @@ export default class Project extends EventEmitter {
       }
     });
 
-    const projectAssetsEndpoint = `https://${process.env.RETICULUM_SERVER}/api/v1/projects/${projectId}/assets`;
+    const projectAssetsEndpoint = `https://${RETICULUM_SERVER}/api/v1/projects/${projectId}/assets`;
 
     const resp = await this.fetch(projectAssetsEndpoint, { method: "POST", headers, body });
 
