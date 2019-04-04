@@ -33,7 +33,8 @@ class LibrarySearchContainer extends Component {
     ).isRequired,
     onSelect: PropTypes.func.isRequired,
     uploadMultiple: PropTypes.bool,
-    onAfterUpload: PropTypes.func
+    onAfterUpload: PropTypes.func,
+    tooltipId: PropTypes.string
   };
 
   static defaultProps = {
@@ -186,7 +187,7 @@ class LibrarySearchContainer extends Component {
   };
 
   render() {
-    const { onSelect, sources, uploadMultiple } = this.props;
+    const { onSelect, sources, uploadMultiple, tooltipId } = this.props;
     const { nextCursor, loading, selectedSourceId, filter, type, query, items } = this.state;
     const {
       filterOptions,
@@ -206,6 +207,7 @@ class LibrarySearchContainer extends Component {
         onSelect={onSelect}
         items={items}
         loading={loading}
+        tooltipId={tooltipId}
         renderTooltip={this.renderTooltip}
       >
         {sources.length > 1 && (

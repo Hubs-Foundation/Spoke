@@ -3,7 +3,6 @@ import PropTypes from "prop-types";
 import styles from "./LibraryDialog.scss";
 import DialogHeader from "./DialogHeader";
 import Button from "../inputs/Button";
-import Tooltip from "react-tooltip";
 
 export default class LibraryDialog extends Component {
   static propTypes = {
@@ -21,7 +20,6 @@ export default class LibraryDialog extends Component {
 
   onCancel = () => {
     this.props.hideDialog();
-    Tooltip.rebuild();
   };
 
   render = () => {
@@ -31,7 +29,11 @@ export default class LibraryDialog extends Component {
       <div className={styles.libraryDialog}>
         <DialogHeader title={this.props.title} />
         <div className={styles.content}>
-          <LibraryComponent onSelectItem={this.onSelectItem} {...this.props.componentProps} />
+          <LibraryComponent
+            onSelectItem={this.onSelectItem}
+            tooltipId="library-dialog"
+            {...this.props.componentProps}
+          />
         </div>
         <div className={styles.bottom}>
           <Button className={styles.cancel} onClick={this.onCancel}>
