@@ -306,7 +306,7 @@ export default class Editor {
             for (const propertyName in component) {
               const property = component[propertyName];
 
-              if (typeof property === "object" && property.__gltfIndexForUUID) {
+              if (property !== null && typeof property === "object" && property.hasOwnProperty("__gltfIndexForUUID")) {
                 component[propertyName] = uuidToIndexMap[property.__gltfIndexForUUID];
               }
             }
