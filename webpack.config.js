@@ -14,6 +14,11 @@ const HTMLWebpackPlugin = require("html-webpack-plugin");
 const path = require("path");
 const packageJSON = require("./package.json");
 const webpack = require("webpack");
+const TerserJSPlugin = require("terser-webpack-plugin");
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const OptimizeCSSAssetsPlugin = require("optimize-css-assets-webpack-plugin");
+const CopyWebpackPlugin = require("copy-webpack-plugin");
+const BundleAnalyzerPlugin = require("webpack-bundle-analyzer").BundleAnalyzerPlugin;
 
 function createHTTPSConfig() {
   // Generate certs for the local webpack-dev-server.
@@ -65,11 +70,11 @@ function createHTTPSConfig() {
 const defaultHostName = "hubs.local";
 const host = process.env.HOST_IP || defaultHostName;
 
-module.exports = {
+module.exports = env => ({
   mode: process.env.NODE_ENV ? "development" : "production",
 
   entry: {
-    app: ["./src/index.js"]
+    entry: ["./src/index.js"]
   },
 
   devtool: process.env.NODE_ENV === "production" ? "source-map" : "inline-source-map",
@@ -80,6 +85,7 @@ module.exports = {
     port: 9090,
     host: process.env.HOST_IP || "0.0.0.0",
     public: `${host}:9090`,
+    publicPath: process.env.BASE_ASSETS_PATH || "",
     useLocalIp: true,
     allowedHosts: [host],
     headers: {
@@ -92,49 +98,62 @@ module.exports = {
   },
 
   output: {
-    filename: "assets/[name]-[chunkhash].js",
-    publicPath: process.env.BASE_ASSETS_PATH || ""
+    filename: "assets/js/[name]-[chunkhash].js",
+    publicPath: process.env.BASE_ASSETS_PATH || "/"
   },
 
   module: {
     rules: [
       {
-        test: /\.(png|jpg|jpeg|gif|svg|woff|woff2|ttf|eot|glb|mp4|webm)(\?.*$|$)/,
+        test: /\.(png|jpg|jpeg|gif|svg)(\?.*$|$)/,
         use: {
           loader: "file-loader",
           options: {
-            name: "[path][name]-[hash].[ext]",
-            context: path.join(__dirname, "src")
+            name: "[name]-[hash].[ext]",
+            outputPath: "assets/images"
+          }
+        }
+      },
+      {
+        test: /\.(woff|woff2|ttf|eot)(\?.*$|$)/,
+        use: {
+          loader: "file-loader",
+          options: {
+            name: "[name]-[hash].[ext]",
+            outputPath: "assets/fonts"
+          }
+        }
+      },
+      {
+        test: /\.(glb)(\?.*$|$)/,
+        use: {
+          loader: "file-loader",
+          options: {
+            name: "[name]-[hash].[ext]",
+            outputPath: "assets/models"
+          }
+        }
+      },
+      {
+        test: /\.(mp4|webm)(\?.*$|$)/,
+        use: {
+          loader: "file-loader",
+          options: {
+            name: "[name]-[hash].[ext]",
+            outputPath: "assets/videos"
           }
         }
       },
       {
         test: /\.css$/,
-        use: [
-          "style-loader",
-          {
-            loader: "css-loader",
-            options: {
-              name: "[path][name]-[hash].[ext]",
-              localIdentName: "[name]__[local]__[hash:base64:5]",
-              camelCase: true
-            }
-          }
-        ]
+        use: [process.env.NODE_ENV !== "production" ? "style-loader" : MiniCssExtractPlugin.loader, "css-loader"]
       },
       {
         test: /\.scss$/,
         include: path.join(__dirname, "src"),
         use: [
-          "style-loader",
-          {
-            loader: "css-loader",
-            options: {
-              name: "[path][name]-[hash].[ext]",
-              localIdentName: "[name]__[local]__[hash:base64:5]",
-              camelCase: true
-            }
-          },
+          process.env.NODE_ENV !== "production" ? "style-loader" : MiniCssExtractPlugin.loader,
+          "css-loader",
           "sass-loader"
         ]
       },
@@ -148,7 +167,7 @@ module.exports = {
         include: path.join(__dirname, "src"),
         loader: "worker-loader",
         options: {
-          name: "assets/js/[name]-[hash].js",
+          name: "assets/js/workers/[name]-[hash].js",
           publicPath: "/",
           inline: true
         }
@@ -160,7 +179,7 @@ module.exports = {
         use: {
           loader: "file-loader",
           options: {
-            outputPath: "assets/wasm",
+            outputPath: "assets/js/wasm",
             name: "[name]-[hash].[ext]"
           }
         }
@@ -174,10 +193,23 @@ module.exports = {
     }
   },
 
+  optimization: {
+    minimizer: [new TerserJSPlugin({}), new OptimizeCSSAssetsPlugin({})]
+  },
+
   plugins: [
+    new BundleAnalyzerPlugin({
+      analyzerMode: env && env.BUNDLE_ANALYZER ? "server" : "disabled"
+    }),
+    new CopyWebpackPlugin([
+      {
+        from: path.join(__dirname, "src", "assets", "favicon-spoke.ico"),
+        to: "assets/images/favicon-spoke.ico"
+      }
+    ]),
     new HTMLWebpackPlugin({
       template: path.join(__dirname, "src", "index.html"),
-      favicon: "src/assets/favicon-spoke.ico"
+      faviconPath: path.join(process.env.BASE_ASSETS_PATH || "/", "assets", "images", "favicon-spoke.ico")
     }),
     new webpack.DefinePlugin({
       SPOKE_VERSION: JSON.stringify(packageJSON.version)
@@ -189,10 +221,15 @@ module.exports = {
       HUBS_SERVER: undefined,
       CORS_PROXY_SERVER: null,
       BASE_ASSETS_PATH: "",
-      NON_CORS_PROXY_DOMAINS: ""
+      NON_CORS_PROXY_DOMAINS: "",
+      ROUTER_BASE_PATH: ""
     }),
     new webpack.IgnorePlugin({
       resourceRegExp: /^@blueprintjs\//
+    }),
+    new MiniCssExtractPlugin({
+      filename: "assets/styles/[name]-[contenthash].css",
+      chunkFilename: "assets/styles/[name]-[contenthash].css"
     })
   ]
-};
+});

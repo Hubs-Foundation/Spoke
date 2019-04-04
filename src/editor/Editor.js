@@ -29,6 +29,7 @@ import eventToMessage from "./utils/eventToMessage";
 import cloneObject3D from "./utils/cloneObject3D";
 import isEmptyObject from "./utils/isEmptyObject";
 import { loadEnvironmentMap } from "./utils/EnvironmentMap";
+import { generateImageFileThumbnail, generateVideoFileThumbnail } from "./utils/thumbnails";
 
 export default class Editor {
   constructor(api) {
@@ -539,7 +540,26 @@ export default class Editor {
     return this.viewport.takeScreenshot(width, height);
   }
 
-  generateThumbnail(object, width, height) {
-    return this.viewport.generateThumbnail(object, width, height);
+  async generateFileThumbnail(file, width, height) {
+    const url = URL.createObjectURL(file);
+
+    let blob;
+
+    if (file.name.endsWith(".glb")) {
+      const gltf = await new Promise((resolve, reject) => new THREE.GLTFLoader().load(url, resolve, undefined, reject));
+      blob = await this.viewport.generateThumbnail(gltf.scene, width, height);
+    } else if ([".png", ".jpg", ".jpeg", ".gif", ".webp"].some(ext => file.name.endsWith(ext))) {
+      blob = await generateImageFileThumbnail(file);
+    } else if (file.name.endsWith(".mp4")) {
+      blob = await generateVideoFileThumbnail(file);
+    }
+
+    URL.revokeObjectURL(url);
+
+    if (!blob) {
+      throw new Error(`Unsupported file type for file: "${file.name}". File must be an image, video, or glb model.`);
+    }
+
+    return blob;
   }
 }

@@ -11,13 +11,15 @@ import Error from "./Error";
 import { ApiContextProvider } from "./contexts/ApiContext";
 
 import AuthenticatedRoute from "./auth/AuthenticatedRoute";
+import LandingPage from "./landing/LandingPage";
+import LoginPage from "./auth/LoginPage";
+import LogoutPage from "./auth/LogoutPage";
+import ProjectsPage from "./projects/ProjectsPage";
+import NewProjectPage from "./projects/NewProjectPage";
 
-const LandingPage = lazy(() => import("./landing/LandingPage"));
-const LoginPage = lazy(() => import("./auth/LoginPage"));
-const LogoutPage = lazy(() => import("./auth/LogoutPage"));
-const ProjectsPage = lazy(() => import("./projects/ProjectsPage"));
-const ProjectPage = lazy(() => import("./projects/ProjectPage"));
-const NewProjectPage = lazy(() => import("./projects/NewProjectPage"));
+const ProjectPage = lazy(() =>
+  import(/* webpackChunkName: "project-page", webpackPrefetch: true */ "./projects/ProjectPage")
+);
 
 export default class App extends Component {
   static propTypes = {
@@ -29,7 +31,7 @@ export default class App extends Component {
 
     return (
       <ApiContextProvider value={api}>
-        <Router basename="/spoke-dev">
+        <Router basename={process.env.ROUTER_BASE_PATH}>
           <Suspense fallback={<Loading message="Loading..." />} className={styles.flexColumn}>
             <Switch>
               <Route path="/" exact component={LandingPage} />
