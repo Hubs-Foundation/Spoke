@@ -31,7 +31,7 @@ export default class LinkNode extends EditorNodeMixin(THREE.Object3D) {
   constructor(editor) {
     super(editor);
 
-    this.href = null;
+    this.href = "";
 
     const geometry = new THREE.PlaneGeometry();
     const material = new THREE.MeshBasicMaterial();
@@ -39,6 +39,7 @@ export default class LinkNode extends EditorNodeMixin(THREE.Object3D) {
     material.side = THREE.DoubleSide;
     material.transparent = true;
     this.helper = new THREE.Mesh(geometry, material);
+    this.helper.layers.set(1);
     this.add(this.helper);
   }
 
