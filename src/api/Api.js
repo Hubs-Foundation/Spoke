@@ -125,8 +125,8 @@ export default class Project extends EventEmitter {
     );
 
     const authComplete = new Promise(resolve =>
-      channel.on("auth_credentials", ({ credentials }) => {
-        localStorage.setItem(LOCAL_STORE_KEY, credentials);
+      channel.on("auth_credentials", ({ credentials: token }) => {
+        localStorage.setItem(LOCAL_STORE_KEY, JSON.stringify({ credentials: { email, token } }));
         resolve();
       })
     );
@@ -140,9 +140,25 @@ export default class Project extends EventEmitter {
     return localStorage.getItem(LOCAL_STORE_KEY) !== null;
   }
 
+  getToken() {
+    const value = localStorage.getItem(LOCAL_STORE_KEY);
+
+    if (!value) {
+      throw new Error("Not authenticated");
+    }
+
+    const store = JSON.parse(value);
+
+    if (!store || !store.credentials || !store.credentials.token) {
+      throw new Error("Not authenticated");
+    }
+
+    return store.credentials.token;
+  }
+
   getAccountId() {
-    const credentials = localStorage.getItem(LOCAL_STORE_KEY);
-    return jwtDecode(credentials).sub;
+    const token = this.getToken();
+    return jwtDecode(token).sub;
   }
 
   logout() {
@@ -150,11 +166,11 @@ export default class Project extends EventEmitter {
   }
 
   async getProjects() {
-    const credentials = localStorage.getItem(LOCAL_STORE_KEY);
+    const token = this.getToken();
 
     const headers = {
       "content-type": "application/json",
-      authorization: `Bearer ${credentials}`
+      authorization: `Bearer ${token}`
     };
 
     const response = await this.fetch(`https://${RETICULUM_SERVER}/api/v1/projects`, { headers });
@@ -173,11 +189,11 @@ export default class Project extends EventEmitter {
   }
 
   async getProject(projectId) {
-    const credentials = localStorage.getItem(LOCAL_STORE_KEY);
+    const token = this.getToken();
 
     const headers = {
       "content-type": "application/json",
-      authorization: `Bearer ${credentials}`
+      authorization: `Bearer ${token}`
     };
 
     const response = await this.fetch(`https://${RETICULUM_SERVER}/api/v1/projects/${projectId}`, {
@@ -298,11 +314,11 @@ export default class Project extends EventEmitter {
       searchParams.set("cursor", cursor);
     }
 
-    const credentials = localStorage.getItem(LOCAL_STORE_KEY);
+    const token = this.getToken();
 
     const headers = {
       "content-type": "application/json",
-      authorization: `Bearer ${credentials}`
+      authorization: `Bearer ${token}`
     };
 
     const resp = await this.fetch(url, { headers, signal });
@@ -317,11 +333,11 @@ export default class Project extends EventEmitter {
   }
 
   async createProject(projectName) {
-    const credentials = localStorage.getItem(LOCAL_STORE_KEY);
+    const token = this.getToken();
 
     const headers = {
       "content-type": "application/json",
-      authorization: `Bearer ${credentials}`
+      authorization: `Bearer ${token}`
     };
 
     const body = JSON.stringify({
@@ -370,11 +386,11 @@ export default class Project extends EventEmitter {
       meta: { access_token: project_file_token }
     } = await this.upload(projectBlob);
 
-    const credentials = localStorage.getItem(LOCAL_STORE_KEY);
+    const token = this.getToken();
 
     const headers = {
       "content-type": "application/json",
-      authorization: `Bearer ${credentials}`
+      authorization: `Bearer ${token}`
     };
 
     const body = JSON.stringify({
@@ -552,11 +568,11 @@ export default class Project extends EventEmitter {
         }
       };
 
-      const credentials = localStorage.getItem(LOCAL_STORE_KEY);
+      const token = this.getToken();
 
       const headers = {
         "content-type": "application/json",
-        authorization: `Bearer ${credentials}`
+        authorization: `Bearer ${token}`
       };
       const body = JSON.stringify({ scene: sceneParams });
 
@@ -653,11 +669,11 @@ export default class Project extends EventEmitter {
   }
 
   async getProjectAssets(projectId, params) {
-    const credentials = localStorage.getItem(LOCAL_STORE_KEY);
+    const token = this.getToken();
     const projectAssetsEndpoint = `https://${RETICULUM_SERVER}/api/v1/projects/${projectId}/assets`;
     const headers = {
       "content-type": "application/json",
-      authorization: `Bearer ${credentials}`
+      authorization: `Bearer ${token}`
     };
     const resp = await this.fetch(projectAssetsEndpoint, { headers });
     const json = await resp.json();
@@ -729,11 +745,11 @@ export default class Project extends EventEmitter {
       await new Promise(resolve => setTimeout(resolve, 1100 - delta));
     }
 
-    const credentials = localStorage.getItem(LOCAL_STORE_KEY);
+    const token = this.getToken();
 
     const headers = {
       "content-type": "application/json",
-      authorization: `Bearer ${credentials}`
+      authorization: `Bearer ${token}`
     };
 
     const body = JSON.stringify({
