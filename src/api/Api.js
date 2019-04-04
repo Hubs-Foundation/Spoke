@@ -7,6 +7,7 @@ import PublishDialog from "./PublishDialog";
 import ProgressDialog from "../ui/dialogs/ProgressDialog";
 import Fuse from "fuse.js";
 import jwtDecode from "jwt-decode";
+import { getFilesFromSketchfabZip } from "./SketchfabZipLoader";
 
 // Media related functions should be kept up to date with Hubs media-utils:
 // https://github.com/mozilla/hubs/blob/master/src/utils/media-utils.js
@@ -62,18 +63,6 @@ export const proxiedUrlFor = (url, index) => {
     return `https://${process.env.CORS_PROXY_SERVER}/${url}`;
   }
 };
-
-async function getFilesFromSketchfabZip(src) {
-  const SketchfabZipWorker = await import(/* webpackChunkName: "sketchfab-zip-worker", webpackPrefetch: true */ "./sketchfab-zip.worker.js");
-  return new Promise(async (resolve, reject) => {
-    const worker = new SketchfabZipWorker();
-    worker.onmessage = e => {
-      const [success, fileMapOrError] = e.data;
-      (success ? resolve : reject)(fileMapOrError);
-    };
-    worker.postMessage(src);
-  });
-}
 
 const CommonKnownContentTypes = {
   gltf: "model/gltf",
