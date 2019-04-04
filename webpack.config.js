@@ -166,7 +166,12 @@ module.exports = env => {
           include: path.join(__dirname, "src"),
           loader: "worker-loader",
           options: {
-            name: "assets/js/workers/[name]-[hash].js"
+            // Workers must be inlined because they are hosted on a CDN and CORS doesn't permit us
+            // from loading worker scripts from another origin. To minimize bundle size, dynamically
+            // import a wrapper around the worker. See SketchfabZipLoader.js and API.js for an example.
+            name: "assets/js/workers/[name]-[hash].js",
+            inline: true,
+            fallback: false
           }
         },
         {

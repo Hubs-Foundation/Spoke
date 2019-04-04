@@ -7,7 +7,6 @@ import PublishDialog from "./PublishDialog";
 import ProgressDialog from "../ui/dialogs/ProgressDialog";
 import Fuse from "fuse.js";
 import jwtDecode from "jwt-decode";
-import { getFilesFromSketchfabZip } from "./SketchfabZipLoader";
 
 // Media related functions should be kept up to date with Hubs media-utils:
 // https://github.com/mozilla/hubs/blob/master/src/utils/media-utils.js
@@ -269,6 +268,9 @@ export default class Project extends EventEmitter {
 
     if (contentType === "model/gltf+zip") {
       // TODO: Sketchfab object urls should be revoked after they are loaded by the glTF loader.
+      const {
+        getFilesFromSketchfabZip
+      } = await import(/* webpackChunkName: "SketchfabZipLoader", webpackPrefetch: true */ "./SketchfabZipLoader");
       const files = await getFilesFromSketchfabZip(accessibleUrl);
       return { canonicalUrl, accessibleUrl: files["scene.gtlf"], contentType, files };
     }
