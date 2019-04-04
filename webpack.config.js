@@ -209,7 +209,7 @@ module.exports = env => ({
     ]),
     new HTMLWebpackPlugin({
       template: path.join(__dirname, "src", "index.html"),
-      faviconPath: path.join(process.env.BASE_ASSETS_PATH || "/", "assets", "images", "favicon-spoke.ico")
+      faviconPath: (process.env.BASE_ASSETS_PATH || "/") + "assets/images/favicon-spoke.ico"
     }),
     new webpack.DefinePlugin({
       SPOKE_VERSION: JSON.stringify(packageJSON.version)
