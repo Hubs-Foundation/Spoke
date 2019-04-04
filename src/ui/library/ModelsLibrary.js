@@ -11,7 +11,8 @@ class ModelsLibrary extends Component {
     api: PropTypes.object.isRequired,
     onSelectItem: PropTypes.func.isRequired,
     uploadMultiple: PropTypes.bool,
-    onAfterUpload: PropTypes.func
+    onAfterUpload: PropTypes.func,
+    tooltipId: PropTypes.string
   };
 
   constructor(props) {
@@ -110,6 +111,7 @@ class ModelsLibrary extends Component {
         onSelect={this.onSelect}
         uploadMultiple={this.props.uploadMultiple}
         onAfterUpload={this.props.onAfterUpload}
+        tooltipId={this.props.tooltipId}
       />
     );
   }

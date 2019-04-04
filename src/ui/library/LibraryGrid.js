@@ -24,6 +24,14 @@ export default class LibraryGrid extends Component {
     renderTooltip: id => id
   };
 
+  componentDidMount() {
+    Tooltip.rebuild();
+  }
+
+  componentDidUpdate() {
+    Tooltip.rebuild();
+  }
+
   render() {
     const { items, onSelect, tooltipId, renderTooltip, renderItem } = this.props;
 

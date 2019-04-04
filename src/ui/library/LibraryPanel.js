@@ -4,7 +4,6 @@ import LibraryGrid from "./LibraryGrid";
 import InfiniteScroll from "react-infinite-scroller";
 import LibraryGridScrollContainer from "./LibraryGridScrollContainer";
 import styles from "./LibraryPanel.scss";
-import Tooltip from "react-tooltip";
 
 export default class LibraryPanel extends Component {
   static propTypes = {
@@ -14,6 +13,7 @@ export default class LibraryPanel extends Component {
     loading: PropTypes.bool,
     onLoadMore: PropTypes.func,
     onSelect: PropTypes.func.isRequired,
+    tooltipId: PropTypes.string,
     renderTooltip: PropTypes.func,
     renderItem: PropTypes.func
   };
@@ -24,19 +24,31 @@ export default class LibraryPanel extends Component {
     onLoadMore: () => {}
   };
 
-  componentDidUpdate() {
-    Tooltip.rebuild();
-  }
-
   render() {
-    const { hasMore, onLoadMore, children, onSelect, items, loading, renderTooltip, renderItem } = this.props;
+    const {
+      hasMore,
+      onLoadMore,
+      children,
+      onSelect,
+      items,
+      loading,
+      tooltipId,
+      renderTooltip,
+      renderItem
+    } = this.props;
 
     return (
       <div className={styles.libraryPanel}>
         {children && <div className={styles.searchBar}>{children}</div>}
         <LibraryGridScrollContainer>
           <InfiniteScroll pageStart={0} loadMore={onLoadMore} hasMore={hasMore} threshold={100} useWindow={false}>
-            <LibraryGrid items={items} onSelect={onSelect} renderTooltip={renderTooltip} renderItem={renderItem}>
+            <LibraryGrid
+              items={items}
+              onSelect={onSelect}
+              tooltipId={tooltipId}
+              renderTooltip={renderTooltip}
+              renderItem={renderItem}
+            >
               {loading && <div className={styles.loadingItem}>Loading...</div>}
             </LibraryGrid>
           </InfiniteScroll>
