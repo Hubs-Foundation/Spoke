@@ -12,10 +12,10 @@ export default class LinkNodeEditor extends Component {
 
   static iconClassName = "fa-link";
 
-  static description = "Link to another webpage or Hubs room.";
+  static description = "Link to a Hubs room.";
 
-  onChangeSrc = src => {
-    this.props.editor.setNodeProperty(this.props.node, "src", src);
+  onChangeHref = href => {
+    this.props.editor.setNodeProperty(this.props.node, "href", href);
   };
 
   render() {
@@ -24,7 +24,7 @@ export default class LinkNodeEditor extends Component {
     return (
       <NodeEditor description={LinkNodeEditor.description} {...this.props}>
         <InputGroup name="Url">
-          <StringInput value={node.src} onChange={this.onChangeSrc} />
+          <StringInput value={node.href} onChange={this.onChangeHref} />
         </InputGroup>
       </NodeEditor>
     );
