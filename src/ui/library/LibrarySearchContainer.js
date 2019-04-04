@@ -123,19 +123,17 @@ class LibrarySearchContainer extends Component {
   };
 
   update(updateState) {
-    const nextState = Object.assign({}, this.state, updateState);
-
-    const { sources } = this.props;
-    const { selectedSourceId, filter, type, query, cursor } = nextState;
-    const selectedSource = sources.find(source => source.value === selectedSourceId);
-
     if (this.state.abortController) {
       this.state.abortController.abort();
     }
 
-    this.setState(nextState);
-
+    const { sources } = this.props;
     const abortController = new AbortController();
+    const nextState = Object.assign({}, this.state, updateState, { abortController });
+    const { selectedSourceId, filter, type, query, cursor } = nextState;
+    const selectedSource = sources.find(source => source.value === selectedSourceId);
+
+    this.setState(nextState);
 
     if (selectedSource.onSearch) {
       selectedSource
