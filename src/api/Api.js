@@ -1,15 +1,12 @@
 import EventEmitter from "eventemitter3";
 import { Socket } from "phoenix";
 import uuid from "uuid/v4";
-import SketchfabZipWorker from "./sketchfab-zip.worker.js";
 import AuthContainer from "./AuthContainer";
 import LoginDialog from "./LoginDialog";
 import PublishDialog from "./PublishDialog";
 import ProgressDialog from "../ui/dialogs/ProgressDialog";
 import Fuse from "fuse.js";
 import jwtDecode from "jwt-decode";
-import THREE from "../vendor/three.js";
-import { generateImageFileThumbnail, generateVideoFileThumbnail } from "../editor/utils/thumbnails";
 
 // Media related functions should be kept up to date with Hubs media-utils:
 // https://github.com/mozilla/hubs/blob/master/src/utils/media-utils.js
@@ -66,8 +63,9 @@ export const proxiedUrlFor = (url, index) => {
   }
 };
 
-function getFilesFromSketchfabZip(src) {
-  return new Promise((resolve, reject) => {
+async function getFilesFromSketchfabZip(src) {
+  const SketchfabZipWorker = await import(/* webpackChunkName: "sketchfab-zip-worker", webpackPrefetch: true */ "./sketchfab-zip.worker.js");
+  return new Promise(async (resolve, reject) => {
     const worker = new SketchfabZipWorker();
     worker.onmessage = e => {
       const [success, fileMapOrError] = e.data;
@@ -92,6 +90,8 @@ function guessContentType(url) {
   const extension = new URL(url).pathname.split(".").pop();
   return CommonKnownContentTypes[extension];
 }
+
+const LOCAL_STORE_KEY = "___hubs_store";
 
 export default class Project extends EventEmitter {
   constructor() {
@@ -126,7 +126,7 @@ export default class Project extends EventEmitter {
 
     const authComplete = new Promise(resolve =>
       channel.on("auth_credentials", ({ credentials }) => {
-        localStorage.setItem("spoke-credentials", credentials);
+        localStorage.setItem(LOCAL_STORE_KEY, credentials);
         resolve();
       })
     );
@@ -137,20 +137,20 @@ export default class Project extends EventEmitter {
   }
 
   isAuthenticated() {
-    return localStorage.getItem("spoke-credentials") !== null;
+    return localStorage.getItem(LOCAL_STORE_KEY) !== null;
   }
 
   getAccountId() {
-    const credentials = localStorage.getItem("spoke-credentials");
+    const credentials = localStorage.getItem(LOCAL_STORE_KEY);
     return jwtDecode(credentials).sub;
   }
 
   logout() {
-    localStorage.removeItem("spoke-credentials");
+    localStorage.removeItem(LOCAL_STORE_KEY);
   }
 
   async getProjects() {
-    const credentials = localStorage.getItem("spoke-credentials");
+    const credentials = localStorage.getItem(LOCAL_STORE_KEY);
 
     const headers = {
       "content-type": "application/json",
@@ -173,7 +173,7 @@ export default class Project extends EventEmitter {
   }
 
   async getProject(projectId) {
-    const credentials = localStorage.getItem("spoke-credentials");
+    const credentials = localStorage.getItem(LOCAL_STORE_KEY);
 
     const headers = {
       "content-type": "application/json",
@@ -298,7 +298,7 @@ export default class Project extends EventEmitter {
       searchParams.set("cursor", cursor);
     }
 
-    const credentials = localStorage.getItem("spoke-credentials");
+    const credentials = localStorage.getItem(LOCAL_STORE_KEY);
 
     const headers = {
       "content-type": "application/json",
@@ -317,7 +317,7 @@ export default class Project extends EventEmitter {
   }
 
   async createProject(projectName) {
-    const credentials = localStorage.getItem("spoke-credentials");
+    const credentials = localStorage.getItem(LOCAL_STORE_KEY);
 
     const headers = {
       "content-type": "application/json",
@@ -370,7 +370,7 @@ export default class Project extends EventEmitter {
       meta: { access_token: project_file_token }
     } = await this.upload(projectBlob);
 
-    const credentials = localStorage.getItem("spoke-credentials");
+    const credentials = localStorage.getItem(LOCAL_STORE_KEY);
 
     const headers = {
       "content-type": "application/json",
@@ -552,7 +552,7 @@ export default class Project extends EventEmitter {
         }
       };
 
-      const credentials = localStorage.getItem("spoke-credentials");
+      const credentials = localStorage.getItem(LOCAL_STORE_KEY);
 
       const headers = {
         "content-type": "application/json",
@@ -593,7 +593,11 @@ export default class Project extends EventEmitter {
       let sceneUrl = json.scenes[0].url;
 
       if (process.env.HUBS_SERVER) {
-        sceneUrl = `https://${process.env.HUBS_SERVER}/scenes/${newSceneId}`;
+        if (process.env.NODE_ENV === "development") {
+          sceneUrl = `https://${process.env.HUBS_SERVER}/scene.html?scene_id=${newSceneId}`;
+        } else {
+          sceneUrl = `https://${process.env.HUBS_SERVER}/scenes/${newSceneId}`;
+        }
       }
 
       scene.setMetadata({ sceneUrl, sceneId: newSceneId });
@@ -649,7 +653,7 @@ export default class Project extends EventEmitter {
   }
 
   async getProjectAssets(projectId, params) {
-    const credentials = localStorage.getItem("spoke-credentials");
+    const credentials = localStorage.getItem(LOCAL_STORE_KEY);
     const projectAssetsEndpoint = `https://${RETICULUM_SERVER}/api/v1/projects/${projectId}/assets`;
     const headers = {
       "content-type": "application/json",
@@ -696,31 +700,10 @@ export default class Project extends EventEmitter {
   lastUploadProjectAssetRequest = 0;
 
   async uploadProjectAsset(projectId, editor, file, showDialog, hideDialog) {
-    let thumbnailTask;
-
-    if (file.name.endsWith(".glb")) {
-      thumbnailTask = (async () => {
-        const url = URL.createObjectURL(file);
-        const gltf = await new Promise((resolve, reject) =>
-          new THREE.GLTFLoader().load(url, resolve, undefined, reject)
-        );
-        URL.revokeObjectURL(url);
-        const blob = await editor.generateThumbnail(gltf.scene);
-        return this.upload(blob);
-      })();
-    } else if ([".png", ".jpg", ".jpeg", ".gif", ".webp"].some(ext => file.name.endsWith(ext))) {
-      thumbnailTask = (async () => {
-        const blob = await generateImageFileThumbnail(file);
-        return this.upload(blob);
-      })();
-    } else if (file.name.endsWith(".mp4")) {
-      thumbnailTask = (async () => {
-        const blob = await generateVideoFileThumbnail(file);
-        return this.upload(blob);
-      })();
-    } else {
-      throw new Error(`Unsupported file type for file: "${file.name}". File must be an image, video, or glb model.`);
-    }
+    const thumbnailTask = (async () => {
+      const blob = await editor.generateFileThumbnail(file);
+      return this.upload(blob);
+    })();
 
     const uploadTask = this.upload(file, uploadProgress => {
       showDialog(ProgressDialog, {
@@ -746,7 +729,7 @@ export default class Project extends EventEmitter {
       await new Promise(resolve => setTimeout(resolve, 1100 - delta));
     }
 
-    const credentials = localStorage.getItem("spoke-credentials");
+    const credentials = localStorage.getItem(LOCAL_STORE_KEY);
 
     const headers = {
       "content-type": "application/json",
