@@ -12,7 +12,7 @@ export default class LinkNodeEditor extends Component {
 
   static iconClassName = "fa-link";
 
-  static description = "Link to another webpage or Hubs room.";
+  static description = "Link to a Hubs room.";
 
   onChangeHref = href => {
     this.props.editor.setNodeProperty(this.props.node, "href", href);
