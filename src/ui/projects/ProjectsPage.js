@@ -7,6 +7,10 @@ import styles from "./ProjectsPage.scss";
 import ProjectGrid from "./ProjectGrid";
 import Footer from "../navigation/Footer";
 import Loading from "../Loading";
+import { connectMenu, ContextMenu, MenuItem } from "react-contextmenu";
+import "../styles/vendor/react-contextmenu/index.scss";
+
+const contextMenuId = "project-menu";
 
 class ProjectsPage extends Component {
   static propTypes = {
@@ -41,6 +45,23 @@ class ProjectsPage extends Component {
       });
   }
 
+  onDeleteProject = project => {
+    this.props.api
+      .deleteProject(project.projectId)
+      .then(() => this.setState({ projects: this.state.projects.filter(p => p.id !== project.id) }))
+      .catch(error => this.setState({ error }));
+  };
+
+  renderContextMenu = props => {
+    return (
+      <ContextMenu id={contextMenuId}>
+        <MenuItem onClick={e => this.onDeleteProject(props.trigger.project, e)}>Delete Project</MenuItem>
+      </ContextMenu>
+    );
+  };
+
+  ProjectContextMenu = connectMenu(contextMenuId)(this.renderContextMenu);
+
   render() {
     const { error, loading, projects } = this.state;
 
@@ -52,11 +73,11 @@ class ProjectsPage extends Component {
           <Loading message="Loading projects..." />
         </div>
       );
-    } else if (error) {
-      content = <div className={styles.error}>{error.message || "There was an unknown error."}</div>;
     } else {
-      content = <ProjectGrid projects={projects} />;
+      content = <ProjectGrid projects={projects} contextMenuId={contextMenuId} />;
     }
+
+    const ProjectContextMenu = this.ProjectContextMenu;
 
     return (
       <>
@@ -68,9 +89,11 @@ class ProjectsPage extends Component {
                 <h1>Projects</h1>
                 <Link to="/projects/new">New Project</Link>
               </div>
+              {error && <div className={styles.error}>{error.message || "There was an unknown error."}</div>}
               {content}
             </div>
           </section>
+          <ProjectContextMenu />
         </main>
         <Footer />
       </>

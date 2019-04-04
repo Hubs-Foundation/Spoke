@@ -354,6 +354,29 @@ export default class Project extends EventEmitter {
     return { projectId: json.project_id };
   }
 
+  async deleteProject(projectId) {
+    const credentials = localStorage.getItem("spoke-credentials");
+
+    const headers = {
+      "content-type": "application/json",
+      authorization: `Bearer ${credentials}`
+    };
+
+    const projectEndpoint = `https://${process.env.RETICULUM_SERVER}/api/v1/projects/${projectId}`;
+
+    const resp = await this.fetch(projectEndpoint, { method: "DELETE", headers });
+
+    if (resp.status === 401) {
+      throw new Error("Not authenticated");
+    }
+
+    if (resp.status !== 200) {
+      throw new Error(`Project deletion failed. ${await resp.text()}`);
+    }
+
+    return true;
+  }
+
   async saveProject(projectId, editor, showDialog, hideDialog) {
     // Ensure the user is authenticated before continuing.
     if (!this.isAuthenticated()) {
@@ -775,6 +798,54 @@ export default class Project extends EventEmitter {
         preview: { url: asset.thumbnail_url }
       }
     };
+  }
+
+  async deleteAsset(assetId) {
+    const credentials = localStorage.getItem("spoke-credentials");
+
+    const headers = {
+      "content-type": "application/json",
+      authorization: `Bearer ${credentials}`
+    };
+
+    const assetEndpoint = `https://${process.env.RETICULUM_SERVER}/api/v1/assets/${assetId}`;
+
+    const resp = await this.fetch(assetEndpoint, { method: "DELETE", headers });
+
+    if (resp.status === 401) {
+      throw new Error("Not authenticated");
+    }
+
+    if (resp.status !== 200) {
+      throw new Error(`Asset deletion failed. ${await resp.text()}`);
+    }
+
+    return true;
+  }
+
+  async deleteProjectAsset(projectId, assetId) {
+    const credentials = localStorage.getItem("spoke-credentials");
+
+    const headers = {
+      "content-type": "application/json",
+      authorization: `Bearer ${credentials}`
+    };
+
+    const projectAssetEndpoint = `https://${
+      process.env.RETICULUM_SERVER
+    }/api/v1/projects/${projectId}/assets/${assetId}`;
+
+    const resp = await this.fetch(projectAssetEndpoint, { method: "DELETE", headers });
+
+    if (resp.status === 401) {
+      throw new Error("Not authenticated");
+    }
+
+    if (resp.status !== 200) {
+      throw new Error(`Project Asset deletion failed. ${await resp.text()}`);
+    }
+
+    return true;
   }
 
   setUserInfo(userInfo) {

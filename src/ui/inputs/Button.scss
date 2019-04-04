@@ -33,3 +33,25 @@
     background-color: $blue-pressed;
   }
 }
+
+:local(.menuButton) {
+  background-color: transparent;
+  color: $text2;
+
+  &:disabled {
+    background-color: transparent;
+    color: $disabled-text;
+
+    &:hover {
+      background-color: transparent;
+    }
+  }
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+
+  &:active {
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+}
