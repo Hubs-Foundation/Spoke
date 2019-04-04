@@ -166,9 +166,7 @@ module.exports = env => {
           include: path.join(__dirname, "src"),
           loader: "worker-loader",
           options: {
-            name: "assets/js/workers/[name]-[hash].js",
-            publicPath: "/",
-            inline: true
+            name: "assets/js/workers/[name]-[hash].js"
           }
         },
         {
