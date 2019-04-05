@@ -4,6 +4,7 @@ export default class SpokeTransformControls extends THREE.TransformControls {
   constructor(camera, canvas) {
     super(camera, canvas);
     this.name = "SpokeTransformControls";
+    this.traverse(obj => (obj.renderOrder = 100));
   }
 
   clone() {

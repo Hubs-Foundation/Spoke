@@ -8,7 +8,8 @@ class ComponentsLibrary extends Component {
   static propTypes = {
     editor: PropTypes.object.isRequired,
     settings: PropTypes.object.isRequired,
-    onSelectItem: PropTypes.func.isRequired
+    onSelectItem: PropTypes.func.isRequired,
+    tooltipId: PropTypes.string
   };
 
   onSelect = item => {
@@ -23,7 +24,7 @@ class ComponentsLibrary extends Component {
   };
 
   render() {
-    const { editor, settings } = this.props;
+    const { editor, settings, tooltipId } = this.props;
 
     const items = Array.from(editor.nodeTypes).reduce((acc, nodeType) => {
       if (!nodeType.canCreate) {
@@ -46,7 +47,9 @@ class ComponentsLibrary extends Component {
       return acc;
     }, []);
 
-    return <LibraryPanel items={items} onSelect={this.onSelect} renderTooltip={this.renderTooltip} />;
+    return (
+      <LibraryPanel items={items} onSelect={this.onSelect} tooltipId={tooltipId} renderTooltip={this.renderTooltip} />
+    );
   }
 }
 
