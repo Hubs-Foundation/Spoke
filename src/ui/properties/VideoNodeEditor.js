@@ -23,7 +23,7 @@ export default class VideoNodeEditor extends Component {
 
   static iconClassName = "fa-video";
 
-  static description = "Dynamically loads an video.";
+  static description = "Dynamically loads a video.";
 
   constructor(props) {
     super(props);
