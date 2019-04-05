@@ -5,11 +5,11 @@ import keysEqual from "./utils/keysEqual";
 import hashImage from "./utils/hashImage";
 
 export async function getImageHash(hashCache, img) {
-  let hash = hashCache.get(img);
+  let hash = hashCache.get(img.src);
 
   if (!hash) {
     hash = await hashImage(img);
-    hashCache.set(img, hash);
+    hashCache.set(img.src, hash);
   }
 
   return hash;
@@ -69,6 +69,7 @@ export default class MeshCombinationGroup {
     rootObject.computeAndSetVisible();
 
     const meshCombinationGroups = [];
+    const imageHashes = new Map();
 
     await asyncTraverse(rootObject, async object => {
       if (isStatic(object) && object.isMesh) {
@@ -82,7 +83,7 @@ export default class MeshCombinationGroup {
         }
 
         if (!added) {
-          meshCombinationGroups.push(new MeshCombinationGroup(object));
+          meshCombinationGroups.push(new MeshCombinationGroup(object, imageHashes));
         }
       }
     });
@@ -98,14 +99,14 @@ export default class MeshCombinationGroup {
     return rootObject;
   }
 
-  constructor(initialObject) {
+  constructor(initialObject, imageHashes) {
     if (!initialObject.isMesh) {
       throw new Error("MeshCombinationGroup must be initialized with a THREE.Mesh.");
     }
 
     this.initialObject = initialObject;
     this.meshes = [initialObject];
-    this.imageHashes = new Map();
+    this.imageHashes = imageHashes;
   }
 
   async _tryAdd(object) {
