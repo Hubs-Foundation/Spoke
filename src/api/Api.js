@@ -355,11 +355,11 @@ export default class Project extends EventEmitter {
   }
 
   async deleteProject(projectId) {
-    const credentials = localStorage.getItem("spoke-credentials");
+    const token = this.getToken();
 
     const headers = {
       "content-type": "application/json",
-      authorization: `Bearer ${credentials}`
+      authorization: `Bearer ${token}`
     };
 
     const projectEndpoint = `https://${process.env.RETICULUM_SERVER}/api/v1/projects/${projectId}`;
@@ -801,11 +801,11 @@ export default class Project extends EventEmitter {
   }
 
   async deleteAsset(assetId) {
-    const credentials = localStorage.getItem("spoke-credentials");
+    const token = this.getToken();
 
     const headers = {
       "content-type": "application/json",
-      authorization: `Bearer ${credentials}`
+      authorization: `Bearer ${token}`
     };
 
     const assetEndpoint = `https://${process.env.RETICULUM_SERVER}/api/v1/assets/${assetId}`;
@@ -824,11 +824,11 @@ export default class Project extends EventEmitter {
   }
 
   async deleteProjectAsset(projectId, assetId) {
-    const credentials = localStorage.getItem("spoke-credentials");
+    const token = this.getToken();
 
     const headers = {
       "content-type": "application/json",
-      authorization: `Bearer ${credentials}`
+      authorization: `Bearer ${token}`
     };
 
     const projectAssetEndpoint = `https://${
