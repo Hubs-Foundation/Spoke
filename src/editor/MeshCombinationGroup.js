@@ -162,7 +162,7 @@ export default class MeshCombinationGroup {
     const combinedMesh = new THREE.Mesh(combinedGeometry, originalMesh.material);
     combinedMesh.name = "CombinedMesh";
     combinedMesh.userData.gltfExtensions = {
-      HUBS_components: {
+      MOZ_hubs_components: {
         visible: {
           visible: originalMesh.visible
         },

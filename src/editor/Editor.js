@@ -252,8 +252,10 @@ export default class Editor {
       );
     });
 
+    const json = chunks.json;
+
     // De-duplicate images.
-    const imageDefs = chunks.json.images;
+    const imageDefs = json.images;
     if (imageDefs && imageDefs.length > 0) {
       // Map containing imageProp -> newIndex
       const uniqueImageProps = new Map();
@@ -273,14 +275,14 @@ export default class Editor {
         }
         imageIndexMap.set(index, newIndex);
       }
-      chunks.json.images = uniqueImageDefs;
+      json.images = uniqueImageDefs;
       chunks.images = uniqueImages;
-      for (const textureDef of chunks.json.textures) {
+      for (const textureDef of json.textures) {
         textureDef.source = imageIndexMap.get(textureDef.source);
       }
     }
 
-    const nodeDefs = chunks.json.nodes;
+    const nodeDefs = json.nodes;
     if (nodeDefs) {
       const uuidToIndexMap = {};
 
@@ -298,8 +300,8 @@ export default class Editor {
       }
 
       for (const nodeDef of nodeDefs) {
-        if (nodeDef.extensions && nodeDef.extensions.HUBS_components) {
-          const components = nodeDef.extensions.HUBS_components;
+        if (nodeDef.extensions && nodeDef.extensions.MOZ_hubs_components) {
+          const components = nodeDef.extensions.MOZ_hubs_components;
           for (const componentName in components) {
             const component = components[componentName];
 
@@ -314,6 +316,14 @@ export default class Editor {
         }
       }
     }
+
+    if (!json.extensions) {
+      json.extensions = {};
+    }
+
+    json.extensions.MOZ_hubs_components = {
+      version: 1
+    };
 
     return await new Promise((resolve, reject) => {
       exporter.createGLBBlob(chunks, resolve, e => {
