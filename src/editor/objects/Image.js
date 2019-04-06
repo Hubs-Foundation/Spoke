@@ -65,6 +65,7 @@ export default class Image extends THREE.Object3D {
 
   async load(src) {
     this._src = src;
+    this._mesh.visible = false;
 
     const material = this._mesh.material;
 
@@ -74,6 +75,7 @@ export default class Image extends THREE.Object3D {
 
     if (!src) {
       material.map = null;
+      this._mesh.visible = true;
       return;
     }
 
@@ -103,6 +105,7 @@ export default class Image extends THREE.Object3D {
 
     this._mesh.material.map = this._texture;
     this._mesh.material.needsUpdate = true;
+    this._mesh.visible = true;
 
     return this;
   }

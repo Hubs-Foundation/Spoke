@@ -7,6 +7,7 @@ export default class Model extends THREE.Object3D {
     super();
     this.type = "Model";
 
+    this.model = null;
     this._src = null;
     this.animations = [];
     this.clipActions = [];
@@ -33,19 +34,25 @@ export default class Model extends THREE.Object3D {
 
   async load(src) {
     this._src = src;
-
-    const { scene, animations } = await this.loadGLTF(src);
-
-    if (animations) {
-      this.animations = this.animations.concat(animations);
-    }
+    this.animations = [];
+    this.clipActions = [];
+    this._mixer = new THREE.AnimationMixer(this);
 
     if (this.model) {
       this.remove(this.model);
     }
 
+    const { scene, animations } = await this.loadGLTF(src);
+
+    if (animations) {
+      this.animations = animations;
+    }
+
     this.model = scene;
     this.add(scene);
+
+    this.castShadow = this._castShadow;
+    this.receiveShadow = this._receiveShadow;
 
     return this;
   }

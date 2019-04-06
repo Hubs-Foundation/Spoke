@@ -42,6 +42,7 @@ export default class Video extends THREE.Object3D {
     videoEl.setAttribute("playsinline", "");
     videoEl.setAttribute("webkit-playsinline", "");
     videoEl.crossOrigin = "anonymous";
+    videoEl.loop = true;
     this.videoEl = videoEl;
 
     this.audioListener = audioListener;
@@ -86,11 +87,17 @@ export default class Video extends THREE.Object3D {
 
   set audioType(type) {
     let audio;
+    const oldAudio = this.audio;
 
     if (type === AudioType.PannerNode) {
       audio = new THREE.PositionalAudio(this.audioListener);
     } else {
       audio = new THREE.Audio(this.audioListener);
+    }
+
+    if (oldAudio) {
+      audio.gain.gain.value = oldAudio.getVolume();
+      oldAudio.disconnect();
     }
 
     if (this.audioSource) {
@@ -272,10 +279,13 @@ export default class Video extends THREE.Object3D {
     this.remove(this._mesh);
     this._mesh = new THREE.Mesh(geometry, material);
     this.add(this._mesh);
+    this.onResize();
   }
 
   async load(src, contentType) {
     let texture;
+
+    this._mesh.visible = false;
 
     try {
       if (src) {
@@ -301,6 +311,7 @@ export default class Video extends THREE.Object3D {
 
     this._mesh.material.map = this._texture;
     this._mesh.material.needsUpdate = true;
+    this._mesh.visible = true;
 
     return this;
   }

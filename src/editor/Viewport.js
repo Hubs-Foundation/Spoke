@@ -205,6 +205,8 @@ export default class Viewport {
   onCanvasMouseDown = event => {
     event.preventDefault();
 
+    if (this.editor.playing) return;
+
     this.canvas.focus();
 
     const array = this.getMousePosition(this.canvas, event.clientX, event.clientY);
@@ -214,6 +216,8 @@ export default class Viewport {
   };
 
   onCanvasMouseUp = event => {
+    if (this.editor.playing) return;
+
     const array = this.getMousePosition(this.canvas, event.clientX, event.clientY);
     this.onUpPosition.fromArray(array);
 
@@ -223,6 +227,8 @@ export default class Viewport {
   };
 
   onCanvasTouchStart = event => {
+    if (this.editor.playing) return;
+
     const touch = event.changedTouches[0];
 
     const array = this.getMousePosition(this.canvas, touch.clientX, touch.clientY);
@@ -232,6 +238,8 @@ export default class Viewport {
   };
 
   onCanvasTouchEnd = event => {
+    if (this.editor.playing) return;
+
     const touch = event.changedTouches[0];
 
     const array = this.getMousePosition(this.canvas, touch.clientX, touch.clientY);
@@ -243,6 +251,8 @@ export default class Viewport {
   };
 
   onCanvasDoubleClick = event => {
+    if (this.editor.playing) return;
+
     const array = this.getMousePosition(this.canvas, event.clientX, event.clientY);
     this.onDoubleClickPosition.fromArray(array);
 
@@ -313,6 +323,8 @@ export default class Viewport {
   };
 
   onObjectSelected = object => {
+    if (this.editor.playing) return;
+
     this.transformControls.detach();
 
     if (
@@ -336,6 +348,7 @@ export default class Viewport {
   };
 
   onObjectFocused = object => {
+    if (this.editor.playing) return;
     this.controls.focus(object);
   };
 
