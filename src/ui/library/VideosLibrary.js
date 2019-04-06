@@ -4,6 +4,8 @@ import VideoNode from "../../editor/nodes/VideoNode";
 import LibrarySearchContainer from "./LibrarySearchContainer";
 import { withApi } from "../contexts/ApiContext";
 import { withEditor } from "../contexts/EditorContext";
+import AssetContextMenu from "./AssetContextMenu";
+import ProjectAssetContextMenu from "./ProjectAssetContextMenu";
 
 class VideosLibrary extends Component {
   static propTypes = {
@@ -25,14 +27,16 @@ class VideosLibrary extends Component {
           label: "Videos",
           searchPlaceholder: "Search videos...",
           legal: "Search by Bing",
-          privacyPolicyUrl: "https://privacy.microsoft.com/en-us/privacystatement"
+          privacyPolicyUrl: "https://privacy.microsoft.com/en-us/privacystatement",
+          onSearch: (...args) => props.api.searchMedia(...args)
         },
         {
           value: "twitch",
           label: "Twitch",
           searchPlaceholder: "Search channels...",
           legal: "Search by Twitch",
-          privacyPolicyUrl: "https://www.twitch.tv/p/legal/privacy-policy/"
+          privacyPolicyUrl: "https://www.twitch.tv/p/legal/privacy-policy/",
+          onSearch: (...args) => props.api.searchMedia(...args)
         },
         {
           value: "tenor",
@@ -42,7 +46,8 @@ class VideosLibrary extends Component {
           filterIsClearable: true,
           searchPlaceholder: "Search gifs...",
           legal: "Search by Tenor",
-          privacyPolicyUrl: "https://tenor.com/legal-privacy"
+          privacyPolicyUrl: "https://tenor.com/legal-privacy",
+          onSearch: (...args) => props.api.searchMedia(...args)
         },
         {
           value: "project_assets",
@@ -53,7 +58,8 @@ class VideosLibrary extends Component {
           legal: "Search by Mozilla Hubs",
           privacyPolicyUrl: "https://github.com/mozilla/hubs/blob/master/PRIVACY.md",
           onSearch: (source, params) => props.api.getProjectAssets(props.editor.projectId, params),
-          upload: true
+          onUpload: (...args) => props.api.uploadProjectAssets(props.editor, props.editor.projectId, ...args),
+          contextMenu: ProjectAssetContextMenu
         },
         {
           value: "assets",
@@ -63,20 +69,22 @@ class VideosLibrary extends Component {
           searchPlaceholder: "Search my assets...",
           legal: "Search by Mozilla Hubs",
           privacyPolicyUrl: "https://github.com/mozilla/hubs/blob/master/PRIVACY.md",
-          upload: true
+          onSearch: (...args) => props.api.searchMedia(...args),
+          onUpload: (...args) => props.api.uploadAssets(props.editor, ...args),
+          contextMenu: AssetContextMenu
         }
       ]
     };
   }
 
-  onSelect = item => {
+  onSelect = (item, source) => {
     const props = { src: item.url };
 
     if (item.name) {
       props.name = item.name;
     }
 
-    this.props.onSelectItem(VideoNode, props);
+    this.props.onSelectItem(VideoNode, props, item, source);
   };
 
   render() {

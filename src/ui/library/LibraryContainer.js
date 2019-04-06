@@ -8,11 +8,13 @@ import VideosLibrary from "./VideosLibrary";
 import ImagesLibrary from "./ImagesLibrary";
 import AssetsLibrary from "./AssetsLibrary";
 import { withEditor } from "../contexts/EditorContext";
+import { withApi } from "../contexts/ApiContext";
 import PropTypes from "prop-types";
 
 class LibraryContainer extends Component {
   static propTypes = {
-    editor: PropTypes.object.isRequired
+    editor: PropTypes.object.isRequired,
+    api: PropTypes.object.isRequired
   };
 
   state = {
@@ -57,8 +59,8 @@ class LibraryContainer extends Component {
     ]
   };
 
-  onSelectItem = (NodeType, props) => {
-    const editor = this.props.editor;
+  onSelectItem = (NodeType, props, item, source) => {
+    const { editor, api } = this.props;
     const node = new NodeType(editor);
 
     if (props) {
@@ -67,6 +69,10 @@ class LibraryContainer extends Component {
           node[propName] = props[propName];
         }
       }
+    }
+
+    if (source.value === "assets") {
+      api.addAssetToProject(editor.projectId, item.id).catch(console.error);
     }
 
     editor.addObject(node);
@@ -95,4 +101,4 @@ class LibraryContainer extends Component {
   }
 }
 
-export default withEditor(LibraryContainer);
+export default withEditor(withApi(LibraryContainer));

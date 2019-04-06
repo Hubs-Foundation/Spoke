@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
+import { ContextMenuTrigger } from "react-contextmenu";
 import styles from "./LibraryGridItem.scss";
 
 const typeToClassName = {
@@ -29,6 +30,10 @@ function renderItem(item) {
   );
 }
 
+function collectMenuProps({ item }) {
+  return { item };
+}
+
 export default class LibraryGridItem extends Component {
   static propTypes = {
     tooltipId: PropTypes.string.isRequired,
@@ -49,24 +54,12 @@ export default class LibraryGridItem extends Component {
   render() {
     const { item, tooltipId, renderItem } = this.props;
 
-    if (item.url) {
-      return (
-        <a
-          href={item.url}
-          className={styles.libraryGridItem}
-          onClick={this.onClick}
-          data-tip={item.id}
-          data-for={tooltipId}
-        >
-          {renderItem(item)}
-        </a>
-      );
-    }
-
     return (
-      <div className={styles.libraryGridItem} onClick={this.onClick} data-tip={item.id} data-for={tooltipId}>
-        {renderItem(item)}
-      </div>
+      <ContextMenuTrigger id={tooltipId} item={item} collect={collectMenuProps} holdToDisplay={-1}>
+        <div className={styles.libraryGridItem} onClick={this.onClick} data-tip={item.id} data-for={tooltipId}>
+          {renderItem(item)}
+        </div>
+      </ContextMenuTrigger>
     );
   }
 }

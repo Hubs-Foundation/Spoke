@@ -4,6 +4,8 @@ import styles from "./LibraryInput.scss";
 import StringInput from "./StringInput";
 import Button from "./Button";
 import { withDialog } from "../contexts/DialogContext";
+import { withApi } from "../contexts/ApiContext";
+import { withEditor } from "../contexts/EditorContext";
 import LibraryDialog from "../dialogs/LibraryDialog";
 
 class LibraryInput extends Component {
@@ -13,7 +15,9 @@ class LibraryInput extends Component {
     value: PropTypes.string.isRequired,
     onChange: PropTypes.func.isRequired,
     showDialog: PropTypes.func.isRequired,
-    hideDialog: PropTypes.func.isRequired
+    hideDialog: PropTypes.func.isRequired,
+    api: PropTypes.object.isRequired,
+    editor: PropTypes.object.isRequired
   };
 
   constructor(props) {
@@ -52,7 +56,13 @@ class LibraryInput extends Component {
     });
   };
 
-  onSelectItem = (NodeType, props) => {
+  onSelectItem = (NodeType, props, item, source) => {
+    const { api, editor } = this.props;
+
+    if (source.value === "assets") {
+      api.addAssetToProject(editor.projectId, item.id).catch(console.error);
+    }
+
     this.props.onChange(props.src);
   };
 
@@ -68,4 +78,4 @@ class LibraryInput extends Component {
   }
 }
 
-export default withDialog(LibraryInput);
+export default withDialog(withEditor(withApi(LibraryInput)));

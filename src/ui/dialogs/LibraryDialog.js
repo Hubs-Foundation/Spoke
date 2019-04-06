@@ -13,9 +13,9 @@ export default class LibraryDialog extends Component {
     hideDialog: PropTypes.func.isRequired
   };
 
-  onSelectItem = (NodeType, props) => {
+  onSelectItem = (...args) => {
     this.props.hideDialog();
-    this.props.onSelectItem(NodeType, props);
+    this.props.onSelectItem(...args);
   };
 
   onCancel = () => {

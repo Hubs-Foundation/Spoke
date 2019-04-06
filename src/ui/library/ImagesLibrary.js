@@ -4,6 +4,8 @@ import ImageNode from "../../editor/nodes/ImageNode";
 import LibrarySearchContainer from "./LibrarySearchContainer";
 import { withApi } from "../contexts/ApiContext";
 import { withEditor } from "../contexts/EditorContext";
+import AssetContextMenu from "./AssetContextMenu";
+import ProjectAssetContextMenu from "./ProjectAssetContextMenu";
 
 class ImagesLibrary extends Component {
   static propTypes = {
@@ -25,7 +27,8 @@ class ImagesLibrary extends Component {
           label: "Images",
           searchPlaceholder: "Search images...",
           legal: "Search by Bing",
-          privacyPolicyUrl: "https://privacy.microsoft.com/en-us/privacystatement"
+          privacyPolicyUrl: "https://privacy.microsoft.com/en-us/privacystatement",
+          onSearch: (...args) => props.api.searchMedia(...args)
         },
         {
           value: "project_assets",
@@ -36,7 +39,8 @@ class ImagesLibrary extends Component {
           legal: "Search by Mozilla Hubs",
           privacyPolicyUrl: "https://github.com/mozilla/hubs/blob/master/PRIVACY.md",
           onSearch: (source, params) => props.api.getProjectAssets(props.editor.projectId, params),
-          upload: true
+          onUpload: (...args) => props.api.uploadProjectAssets(props.editor, props.editor.projectId, ...args),
+          contextMenu: ProjectAssetContextMenu
         },
         {
           value: "assets",
@@ -46,20 +50,22 @@ class ImagesLibrary extends Component {
           searchPlaceholder: "Search my assets...",
           legal: "Search by Mozilla Hubs",
           privacyPolicyUrl: "https://github.com/mozilla/hubs/blob/master/PRIVACY.md",
-          upload: true
+          onSearch: (...args) => props.api.searchMedia(...args),
+          onUpload: (...args) => props.api.uploadAssets(props.editor, ...args),
+          contextMenu: AssetContextMenu
         }
       ]
     };
   }
 
-  onSelect = item => {
+  onSelect = (item, source) => {
     const props = { src: item.url };
 
     if (item.name) {
       props.name = item.name;
     }
 
-    this.props.onSelectItem(ImageNode, props);
+    this.props.onSelectItem(ImageNode, props, item, source);
   };
 
   render() {

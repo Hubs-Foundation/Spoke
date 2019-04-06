@@ -650,9 +650,20 @@ export default class Project extends EventEmitter {
     }
   }
 
-  upload(blob, onUploadProgress) {
+  upload(blob, onUploadProgress, signal) {
     return new Promise((resolve, reject) => {
       const request = new XMLHttpRequest();
+
+      const onAbort = () => {
+        request.abort();
+        const error = new Error("Upload aborted");
+        error.name = "AbortError";
+        reject(error);
+      };
+
+      if (signal) {
+        signal.addEventListener("abort", onAbort);
+      }
 
       request.open("post", `https://${RETICULUM_SERVER}/api/v1/media`, true);
 
@@ -663,10 +674,17 @@ export default class Project extends EventEmitter {
       });
 
       request.addEventListener("error", e => {
+        if (signal) {
+          signal.removeEventListener("abort", onAbort);
+        }
         reject(new Error(`Upload failed ${e}`));
       });
 
       request.addEventListener("load", () => {
+        if (signal) {
+          signal.removeEventListener("abort", onAbort);
+        }
+
         if (request.status < 300) {
           const response = JSON.parse(request.responseText);
           resolve(response);
@@ -727,33 +745,87 @@ export default class Project extends EventEmitter {
     return { results: assets, nextCursor: 0 };
   }
 
-  lastUploadProjectAssetRequest = 0;
+  uploadAssets(editor, files, onProgress, signal) {
+    return this._uploadAssets(`https://${RETICULUM_SERVER}/api/v1/assets`, editor, files, onProgress, signal);
+  }
 
-  async uploadProjectAsset(projectId, editor, file, showDialog, hideDialog) {
-    const thumbnailTask = (async () => {
-      const blob = await editor.generateFileThumbnail(file);
-      return this.upload(blob);
-    })();
+  uploadProjectAssets(editor, projectId, files, onProgress, signal) {
+    return this._uploadAssets(
+      `https://${RETICULUM_SERVER}/api/v1/projects/${projectId}/assets`,
+      editor,
+      files,
+      onProgress,
+      signal
+    );
+  }
 
-    const uploadTask = this.upload(file, uploadProgress => {
-      showDialog(ProgressDialog, {
-        title: "Uploading File",
-        message: `Uploading file: ${Math.floor(uploadProgress * 100)}%`
-      });
-    });
+  async _uploadAssets(endpoint, editor, files, onProgress, signal) {
+    const assets = [];
 
-    const [
-      {
-        file_id: thumbnail_file_id,
-        meta: { access_token: thumbnail_access_token }
-      },
-      {
-        file_id: asset_file_id,
-        meta: { access_token: asset_access_token }
+    for (const file of Array.from(files)) {
+      try {
+        if (signal.aborted) {
+          break;
+        }
+
+        const abortController = new AbortController();
+        const onAbort = () => abortController.abort();
+        signal.addEventListener("abort", onAbort);
+
+        const asset = await this._uploadAsset(
+          endpoint,
+          editor,
+          file,
+          progress => onProgress(assets.length + 1, files.length, progress),
+          abortController.signal
+        );
+
+        assets.push(asset);
+        signal.removeEventListener("abort", onAbort);
+
+        if (signal.aborted) {
+          break;
+        }
+      } catch (error) {
+        if (error.name !== "AbortError") {
+          throw error;
+        }
       }
-    ] = await Promise.all([thumbnailTask, uploadTask]);
+    }
 
-    const delta = Date.now() - this.lastUploadProjectAssetRequest;
+    return assets;
+  }
+
+  uploadAsset(editor, file, onProgress, signal) {
+    return this._uploadAsset(`https://${RETICULUM_SERVER}/api/v1/assets`, editor, file, onProgress, signal);
+  }
+
+  uploadProjectAsset(editor, projectId, file, onProgress, signal) {
+    return this._uploadAsset(
+      `https://${RETICULUM_SERVER}/api/v1/projects/${projectId}/assets`,
+      editor,
+      file,
+      onProgress,
+      signal
+    );
+  }
+
+  lastUploadAssetRequest = 0;
+
+  async _uploadAsset(endpoint, editor, file, onProgress, signal) {
+    const thumbnailBlob = await editor.generateFileThumbnail(file);
+
+    const {
+      file_id: thumbnail_file_id,
+      meta: { access_token: thumbnail_access_token }
+    } = await this.upload(thumbnailBlob, undefined, signal);
+
+    const {
+      file_id: asset_file_id,
+      meta: { access_token: asset_access_token }
+    } = await this.upload(file, onProgress, signal);
+
+    const delta = Date.now() - this.lastUploadAssetRequest;
 
     if (delta < 1100) {
       await new Promise(resolve => setTimeout(resolve, 1100 - delta));
@@ -776,17 +848,13 @@ export default class Project extends EventEmitter {
       }
     });
 
-    const projectAssetsEndpoint = `https://${RETICULUM_SERVER}/api/v1/projects/${projectId}/assets`;
-
-    const resp = await this.fetch(projectAssetsEndpoint, { method: "POST", headers, body });
+    const resp = await this.fetch(endpoint, { method: "POST", headers, body, signal });
 
     const json = await resp.json();
 
-    hideDialog();
-
     const asset = json.assets[0];
 
-    this.lastUploadProjectAssetRequest = Date.now();
+    this.lastUploadAssetRequest = Date.now();
 
     return {
       id: asset.asset_id,
@@ -798,6 +866,25 @@ export default class Project extends EventEmitter {
         preview: { url: asset.thumbnail_url }
       }
     };
+  }
+
+  async addAssetToProject(projectId, assetId) {
+    const token = this.getToken();
+
+    const headers = {
+      "content-type": "application/json",
+      authorization: `Bearer ${token}`
+    };
+
+    const body = JSON.stringify({
+      asset_id: assetId
+    });
+
+    const projectAssetsEndpoint = `https://${RETICULUM_SERVER}/api/v1/projects/${projectId}/assets`;
+
+    const resp = await this.fetch(projectAssetsEndpoint, { method: "POST", headers, body });
+
+    return resp.ok;
   }
 
   async deleteAsset(assetId) {
