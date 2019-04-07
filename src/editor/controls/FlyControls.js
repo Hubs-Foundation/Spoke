@@ -11,7 +11,14 @@ export default class FlyControls {
     this.lookSensitivity = 1;
     this.direction = new THREE.Vector3();
     this.maxXRotation = THREE.Math.degToRad(70);
+    this.inputManager.canvas.addEventListener("click", this.onClickCanvas);
   }
+
+  onClickCanvas = () => {
+    if (this.enabled && document.pointerLockElement !== this.inputManager.canvas) {
+      this.inputManager.canvas.requestPointerLock();
+    }
+  };
 
   enable() {
     this.enabled = true;
@@ -22,10 +29,11 @@ export default class FlyControls {
   disable() {
     this.enabled = false;
     this.inputManager.setInputMapping({});
+    this.inputManager.canvas.exitPointerLock();
   }
 
   update(dt) {
-    if (!this.enabled || !this.inputManager.enabled) return;
+    if (!this.enabled || document.pointerLockElement !== this.inputManager.canvas) return;
 
     const input = this.inputManager;
 

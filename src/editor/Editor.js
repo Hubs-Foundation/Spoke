@@ -568,7 +568,6 @@ export default class Editor {
     this.deselect();
     this.camera.layers.disable(1);
     this.viewport.controls.enabled = false;
-    this.viewport.inputManager.enabled = true;
     this.viewport.flyControls.enable();
 
     this.scene.traverse(node => {
@@ -582,7 +581,6 @@ export default class Editor {
     this.playing = false;
     this.camera.layers.enable(1);
     this.viewport.controls.enabled = true;
-    this.viewport.inputManager.enabled = false;
     this.viewport.flyControls.disable();
 
     this.scene.traverse(node => {

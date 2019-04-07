@@ -16,30 +16,10 @@ export default class InputManager {
     this.mapping = {};
     this.initialState = {};
     this.state = {};
-    this._enabled = false;
 
     window.addEventListener("keydown", this.onKeyDown);
     window.addEventListener("keyup", this.onKeyUp);
     window.addEventListener("mousemove", this.onMouseMove);
-    this.canvas.addEventListener("click", this.onClickCanvas);
-  }
-
-  onClickCanvas = () => {
-    if (this._enabled && document.pointerLockElement !== this.canvas) {
-      this.canvas.requestPointerLock();
-    }
-  };
-
-  exitPointerLock() {
-    this.canvas.exitPointerLock();
-  }
-
-  set enabled(enabled) {
-    this._enabled = enabled;
-  }
-
-  get enabled() {
-    return document.pointerLockElement === this.canvas && this._enabled;
   }
 
   setInputMapping(mapping) {
@@ -71,8 +51,6 @@ export default class InputManager {
   }
 
   onKeyDown = event => {
-    if (!this.enabled) return;
-
     const keyboardMapping = this.mapping.keyboard;
 
     if (!keyboardMapping) return;
@@ -99,8 +77,6 @@ export default class InputManager {
   };
 
   onKeyUp = event => {
-    if (!this.enabled) return;
-
     const keyboardMapping = this.mapping.keyboard;
 
     if (!keyboardMapping) return;
@@ -127,8 +103,6 @@ export default class InputManager {
   };
 
   onMouseMove = event => {
-    if (!this.enabled) return;
-
     const mouseMapping = this.mapping.mouse;
 
     if (!mouseMapping) return;
@@ -145,8 +119,6 @@ export default class InputManager {
   };
 
   update() {
-    if (!this.enabled) return;
-
     const computed = this.mapping.computed;
 
     if (computed) {
@@ -157,8 +129,6 @@ export default class InputManager {
   }
 
   reset() {
-    if (!this.enabled) return;
-
     const mouseMapping = this.mapping.mouse;
 
     if (mouseMapping && mouseMapping.move) {
