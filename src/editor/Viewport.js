@@ -9,6 +9,8 @@ import OutlinePass from "./renderer/OutlinePass";
 import { environmentMap } from "./utils/EnvironmentMap";
 import { traverseMaterials } from "./utils/materials";
 import { getCanvasBlob } from "./utils/thumbnails";
+import InputManager from "./controls/InputManager";
+import FlyControls from "./controls/FlyControls";
 
 /**
  * @author mrdoob / http://mrdoob.com/
@@ -70,6 +72,9 @@ export default class Viewport {
     this.objectRotationOnDown = null;
     this.objectScaleOnDown = null;
 
+    this.inputManager = new InputManager(canvas);
+    this.flyControls = new FlyControls(camera, this.inputManager);
+
     this.skipRender = false;
 
     this.clock = new THREE.Clock();
@@ -78,6 +83,7 @@ export default class Viewport {
       if (!this.skipRender) {
         const delta = this.clock.getDelta();
         editor.scene.updateMatrixWorld();
+        this.inputManager.update();
 
         editor.scene.traverse(node => {
           if (node.isDirectionalLight) {
@@ -89,8 +95,10 @@ export default class Viewport {
           }
         });
         this.transformControls.update();
+        this.flyControls.update(delta);
         effectComposer.render();
         signals.sceneRendered.dispatch(renderer, editor.scene);
+        this.inputManager.reset();
       }
 
       this.rafId = requestAnimationFrame(render);
