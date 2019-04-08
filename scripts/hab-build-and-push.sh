@@ -24,11 +24,8 @@ rm /usr/bin/env
 ln -s "$(hab pkg path core/coreutils)/bin/env" /usr/bin/env
 hab pkg install -b core/coreutils core/bash core/node10 core/git core/aws-cli core/python2
 
-npm config set cache "$(pwd)/.npm" --global # Set the npm cache to a directory in the current workspace so that it can be reused across ci builds
+npm config set cache "$(pwd)/.npm" # Set the npm cache to a directory in the current workspace so that it can be reused across ci builds
 npm ci --verbose --no-progress
-npm rebuild node-sass # HACK sometimes node-sass build fails
-npm rebuild node-sass # HACK sometimes node-sass build fails
-npm rebuild node-sass # HACK sometimes node-sass build fails
 npm run build
 mkdir -p dist/pages
 mv dist/*.html dist/pages
