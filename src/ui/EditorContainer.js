@@ -491,7 +491,9 @@ export default class EditorContainer extends Component {
       const el = document.createElement("a");
       el.download = editor.scene.name + ".glb";
       el.href = URL.createObjectURL(glbBlob);
+      document.body.appendChild(el);
       el.click();
+      document.body.removeChild(el);
     } catch (e) {
       console.error(e);
 

@@ -178,8 +178,8 @@ export default function EditorNodeMixin(Object3DClass) {
         this.userData.gltfExtensions = {};
       }
 
-      if (!this.userData.gltfExtensions.HUBS_components) {
-        this.userData.gltfExtensions.HUBS_components = {};
+      if (!this.userData.gltfExtensions.MOZ_hubs_components) {
+        this.userData.gltfExtensions.MOZ_hubs_components = {};
       }
 
       if (props !== undefined && typeof props !== "object") {
@@ -198,7 +198,7 @@ export default function EditorNodeMixin(Object3DClass) {
         }
       }
 
-      this.userData.gltfExtensions.HUBS_components[name] = props;
+      this.userData.gltfExtensions.MOZ_hubs_components[name] = props;
     }
 
     replaceObject(replacementObject) {
@@ -206,8 +206,8 @@ export default function EditorNodeMixin(Object3DClass) {
 
       replacementObject.uuid = this.uuid;
 
-      if (this.userData.gltfExtensions && this.userData.gltfExtensions.HUBS_components) {
-        replacementObject.userData.gltfExtensions.HUBS_components = this.userData.gltfExtensions.HUBS_components;
+      if (this.userData.gltfExtensions && this.userData.gltfExtensions.MOZ_hubs_components) {
+        replacementObject.userData.gltfExtensions.MOZ_hubs_components = this.userData.gltfExtensions.MOZ_hubs_components;
       }
 
       this.parent.add(replacementObject);

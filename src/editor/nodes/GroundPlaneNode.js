@@ -76,7 +76,7 @@ export default class GroundPlaneNode extends EditorNodeMixin(GroundPlane) {
     const groundPlaneCollider = new THREE.Object3D();
     groundPlaneCollider.scale.set(this.walkableMesh.scale.x, 0.1, this.walkableMesh.scale.z);
     groundPlaneCollider.userData.gltfExtensions = {
-      HUBS_components: {
+      MOZ_hubs_components: {
         "box-collider": {
           // TODO: Remove exporting these properties. They are already included in the transform props.
           position: groundPlaneCollider.position,
