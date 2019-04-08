@@ -174,6 +174,10 @@ export default class EditorContainer extends Component {
           {
             name: "Import legacy .spoke project",
             action: this.onImportLegacyProject
+          },
+          {
+            name: "Export legacy .spoke project",
+            action: this.onExportLegacyProject
           }
         ]
       },
@@ -538,6 +542,19 @@ export default class EditorContainer extends Component {
       }
     };
     el.click();
+  };
+
+  onExportLegacyProject = async () => {
+    const editor = this.state.editor;
+    const project = editor.scene.serialize();
+    const projectString = JSON.stringify(project);
+    const projectBlob = new Blob([projectString]);
+    const el = document.createElement("a");
+    el.download = this.state.editor.scene.name + ".spoke";
+    el.href = URL.createObjectURL(projectBlob);
+    document.body.appendChild(el);
+    el.click();
+    document.body.removeChild(el);
   };
 
   onPublishProject = async () => {
