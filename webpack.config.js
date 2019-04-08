@@ -153,7 +153,13 @@ module.exports = env => {
           use: [
             process.env.NODE_ENV !== "production" ? "style-loader" : MiniCssExtractPlugin.loader,
             "css-loader",
-            "sass-loader"
+            {
+              loader: "sass-loader",
+              options: {
+                implementation: require("sass"),
+                fiber: require("fibers")
+              }
+            }
           ]
         },
         {
