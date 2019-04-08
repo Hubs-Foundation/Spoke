@@ -562,4 +562,31 @@ export default class Editor {
 
     return blob;
   }
+
+  enterPlayMode() {
+    this.playing = true;
+    this.deselect();
+    this.camera.layers.disable(1);
+    this.viewport.controls.enabled = false;
+    this.viewport.flyControls.enable();
+
+    this.scene.traverse(node => {
+      if (node.isNode) {
+        node.onPlay();
+      }
+    });
+  }
+
+  leavePlayMode() {
+    this.playing = false;
+    this.camera.layers.enable(1);
+    this.viewport.controls.enabled = true;
+    this.viewport.flyControls.disable();
+
+    this.scene.traverse(node => {
+      if (node.isNode) {
+        node.onPause();
+      }
+    });
+  }
 }

@@ -83,11 +83,15 @@ export default function EditorNodeMixin(Object3DClass) {
       return this;
     }
 
+    onPlay() {}
+
     onUpdate(dt) {
       if (this.loadingCube) {
         this.loadingCube.update(dt);
       }
     }
+
+    onPause() {}
 
     onAdd() {}
 
@@ -240,6 +244,7 @@ export default function EditorNodeMixin(Object3DClass) {
     hideLoadingCube() {
       if (this.loadingCube) {
         this.remove(this.loadingCube);
+        this.loadingCube = null;
       }
     }
 

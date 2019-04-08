@@ -29,21 +29,24 @@ export default class VideoNode extends EditorNodeMixin(Video) {
       projection
     } = json.components.find(c => c.name === "video").props;
 
-    loadAsync(node.load(src));
-
-    node.controls = controls;
-    node.autoPlay = autoPlay;
-    node.loop = loop;
-    node.audioType = audioType;
-    node.volume = volume;
-    node.distanceModel = distanceModel;
-    node.rolloffFactor = rolloffFactor;
-    node.refDistance = refDistance;
-    node.maxDistance = maxDistance;
-    node.coneInnerAngle = coneInnerAngle;
-    node.coneOuterAngle = coneOuterAngle;
-    node.coneOuterGain = coneOuterGain;
-    node.projection = projection;
+    loadAsync(
+      (async () => {
+        await node.load(src);
+        node.controls = controls;
+        node.autoPlay = autoPlay;
+        node.loop = loop;
+        node.audioType = audioType;
+        node.volume = volume;
+        node.distanceModel = distanceModel;
+        node.rolloffFactor = rolloffFactor;
+        node.refDistance = refDistance;
+        node.maxDistance = maxDistance;
+        node.coneInnerAngle = coneInnerAngle;
+        node.coneOuterAngle = coneOuterAngle;
+        node.coneOuterGain = coneOuterGain;
+        node.projection = projection;
+      })()
+    );
 
     return node;
   }
@@ -74,7 +77,12 @@ export default class VideoNode extends EditorNodeMixin(Video) {
 
   async load(src) {
     this.showLoadingCube();
+    this._mesh.visible = false;
     this._canonicalUrl = src || "";
+
+    if (this.editor.playing) {
+      this.videoEl.pause();
+    }
 
     try {
       const { accessibleUrl, contentType } = await this.editor.api.resolveMedia(src);
@@ -108,6 +116,10 @@ export default class VideoNode extends EditorNodeMixin(Video) {
       } else if (this.videoEl.duration) {
         this.videoEl.currentTime = 1;
       }
+
+      if (this.editor.playing && this.autoPlay) {
+        this.videoEl.play();
+      }
     } catch (e) {
       console.error(e);
     }
@@ -115,6 +127,17 @@ export default class VideoNode extends EditorNodeMixin(Video) {
     this.hideLoadingCube();
 
     return this;
+  }
+
+  onPlay() {
+    if (this.autoPlay) {
+      this.videoEl.play();
+    }
+  }
+
+  onPause() {
+    this.videoEl.pause();
+    this.videoEl.currentTime = 0;
   }
 
   onChange() {

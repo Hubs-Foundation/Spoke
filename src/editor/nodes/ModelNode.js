@@ -11,33 +11,37 @@ export default class ModelNode extends EditorNodeMixin(Model) {
   static async deserialize(editor, json, loadAsync) {
     const node = await super.deserialize(editor, json);
 
-    const { src, attribution } = json.components.find(c => c.name === "gltf-model").props;
+    loadAsync(
+      (async () => {
+        const { src, attribution } = json.components.find(c => c.name === "gltf-model").props;
 
-    loadAsync(node.load(src));
+        await node.load(src);
 
-    // Legacy, might be a raw string left over before switch to JSON.
-    if (attribution && typeof attribution === "string") {
-      const [name, author] = attribution.split(" by ");
-      node.attribution = { name, author };
-    } else {
-      node.attribution = attribution;
-    }
+        // Legacy, might be a raw string left over before switch to JSON.
+        if (attribution && typeof attribution === "string") {
+          const [name, author] = attribution.split(" by ");
+          node.attribution = { name, author };
+        } else {
+          node.attribution = attribution;
+        }
 
-    node.collidable = !!json.components.find(c => c.name === "collidable");
-    node.walkable = !!json.components.find(c => c.name === "walkable");
+        node.collidable = !!json.components.find(c => c.name === "collidable");
+        node.walkable = !!json.components.find(c => c.name === "walkable");
 
-    const loopAnimationComponent = json.components.find(c => c.name === "loop-animation");
+        const loopAnimationComponent = json.components.find(c => c.name === "loop-animation");
 
-    if (loopAnimationComponent && loopAnimationComponent.props.clip) {
-      node.activeClipName = loopAnimationComponent.props.clip;
-    }
+        if (loopAnimationComponent && loopAnimationComponent.props.clip) {
+          node.activeClipName = loopAnimationComponent.props.clip;
+        }
 
-    const shadowComponent = json.components.find(c => c.name === "shadow");
+        const shadowComponent = json.components.find(c => c.name === "shadow");
 
-    if (shadowComponent) {
-      node.castShadow = shadowComponent.props.cast;
-      node.receiveShadow = shadowComponent.props.receive;
-    }
+        if (shadowComponent) {
+          node.castShadow = shadowComponent.props.cast;
+          node.receiveShadow = shadowComponent.props.receive;
+        }
+      })()
+    );
 
     return node;
   }
@@ -80,12 +84,17 @@ export default class ModelNode extends EditorNodeMixin(Model) {
   async load(src) {
     this.showLoadingCube();
 
+    this.remove(this.model);
+    this.model = null;
+
     this._canonicalUrl = src || "";
 
     try {
       const { accessibleUrl, files } = await this.editor.api.resolveMedia(src);
 
       await super.load(accessibleUrl);
+
+      this.editor.signals.objectChanged.dispatch(this);
 
       if (files) {
         // Revoke any object urls from the SketchfabZipLoader.
@@ -126,6 +135,46 @@ export default class ModelNode extends EditorNodeMixin(Model) {
           setStaticMode(animatedNode, StaticModes.Dynamic);
         }
       }
+    }
+  }
+
+  get activeClipName() {
+    if (this.clipActions.length > 0) {
+      return this.clipActions[0].getClip().name;
+    }
+
+    return null;
+  }
+
+  set activeClipName(clipName) {
+    if (!clipName && this.editor.playing) {
+      for (const clipAction of this.clipActions) {
+        clipAction.stop();
+      }
+    }
+
+    this.clipActions = [];
+    const clipAction = this.addClipAction(clipName);
+
+    if (clipAction && this.editor.playing) {
+      clipAction.play();
+    }
+  }
+
+  onPlay() {
+    for (const clipAction of this.clipActions) {
+      clipAction.play();
+    }
+  }
+
+  onUpdate(dt) {
+    super.onUpdate(dt);
+    this.update(dt);
+  }
+
+  onPause() {
+    for (const clipAction of this.clipActions) {
+      clipAction.stop();
     }
   }
 

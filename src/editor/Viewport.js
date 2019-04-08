@@ -9,6 +9,8 @@ import OutlinePass from "./renderer/OutlinePass";
 import { environmentMap } from "./utils/EnvironmentMap";
 import { traverseMaterials } from "./utils/materials";
 import { getCanvasBlob } from "./utils/thumbnails";
+import InputManager from "./controls/InputManager";
+import FlyControls from "./controls/FlyControls";
 
 /**
  * @author mrdoob / http://mrdoob.com/
@@ -70,6 +72,9 @@ export default class Viewport {
     this.objectRotationOnDown = null;
     this.objectScaleOnDown = null;
 
+    this.inputManager = new InputManager(canvas);
+    this.flyControls = new FlyControls(camera, this.inputManager);
+
     this.skipRender = false;
 
     this.clock = new THREE.Clock();
@@ -78,6 +83,7 @@ export default class Viewport {
       if (!this.skipRender) {
         const delta = this.clock.getDelta();
         editor.scene.updateMatrixWorld();
+        this.inputManager.update();
 
         editor.scene.traverse(node => {
           if (node.isDirectionalLight) {
@@ -89,8 +95,10 @@ export default class Viewport {
           }
         });
         this.transformControls.update();
+        this.flyControls.update(delta);
         effectComposer.render();
         signals.sceneRendered.dispatch(renderer, editor.scene);
+        this.inputManager.reset();
       }
 
       this.rafId = requestAnimationFrame(render);
@@ -205,6 +213,8 @@ export default class Viewport {
   onCanvasMouseDown = event => {
     event.preventDefault();
 
+    if (this.editor.playing) return;
+
     this.canvas.focus();
 
     const array = this.getMousePosition(this.canvas, event.clientX, event.clientY);
@@ -214,6 +224,8 @@ export default class Viewport {
   };
 
   onCanvasMouseUp = event => {
+    if (this.editor.playing) return;
+
     const array = this.getMousePosition(this.canvas, event.clientX, event.clientY);
     this.onUpPosition.fromArray(array);
 
@@ -223,6 +235,8 @@ export default class Viewport {
   };
 
   onCanvasTouchStart = event => {
+    if (this.editor.playing) return;
+
     const touch = event.changedTouches[0];
 
     const array = this.getMousePosition(this.canvas, touch.clientX, touch.clientY);
@@ -232,6 +246,8 @@ export default class Viewport {
   };
 
   onCanvasTouchEnd = event => {
+    if (this.editor.playing) return;
+
     const touch = event.changedTouches[0];
 
     const array = this.getMousePosition(this.canvas, touch.clientX, touch.clientY);
@@ -243,6 +259,8 @@ export default class Viewport {
   };
 
   onCanvasDoubleClick = event => {
+    if (this.editor.playing) return;
+
     const array = this.getMousePosition(this.canvas, event.clientX, event.clientY);
     this.onDoubleClickPosition.fromArray(array);
 
@@ -313,6 +331,8 @@ export default class Viewport {
   };
 
   onObjectSelected = object => {
+    if (this.editor.playing) return;
+
     this.transformControls.detach();
 
     if (
@@ -336,6 +356,7 @@ export default class Viewport {
   };
 
   onObjectFocused = object => {
+    if (this.editor.playing) return;
     this.controls.focus(object);
   };
 
