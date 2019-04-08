@@ -22,6 +22,7 @@ import { createEditor } from "../config";
 
 import ErrorDialog from "./dialogs/ErrorDialog";
 import ProgressDialog from "./dialogs/ProgressDialog";
+import ConfirmDialog from "./dialogs/ConfirmDialog";
 
 function isInputSelected() {
   const el = document.activeElement;
@@ -169,6 +170,10 @@ export default class EditorContainer extends Component {
           {
             name: "Export as binary glTF (.glb) ...",
             action: this.onExportProject
+          },
+          {
+            name: "Import legacy .spoke project",
+            action: this.onImportLegacyProject
           }
         ]
       },
@@ -502,6 +507,37 @@ export default class EditorContainer extends Component {
         message: e.message || "There was an error when exporting the project."
       });
     }
+  };
+
+  onImportLegacyProject = async () => {
+    const confirm = await new Promise(resolve => {
+      this.showDialog(ConfirmDialog, {
+        title: "Import Legacy Spoke Project",
+        message: "Warning! This will overwrite your existing scene! Are you sure you wish to continue?",
+        onConfirm: () => resolve(true),
+        onCancel: () => resolve(false)
+      });
+    });
+
+    if (!confirm) return;
+
+    this.hideDialog();
+
+    const el = document.createElement("input");
+    el.type = "file";
+    el.accept = ".spoke";
+    el.style.display = "none";
+    el.onchange = () => {
+      if (el.files.length > 0) {
+        const fileReader = new FileReader();
+        fileReader.onload = () => {
+          const json = JSON.parse(fileReader.result);
+          this.loadProject(json);
+        };
+        fileReader.readAsText(el.files[0]);
+      }
+    };
+    el.click();
   };
 
   onPublishProject = async () => {
