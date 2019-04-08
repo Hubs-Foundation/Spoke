@@ -29,7 +29,7 @@ export default class FlyControls {
   disable() {
     this.enabled = false;
     this.inputManager.setInputMapping({});
-    this.inputManager.canvas.exitPointerLock();
+    document.exitPointerLock();
   }
 
   update(dt) {
