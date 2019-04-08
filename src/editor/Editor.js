@@ -30,6 +30,7 @@ import cloneObject3D from "./utils/cloneObject3D";
 import isEmptyObject from "./utils/isEmptyObject";
 import { loadEnvironmentMap } from "./utils/EnvironmentMap";
 import { generateImageFileThumbnail, generateVideoFileThumbnail } from "./utils/thumbnails";
+import SetMaterialPropertyCommand from "./commands/SetMaterialPropertyCommand";
 
 export default class Editor {
   constructor(api) {
@@ -395,6 +396,25 @@ export default class Editor {
 
   setNodeProperty(node, propertyName, value) {
     const command = this._getSetNodePropertyCommand(node, propertyName, value);
+    this.execute(command);
+    node.onChange();
+  }
+
+  _getSetNodeMaterialPropertyCommand(node, propertyName, value) {
+    switch (propertyName) {
+      case "position":
+        return new SetPositionCommand(node, value);
+      case "rotation":
+        return new SetRotationCommand(node, value);
+      case "scale":
+        return new SetScaleCommand(node, value);
+      default:
+        return new SetObjectPropertyCommand(node, propertyName, value);
+    }
+  }
+
+  setNodeMaterialProperty(node, material, propertyName, value) {
+    const command = new SetMaterialPropertyCommand(node, material, propertyName, value);
     this.execute(command);
     node.onChange();
   }

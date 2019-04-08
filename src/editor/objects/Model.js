@@ -1,6 +1,7 @@
 import THREE from "../../vendor/three";
 import cloneObject3D from "../utils/cloneObject3D";
 import eventToMessage from "../utils/eventToMessage";
+import { traverseMaterials } from "../utils/materials";
 
 export default class Model extends THREE.Object3D {
   constructor() {
@@ -148,6 +149,12 @@ export default class Model extends THREE.Object3D {
         }
       });
     }
+  }
+
+  getMaterials() {
+    const materialSet = new Set();
+    traverseMaterials(this.model, material => materialSet.add(material));
+    return Array.from(materialSet);
   }
 
   // TODO: Add play/pause methods for previewing animations.

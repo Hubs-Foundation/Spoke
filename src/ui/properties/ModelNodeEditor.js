@@ -5,6 +5,7 @@ import SelectInput from "../inputs/SelectInput";
 import InputGroup from "../inputs/InputGroup";
 import BooleanInput from "../inputs/BooleanInput";
 import ModelInput from "../inputs/ModelInput";
+import MaterialEditor from "./MaterialEditor";
 
 export default class ModelNodeEditor extends Component {
   static propTypes = {
@@ -45,11 +46,19 @@ export default class ModelNodeEditor extends Component {
     const activeClipName = node.activeClipName;
     const clipOptions = node.getClipNames().map(name => ({ label: name, value: name }));
     clipOptions.unshift({ label: "None", value: null });
+    const materials = node.getMaterials();
 
     return (
       <NodeEditor description={ModelNodeEditor.description} {...this.props}>
         <InputGroup name="Model">
           <ModelInput value={node.src} onChange={this.onChangeSrc} />
+        </InputGroup>
+        <InputGroup name="Materials">
+          <div>
+            {materials.map(material => (
+              <MaterialEditor key={material.id} {...this.props} material={material} />
+            ))}
+          </div>
         </InputGroup>
         <InputGroup name="Loop Animation">
           <SelectInput options={clipOptions} value={activeClipName} onChange={this.onChangeAnimation} />
