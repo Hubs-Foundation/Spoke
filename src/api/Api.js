@@ -600,7 +600,7 @@ export default class Project extends EventEmitter {
       let sceneUrl = json.scenes[0].url;
 
       if (process.env.HUBS_SERVER) {
-        if (process.env.NODE_ENV === "development") {
+        if (process.env.HUBS_SERVER.startsWith("localhost") || process.env.HUBS_SERVER.startsWith("hubs.local")) {
           sceneUrl = `https://${process.env.HUBS_SERVER}/scene.html?scene_id=${newSceneId}`;
         } else {
           sceneUrl = `https://${process.env.HUBS_SERVER}/scenes/${newSceneId}`;
