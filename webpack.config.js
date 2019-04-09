@@ -203,7 +203,7 @@ module.exports = env => {
 
     optimization: {
       minimizer: [
-        new TerserJSPlugin({ sourceMap: true }),
+        new TerserJSPlugin({ sourceMap: true, parallel: true, cache: path.join(__dirname, ".tersercache") }),
         new OptimizeCSSAssetsPlugin({
           cssProcessorOptions: {
             sourcemap: true,
