@@ -41,7 +41,7 @@ class NewProjectPage extends Component {
     const { loading, error, projectId } = this.state;
 
     if (loading) {
-      return <Loading message="Creating project..." />;
+      return <Loading message="Creating project..." fullScreen />;
     }
 
     if (error) {

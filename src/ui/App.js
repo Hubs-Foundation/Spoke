@@ -32,7 +32,7 @@ export default class App extends Component {
     return (
       <ApiContextProvider value={api}>
         <Router basename={process.env.ROUTER_BASE_PATH}>
-          <Suspense fallback={<Loading message="Loading..." />} className={styles.flexColumn}>
+          <Suspense fallback={<Loading message="Loading..." fullScreen />} className={styles.flexColumn}>
             <Switch>
               <Route path="/" exact component={LandingPage} />
               <Route path="/login" exact component={LoginPage} />

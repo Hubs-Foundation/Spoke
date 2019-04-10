@@ -4,7 +4,7 @@ import { MosaicWindow, Mosaic } from "react-mosaic-component";
 import { HotKeys } from "react-hotkeys";
 import Modal from "react-modal";
 import { Prompt } from "react-router-dom";
-import DocumentTitle from "react-document-title";
+import { Helmet } from "react-helmet";
 
 import styles from "./EditorContainer.scss";
 
@@ -608,7 +608,10 @@ export default class EditorContainer extends Component {
               >
                 {DialogComponent && <DialogComponent {...dialogProps} hideDialog={this.hideDialog} />}
               </Modal>
-              <DocumentTitle title={`${modified}${editor.scene.name} | Spoke by Mozilla`} />
+              <Helmet>
+                <title>{`${modified}${editor.scene.name} | Spoke by Mozilla`}</title>
+                <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+              </Helmet>
               <Prompt
                 message={`${
                   editor.scene.name
