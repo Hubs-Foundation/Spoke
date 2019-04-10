@@ -48,7 +48,7 @@ class ProjectsPage extends Component {
   onDeleteProject = project => {
     this.props.api
       .deleteProject(project.projectId)
-      .then(() => this.setState({ projects: this.state.projects.filter(p => p.id !== project.id) }))
+      .then(() => this.setState({ projects: this.state.projects.filter(p => p.projectId !== project.projectId) }))
       .catch(error => this.setState({ error }));
   };
 
