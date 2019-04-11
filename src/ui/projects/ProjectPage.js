@@ -56,7 +56,7 @@ class ProjectPage extends Component {
     const { loading, error, project } = this.state;
 
     if (loading) {
-      return <Loading message="Loading project..." />;
+      return <Loading message="Loading project..." fullScreen />;
     }
 
     if (error) {
