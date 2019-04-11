@@ -1,8 +1,9 @@
 import THREE from "../../vendor/three";
+import TransformControls from "./TransformControls";
 
-export default class SpokeTransformControls extends THREE.TransformControls {
-  constructor(camera, canvas) {
-    super(camera, canvas);
+export default class SpokeTransformControls extends TransformControls {
+  constructor(camera) {
+    super(camera);
     this.name = "SpokeTransformControls";
     this.traverse(obj => (obj.renderOrder = 100));
   }

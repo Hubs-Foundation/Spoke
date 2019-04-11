@@ -7,6 +7,8 @@ export default class SkyboxNode extends EditorNodeMixin(Sky) {
 
   static hideTransform = true;
 
+  static ignoreRaycast = true;
+
   static nodeName = "Skybox";
 
   static async deserialize(editor, json) {

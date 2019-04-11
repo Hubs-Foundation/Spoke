@@ -14,7 +14,7 @@ export default class SnappingDropdown extends React.Component {
     this.state = {
       listOpen: false,
       headerTitle: "Snapping",
-      snapMoveValue: 0,
+      snapTranslateValue: 0,
       snapRotateValue: 0
     };
   }
@@ -25,8 +25,8 @@ export default class SnappingDropdown extends React.Component {
 
   onViewportInitialized = viewport => {
     this.setState({
-      snapMoveValue: viewport.snapValues.translationSnap,
-      snapRotateValue: (viewport.snapValues.rotationSnap || 0) * RAD2DEG
+      snapTranslateValue: viewport.spokeControls.translationSnap,
+      snapRotateValue: (viewport.spokeControls.rotationSnap || 0) * RAD2DEG
     });
   };
 
@@ -50,23 +50,21 @@ export default class SnappingDropdown extends React.Component {
     let v = value;
     switch (type) {
       case "translate":
-        this.setState({ snapMoveValue: value });
+        this.setState({ snapTranslateValue: value });
+        this.props.editor.viewport.spokeControls.setTranslationSnapValue(v);
         break;
       case "rotate":
         this.setState({ snapRotateValue: v });
         v = v * DEG2RAD;
+        this.props.editor.viewport.spokeControls.setRotationSnapValue(v);
         break;
       default:
         break;
     }
-    this.props.editor.signals.snapValueChanged.dispatch({
-      type: type,
-      value: v
-    });
   }
 
   render() {
-    const { snapMoveValue, snapRotateValue } = this.state;
+    const { snapTranslateValue, snapRotateValue } = this.state;
     return (
       <div className={classNames(styles.wrapper)}>
         <div className={styles.header} onClick={() => this.toggleList()}>
@@ -77,7 +75,7 @@ export default class SnappingDropdown extends React.Component {
           <ul className={styles.list}>
             <li className={styles.listItem}>
               <InputGroup className={styles.snappingInput} name={"Move"}>
-                <NumericInput value={snapMoveValue} onChange={value => this.setSnapValue("translate", value)} />
+                <NumericInput value={snapTranslateValue} onChange={value => this.setSnapValue("translate", value)} />
               </InputGroup>
             </li>
             <li className={styles.listItem}>

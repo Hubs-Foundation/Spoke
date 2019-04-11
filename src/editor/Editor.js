@@ -63,17 +63,14 @@ export default class Editor {
       transformChanged: new Signal(),
       transformModeChanged: new Signal(),
       snapToggled: new Signal(),
-      snapValueChanged: new Signal(),
       spaceChanged: new Signal(),
       viewportInitialized: new Signal(),
 
       sceneGraphChanged: new Signal(),
       sceneSet: new Signal(),
       sceneModified: new Signal(),
-      sceneRendered: new Signal(),
 
       objectSelected: new Signal(),
-      objectFocused: new Signal(),
 
       objectAdded: new Signal(),
       objectChanged: new Signal(),
@@ -83,7 +80,9 @@ export default class Editor {
 
       windowResize: new Signal(),
 
-      historyChanged: new Signal()
+      historyChanged: new Signal(),
+
+      saveProject: new Signal()
     };
 
     this._ignoreSceneModification = false;
@@ -390,21 +389,21 @@ export default class Editor {
     return this.nodeEditors.get(node.constructor);
   }
 
-  _getSetNodePropertyCommand(node, propertyName, value) {
+  _getSetNodePropertyCommand(node, propertyName, value, oldValue) {
     switch (propertyName) {
       case "position":
-        return new SetPositionCommand(node, value);
+        return new SetPositionCommand(node, value, oldValue);
       case "rotation":
-        return new SetRotationCommand(node, value);
+        return new SetRotationCommand(node, value, oldValue);
       case "scale":
-        return new SetScaleCommand(node, value);
+        return new SetScaleCommand(node, value, oldValue);
       default:
         return new SetObjectPropertyCommand(node, propertyName, value);
     }
   }
 
-  setNodeProperty(node, propertyName, value) {
-    const command = this._getSetNodePropertyCommand(node, propertyName, value);
+  setNodeProperty(node, propertyName, value, oldValue) {
+    const command = this._getSetNodePropertyCommand(node, propertyName, value, oldValue);
     this.execute(command);
     node.onChange();
   }
@@ -481,7 +480,7 @@ export default class Editor {
       return;
     }
 
-    this.signals.objectFocused.dispatch(object);
+    this.viewport.spokeControls.focus(object);
   }
 
   focusSelection() {
@@ -577,9 +576,7 @@ export default class Editor {
     this.playing = true;
     this.deselect();
     this.camera.layers.disable(1);
-    this.viewport.controls.enabled = false;
-    this.viewport.flyControls.enable();
-
+    this.viewport.playModeControls.enable();
     this.scene.traverse(node => {
       if (node.isNode) {
         node.onPlay();
@@ -590,9 +587,7 @@ export default class Editor {
   leavePlayMode() {
     this.playing = false;
     this.camera.layers.enable(1);
-    this.viewport.controls.enabled = true;
-    this.viewport.flyControls.disable();
-
+    this.viewport.playModeControls.disable();
     this.scene.traverse(node => {
       if (node.isNode) {
         node.onPause();

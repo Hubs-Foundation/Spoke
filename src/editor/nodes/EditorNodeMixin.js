@@ -18,6 +18,8 @@ export default function EditorNodeMixin(Object3DClass) {
 
     static canCreate = true;
 
+    static ignoreRaycast = false;
+
     static async load() {
       return Promise.resolve();
     }
@@ -60,6 +62,7 @@ export default function EditorNodeMixin(Object3DClass) {
       this.isNode = true;
       this.isCollapsed = false;
       this.hideTransform = this.constructor.hideTransform;
+      this.ignoreRaycast = this.constructor.ignoreRaycast;
 
       this.staticMode = StaticModes.Inherits;
       this.originalStaticMode = null;

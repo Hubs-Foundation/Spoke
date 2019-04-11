@@ -1,7 +1,6 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
 import { MosaicWindow, Mosaic } from "react-mosaic-component";
-import { HotKeys } from "react-hotkeys";
 import Modal from "react-modal";
 import { Prompt } from "react-router-dom";
 import { Helmet } from "react-helmet";
@@ -23,25 +22,6 @@ import { createEditor } from "../config";
 import ErrorDialog from "./dialogs/ErrorDialog";
 import ProgressDialog from "./dialogs/ProgressDialog";
 import ConfirmDialog from "./dialogs/ConfirmDialog";
-
-function isInputSelected() {
-  const el = document.activeElement;
-  const nodeName = el.nodeName;
-  return el.isContentEditable || nodeName === "INPUT" || nodeName === "SELECT" || nodeName === "TEXTAREA";
-}
-
-function wrapHotkeyHandler(component, handler) {
-  return e => {
-    e.preventDefault();
-
-    // Disable when dialog is shown.
-    if (component.state.DialogComponent !== null) {
-      return;
-    }
-
-    handler();
-  };
-}
 
 export default class EditorContainer extends Component {
   static propTypes = {
@@ -114,35 +94,7 @@ export default class EditorContainer extends Component {
         splitPercentage: 75
       },
       DialogComponent: null,
-      dialogProps: {},
-      keyMap: {
-        translateTool: "w",
-        rotateTool: "e",
-        scaleTool: "r",
-        spaceTool: "d",
-        snapTool: "s",
-        focusSelection: "f",
-        delete: ["del", "backspace"],
-        duplicate: ["ctrl+d", "command+d"],
-        save: ["ctrl+s", "command+s"],
-        open: ["ctrl+o", "command+o"],
-        undo: ["ctrl+z", "command+z"],
-        redo: ["ctrl+shift+z", "command+shift+z"]
-      },
-      globalHotKeyHandlers: {
-        undo: this.onUndo,
-        redo: this.onRedo,
-        delete: this.onDelete,
-        save: wrapHotkeyHandler(this, this.onSaveProject),
-        open: wrapHotkeyHandler(this, this.onOpenProject),
-        translateTool: this.onTranslateTool,
-        rotateTool: this.onRotateTool,
-        scaleTool: this.onScaleTool,
-        focusSelection: this.onFocusSelection,
-        duplicate: this.onDuplicate,
-        snapTool: this.onSnapTool,
-        spaceTool: this.onSpaceTool
-      }
+      dialogProps: {}
     };
   }
 
@@ -232,6 +184,7 @@ export default class EditorContainer extends Component {
     this.state.editor.signals.windowResize.dispatch();
     this.state.editor.signals.sceneModified.add(this.onSceneModified);
     this.state.editor.signals.editorError.add(this.onEditorError);
+    this.state.editor.signals.saveProject.add(this.onSaveProject);
 
     this.state.editorInitPromise
       .then(() => {
@@ -261,6 +214,7 @@ export default class EditorContainer extends Component {
     window.removeEventListener("resize", this.onWindowResize, false);
     this.state.editor.signals.sceneModified.remove(this.onSceneModified);
     this.state.editor.signals.editorError.remove(this.onEditorError);
+    this.state.editor.signals.saveProject.remove(this.onSaveProject);
   }
 
   onWindowResize = () => {
@@ -292,98 +246,6 @@ export default class EditorContainer extends Component {
   dialogContext = {
     showDialog: this.showDialog,
     hideDialog: this.hideDialog
-  };
-
-  /**
-   *  Hotkey / Hamburger Menu Handlers
-   */
-  onUndo = () => {
-    if (this.state.DialogComponent !== null) {
-      return;
-    }
-
-    this.state.editor.undo();
-  };
-
-  onRedo = () => {
-    if (this.state.DialogComponent !== null) {
-      return;
-    }
-
-    this.state.editor.redo();
-  };
-
-  onTranslateTool = e => {
-    if (isInputSelected()) {
-      return true;
-    }
-
-    e.preventDefault();
-    this.state.editor.signals.transformModeChanged.dispatch("translate");
-  };
-
-  onRotateTool = e => {
-    if (isInputSelected()) {
-      return true;
-    }
-
-    e.preventDefault();
-    this.state.editor.signals.transformModeChanged.dispatch("rotate");
-  };
-
-  onScaleTool = e => {
-    if (isInputSelected()) {
-      return true;
-    }
-
-    e.preventDefault();
-    this.state.editor.signals.transformModeChanged.dispatch("scale");
-  };
-
-  onFocusSelection = e => {
-    if (isInputSelected()) {
-      return true;
-    }
-
-    e.preventDefault();
-    this.state.editor.focusSelection();
-  };
-
-  onDuplicate = e => {
-    if (isInputSelected()) {
-      return true;
-    }
-
-    e.preventDefault();
-    this.state.editor.duplicateSelectedObject();
-    return false;
-  };
-
-  onDelete = e => {
-    if (isInputSelected()) {
-      return true;
-    }
-
-    e.preventDefault();
-    this.state.editor.deleteSelectedObject();
-  };
-
-  onSnapTool = e => {
-    if (isInputSelected()) {
-      return true;
-    }
-
-    e.preventDefault();
-    this.state.editor.signals.snapToggled.dispatch();
-  };
-
-  onSpaceTool = e => {
-    if (isInputSelected()) {
-      return true;
-    }
-
-    e.preventDefault();
-    this.state.editor.signals.spaceChanged.dispatch();
   };
 
   /**
@@ -587,7 +449,7 @@ export default class EditorContainer extends Component {
     const modified = editor.sceneModified ? "*" : "";
 
     return (
-      <HotKeys keyMap={this.state.keyMap} handlers={this.state.globalHotKeyHandlers} className={styles.editorContainer}>
+      <div className={styles.editorContainer}>
         <SettingsContextProvider value={settingsContext}>
           <EditorContextProvider value={editor}>
             <DialogContextProvider value={this.dialogContext}>
@@ -621,7 +483,7 @@ export default class EditorContainer extends Component {
             </DialogContextProvider>
           </EditorContextProvider>
         </SettingsContextProvider>
-      </HotKeys>
+      </div>
     );
   }
 }
