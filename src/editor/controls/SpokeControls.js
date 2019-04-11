@@ -142,6 +142,9 @@ export default class SpokeControls {
       camera.position.copy(center).add(vector);
 
       camera.lookAt(center);
+
+      this.transformControls.update(this.raycaster, false, false);
+      return;
     }
 
     if (input.get(Spoke.focusSelection)) {
@@ -169,12 +172,11 @@ export default class SpokeControls {
     }
 
     const selecting = input.get(Spoke.selecting);
+    const selectEnd = input.get(Spoke.selectEnd);
     const snapModifier = input.get(Spoke.snapModifier);
 
-    const selectScreenCoords = input.get(Spoke.select);
-
-    if (selectScreenCoords && !this.transformControls.dragging) {
-      this.raycaster.setFromCamera(selectScreenCoords, this.camera);
+    if (selectEnd && !this.transformControls.dragging) {
+      this.raycaster.setFromCamera(input.get(Spoke.selectCoords), this.camera);
       const results = this.raycaster.intersectObject(this.scene, true);
       const node = this.getIntersectingNode(results, this.scene);
       this.editor.select(node);
@@ -198,17 +200,15 @@ export default class SpokeControls {
       this.raycaster.setFromCamera(moveScreenCoords, this.camera);
     }
 
+    const object = this.transformControls.object;
+
     this.transformControls.update(this.raycaster, selecting, this.snapEnabled == !snapModifier);
 
-    if (!selectScreenCoords && !focusScreenCoords && this.transformControls.dragging === true) {
-      const object = this.transformControls.object;
-
+    if (!selectEnd && !focusScreenCoords && this.transformControls.dragging === true && object) {
       if (object !== undefined) {
         this.editor.signals.transformChanged.dispatch(object);
       }
-    } else if (input.get(Spoke.selectEnd)) {
-      const object = this.transformControls.object;
-
+    } else if (selectEnd && object) {
       switch (this.transformControls.mode) {
         case "translate":
           if (!this.objectPositionOnDown.equals(object.position)) {
@@ -219,9 +219,7 @@ export default class SpokeControls {
           if (!this.objectRotationOnDown.equals(object.rotation)) {
             this.editor.setNodeProperty(object, "rotation", object.rotation, this.objectRotationOnDown);
           }
-
           break;
-
         case "scale":
           if (!this.objectScaleOnDown.equals(object.scale)) {
             this.editor.setNodeProperty(object, "scale", object.scale, this.objectScaleOnDown);

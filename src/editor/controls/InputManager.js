@@ -114,6 +114,7 @@ export default class InputManager {
     canvas.addEventListener("mousemove", this.onMouseMove);
     canvas.addEventListener("mousedown", this.onMouseDown);
     canvas.addEventListener("mouseup", this.onMouseUp);
+    window.addEventListener("mouseup", this.onMouseUp);
     canvas.addEventListener("dblclick", this.onDoubleClick);
     canvas.addEventListener("click", this.onClick);
     canvas.addEventListener("contextmenu", this.onContextMenu);
@@ -219,23 +220,27 @@ export default class InputManager {
 
     if (!keyboardMapping) return;
 
+    if (keyboardMapping.event) {
+      this.state[keyboardMapping.event] = event;
+    }
+
     const pressedMapping = keyboardMapping.pressed;
 
     if (pressedMapping) {
-      const key = pressedMapping[event.key.toLowerCase()];
+      const action = pressedMapping[event.key.toLowerCase()];
 
-      if (key) {
-        this.state[key] = 1;
+      if (action) {
+        this.state[action] = 1;
       }
     }
 
     const keydownMapping = keyboardMapping.keydown;
 
     if (keydownMapping) {
-      const key = keydownMapping[event.key.toLowerCase()];
+      const action = keydownMapping[event.key.toLowerCase()];
 
-      if (key) {
-        this.state[key] = 1;
+      if (action) {
+        this.state[action] = 1;
       }
     }
   };
@@ -248,6 +253,10 @@ export default class InputManager {
     const keyboardMapping = this.mapping.keyboard;
 
     if (!keyboardMapping) return;
+
+    if (keyboardMapping.event) {
+      this.state[keyboardMapping.event] = event;
+    }
 
     const pressedMapping = keyboardMapping.pressed;
 
@@ -280,20 +289,26 @@ export default class InputManager {
     const pressedMapping = mouseMapping.pressed;
 
     if (pressedMapping) {
-      const key = pressedMapping[buttonKey];
+      const action = pressedMapping[buttonKey];
 
-      if (key) {
-        this.state[key] = 1;
+      if (action) {
+        this.state[action] = 1;
       }
     }
 
     const mousedownMapping = mouseMapping.mousedown;
 
     if (mousedownMapping) {
-      const key = mousedownMapping[buttonKey];
+      const action = mousedownMapping[buttonKey];
 
-      if (key) {
-        this.state[key] = 1;
+      if (action) {
+        this.state[action] = 1;
+      }
+
+      const eventAction = mousedownMapping.event;
+
+      if (eventAction) {
+        this.state[eventAction] = event;
       }
     }
   };
@@ -308,20 +323,26 @@ export default class InputManager {
     const pressedMapping = mouseMapping.pressed;
 
     if (pressedMapping) {
-      const key = pressedMapping[buttonKey];
+      const action = pressedMapping[buttonKey];
 
-      if (key) {
-        this.state[key] = 0;
+      if (action) {
+        this.state[action] = 0;
       }
     }
 
     const mouseupMapping = mouseMapping.mouseup;
 
     if (mouseupMapping) {
-      const key = mouseupMapping[buttonKey];
+      const action = mouseupMapping[buttonKey];
 
-      if (key) {
-        this.state[key] = 1;
+      if (action) {
+        this.state[action] = 1;
+      }
+
+      const eventAction = mouseupMapping.event;
+
+      if (eventAction) {
+        this.state[eventAction] = event;
       }
     }
   };
@@ -359,7 +380,13 @@ export default class InputManager {
 
     for (const key in wheelMapping) {
       if (wheelMapping.hasOwnProperty(key)) {
-        this.state[wheelMapping[key]] += event[key];
+        if (key === "event") {
+          this.state[wheelMapping[key]] = event;
+        } else if (key === "deltaX" || key === "deltaY") {
+          this.state[wheelMapping[key]] += event[key];
+        } else {
+          this.state[wheelMapping[key]] = event[key];
+        }
       }
     }
   };

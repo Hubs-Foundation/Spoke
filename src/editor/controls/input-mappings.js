@@ -102,7 +102,6 @@ export const Spoke = {
   shift: Symbol("shift"),
   rightMouse: Symbol("rightMouse"),
   leftMouse: Symbol("leftMouse"),
-  select: Symbol("select"),
   clickEvent: Symbol("clickEvent"),
   doubleClick: Symbol("doubleClick"),
   focusSelection: Symbol("focusSelection"),
@@ -124,7 +123,9 @@ export const Spoke = {
   move: Symbol("move"),
   snapModifier: Symbol("snapModifier"),
   selecting: Symbol("selecting"),
-  selectEnd: Symbol("selectEnd")
+  selectEnd: Symbol("selectEnd"),
+  selectCoords: Symbol("selectCoords"),
+  mouseUpEvent: Symbol("mouseUpEvent")
 };
 
 export const FlyMapping = {
@@ -165,9 +166,6 @@ export const FlyMapping = {
 
 export const SpokeMapping = {
   mouse: {
-    click: {
-      event: Spoke.clickEvent
-    },
     dblclick: {
       event: Spoke.doubleClickEvent
     },
@@ -183,6 +181,7 @@ export const SpokeMapping = {
       right: Spoke.enableFlyMode
     },
     mouseup: {
+      event: Spoke.mouseUpEvent,
       left: Spoke.selectEnd,
       right: Spoke.disableFlyMode
     },
@@ -214,11 +213,11 @@ export const SpokeMapping = {
   },
   computed: [
     or(Spoke.cmd, Spoke.ctrl, Spoke.cmdOrCtrl),
-    mouseEventToScreenSpaceCoords(Spoke.clickEvent, Spoke.select),
+    mouseEventToScreenSpaceCoords(Spoke.mouseUpEvent, Spoke.selectCoords),
     mouseEventToScreenSpaceCoords(Spoke.doubleClickEvent, Spoke.focus),
     mouseEventToScreenSpaceCoords(Spoke.mouseMoveEvent, Spoke.move),
     copy(Spoke.rightMouse, Spoke.flyMode),
-    and(Spoke.alt, Spoke.rightMouse, Spoke.orbit),
+    and(Spoke.alt, Spoke.leftMouse, Spoke.orbit),
     normalizeWheel(Spoke.zoomDeltaY, Spoke.zoom),
     metaHotkey(Spoke.cmdOrCtrl, Spoke.z, Spoke.shift, false, Spoke.undo),
     metaHotkey(Spoke.cmdOrCtrl, Spoke.z, Spoke.shift, true, Spoke.redo),
