@@ -29,10 +29,7 @@ export default class SpokeControls {
     this.scene = null;
     this.box = new THREE.Box3();
     this.sphere = new THREE.Sphere();
-    this.transformControls = new SpokeTransformControls(camera, inputManager.canvas);
-    this.transformControls.addEventListener("change", this.onTransformControlsChanged);
-    this.transformControls.addEventListener("mouseDown", this.onTransformMouseDown);
-    this.transformControls.addEventListener("mouseUp", this.onTransformMouseUp);
+    this.transformControls = new SpokeTransformControls(camera);
     this.objectPositionOnDown = null;
     this.objectRotationOnDown = null;
     this.objectScaleOnDown = null;
@@ -62,8 +59,6 @@ export default class SpokeControls {
 
   update() {
     if (!this.enabled) return;
-
-    this.transformControls.update();
 
     const input = this.inputManager;
 
@@ -149,28 +144,6 @@ export default class SpokeControls {
       camera.lookAt(center);
     }
 
-    const selectScreenCoords = input.get(Spoke.select);
-
-    if (selectScreenCoords) {
-      this.raycaster.setFromCamera(selectScreenCoords, this.camera);
-      const results = this.raycaster.intersectObject(this.scene, true);
-      const node = this.getIntersectingNode(results, this.scene);
-      this.editor.select(node);
-    }
-
-    const focusScreenCoords = input.get(Spoke.focus);
-
-    if (focusScreenCoords) {
-      this.raycaster.setFromCamera(focusScreenCoords, this.camera);
-
-      const results = this.raycaster.intersectObject(this.scene, true);
-      const node = this.getIntersectingNode(results, this.scene);
-
-      if (node) {
-        this.focus(node);
-      }
-    }
-
     if (input.get(Spoke.focusSelection)) {
       this.focus(this.editor.selected);
     } else if (input.get(Spoke.translateMode)) {
@@ -193,6 +166,68 @@ export default class SpokeControls {
       this.editor.deleteSelectedObject();
     } else if (input.get(Spoke.saveProject)) {
       this.editor.signals.saveProject.dispatch();
+    }
+
+    const selecting = input.get(Spoke.selecting);
+    const snapModifier = input.get(Spoke.snapModifier);
+
+    const selectScreenCoords = input.get(Spoke.select);
+
+    if (selectScreenCoords && !this.transformControls.dragging) {
+      this.raycaster.setFromCamera(selectScreenCoords, this.camera);
+      const results = this.raycaster.intersectObject(this.scene, true);
+      const node = this.getIntersectingNode(results, this.scene);
+      this.editor.select(node);
+    }
+
+    const focusScreenCoords = input.get(Spoke.focus);
+
+    if (focusScreenCoords) {
+      this.raycaster.setFromCamera(focusScreenCoords, this.camera);
+      const results = this.raycaster.intersectObject(this.scene, true);
+      const node = this.getIntersectingNode(results, this.scene);
+
+      if (node) {
+        this.focus(node);
+      }
+    }
+
+    const moveScreenCoords = input.get(Spoke.move);
+
+    if (moveScreenCoords) {
+      this.raycaster.setFromCamera(moveScreenCoords, this.camera);
+    }
+
+    this.transformControls.update(this.raycaster, selecting, this.snapEnabled == !snapModifier);
+
+    if (!selectScreenCoords && !focusScreenCoords && this.transformControls.dragging === true) {
+      const object = this.transformControls.object;
+
+      if (object !== undefined) {
+        this.editor.signals.transformChanged.dispatch(object);
+      }
+    } else if (input.get(Spoke.selectEnd)) {
+      const object = this.transformControls.object;
+
+      switch (this.transformControls.mode) {
+        case "translate":
+          if (!this.objectPositionOnDown.equals(object.position)) {
+            this.editor.setNodeProperty(object, "position", object.position, this.objectPositionOnDown);
+          }
+          break;
+        case "rotate":
+          if (!this.objectRotationOnDown.equals(object.rotation)) {
+            this.editor.setNodeProperty(object, "rotation", object.rotation, this.objectRotationOnDown);
+          }
+
+          break;
+
+        case "scale":
+          if (!this.objectScaleOnDown.equals(object.scale)) {
+            this.editor.setNodeProperty(object, "scale", object.scale, this.objectScaleOnDown);
+          }
+          break;
+      }
     }
   }
 
@@ -228,7 +263,7 @@ export default class SpokeControls {
   }
 
   onObjectSelected = object => {
-    this.transformControls.detach();
+    this.transformControls.object = null;
 
     if (
       object !== null &&
@@ -236,7 +271,10 @@ export default class SpokeControls {
       object !== this.camera &&
       !(object.constructor && object.constructor.hideTransform)
     ) {
-      this.transformControls.attach(object);
+      this.transformControls.object = object;
+      this.objectPositionOnDown = object.position.clone();
+      this.objectRotationOnDown = object.rotation.clone();
+      this.objectScaleOnDown = object.scale.clone();
     }
 
     const selectedObject = this.transformControls.object;
@@ -273,7 +311,7 @@ export default class SpokeControls {
   }
 
   setTransformControlsMode(mode) {
-    this.transformControls.setMode(mode);
+    this.transformControls.mode = mode;
     this.editor.signals.transformModeChanged.dispatch(mode);
   }
 
@@ -284,65 +322,23 @@ export default class SpokeControls {
   }
 
   updateSnapSettings() {
-    this.transformControls.setTranslationSnap(this.snapEnabled ? this.translationSnap : null);
-    this.transformControls.setRotationSnap(this.snapEnabled ? this.rotationSnap : null);
+    this.transformControls.translationSnap = this.translationSnap;
+    this.transformControls.rotationSnap = this.rotationSnap;
   }
 
   setTranslationSnapValue(value) {
     this.translationSnap = value;
-    this.transformControls.setTranslationSnap(this.snapEnabled ? this.translationSnap : null);
+    this.transformControls.translationSnap = this.translationSnap;
   }
 
   setRotationSnapValue(value) {
     this.rotationSnap = value;
-    this.transformControls.setRotationSnap(this.snapEnabled ? this.rotationSnap : null);
+    this.transformControls.rotationSnap = this.rotationSnap;
   }
 
   toggleRotationSpace() {
     this.currentSpace = this.currentSpace === "world" ? "local" : "world";
-    this.transformControls.setSpace(this.currentSpace);
+    this.transformControls.space = this.currentSpace;
     this.editor.signals.spaceChanged.dispatch(this.currentSpace);
   }
-
-  onTransformControlsChanged = () => {
-    const object = this.transformControls.object;
-
-    if (object !== undefined) {
-      this.editor.signals.transformChanged.dispatch(object);
-    }
-  };
-
-  onTransformMouseDown = () => {
-    const object = this.transformControls.object;
-
-    this.objectPositionOnDown = object.position.clone();
-    this.objectRotationOnDown = object.rotation.clone();
-    this.objectScaleOnDown = object.scale.clone();
-  };
-
-  onTransformMouseUp = () => {
-    const object = this.transformControls.object;
-
-    if (object !== undefined) {
-      switch (this.transformControls.getMode()) {
-        case "translate":
-          if (!this.objectPositionOnDown.equals(object.position)) {
-            this.editor.setNodeProperty(object, "position", object.position, this.objectPositionOnDown);
-          }
-          break;
-        case "rotate":
-          if (!this.objectRotationOnDown.equals(object.rotation)) {
-            this.editor.setNodeProperty(object, "rotation", object.rotation, this.objectRotationOnDown);
-          }
-
-          break;
-
-        case "scale":
-          if (!this.objectScaleOnDown.equals(object.scale)) {
-            this.editor.setNodeProperty(object, "scale", object.scale, this.objectScaleOnDown);
-          }
-          break;
-      }
-    }
-  };
 }

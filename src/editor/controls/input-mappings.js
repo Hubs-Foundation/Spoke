@@ -119,7 +119,12 @@ export const Spoke = {
   saveProject: Symbol("saveProject"),
   d: Symbol("d"),
   duplicateSelected: Symbol("duplicateSelected"),
-  deleteSelected: Symbol("deleteSelected")
+  deleteSelected: Symbol("deleteSelected"),
+  mouseMoveEvent: Symbol("mouseMoveEvent"),
+  move: Symbol("move"),
+  snapModifier: Symbol("snapModifier"),
+  selecting: Symbol("selecting"),
+  selectEnd: Symbol("selectEnd")
 };
 
 export const FlyMapping = {
@@ -178,10 +183,11 @@ export const SpokeMapping = {
       right: Spoke.enableFlyMode
     },
     mouseup: {
-      left: Spoke.click,
+      left: Spoke.selectEnd,
       right: Spoke.disableFlyMode
     },
     move: {
+      event: Spoke.mouseMoveEvent,
       movementX: Spoke.mouseDeltaX,
       movementY: Spoke.mouseDeltaY
     }
@@ -210,6 +216,7 @@ export const SpokeMapping = {
     or(Spoke.cmd, Spoke.ctrl, Spoke.cmdOrCtrl),
     mouseEventToScreenSpaceCoords(Spoke.clickEvent, Spoke.select),
     mouseEventToScreenSpaceCoords(Spoke.doubleClickEvent, Spoke.focus),
+    mouseEventToScreenSpaceCoords(Spoke.mouseMoveEvent, Spoke.move),
     copy(Spoke.rightMouse, Spoke.flyMode),
     and(Spoke.alt, Spoke.rightMouse, Spoke.orbit),
     normalizeWheel(Spoke.zoomDeltaY, Spoke.zoom),
@@ -217,6 +224,8 @@ export const SpokeMapping = {
     metaHotkey(Spoke.cmdOrCtrl, Spoke.z, Spoke.shift, true, Spoke.redo),
     and(Spoke.cmdOrCtrl, Spoke.d, Spoke.duplicateSelected),
     and(Spoke.cmdOrCtrl, Spoke.s, Spoke.saveProject),
-    andNot(Spoke.s, Spoke.cmdOrCtrl, Spoke.snapToggle)
+    andNot(Spoke.s, Spoke.cmdOrCtrl, Spoke.snapToggle),
+    copy(Spoke.cmdOrCtrl, Spoke.snapModifier),
+    copy(Spoke.leftMouse, Spoke.selecting)
   ]
 };

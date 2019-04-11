@@ -116,6 +116,7 @@ export default class InputManager {
     canvas.addEventListener("mouseup", this.onMouseUp);
     canvas.addEventListener("dblclick", this.onDoubleClick);
     canvas.addEventListener("click", this.onClick);
+    canvas.addEventListener("contextmenu", this.onContextMenu);
     canvas.addEventListener("resize", this.onResize);
   }
 
@@ -336,7 +337,9 @@ export default class InputManager {
 
     for (const key in moveMapping) {
       if (moveMapping.hasOwnProperty(key)) {
-        if (key === "movementX" || key === "movementY") {
+        if (key === "event") {
+          this.state[moveMapping[key]] = event;
+        } else if (key === "movementX" || key === "movementY") {
           this.state[moveMapping[key]] += event[key];
         } else {
           this.state[moveMapping[key]] = event[key];
@@ -421,6 +424,10 @@ export default class InputManager {
         this.state[action] = value;
       }
     }
+  };
+
+  onContextMenu = event => {
+    event.preventDefault();
   };
 
   onResize = () => {
