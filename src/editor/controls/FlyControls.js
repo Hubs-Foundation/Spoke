@@ -11,7 +11,6 @@ export default class FlyControls {
     this.lookSensitivity = 1;
     this.direction = new THREE.Vector3();
     this.maxXRotation = THREE.Math.degToRad(70);
-    this.inputManager.canvas.addEventListener("click", this.onClickCanvas);
   }
 
   onClickCanvas = () => {
@@ -22,18 +21,16 @@ export default class FlyControls {
 
   enable() {
     this.enabled = true;
-    this.inputManager.setInputMapping(FlyMapping);
-    this.camera.rotation.set(0, 0, 0);
+    this.inputManager.enableInputMapping(Fly, FlyMapping);
   }
 
   disable() {
     this.enabled = false;
-    this.inputManager.setInputMapping({});
-    document.exitPointerLock();
+    this.inputManager.disableInputMapping(Fly);
   }
 
   update(dt) {
-    if (!this.enabled || document.pointerLockElement !== this.inputManager.canvas) return;
+    if (!this.enabled) return;
 
     const input = this.inputManager;
 

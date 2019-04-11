@@ -43,7 +43,7 @@ export default class ToolBar extends Component {
         }
       ],
       spaceToggle: {
-        name: "coordination",
+        name: "rotation-space",
         type: "toggle",
         text: ["Global", "Local"],
         isSwitch: true,
@@ -52,7 +52,7 @@ export default class ToolBar extends Component {
           checked: "fa-cube",
           unchecked: "fa-globe"
         },
-        action: () => this.onCoordinationChanged()
+        action: () => this.onRotationSpaceChanged()
       },
       snapToggle: {
         name: "snap",
@@ -121,23 +121,23 @@ export default class ToolBar extends Component {
   };
 
   onMoveSelected = () => {
-    this.props.editor.signals.transformModeChanged.dispatch("translate");
+    this.props.editor.viewport.spokeControls.setTransformControlsMode("translate");
   };
 
   onRotateSelected = () => {
-    this.props.editor.signals.transformModeChanged.dispatch("rotate");
+    this.props.editor.viewport.spokeControls.setTransformControlsMode("rotate");
   };
 
   onScaleSelected = () => {
-    this.props.editor.signals.transformModeChanged.dispatch("scale");
+    this.props.editor.viewport.spokeControls.setTransformControlsMode("scale");
   };
 
-  onCoordinationChanged = () => {
-    this.props.editor.signals.spaceChanged.dispatch();
+  onRotationSpaceChanged = () => {
+    this.props.editor.viewport.spokeControls.toggleRotationSpace();
   };
 
   onSnappingChanged = () => {
-    this.props.editor.signals.snapToggled.dispatch();
+    this.props.editor.viewport.spokeControls.toggleSnapMode();
   };
 
   renderToolButtons = buttons => {
