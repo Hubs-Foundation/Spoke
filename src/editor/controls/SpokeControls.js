@@ -40,6 +40,7 @@ export default class SpokeControls {
     this.updateSnapSettings();
     this.selectedObjects = selectedObjects;
     this.editor.signals.objectSelected.add(this.onObjectSelected);
+    this.wasOrbiting = false;
   }
 
   onSceneSet(scene) {
@@ -144,43 +145,24 @@ export default class SpokeControls {
       camera.lookAt(center);
 
       this.transformControls.update(this.raycaster, false, false);
-      return;
-    }
 
-    if (input.get(Spoke.focusSelection)) {
-      this.focus(this.editor.selected);
-    } else if (input.get(Spoke.translateMode)) {
-      this.setTransformControlsMode("translate");
-    } else if (input.get(Spoke.rotateMode)) {
-      this.setTransformControlsMode("rotate");
-    } else if (input.get(Spoke.scaleMode)) {
-      this.setTransformControlsMode("scale");
-    } else if (input.get(Spoke.snapToggle)) {
-      this.toggleSnapMode();
-    } else if (input.get(Spoke.rotationSpaceToggle)) {
-      this.toggleRotationSpace();
-    } else if (input.get(Spoke.undo)) {
-      this.editor.undo();
-    } else if (input.get(Spoke.redo)) {
-      this.editor.redo();
-    } else if (input.get(Spoke.duplicateSelected)) {
-      this.editor.duplicateSelectedObject();
-    } else if (input.get(Spoke.deleteSelected)) {
-      this.editor.deleteSelectedObject();
-    } else if (input.get(Spoke.saveProject)) {
-      this.editor.signals.saveProject.dispatch();
+      this.wasOrbiting = true;
+      return;
     }
 
     const selecting = input.get(Spoke.selecting);
     const selectEnd = input.get(Spoke.selectEnd);
     const snapModifier = input.get(Spoke.snapModifier);
 
-    if (selectEnd && !this.transformControls.dragging) {
+    // TODO: Replace wasOrbiting with a rising action getter ex: input.actionRising(Spoke.orbit)
+    if (selectEnd && !this.transformControls.dragging && !this.wasOrbiting) {
       this.raycaster.setFromCamera(input.get(Spoke.selectCoords), this.camera);
       const results = this.raycaster.intersectObject(this.scene, true);
       const node = this.getIntersectingNode(results, this.scene);
       this.editor.select(node);
     }
+
+    this.wasOrbiting = false;
 
     const focusScreenCoords = input.get(Spoke.focus);
 
@@ -205,9 +187,8 @@ export default class SpokeControls {
     this.transformControls.update(this.raycaster, selecting, this.snapEnabled == !snapModifier);
 
     if (!selectEnd && !focusScreenCoords && this.transformControls.dragging === true && object) {
-      if (object !== undefined) {
-        this.editor.signals.transformChanged.dispatch(object);
-      }
+      this.editor.signals.transformChanged.dispatch(object);
+      return;
     } else if (selectEnd && object) {
       switch (this.transformControls.mode) {
         case "translate":
@@ -226,6 +207,30 @@ export default class SpokeControls {
           }
           break;
       }
+    }
+
+    if (input.get(Spoke.focusSelection)) {
+      this.focus(this.editor.selected);
+    } else if (input.get(Spoke.translateMode)) {
+      this.setTransformControlsMode("translate");
+    } else if (input.get(Spoke.rotateMode)) {
+      this.setTransformControlsMode("rotate");
+    } else if (input.get(Spoke.scaleMode)) {
+      this.setTransformControlsMode("scale");
+    } else if (input.get(Spoke.snapToggle)) {
+      this.toggleSnapMode();
+    } else if (input.get(Spoke.rotationSpaceToggle)) {
+      this.toggleRotationSpace();
+    } else if (input.get(Spoke.undo)) {
+      this.editor.undo();
+    } else if (input.get(Spoke.redo)) {
+      this.editor.redo();
+    } else if (input.get(Spoke.duplicateSelected)) {
+      this.editor.duplicateSelectedObject();
+    } else if (input.get(Spoke.deleteSelected)) {
+      this.editor.deleteSelectedObject();
+    } else if (input.get(Spoke.saveProject)) {
+      this.editor.signals.saveProject.dispatch();
     }
   }
 
