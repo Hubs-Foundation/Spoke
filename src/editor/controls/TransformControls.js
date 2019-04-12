@@ -21,6 +21,8 @@ export default class TransformControls extends THREE.Object3D {
     this.space = "world";
     this.size = 1;
     this.dragging = false;
+    this.startDrag = false;
+    this.endDrag = false;
     this.showX = true;
     this.showY = true;
     this.showZ = true;
@@ -61,6 +63,7 @@ export default class TransformControls extends THREE.Object3D {
 
     this.positionStart = new THREE.Vector3();
     this.quaternionStart = new THREE.Quaternion();
+    this.rotationStart = new THREE.Euler();
     this.scaleStart = new THREE.Vector3();
 
     this.gizmo = new TransformControlsGizmo(this);
@@ -119,6 +122,7 @@ export default class TransformControls extends THREE.Object3D {
 
         this.positionStart.copy(this.object.position);
         this.quaternionStart.copy(this.object.quaternion);
+        this.rotationStart.copy(this.object.rotation);
         this.scaleStart.copy(this.object.scale);
 
         this.object.matrixWorld.decompose(this.worldPositionStart, this.worldQuaternionStart, this.worldScaleStart);
@@ -129,12 +133,18 @@ export default class TransformControls extends THREE.Object3D {
       }
 
       this.dragging = true;
+      this.startDrag = true;
+    } else {
+      this.startDrag = false;
     }
 
     // End Drag
     if (!selecting && this.dragging) {
       this.dragging = false;
       this.axis = null;
+      this.endDrag = true;
+    } else {
+      this.endDrag = false;
     }
 
     // Dragging

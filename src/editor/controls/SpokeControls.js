@@ -3,7 +3,7 @@ import THREE from "../../vendor/three";
 import SpokeTransformControls from "./SpokeTransformControls";
 
 export default class SpokeControls {
-  constructor(camera, editor, inputManager, flyControls, selectedObjects) {
+  constructor(camera, editor, inputManager, flyControls) {
     this.camera = camera;
     this.editor = editor;
     this.inputManager = inputManager;
@@ -38,8 +38,6 @@ export default class SpokeControls {
     this.rotationSnap = Math.PI / 4;
     this.currentSpace = "world";
     this.updateSnapSettings();
-    this.selectedObjects = selectedObjects;
-    this.editor.signals.objectSelected.add(this.onObjectSelected);
     this.wasOrbiting = false;
   }
 
@@ -62,6 +60,7 @@ export default class SpokeControls {
     if (!this.enabled) return;
 
     const input = this.inputManager;
+    const transformControls = this.transformControls;
 
     if (input.get(Spoke.enableFlyMode)) {
       this.flyControls.enable();
@@ -120,7 +119,7 @@ export default class SpokeControls {
 
       camera.position.add(delta);
       center.add(delta);
-    } else if (input.get(Spoke.orbit)) {
+    } else if (input.get(Spoke.orbit) && !transformControls.dragging) {
       const camera = this.camera;
       const center = this.center;
       const vector = this.vector;
@@ -144,7 +143,7 @@ export default class SpokeControls {
 
       camera.lookAt(center);
 
-      this.transformControls.update(this.raycaster, false, false);
+      transformControls.update(this.raycaster, false, false);
 
       this.wasOrbiting = true;
       return;
@@ -155,7 +154,7 @@ export default class SpokeControls {
     const snapModifier = input.get(Spoke.snapModifier);
 
     // TODO: Replace wasOrbiting with a rising action getter ex: input.actionRising(Spoke.orbit)
-    if (selectEnd && !this.transformControls.dragging && !this.wasOrbiting) {
+    if (selectEnd && !transformControls.dragging && !this.wasOrbiting) {
       this.raycaster.setFromCamera(input.get(Spoke.selectCoords), this.camera);
       const results = this.raycaster.intersectObject(this.scene, true);
       const node = this.getIntersectingNode(results, this.scene);
@@ -182,28 +181,46 @@ export default class SpokeControls {
       this.raycaster.setFromCamera(moveScreenCoords, this.camera);
     }
 
-    const object = this.transformControls.object;
+    // Update Transform Controls selection
+    const editorSelection = this.editor.selected;
 
-    this.transformControls.update(this.raycaster, selecting, this.snapEnabled == !snapModifier);
+    if (editorSelection !== transformControls.object) {
+      if (
+        editorSelection !== null &&
+        editorSelection !== this.editor.scene &&
+        editorSelection !== this.camera &&
+        !(editorSelection.constructor && editorSelection.constructor.hideTransform)
+      ) {
+        transformControls.object = editorSelection;
+      } else {
+        transformControls.object = null;
+      }
+    }
 
-    if (!selectEnd && !focusScreenCoords && this.transformControls.dragging === true && object) {
+    transformControls.update(this.raycaster, selecting, this.snapEnabled == !snapModifier);
+
+    const object = transformControls.object;
+
+    if (transformControls.dragging && !transformControls.startDrag && !transformControls.endDrag) {
       this.editor.signals.transformChanged.dispatch(object);
       return;
-    } else if (selectEnd && object) {
-      switch (this.transformControls.mode) {
+    }
+
+    if (transformControls.endDrag) {
+      switch (transformControls.mode) {
         case "translate":
-          if (!this.objectPositionOnDown.equals(object.position)) {
-            this.editor.setNodeProperty(object, "position", object.position, this.objectPositionOnDown);
+          if (!transformControls.positionStart.equals(object.position)) {
+            this.editor.setNodeProperty(object, "position", object.position, transformControls.positionStart);
           }
           break;
         case "rotate":
-          if (!this.objectRotationOnDown.equals(object.rotation)) {
-            this.editor.setNodeProperty(object, "rotation", object.rotation, this.objectRotationOnDown);
+          if (!transformControls.rotationStart.equals(object.rotation)) {
+            this.editor.setNodeProperty(object, "rotation", object.rotation, transformControls.rotationStart);
           }
           break;
         case "scale":
-          if (!this.objectScaleOnDown.equals(object.scale)) {
-            this.editor.setNodeProperty(object, "scale", object.scale, this.objectScaleOnDown);
+          if (!transformControls.scaleStart.equals(object.scale)) {
+            this.editor.setNodeProperty(object, "scale", object.scale, transformControls.scaleStart);
           }
           break;
       }
@@ -264,32 +281,6 @@ export default class SpokeControls {
 
     camera.position.copy(center).add(delta);
   }
-
-  onObjectSelected = object => {
-    this.transformControls.object = null;
-
-    if (
-      object !== null &&
-      object !== this.editor.scene &&
-      object !== this.camera &&
-      !(object.constructor && object.constructor.hideTransform)
-    ) {
-      this.transformControls.object = object;
-      this.objectPositionOnDown = object.position.clone();
-      this.objectRotationOnDown = object.rotation.clone();
-      this.objectScaleOnDown = object.scale.clone();
-    }
-
-    const selectedObject = this.transformControls.object;
-
-    if (selectedObject) {
-      this.selectedObjects[0] = selectedObject;
-    } else {
-      while (this.selectedObjects.length) {
-        this.selectedObjects.pop();
-      }
-    }
-  };
 
   getIntersectingNode(results, scene) {
     if (results.length > 0) {

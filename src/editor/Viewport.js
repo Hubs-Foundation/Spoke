@@ -68,7 +68,7 @@ export default class Viewport {
 
     this.inputManager = new InputManager(canvas);
     this.flyControls = new FlyControls(camera, this.inputManager);
-    this.spokeControls = new SpokeControls(camera, editor, this.inputManager, this.flyControls, this.selectedObjects);
+    this.spokeControls = new SpokeControls(camera, editor, this.inputManager, this.flyControls);
     this.playModeControls = new PlayModeControls(this.inputManager, this.spokeControls, this.flyControls);
     this.spokeControls.enable();
 
@@ -94,6 +94,13 @@ export default class Viewport {
         });
         this.flyControls.update(delta);
         this.spokeControls.update(delta);
+
+        if (editor.selected) {
+          this.selectedObjects[0] = editor.selected;
+        } else if (this.selectedObjects.length === 1) {
+          this.selectedObjects.pop();
+        }
+
         effectComposer.render();
         this.inputManager.reset();
       }
