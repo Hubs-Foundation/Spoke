@@ -107,14 +107,16 @@ export default class InputManager {
     this.state = {};
     this.resetKeys = [];
     this.boundingClientRect = this.canvas.getBoundingClientRect();
+    this.mouseDownTarget = null;
 
     window.addEventListener("keydown", this.onKeyDown);
     window.addEventListener("keyup", this.onKeyUp);
     canvas.addEventListener("wheel", this.onWheel);
     canvas.addEventListener("mousemove", this.onMouseMove);
     canvas.addEventListener("mousedown", this.onMouseDown);
+    window.addEventListener("mousedown", this.onWindowMouseDown);
     canvas.addEventListener("mouseup", this.onMouseUp);
-    window.addEventListener("mouseup", this.onMouseUp);
+    window.addEventListener("mouseup", this.onWindowMouseUp);
     canvas.addEventListener("dblclick", this.onDoubleClick);
     canvas.addEventListener("click", this.onClick);
     canvas.addEventListener("contextmenu", this.onContextMenu);
@@ -214,7 +216,7 @@ export default class InputManager {
   onKeyDown = event => {
     if (isInputSelected()) return;
 
-    event.preventDefault();
+    let preventDefault = false;
 
     const keyboardMapping = this.mapping.keyboard;
 
@@ -222,6 +224,7 @@ export default class InputManager {
 
     if (keyboardMapping.event) {
       this.state[keyboardMapping.event] = event;
+      preventDefault = true;
     }
 
     const pressedMapping = keyboardMapping.pressed;
@@ -231,6 +234,7 @@ export default class InputManager {
 
       if (action) {
         this.state[action] = 1;
+        preventDefault = true;
       }
     }
 
@@ -241,14 +245,19 @@ export default class InputManager {
 
       if (action) {
         this.state[action] = 1;
+        preventDefault = true;
       }
+    }
+
+    if (preventDefault) {
+      event.preventDefault();
     }
   };
 
   onKeyUp = event => {
     if (isInputSelected()) return;
 
-    event.preventDefault();
+    let preventDefault = false;
 
     const keyboardMapping = this.mapping.keyboard;
 
@@ -256,6 +265,7 @@ export default class InputManager {
 
     if (keyboardMapping.event) {
       this.state[keyboardMapping.event] = event;
+      preventDefault = true;
     }
 
     const pressedMapping = keyboardMapping.pressed;
@@ -265,6 +275,7 @@ export default class InputManager {
 
       if (key) {
         this.state[key] = 0;
+        preventDefault = true;
       }
     }
 
@@ -275,11 +286,22 @@ export default class InputManager {
 
       if (key) {
         this.state[key] = 1;
+        preventDefault = true;
       }
+    }
+
+    if (preventDefault) {
+      event.preventDefault();
     }
   };
 
+  onWindowMouseDown = event => {
+    this.mouseDownTarget = event.target;
+  };
+
   onMouseDown = event => {
+    this.mouseDownTarget = event.target;
+
     const mouseMapping = this.mapping.mouse;
 
     if (!mouseMapping) return;
@@ -311,6 +333,19 @@ export default class InputManager {
         this.state[eventAction] = event;
       }
     }
+  };
+
+  onWindowMouseUp = event => {
+    const canvas = this.canvas;
+    const mouseDownTarget = this.mouseDownTarget;
+
+    this.mouseDownTarget = null;
+
+    if (event.target === canvas || mouseDownTarget !== canvas) {
+      return;
+    }
+
+    this.onMouseUp(event);
   };
 
   onMouseUp = event => {
