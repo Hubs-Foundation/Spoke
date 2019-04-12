@@ -204,7 +204,7 @@ export const SpokeMapping = {
       e: Spoke.rotateMode,
       r: Spoke.scaleMode,
       s: Spoke.s,
-      x: Spoke.rotationSpaceToggle,
+      x: Spoke.snapToggle,
       z: Spoke.z,
       d: Spoke.d,
       backspace: Spoke.deleteSelected,
@@ -223,7 +223,7 @@ export const SpokeMapping = {
     metaHotkey(Spoke.cmdOrCtrl, Spoke.z, Spoke.shift, true, Spoke.redo),
     and(Spoke.cmdOrCtrl, Spoke.d, Spoke.duplicateSelected),
     and(Spoke.cmdOrCtrl, Spoke.s, Spoke.saveProject),
-    andNot(Spoke.s, Spoke.cmdOrCtrl, Spoke.snapToggle),
+    andNot(Spoke.z, Spoke.cmdOrCtrl, Spoke.rotationSpaceToggle),
     copy(Spoke.cmdOrCtrl, Spoke.snapModifier),
     copy(Spoke.leftMouse, Spoke.selecting)
   ]
