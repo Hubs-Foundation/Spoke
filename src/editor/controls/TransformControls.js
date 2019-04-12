@@ -134,7 +134,7 @@ export default class TransformControls extends THREE.Object3D {
     // End Drag
     if (!selecting && this.dragging) {
       this.dragging = false;
-      // this.axis = null;
+      this.axis = null;
     }
 
     // Dragging
