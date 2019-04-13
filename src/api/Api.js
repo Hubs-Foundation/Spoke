@@ -362,7 +362,7 @@ export default class Project extends EventEmitter {
       authorization: `Bearer ${token}`
     };
 
-    const projectEndpoint = `https://${process.env.RETICULUM_SERVER}/api/v1/projects/${projectId}`;
+    const projectEndpoint = `https://${RETICULUM_SERVER}/api/v1/projects/${projectId}`;
 
     const resp = await this.fetch(projectEndpoint, { method: "DELETE", headers });
 
@@ -895,7 +895,7 @@ export default class Project extends EventEmitter {
       authorization: `Bearer ${token}`
     };
 
-    const assetEndpoint = `https://${process.env.RETICULUM_SERVER}/api/v1/assets/${assetId}`;
+    const assetEndpoint = `https://${RETICULUM_SERVER}/api/v1/assets/${assetId}`;
 
     const resp = await this.fetch(assetEndpoint, { method: "DELETE", headers });
 
@@ -918,9 +918,7 @@ export default class Project extends EventEmitter {
       authorization: `Bearer ${token}`
     };
 
-    const projectAssetEndpoint = `https://${
-      process.env.RETICULUM_SERVER
-    }/api/v1/projects/${projectId}/assets/${assetId}`;
+    const projectAssetEndpoint = `https://${RETICULUM_SERVER}/api/v1/projects/${projectId}/assets/${assetId}`;
 
     const resp = await this.fetch(projectAssetEndpoint, { method: "DELETE", headers });
 
