@@ -4,6 +4,8 @@ import ModelNode from "../../editor/nodes/ModelNode";
 import LibrarySearchContainer from "./LibrarySearchContainer";
 import { withApi } from "../contexts/ApiContext";
 import { withEditor } from "../contexts/EditorContext";
+import AssetContextMenu from "./AssetContextMenu";
+import ProjectAssetContextMenu from "./ProjectAssetContextMenu";
 
 class ModelsLibrary extends Component {
   static propTypes = {
@@ -48,7 +50,8 @@ class ModelsLibrary extends Component {
           filterIsClearable: true,
           searchPlaceholder: "Search models...",
           legal: "Search by Sketchfab",
-          privacyPolicyUrl: "https://sketchfab.com/privacy"
+          privacyPolicyUrl: "https://sketchfab.com/privacy",
+          onSearch: (...args) => props.api.searchMedia(...args)
         },
         {
           value: "poly",
@@ -67,7 +70,8 @@ class ModelsLibrary extends Component {
           filterIsClearable: true,
           searchPlaceholder: "Search models...",
           legal: "Search by Google",
-          privacyPolicyUrl: "https://policies.google.com/privacy"
+          privacyPolicyUrl: "https://policies.google.com/privacy",
+          onSearch: (...args) => props.api.searchMedia(...args)
         },
         {
           value: "project_assets",
@@ -78,7 +82,8 @@ class ModelsLibrary extends Component {
           legal: "Search by Mozilla Hubs",
           privacyPolicyUrl: "https://github.com/mozilla/hubs/blob/master/PRIVACY.md",
           onSearch: (source, params) => props.api.getProjectAssets(props.editor.projectId, params),
-          upload: true
+          onUpload: (...args) => props.api.uploadProjectAssets(props.editor, props.editor.projectId, ...args),
+          contextMenu: ProjectAssetContextMenu
         },
         {
           value: "assets",
@@ -88,20 +93,22 @@ class ModelsLibrary extends Component {
           searchPlaceholder: "Search my assets...",
           legal: "Search by Mozilla Hubs",
           privacyPolicyUrl: "https://github.com/mozilla/hubs/blob/master/PRIVACY.md",
-          upload: true
+          onSearch: (...args) => props.api.searchMedia(...args),
+          onUpload: (...args) => props.api.uploadAssets(props.editor, ...args),
+          contextMenu: AssetContextMenu
         }
       ]
     };
   }
 
-  onSelect = item => {
+  onSelect = (item, source) => {
     const props = { src: item.url };
 
     if (item.name) {
       props.name = item.name;
     }
 
-    this.props.onSelectItem(ModelNode, props);
+    this.props.onSelectItem(ModelNode, props, item, source);
   };
 
   render() {

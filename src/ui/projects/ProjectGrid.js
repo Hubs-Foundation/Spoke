@@ -6,6 +6,7 @@ import NewProjectGridItem from "./NewProjectGridItem";
 
 export default class ProjectGrid extends Component {
   static propTypes = {
+    contextMenuId: PropTypes.string.isRequired,
     projects: PropTypes.arrayOf(PropTypes.object).isRequired
   };
 
@@ -13,7 +14,7 @@ export default class ProjectGrid extends Component {
     return (
       <div className={styles.projectGrid}>
         {this.props.projects.map(project => (
-          <ProjectGridItem key={project.projectId} project={project} />
+          <ProjectGridItem key={project.projectId} project={project} contextMenuId={this.props.contextMenuId} />
         ))}
         <NewProjectGridItem />
       </div>

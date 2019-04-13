@@ -3,11 +3,10 @@ import PropTypes from "prop-types";
 import LibraryPanel from "./LibraryPanel";
 import SelectInput from "../inputs/SelectInput";
 import FileInput from "../inputs/FileInput";
-import { withApi } from "../contexts/ApiContext";
-import { withEditor } from "../contexts/EditorContext";
 import { withDialog } from "../contexts/DialogContext";
 import styles from "./LibrarySearchContainer.scss";
 import ErrorDialog from "../dialogs/ErrorDialog";
+import ProgressDialog from "../dialogs/ProgressDialog";
 
 const filterFileTypes = {
   all: ".png,.jpeg,.jpg,.gif,.mp4,.glb,image/png,image/jpeg,image/gif,video/mp4,model/gltf-binary",
@@ -18,8 +17,6 @@ const filterFileTypes = {
 
 class LibrarySearchContainer extends Component {
   static propTypes = {
-    api: PropTypes.object.isRequired,
-    editor: PropTypes.object.isRequired,
     showDialog: PropTypes.func.isRequired,
     hideDialog: PropTypes.func.isRequired,
     sources: PropTypes.arrayOf(
@@ -91,27 +88,52 @@ class LibrarySearchContainer extends Component {
   };
 
   onUpload = async files => {
-    const { api, editor, showDialog, hideDialog } = this.props;
+    const { showDialog, hideDialog, sources } = this.props;
+    const selectedSource = sources.find(source => source.value === this.state.selectedSourceId);
+    const abortController = new AbortController();
 
-    const items = [];
-
-    for (const file of files) {
-      try {
-        const item = await api.uploadProjectAsset(editor.projectId, editor, file, showDialog, hideDialog);
-        items.push(item);
-        this.onAddItem(item);
-      } catch (err) {
-        console.error(err);
-        showDialog(ErrorDialog, {
-          title: "Upload Error",
-          message: `Error uploading file: ${err.message || "There was an unknown error."}`
-        });
-        return;
+    showDialog(ProgressDialog, {
+      title: "Uploading Files",
+      message: `Uploading files 1 of ${files.length}: 0%`,
+      cancelable: true,
+      onCancel: () => {
+        abortController.abort();
+        hideDialog();
       }
-    }
+    });
 
-    if (this.props.onAfterUpload) {
-      this.props.onAfterUpload(items);
+    try {
+      const items = await selectedSource.onUpload(
+        files,
+        (item, total, progress) => {
+          showDialog(ProgressDialog, {
+            title: "Uploading Files",
+            message: `Uploading files: ${item} of ${total}: ${Math.round(progress * 100)}%`,
+            cancelable: true,
+            onCancel: () => {
+              abortController.abort();
+              hideDialog();
+            }
+          });
+        },
+        abortController.signal
+      );
+
+      hideDialog();
+
+      this.setState({
+        items: [...items, ...this.state.items]
+      });
+
+      if (this.props.onAfterUpload) {
+        this.props.onAfterUpload(items);
+      }
+    } catch (err) {
+      console.error(err);
+      showDialog(ErrorDialog, {
+        title: "Upload Error",
+        message: `Error uploading file: ${err.message || "There was an unknown error."}`
+      });
     }
   };
 
@@ -136,17 +158,10 @@ class LibrarySearchContainer extends Component {
 
     this.setState(nextState);
 
-    if (selectedSource.onSearch) {
-      selectedSource
-        .onSearch(selectedSourceId, { filter, type, query }, cursor, abortController.signal)
-        .then(this.onResults)
-        .catch(this.onError);
-    } else {
-      this.props.api
-        .searchMedia(selectedSourceId, { filter, type, query }, cursor, abortController.signal)
-        .then(this.onResults)
-        .catch(this.onError);
-    }
+    selectedSource
+      .onSearch(selectedSourceId, { filter, type, query }, cursor, abortController.signal)
+      .then(this.onResults)
+      .catch(this.onError);
   }
 
   onResults = ({ results, nextCursor }) => {
@@ -170,6 +185,12 @@ class LibrarySearchContainer extends Component {
     });
   };
 
+  onRemoveItem = item => {
+    this.setState({
+      items: this.state.items.filter(i => i !== item)
+    });
+  };
+
   renderTooltip = id => {
     const item = this.state.items.find(r => r.id == id);
 
@@ -189,6 +210,7 @@ class LibrarySearchContainer extends Component {
   render() {
     const { onSelect, sources, uploadMultiple, tooltipId } = this.props;
     const { nextCursor, loading, selectedSourceId, filter, type, query, items } = this.state;
+    const source = sources.find(source => source.value === selectedSourceId);
     const {
       filterOptions,
       filterIsClearable,
@@ -197,66 +219,70 @@ class LibrarySearchContainer extends Component {
       searchPlaceholder,
       legal,
       privacyPolicyUrl,
-      upload
-    } = sources.find(source => source.value === selectedSourceId);
+      onUpload,
+      contextMenu: ContextMenu
+    } = source;
 
     return (
-      <LibraryPanel
-        hasMore={!!nextCursor}
-        onLoadMore={this.onLoadMore}
-        onSelect={onSelect}
-        items={items}
-        loading={loading}
-        tooltipId={tooltipId}
-        renderTooltip={this.renderTooltip}
-      >
-        {sources.length > 1 && (
-          <span className={styles.sourceInputContainer}>
-            <SelectInput options={sources} value={selectedSourceId} onChange={this.onChangeSource} />
+      <>
+        <LibraryPanel
+          hasMore={!!nextCursor}
+          onLoadMore={this.onLoadMore}
+          onSelect={item => onSelect(item, source)}
+          items={items}
+          loading={loading}
+          tooltipId={tooltipId}
+          renderTooltip={this.renderTooltip}
+        >
+          {sources.length > 1 && (
+            <span className={styles.sourceInputContainer}>
+              <SelectInput options={sources} value={selectedSourceId} onChange={this.onChangeSource} />
+            </span>
+          )}
+          {typeOptions && typeOptions.length > 1 && (
+            <span className={styles.filterInputContainer}>
+              <SelectInput
+                placeholder="Type..."
+                isClearable={typeIsClearable}
+                options={typeOptions}
+                value={type}
+                onChange={this.onChangeType}
+              />
+            </span>
+          )}
+          {filterOptions && filterOptions.length > 1 && (
+            <span className={styles.filterInputContainer}>
+              <SelectInput
+                placeholder="Filter..."
+                isClearable={filterIsClearable}
+                options={filterOptions}
+                value={filter}
+                onChange={this.onChangeFilter}
+              />
+            </span>
+          )}
+          <span className={styles.searchContainer}>
+            <input placeholder={searchPlaceholder} value={query} onChange={this.onChangeQuery} />
+            <span>
+              {legal}
+              {privacyPolicyUrl && (
+                <>
+                  <span> | </span>
+                  <a rel="noopener noreferrer" href={privacyPolicyUrl}>
+                    Privacy Policy
+                  </a>
+                </>
+              )}
+            </span>
           </span>
-        )}
-        {typeOptions && typeOptions.length > 1 && (
-          <span className={styles.filterInputContainer}>
-            <SelectInput
-              placeholder="Type..."
-              isClearable={typeIsClearable}
-              options={typeOptions}
-              value={type}
-              onChange={this.onChangeType}
-            />
-          </span>
-        )}
-        {filterOptions && filterOptions.length > 1 && (
-          <span className={styles.filterInputContainer}>
-            <SelectInput
-              placeholder="Filter..."
-              isClearable={filterIsClearable}
-              options={filterOptions}
-              value={filter}
-              onChange={this.onChangeFilter}
-            />
-          </span>
-        )}
-        <span className={styles.searchContainer}>
-          <input placeholder={searchPlaceholder} value={query} onChange={this.onChangeQuery} />
-          <span>
-            {legal}
-            {privacyPolicyUrl && (
-              <>
-                <span> | </span>
-                <a rel="noopener noreferrer" href={privacyPolicyUrl}>
-                  Privacy Policy
-                </a>
-              </>
-            )}
-          </span>
-        </span>
-        {upload && (
-          <FileInput accept={filterFileTypes[type || "all"]} multiple={uploadMultiple} onChange={this.onUpload} />
-        )}
-      </LibraryPanel>
+          {onUpload && (
+            <FileInput accept={filterFileTypes[type || "all"]} multiple={uploadMultiple} onChange={this.onUpload} />
+          )}
+        </LibraryPanel>
+        {ContextMenu && <ContextMenu id={tooltipId} onAddItem={this.onAddItem} onRemoveItem={this.onRemoveItem} />}
+      </>
     );
   }
 }
 
-export default withApi(withEditor(withDialog(LibrarySearchContainer)));
+export default withDialog(LibrarySearchContainer);

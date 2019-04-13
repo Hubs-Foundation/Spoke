@@ -6,6 +6,8 @@ import VideoNode from "../../editor/nodes/VideoNode";
 import ImageNode from "../../editor/nodes/ImageNode";
 import ModelNode from "../../editor/nodes/ModelNode";
 import LibrarySearchContainer from "./LibrarySearchContainer";
+import AssetContextMenu from "./AssetContextMenu";
+import ProjectAssetContextMenu from "./ProjectAssetContextMenu";
 
 const assetTypeToNode = {
   image: ImageNode,
@@ -19,7 +21,8 @@ class AssetsLibrary extends Component {
     api: PropTypes.object.isRequired,
     onSelectItem: PropTypes.func.isRequired,
     uploadMultiple: PropTypes.bool,
-    onAfterUpload: PropTypes.func
+    onAfterUpload: PropTypes.func,
+    tooltipId: PropTypes.string
   };
 
   constructor(props) {
@@ -40,7 +43,8 @@ class AssetsLibrary extends Component {
           legal: "Search by Mozilla Hubs",
           privacyPolicyUrl: "https://github.com/mozilla/hubs/blob/master/PRIVACY.md",
           onSearch: (source, params) => props.api.getProjectAssets(props.editor.projectId, params),
-          upload: true
+          onUpload: (...args) => props.api.uploadProjectAssets(props.editor, props.editor.projectId, ...args),
+          contextMenu: ProjectAssetContextMenu
         },
         {
           value: "assets",
@@ -54,13 +58,15 @@ class AssetsLibrary extends Component {
           searchPlaceholder: "Search my assets...",
           legal: "Search by Mozilla Hubs",
           privacyPolicyUrl: "https://github.com/mozilla/hubs/blob/master/PRIVACY.md",
-          upload: true
+          onSearch: (...args) => props.api.searchMedia(...args),
+          onUpload: (...args) => props.api.uploadAssets(props.editor, ...args),
+          contextMenu: AssetContextMenu
         }
       ]
     };
   }
 
-  onSelect = item => {
+  onSelect = (item, source) => {
     const nodeType = assetTypeToNode[item.type];
 
     if (nodeType) {
@@ -70,7 +76,7 @@ class AssetsLibrary extends Component {
         props.name = item.name;
       }
 
-      this.props.onSelectItem(nodeType, props);
+      this.props.onSelectItem(nodeType, props, item, source);
     }
   };
 
@@ -81,6 +87,7 @@ class AssetsLibrary extends Component {
         onSelect={this.onSelect}
         uploadMultiple={this.props.uploadMultiple}
         onAfterUpload={this.props.onAfterUpload}
+        tooltipId={this.props.tooltipId}
       />
     );
   }
