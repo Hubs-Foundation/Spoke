@@ -14,7 +14,11 @@ export default class SpawnerNodeEditor extends Component {
 
   static description = "Spawns a model as an interactable object.";
 
-  onChangeSrc = src => {
+  onChangeSrc = (src, { scaleToFit }) => {
+    if (scaleToFit) {
+      this.props.node.scaleToFit = scaleToFit;
+    }
+
     this.props.editor.setNodeProperty(this.props.node, "src", src);
   };
 

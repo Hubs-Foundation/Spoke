@@ -52,6 +52,9 @@ export default class ModelNode extends EditorNodeMixin(Model) {
     this._canonicalUrl = "";
     this.collidable = true;
     this.walkable = true;
+    this.scaleToFit = false;
+    this.boundingBox = new THREE.Box3();
+    this.boundingSphere = new THREE.Sphere();
   }
 
   // Overrides Model's src property and stores the original (non-resolved) url.
@@ -93,6 +96,28 @@ export default class ModelNode extends EditorNodeMixin(Model) {
       const { accessibleUrl, files } = await this.editor.api.resolveMedia(src);
 
       await super.load(accessibleUrl);
+
+      if (this.scaleToFit) {
+        this.scale.set(1, 1, 1);
+        this.updateMatrixWorld();
+        this.boundingBox.setFromObject(this.model);
+        this.boundingBox.getBoundingSphere(this.boundingSphere);
+
+        const diameter = this.boundingSphere.radius * 2;
+
+        if ((diameter > 1000 || diameter < 0.1) && diameter !== 0) {
+          // Scale models that are too big or to small to fit in a 1m bounding sphere.
+          const scaleFactor = 1 / diameter;
+          this.scale.set(scaleFactor, scaleFactor, scaleFactor);
+        } else if (diameter > 20) {
+          // If the bounding sphere of a model is over 20m in diameter, assume that the model was
+          // exported with units as centimeters and convert to meters.
+          this.scale.set(0.01, 0.01, 0.01);
+        }
+
+        // Clear scale to fit property so that the swapped model maintains the same scale.
+        this.scaleToFit = false;
+      }
 
       this.editor.signals.objectChanged.dispatch(this);
 
