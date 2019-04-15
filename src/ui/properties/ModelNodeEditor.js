@@ -16,7 +16,11 @@ export default class ModelNodeEditor extends Component {
 
   static description = "A 3D model in your scene, loaded from a GLTF URL or file.";
 
-  onChangeSrc = src => {
+  onChangeSrc = (src, { scaleToFit }) => {
+    if (scaleToFit) {
+      this.props.node.scaleToFit = scaleToFit;
+    }
+
     this.props.editor.setNodeProperty(this.props.node, "src", src);
   };
 

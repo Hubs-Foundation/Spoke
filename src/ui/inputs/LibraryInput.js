@@ -63,7 +63,7 @@ class LibraryInput extends Component {
       api.addAssetToProject(editor.projectId, item.id).catch(console.error);
     }
 
-    this.props.onChange(props.src);
+    this.props.onChange(props.src, props);
   };
 
   render() {
