@@ -52,6 +52,9 @@ export default class ModelNode extends EditorNodeMixin(Model) {
     this._canonicalUrl = "";
     this.collidable = true;
     this.walkable = true;
+    this.scaleToFit = false;
+    this.boundingBox = new THREE.Box3();
+    this.boundingSphere = new THREE.Sphere();
   }
 
   // Overrides Model's src property and stores the original (non-resolved) url.
@@ -93,6 +96,19 @@ export default class ModelNode extends EditorNodeMixin(Model) {
       const { accessibleUrl, files } = await this.editor.api.resolveMedia(src);
 
       await super.load(accessibleUrl);
+
+      if (this.scaleToFit) {
+        this.boundingBox.setFromObject(this.model);
+        this.boundingBox.getBoundingSphere(this.boundingSphere);
+
+        const diameter = this.boundingSphere.radius * 2;
+
+        // If the bounding sphere of a model is over 20m in diameter, assume that the model was
+        // exported with units as centimeters and convert to meters.
+        if (diameter > 20) {
+          this.scale.divideScalar(100);
+        }
+      }
 
       this.editor.signals.objectChanged.dispatch(this);
 

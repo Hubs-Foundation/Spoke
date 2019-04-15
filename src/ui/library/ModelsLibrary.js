@@ -102,7 +102,7 @@ class ModelsLibrary extends Component {
   }
 
   onSelect = (item, source) => {
-    const props = { src: item.url };
+    const props = { src: item.url, scaleToFit: true };
 
     if (item.name) {
       props.name = item.name;
