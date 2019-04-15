@@ -106,8 +106,11 @@ export default class ModelNode extends EditorNodeMixin(Model) {
         // If the bounding sphere of a model is over 20m in diameter, assume that the model was
         // exported with units as centimeters and convert to meters.
         if (diameter > 20) {
-          this.scale.divideScalar(100);
+          this.scale.set(0.01, 0.01, 0.01);
         }
+
+        // Clear scale to fit property so that the swapped model maintains the same scale.
+        this.scaleToFit = false;
       }
 
       this.editor.signals.objectChanged.dispatch(this);
