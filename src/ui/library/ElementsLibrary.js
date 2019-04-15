@@ -4,7 +4,7 @@ import LibraryPanel from "./LibraryPanel";
 import { withEditor } from "../contexts/EditorContext";
 import { withSettings } from "../contexts/SettingsContext";
 
-class ComponentsLibrary extends Component {
+class ElementsLibrary extends Component {
   static propTypes = {
     editor: PropTypes.object.isRequired,
     settings: PropTypes.object.isRequired,
@@ -53,4 +53,4 @@ class ComponentsLibrary extends Component {
   }
 }
 
-export default withSettings(withEditor(ComponentsLibrary));
+export default withSettings(withEditor(ElementsLibrary));

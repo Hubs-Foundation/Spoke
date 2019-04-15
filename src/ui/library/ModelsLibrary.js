@@ -74,6 +74,18 @@ class ModelsLibrary extends Component {
           onSearch: (...args) => props.api.searchMedia(...args)
         },
         {
+          value: "assets",
+          label: "My Assets",
+          defaultType: "model",
+          typeOptions: [{ label: "Models", value: "model" }],
+          searchPlaceholder: "Search my assets...",
+          legal: "Search by Mozilla Hubs",
+          privacyPolicyUrl: "https://github.com/mozilla/hubs/blob/master/PRIVACY.md",
+          onSearch: (...args) => props.api.searchMedia(...args),
+          onUpload: (...args) => props.api.uploadAssets(props.editor, ...args),
+          contextMenu: AssetContextMenu
+        },
+        {
           value: "project_assets",
           label: "Project Assets",
           defaultType: "model",
@@ -84,18 +96,6 @@ class ModelsLibrary extends Component {
           onSearch: (source, params) => props.api.getProjectAssets(props.editor.projectId, params),
           onUpload: (...args) => props.api.uploadProjectAssets(props.editor, props.editor.projectId, ...args),
           contextMenu: ProjectAssetContextMenu
-        },
-        {
-          value: "assets",
-          label: "Assets",
-          defaultType: "model",
-          typeOptions: [{ label: "Models", value: "model" }],
-          searchPlaceholder: "Search my assets...",
-          legal: "Search by Mozilla Hubs",
-          privacyPolicyUrl: "https://github.com/mozilla/hubs/blob/master/PRIVACY.md",
-          onSearch: (...args) => props.api.searchMedia(...args),
-          onUpload: (...args) => props.api.uploadAssets(props.editor, ...args),
-          contextMenu: AssetContextMenu
         }
       ]
     };

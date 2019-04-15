@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import LibraryToolbar from "./LibraryToolbar";
 import styles from "./LibraryContainer.scss";
-import ComponentsLibrary from "./ComponentsLibrary";
+import ElementsLibrary from "./ElementsLibrary";
 //import PrimitivesLibrary from "./PrimitivesLibrary";
 import ModelsLibrary from "./ModelsLibrary";
 import VideosLibrary from "./VideosLibrary";
@@ -21,27 +21,15 @@ class LibraryContainer extends Component {
     selected: null,
     items: [
       {
-        id: "components",
-        label: "Components",
-        iconClassName: "fa-puzzle-piece",
-        component: ComponentsLibrary
+        id: "elements",
+        label: "Elements",
+        iconClassName: "fa-code",
+        component: ElementsLibrary
       },
-      {
-        id: "assets",
-        label: "Assets",
-        iconClassName: "fa-folder",
-        component: AssetsLibrary
-      },
-      // {
-      //   id: "primitives",
-      //   label: "Primitives",
-      //   iconClassName: "fa-cube",
-      //   component: PrimitivesLibrary
-      // },
       {
         id: "models",
         label: "Models",
-        iconClassName: "fa-cubes",
+        iconClassName: "fa-cube",
         component: ModelsLibrary
       },
       {
@@ -55,6 +43,12 @@ class LibraryContainer extends Component {
         label: "Images",
         iconClassName: "fa-image",
         component: ImagesLibrary
+      },
+      {
+        id: "assets",
+        label: "My Assets",
+        iconClassName: "fa-folder",
+        component: AssetsLibrary
       }
     ]
   };
@@ -71,7 +65,7 @@ class LibraryContainer extends Component {
       }
     }
 
-    if (source.value === "assets") {
+    if (source && source.value === "assets") {
       api.addAssetToProject(editor.projectId, item.id).catch(console.error);
     }
 
