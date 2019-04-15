@@ -31,6 +31,22 @@ class AssetsLibrary extends Component {
     this.state = {
       sources: [
         {
+          value: "assets",
+          label: "My Assets",
+          typeOptions: [
+            { label: "Models", value: "model" },
+            { label: "Images", value: "image" },
+            { label: "Videos", value: "video" }
+          ],
+          typeIsClearable: true,
+          searchPlaceholder: "Search my assets...",
+          legal: "Search by Mozilla Hubs",
+          privacyPolicyUrl: "https://github.com/mozilla/hubs/blob/master/PRIVACY.md",
+          onSearch: (...args) => props.api.searchMedia(...args),
+          onUpload: (...args) => props.api.uploadAssets(props.editor, ...args),
+          contextMenu: AssetContextMenu
+        },
+        {
           value: "project_assets",
           label: "Project Assets",
           typeOptions: [
@@ -45,22 +61,6 @@ class AssetsLibrary extends Component {
           onSearch: (source, params) => props.api.getProjectAssets(props.editor.projectId, params),
           onUpload: (...args) => props.api.uploadProjectAssets(props.editor, props.editor.projectId, ...args),
           contextMenu: ProjectAssetContextMenu
-        },
-        {
-          value: "assets",
-          label: "Assets",
-          typeOptions: [
-            { label: "Models", value: "model" },
-            { label: "Images", value: "image" },
-            { label: "Videos", value: "video" }
-          ],
-          typeIsClearable: true,
-          searchPlaceholder: "Search my assets...",
-          legal: "Search by Mozilla Hubs",
-          privacyPolicyUrl: "https://github.com/mozilla/hubs/blob/master/PRIVACY.md",
-          onSearch: (...args) => props.api.searchMedia(...args),
-          onUpload: (...args) => props.api.uploadAssets(props.editor, ...args),
-          contextMenu: AssetContextMenu
         }
       ]
     };

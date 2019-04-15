@@ -23,8 +23,16 @@ class VideosLibrary extends Component {
     this.state = {
       sources: [
         {
+          value: "youtube_videos",
+          label: "YouTube",
+          searchPlaceholder: "Search videos...",
+          legal: "Search by Google",
+          privacyPolicyUrl: "https://policies.google.com/privacy",
+          onSearch: (...args) => props.api.searchMedia(...args)
+        },
+        {
           value: "bing_videos",
-          label: "Videos",
+          label: "Bing Videos",
           searchPlaceholder: "Search videos...",
           legal: "Search by Bing",
           privacyPolicyUrl: "https://privacy.microsoft.com/en-us/privacystatement",
@@ -50,6 +58,18 @@ class VideosLibrary extends Component {
           onSearch: (...args) => props.api.searchMedia(...args)
         },
         {
+          value: "assets",
+          label: "My Assets",
+          defaultType: "video",
+          typeOptions: [{ label: "Videos", value: "video" }],
+          searchPlaceholder: "Search my assets...",
+          legal: "Search by Mozilla Hubs",
+          privacyPolicyUrl: "https://github.com/mozilla/hubs/blob/master/PRIVACY.md",
+          onSearch: (...args) => props.api.searchMedia(...args),
+          onUpload: (...args) => props.api.uploadAssets(props.editor, ...args),
+          contextMenu: AssetContextMenu
+        },
+        {
           value: "project_assets",
           label: "Project Assets",
           defaultType: "video",
@@ -60,18 +80,6 @@ class VideosLibrary extends Component {
           onSearch: (source, params) => props.api.getProjectAssets(props.editor.projectId, params),
           onUpload: (...args) => props.api.uploadProjectAssets(props.editor, props.editor.projectId, ...args),
           contextMenu: ProjectAssetContextMenu
-        },
-        {
-          value: "assets",
-          label: "Assets",
-          defaultType: "video",
-          typeOptions: [{ label: "Videos", value: "video" }],
-          searchPlaceholder: "Search my assets...",
-          legal: "Search by Mozilla Hubs",
-          privacyPolicyUrl: "https://github.com/mozilla/hubs/blob/master/PRIVACY.md",
-          onSearch: (...args) => props.api.searchMedia(...args),
-          onUpload: (...args) => props.api.uploadAssets(props.editor, ...args),
-          contextMenu: AssetContextMenu
         }
       ]
     };

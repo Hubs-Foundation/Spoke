@@ -6,7 +6,7 @@ import styles from "./LibraryGridItem.scss";
 const typeToClassName = {
   image: "fa-image",
   video: "fa-film",
-  model: "fa-cubes"
+  model: "fa-cube"
 };
 
 function renderItem(item) {

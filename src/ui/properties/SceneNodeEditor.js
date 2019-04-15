@@ -8,7 +8,7 @@ export default class SceneNodeEditor extends Component {
     node: PropTypes.object
   };
 
-  static iconClassName = "fa-cubes";
+  static iconClassName = "fa-globe";
 
   static description = "The root object of the scene.";
 
