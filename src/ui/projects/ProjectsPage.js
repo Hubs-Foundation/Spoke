@@ -23,6 +23,14 @@ class ProjectsPage extends Component {
 
     this.state = {
       projects: [],
+      templates: [
+        {
+          id: "VfoICgK",
+          name: "Too Late",
+          creator: "Ovidiu Vladut",
+          thumbnailUrl: "https://uploads-prod.reticulum.io/files/cac6a12f-2163-42b9-b2c7-c077745c4b7a.jpg"
+        }
+      ],
       loading: true,
       error: null
     };
@@ -47,9 +55,17 @@ class ProjectsPage extends Component {
 
   onDeleteProject = project => {
     this.props.api
-      .deleteProject(project.projectId)
-      .then(() => this.setState({ projects: this.state.projects.filter(p => p.projectId !== project.projectId) }))
+      .deleteProject(project.id)
+      .then(() => this.setState({ projects: this.state.projects.filter(p => p.id !== project.id) }))
       .catch(error => this.setState({ error }));
+  };
+
+  onSelectProject = project => {
+    this.props.history.push(`/projects/${project.id}`);
+  };
+
+  onRemixProject = project => {
+    this.props.history.push(`/scenes/${project.id}/remix`);
   };
 
   renderContextMenu = props => {
@@ -74,7 +90,14 @@ class ProjectsPage extends Component {
         </div>
       );
     } else {
-      content = <ProjectGrid projects={projects} contextMenuId={contextMenuId} />;
+      content = (
+        <ProjectGrid
+          projects={projects}
+          showNewProjectItem
+          onSelect={this.onSelectProject}
+          contextMenuId={contextMenuId}
+        />
+      );
     }
 
     const ProjectContextMenu = this.ProjectContextMenu;
@@ -86,7 +109,15 @@ class ProjectsPage extends Component {
           <section className={styles.projectsSection}>
             <div className={styles.projectsContainer}>
               <div className={styles.projectsHeader}>
-                <h1>Projects</h1>
+                <h1>Templates</h1>
+              </div>
+              <ProjectGrid projects={this.state.templates} onSelect={this.onRemixProject} />
+            </div>
+          </section>
+          <section className={styles.projectsSection}>
+            <div className={styles.projectsContainer}>
+              <div className={styles.projectsHeader}>
+                <h1>My Projects</h1>
                 <Link to="/projects/new">New Project</Link>
               </div>
               {error && <div className={styles.error}>{error.message || "There was an unknown error."}</div>}

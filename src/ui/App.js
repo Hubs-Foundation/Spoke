@@ -16,6 +16,7 @@ import LoginPage from "./auth/LoginPage";
 import LogoutPage from "./auth/LogoutPage";
 import ProjectsPage from "./projects/ProjectsPage";
 import NewProjectPage from "./projects/NewProjectPage";
+import RemixScenePage from "./projects/RemixScenePage";
 
 const ProjectPage = lazy(() =>
   import(/* webpackChunkName: "project-page", webpackPrefetch: true */ "./projects/ProjectPage")
@@ -40,6 +41,7 @@ export default class App extends Component {
               <AuthenticatedRoute path="/projects" exact component={ProjectsPage} />
               <AuthenticatedRoute path="/projects/new" exact component={NewProjectPage} />
               <AuthenticatedRoute path="/projects/:projectId" component={ProjectPage} />
+              <AuthenticatedRoute path="/scenes/:sceneId/remix" component={RemixScenePage} />
               <Route render={() => <Error message="Page not found." />} />
             </Switch>
           </Suspense>

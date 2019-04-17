@@ -1,7 +1,6 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
 import styles from "./ProjectGridItem.scss";
-import { Link } from "react-router-dom";
 import { showMenu, ContextMenuTrigger } from "react-contextmenu";
 import MenuButton from "../inputs/MenuButton";
 
@@ -11,8 +10,9 @@ function collectMenuProps({ project }) {
 
 export default class ProjectGridItem extends Component {
   static propTypes = {
-    contextMenuId: PropTypes.string.isRequired,
-    project: PropTypes.object.isRequired
+    contextMenuId: PropTypes.string,
+    project: PropTypes.object.isRequired,
+    onSelect: PropTypes.func.isRequired
   };
 
   onShowMenu = event => {
@@ -29,18 +29,38 @@ export default class ProjectGridItem extends Component {
     });
   };
 
+  onSelect = e => {
+    this.props.onSelect(this.props.project, e);
+  };
+
   render() {
     const { project, contextMenuId } = this.props;
 
-    return (
-      <Link className={styles.projectGridItem} to={`/projects/${project.projectId}`}>
-        <ContextMenuTrigger
-          attributes={{ className: styles.contextMenuTrigger }}
-          id={contextMenuId}
-          project={project}
-          collect={collectMenuProps}
-          holdToDisplay={-1}
-        >
+    if (contextMenuId) {
+      return (
+        <div className={styles.projectGridItem} onClick={this.onSelect}>
+          <ContextMenuTrigger
+            attributes={{ className: styles.contextMenuTrigger }}
+            id={contextMenuId}
+            project={project}
+            collect={collectMenuProps}
+            holdToDisplay={-1}
+          >
+            <div className={styles.thumbnailContainer}>
+              {project.thumbnailUrl && (
+                <div className={styles.thumbnail} style={{ backgroundImage: `url(${project.thumbnailUrl})` }} />
+              )}
+            </div>
+            <div className={styles.titleContainer}>
+              <h3>{project.name}</h3>
+              <MenuButton onClick={this.onShowMenu} className="fas fa-ellipsis-v" />
+            </div>
+          </ContextMenuTrigger>
+        </div>
+      );
+    } else {
+      return (
+        <div className={styles.projectGridItem} onClick={this.onSelect}>
           <div className={styles.thumbnailContainer}>
             {project.thumbnailUrl && (
               <div className={styles.thumbnail} style={{ backgroundImage: `url(${project.thumbnailUrl})` }} />
@@ -48,10 +68,9 @@ export default class ProjectGridItem extends Component {
           </div>
           <div className={styles.titleContainer}>
             <h3>{project.name}</h3>
-            <MenuButton onClick={this.onShowMenu} className="fas fa-ellipsis-v" />
           </div>
-        </ContextMenuTrigger>
-      </Link>
-    );
+        </div>
+      );
+    }
   }
 }

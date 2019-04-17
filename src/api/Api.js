@@ -170,7 +170,7 @@ export default class Project extends EventEmitter {
     }
 
     return json.projects.map(project => ({
-      projectId: project.project_id,
+      id: project.project_id,
       name: project.name,
       thumbnailUrl: project.thumbnail_url
     }));
@@ -351,7 +351,32 @@ export default class Project extends EventEmitter {
 
     const json = await resp.json();
 
-    return { projectId: json.project_id };
+    return { id: json.project_id };
+  }
+
+  async remixScene(sceneId) {
+    const token = this.getToken();
+
+    const headers = {
+      "content-type": "application/json",
+      authorization: `Bearer ${token}`
+    };
+
+    const remixEndpoint = `https://${RETICULUM_SERVER}/api/v1/scenes/${sceneId}/remix`;
+
+    const resp = await this.fetch(remixEndpoint, { method: "POST", headers });
+
+    if (resp.status === 401) {
+      throw new Error("Not authenticated");
+    }
+
+    if (resp.status !== 200) {
+      throw new Error(`Project creation failed. ${await resp.text()}`);
+  }
+
+    const json = await resp.json();
+
+    return { id: json.project_id };
   }
 
   async deleteProject(projectId) {

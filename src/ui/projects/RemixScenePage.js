@@ -5,10 +5,11 @@ import { Redirect } from "react-router-dom";
 import Loading from "../Loading";
 import Error from "../Error";
 
-class NewProjectPage extends Component {
+class RemixScenePage extends Component {
   static propTypes = {
     api: PropTypes.object.isRequired,
-    history: PropTypes.object.isRequired
+    history: PropTypes.object.isRequired,
+    match: PropTypes.object.isRequired
   };
 
   state = {
@@ -18,8 +19,10 @@ class NewProjectPage extends Component {
   };
 
   componentDidMount() {
+    const sceneId = this.props.match.params.sceneId;
+
     this.props.api
-      .createProject("Untitled")
+      .remixScene(sceneId)
       .then(({ id }) => {
         this.setState({ loading: false, projectId: id });
       })
@@ -27,12 +30,12 @@ class NewProjectPage extends Component {
         if (err.response && err.response.status === 401) {
           // User has an invalid auth token. Prompt them to login again.
           this.props.api.logout();
-          return this.props.history.push("/login", { from: "/projects/new" });
+          return this.props.history.push("/login", { from: `/scenes/${sceneId}/remix` });
         }
 
         this.setState({
           loading: false,
-          error: err.message || "An unknown error occurred while trying to create a new project."
+          error: err.message || "An unknown error occurred while trying to remix a scene."
         });
       });
   }
@@ -52,4 +55,4 @@ class NewProjectPage extends Component {
   }
 }
 
-export default withApi(NewProjectPage);
+export default withApi(RemixScenePage);
