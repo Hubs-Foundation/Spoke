@@ -7,6 +7,7 @@ import PublishDialog from "./PublishDialog";
 import ProgressDialog from "../ui/dialogs/ProgressDialog";
 import Fuse from "fuse.js";
 import jwtDecode from "jwt-decode";
+import { buildAbsoluteURL } from "url-toolkit";
 
 // Media related functions should be kept up to date with Hubs media-utils:
 // https://github.com/mozilla/hubs/blob/master/src/utils/media-utils.js
@@ -276,6 +277,28 @@ export default class Project extends EventEmitter {
     }
 
     return { canonicalUrl, accessibleUrl, contentType };
+  }
+
+  unproxyUrl(baseUrl, url) {
+    if (process.env.CORS_PROXY_SERVER) {
+      const corsProxyPrefix = `https://${process.env.CORS_PROXY_SERVER}/`;
+
+      if (baseUrl.startsWith(corsProxyPrefix)) {
+        baseUrl = baseUrl.substring(corsProxyPrefix.length);
+      }
+
+      if (url.startsWith(corsProxyPrefix)) {
+        url = url.substring(corsProxyPrefix.length);
+      }
+    }
+
+    // HACK HLS.js resolves relative urls internally, but our CORS proxying screws it up. Resolve relative to the original unproxied url.
+    // TODO extend HLS.js to allow overriding of its internal resolving instead
+    if (!url.startsWith("http")) {
+      url = buildAbsoluteURL(baseUrl, url.startsWith("/") ? url : `/${url}`);
+    }
+
+    return proxiedUrlFor(url);
   }
 
   async searchMedia(source, params, cursor, signal) {
