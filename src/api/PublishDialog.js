@@ -19,8 +19,7 @@ export default class PublishDialog extends Component {
     initialDescription: PropTypes.string,
     initialCreatorAttribution: PropTypes.string,
     initialAllowRemixing: PropTypes.bool,
-    initialAllowPromotion: PropTypes.bool,
-    isNewScene: PropTypes.bool
+    initialAllowPromotion: PropTypes.bool
   };
 
   static defaultProps = {
@@ -40,8 +39,7 @@ export default class PublishDialog extends Component {
       description: props.initialDescription,
       creatorAttribution: props.initialCreatorAttribution,
       allowRemixing: props.initialAllowRemixing,
-      allowPromotion: props.initialAllowPromotion,
-      isNewScene: props.isNewScene
+      allowPromotion: props.initialAllowPromotion
     };
   }
 
@@ -66,7 +64,7 @@ export default class PublishDialog extends Component {
             <img className={styles.sceneThumbnail} src={screenshotURL} />
             <div>
               <form id="publish" onSubmit={this.handleSubmit}>
-                {this.state.isNewScene && !published ? (
+                {!published ? (
                   <div>
                     <div className={styles.inputField}>
                       <label className={styles.label}>Scene Name:</label>
@@ -89,23 +87,6 @@ export default class PublishDialog extends Component {
                         onChange={value => this.setState({ creatorAttribution: value })}
                       />
                     </div>
-                  </div>
-                ) : (
-                  <div>
-                    <div className={styles.titleRow}>
-                      <div className={styles.contentTitle}>{this.state.name}</div>
-
-                      {!published && <Button onClick={() => this.setState({ isNewScene: true })}>New Scene</Button>}
-                    </div>
-                    {this.state.creatorAttribution && (
-                      <div className={styles.titleRow}>
-                        <div>by {this.state.creatorAttribution}</div>
-                      </div>
-                    )}
-                  </div>
-                )}
-                {!published ? (
-                  <div>
                     <div className={styles.inputField}>
                       <div className={styles.checkboxRow}>
                         <label htmlFor="allowRemixing">
@@ -186,7 +167,7 @@ export default class PublishDialog extends Component {
               Cancel
             </Button>
             <Button key="publish" type="submit" form="publish">
-              {this.state.isNewScene ? "Publish" : "Re-Publish"}
+              Publish
             </Button>
           </div>
         )}

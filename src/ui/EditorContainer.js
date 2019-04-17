@@ -27,6 +27,8 @@ export default class EditorContainer extends Component {
   static propTypes = {
     api: PropTypes.object.isRequired,
     projectId: PropTypes.string.isRequired,
+    sceneId: PropTypes.string,
+    sceneUrl: PropTypes.string,
     project: PropTypes.object,
     history: PropTypes.object.isRequired
   };
@@ -295,6 +297,8 @@ export default class EditorContainer extends Component {
         });
 
         this.state.editor.projectId = this.props.projectId;
+        this.state.editor.sceneId = this.props.sceneId;
+        this.state.editor.sceneUrl = this.props.sceneUrl;
 
         this.hideDialog();
       } catch (e) {
@@ -431,6 +435,11 @@ export default class EditorContainer extends Component {
     }
   };
 
+  onOpenScene = () => {
+    const sceneUrl = this.props.api.getSceneUrl(this.state.editor.sceneId);
+    window.open(sceneUrl);
+  };
+
   renderPanel = (panelId, path) => {
     const panel = this.state.registeredPanels[panelId];
 
@@ -453,7 +462,12 @@ export default class EditorContainer extends Component {
         <SettingsContextProvider value={settingsContext}>
           <EditorContextProvider value={editor}>
             <DialogContextProvider value={this.dialogContext}>
-              <ToolBar menu={toolbarMenu} editor={editor} onPublish={this.onPublishProject} />
+              <ToolBar
+                menu={toolbarMenu}
+                editor={editor}
+                onPublish={this.onPublishProject}
+                onOpenScene={this.onOpenScene}
+              />
               <Mosaic
                 className="mosaic-theme"
                 renderTile={this.renderPanel}

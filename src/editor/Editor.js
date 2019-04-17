@@ -35,6 +35,8 @@ export default class Editor {
   constructor(api) {
     this.api = api;
     this.projectId = null;
+    this.sceneId = null;
+    this.sceneUrl = null;
 
     this.scene = new SceneNode(this);
     this.sceneModified = false;

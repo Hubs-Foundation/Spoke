@@ -201,6 +201,8 @@ export default class Project extends EventEmitter {
       id: json.project_id,
       name: json.name,
       thumbnailUrl: json.thumbnail_url,
+      sceneId: json.published_scene_id,
+      sceneUrl: this.getSceneUrl(json.published_scene_id),
       project
     };
   }
@@ -372,7 +374,7 @@ export default class Project extends EventEmitter {
 
     if (resp.status !== 200) {
       throw new Error(`Project creation failed. ${await resp.text()}`);
-  }
+    }
 
     const json = await resp.json();
 
@@ -472,11 +474,6 @@ export default class Project extends EventEmitter {
     try {
       const scene = editor.scene;
 
-      // Save the scene if it has been modified.
-      if (editor.sceneModified) {
-        await this.saveProject(projectId, editor, showDialog, hideDialog);
-      }
-
       // Ensure the user is authenticated before continuing.
       if (!this.isAuthenticated()) {
         await new Promise(resolve => {
@@ -491,7 +488,7 @@ export default class Project extends EventEmitter {
       screenshotURL = URL.createObjectURL(screenshotBlob);
 
       // Gather all the info needed to display the publish dialog
-      const { name, creatorAttribution, description, allowRemixing, allowPromotion, sceneId } = scene.metadata;
+      const { name, creatorAttribution, description, allowRemixing, allowPromotion } = scene.metadata;
       const userInfo = this.getUserInfo();
 
       let initialCreatorAttribution = creatorAttribution;
@@ -515,7 +512,6 @@ export default class Project extends EventEmitter {
           initialDescription: description,
           initialAllowRemixing: allowRemixing,
           initialAllowPromotion: allowPromotion,
-          isNewScene: !sceneId,
           onCancel: () => resolve(null),
           onPublish: resolve
         });
@@ -543,19 +539,23 @@ export default class Project extends EventEmitter {
 
       showDialog(ProgressDialog, {
         title: "Publishing Scene",
+        message: "Saving scene..."
+      });
+
+      // Save project along with updated metadata
+      await this.saveProject(projectId, editor, showDialog, hideDialog);
+
+      showDialog(ProgressDialog, {
+        title: "Publishing Scene",
         message: "Exporting scene..."
       });
 
       // Clone the existing scene, process it for exporting, and then export as a glb blob
       const glbBlob = await editor.exportScene();
 
-      // Serialize Spoke scene
-      const serializedScene = editor.scene.serialize();
-      const sceneBlob = new Blob([JSON.stringify(serializedScene)], { type: "application/json" });
-
       showDialog(ProgressDialog, {
         title: "Publishing Scene",
-        message: `${sceneId ? "updating" : "creating"} scene`
+        message: "Publishing scene..."
       });
 
       const size = glbBlob.size / 1024 / 1024;
@@ -585,18 +585,11 @@ export default class Project extends EventEmitter {
         });
       });
 
-      const {
-        file_id: sceneFileId,
-        meta: { access_token: sceneFileToken }
-      } = await this.upload(sceneBlob);
-
       const sceneParams = {
         screenshot_file_id: screenshotId,
         screenshot_file_token: screenshotToken,
         model_file_id: glbId,
         model_file_token: glbToken,
-        scene_file_id: sceneFileId,
-        scene_file_token: sceneFileToken,
         allow_remixing: publishParams.allowRemixing,
         allow_promotion: publishParams.allowPromotion,
         name: publishParams.name,
@@ -613,23 +606,19 @@ export default class Project extends EventEmitter {
         "content-type": "application/json",
         authorization: `Bearer ${token}`
       };
+
       const body = JSON.stringify({ scene: sceneParams });
 
-      let sceneEndpoint = `https://${RETICULUM_SERVER}/api/v1/scenes`;
-      let method = "POST";
-      if (sceneId) {
-        sceneEndpoint = `${sceneEndpoint}/${sceneId}`;
-        method = "PATCH";
-      }
+      const publishEndpoint = `https://${RETICULUM_SERVER}/api/v1/projects/${projectId}/publish`;
 
-      const resp = await this.fetch(sceneEndpoint, { method, headers, body });
+      const resp = await this.fetch(publishEndpoint, { method: "POST", headers, body });
 
       if (resp.status === 401) {
         return await new Promise((resolve, reject) => {
           showDialog(LoginDialog, {
             onSuccess: async () => {
               try {
-                await this.publish(editor, showDialog, hideDialog);
+                await this.publishProject(projectId, editor, showDialog, hideDialog);
                 resolve();
               } catch (e) {
                 reject(e);
@@ -644,18 +633,11 @@ export default class Project extends EventEmitter {
       }
 
       const json = await resp.json();
-      const newSceneId = json.scenes[0].scene_id;
-      let sceneUrl = json.scenes[0].url;
+      const sceneId = json.scenes[0].scene_id;
+      const sceneUrl = this.getSceneUrl(sceneId);
 
-      if (process.env.HUBS_SERVER) {
-        if (process.env.HUBS_SERVER.startsWith("localhost") || process.env.HUBS_SERVER.startsWith("hubs.local")) {
-          sceneUrl = `https://${process.env.HUBS_SERVER}/scene.html?scene_id=${newSceneId}`;
-        } else {
-          sceneUrl = `https://${process.env.HUBS_SERVER}/scenes/${newSceneId}`;
-        }
-      }
-
-      scene.setMetadata({ sceneUrl, sceneId: newSceneId });
+      editor.sceneId = sceneId;
+      editor.sceneUrl = sceneUrl;
 
       await this.saveProject(projectId, editor, showDialog, hideDialog);
 
@@ -672,6 +654,14 @@ export default class Project extends EventEmitter {
       if (screenshotURL) {
         URL.revokeObjectURL(screenshotURL);
       }
+    }
+  }
+
+  getSceneUrl(sceneId) {
+    if (process.env.HUBS_SERVER === "localhost:8080" || process.env.HUBS_SERVER === "hubs.local:8080") {
+      return `https://${process.env.HUBS_SERVER}/scene.html?scene_id=${sceneId}`;
+    } else {
+      return `https://${process.env.HUBS_SERVER}/scenes/${sceneId}`;
     }
   }
 

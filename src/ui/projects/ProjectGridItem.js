@@ -17,6 +17,8 @@ export default class ProjectGridItem extends Component {
 
   onShowMenu = event => {
     event.preventDefault();
+    event.stopPropagation();
+
     const x = event.clientX || (event.touches && event.touches[0].pageX);
     const y = event.clientY || (event.touches && event.touches[0].pageY);
     showMenu({

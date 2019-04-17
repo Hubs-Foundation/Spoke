@@ -15,7 +15,9 @@ class ProjectPage extends Component {
   state = {
     loading: true,
     error: null,
-    project: null
+    project: null,
+    sceneId: null,
+    sceneUrl: null
   };
 
   componentDidMount() {
@@ -37,8 +39,8 @@ class ProjectPage extends Component {
 
     this.props.api
       .getProject(projectId)
-      .then(({ project }) => {
-        this.setState({ loading: false, project });
+      .then(({ project, sceneId, sceneUrl }) => {
+        this.setState({ loading: false, project, sceneId, sceneUrl });
       })
       .catch(err => {
         if (err.response && err.response.status === 401) {
@@ -53,7 +55,7 @@ class ProjectPage extends Component {
 
   render() {
     const { api, match, history } = this.props;
-    const { loading, error, project } = this.state;
+    const { loading, error, project, sceneId, sceneUrl } = this.state;
 
     if (loading) {
       return <Loading message="Loading project..." fullScreen />;
@@ -63,7 +65,16 @@ class ProjectPage extends Component {
       return <Error message={error} />;
     }
 
-    return <EditorContainer api={api} history={history} projectId={match.params.projectId} project={project} />;
+    return (
+      <EditorContainer
+        api={api}
+        history={history}
+        projectId={match.params.projectId}
+        project={project}
+        sceneId={sceneId}
+        sceneUrl={sceneUrl}
+      />
+    );
   }
 }
 
