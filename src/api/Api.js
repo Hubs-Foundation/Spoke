@@ -64,6 +64,18 @@ export const proxiedUrlFor = (url, index) => {
   }
 };
 
+export const scaledThumbnailUrlFor = (url, width, height) => {
+  if (
+    process.env.RETICULUM_SERVER &&
+    process.env.RETICULUM_SERVER.includes("hubs.local") &&
+    url.includes("hubs.local")
+  ) {
+    return url;
+  }
+
+  return `https://${process.env.FARSPARK_SERVER}/thumbnail/${farsparkEncodeUrl(url)}?w=${width}&h=${height}`;
+};
+
 const CommonKnownContentTypes = {
   gltf: "model/gltf",
   glb: "model/gltf-binary",
@@ -351,8 +363,15 @@ export default class Project extends EventEmitter {
 
     const json = await resp.json();
 
+    const farsparkedEntries = json.entries.map(entry => {
+      if (entry.images && entry.images.preview && entry.images.preview.url) {
+        entry.images.preview.url = scaledThumbnailUrlFor(entry.images.preview.url, 100, 100);
+      }
+      return entry;
+    });
+
     return {
-      results: json.entries,
+      results: farsparkedEntries,
       suggestions: json.suggestions,
       nextCursor: json.meta.next_cursor
     };
