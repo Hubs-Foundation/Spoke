@@ -383,6 +383,8 @@ export default class InputManager {
   };
 
   onMouseMove = event => {
+    event.stopPropagation();
+
     const mouseMapping = this.mapping.mouse;
 
     if (!mouseMapping) return;
@@ -500,7 +502,8 @@ export default class InputManager {
     const computed = this.mapping.computed;
 
     if (computed) {
-      for (const computedProp of computed) {
+      for (let i = 0; i < computed.length; i++) {
+        const computedProp = computed[i];
         const { action, transform } = computedProp;
         this.state[action] = transform(this, computedProp, dt, time);
       }
@@ -508,7 +511,8 @@ export default class InputManager {
   }
 
   reset() {
-    for (const key of this.resetKeys) {
+    for (let i = 0; i < this.resetKeys.length; i++) {
+      const key = this.resetKeys[i];
       this.state[key] = this.initialState[key];
     }
   }
