@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
 import { withApi } from "../contexts/ApiContext";
+import { withAuth } from "../contexts/AuthContext";
 import { withEditor } from "../contexts/EditorContext";
 import VideoNode from "../../editor/nodes/VideoNode";
 import ImageNode from "../../editor/nodes/ImageNode";
@@ -8,6 +9,9 @@ import ModelNode from "../../editor/nodes/ModelNode";
 import LibrarySearchContainer from "./LibrarySearchContainer";
 import AssetContextMenu from "./AssetContextMenu";
 import ProjectAssetContextMenu from "./ProjectAssetContextMenu";
+import LoginDialogLink from "../dialogs/LoginDialogLink";
+import styles from "./LibraryPanel.scss";
+import Center from "../layout/Center";
 
 const assetTypeToNode = {
   image: ImageNode,
@@ -22,7 +26,8 @@ class AssetsLibrary extends Component {
     onSelectItem: PropTypes.func.isRequired,
     uploadMultiple: PropTypes.bool,
     onAfterUpload: PropTypes.func,
-    tooltipId: PropTypes.string
+    tooltipId: PropTypes.string,
+    isAuthenticated: PropTypes.bool
   };
 
   constructor(props) {
@@ -81,6 +86,16 @@ class AssetsLibrary extends Component {
   };
 
   render() {
+    if (!this.props.isAuthenticated) {
+      return (
+        <div className={styles.libraryPanel}>
+          <Center>
+            <LoginDialogLink>Login to upload assets</LoginDialogLink>
+          </Center>
+        </div>
+      );
+    }
+
     return (
       <LibrarySearchContainer
         sources={this.state.sources}
@@ -93,4 +108,4 @@ class AssetsLibrary extends Component {
   }
 }
 
-export default withApi(withEditor(AssetsLibrary));
+export default withApi(withEditor(withAuth(AssetsLibrary)));

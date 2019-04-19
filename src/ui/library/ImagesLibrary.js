@@ -3,6 +3,7 @@ import PropTypes from "prop-types";
 import ImageNode from "../../editor/nodes/ImageNode";
 import LibrarySearchContainer from "./LibrarySearchContainer";
 import { withApi } from "../contexts/ApiContext";
+import { withAuth } from "../contexts/AuthContext";
 import { withEditor } from "../contexts/EditorContext";
 import AssetContextMenu from "./AssetContextMenu";
 import ProjectAssetContextMenu from "./ProjectAssetContextMenu";
@@ -14,7 +15,8 @@ class ImagesLibrary extends Component {
     api: PropTypes.object.isRequired,
     uploadMultiple: PropTypes.bool,
     onAfterUpload: PropTypes.func,
-    tooltipId: PropTypes.string
+    tooltipId: PropTypes.string,
+    isAuthenticated: PropTypes.bool
   };
 
   constructor(props) {
@@ -40,7 +42,8 @@ class ImagesLibrary extends Component {
           privacyPolicyUrl: "https://github.com/mozilla/hubs/blob/master/PRIVACY.md",
           onSearch: (...args) => props.api.searchMedia(...args),
           onUpload: (...args) => props.api.uploadAssets(props.editor, ...args),
-          contextMenu: AssetContextMenu
+          contextMenu: AssetContextMenu,
+          requiresAuthentication: true
         },
         {
           value: "project_assets",
@@ -52,7 +55,8 @@ class ImagesLibrary extends Component {
           privacyPolicyUrl: "https://github.com/mozilla/hubs/blob/master/PRIVACY.md",
           onSearch: (source, params) => props.api.getProjectAssets(props.editor.projectId, params),
           onUpload: (...args) => props.api.uploadProjectAssets(props.editor, props.editor.projectId, ...args),
-          contextMenu: ProjectAssetContextMenu
+          contextMenu: ProjectAssetContextMenu,
+          requiresAuthentication: true
         }
       ]
     };
@@ -71,7 +75,7 @@ class ImagesLibrary extends Component {
   render() {
     return (
       <LibrarySearchContainer
-        sources={this.state.sources}
+        sources={this.state.sources.filter(source => this.props.isAuthenticated || !source.requiresAuthentication)}
         onSelect={this.onSelect}
         uploadMultiple={this.props.uploadMultiple}
         onAfterUpload={this.props.onAfterUpload}
@@ -81,4 +85,4 @@ class ImagesLibrary extends Component {
   }
 }
 
-export default withApi(withEditor(ImagesLibrary));
+export default withApi(withEditor(withAuth(ImagesLibrary)));

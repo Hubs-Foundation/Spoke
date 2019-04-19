@@ -1,13 +1,13 @@
 import React, { Component } from "react";
 import { Link } from "react-router-dom";
 import PropTypes from "prop-types";
-import { withApi } from "../contexts/ApiContext";
+import { withAuth } from "../contexts/AuthContext";
 import styles from "./NavBar.scss";
 import spokeIcon from "../../assets/spoke-icon.png";
 
 class NavBar extends Component {
   static propTypes = {
-    api: PropTypes.object.isRequired
+    isAuthenticated: PropTypes.object.isRequired
   };
 
   render() {
@@ -41,7 +41,7 @@ class NavBar extends Component {
         </div>
         <div className={styles.rightContainer}>
           <ul className={styles.navList}>
-            {this.props.api.isAuthenticated() ? (
+            {this.props.isAuthenticated ? (
               <>
                 <li>
                   <Link to="/projects">Projects</Link>
@@ -62,4 +62,4 @@ class NavBar extends Component {
   }
 }
 
-export default withApi(NavBar);
+export default withAuth(NavBar);

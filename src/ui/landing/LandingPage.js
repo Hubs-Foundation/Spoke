@@ -26,7 +26,7 @@ export default class LandingPage extends Component {
                     Hubs
                   </a>
                 </h3>
-                <Link className={styles.linkButtonPrimary} to="/projects">
+                <Link className={styles.linkButtonPrimary} to="/projects/tutorial">
                   Get Started
                 </Link>
               </div>

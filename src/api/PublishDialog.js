@@ -186,7 +186,7 @@ export default class PublishDialog extends Component {
               Cancel
             </Button>
             <Button key="publish" type="submit" form="publish">
-              {this.state.isNewScene ? "Publish" : "Re-Publish"}
+              Save and Publish
             </Button>
           </div>
         )}

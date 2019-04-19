@@ -116,6 +116,7 @@ export default class Project extends EventEmitter {
     const authComplete = new Promise(resolve =>
       channel.on("auth_credentials", ({ credentials: token }) => {
         localStorage.setItem(LOCAL_STORE_KEY, JSON.stringify({ credentials: { email, token } }));
+        this.emit("authentication-changed", true);
         resolve();
       })
     );
@@ -152,6 +153,18 @@ export default class Project extends EventEmitter {
 
   logout() {
     localStorage.removeItem(LOCAL_STORE_KEY);
+    this.emit("authentication-changed", false);
+  }
+
+  showLoginDialog(showDialog, hideDialog) {
+    return new Promise(resolve => {
+      showDialog(LoginDialog, {
+        onSuccess: () => {
+          hideDialog();
+          resolve();
+        }
+      });
+    });
   }
 
   async getProjects() {
@@ -304,12 +317,18 @@ export default class Project extends EventEmitter {
   async searchMedia(source, params, cursor, signal) {
     const url = new URL(`https://${RETICULUM_SERVER}/api/v1/media/search`);
 
+    const headers = {
+      "content-type": "application/json"
+    };
+
     const searchParams = url.searchParams;
 
     searchParams.set("source", source);
 
     if (source === "assets") {
       searchParams.set("user", this.getAccountId());
+      const token = this.getToken();
+      headers.authorization = `Bearer ${token}`;
     }
 
     if (params.type) {
@@ -328,13 +347,6 @@ export default class Project extends EventEmitter {
       searchParams.set("cursor", cursor);
     }
 
-    const token = this.getToken();
-
-    const headers = {
-      "content-type": "application/json",
-      authorization: `Bearer ${token}`
-    };
-
     const resp = await this.fetch(url, { headers, signal });
 
     const json = await resp.json();
@@ -346,7 +358,29 @@ export default class Project extends EventEmitter {
     };
   }
 
-  async createProject(projectName) {
+  async createProject(editor, showDialog, hideDialog) {
+    // Ensure the user is authenticated before continuing.
+    if (!this.isAuthenticated()) {
+      await new Promise(resolve => {
+        showDialog(LoginDialog, {
+          onSuccess: resolve
+        });
+      });
+    }
+
+    const { blob: thumbnailBlob } = await editor.takeScreenshot(512, 320);
+    const {
+      file_id: thumbnail_file_id,
+      meta: { access_token: thumbnail_file_token }
+    } = await this.upload(thumbnailBlob);
+
+    const serializedScene = editor.scene.serialize();
+    const projectBlob = new Blob([JSON.stringify(serializedScene)], { type: "application/json" });
+    const {
+      file_id: project_file_id,
+      meta: { access_token: project_file_token }
+    } = await this.upload(projectBlob);
+
     const token = this.getToken();
 
     const headers = {
@@ -356,7 +390,11 @@ export default class Project extends EventEmitter {
 
     const body = JSON.stringify({
       project: {
-        name: projectName
+        name: editor.scene.name,
+        thumbnail_file_id,
+        thumbnail_file_token,
+        project_file_id,
+        project_file_token
       }
     });
 
@@ -365,7 +403,18 @@ export default class Project extends EventEmitter {
     const resp = await this.fetch(projectEndpoint, { method: "POST", headers, body });
 
     if (resp.status === 401) {
-      throw new Error("Not authenticated");
+      return await new Promise((resolve, reject) => {
+        showDialog(LoginDialog, {
+          onSuccess: async () => {
+            try {
+              await this.createProject(editor, showDialog, hideDialog);
+              resolve();
+            } catch (e) {
+              reject(e);
+            }
+          }
+        });
+      });
     }
 
     if (resp.status !== 200) {
