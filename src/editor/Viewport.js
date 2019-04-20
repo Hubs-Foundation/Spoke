@@ -231,6 +231,8 @@ export default class Viewport {
     camera.position.z += size;
     camera.lookAt(center);
 
+    camera.layers.disable(1);
+
     this.thumbnailRenderer.setSize(width, height, true);
     this.thumbnailRenderer.render(scene, camera);
 
