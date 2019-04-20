@@ -634,7 +634,7 @@ export default class Project extends EventEmitter {
 
       let sceneEndpoint = `https://${RETICULUM_SERVER}/api/v1/scenes`;
       let method = "POST";
-      if (sceneId) {
+      if (sceneId && !publishParams.isNewScene) {
         sceneEndpoint = `${sceneEndpoint}/${sceneId}`;
         method = "PATCH";
       }
