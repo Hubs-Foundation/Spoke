@@ -26,7 +26,7 @@ export default class LibraryToolbarItem extends Component {
     });
 
     return (
-      <div className={classNames} onClick={this.onClick}>
+      <div id={`${item.id}-library-btn`} className={classNames} onClick={this.onClick}>
         <i className={`fas ${item.iconClassName}`} />
         <span>{item.label}</span>
       </div>

@@ -7,7 +7,7 @@ import spokeIcon from "../../assets/spoke-icon.png";
 
 class NavBar extends Component {
   static propTypes = {
-    isAuthenticated: PropTypes.object.isRequired
+    isAuthenticated: PropTypes.bool.isRequired
   };
 
   render() {

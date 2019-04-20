@@ -13,6 +13,7 @@
   text-align: center;
   cursor: pointer;
   align-items: center;
+  justify-content: center;
   text-decoration: none;
   padding: 1px 6px;
 
@@ -31,6 +32,28 @@
 
   &:active {
     background-color: $blue-pressed;
+  }
+}
+
+:local(.secondaryButton) {
+  background-color: $hover;
+  color: $text;
+
+  &:disabled {
+    background-color: $disabled;
+    color: $disabled-text;
+
+    &:hover {
+      background-color: transparent;
+    }
+  }
+
+  &:hover {
+    background-color: $text2;
+  }
+
+  &:active {
+    background-color: $text2;
   }
 }
 
