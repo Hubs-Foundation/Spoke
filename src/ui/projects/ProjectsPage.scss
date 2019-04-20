@@ -1,9 +1,12 @@
 @import "../styles/theme";
 
 :local(.projectsSection) {
-  padding: 100px 0;
+  padding-bottom: 100px;
   display: flex;
-  flex: 1;
+
+  &:first-child {
+    padding-top: 100px;
+  }
 }
 
 :local(.projectsContainer) {

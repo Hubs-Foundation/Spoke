@@ -9,6 +9,7 @@ import Footer from "../navigation/Footer";
 import Loading from "../Loading";
 import { connectMenu, ContextMenu, MenuItem } from "react-contextmenu";
 import "../styles/vendor/react-contextmenu/index.scss";
+import defaultTemplateUrl from "file-loader!../../assets/templates/default.spoke";
 
 const contextMenuId = "project-menu";
 
@@ -23,6 +24,14 @@ class ProjectsPage extends Component {
 
     this.state = {
       projects: [],
+      templates: [
+        {
+          id: "test",
+          name: "Test",
+          thumbnailUrl: "",
+          url: defaultTemplateUrl
+        }
+      ],
       loading: true,
       error: null
     };
@@ -47,9 +56,23 @@ class ProjectsPage extends Component {
 
   onDeleteProject = project => {
     this.props.api
-      .deleteProject(project.projectId)
-      .then(() => this.setState({ projects: this.state.projects.filter(p => p.projectId !== project.projectId) }))
+      .deleteProject(project.id)
+      .then(() => this.setState({ projects: this.state.projects.filter(p => p.id !== project.id) }))
       .catch(error => this.setState({ error }));
+  };
+
+  onNewProject = () => {
+    this.props.history.push(`/projects/new`);
+  };
+
+  onOpenProject = project => {
+    this.props.history.push(`/projects/${project.id}`);
+  };
+
+  onSelectTemplate = template => {
+    const search = new URLSearchParams();
+    search.set("template", template.url);
+    this.props.history.push(`/projects/new?${search}`);
   };
 
   renderContextMenu = props => {
@@ -63,7 +86,7 @@ class ProjectsPage extends Component {
   ProjectContextMenu = connectMenu(contextMenuId)(this.renderContextMenu);
 
   render() {
-    const { error, loading, projects } = this.state;
+    const { error, loading, projects, templates } = this.state;
 
     let content;
 
@@ -74,7 +97,14 @@ class ProjectsPage extends Component {
         </div>
       );
     } else {
-      content = <ProjectGrid projects={projects} contextMenuId={contextMenuId} />;
+      content = (
+        <ProjectGrid
+          projects={projects}
+          onNewProject={this.onNewProject}
+          onSelectProject={this.onOpenProject}
+          contextMenuId={contextMenuId}
+        />
+      );
     }
 
     const ProjectContextMenu = this.ProjectContextMenu;
@@ -83,6 +113,14 @@ class ProjectsPage extends Component {
       <>
         <NavBar />
         <main>
+          <section className={styles.projectsSection}>
+            <div className={styles.projectsContainer}>
+              <div className={styles.projectsHeader}>
+                <h1>Templates</h1>
+              </div>
+              <ProjectGrid projects={templates} onSelectProject={this.onSelectTemplate} />
+            </div>
+          </section>
           <section className={styles.projectsSection}>
             <div className={styles.projectsContainer}>
               <div className={styles.projectsHeader}>

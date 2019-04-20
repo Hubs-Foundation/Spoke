@@ -196,7 +196,7 @@ export default class Project extends EventEmitter {
     }
 
     return json.projects.map(project => ({
-      projectId: project.project_id,
+      id: project.project_id,
       name: project.name,
       thumbnailUrl: project.thumbnail_url
     }));
@@ -532,6 +532,14 @@ export default class Project extends EventEmitter {
     }
   }
 
+  getSceneUrl(sceneId) {
+    if (process.env.HUBS_SERVER === "localhost:8080" || process.env.HUBS_SERVER === "hubs.local:8080") {
+      return `https://${process.env.HUBS_SERVER}/scene.html?scene_id=${sceneId}`;
+    } else {
+      return `https://${process.env.HUBS_SERVER}/scenes/${sceneId}`;
+    }
+  }
+
   async publishProject(projectId, editor, showDialog, hideDialog) {
     let screenshotURL;
 
@@ -711,15 +719,8 @@ export default class Project extends EventEmitter {
 
       const json = await resp.json();
       const newSceneId = json.scenes[0].scene_id;
-      let sceneUrl = json.scenes[0].url;
-
-      if (process.env.HUBS_SERVER) {
-        if (process.env.HUBS_SERVER.startsWith("localhost") || process.env.HUBS_SERVER.startsWith("hubs.local")) {
-          sceneUrl = `https://${process.env.HUBS_SERVER}/scene.html?scene_id=${newSceneId}`;
-        } else {
-          sceneUrl = `https://${process.env.HUBS_SERVER}/scenes/${newSceneId}`;
-        }
-      }
+      const sceneUrl = this.getSceneUrl(newSceneId);
+      editor.sceneUrl = sceneUrl;
 
       scene.setMetadata({ sceneUrl, sceneId: newSceneId });
 

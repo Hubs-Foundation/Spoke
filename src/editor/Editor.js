@@ -167,6 +167,7 @@ export default class Editor {
 
   setScene(scene) {
     this.scene = scene;
+    this.sceneUrl = null;
 
     this.camera.position.set(0, 5, 10);
     this.camera.lookAt(new THREE.Vector3());
@@ -512,7 +513,6 @@ export default class Editor {
   }
 
   async takeScreenshot(width, height) {
-    this.deselect();
     return this.viewport.takeScreenshot(width, height);
   }
 

@@ -296,13 +296,15 @@ class EditorContainer extends Component {
    */
 
   async loadProject(project) {
+    const editor = this.state.editor;
+
     this.showDialog(ProgressDialog, {
       title: "Loading Project",
       message: "Loading project..."
     });
 
     try {
-      await this.state.editor.loadProject(project, (dependenciesLoaded, totalDependencies) => {
+      await editor.loadProject(project, (dependenciesLoaded, totalDependencies) => {
         const loadingProgress = Math.floor((dependenciesLoaded / totalDependencies) * 100);
         this.showDialog(ProgressDialog, {
           title: "Loading Project",
@@ -313,9 +315,17 @@ class EditorContainer extends Component {
       const projectId = this.props.projectId;
 
       if (projectId === "new" || projectId === "tutorial") {
-        this.state.editor.projectId = null;
+        editor.projectId = null;
       } else {
-        this.state.editor.projectId = projectId;
+        editor.projectId = projectId;
+      }
+
+      const sceneId = editor.scene.metadata && editor.scene.metadata.sceneId;
+
+      if (sceneId) {
+        editor.sceneUrl = this.props.api.getSceneUrl(sceneId);
+      } else {
+        editor.sceneUrl = null;
       }
 
       this.hideDialog();
@@ -465,6 +475,17 @@ class EditorContainer extends Component {
     }
   };
 
+  getSceneId() {
+    const scene = this.state.editor.scene;
+    return scene.metadata && scene.metadata.sceneId;
+  }
+
+  onOpenScene = () => {
+    const sceneId = this.getSceneId();
+    const url = this.props.api.getSceneUrl(sceneId);
+    window.open(url);
+  };
+
   renderPanel = (panelId, path) => {
     const panel = this.state.registeredPanels[panelId];
 
@@ -479,6 +500,7 @@ class EditorContainer extends Component {
     const { DialogComponent, dialogProps, settingsContext, editor, creatingProject } = this.state;
     const { projectId } = this.props;
     const toolbarMenu = this.generateToolbarMenu();
+    const isPublishedScene = !!this.getSceneId();
 
     const modified = editor.sceneModified ? "*" : "";
 
@@ -487,7 +509,13 @@ class EditorContainer extends Component {
         <SettingsContextProvider value={settingsContext}>
           <EditorContextProvider value={editor}>
             <DialogContextProvider value={this.dialogContext}>
-              <ToolBar menu={toolbarMenu} editor={editor} onPublish={this.onPublishProject} />
+              <ToolBar
+                menu={toolbarMenu}
+                editor={editor}
+                onPublish={this.onPublishProject}
+                isPublishedScene={isPublishedScene}
+                onOpenScene={this.onOpenScene}
+              />
               <Mosaic
                 className="mosaic-theme"
                 renderTile={this.renderPanel}

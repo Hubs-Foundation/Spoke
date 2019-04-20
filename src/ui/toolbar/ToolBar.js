@@ -14,7 +14,8 @@ export default class ToolBar extends Component {
   static propTypes = {
     menu: PropTypes.array,
     editor: PropTypes.object,
-    onPublish: PropTypes.func
+    onPublish: PropTypes.func,
+    onOpenScene: PropTypes.func
   };
 
   constructor(props) {
@@ -205,6 +206,11 @@ export default class ToolBar extends Component {
           </ToolToggle>
         </div>
         <div className={styles.spacer} />
+        {this.props.editor.sceneUrl && (
+          <Button className={styles.publishButton} onClick={this.props.onOpenScene}>
+            Open in Hubs
+          </Button>
+        )}
         <Button className={styles.publishButton} onClick={this.props.onPublish}>
           Publish to Hubs...
         </Button>
