@@ -3,7 +3,7 @@
 :local(.inputGroup) {
   display: flex;
   flex-direction: row;
-  padding: 0 8px;
+  padding: 4px 8px;
   flex: 1;
   min-height: 24px;
 
@@ -14,8 +14,8 @@
 
   & > label {
     display: block;
+    width: 25%;
     color: $text2;
-    width: 42%;
     padding-bottom: 2px;
     padding-top: 4px;
   }
@@ -24,5 +24,6 @@
     display: flex;
     flex-direction: row;
     flex: 1;
+    padding-left: 8px;
   }
 }
