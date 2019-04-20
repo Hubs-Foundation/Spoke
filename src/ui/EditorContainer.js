@@ -24,6 +24,8 @@ import ErrorDialog from "./dialogs/ErrorDialog";
 import ProgressDialog from "./dialogs/ProgressDialog";
 import ConfirmDialog from "./dialogs/ConfirmDialog";
 
+import Onboarding from "./onboarding/Onboarding";
+
 class EditorContainer extends Component {
   static propTypes = {
     api: PropTypes.object.isRequired,
@@ -308,7 +310,13 @@ class EditorContainer extends Component {
         });
       });
 
-      this.state.editor.projectId = this.props.projectId;
+      const projectId = this.props.projectId;
+
+      if (projectId === "new" || projectId === "tutorial") {
+        this.state.editor.projectId = null;
+      } else {
+        this.state.editor.projectId = projectId;
+      }
 
       this.hideDialog();
     } catch (e) {
@@ -468,8 +476,8 @@ class EditorContainer extends Component {
   };
 
   render() {
-    const { DialogComponent, dialogProps, settingsContext } = this.state;
-    const { editor, creatingProject } = this.state;
+    const { DialogComponent, dialogProps, settingsContext, editor, creatingProject } = this.state;
+    const { projectId } = this.props;
     const toolbarMenu = this.generateToolbarMenu();
 
     const modified = editor.sceneModified ? "*" : "";
@@ -506,6 +514,7 @@ class EditorContainer extends Component {
                 } has unsaved changes, are you sure you wish to navigate away from the page?`}
                 when={editor.sceneModified && !creatingProject}
               />
+              {projectId === "tutorial" && <Onboarding />}
             </DialogContextProvider>
           </EditorContextProvider>
         </SettingsContextProvider>

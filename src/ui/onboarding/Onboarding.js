@@ -1,9 +1,36 @@
-import React from "react";
+import React, { Component } from "react";
 import OnboardingContainer from "./OnboardingContainer";
 import OnboardingDialog from "./OnboardingDialog";
 import OnboardingPopover from "./OnboardingPopover";
+import { withEditor } from "../contexts/EditorContext";
 
 /* eslint-disable react/prop-types */
+
+class CreateModelPopover extends Component {
+  componentDidMount() {
+    document.getElementById("models-library-btn").click();
+    this.props.editor.signals.objectAdded.add(this.onObjectAdded);
+  }
+
+  onObjectAdded = () => {
+    this.props.nextStep();
+  };
+
+  componentWillUnmount() {
+    this.props.editor.signals.objectAdded.remove(this.onObjectAdded);
+  }
+
+  render() {
+    return (
+      <OnboardingPopover target="#library-container" {...this.props} disableNext>
+        Add a model to your scene by clicking on it.
+      </OnboardingPopover>
+    );
+  }
+}
+
+const WrappedCreateModelPopover = withEditor(CreateModelPopover);
+
 const steps = [
   {
     render(props) {
@@ -20,20 +47,15 @@ const steps = [
     }
   },
   {
-    onEnter() {
-      document.getElementById("models-library-btn").click();
-    },
-    render(props) {
-      return (
-        <OnboardingPopover target="#library-container" {...props}>
-          Add a model to your scene by clicking on it.
-        </OnboardingPopover>
-      );
-    }
+    component: WrappedCreateModelPopover
   },
   {
     render(props) {
-      return <OnboardingDialog {...props}>Step 3</OnboardingDialog>;
+      return (
+        <OnboardingPopover target="#properties-panel-container" {...props} position="left">
+          {"You can change the model's position in the properties panel"}
+        </OnboardingPopover>
+      );
     }
   }
 ];

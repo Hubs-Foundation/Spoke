@@ -6,7 +6,6 @@ import Loading from "../Loading";
 import Error from "../Error";
 import defaultTemplateUrl from "file-loader!../../assets/templates/default.spoke";
 import tutorialTemplateUrl from "file-loader!../../assets/templates/tutorial.spoke";
-import Onboarding from "../onboarding/Onboarding";
 
 class ProjectPage extends Component {
   static propTypes = {
@@ -101,15 +100,7 @@ class ProjectPage extends Component {
       return <Error message={error} />;
     }
 
-    const projectIdParam = match.params.projectId;
-    const projectId = projectIdParam === "new" || projectIdParam === "tutorial" ? null : projectIdParam;
-
-    return (
-      <>
-        <EditorContainer api={api} history={history} projectId={projectId} project={project} />
-        {projectIdParam === "tutorial" && <Onboarding />}
-      </>
-    );
+    return <EditorContainer api={api} history={history} projectId={match.params.projectId} project={project} />;
   }
 }
 

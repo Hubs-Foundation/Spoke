@@ -41,16 +41,25 @@ export default class OnboardingContainer extends Component {
   setStep = index => {
     const { steps, curStepIdx } = this.state;
 
+    const stepProps = {
+      steps,
+      curStepIdx,
+      nextStep: this.nextStep,
+      prevStep: this.prevStep,
+      setStep: this.setStep,
+      skip: this.skip
+    };
+
     const step = steps[curStepIdx];
 
     if (step && step.onLeave) {
-      step.onLeave();
+      step.onLeave(stepProps);
     }
 
     const nextStep = steps[index];
 
     if (nextStep && nextStep.onEnter) {
-      nextStep.onEnter();
+      nextStep.onEnter(stepProps);
     }
 
     this.setState({ curStepIdx: index });
