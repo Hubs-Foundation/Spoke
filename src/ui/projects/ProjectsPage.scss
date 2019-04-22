@@ -28,28 +28,6 @@
   h1 {
     font-size: 36px;
   }
-
-  a {
-    border-radius: 4px;
-    background: $blue;
-    color: $text;
-    text-align: center;
-    text-decoration: none;
-    padding: 1em;
-    display: inline-block;
-    line-height: 1em;
-    height: 3em;
-  
-    &:hover {
-      color: $text;
-      background-color: $blue-pressed;
-    }
-  
-    &:active {
-      color: $text;
-      background-color: $blue-pressed;
-    }
-  }
 }
 
 :local(.loadingContainer) {

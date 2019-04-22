@@ -8,22 +8,16 @@ export default class ProjectGrid extends Component {
   static propTypes = {
     contextMenuId: PropTypes.string,
     projects: PropTypes.arrayOf(PropTypes.object).isRequired,
-    onSelectProject: PropTypes.func.isRequired,
-    onNewProject: PropTypes.func
+    newProjectUrl: PropTypes.string
   };
 
   render() {
     return (
       <div className={styles.projectGrid}>
         {this.props.projects.map(project => (
-          <ProjectGridItem
-            key={project.id}
-            project={project}
-            contextMenuId={this.props.contextMenuId}
-            onClick={this.props.onSelectProject}
-          />
+          <ProjectGridItem key={project.id} project={project} contextMenuId={this.props.contextMenuId} />
         ))}
-        {this.props.onNewProject && <NewProjectGridItem onClick={this.props.onNewProject} />}
+        {this.props.newProjectUrl && <NewProjectGridItem newProjectUrl={this.props.newProjectUrl} />}
       </div>
     );
   }

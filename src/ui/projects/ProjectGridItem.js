@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
+import { Link } from "react-router-dom";
 import styles from "./ProjectGridItem.scss";
 import { showMenu, ContextMenuTrigger } from "react-contextmenu";
 import MenuButton from "../inputs/MenuButton";
@@ -11,12 +12,7 @@ function collectMenuProps({ project }) {
 export default class ProjectGridItem extends Component {
   static propTypes = {
     contextMenuId: PropTypes.string,
-    project: PropTypes.object.isRequired,
-    onClick: PropTypes.func.isRequired
-  };
-
-  onClick = () => {
-    this.props.onClick(this.props.project);
+    project: PropTypes.object.isRequired
   };
 
   onShowMenu = event => {
@@ -54,7 +50,7 @@ export default class ProjectGridItem extends Component {
 
     if (contextMenuId) {
       return (
-        <div className={styles.projectGridItem} onClick={this.onClick}>
+        <Link className={styles.projectGridItem} to={project.url}>
           <ContextMenuTrigger
             attributes={{ className: styles.contextMenuTrigger }}
             id={contextMenuId}
@@ -64,13 +60,13 @@ export default class ProjectGridItem extends Component {
           >
             {content}
           </ContextMenuTrigger>
-        </div>
+        </Link>
       );
     } else {
       return (
-        <div className={styles.projectGridItem} onClick={this.onClick}>
+        <Link className={styles.projectGridItem} to={project.url}>
           {content}
-        </div>
+        </Link>
       );
     }
   }

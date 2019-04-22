@@ -28,6 +28,10 @@
     font-size: 2em;
     margin-bottom: 1.5em;
   }
+
+  a {
+    color: $text;
+  }
 }
 
 :local(.logoContainer) {
@@ -52,7 +56,7 @@
   font-size: 1.5em;
   text-align: center;
   text-decoration: none;
-  padding: 1em 2em;
+  
   display: inline-block;
 
   &:hover {

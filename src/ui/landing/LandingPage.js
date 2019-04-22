@@ -1,5 +1,4 @@
 import React, { Component } from "react";
-import { Link } from "react-router-dom";
 import styles from "./LandingPage.scss";
 import spokeLogo from "../../assets/spoke-logo.png";
 import landingVideoMp4 from "../../assets/video/landing-video.mp4";
@@ -7,6 +6,7 @@ import landingVideoWebm from "../../assets/video/landing-video.webm";
 import NavBar from "../navigation/NavBar";
 import Footer from "../navigation/Footer";
 import Callout from "./Callout";
+import Button from "../inputs/Button";
 
 export default class LandingPage extends Component {
   render() {
@@ -27,9 +27,9 @@ export default class LandingPage extends Component {
                     Hubs
                   </a>
                 </h3>
-                <Link className={styles.linkButtonPrimary} to="/projects/tutorial">
+                <Button large to="/projects/tutorial">
                   Get Started
-                </Link>
+                </Button>
               </div>
               <div className={styles.heroRight}>
                 <video playsInline loop autoPlay muted>

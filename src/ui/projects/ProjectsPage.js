@@ -1,15 +1,16 @@
 import React, { Component } from "react";
-import { Link } from "react-router-dom";
 import PropTypes from "prop-types";
 import { withApi } from "../contexts/ApiContext";
 import NavBar from "../navigation/NavBar";
 import styles from "./ProjectsPage.scss";
 import ProjectGrid from "./ProjectGrid";
 import Footer from "../navigation/Footer";
+import Button from "../inputs/Button";
+import PrimaryLink from "../inputs/PrimaryLink";
 import Loading from "../Loading";
 import { connectMenu, ContextMenu, MenuItem } from "react-contextmenu";
 import "../styles/vendor/react-contextmenu/index.scss";
-import defaultTemplateUrl from "file-loader!../../assets/templates/default.spoke";
+import templates from "./templates";
 
 const contextMenuId = "project-menu";
 
@@ -24,14 +25,6 @@ class ProjectsPage extends Component {
 
     this.state = {
       projects: [],
-      templates: [
-        {
-          id: "test",
-          name: "Test",
-          thumbnailUrl: "",
-          url: defaultTemplateUrl
-        }
-      ],
       loading: true,
       error: null
     };
@@ -40,7 +33,15 @@ class ProjectsPage extends Component {
   componentDidMount() {
     this.props.api
       .getProjects()
-      .then(projects => this.setState({ projects, loading: false }))
+      .then(projects => {
+        this.setState({
+          projects: projects.map(project => ({
+            ...project,
+            url: `/projects/${project.id}`
+          })),
+          loading: false
+        });
+      })
       .catch(error => {
         console.error(error);
 
@@ -61,20 +62,6 @@ class ProjectsPage extends Component {
       .catch(error => this.setState({ error }));
   };
 
-  onNewProject = () => {
-    this.props.history.push(`/projects/new`);
-  };
-
-  onOpenProject = project => {
-    this.props.history.push(`/projects/${project.id}`);
-  };
-
-  onSelectTemplate = template => {
-    const search = new URLSearchParams();
-    search.set("template", template.url);
-    this.props.history.push(`/projects/new?${search}`);
-  };
-
   renderContextMenu = props => {
     return (
       <ContextMenu id={contextMenuId}>
@@ -86,7 +73,7 @@ class ProjectsPage extends Component {
   ProjectContextMenu = connectMenu(contextMenuId)(this.renderContextMenu);
 
   render() {
-    const { error, loading, projects, templates } = this.state;
+    const { error, loading, projects } = this.state;
 
     let content;
 
@@ -97,14 +84,7 @@ class ProjectsPage extends Component {
         </div>
       );
     } else {
-      content = (
-        <ProjectGrid
-          projects={projects}
-          onNewProject={this.onNewProject}
-          onSelectProject={this.onOpenProject}
-          contextMenuId={contextMenuId}
-        />
-      );
+      content = <ProjectGrid projects={projects} newProjectUrl="/projects/new" contextMenuId={contextMenuId} />;
     }
 
     const ProjectContextMenu = this.ProjectContextMenu;
@@ -117,15 +97,18 @@ class ProjectsPage extends Component {
             <div className={styles.projectsContainer}>
               <div className={styles.projectsHeader}>
                 <h1>Templates</h1>
+                <PrimaryLink to="/projects/templates">View More</PrimaryLink>
               </div>
-              <ProjectGrid projects={templates} onSelectProject={this.onSelectTemplate} />
+              <ProjectGrid projects={templates} />
             </div>
           </section>
           <section className={styles.projectsSection}>
             <div className={styles.projectsContainer}>
               <div className={styles.projectsHeader}>
                 <h1>Projects</h1>
-                <Link to="/projects/new">New Project</Link>
+                <Button medium to="/projects/new">
+                  New Project
+                </Button>
               </div>
               {error && <div className={styles.error}>{error.message || "There was an unknown error."}</div>}
               {content}

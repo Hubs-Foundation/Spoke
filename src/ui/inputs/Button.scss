@@ -27,10 +27,12 @@
   }
 
   &:hover {
-    background-color: $blue-hover;
+    color: $text;
+    background-color: $blue-pressed;
   }
 
   &:active {
+    color: $text;
     background-color: $blue-pressed;
   }
 }
@@ -77,4 +79,16 @@
   &:active {
     background-color: rgba(255, 255, 255, 0.2);
   }
+}
+
+:local(.medium) {
+  line-height: 1em;
+  height: 3em;
+  padding: 1em;
+}
+
+:local(.large) {
+  min-height: 24px;
+  padding: 1em 2em;
+  font-size: 1.5em;
 }

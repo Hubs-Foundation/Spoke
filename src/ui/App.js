@@ -16,6 +16,7 @@ import LandingPage from "./landing/LandingPage";
 import LoginPage from "./auth/LoginPage";
 import LogoutPage from "./auth/LogoutPage";
 import ProjectsPage from "./projects/ProjectsPage";
+import TemplatesPage from "./projects/TemplatesPage";
 
 const ProjectPage = lazy(() =>
   import(/* webpackChunkName: "project-page", webpackPrefetch: true */ "./projects/ProjectPage")
@@ -58,6 +59,7 @@ export default class App extends Component {
                 <Route path="/" exact component={LandingPage} />
                 <Route path="/login" exact component={LoginPage} />
                 <Route path="/logout" exact component={LogoutPage} />
+                <AuthenticatedRoute path="/projects/templates" exact component={TemplatesPage} />
                 <AuthenticatedRoute path="/projects" exact component={ProjectsPage} />
                 <Route path="/projects/:projectId" component={ProjectPage} />
                 <Route render={() => <Error message="Page not found." />} />

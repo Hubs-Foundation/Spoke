@@ -16,7 +16,11 @@ a {
   color: $text;
 
   &:hover {
-    color: $selected;
+    color: $blue-hover;
+  }
+
+  &:active {
+    color: $blue-pressed;
   }
 }
 
