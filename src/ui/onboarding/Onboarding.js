@@ -3,12 +3,18 @@ import OnboardingContainer from "./OnboardingContainer";
 import OnboardingDialog from "./OnboardingDialog";
 import OnboardingPopover from "./OnboardingPopover";
 import { withEditor } from "../contexts/EditorContext";
+import libraryToolbarItemStyles from "../library/LibraryToolbarItem.scss";
 
 /* eslint-disable react/prop-types */
 
 class CreateModelPopover extends Component {
   componentDidMount() {
-    document.getElementById("models-library-btn").click();
+    const libraryButton = document.getElementById("models-library-btn");
+
+    if (!libraryButton.classList.contains(libraryToolbarItemStyles.selected)) {
+      libraryButton.click();
+    }
+
     this.props.editor.signals.objectAdded.add(this.onObjectAdded);
   }
 
