@@ -6,14 +6,15 @@ import landingVideoMp4 from "../../assets/video/landing-video.mp4";
 import landingVideoWebm from "../../assets/video/landing-video.webm";
 import NavBar from "../navigation/NavBar";
 import Footer from "../navigation/Footer";
+import Callout from "./Callout";
 
 export default class LandingPage extends Component {
   render() {
     return (
       <>
         <NavBar />
-        <main>
-          <section className={styles.heroSection}>
+        <main className={styles.landingPage}>
+          <section>
             <div className={styles.heroContainer}>
               <div className={styles.heroLeft}>
                 <div className={styles.logoContainer}>
@@ -36,6 +37,33 @@ export default class LandingPage extends Component {
                   <source src={landingVideoWebm} type="video/webm" />
                 </video>
               </div>
+            </div>
+          </section>
+          <section>
+            <div className={styles.calloutContainer}>
+              <Callout>
+                <h3>Discover</h3>
+                <p>
+                  Explore images, videos, and 3D models from around the web, all without opening up a new tab. With
+                  media integrations from Sketchfab and Google Poly, you&#39;ll be on your way to creating a scene in no
+                  time.
+                </p>
+              </Callout>
+              <Callout>
+                <h3>Create</h3>
+                <p>
+                  No external software or 3D modeling experience required - build 3D scenes using the Spoke web editor
+                  so you can have a space that&#39;s entirely custom to your needs. From a board room to outer space and
+                  beyond, your space is in your control.
+                </p>
+              </Callout>
+              <Callout>
+                <h3>Share</h3>
+                <p>
+                  Invite people to meet in your new space by publishing your content to Hubs immediately. With just a
+                  few clicks, you&#39;ll have a world of your own to experience and share - all from your browser.
+                </p>
+              </Callout>
             </div>
           </section>
         </main>

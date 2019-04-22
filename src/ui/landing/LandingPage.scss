@@ -1,7 +1,9 @@
 @import "../styles/theme";
 
-:local(.heroSection) {
-  padding: 100px 0;
+:local(.landingPage) {
+  section {
+    padding: 100px 0;
+  }
 }
 
 :local(.heroContainer) {
@@ -67,7 +69,17 @@
 :local(.heroRight) {
   video {
     border-radius: 8px;
+    background-color: $panel;
   }
+}
+
+:local(.calloutContainer) {
+  display: grid;
+  grid-gap: 80px;
+  max-width: 1200px;
+  padding: 0 20px;
+  margin: 0 auto;
+  grid-template-columns: repeat(3, 1fr);;
 }
 
 @media (max-width:1200px) {
@@ -86,5 +98,9 @@
   :local(.heroContainer) {
     grid-template-columns: 1fr;
     grid-gap: 20px;
+  }
+
+  :local(.calloutContainer) {
+    grid-template-columns: 1fr;
   }
 }
