@@ -29,7 +29,7 @@
 
   :local(.popover) {
     position: fixed;
-    z-index: 100;
+    z-index: 10;
     box-shadow: $shadow-30;
     margin-bottom: 3px;
     :local(.cover) {
