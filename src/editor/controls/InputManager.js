@@ -120,7 +120,7 @@ export default class InputManager {
     canvas.addEventListener("dblclick", this.onDoubleClick);
     canvas.addEventListener("click", this.onClick);
     canvas.addEventListener("contextmenu", this.onContextMenu);
-    canvas.addEventListener("resize", this.onResize);
+    window.addEventListener("resize", this.onResize);
   }
 
   enableInputMapping(key, mapping) {
