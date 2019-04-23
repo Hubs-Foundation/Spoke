@@ -56,7 +56,7 @@ export default class ToolBar extends Component {
         text: ["Snapping", "Snapping"],
         children: <SnappingDropdown />,
         isSwitch: false,
-        isChecked: false,
+        isChecked: true,
         icons: {
           checked: "fa-magnet",
           unchecked: "fa-magnet"
