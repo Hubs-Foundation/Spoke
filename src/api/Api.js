@@ -442,6 +442,8 @@ export default class Project extends EventEmitter {
 
     const json = await resp.json();
 
+    this.emit("project-saved");
+
     return { projectId: json.project_id };
   }
 
@@ -530,6 +532,8 @@ export default class Project extends EventEmitter {
     if (resp.status !== 200) {
       throw new Error(`Saving project failed. ${await resp.text()}`);
     }
+
+    this.emit("project-saved");
   }
 
   getSceneUrl(sceneId) {
@@ -740,6 +744,8 @@ export default class Project extends EventEmitter {
         URL.revokeObjectURL(screenshotURL);
       }
     }
+
+    this.emit("project-published");
   }
 
   upload(blob, onUploadProgress, signal) {

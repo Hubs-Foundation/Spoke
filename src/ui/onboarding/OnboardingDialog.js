@@ -6,7 +6,18 @@ import Button from "../inputs/Button";
 import SecondaryButton from "../inputs/SecondaryButton";
 import defaultBackgroundImage from "../../assets/onboarding/default.png";
 
-export default function OnboardingDialog({ children, backgroundImage, steps, curStepIdx, prevStep, nextStep, skip }) {
+export default function OnboardingDialog({
+  children,
+  backgroundImage,
+  videoSrc,
+  steps,
+  curStepIdx,
+  prevStep,
+  disablePrev,
+  nextStep,
+  disableNext,
+  skip
+}) {
   return (
     <OnboardingOverlay>
       <div className={styles.onboardingDialog}>
@@ -14,7 +25,9 @@ export default function OnboardingDialog({ children, backgroundImage, steps, cur
           <div
             className={styles.leftContent}
             style={{ backgroundImage: `url(${backgroundImage || defaultBackgroundImage}` }}
-          />
+          >
+            {videoSrc && <video src={videoSrc} loop autoPlay muted />}
+          </div>
           <div className={styles.rightContent}>{children}</div>
         </div>
         <div className={styles.bottomNav}>
@@ -27,9 +40,9 @@ export default function OnboardingDialog({ children, backgroundImage, steps, cur
           >
             Skip Tutorial
           </a>
-          {curStepIdx > 0 && <SecondaryButton onClick={prevStep}>Back</SecondaryButton>}
-          {curStepIdx < steps.length - 1 && <Button onClick={nextStep}>Next</Button>}
-          {curStepIdx === steps.length - 1 && <Button onClick={nextStep}>Finish</Button>}
+          {!disablePrev && curStepIdx > 0 && <SecondaryButton onClick={prevStep}>Back</SecondaryButton>}
+          {!disableNext && curStepIdx < steps.length - 1 && <Button onClick={nextStep}>Next</Button>}
+          {!disableNext && curStepIdx === steps.length - 1 && <Button onClick={nextStep}>Finish</Button>}
         </div>
       </div>
     </OnboardingOverlay>
@@ -39,9 +52,12 @@ export default function OnboardingDialog({ children, backgroundImage, steps, cur
 OnboardingDialog.propTypes = {
   children: PropTypes.node,
   backgroundImage: PropTypes.string,
+  videoSrc: PropTypes.string,
   steps: PropTypes.array.isRequired,
   curStepIdx: PropTypes.number.isRequired,
   nextStep: PropTypes.func.isRequired,
+  disableNext: PropTypes.bool,
   prevStep: PropTypes.func.isRequired,
+  disablePrev: PropTypes.bool,
   skip: PropTypes.func.isRequired
 };

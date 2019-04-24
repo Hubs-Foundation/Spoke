@@ -3,6 +3,7 @@ import PropTypes from "prop-types";
 import styles from "./LibraryGrid.scss";
 import LibraryGridItem from "./LibraryGridItem";
 import Tooltip from "react-tooltip";
+import { unique } from "../utils";
 
 export default class LibraryGrid extends Component {
   static propTypes = {
@@ -37,7 +38,7 @@ export default class LibraryGrid extends Component {
 
     return (
       <div className={styles.libraryGrid}>
-        {items.map(item => (
+        {unique(items, "id").map(item => (
           <LibraryGridItem key={item.id} item={item} onClick={onSelect} renderItem={renderItem} tooltipId={tooltipId} />
         ))}
         {this.props.children}

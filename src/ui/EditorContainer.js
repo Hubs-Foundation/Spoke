@@ -51,6 +51,7 @@ class EditorContainer extends Component {
     const editorInitPromise = editor.init();
 
     this.state = {
+      tutorialEnabled: props.projectId === "tutorial",
       editor,
       editorInitPromise,
       creatingProject: false,
@@ -497,8 +498,7 @@ class EditorContainer extends Component {
   };
 
   render() {
-    const { DialogComponent, dialogProps, settingsContext, editor, creatingProject } = this.state;
-    const { projectId } = this.props;
+    const { DialogComponent, dialogProps, settingsContext, editor, creatingProject, tutorialEnabled } = this.state;
     const toolbarMenu = this.generateToolbarMenu();
     const isPublishedScene = !!this.getSceneId();
 
@@ -542,7 +542,7 @@ class EditorContainer extends Component {
                 } has unsaved changes, are you sure you wish to navigate away from the page?`}
                 when={editor.sceneModified && !creatingProject}
               />
-              {projectId === "tutorial" && <Onboarding />}
+              {tutorialEnabled && <Onboarding />}
             </DialogContextProvider>
           </EditorContextProvider>
         </SettingsContextProvider>

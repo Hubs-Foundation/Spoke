@@ -56,7 +56,7 @@ export default class ToolBar extends Component {
         text: ["Snapping", "Snapping"],
         children: <SnappingDropdown />,
         isSwitch: false,
-        isChecked: true,
+        isChecked: false,
         icons: {
           checked: "fa-magnet",
           unchecked: "fa-magnet"
@@ -218,7 +218,7 @@ export default class ToolBar extends Component {
             Open in Hubs
           </Button>
         )}
-        <Button className={styles.publishButton} onClick={this.props.onPublish}>
+        <Button id="publish-button" className={styles.publishButton} onClick={this.props.onPublish}>
           Publish to Hubs...
         </Button>
         <ContextMenu id="menu">

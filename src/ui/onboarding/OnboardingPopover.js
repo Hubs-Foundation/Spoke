@@ -14,6 +14,7 @@ export default class OnboardingPopover extends Component {
     children: PropTypes.node,
     steps: PropTypes.array.isRequired,
     curStepIdx: PropTypes.number.isRequired,
+    disablePrev: PropTypes.bool.isRequired,
     disableNext: PropTypes.bool.isRequired,
     nextStep: PropTypes.func.isRequired,
     prevStep: PropTypes.func.isRequired,
@@ -21,6 +22,7 @@ export default class OnboardingPopover extends Component {
   };
 
   static defaultProps = {
+    disablePrev: false,
     disableNext: false,
     position: "top",
     padding: 16
@@ -101,7 +103,7 @@ export default class OnboardingPopover extends Component {
 
   render() {
     const { transform } = this.state;
-    const { position, children, steps, curStepIdx, prevStep, nextStep, disableNext, skip } = this.props;
+    const { position, children, steps, curStepIdx, prevStep, disablePrev, nextStep, disableNext, skip } = this.props;
 
     return (
       <Portal>
@@ -118,9 +120,9 @@ export default class OnboardingPopover extends Component {
               >
                 Skip Tutorial
               </a>
-              {curStepIdx > 0 && <SecondaryButton onClick={prevStep}>Back</SecondaryButton>}
+              {!disablePrev && curStepIdx > 0 && <SecondaryButton onClick={prevStep}>Back</SecondaryButton>}
               {!disableNext && curStepIdx < steps.length - 1 && <Button onClick={nextStep}>Next</Button>}
-              {curStepIdx === steps.length - 1 && <Button onClick={nextStep}>Finish</Button>}
+              {!disableNext && curStepIdx === steps.length - 1 && <Button onClick={nextStep}>Finish</Button>}
             </div>
           </div>
         </div>

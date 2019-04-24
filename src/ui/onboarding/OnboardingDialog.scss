@@ -22,6 +22,12 @@
   width: 360px;
   background-color: #006EFF;
   border-top-left-radius: inherit;
+  align-items: center;
+  padding: 30px;
+
+  video {
+    border-radius: 6px;
+  }
 }
 
 :local(.rightContent) {
@@ -44,6 +50,11 @@
   p {
     margin-bottom: 12px;
     line-height: 1.5em;
+  }
+
+  img {
+    align-self: center;
+    margin-bottom: 8px;
   }
 }
 
