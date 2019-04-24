@@ -18,6 +18,7 @@ import snappingVideo from "../../assets/onboarding/snapping.mp4";
 import snappingImage from "../../assets/onboarding/snapping.png";
 import { withApi } from "../contexts/ApiContext";
 import Button from "../inputs/Button";
+import Well from "../layout/Well";
 
 const isApple = /(Mac|iPhone|iPod|iPad)/i.test(navigator.platform);
 const cmdOrCtrlString = isApple ? "cmd" : "ctrl";
@@ -25,12 +26,20 @@ const cmdOrCtrlString = isApple ? "cmd" : "ctrl";
 /* eslint-disable react/prop-types */
 
 class CreateModelPopover extends Component {
+  state = {
+    openingLibrary: true
+  };
+
   componentDidMount() {
     const libraryButton = document.getElementById("models-library-btn");
 
     if (!libraryButton.classList.contains(libraryToolbarItemStyles.selected)) {
       libraryButton.click();
     }
+
+    setTimeout(() => {
+      this.setState({ openingLibrary: false });
+    });
 
     this.props.editor.signals.objectAdded.add(this.onObjectAdded);
   }
@@ -44,6 +53,10 @@ class CreateModelPopover extends Component {
   }
 
   render() {
+    if (this.state.openingLibrary) {
+      return null;
+    }
+
     return (
       <OnboardingPopover target="#library-container" {...this.props} disableNext>
         Add a model to your scene by clicking on it.
@@ -55,16 +68,29 @@ class CreateModelPopover extends Component {
 const WrappedCreateModelPopover = withEditor(CreateModelPopover);
 
 class HideModelsPopover extends Component {
+  state = {
+    hidingLibrary: true
+  };
+
   componentDidMount() {
     const libraryButton = document.getElementById("models-library-btn");
 
     if (libraryButton.classList.contains(libraryToolbarItemStyles.selected)) {
       libraryButton.click();
     }
+
+    setTimeout(() => {
+      this.setState({ hidingLibrary: false });
+    });
   }
 
   render() {
     const { children, ...props } = this.props;
+
+    if (this.state.hidingLibrary) {
+      return null;
+    }
+
     return <OnboardingPopover {...props}>{children}</OnboardingPopover>;
   }
 }
@@ -121,10 +147,12 @@ class SaveProjectPopover extends Component {
         disableNext
       >
         Press {cmdOrCtrlString} + S to save your project.
-        <HotkeyDescription action="Save Project">
-          <div>{cmdOrCtrlString}</div>
-          <div>S</div>
-        </HotkeyDescription>
+        <Well>
+          <HotkeyDescription action="Save Project">
+            <div>{cmdOrCtrlString}</div>
+            <div>S</div>
+          </HotkeyDescription>
+        </Well>
       </OnboardingPopover>
     );
   }
@@ -188,10 +216,12 @@ const steps = [
       return (
         <HideModelsPopover target=".viewportPanel .mosaic-window-title" {...props} position="bottom">
           <p>You can move around the scene by holding the right mouse button and using the WASD keys.</p>
-          <HotkeyDescription action="Fly">
-            <Icon src={rmbIcon} />
-            <Icon src={wasdIcon} />
-          </HotkeyDescription>
+          <Well>
+            <HotkeyDescription action="Fly">
+              <Icon src={rmbIcon} />
+              <Icon src={wasdIcon} />
+            </HotkeyDescription>
+          </Well>
         </HideModelsPopover>
       );
     }
@@ -217,9 +247,11 @@ const steps = [
             key to switch to translation mode.
           </p>
           <img src={translationImage} />
-          <HotkeyDescription action="Translation Mode">
-            <div>W</div>
-          </HotkeyDescription>
+          <Well>
+            <HotkeyDescription action="Translation Mode">
+              <div>W</div>
+            </HotkeyDescription>
+          </Well>
         </OnboardingDialog>
       );
     }
@@ -235,9 +267,11 @@ const steps = [
             to switch to rotation mode.
           </p>
           <img src={rotationImage} />
-          <HotkeyDescription action="Rotation Mode">
-            <div>E</div>
-          </HotkeyDescription>
+          <Well>
+            <HotkeyDescription action="Rotation Mode">
+              <div>E</div>
+            </HotkeyDescription>
+          </Well>
         </OnboardingDialog>
       );
     }
@@ -253,9 +287,11 @@ const steps = [
             switch to scale mode.
           </p>
           <img src={scaleImage} />
-          <HotkeyDescription action="Scale Mode">
-            <div>R</div>
-          </HotkeyDescription>
+          <Well>
+            <HotkeyDescription action="Scale Mode">
+              <div>R</div>
+            </HotkeyDescription>
+          </Well>
         </OnboardingDialog>
       );
     }
@@ -271,9 +307,11 @@ const steps = [
             mode.
           </p>
           <img src={snappingImage} />
-          <HotkeyDescription action="Snapping Mode">
-            <div>X</div>
-          </HotkeyDescription>
+          <Well>
+            <HotkeyDescription action="Snapping Mode">
+              <div>X</div>
+            </HotkeyDescription>
+          </Well>
         </OnboardingDialog>
       );
     }
@@ -284,18 +322,20 @@ const steps = [
         <OnboardingPopover target=".viewportPanel .mosaic-window-title" {...props} position="bottom">
           Go ahead and try translating, rotating, and scaling the object you added to the scene. When you&#39;re ready
           to continue, click next.
-          <HotkeyDescription action="Translation Mode">
-            <div>W</div>
-          </HotkeyDescription>
-          <HotkeyDescription action="Rotation Mode">
-            <div>E</div>
-          </HotkeyDescription>
-          <HotkeyDescription action="Scale Mode">
-            <div>R</div>
-          </HotkeyDescription>
-          <HotkeyDescription action="Snapping Mode">
-            <div>X</div>
-          </HotkeyDescription>
+          <Well>
+            <HotkeyDescription action="Translation Mode">
+              <div>W</div>
+            </HotkeyDescription>
+            <HotkeyDescription action="Rotation Mode">
+              <div>E</div>
+            </HotkeyDescription>
+            <HotkeyDescription action="Scale Mode">
+              <div>R</div>
+            </HotkeyDescription>
+            <HotkeyDescription action="Snapping Mode">
+              <div>X</div>
+            </HotkeyDescription>
+          </Well>
         </OnboardingPopover>
       );
     }
@@ -321,10 +361,12 @@ const steps = [
             menu and clicking Save Project or by pressing {cmdOrCtrlString} + S.
           </p>
           <img src={snappingImage} />
-          <HotkeyDescription action="Save Project">
-            <div>{cmdOrCtrlString}</div>
-            <div>S</div>
-          </HotkeyDescription>
+          <Well>
+            <HotkeyDescription action="Save Project">
+              <div>{cmdOrCtrlString}</div>
+              <div>S</div>
+            </HotkeyDescription>
+          </Well>
         </OnboardingDialog>
       );
     }

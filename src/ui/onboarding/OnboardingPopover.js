@@ -5,6 +5,7 @@ import SecondaryButton from "../inputs/SecondaryButton";
 import Portal from "../layout/Portal";
 import styles from "./OnboardingPopover.scss";
 import classNames from "classnames";
+import getPosition from "evergreen-ui/esm/positioner/src/getPosition";
 
 export default class OnboardingPopover extends Component {
   static propTypes = {
@@ -36,25 +37,22 @@ export default class OnboardingPopover extends Component {
 
     this.state = {
       targetEl: null,
-      transform: "translate(0px,0px)"
+      finalPosition: props.position,
+      transform: "translate(0px,0px)",
+      transformOrigin: "initial"
     };
   }
 
   componentDidMount() {
-    // Popover is rendered in a portal. Wait for react rendering to finish before calculating the position.
-    setTimeout(() => {
-      const targetEl = document.querySelector(this.props.target);
-      this.updatePosition(targetEl);
-    });
+    const targetEl = document.querySelector(this.props.target);
+    this.updatePosition(targetEl);
     window.addEventListener("resize", this.onResize);
   }
 
   componentDidUpdate(nextProps) {
     if (this.props.target !== nextProps.target) {
-      setTimeout(() => {
-        const targetEl = document.querySelector(this.props.target);
-        this.updatePosition(targetEl);
-      });
+      const targetEl = document.querySelector(this.props.target);
+      this.updatePosition(targetEl);
     }
   }
 
@@ -71,43 +69,33 @@ export default class OnboardingPopover extends Component {
 
     const { position, padding } = this.props;
     const popoverRect = this.popoverRef.current.getBoundingClientRect();
-    const popoverWidth = popoverRect.width;
-    const popoverHeight = popoverRect.height;
     const targetRect = targetEl.getBoundingClientRect();
+    const viewportHeight = document.documentElement.clientHeight;
+    const viewportWidth = document.documentElement.clientWidth;
 
-    let top = 0;
-    let left = 0;
-
-    if (position === "top") {
-      top = targetRect.top - popoverHeight - padding;
-      left = targetRect.left + targetRect.width / 2 - popoverWidth / 2;
-    } else if (position === "left") {
-      top = targetRect.top + targetRect.height / 2 - popoverHeight / 2;
-      left = targetRect.left - popoverWidth - padding;
-    } else if (position === "right") {
-      top = targetRect.top + targetRect.height / 2 - popoverHeight / 2;
-      left = targetRect.right + padding;
-    } else if (position === "bottom") {
-      top = targetRect.bottom + padding;
-      left = targetRect.left + targetRect.width / 2 - popoverWidth / 2;
-    }
-
-    top = Math.round(top);
-    left = Math.round(left);
+    const { rect, position: finalPosition, transformOrigin } = getPosition({
+      position,
+      targetRect,
+      targetOffset: padding,
+      dimensions: { width: popoverRect.width, height: popoverRect.height },
+      viewport: { width: viewportWidth, height: viewportHeight },
+      viewportOffset: padding
+    });
 
     this.setState({
-      targetEl,
-      transform: `translate(${left}px,${top}px)`
+      finalPosition,
+      transformOrigin,
+      transform: `translate(${rect.left}px, ${rect.top}px)`
     });
   }
 
   render() {
-    const { transform } = this.state;
+    const { transform, transformOrigin } = this.state;
     const { position, children, steps, curStepIdx, prevStep, disablePrev, nextStep, disableNext, skip } = this.props;
 
     return (
       <Portal>
-        <div className={styles.container} style={{ transform }}>
+        <div className={styles.container} style={{ transform, transformOrigin }}>
           <div className={classNames(styles.popover, styles[position])} ref={this.popoverRef}>
             <div className={styles.content}>{children}</div>
             <div className={styles.bottomNav}>
