@@ -1,6 +1,7 @@
 import { Spoke, SpokeMapping } from "./input-mappings";
 import THREE from "../../vendor/three";
 import SpokeTransformControls from "./SpokeTransformControls";
+import getIntersectingNode from "../utils/getIntersectingNode";
 
 export default class SpokeControls {
   constructor(camera, editor, inputManager, flyControls) {
@@ -157,8 +158,13 @@ export default class SpokeControls {
     if (selectEnd && !transformControls.dragging && !this.wasOrbiting) {
       this.raycaster.setFromCamera(input.get(Spoke.selectCoords), this.camera);
       const results = this.raycaster.intersectObject(this.scene, true);
-      const node = this.getIntersectingNode(results, this.scene);
-      this.editor.select(node);
+      const result = getIntersectingNode(results, this.scene);
+
+      if (result) {
+        this.editor.select(result.node);
+      } else {
+        this.editor.deselect();
+      }
     }
 
     this.wasOrbiting = false;
@@ -168,10 +174,10 @@ export default class SpokeControls {
     if (focusScreenCoords) {
       this.raycaster.setFromCamera(focusScreenCoords, this.camera);
       const results = this.raycaster.intersectObject(this.scene, true);
-      const node = this.getIntersectingNode(results, this.scene);
+      const result = getIntersectingNode(results, this.scene);
 
-      if (node) {
-        this.focus(node);
+      if (result) {
+        this.focus(result.node);
       }
     }
 
@@ -280,28 +286,6 @@ export default class SpokeControls {
     delta.multiplyScalar(Math.min(distance, this.maxFocusDistance) * 4);
 
     camera.position.copy(center).add(delta);
-  }
-
-  getIntersectingNode(results, scene) {
-    if (results.length > 0) {
-      for (const { object } of results) {
-        let curObject = object;
-
-        while (curObject) {
-          if (curObject.isNode) {
-            break;
-          }
-
-          curObject = curObject.parent;
-        }
-
-        if (curObject && curObject !== scene && !curObject.ignoreRaycast) {
-          return curObject;
-        }
-      }
-    }
-
-    return null;
   }
 
   setTransformControlsMode(mode) {
