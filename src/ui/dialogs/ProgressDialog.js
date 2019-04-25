@@ -1,28 +1,17 @@
 import React from "react";
 import PropTypes from "prop-types";
-import styles from "./dialog.scss";
-import Button from "../inputs/Button";
+import Dialog from "./Dialog";
 import ProgressBar from "../inputs/ProgressBar";
-import DialogHeader from "./DialogHeader";
+import styles from "./ProgressDialog.scss";
 
-export const PROGRESS_DIALOG_DELAY = 500;
-
-export default function ProgressDialog({ title, message, cancelable, onCancel, cancelLabel, hideDialog }) {
+export default function ProgressDialog({ message, onConfirm, cancelable, onCancel, ...props }) {
   return (
-    <div className={styles.dialogContainer}>
-      <DialogHeader title={title} />
+    <Dialog onCancel={cancelable ? onCancel : null} {...props}>
       <div className={styles.progressContainer}>
         <div className={styles.message}>{message}</div>
         <ProgressBar />
       </div>
-      {cancelable && (
-        <div className={styles.bottom}>
-          <Button key="cancel" onClick={onCancel || hideDialog}>
-            {cancelLabel}
-          </Button>
-        </div>
-      )}
-    </div>
+    </Dialog>
   );
 }
 
@@ -30,9 +19,9 @@ ProgressDialog.propTypes = {
   title: PropTypes.string.isRequired,
   message: PropTypes.string.isRequired,
   cancelable: PropTypes.bool,
-  onCancel: PropTypes.func,
   cancelLabel: PropTypes.string,
-  hideDialog: PropTypes.func.isRequired
+  onCancel: PropTypes.func,
+  onConfirm: PropTypes.func
 };
 
 ProgressDialog.defaultProps = {

@@ -83,7 +83,7 @@ class LibraryContainer extends Component {
     const Component = selected && selected.component;
 
     return (
-      <div className={styles.libraryContainer}>
+      <div id="library-container" className={styles.libraryContainer}>
         {Component && (
           <div className={styles.libraryPanelContainer}>
             <Component onSelectItem={this.onSelectItem} tooltipId="library-container" />

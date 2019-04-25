@@ -1,14 +1,16 @@
 import React, { Component } from "react";
-import { Link } from "react-router-dom";
 import PropTypes from "prop-types";
 import { withApi } from "../contexts/ApiContext";
 import NavBar from "../navigation/NavBar";
 import styles from "./ProjectsPage.scss";
 import ProjectGrid from "./ProjectGrid";
 import Footer from "../navigation/Footer";
+import Button from "../inputs/Button";
+import PrimaryLink from "../inputs/PrimaryLink";
 import Loading from "../Loading";
 import { connectMenu, ContextMenu, MenuItem } from "react-contextmenu";
 import "../styles/vendor/react-contextmenu/index.scss";
+import templates from "./templates";
 
 const contextMenuId = "project-menu";
 
@@ -31,7 +33,15 @@ class ProjectsPage extends Component {
   componentDidMount() {
     this.props.api
       .getProjects()
-      .then(projects => this.setState({ projects, loading: false }))
+      .then(projects => {
+        this.setState({
+          projects: projects.map(project => ({
+            ...project,
+            url: `/projects/${project.id}`
+          })),
+          loading: false
+        });
+      })
       .catch(error => {
         console.error(error);
 
@@ -47,8 +57,8 @@ class ProjectsPage extends Component {
 
   onDeleteProject = project => {
     this.props.api
-      .deleteProject(project.projectId)
-      .then(() => this.setState({ projects: this.state.projects.filter(p => p.projectId !== project.projectId) }))
+      .deleteProject(project.id)
+      .then(() => this.setState({ projects: this.state.projects.filter(p => p.id !== project.id) }))
       .catch(error => this.setState({ error }));
   };
 
@@ -74,7 +84,7 @@ class ProjectsPage extends Component {
         </div>
       );
     } else {
-      content = <ProjectGrid projects={projects} contextMenuId={contextMenuId} />;
+      content = <ProjectGrid projects={projects} newProjectUrl="/projects/new" contextMenuId={contextMenuId} />;
     }
 
     const ProjectContextMenu = this.ProjectContextMenu;
@@ -86,8 +96,19 @@ class ProjectsPage extends Component {
           <section className={styles.projectsSection}>
             <div className={styles.projectsContainer}>
               <div className={styles.projectsHeader}>
+                <h1>Templates</h1>
+                <PrimaryLink to="/projects/templates">View More</PrimaryLink>
+              </div>
+              <ProjectGrid projects={templates} />
+            </div>
+          </section>
+          <section className={styles.projectsSection}>
+            <div className={styles.projectsContainer}>
+              <div className={styles.projectsHeader}>
                 <h1>Projects</h1>
-                <Link to="/projects/new">New Project</Link>
+                <Button medium to="/projects/new">
+                  New Project
+                </Button>
               </div>
               {error && <div className={styles.error}>{error.message || "There was an unknown error."}</div>}
               {content}

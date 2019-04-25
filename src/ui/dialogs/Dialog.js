@@ -1,0 +1,39 @@
+import React from "react";
+import PropTypes from "prop-types";
+import classNames from "classnames";
+import Button from "../inputs/Button";
+import styles from "./Dialog.scss";
+import SecondaryButton from "../inputs/SecondaryButton";
+
+export default function Dialog({ icon, title, onCancel, cancelLabel, onConfirm, confirmLabel, children }) {
+  return (
+    <div className={styles.dialogContainer}>
+      <div className={styles.header}>
+        {icon && <i className={classNames(styles.icon, "fas", icon)} />}
+        <span>{title}</span>
+      </div>
+      <div className={styles.content}>{children}</div>
+      {(onConfirm || onCancel) && (
+        <div className={styles.bottomNav}>
+          {onCancel && <SecondaryButton onClick={onCancel}>{cancelLabel}</SecondaryButton>}
+          {onConfirm && <Button onClick={onConfirm}>{confirmLabel}</Button>}
+        </div>
+      )}
+    </div>
+  );
+}
+
+Dialog.propTypes = {
+  icon: PropTypes.string,
+  title: PropTypes.string.isRequired,
+  onCancel: PropTypes.func,
+  cancelLabel: PropTypes.string.isRequired,
+  onConfirm: PropTypes.func,
+  confirmLabel: PropTypes.string.isRequired,
+  children: PropTypes.node
+};
+
+Dialog.defaultProps = {
+  confirmLabel: "Ok",
+  cancelLabel: "Cancel"
+};

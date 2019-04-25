@@ -354,6 +354,7 @@ export default class TransformControlsGizmo extends THREE.Object3D {
           object.position.set(0, 0, 0);
           object.rotation.set(0, 0, 0);
           object.scale.set(1, 1, 1);
+          object.layers.set(1);
 
           gizmo.add(object);
         }

@@ -16,10 +16,6 @@ import TextureCache from "./caches/TextureCache";
 import GLTFCache from "./caches/GLTFCache";
 
 import SceneNode from "./nodes/SceneNode";
-import GroundPlaneNode from "./nodes/GroundPlaneNode";
-import DirectionalLightNode from "./nodes/DirectionalLightNode";
-import SpawnPointNode from "./nodes/SpawnPointNode";
-import SkyboxNode from "./nodes/SkyboxNode";
 import FloorPlanNode from "./nodes/FloorPlanNode";
 
 import LoadingCube from "./objects/LoadingCube";
@@ -153,35 +149,6 @@ export default class Editor {
     this.gltfCache.disposeAndClear();
   }
 
-  async loadNewScene() {
-    this.clearCaches();
-
-    const scene = new SceneNode(this);
-    scene.name = "Untitled";
-    this.setScene(scene);
-
-    this._addObject(new SkyboxNode(this));
-    const directionalLight = new DirectionalLightNode(this);
-    directionalLight.position.set(-1, 3, 0);
-    directionalLight.rotation.set(Math.PI * 0.5, Math.PI * (0.5 / 3.0), -Math.PI * 0.5);
-    this._addObject(directionalLight);
-    this._addObject(new SpawnPointNode(this));
-    this._addObject(new GroundPlaneNode(this));
-    this._addObject(new FloorPlanNode(this));
-
-    this.scene.traverse(node => {
-      if (node.isNode) {
-        node.onRendererChanged();
-      }
-    });
-
-    this.signals.sceneGraphChanged.dispatch();
-    this.sceneModified = true;
-    this.signals.sceneModified.dispatch();
-
-    return scene;
-  }
-
   async loadProject(json, onProgress) {
     this.clearCaches();
 
@@ -200,6 +167,7 @@ export default class Editor {
 
   setScene(scene) {
     this.scene = scene;
+    this.sceneUrl = null;
 
     this.camera.position.set(0, 5, 10);
     this.camera.lookAt(new THREE.Vector3());
@@ -545,7 +513,6 @@ export default class Editor {
   }
 
   async takeScreenshot(width, height) {
-    this.deselect();
     return this.viewport.takeScreenshot(width, height);
   }
 

@@ -1,5 +1,10 @@
 @import "../styles/theme";
 
+:local(.container) {
+  display: flex;
+  flex: 1;
+}
+
 :local(.numericInput) {
   display: flex;
   width: 100%;

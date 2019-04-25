@@ -33,7 +33,7 @@ export default class SpokeControls {
     this.objectPositionOnDown = null;
     this.objectRotationOnDown = null;
     this.objectScaleOnDown = null;
-    this.snapEnabled = true;
+    this.snapEnabled = false;
     this.translationSnap = 1;
     this.rotationSnap = Math.PI / 4;
     this.currentSpace = "world";

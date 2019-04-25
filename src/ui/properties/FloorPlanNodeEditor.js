@@ -41,6 +41,8 @@ class FloorPlanNodeEditor extends Component {
       message: "Generating floor plan..."
     });
 
+    console.log("show dialog");
+
     try {
       await this.props.node.generate();
       this.props.hideDialog();

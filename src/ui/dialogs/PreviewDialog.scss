@@ -1,0 +1,31 @@
+@import "../styles/theme";
+
+:local(.leftContent) {
+  display: flex;
+  width: 360px;
+  border-top-left-radius: inherit;
+  align-items: center;
+  padding: 30px;
+
+  img {
+    border-radius: 6px;
+  }
+}
+
+:local(.rightContent) {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: 30px 30px;
+
+  h1 {
+    font-size: 2em;
+    color: $text;
+    margin-bottom: 16px;
+  }
+
+  p {
+    margin-bottom: 12px;
+    line-height: 1.5em;
+  }
+}

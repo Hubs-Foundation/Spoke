@@ -1,0 +1,8 @@
+@import "../styles/theme";
+
+:local(.primaryLink) {
+  font-size: 1.2em;
+  color: $blue;
+  line-height: 3em;
+  vertical-align: middle;
+}

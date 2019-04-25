@@ -16,6 +16,7 @@ import ViewportPanelContainer from "./viewport/ViewportPanelContainer";
 import { defaultSettings, SettingsContextProvider } from "./contexts/SettingsContext";
 import { EditorContextProvider } from "./contexts/EditorContext";
 import { DialogContextProvider } from "./contexts/DialogContext";
+import { withAuth } from "./contexts/AuthContext";
 
 import { createEditor } from "../config";
 
@@ -23,12 +24,15 @@ import ErrorDialog from "./dialogs/ErrorDialog";
 import ProgressDialog from "./dialogs/ProgressDialog";
 import ConfirmDialog from "./dialogs/ConfirmDialog";
 
-export default class EditorContainer extends Component {
+import Onboarding from "./onboarding/Onboarding";
+
+class EditorContainer extends Component {
   static propTypes = {
     api: PropTypes.object.isRequired,
-    projectId: PropTypes.string.isRequired,
+    projectId: PropTypes.string,
     project: PropTypes.object,
-    history: PropTypes.object.isRequired
+    history: PropTypes.object.isRequired,
+    isAuthenticated: PropTypes.bool.isRequired
   };
 
   constructor(props) {
@@ -47,8 +51,10 @@ export default class EditorContainer extends Component {
     const editorInitPromise = editor.init();
 
     this.state = {
+      tutorialEnabled: props.projectId === "tutorial",
       editor,
       editorInitPromise,
+      creatingProject: false,
       settingsContext: {
         settings,
         updateSetting: this.updateSetting
@@ -99,11 +105,22 @@ export default class EditorContainer extends Component {
   }
 
   generateToolbarMenu = () => {
-    return [
-      {
+    let projectsOrLoginItem;
+
+    if (this.props.isAuthenticated) {
+      projectsOrLoginItem = {
         name: "Back to Projects",
         action: this.onOpenProject
-      },
+      };
+    } else {
+      projectsOrLoginItem = {
+        name: "Login",
+        action: this.onLogin
+      };
+    }
+
+    return [
+      projectsOrLoginItem,
       {
         name: "File",
         items: [
@@ -137,6 +154,10 @@ export default class EditorContainer extends Component {
         name: "Help",
         items: [
           {
+            name: "Tutorial",
+            action: () => this.props.history.push("/projects/tutorial")
+          },
+          {
             name: "Keyboard and Mouse Controls",
             action: () => window.open("https://github.com/MozillaReality/Spoke/wiki/Keyboard-and-Mouse-Controls")
           },
@@ -146,7 +167,7 @@ export default class EditorContainer extends Component {
           },
           {
             name: "Report an Issue",
-            action: () => window.open("https://github.com/MozillaReality/Spoke/issues")
+            action: () => window.open("https://github.com/MozillaReality/Spoke/issues/new")
           },
           {
             name: "Join us on Discord",
@@ -196,10 +217,7 @@ export default class EditorContainer extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    const { projectId } = this.props;
-    const { projectId: prevProjectId } = prevProps;
-
-    if (projectId !== prevProjectId && this.state.editor.viewport) {
+    if (this.props.project !== prevProps.project) {
       this.state.editorInitPromise
         .then(() => {
           this.loadProject(this.props.project);
@@ -274,42 +292,69 @@ export default class EditorContainer extends Component {
     });
   }
 
+  onLogin = () => {
+    this.props.api.showLoginDialog(this.showDialog, this.hideDialog);
+  };
+
   /**
    *  Project Actions
    */
 
   async loadProject(project) {
-    if (project) {
-      this.showDialog(ProgressDialog, {
-        title: "Loading Project",
-        message: "Loading project..."
+    const editor = this.state.editor;
+
+    this.showDialog(ProgressDialog, {
+      title: "Loading Project",
+      message: "Loading project..."
+    });
+
+    try {
+      await editor.loadProject(project, (dependenciesLoaded, totalDependencies) => {
+        const loadingProgress = Math.floor((dependenciesLoaded / totalDependencies) * 100);
+        this.showDialog(ProgressDialog, {
+          title: "Loading Project",
+          message: `Loading project: ${loadingProgress}%`
+        });
       });
 
-      try {
-        await this.state.editor.loadProject(project, (dependenciesLoaded, totalDependencies) => {
-          const loadingProgress = Math.floor((dependenciesLoaded / totalDependencies) * 100);
-          this.showDialog(ProgressDialog, {
-            title: "Loading Project",
-            message: `Loading project: ${loadingProgress}%`
-          });
-        });
+      const projectId = this.props.projectId;
 
-        this.state.editor.projectId = this.props.projectId;
-
-        this.hideDialog();
-      } catch (e) {
-        console.error(e);
-
-        this.showDialog(ErrorDialog, {
-          title: "Error loading project.",
-          message: e.message || "There was an error when loading the project."
-        });
+      if (projectId === "new" || projectId === "tutorial") {
+        editor.projectId = null;
+      } else {
+        editor.projectId = projectId;
       }
-    } else {
-      await this.state.editor.loadNewScene();
-      await this.props.api.saveProject(this.props.projectId, this.state.editor, this.showDialog, this.hideDialog);
-      this.state.editor.projectId = this.props.projectId;
+
+      if (projectId === "tutorial") {
+        this.setState({ tutorialEnabled: true });
+      }
+
+      const sceneId = editor.scene.metadata && editor.scene.metadata.sceneId;
+
+      if (sceneId) {
+        editor.sceneUrl = this.props.api.getSceneUrl(sceneId);
+      } else {
+        editor.sceneUrl = null;
+      }
+
+      this.hideDialog();
+    } catch (e) {
+      console.error(e);
+
+      this.showDialog(ErrorDialog, {
+        title: "Error loading project.",
+        message: e.message || "There was an error when loading the project."
+      });
     }
+  }
+
+  async createProject() {
+    const { projectId } = await this.props.api.createProject(this.state.editor, this.showDialog, this.hideDialog);
+    this.state.editor.projectId = projectId;
+    this.setState({ creatingProject: true }, () => {
+      this.props.history.replace(`/projects/${projectId}`);
+      this.setState({ creatingProject: false });
+    });
   }
 
   onNewProject = async () => {
@@ -321,19 +366,36 @@ export default class EditorContainer extends Component {
   };
 
   onSaveProject = async () => {
+    const abortController = new AbortController();
+
     this.showDialog(ProgressDialog, {
       title: "Saving Project",
-      message: "Saving project..."
+      message: "Saving project...",
+      cancelable: true,
+      onCancel: () => {
+        abortController.abort();
+        this.hideDialog();
+      }
     });
 
     try {
       const editor = this.state.editor;
-      const result = await this.props.api.saveProject(this.props.projectId, editor, this.showDialog, this.hideDialog);
+
+      if (editor.projectId) {
+        await this.props.api.saveProject(
+          editor.projectId,
+          editor,
+          abortController.signal,
+          this.showDialog,
+          this.hideDialog
+        );
+      } else {
+        await this.createProject();
+      }
+
       editor.sceneModified = false;
 
       this.hideDialog();
-
-      return result;
     } catch (e) {
       console.error(e);
 
@@ -341,8 +403,6 @@ export default class EditorContainer extends Component {
         title: "Error Saving Project",
         message: e.message || "There was an error when saving the project."
       });
-
-      return null;
     }
   };
 
@@ -421,7 +481,13 @@ export default class EditorContainer extends Component {
 
   onPublishProject = async () => {
     try {
-      await this.props.api.publishProject(this.props.projectId, this.state.editor, this.showDialog, this.hideDialog);
+      const editor = this.state.editor;
+
+      if (!editor.projectId) {
+        await this.createProject();
+      }
+
+      await this.props.api.publishProject(editor.projectId, editor, this.showDialog, this.hideDialog);
     } catch (e) {
       console.error(e);
       this.showDialog(ErrorDialog, {
@@ -429,6 +495,17 @@ export default class EditorContainer extends Component {
         message: e.message || "There was an unknown error."
       });
     }
+  };
+
+  getSceneId() {
+    const scene = this.state.editor.scene;
+    return scene.metadata && scene.metadata.sceneId;
+  }
+
+  onOpenScene = () => {
+    const sceneId = this.getSceneId();
+    const url = this.props.api.getSceneUrl(sceneId);
+    window.open(url);
   };
 
   renderPanel = (panelId, path) => {
@@ -442,9 +519,9 @@ export default class EditorContainer extends Component {
   };
 
   render() {
-    const { DialogComponent, dialogProps, settingsContext } = this.state;
-    const { editor } = this.state;
+    const { DialogComponent, dialogProps, settingsContext, editor, creatingProject, tutorialEnabled } = this.state;
     const toolbarMenu = this.generateToolbarMenu();
+    const isPublishedScene = !!this.getSceneId();
 
     const modified = editor.sceneModified ? "*" : "";
 
@@ -453,7 +530,13 @@ export default class EditorContainer extends Component {
         <SettingsContextProvider value={settingsContext}>
           <EditorContextProvider value={editor}>
             <DialogContextProvider value={this.dialogContext}>
-              <ToolBar menu={toolbarMenu} editor={editor} onPublish={this.onPublishProject} />
+              <ToolBar
+                menu={toolbarMenu}
+                editor={editor}
+                onPublish={this.onPublishProject}
+                isPublishedScene={isPublishedScene}
+                onOpenScene={this.onOpenScene}
+              />
               <Mosaic
                 className="mosaic-theme"
                 renderTile={this.renderPanel}
@@ -468,7 +551,9 @@ export default class EditorContainer extends Component {
                 className="Modal"
                 overlayClassName="Overlay"
               >
-                {DialogComponent && <DialogComponent {...dialogProps} hideDialog={this.hideDialog} />}
+                {DialogComponent && (
+                  <DialogComponent onConfirm={this.hideDialog} onCancel={this.hideDialog} {...dialogProps} />
+                )}
               </Modal>
               <Helmet>
                 <title>{`${modified}${editor.scene.name} | Spoke by Mozilla`}</title>
@@ -478,8 +563,9 @@ export default class EditorContainer extends Component {
                 message={`${
                   editor.scene.name
                 } has unsaved changes, are you sure you wish to navigate away from the page?`}
-                when={editor.sceneModified}
+                when={editor.sceneModified && !creatingProject}
               />
+              {tutorialEnabled && <Onboarding />}
             </DialogContextProvider>
           </EditorContextProvider>
         </SettingsContextProvider>
@@ -487,3 +573,5 @@ export default class EditorContainer extends Component {
     );
   }
 }
+
+export default withAuth(EditorContainer);

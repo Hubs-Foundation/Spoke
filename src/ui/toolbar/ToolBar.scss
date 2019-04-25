@@ -38,39 +38,6 @@
     }
   }
 
-  :local(.notification) {
-    position: absolute;
-    top: 46px;
-    background: $panel;
-    padding: 0.2em 1em;
-    color: white;
-    border-radius: 0 0 6px 6px;
-    z-index: 5;
-    left: 50%;
-    width: 22em;
-    text-align: center;
-    margin-left: -11em;
-    box-sizing: border-box;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-
-    :local(.message) {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      margin: 0 0.2em;
-    }
-
-    :local(.download) {
-      margin: 0.4em 0.4em 0.4em 1.0em;
-    }
-
-    :local(.dismiss) {
-      cursor: pointer;
-    }
-  }
-
   :local(.toolbtns) {
     width: auto;
     height: inherit;

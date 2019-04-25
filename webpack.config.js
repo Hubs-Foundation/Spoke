@@ -244,7 +244,7 @@ module.exports = env => {
         ROUTER_BASE_PATH: ""
       }),
       new webpack.IgnorePlugin({
-        resourceRegExp: /^@blueprintjs\//
+        resourceRegExp: /^@blueprintjs\/core/
       }),
       new MiniCssExtractPlugin({
         filename: "assets/styles/[name]-[contenthash].css",

@@ -29,7 +29,7 @@ export default class NodeEditor extends Component {
     const { node, description, editor, children } = this.props;
 
     return (
-      <div className={styles.propertiesPanelContainer}>
+      <div className={styles.nodeEditor}>
         <div className={styles.propertiesHeader}>
           <div className={styles.propertiesPanelTopBar}>
             <NameInputGroup node={node} editor={editor} />

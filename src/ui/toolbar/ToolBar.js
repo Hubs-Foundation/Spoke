@@ -14,18 +14,14 @@ export default class ToolBar extends Component {
   static propTypes = {
     menu: PropTypes.array,
     editor: PropTypes.object,
-    onPublish: PropTypes.func
+    onPublish: PropTypes.func,
+    onOpenScene: PropTypes.func
   };
 
   constructor(props) {
     super(props);
     this.state = {
       toolButtons: [
-        {
-          name: "menu",
-          type: "fa-bars",
-          onClick: e => this.onMenuSelected(e)
-        },
         {
           name: "translate",
           type: "fa-arrows-alt",
@@ -67,7 +63,8 @@ export default class ToolBar extends Component {
         },
         action: () => this.onSnappingChanged()
       },
-      toolButtonSelected: "translate"
+      toolButtonSelected: "translate",
+      menuOpen: false
     };
   }
 
@@ -104,15 +101,23 @@ export default class ToolBar extends Component {
   };
 
   onMenuSelected = e => {
-    const x = 0;
-    const y = e.currentTarget.offsetHeight;
-    showMenu({
-      position: { x, y },
-      target: e.currentTarget,
-      id: "menu"
-    });
+    if (!this.state.menuOpen) {
+      const x = 0;
+      const y = e.currentTarget.offsetHeight;
+      showMenu({
+        position: { x, y },
+        target: e.currentTarget,
+        id: "menu"
+      });
 
-    this._updateToolBarStatus("menu");
+      this.setState({ menuOpen: true });
+      window.addEventListener("mousedown", this.onWindowClick);
+    }
+  };
+
+  onWindowClick = () => {
+    window.removeEventListener("mousedown", this.onWindowClick);
+    this.setState({ menuOpen: false });
   };
 
   onSelectionSelected = () => {
@@ -167,7 +172,7 @@ export default class ToolBar extends Component {
   };
 
   render() {
-    const { toolButtons, spaceToggle, snapToggle } = this.state;
+    const { toolButtons, spaceToggle, snapToggle, menuOpen } = this.state;
 
     return (
       <div className={styles.toolbar}>
@@ -177,7 +182,10 @@ export default class ToolBar extends Component {
             <div>spoke</div>
           </Link>
         </div>
-        <div className={styles.toolbtns}>{this.renderToolButtons(toolButtons)}</div>
+        <div className={styles.toolbtns}>
+          <ToolButton toolType="fa-bars" onClick={this.onMenuSelected} selected={menuOpen} id="menu" />
+          {this.renderToolButtons(toolButtons)}
+        </div>
         <div className={styles.tooltoggles}>
           <ToolToggle
             text={spaceToggle.text}
@@ -205,7 +213,12 @@ export default class ToolBar extends Component {
           </ToolToggle>
         </div>
         <div className={styles.spacer} />
-        <Button className={styles.publishButton} onClick={this.props.onPublish}>
+        {this.props.editor.sceneUrl && (
+          <Button className={styles.publishButton} onClick={this.props.onOpenScene}>
+            Open in Hubs
+          </Button>
+        )}
+        <Button id="publish-button" className={styles.publishButton} onClick={this.props.onPublish}>
           Publish to Hubs...
         </Button>
         <ContextMenu id="menu">
