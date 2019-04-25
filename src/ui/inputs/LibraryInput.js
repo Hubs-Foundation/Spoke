@@ -48,22 +48,27 @@ class LibraryInput extends Component {
       component: this.props.component,
       componentProps: {
         uploadMultiple: false,
-        onAfterUpload: items => {
-          this.props.onChange(items[0].url);
-        }
-      },
-      onSelectItem: this.onSelectItem
+        onAfterUpload: this.onAfterUpload,
+        onSelectItem: this.onSelectItem
+      }
     });
   };
 
+  onAfterUpload = items => {
+    this.props.hideDialog();
+    this.props.onChange(items[0].url);
+  };
+
   onSelectItem = (NodeType, props, item, source) => {
-    const { api, editor } = this.props;
+    const { api, editor, onChange, hideDialog } = this.props;
+
+    hideDialog();
 
     if (source.value === "assets") {
       api.addAssetToProject(editor.projectId, item.id).catch(console.error);
     }
 
-    this.props.onChange(props.src, props);
+    onChange(props.src, props);
   };
 
   render() {

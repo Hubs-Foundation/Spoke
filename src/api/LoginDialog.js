@@ -1,27 +1,25 @@
-import React, { Component } from "react";
+import React from "react";
 import PropTypes from "prop-types";
-import styles from "../ui/dialogs/dialog.scss";
-import DialogHeader from "../ui/dialogs/DialogHeader";
+import Dialog from "../ui/dialogs/Dialog";
 import AuthContainer from "./AuthContainer";
-import Button from "../ui/inputs/Button";
+import styles from "./LoginDialog.scss";
 
-export default class LoginDialog extends Component {
-  static propTypes = {
-    hideDialog: PropTypes.func.isRequired,
-    onSuccess: PropTypes.func.isRequired
-  };
-
-  render() {
-    return (
-      <div className={styles.dialogContainer}>
-        <DialogHeader title="Login" />
-        <div className={styles.loginContainer}>
-          <AuthContainer onSuccess={this.props.onSuccess} />
-          <Button key="cancel" onClick={this.props.hideDialog} className={styles.cancel}>
-            Cancel
-          </Button>
-        </div>
+export default function LoginDialog({ onConfirm, onSuccess, ...props }) {
+  return (
+    <Dialog {...props}>
+      <div className={styles.container}>
+        <AuthContainer onSuccess={onSuccess} />
       </div>
-    );
-  }
+    </Dialog>
+  );
 }
+
+LoginDialog.propTypes = {
+  title: PropTypes.string.isRequired,
+  onConfirm: PropTypes.func.isRequired,
+  onSuccess: PropTypes.func.isRequired
+};
+
+LoginDialog.defaultProps = {
+  title: "Login"
+};

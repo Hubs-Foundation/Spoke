@@ -35,7 +35,6 @@ class LoginPage extends Component {
         <main>
           <section className={styles.loginSection}>
             <div className={styles.loginContainer}>
-              <h1>Login</h1>
               <AuthContainer {...this.props} onSuccess={this.onSuccess} />
             </div>
           </section>

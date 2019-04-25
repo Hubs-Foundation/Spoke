@@ -1,31 +1,37 @@
-@import "../styles/common";
 @import "../styles/theme";
-@import "../styles/global";
-@import "../styles/icons";
 
 :local(.dialogContainer) {
   display: flex;
   flex-direction: column;
   flex: 1;
   border-radius: 4px;
-  background-color: $dropdown;
-  font-family: $lato;
-  font-size: 12px;
-  color: $text;
+  background-color: #282C31;
   max-width: 800px;
   min-width: 400px;
   min-height: 150px;
   max-height: 80vh;
+}
 
-  form {
+:local(.header) {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  padding: 0 8px;
+  font-size: 12px;
+  overflow: hidden;
+  height: 32px;
+  background: black;
+  border-top-left-radius: inherit;
+  border-top-right-radius: inherit;
+
+  > * {
     display: flex;
-    flex-direction: column;
-    flex: 1;
+    align-items: center;
   }
+}
 
-  a {
-    color: white;
-  }
+:local(.icon) {
+  padding-right: 8px;
 }
 
 :local(.content) {
@@ -37,310 +43,30 @@
   overflow: hidden;
   padding: 8px;
   white-space: pre;
+  min-height: 100px;
 }
 
-:local(.contentFullHeight) {
-  height: 100%;
-}
-
-:local(.contentRows) {
+:local(.bottomNav) {
   display: flex;
-  flex-direction: column;
-  width: 100%;
-
-  & > * {
-    margin-bottom: 12px;
-  }
-
-  :local(.topImage) {
-    max-height: 300px;
-    width: auto;
-    padding: 0 0 16px 0;
-  }
-}
-
-:local(.contentRowsCentered) {
-  justify-content: center;
-  align-items: center;
-  height: 100%;
-}
-
-:local(.buttonList) {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-
-  button {
-    width: 125px;
-    margin: 6px;
-  }
-}
-
-:local(.fieldRow) {
-  display: flex;
-  flex-direction: row;
-  width: 100%;
-  justify-content: center;
-
-  input[type="text"] {
-    margin-right: 8px;
-  }
-}
-
-:local(.checkboxRow) {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-}
-
-:local(.bottom) {
-  margin: 8px 0;
-  display: flex;
+  height: 64px;
   flex-direction: row;
   justify-content: flex-end;
-  min-height: 24px;
+  align-items: center;
+  background-color: black;
+  border-bottom-left-radius: inherit;
+  border-bottom-right-radius: inherit;
+  padding: 8px;
 
-   > * {
-    margin-right: 8px;
-
-    &:first-child {
-      margin-left: 8px;
-    }
+  a {
+    color: $text2;
   }
 
   button {
     min-width: 84px;
-    justify-content: center;
   }
-}
-
-@keyframes move {
-  0% {
-    background-position: 0 0;
+  
+  & > * {
+    margin: 0 8px;
   }
-  100% {
-    background-position: 50px 50px;
-  }
-}
-
-:local(.progressContainer), :local(.loginContainer) {
-  :local(.loadingBarContainer) {
-    height: 20px;
-	  position: relative;
-	  background: $panel2;
-    border-radius: 4px;
-    
-    & > span {
-      display: block;
-      height: 100%;
-      border-radius: 4px;
-      background-color: $blue;
-      position: relative;
-      overflow: hidden;
-
-      &:after {
-        content: "";
-          position: absolute;
-          top: 0; left: 0; bottom: 0; right: 0;
-          background-image: linear-gradient(
-            -45deg, 
-            rgba(255, 255, 255, .2) 25%, 
-            transparent 25%, 
-            transparent 50%, 
-            rgba(255, 255, 255, .2) 50%, 
-            rgba(255, 255, 255, .2) 75%, 
-            transparent 75%, 
-            transparent
-          );
-          z-index: 1;
-          background-size: 50px 50px;
-          animation: move 2s linear infinite;
-          border-radius: 4px;
-          overflow: hidden;
-      }
-    }
-  }
-
-  :local(.animate) {
-    & > span > span {
-      content: "";
-      position: absolute;
-      top: 0; left: 0; bottom: 0; right: 0;
-      background-image: linear-gradient(
-        -45deg, 
-      rgba(255, 255, 255, .2) 25%, 
-        transparent 25%, 
-        transparent 50%, 
-      rgba(255, 255, 255, .2) 50%, 
-      rgba(255, 255, 255, .2) 75%, 
-        transparent 75%, 
-        transparent
-      );
-      z-index: 1;
-      background-size: 50px 50px;
-      animation: move 2s linear infinite;
-      border-radius: 4px;
-      overflow: hidden;
-    }
-
-    & > span {
-      &:after {
-        display: none;
-      }
-    }
-  }
-}
-
-:local(.cancel) {
-  background: $panel2;
-
-  &:hover {
-     background-color: $panel;
-   }
-}
-
-:local(.progressContainer) {
-  color: $text2;
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  // This forces firefox to give the contents a proper height.
-  overflow: hidden;
-  padding: 8px;
-
-  :local(.message) {
-    padding-bottom: 24px;
-    white-space: pre;
-  }
-}
-
-:local(.loginContainer) {
-  :local(.loadingBarContainer) {
-    width: 80%;
-    margin-top: 24px;
-  }
-}
-
-
-:local(.search) {
-  background: $panel2;
-
-  &:hover {
-     background-color: $panel;
-   }
-}
-
-:local(.search:before) {
-  @extend .fas;
-  content: fa-content($fa-var-search);
-  padding-right: 8px;
-}
-
-:local(.collections) {
-  background: $panel2;
-
-  &:hover {
-     background-color: $panel;
-   }
-}
-
-:local(.collections:before) {
-  @extend .fas;
-  content: fa-content($fa-var-cubes);
-  padding-right: 8px;
-}
-
-:local(.loginContainer) {
-  flex: 1;
-
-  :local(.label) {
-    display: flex;
-    align-items: center;
-    margin-right: 0.5em;
-  }
-
-  input {
-    width: auto;
-  }
-}
-
-:local(.publishContainer) {
-  :local(.sceneThumbnail) {
-    width: 400px;
-    height: 260px;
-    margin: 1em;
-    border-radius: 4px;
-    object-fit: cover;
-  }
-  :local(.content) {
-    flex-direction: row;
-    background-color: $panel;
-  }
-  :local(.publishedContent) {
-    background-color: $dropdown;
-    & a {
-      color: $text2;
-    }
-  }
-  :local(.label) {
-    margin: 0.2em;
-  }
-  :local(.inputField) {
-    margin: 1em;
-  }
-  :local(input) {
-    width: auto;
-  }
-  :local(.name), :local(.creatorAttribution) {
-    width: 300px;
-    margin-top: 0.8em;
-  }
-  :local(.description) {
-    @include input;
-    display: block;
-    font-family: $lato;
-    font-size: 13px;
-    padding-top: 4px;
-    padding-bottom: 4px;
-    margin-top: 0.8em;
-    resize: none;
-    width: 300px;
-    height: 100px;
-  }
-  :local(.attribution) {
-    margin: 0.8em;
-
-    :local(.attributionText) {
-      margin: 0;
-      margin-top: 0.8em;
-      padding: 0 0.2em;
-      height: 4em;
-      overflow: auto;
-      white-space: pre-wrap;
-    }
-  }
-  :local(.publishInfo) {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin: 12px;
-
-    a {
-      margin-top: 12px;
-    }
-  }
-}
-
-:local(.titleRow) {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  margin: 12px;
-}
-
-:local(.contentTitle) {
-  color: $white;
-  font-size: 1.5em;
-  font-weight: bold;
 }
 

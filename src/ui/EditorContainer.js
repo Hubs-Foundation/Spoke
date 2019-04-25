@@ -154,6 +154,10 @@ class EditorContainer extends Component {
         name: "Help",
         items: [
           {
+            name: "Tutorial",
+            action: () => this.props.history.push("/projects/tutorial")
+          },
+          {
             name: "Keyboard and Mouse Controls",
             action: () => window.open("https://github.com/MozillaReality/Spoke/wiki/Keyboard-and-Mouse-Controls")
           },
@@ -321,6 +325,10 @@ class EditorContainer extends Component {
         editor.projectId = projectId;
       }
 
+      if (projectId === "tutorial") {
+        this.setState({ tutorialEnabled: true });
+      }
+
       const sceneId = editor.scene.metadata && editor.scene.metadata.sceneId;
 
       if (sceneId) {
@@ -358,16 +366,29 @@ class EditorContainer extends Component {
   };
 
   onSaveProject = async () => {
+    const abortController = new AbortController();
+
     this.showDialog(ProgressDialog, {
       title: "Saving Project",
-      message: "Saving project..."
+      message: "Saving project...",
+      cancelable: true,
+      onCancel: () => {
+        abortController.abort();
+        this.hideDialog();
+      }
     });
 
     try {
       const editor = this.state.editor;
 
       if (editor.projectId) {
-        await this.props.api.saveProject(editor.projectId, editor, this.showDialog, this.hideDialog);
+        await this.props.api.saveProject(
+          editor.projectId,
+          editor,
+          abortController.signal,
+          this.showDialog,
+          this.hideDialog
+        );
       } else {
         await this.createProject();
       }
@@ -530,7 +551,9 @@ class EditorContainer extends Component {
                 className="Modal"
                 overlayClassName="Overlay"
               >
-                {DialogComponent && <DialogComponent {...dialogProps} hideDialog={this.hideDialog} />}
+                {DialogComponent && (
+                  <DialogComponent onConfirm={this.hideDialog} onCancel={this.hideDialog} {...dialogProps} />
+                )}
               </Modal>
               <Helmet>
                 <title>{`${modified}${editor.scene.name} | Spoke by Mozilla`}</title>
