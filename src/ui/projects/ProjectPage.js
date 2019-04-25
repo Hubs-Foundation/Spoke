@@ -4,8 +4,8 @@ import { withApi } from "../contexts/ApiContext";
 import EditorContainer from "../EditorContainer";
 import Loading from "../Loading";
 import Error from "../Error";
-import defaultTemplateUrl from "file-loader!../../assets/templates/default.spoke";
-import tutorialTemplateUrl from "file-loader!../../assets/templates/tutorial.spoke";
+import defaultTemplateUrl from "../../assets/templates/default.spoke";
+import tutorialTemplateUrl from "../../assets/templates/tutorial.spoke";
 
 class ProjectPage extends Component {
   static propTypes = {

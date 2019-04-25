@@ -1,4 +1,4 @@
-import defaultTemplateUrl from "file-loader!../../assets/templates/default.spoke";
+import defaultTemplateUrl from "../../assets/templates/default.spoke";
 
 const templates = [
   {

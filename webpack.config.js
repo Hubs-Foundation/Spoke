@@ -144,6 +144,16 @@ module.exports = env => {
           }
         },
         {
+          test: /\.(spoke)(\?.*$|$)/,
+          use: {
+            loader: "file-loader",
+            options: {
+              name: "[name]-[hash].[ext]",
+              outputPath: "assets/templates"
+            }
+          }
+        },
+        {
           test: /\.css$/,
           use: [process.env.NODE_ENV !== "production" ? "style-loader" : MiniCssExtractPlugin.loader, "css-loader"]
         },
