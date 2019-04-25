@@ -243,6 +243,9 @@ module.exports = env => {
         NON_CORS_PROXY_DOMAINS: "",
         ROUTER_BASE_PATH: ""
       }),
+      new webpack.IgnorePlugin({
+        resourceRegExp: /^@blueprintjs\/core/
+      }),
       new MiniCssExtractPlugin({
         filename: "assets/styles/[name]-[contenthash].css",
         chunkFilename: "assets/styles/[name]-[contenthash].css"
