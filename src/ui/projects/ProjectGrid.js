@@ -6,17 +6,18 @@ import NewProjectGridItem from "./NewProjectGridItem";
 
 export default class ProjectGrid extends Component {
   static propTypes = {
-    contextMenuId: PropTypes.string.isRequired,
-    projects: PropTypes.arrayOf(PropTypes.object).isRequired
+    contextMenuId: PropTypes.string,
+    projects: PropTypes.arrayOf(PropTypes.object).isRequired,
+    newProjectUrl: PropTypes.string
   };
 
   render() {
     return (
       <div className={styles.projectGrid}>
         {this.props.projects.map(project => (
-          <ProjectGridItem key={project.projectId} project={project} contextMenuId={this.props.contextMenuId} />
+          <ProjectGridItem key={project.id} project={project} contextMenuId={this.props.contextMenuId} />
         ))}
-        <NewProjectGridItem />
+        {this.props.newProjectUrl && <NewProjectGridItem newProjectUrl={this.props.newProjectUrl} />}
       </div>
     );
   }

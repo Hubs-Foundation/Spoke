@@ -1,46 +1,18 @@
-import React, { Component } from "react";
+import React from "react";
 import PropTypes from "prop-types";
-import styles from "./LibraryDialog.scss";
-import DialogHeader from "./DialogHeader";
-import Button from "../inputs/Button";
+import Dialog from "./Dialog";
 
-export default class LibraryDialog extends Component {
-  static propTypes = {
-    title: PropTypes.string.isRequired,
-    component: PropTypes.elementType.isRequired,
-    componentProps: PropTypes.object,
-    onSelectItem: PropTypes.func.isRequired,
-    hideDialog: PropTypes.func.isRequired
-  };
-
-  onSelectItem = (...args) => {
-    this.props.hideDialog();
-    this.props.onSelectItem(...args);
-  };
-
-  onCancel = () => {
-    this.props.hideDialog();
-  };
-
-  render = () => {
-    const LibraryComponent = this.props.component;
-
-    return (
-      <div className={styles.libraryDialog}>
-        <DialogHeader title={this.props.title} />
-        <div className={styles.content}>
-          <LibraryComponent
-            onSelectItem={this.onSelectItem}
-            tooltipId="library-dialog"
-            {...this.props.componentProps}
-          />
-        </div>
-        <div className={styles.bottom}>
-          <Button className={styles.cancel} onClick={this.onCancel}>
-            Cancel
-          </Button>
-        </div>
-      </div>
-    );
-  };
+export default function LibraryDialog({ component: LibraryComponent, componentProps, onConfirm, ...props }) {
+  return (
+    <Dialog {...props}>
+      <LibraryComponent tooltipId="library-dialog" {...componentProps} />
+    </Dialog>
+  );
 }
+
+LibraryDialog.propTypes = {
+  title: PropTypes.string.isRequired,
+  component: PropTypes.elementType.isRequired,
+  componentProps: PropTypes.object,
+  onConfirm: PropTypes.func.isRequired
+};

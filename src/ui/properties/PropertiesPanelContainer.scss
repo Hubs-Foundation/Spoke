@@ -20,6 +20,12 @@
   overflow-y: auto;
 }
 
+:local(.nodeEditor) {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+
 :local(.propertiesHeader) {
   background-color: $panel2;
   border: none !important;

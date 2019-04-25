@@ -16,7 +16,11 @@ a {
   color: $text;
 
   &:hover {
-    color: $selected;
+    color: $blue-hover;
+  }
+
+  &:active {
+    color: $blue-pressed;
   }
 }
 
@@ -67,7 +71,7 @@ body {
   }
 
   .ReactModal__Overlay--after-open {
-    z-index: 999;
+    z-index: 100;
   }
 
   .mosaic.mosaic-theme {

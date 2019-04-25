@@ -13,6 +13,7 @@ export default class AuthEmailSentMessage extends Component {
       <div className={styles.authEmailSentMessage}>
         <h2>Email sent!</h2>
         <p>Waiting for you to click on the link sent to {this.props.email}</p>
+        <strong>Don&#39;t close this browser tab or you may lose your work!</strong>
         <ProgressBar />
       </div>
     );

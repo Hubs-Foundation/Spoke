@@ -318,6 +318,8 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
       }
     }
 
+    await yieldFor(5);
+
     const walkableGeometry = mergeMeshGeometries(walkableMeshes);
     const walkableNavGeometry = this.generateNavGeometry(walkableGeometry);
     const navMesh = new THREE.Mesh(walkableNavGeometry, new THREE.MeshBasicMaterial({ color: 0x0000ff }));

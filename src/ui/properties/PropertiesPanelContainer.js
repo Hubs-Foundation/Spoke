@@ -42,7 +42,7 @@ class PropertiesPanelContainer extends Component {
 
     if (!node) {
       return (
-        <div className={styles.propertiesPanelContainer}>
+        <div id="properties-panel-container" className={styles.propertiesPanelContainer}>
           <div className={styles.noNodeSelected}>No node selected</div>
         </div>
       );
@@ -51,7 +51,11 @@ class PropertiesPanelContainer extends Component {
     const editor = this.props.editor;
     const NodeEditor = editor.getNodeEditor(node) || DefaultNodeEditor;
 
-    return <NodeEditor node={node} editor={editor} />;
+    return (
+      <div id="properties-panel-container" className={styles.propertiesPanelContainer}>
+        <NodeEditor node={node} editor={editor} />
+      </div>
+    );
   }
 }
 

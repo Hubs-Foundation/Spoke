@@ -28,7 +28,7 @@ class ViewportPanelContainer extends Component {
 
   render() {
     return (
-      <div className={styles.viewportPanelContainer}>
+      <div id="viewport-panel-container" className={styles.viewportPanelContainer}>
         <Viewport ref={this.canvasRef} />
         <div className={styles.libraryToolbarContainer}>
           <LibraryContainer />

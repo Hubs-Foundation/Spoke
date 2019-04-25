@@ -9,7 +9,8 @@ $prefixClass: rc-slider;
 }
 
 .#{$prefixClass} {
-  width: 100% !important;
+  display: flex;
+  flex: 1;
   height: 1px;
   margin-right: 28px;
   position: relative;

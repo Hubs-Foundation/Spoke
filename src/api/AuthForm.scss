@@ -9,11 +9,14 @@
   max-width: 400px;
   align-self: center;
 
+  & > * {
+    margin-bottom: 20px;
+  }
+
   input {
     @include input;
     font-size: 20px;
     padding: 8px;
-    margin-bottom: 20px;
     height: 36px;
   }
 
@@ -31,6 +34,16 @@
     &:hover, &:active {
       background-color: $blue-pressed;
     }
+  }
+
+  h3 {
+    font-size: 2em;
+    color: $text;
+  }
+
+  h4 {
+    font-size: 1.1em;
+    color: text;
   }
 }
 

@@ -268,7 +268,7 @@ class LibrarySearchContainer extends Component {
               {privacyPolicyUrl && (
                 <>
                   <span> | </span>
-                  <a rel="noopener noreferrer" href={privacyPolicyUrl}>
+                  <a rel="noopener noreferrer" target="_blank" href={privacyPolicyUrl}>
                     Privacy Policy
                   </a>
                 </>
