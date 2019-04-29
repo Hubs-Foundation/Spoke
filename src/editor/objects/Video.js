@@ -86,6 +86,8 @@ export default class Video extends THREE.Object3D {
   }
 
   set audioType(type) {
+    if (type === this._audioType) return;
+
     let audio;
     const oldAudio = this.audio;
 
@@ -326,6 +328,7 @@ export default class Video extends THREE.Object3D {
   }
 
   clone(recursive) {
+    console.log("Video .clone", this.audioListener);
     return new this.constructor(this.audioListener).copy(this, recursive);
   }
 
