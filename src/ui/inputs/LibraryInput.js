@@ -14,6 +14,7 @@ class LibraryInput extends Component {
     component: PropTypes.elementType.isRequired,
     value: PropTypes.string.isRequired,
     onChange: PropTypes.func.isRequired,
+    nodeProps: PropTypes.object,
     showDialog: PropTypes.func.isRequired,
     hideDialog: PropTypes.func.isRequired,
     api: PropTypes.object.isRequired,
@@ -39,7 +40,8 @@ class LibraryInput extends Component {
   };
 
   onBlur = e => {
-    this.props.onChange(e.target.value);
+    const src = e.target.value;
+    this.props.onChange(src, { src, ...this.props.nodeProps });
   };
 
   onOpenDialog = () => {
@@ -56,7 +58,10 @@ class LibraryInput extends Component {
 
   onAfterUpload = items => {
     this.props.hideDialog();
-    this.props.onChange(items[0].url);
+
+    const uploadedUrl = items[0].url;
+
+    this.props.onChange(uploadedUrl, { src: uploadedUrl, ...this.props.nodeProps });
   };
 
   onSelectItem = (NodeType, props, item, source) => {
@@ -68,11 +73,11 @@ class LibraryInput extends Component {
       api.addAssetToProject(editor.projectId, item.id).catch(console.error);
     }
 
-    onChange(props.src, props);
+    onChange(props.src, { src: props.src, ...this.props.nodeProps, ...props });
   };
 
   render() {
-    const { onChange, value, component, dialogTitle, showDialog, hideDialog, ...rest } = this.props;
+    const { onChange, value, component, dialogTitle, showDialog, hideDialog, nodeProps, ...rest } = this.props;
 
     return (
       <div className={styles.libraryInput}>
