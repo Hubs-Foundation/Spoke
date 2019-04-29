@@ -1,7 +1,6 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
 import Button from "../inputs/Button";
-import SecondaryButton from "../inputs/SecondaryButton";
 import Portal from "../layout/Portal";
 import styles from "./OnboardingPopover.scss";
 import classNames from "classnames";
@@ -108,7 +107,11 @@ export default class OnboardingPopover extends Component {
               >
                 Skip Tutorial
               </a>
-              {!disablePrev && curStepIdx > 0 && <SecondaryButton onClick={prevStep}>Back</SecondaryButton>}
+              {!disablePrev && curStepIdx > 0 && (
+                <Button secondary onClick={prevStep}>
+                  Back
+                </Button>
+              )}
               {!disableNext && curStepIdx < steps.length - 1 && <Button onClick={nextStep}>Next</Button>}
               {!disableNext && curStepIdx === steps.length - 1 && <Button onClick={nextStep}>Finish</Button>}
             </div>

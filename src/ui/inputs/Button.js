@@ -4,8 +4,12 @@ import classNames from "classnames";
 import { Link } from "react-router-dom";
 import styles from "./Button.scss";
 
-export default function Button({ className, children, medium, large, ...props }) {
-  const fullClassName = classNames(styles.button, { [styles.medium]: medium, [styles.large]: large }, className);
+export default function Button({ className, children, medium, large, type, secondary, ...props }) {
+  const fullClassName = classNames(
+    styles.button,
+    { [styles.medium]: medium, [styles.large]: large, [styles.secondary]: secondary },
+    className
+  );
 
   if (props.to) {
     return (
@@ -21,7 +25,7 @@ export default function Button({ className, children, medium, large, ...props })
     );
   } else {
     return (
-      <button className={fullClassName} {...props}>
+      <button type={type} className={fullClassName} {...props}>
         {children}
       </button>
     );
@@ -34,5 +38,10 @@ Button.propTypes = {
   className: PropTypes.string,
   children: PropTypes.node,
   href: PropTypes.string,
-  to: PropTypes.oneOfType([PropTypes.string, PropTypes.object])
+  to: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
+  type: PropTypes.string
+};
+
+Button.defaultProps = {
+  type: "button"
 };

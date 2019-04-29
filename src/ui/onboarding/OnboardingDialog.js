@@ -3,7 +3,6 @@ import PropTypes from "prop-types";
 import styles from "./OnboardingDialog.scss";
 import OnboardingOverlay from "./OnboardingOverlay";
 import Button from "../inputs/Button";
-import SecondaryButton from "../inputs/SecondaryButton";
 import defaultBackgroundImage from "../../assets/onboarding/default.png";
 
 export default function OnboardingDialog({
@@ -40,7 +39,11 @@ export default function OnboardingDialog({
           >
             Skip Tutorial
           </a>
-          {!disablePrev && curStepIdx > 0 && <SecondaryButton onClick={prevStep}>Back</SecondaryButton>}
+          {!disablePrev && curStepIdx > 0 && (
+            <Button secondary onClick={prevStep}>
+              Back
+            </Button>
+          )}
           {!disableNext && curStepIdx < steps.length - 1 && <Button onClick={nextStep}>Next</Button>}
           {!disableNext && curStepIdx === steps.length - 1 && <Button onClick={nextStep}>Finish</Button>}
         </div>
