@@ -7,7 +7,7 @@ import SecondaryButton from "../inputs/SecondaryButton";
 
 export default function Dialog({ icon, title, onCancel, cancelLabel, onConfirm, confirmLabel, children }) {
   return (
-    <div className={styles.dialogContainer}>
+    <form className={styles.dialogContainer} onSubmit={onConfirm}>
       <div className={styles.header}>
         {icon && <i className={classNames(styles.icon, "fas", icon)} />}
         <span>{title}</span>
@@ -16,10 +16,10 @@ export default function Dialog({ icon, title, onCancel, cancelLabel, onConfirm, 
       {(onConfirm || onCancel) && (
         <div className={styles.bottomNav}>
           {onCancel && <SecondaryButton onClick={onCancel}>{cancelLabel}</SecondaryButton>}
-          {onConfirm && <Button onClick={onConfirm}>{confirmLabel}</Button>}
+          {onConfirm && <Button type="submit">{confirmLabel}</Button>}
         </div>
       )}
-    </div>
+    </form>
   );
 }
 
