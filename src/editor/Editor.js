@@ -26,6 +26,7 @@ import cloneObject3D from "./utils/cloneObject3D";
 import isEmptyObject from "./utils/isEmptyObject";
 import { loadEnvironmentMap } from "./utils/EnvironmentMap";
 import { generateImageFileThumbnail, generateVideoFileThumbnail } from "./utils/thumbnails";
+import getIntersectingNode from "./utils/getIntersectingNode";
 
 export default class Editor {
   constructor(api) {
@@ -88,6 +89,10 @@ export default class Editor {
     this.signals.objectSelected.add(this.onObjectSelected);
 
     this.history = new History(this);
+
+    this.raycaster = new THREE.Raycaster();
+    // Center at 0, 0
+    this.centerScreenSpace = new THREE.Vector2();
   }
 
   onSceneGraphChanged = () => {
@@ -297,6 +302,28 @@ export default class Editor {
         reject(new Error(`Error creating glb blob. ${eventToMessage(e)}`));
       });
     });
+  }
+
+  getSpawnPosition(target) {
+    this.raycaster.setFromCamera(this.centerScreenSpace, this.camera);
+    const results = this.raycaster.intersectObject(this.scene, true);
+    const result = getIntersectingNode(results, this.scene);
+
+    if (result && result.distance < 1000) {
+      target.copy(result.point);
+    } else {
+      this.raycaster.ray.at(20, target);
+    }
+
+    if (this.viewport.spokeControls.snapEnabled) {
+      const translationSnap = this.viewport.spokeControls.translationSnap;
+
+      target.set(
+        Math.round(target.x / translationSnap) * translationSnap,
+        Math.round(target.y / translationSnap) * translationSnap,
+        Math.round(target.z / translationSnap) * translationSnap
+      );
+    }
   }
 
   addObject(object, parent) {
