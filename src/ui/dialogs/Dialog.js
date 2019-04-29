@@ -3,7 +3,6 @@ import PropTypes from "prop-types";
 import classNames from "classnames";
 import Button from "../inputs/Button";
 import styles from "./Dialog.scss";
-import SecondaryButton from "../inputs/SecondaryButton";
 
 export default function Dialog({ icon, title, onCancel, cancelLabel, onConfirm, confirmLabel, children }) {
   return (
@@ -15,7 +14,11 @@ export default function Dialog({ icon, title, onCancel, cancelLabel, onConfirm, 
       <div className={styles.content}>{children}</div>
       {(onConfirm || onCancel) && (
         <div className={styles.bottomNav}>
-          {onCancel && <SecondaryButton onClick={onCancel}>{cancelLabel}</SecondaryButton>}
+          {onCancel && (
+            <Button secondary onClick={onCancel}>
+              {cancelLabel}
+            </Button>
+          )}
           {onConfirm && <Button type="submit">{confirmLabel}</Button>}
         </div>
       )}
