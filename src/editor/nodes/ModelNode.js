@@ -150,6 +150,8 @@ export default class ModelNode extends EditorNodeMixin(Model) {
   }
 
   updateStaticModes() {
+    if (!this.model) return;
+
     setStaticMode(this.model, StaticModes.Static);
 
     if (this.animations.length > 0) {
