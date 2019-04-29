@@ -69,7 +69,7 @@ class LibraryContainer extends Component {
       api.addAssetToProject(editor.projectId, item.id).catch(console.error);
     }
 
-    editor.getCenterPosition(node.position);
+    editor.getSpawnPosition(node.position);
 
     editor.addObject(node);
   };

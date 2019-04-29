@@ -304,7 +304,7 @@ export default class Editor {
     });
   }
 
-  getCenterPosition(target) {
+  getSpawnPosition(target) {
     this.raycaster.setFromCamera(this.centerScreenSpace, this.camera);
     const results = this.raycaster.intersectObject(this.scene, true);
     const result = getIntersectingNode(results, this.scene);
