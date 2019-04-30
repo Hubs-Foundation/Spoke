@@ -11,6 +11,7 @@ export default class PhysicalSpotLight extends THREE.SpotLight {
     this.castShadow = true;
     this.innerConeAngle = 0;
     this.outerConeAngle = Math.PI / 4;
+    this.maxOuterConeAngle = Math.PI / 2;
     this.shadowMapResolution = createShadowMapResolutionProxy(this);
   }
 

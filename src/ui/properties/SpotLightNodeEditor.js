@@ -53,6 +53,7 @@ export default class SpotLightNodeEditor extends Component {
         <InputGroup name="Inner Cone Angle">
           <NumericInput
             min={0}
+            max={radToDeg(node.outerConeAngle)}
             value={node.innerConeAngle}
             onChange={this.onChangeInnerConeAngle}
             format={radToDeg}
@@ -61,7 +62,8 @@ export default class SpotLightNodeEditor extends Component {
         </InputGroup>
         <InputGroup name="Outer Cone Angle">
           <NumericInput
-            min={0}
+            min={radToDeg(node.innerConeAngle + 0.00001)}
+            max={radToDeg(node.maxOuterConeAngle)}
             value={node.outerConeAngle}
             onChange={this.onChangeOuterConeAngle}
             format={radToDeg}
