@@ -14,6 +14,7 @@ export TARGET_S3_URL=${11}
 export BUILD_NUMBER=${12}
 export GIT_COMMIT=${13}
 export BUILD_VERSION="${BUILD_NUMBER} (${GIT_COMMIT})"
+export SENTRY_LOG_LEVEL=debug
 
 # To build + push to S3 run:
 # hab studio run "bash scripts/hab-build-and-push.sh"
