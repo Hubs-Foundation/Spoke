@@ -39,8 +39,13 @@ pipeline {
           def corsProxyServer = env.CORS_PROXY_SERVER
           def nonCorsProxyDomains = env.NON_CORS_PROXY_DOMAINS
           def slackURL = env.SLACK_URL
+          def sentryDsn = env.SENTRY_DSN
+          def sentryAuthToken = env.SENTRY_AUTH_TOKEN
+          def sentryURL = env.SENTRY_URL
+          def sentryOrg = env.SENTRY_ORG
+          def sentryProject = env.SENTRY_PROJECT
 
-          def habCommand = "sudo /usr/bin/hab-docker-studio -k mozillareality run /bin/bash scripts/hab-build-and-push.sh \\\"${baseAssetsPath}\\\" \\\"${reticulumServer}\\\" \\\"${farsparkServer}\\\" \\\"${corsProxyServer}\\\" \\\"${nonCorsProxyDomains}\\\" \\\"${targetS3Url}\\\" \\\"${env.BUILD_NUMBER}\\\" \\\"${env.GIT_COMMIT}\\\""
+          def habCommand = "sudo /usr/bin/hab-docker-studio -k mozillareality run /bin/bash scripts/hab-build-and-push.sh \\\"${baseAssetsPath}\\\" \\\"${reticulumServer}\\\" \\\"${farsparkServer}\\\" \\\"${corsProxyServer}\\\" \\\"${nonCorsProxyDomains}\\\" \\\"${sentryDsn}\\\" \\\"${sentryAuthToken}\\\" \\\"${sentryURL}\\\" \\\"${sentryOrg}\\\" \\\"${sentryProject}\\\" \\\"${targetS3Url}\\\" \\\"${env.BUILD_NUMBER}\\\" \\\"${env.GIT_COMMIT}\\\""
           sh "/usr/bin/script --return -c ${shellString(habCommand)} /dev/null"
 
           def gitMessage = sh(returnStdout: true, script: "git log -n 1 --pretty=format:'[%an] %s'").trim()
