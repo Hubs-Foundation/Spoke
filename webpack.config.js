@@ -1,5 +1,6 @@
 // Variables in .env and .env.defaults will be added to process.env
 const dotenv = require("dotenv");
+
 if (process.env.NODE_ENV === "production") {
   dotenv.config({ path: ".env.prod" });
 } else {
@@ -12,13 +13,13 @@ const selfsigned = require("selfsigned");
 const cors = require("cors");
 const HTMLWebpackPlugin = require("html-webpack-plugin");
 const path = require("path");
-const packageJSON = require("./package.json");
 const webpack = require("webpack");
 const TerserJSPlugin = require("terser-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const OptimizeCSSAssetsPlugin = require("optimize-css-assets-webpack-plugin");
 const CopyWebpackPlugin = require("copy-webpack-plugin");
 const BundleAnalyzerPlugin = require("webpack-bundle-analyzer").BundleAnalyzerPlugin;
+const SentryCliPlugin = require("@sentry/webpack-plugin");
 
 function createHTTPSConfig() {
   // Generate certs for the local webpack-dev-server.
@@ -71,7 +72,7 @@ const defaultHostName = "hubs.local";
 const host = process.env.HOST_IP || defaultHostName;
 
 module.exports = env => {
-  return {
+  const config = {
     entry: {
       entry: ["./src/index.js"]
     },
@@ -240,10 +241,8 @@ module.exports = env => {
         template: path.join(__dirname, "src", "index.html"),
         faviconPath: (process.env.BASE_ASSETS_PATH || "/") + "assets/images/favicon-spoke.ico"
       }),
-      new webpack.DefinePlugin({
-        SPOKE_VERSION: JSON.stringify(packageJSON.version)
-      }),
       new webpack.EnvironmentPlugin({
+        BUILD_VERSION: "dev",
         NODE_ENV: "development",
         RETICULUM_SERVER: undefined,
         FARSPARK_SERVER: undefined,
@@ -251,7 +250,8 @@ module.exports = env => {
         CORS_PROXY_SERVER: null,
         BASE_ASSETS_PATH: "",
         NON_CORS_PROXY_DOMAINS: "",
-        ROUTER_BASE_PATH: ""
+        ROUTER_BASE_PATH: "",
+        SENTRY_DSN: undefined
       }),
       new webpack.IgnorePlugin({
         resourceRegExp: /^@blueprintjs\/core/
@@ -262,4 +262,15 @@ module.exports = env => {
       })
     ]
   };
+
+  if (process.env.SENTRY_AUTH_TOKEN) {
+    config.plugins.push(
+      new SentryCliPlugin({
+        include: path.join(__dirname, "dist"),
+        release: process.env.BUILD_VERSION
+      })
+    );
+  }
+
+  return config;
 };
