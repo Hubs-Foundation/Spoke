@@ -19,7 +19,6 @@ const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const OptimizeCSSAssetsPlugin = require("optimize-css-assets-webpack-plugin");
 const CopyWebpackPlugin = require("copy-webpack-plugin");
 const BundleAnalyzerPlugin = require("webpack-bundle-analyzer").BundleAnalyzerPlugin;
-const SentryCliPlugin = require("@sentry/webpack-plugin");
 
 function createHTTPSConfig() {
   // Generate certs for the local webpack-dev-server.
@@ -72,7 +71,7 @@ const defaultHostName = "hubs.local";
 const host = process.env.HOST_IP || defaultHostName;
 
 module.exports = env => {
-  const config = {
+  return {
     entry: {
       entry: ["./src/index.js"]
     },
@@ -242,7 +241,7 @@ module.exports = env => {
         faviconPath: (process.env.BASE_ASSETS_PATH || "/") + "assets/images/favicon-spoke.ico"
       }),
       new webpack.EnvironmentPlugin({
-        BUILD_NUMBER: "dev",
+        BUILD_VERSION: "dev",
         NODE_ENV: "development",
         RETICULUM_SERVER: undefined,
         FARSPARK_SERVER: undefined,
@@ -262,15 +261,4 @@ module.exports = env => {
       })
     ]
   };
-
-  if (process.env.SENTRY_AUTH_TOKEN) {
-    config.plugins.push(
-      new SentryCliPlugin({
-        include: path.join(__dirname, "dist"),
-        release: process.env.BUILD_NUMBER
-      })
-    );
-  }
-
-  return config;
 };

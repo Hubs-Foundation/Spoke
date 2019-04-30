@@ -7,12 +7,12 @@ import Api from "./api/Api";
 if (process.env.SENTRY_DSN) {
   Sentry.init({
     dsn: process.env.SENTRY_DSN,
-    release: process.env.BUILD_NUMBER
+    release: process.env.BUILD_VERSION
   });
 }
 
 // eslint-disable-next-line no-undef
-console.log(`Spoke version: ${process.env.BUILD_NUMBER}`);
+console.log(`Spoke version: ${process.env.BUILD_VERSION}`);
 
 const api = new Api();
 
