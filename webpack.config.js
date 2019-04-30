@@ -242,7 +242,7 @@ module.exports = env => {
         faviconPath: (process.env.BASE_ASSETS_PATH || "/") + "assets/images/favicon-spoke.ico"
       }),
       new webpack.EnvironmentPlugin({
-        BUILD_VERSION: "dev",
+        BUILD_NUMBER: "dev",
         NODE_ENV: "development",
         RETICULUM_SERVER: undefined,
         FARSPARK_SERVER: undefined,
@@ -267,7 +267,7 @@ module.exports = env => {
     config.plugins.push(
       new SentryCliPlugin({
         include: path.join(__dirname, "dist"),
-        release: process.env.BUILD_VERSION
+        release: process.env.BUILD_NUMBER
       })
     );
   }
