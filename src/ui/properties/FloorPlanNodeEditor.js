@@ -65,26 +65,26 @@ class FloorPlanNodeEditor extends Component {
         </InputGroup>
         {!node.autoCellSize && (
           <InputGroup name="Cell Size">
-            <NumericInput value={node.cellSize} precision={0.0001} onChange={this.onChangeCellSize} />
+            <NumericInput value={node.cellSize} min={0.1} precision={0.0001} onChange={this.onChangeCellSize} />
           </InputGroup>
         )}
         <InputGroup name="Cell Height">
-          <NumericInput value={node.cellHeight} onChange={this.onChangeCellHeight} />
+          <NumericInput value={node.cellHeight} min={0.1} onChange={this.onChangeCellHeight} />
         </InputGroup>
         <InputGroup name="Agent Height">
-          <NumericInput value={node.agentHeight} onChange={this.onChangeAgentHeight} />
+          <NumericInput value={node.agentHeight} min={0.1} onChange={this.onChangeAgentHeight} />
         </InputGroup>
         <InputGroup name="Agent Radius">
-          <NumericInput value={node.agentRadius} onChange={this.onChangeAgentRadius} />
+          <NumericInput value={node.agentRadius} min={0} onChange={this.onChangeAgentRadius} />
         </InputGroup>
         <InputGroup name="Maximum Step Height">
-          <NumericInput value={node.agentMaxClimb} onChange={this.onChangeAgentMaxClimb} />
+          <NumericInput value={node.agentMaxClimb} min={0} onChange={this.onChangeAgentMaxClimb} />
         </InputGroup>
         <InputGroup name="Maximum Slope">
-          <NumericInput value={node.agentMaxSlope} onChange={this.onChangeAgentMaxSlope} />
+          <NumericInput value={node.agentMaxSlope} min={0.00001} max={90} onChange={this.onChangeAgentMaxSlope} />
         </InputGroup>
         <InputGroup name="Minimum Region Area">
-          <NumericInput value={node.regionMinSize} onChange={this.onChangeRegionMinSize} />
+          <NumericInput value={node.regionMinSize} min={0.1} onChange={this.onChangeRegionMinSize} />
         </InputGroup>
         <Button className={styles.regenerateButton} onClick={this.onRegenerate}>
           Regenerate
