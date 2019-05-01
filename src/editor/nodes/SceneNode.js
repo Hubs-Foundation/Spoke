@@ -135,7 +135,9 @@ export default class SceneNode extends EditorNodeMixin(THREE.Scene) {
 
   static disableTransform = true;
 
-  static canCreate = false;
+  static canAddNode() {
+    return false;
+  }
 
   static async loadProject(editor, json, onProgress) {
     if (!json.version) {

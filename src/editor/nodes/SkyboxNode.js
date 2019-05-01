@@ -11,6 +11,10 @@ export default class SkyboxNode extends EditorNodeMixin(Sky) {
 
   static nodeName = "Skybox";
 
+  static canAddNode(editor) {
+    return editor.scene.findNodeByType(SkyboxNode) === null;
+  }
+
   static async deserialize(editor, json) {
     const node = await super.deserialize(editor, json);
 

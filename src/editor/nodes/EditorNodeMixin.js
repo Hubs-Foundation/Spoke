@@ -16,9 +16,11 @@ export default function EditorNodeMixin(Object3DClass) {
 
     static disableTransform = false;
 
-    static canCreate = true;
-
     static ignoreRaycast = false;
+
+    static canAddNode(_editor) {
+      return true;
+    }
 
     static async load() {
       return Promise.resolve();

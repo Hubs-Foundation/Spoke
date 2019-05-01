@@ -127,6 +127,10 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
 
   static disableTransform = true;
 
+  static canAddNode(editor) {
+    return editor.scene.findNodeByType(FloorPlanNode) === null;
+  }
+
   static load() {
     // Recast() doesn't actually return a promise so we wrap it in one.
     return new Promise(resolve => {

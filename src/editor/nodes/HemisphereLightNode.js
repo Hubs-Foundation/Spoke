@@ -8,6 +8,10 @@ export default class HemisphereLightNode extends EditorNodeMixin(PhysicalHemisph
 
   static nodeName = "Hemisphere Light";
 
+  static canAddNode(editor) {
+    return editor.scene.findNodeByType(HemisphereLightNode) === null;
+  }
+
   static async deserialize(editor, json) {
     const node = await super.deserialize(editor, json);
 
