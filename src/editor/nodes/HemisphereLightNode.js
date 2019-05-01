@@ -4,7 +4,7 @@ import PhysicalHemisphereLight from "../objects/PhysicalHemisphereLight";
 export default class HemisphereLightNode extends EditorNodeMixin(PhysicalHemisphereLight) {
   static legacyComponentName = "hemisphere-light";
 
-  static hideTransform = true;
+  static disableTransform = true;
 
   static nodeName = "Hemisphere Light";
 

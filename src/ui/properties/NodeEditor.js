@@ -14,11 +14,11 @@ export default class NodeEditor extends Component {
     node: PropTypes.object,
     editor: PropTypes.object,
     children: PropTypes.node,
-    hideTransform: PropTypes.bool
+    disableTransform: PropTypes.bool
   };
 
   static defaultProps = {
-    hideTransform: false
+    disableTransform: false
   };
 
   onChangeVisible = value => {
@@ -39,7 +39,7 @@ export default class NodeEditor extends Component {
               </InputGroup>
             )}
           </div>
-          {!node.hideTransform && <TransformPropertyGroup node={node} editor={editor} />}
+          {!node.disableTransform && <TransformPropertyGroup node={node} editor={editor} />}
         </div>
         <PropertyGroup name={node.nodeName} description={description}>
           {children}

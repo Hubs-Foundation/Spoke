@@ -125,7 +125,7 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
 
   static legacyComponentName = "floor-plan";
 
-  static hideTransform = true;
+  static disableTransform = true;
 
   static load() {
     // Recast() doesn't actually return a promise so we wrap it in one.

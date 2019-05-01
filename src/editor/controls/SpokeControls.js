@@ -195,7 +195,7 @@ export default class SpokeControls {
         editorSelection !== null &&
         editorSelection !== this.editor.scene &&
         editorSelection !== this.camera &&
-        !(editorSelection.constructor && editorSelection.constructor.hideTransform)
+        !(editorSelection.constructor && editorSelection.constructor.disableTransform)
       ) {
         transformControls.object = editorSelection;
       } else {

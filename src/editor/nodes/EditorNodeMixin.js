@@ -14,7 +14,7 @@ export default function EditorNodeMixin(Object3DClass) {
   return class extends Object3DClass {
     static nodeName = "Unknown Node";
 
-    static hideTransform = false;
+    static disableTransform = false;
 
     static canCreate = true;
 
@@ -61,7 +61,7 @@ export default function EditorNodeMixin(Object3DClass) {
       this.name = this.constructor.nodeName;
       this.isNode = true;
       this.isCollapsed = false;
-      this.hideTransform = this.constructor.hideTransform;
+      this.disableTransform = this.constructor.disableTransform;
       this.ignoreRaycast = this.constructor.ignoreRaycast;
 
       this.staticMode = StaticModes.Inherits;

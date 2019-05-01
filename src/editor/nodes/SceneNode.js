@@ -133,7 +133,7 @@ function migrateV3ToV4(json) {
 export default class SceneNode extends EditorNodeMixin(THREE.Scene) {
   static nodeName = "Scene";
 
-  static hideTransform = true;
+  static disableTransform = true;
 
   static canCreate = false;
 
