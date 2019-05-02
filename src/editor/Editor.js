@@ -504,7 +504,7 @@ export default class Editor {
   }
 
   duplicateObject(object) {
-    if (object === this.scene) {
+    if (!object.constructor.canAddNode(this)) {
       return;
     }
 

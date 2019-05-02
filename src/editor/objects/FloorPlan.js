@@ -18,6 +18,7 @@ export default class FloorPlan extends THREE.Object3D {
     }
 
     this.navMesh = object;
+    this.navMesh.layers.set(1);
   }
 
   copy(source, recursive) {

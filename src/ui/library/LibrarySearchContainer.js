@@ -128,11 +128,12 @@ class LibrarySearchContainer extends Component {
       if (this.props.onAfterUpload) {
         this.props.onAfterUpload(items);
       }
-    } catch (err) {
-      console.error(err);
+    } catch (error) {
+      console.error(error);
       showDialog(ErrorDialog, {
         title: "Upload Error",
-        message: `Error uploading file: ${err.message || "There was an unknown error."}`
+        message: `Error uploading file: ${error.message || "There was an unknown error."}`,
+        error
       });
     }
   };

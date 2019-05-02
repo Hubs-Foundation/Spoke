@@ -4,7 +4,7 @@ import classNames from "classnames";
 import Button from "../inputs/Button";
 import styles from "./Dialog.scss";
 
-export default function Dialog({ icon, title, onCancel, cancelLabel, onConfirm, confirmLabel, children }) {
+export default function Dialog({ icon, title, onCancel, cancelLabel, onConfirm, confirmLabel, bottomNav, children }) {
   return (
     <form className={styles.dialogContainer} onSubmit={onConfirm}>
       <div className={styles.header}>
@@ -12,8 +12,9 @@ export default function Dialog({ icon, title, onCancel, cancelLabel, onConfirm, 
         <span>{title}</span>
       </div>
       <div className={styles.content}>{children}</div>
-      {(onConfirm || onCancel) && (
+      {(onConfirm || onCancel || bottomNav) && (
         <div className={styles.bottomNav}>
+          {bottomNav}
           {onCancel && (
             <Button secondary onClick={onCancel}>
               {cancelLabel}
@@ -33,6 +34,7 @@ Dialog.propTypes = {
   cancelLabel: PropTypes.string.isRequired,
   onConfirm: PropTypes.func,
   confirmLabel: PropTypes.string.isRequired,
+  bottomNav: PropTypes.node,
   children: PropTypes.node
 };
 

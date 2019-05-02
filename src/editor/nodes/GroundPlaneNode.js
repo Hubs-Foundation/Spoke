@@ -7,6 +7,10 @@ export default class GroundPlaneNode extends EditorNodeMixin(GroundPlane) {
 
   static nodeName = "Ground Plane";
 
+  static canAddNode(editor) {
+    return editor.scene.findNodeByType(GroundPlaneNode) === null;
+  }
+
   static async deserialize(editor, json) {
     const node = await super.deserialize(editor, json);
 

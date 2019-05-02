@@ -5,11 +5,15 @@ import Sky from "../objects/Sky";
 export default class SkyboxNode extends EditorNodeMixin(Sky) {
   static legacyComponentName = "skybox";
 
-  static hideTransform = true;
+  static disableTransform = true;
 
   static ignoreRaycast = true;
 
   static nodeName = "Skybox";
+
+  static canAddNode(editor) {
+    return editor.scene.findNodeByType(SkyboxNode) === null;
+  }
 
   static async deserialize(editor, json) {
     const node = await super.deserialize(editor, json);

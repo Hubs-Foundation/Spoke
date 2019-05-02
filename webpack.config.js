@@ -185,15 +185,12 @@ module.exports = env => {
             // Workers must be inlined because they are hosted on a CDN and CORS doesn't permit us
             // from loading worker scripts from another origin. To minimize bundle size, dynamically
             // import a wrapper around the worker. See SketchfabZipLoader.js and API.js for an example.
-            name: "assets/js/workers/[name]-[hash].js",
-            inline: true,
-            fallback: false
+            name: "assets/js/workers/[name]-[hash].js"
           }
         },
         {
           test: /\.wasm$/,
           type: "javascript/auto",
-          include: path.join(__dirname, "src"),
           use: {
             loader: "file-loader",
             options: {
@@ -203,6 +200,14 @@ module.exports = env => {
           }
         }
       ]
+    },
+
+    target: "web",
+    node: {
+      __dirname: false,
+      fs: "empty",
+      Buffer: false,
+      process: false
     },
 
     resolve: {
@@ -250,7 +255,7 @@ module.exports = env => {
         BASE_ASSETS_PATH: "",
         NON_CORS_PROXY_DOMAINS: "",
         ROUTER_BASE_PATH: "",
-        SENTRY_DSN: undefined
+        SENTRY_DSN: null
       }),
       new webpack.IgnorePlugin({
         resourceRegExp: /^@blueprintjs\/core/

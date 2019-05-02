@@ -6,7 +6,11 @@ export default class AmbientLightNode extends EditorNodeMixin(THREE.AmbientLight
 
   static nodeName = "Ambient Light";
 
-  static hideTransform = true;
+  static disableTransform = true;
+
+  static canAddNode(editor) {
+    return editor.scene.findNodeByType(AmbientLightNode) === null;
+  }
 
   static async deserialize(editor, json) {
     const node = await super.deserialize(editor, json);

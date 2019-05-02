@@ -4,9 +4,13 @@ import PhysicalHemisphereLight from "../objects/PhysicalHemisphereLight";
 export default class HemisphereLightNode extends EditorNodeMixin(PhysicalHemisphereLight) {
   static legacyComponentName = "hemisphere-light";
 
-  static hideTransform = true;
+  static disableTransform = true;
 
   static nodeName = "Hemisphere Light";
+
+  static canAddNode(editor) {
+    return editor.scene.findNodeByType(HemisphereLightNode) === null;
+  }
 
   static async deserialize(editor, json) {
     const node = await super.deserialize(editor, json);

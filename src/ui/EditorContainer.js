@@ -270,10 +270,11 @@ class EditorContainer extends Component {
    * Scene Event Handlers
    */
 
-  onEditorError = e => {
+  onEditorError = error => {
     this.showDialog(ErrorDialog, {
-      title: e.title || "Error",
-      message: e.message || "There was an unknown error."
+      title: error.title || "Error",
+      message: error.message || "There was an unknown error.",
+      error
     });
   };
 
@@ -338,12 +339,13 @@ class EditorContainer extends Component {
       }
 
       this.hideDialog();
-    } catch (e) {
-      console.error(e);
+    } catch (error) {
+      console.error(error);
 
       this.showDialog(ErrorDialog, {
         title: "Error loading project.",
-        message: e.message || "There was an error when loading the project."
+        message: error.message || "There was an error when loading the project.",
+        error
       });
     }
   }
@@ -396,12 +398,12 @@ class EditorContainer extends Component {
       editor.sceneModified = false;
 
       this.hideDialog();
-    } catch (e) {
-      console.error(e);
+    } catch (error) {
+      console.error(error);
 
       this.showDialog(ErrorDialog, {
         title: "Error Saving Project",
-        message: e.message || "There was an error when saving the project."
+        message: error.message || "There was an error when saving the project."
       });
     }
   };
@@ -425,12 +427,13 @@ class EditorContainer extends Component {
       document.body.appendChild(el);
       el.click();
       document.body.removeChild(el);
-    } catch (e) {
-      console.error(e);
+    } catch (error) {
+      console.error(error);
 
       this.showDialog(ErrorDialog, {
         title: "Error Exporting Project",
-        message: e.message || "There was an error when exporting the project."
+        message: error.message || "There was an error when exporting the project.",
+        error
       });
     }
   };
@@ -488,11 +491,12 @@ class EditorContainer extends Component {
       }
 
       await this.props.api.publishProject(editor.projectId, editor, this.showDialog, this.hideDialog);
-    } catch (e) {
-      console.error(e);
+    } catch (error) {
+      console.error(error);
       this.showDialog(ErrorDialog, {
         title: "Error Publishing Project",
-        message: e.message || "There was an unknown error."
+        message: error.message || "There was an unknown error.",
+        error
       });
     }
   };

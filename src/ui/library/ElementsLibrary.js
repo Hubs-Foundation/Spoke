@@ -12,6 +12,18 @@ class ElementsLibrary extends Component {
     tooltipId: PropTypes.string
   };
 
+  componentDidMount() {
+    this.props.editor.signals.sceneGraphChanged.add(this.onSceneGraphChanged);
+  }
+
+  componentWillUnmount() {
+    this.props.editor.signals.sceneGraphChanged.remove(this.onSceneGraphChanged);
+  }
+
+  onSceneGraphChanged = () => {
+    this.forceUpdate();
+  };
+
   onSelect = item => {
     this.props.onSelectItem(item.node);
   };
@@ -27,7 +39,7 @@ class ElementsLibrary extends Component {
     const { editor, settings, tooltipId } = this.props;
 
     const items = Array.from(editor.nodeTypes).reduce((acc, nodeType) => {
-      if (!nodeType.canCreate) {
+      if (!nodeType.canAddNode(editor)) {
         return acc;
       }
 
