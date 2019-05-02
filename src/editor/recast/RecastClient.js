@@ -25,22 +25,34 @@ export default class RecastClient {
     this.working = false;
   }
 
-  async buildNavMesh(verts, faces, params, generateHeightfield) {
+  async buildNavMesh(verts, faces, params, generateHeightfield, signal) {
     if (this.working) {
       throw new Error("Already building nav mesh");
     }
 
+    this.working = true;
+
     const navMeshPromise = new Promise((resolve, reject) => {
       let onMessage = null;
       let onError = null;
+      let onAbort = null;
 
       const cleanUp = () => {
+        signal.removeEventListener("abort", onAbort);
         this.worker.removeEventListener("message", onMessage);
         this.worker.removeEventListener("message", onError);
+        this.working = false;
       };
 
       onMessage = event => {
         resolve(event.data);
+        cleanUp();
+      };
+
+      onAbort = () => {
+        this.worker.terminate();
+        this.worker = new RecastWorker();
+        reject(new Error("Canceled navmesh generation."));
         cleanUp();
       };
 
@@ -49,6 +61,7 @@ export default class RecastClient {
         cleanUp();
       };
 
+      signal.addEventListener("abort", onAbort);
       this.worker.addEventListener("message", onMessage);
       this.worker.addEventListener("error", onError);
     });

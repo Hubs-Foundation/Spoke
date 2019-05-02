@@ -255,7 +255,7 @@ module.exports = env => {
         BASE_ASSETS_PATH: "",
         NON_CORS_PROXY_DOMAINS: "",
         ROUTER_BASE_PATH: "",
-        SENTRY_DSN: undefined
+        SENTRY_DSN: null
       }),
       new webpack.IgnorePlugin({
         resourceRegExp: /^@blueprintjs\/core/

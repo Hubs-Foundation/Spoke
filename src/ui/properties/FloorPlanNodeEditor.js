@@ -36,21 +36,29 @@ class FloorPlanNodeEditor extends Component {
   }
 
   onRegenerate = async () => {
+    const abortController = new AbortController();
+
     this.props.showDialog(ProgressDialog, {
       title: "Generating Floor Plan",
-      message: "Generating floor plan..."
+      message: "Generating floor plan...",
+      cancelable: true,
+      onCancel: () => abortController.abort()
     });
 
-    console.log("show dialog");
-
     try {
-      await this.props.node.generate();
+      await this.props.node.generate(abortController.signal);
       this.props.hideDialog();
-    } catch (e) {
-      console.error(e);
+    } catch (error) {
+      if (error.message && error.message.startsWith("Canceled")) {
+        this.props.hideDialog();
+        return;
+      }
+
+      console.error(error);
       this.props.showDialog(ErrorDialog, {
         title: "Error Generating Floor Plan",
-        message: e.message || "There was an unknown error."
+        message: error.message || "There was an unknown error.",
+        error
       });
     }
   };

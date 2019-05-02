@@ -70,7 +70,7 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
     }
   }
 
-  async generateNavGeometry(geometry, generateHeightfield = false) {
+  async generateNavGeometry(geometry, generateHeightfield, signal) {
     if (!geometry.attributes.position || geometry.attributes.position.count === 0) {
       const emptyGeometry = new THREE.BufferGeometry();
       emptyGeometry.setIndex([]);
@@ -112,11 +112,12 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
         agentMaxSlope: this.agentMaxSlope,
         regionMinSize: this.regionMinSize
       },
-      generateHeightfield
+      generateHeightfield,
+      signal
     );
   }
 
-  async generate() {
+  async generate(signal) {
     const collidableMeshes = [];
     const walkableMeshes = [];
 
@@ -161,7 +162,7 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
     }
 
     const walkableGeometry = mergeMeshGeometries(walkableMeshes);
-    const { navmesh } = await this.generateNavGeometry(walkableGeometry);
+    const { navmesh } = await this.generateNavGeometry(walkableGeometry, false, signal);
     const navMesh = new THREE.Mesh(navmesh, new THREE.MeshBasicMaterial({ color: 0x0000ff }));
 
     if (this.editor.selected !== this) {
@@ -171,7 +172,7 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
     this.setNavMesh(navMesh);
 
     const heightfieldGeometry = mergeMeshGeometries(collidableMeshes);
-    const { heightfield } = await this.generateNavGeometry(heightfieldGeometry, true);
+    const { heightfield } = await this.generateNavGeometry(heightfieldGeometry, true, signal);
     this.heightfield = heightfield;
 
     return this;
