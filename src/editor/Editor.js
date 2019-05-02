@@ -185,13 +185,13 @@ export default class Editor {
     this.sceneModified = false;
   }
 
-  async exportScene() {
+  async exportScene(signal) {
     const scene = this.scene;
 
     const floorPlanNode = scene.findNodeByType(FloorPlanNode);
 
     if (floorPlanNode) {
-      await floorPlanNode.generate();
+      await floorPlanNode.generate(signal);
     }
 
     const clonedScene = cloneObject3D(scene, true);

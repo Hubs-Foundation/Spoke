@@ -52,7 +52,9 @@ export default class RecastClient {
       onAbort = () => {
         this.worker.terminate();
         this.worker = new RecastWorker();
-        reject(new Error("Canceled navmesh generation."));
+        const error = new Error("Canceled navmesh generation.");
+        error.aborted = true;
+        reject(error);
         cleanUp();
       };
 

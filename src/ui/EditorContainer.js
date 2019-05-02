@@ -271,6 +271,11 @@ class EditorContainer extends Component {
    */
 
   onEditorError = error => {
+    if (error.aborted) {
+      this.hideDialog();
+      return;
+    }
+
     this.showDialog(ErrorDialog, {
       title: error.title || "Error",
       message: error.message || "There was an unknown error.",
@@ -409,15 +414,19 @@ class EditorContainer extends Component {
   };
 
   onExportProject = async () => {
+    const abortController = new AbortController();
+
     this.showDialog(ProgressDialog, {
       title: "Exporting Project",
-      message: "Exporting project..."
+      message: "Exporting project...",
+      cancelable: true,
+      onCancel: () => abortController.abort()
     });
 
     try {
       const editor = this.state.editor;
 
-      const glbBlob = await editor.exportScene();
+      const glbBlob = await editor.exportScene(abortController.signal);
 
       this.hideDialog();
 
@@ -428,6 +437,11 @@ class EditorContainer extends Component {
       el.click();
       document.body.removeChild(el);
     } catch (error) {
+      if (error.aborted) {
+        this.hideDialog();
+        return;
+      }
+
       console.error(error);
 
       this.showDialog(ErrorDialog, {
@@ -492,6 +506,11 @@ class EditorContainer extends Component {
 
       await this.props.api.publishProject(editor.projectId, editor, this.showDialog, this.hideDialog);
     } catch (error) {
+      if (error.aborted) {
+        this.hideDialog();
+        return;
+      }
+
       console.error(error);
       this.showDialog(ErrorDialog, {
         title: "Error Publishing Project",

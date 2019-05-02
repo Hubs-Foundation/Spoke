@@ -481,11 +481,24 @@ export default class Project extends EventEmitter {
       });
     }
 
+    if (signal.aborted) {
+      throw new Error("Save project aborted");
+    }
+
     const { blob: thumbnailBlob } = await editor.takeScreenshot(512, 320);
+
+    if (signal.aborted) {
+      throw new Error("Save project aborted");
+    }
+
     const {
       file_id: thumbnail_file_id,
       meta: { access_token: thumbnail_file_token }
     } = await this.upload(thumbnailBlob, undefined, signal);
+
+    if (signal.aborted) {
+      throw new Error("Save project aborted");
+    }
 
     const serializedScene = editor.scene.serialize();
     const projectBlob = new Blob([JSON.stringify(serializedScene)], { type: "application/json" });
@@ -493,6 +506,10 @@ export default class Project extends EventEmitter {
       file_id: project_file_id,
       meta: { access_token: project_file_token }
     } = await this.upload(projectBlob, undefined, signal);
+
+    if (signal.aborted) {
+      throw new Error("Save project aborted");
+    }
 
     const token = this.getToken();
 
@@ -514,6 +531,10 @@ export default class Project extends EventEmitter {
     const projectEndpoint = `https://${RETICULUM_SERVER}/api/v1/projects/${projectId}`;
 
     const resp = await this.fetch(projectEndpoint, { method: "PATCH", headers, body, signal });
+
+    if (signal.aborted) {
+      throw new Error("Save project aborted");
+    }
 
     if (resp.status === 401) {
       return await new Promise((resolve, reject) => {
@@ -552,6 +573,7 @@ export default class Project extends EventEmitter {
       const scene = editor.scene;
 
       const abortController = new AbortController();
+      const signal = abortController.signal;
 
       // Save the scene if it has been modified.
       if (editor.sceneModified) {
@@ -564,7 +586,13 @@ export default class Project extends EventEmitter {
           }
         });
 
-        await this.saveProject(projectId, editor, abortController.signal, showDialog, hideDialog);
+        await this.saveProject(projectId, editor, signal, showDialog, hideDialog);
+
+        if (signal.aborted) {
+          const error = new Error("Publish project aborted");
+          error.aborted = true;
+          throw error;
+        }
       }
 
       // Ensure the user is authenticated before continuing.
@@ -579,6 +607,12 @@ export default class Project extends EventEmitter {
       // Take a screenshot of the scene from the current camera position to use as the thumbnail
       const { blob: screenshotBlob, cameraTransform: screenshotCameraTransform } = await editor.takeScreenshot();
       screenshotUrl = URL.createObjectURL(screenshotBlob);
+
+      if (signal.aborted) {
+        const error = new Error("Publish project aborted");
+        error.aborted = true;
+        throw error;
+      }
 
       // Gather all the info needed to display the publish dialog
       const { name, creatorAttribution, allowRemixing, allowPromotion, sceneId } = scene.metadata;
@@ -640,7 +674,13 @@ export default class Project extends EventEmitter {
       });
 
       // Clone the existing scene, process it for exporting, and then export as a glb blob
-      const glbBlob = await editor.exportScene();
+      const glbBlob = await editor.exportScene(abortController.signal);
+
+      if (signal.aborted) {
+        const error = new Error("Publish project aborted");
+        error.aborted = true;
+        throw error;
+      }
 
       // Serialize Spoke scene
       const serializedScene = editor.scene.serialize();
@@ -676,6 +716,12 @@ export default class Project extends EventEmitter {
         meta: { access_token: screenshotToken }
       } = await this.upload(screenshotBlob, undefined, abortController.signal);
 
+      if (signal.aborted) {
+        const error = new Error("Publish project aborted");
+        error.aborted = true;
+        throw error;
+      }
+
       const {
         file_id: glbId,
         meta: { access_token: glbToken }
@@ -693,10 +739,22 @@ export default class Project extends EventEmitter {
         );
       });
 
+      if (signal.aborted) {
+        const error = new Error("Publish project aborted");
+        error.aborted = true;
+        throw error;
+      }
+
       const {
         file_id: sceneFileId,
         meta: { access_token: sceneFileToken }
       } = await this.upload(sceneBlob, undefined, abortController.signal);
+
+      if (signal.aborted) {
+        const error = new Error("Publish project aborted");
+        error.aborted = true;
+        throw error;
+      }
 
       const sceneParams = {
         screenshot_file_id: screenshotId,
@@ -731,6 +789,12 @@ export default class Project extends EventEmitter {
 
       const resp = await this.fetch(sceneEndpoint, { method, headers, body });
 
+      if (signal.aborted) {
+        const error = new Error("Publish project aborted");
+        error.aborted = true;
+        throw error;
+      }
+
       if (resp.status === 401) {
         return await new Promise((resolve, reject) => {
           showDialog(LoginDialog, {
@@ -759,6 +823,12 @@ export default class Project extends EventEmitter {
 
       await this.saveProject(projectId, editor, abortController.signal, showDialog, hideDialog);
 
+      if (signal.aborted) {
+        const error = new Error("Publish project aborted");
+        error.aborted = true;
+        throw error;
+      }
+
       showDialog(PublishedSceneDialog, {
         sceneName: sceneParams.name,
         screenshotUrl,
@@ -783,6 +853,7 @@ export default class Project extends EventEmitter {
         request.abort();
         const error = new Error("Upload aborted");
         error.name = "AbortError";
+        error.aborted = true;
         reject(error);
       };
 
@@ -888,33 +959,27 @@ export default class Project extends EventEmitter {
     const assets = [];
 
     for (const file of Array.from(files)) {
-      try {
-        if (signal.aborted) {
-          break;
-        }
+      if (signal.aborted) {
+        break;
+      }
 
-        const abortController = new AbortController();
-        const onAbort = () => abortController.abort();
-        signal.addEventListener("abort", onAbort);
+      const abortController = new AbortController();
+      const onAbort = () => abortController.abort();
+      signal.addEventListener("abort", onAbort);
 
-        const asset = await this._uploadAsset(
-          endpoint,
-          editor,
-          file,
-          progress => onProgress(assets.length + 1, files.length, progress),
-          abortController.signal
-        );
+      const asset = await this._uploadAsset(
+        endpoint,
+        editor,
+        file,
+        progress => onProgress(assets.length + 1, files.length, progress),
+        abortController.signal
+      );
 
-        assets.push(asset);
-        signal.removeEventListener("abort", onAbort);
+      assets.push(asset);
+      signal.removeEventListener("abort", onAbort);
 
-        if (signal.aborted) {
-          break;
-        }
-      } catch (error) {
-        if (error.name !== "AbortError") {
-          throw error;
-        }
+      if (signal.aborted) {
+        break;
       }
     }
 

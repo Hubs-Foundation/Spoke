@@ -49,7 +49,7 @@ class FloorPlanNodeEditor extends Component {
       await this.props.node.generate(abortController.signal);
       this.props.hideDialog();
     } catch (error) {
-      if (error.message && error.message.startsWith("Canceled")) {
+      if (error.aborted) {
         this.props.hideDialog();
         return;
       }
