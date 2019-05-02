@@ -87,7 +87,7 @@ const defaultParams = {
 const recast = Recast({
   locateFile(path) {
     if (path.endsWith(".wasm")) {
-      return recastWasmUrl;
+      return new URL(recastWasmUrl, process.env.BASE_ASSETS_PATH || "https://hubs.local:9090").href;
     }
   }
 });
