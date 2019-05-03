@@ -360,7 +360,6 @@ const steps = [
             Before you navigate away from the page you&#39;ll want to save your work. You can do this by opening the
             menu and clicking Save Project or by pressing {cmdOrCtrlString} + S.
           </p>
-          <img src={snappingImage} />
           <Well>
             <HotkeyDescription action="Save Project">
               <div>{cmdOrCtrlString}</div>
