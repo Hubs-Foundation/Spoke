@@ -5,7 +5,13 @@ import ProgressBar from "../ui/inputs/ProgressBar";
 
 export default class AuthEmailSentMessage extends Component {
   static propTypes = {
-    email: PropTypes.string.isRequired
+    email: PropTypes.string.isRequired,
+    onCancel: PropTypes.func.isRequired
+  };
+
+  onCancel = e => {
+    e.preventDefault();
+    this.props.onCancel();
   };
 
   render() {
@@ -15,6 +21,11 @@ export default class AuthEmailSentMessage extends Component {
         <p>Waiting for you to click on the link sent to {this.props.email}</p>
         <strong>Don&#39;t close this browser tab or you may lose your work!</strong>
         <ProgressBar />
+        <div>
+          <a href="#" onClick={this.onCancel}>
+            Cancel
+          </a>
+        </div>
       </div>
     );
   }

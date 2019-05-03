@@ -4,9 +4,21 @@ import classNames from "classnames";
 import Button from "../inputs/Button";
 import styles from "./Dialog.scss";
 
-export default function Dialog({ icon, title, onCancel, cancelLabel, onConfirm, confirmLabel, bottomNav, children }) {
+export default function Dialog({
+  tag,
+  icon,
+  title,
+  onCancel,
+  cancelLabel,
+  onConfirm,
+  confirmLabel,
+  bottomNav,
+  children
+}) {
+  const DialogElement = tag;
+
   return (
-    <form className={styles.dialogContainer} onSubmit={onConfirm}>
+    <DialogElement className={styles.dialogContainer} onSubmit={onConfirm}>
       <div className={styles.header}>
         {icon && <i className={classNames(styles.icon, "fas", icon)} />}
         <span>{title}</span>
@@ -20,14 +32,19 @@ export default function Dialog({ icon, title, onCancel, cancelLabel, onConfirm, 
               {cancelLabel}
             </Button>
           )}
-          {onConfirm && <Button type="submit">{confirmLabel}</Button>}
+          {onConfirm && (
+            <Button type="submit" onClick={tag === "form" ? null : onConfirm}>
+              {confirmLabel}
+            </Button>
+          )}
         </div>
       )}
-    </form>
+    </DialogElement>
   );
 }
 
 Dialog.propTypes = {
+  tag: PropTypes.string.isRequired,
   icon: PropTypes.string,
   title: PropTypes.string.isRequired,
   onCancel: PropTypes.func,
@@ -39,6 +56,7 @@ Dialog.propTypes = {
 };
 
 Dialog.defaultProps = {
+  tag: "form",
   confirmLabel: "Ok",
   cancelLabel: "Cancel"
 };

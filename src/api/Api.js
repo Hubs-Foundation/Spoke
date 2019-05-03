@@ -113,17 +113,26 @@ export default class Project extends EventEmitter {
     return AuthContainer;
   }
 
-  async authenticate(email) {
+  async authenticate(email, signal) {
     const reticulumServer = RETICULUM_SERVER;
     const socketUrl = `wss://${reticulumServer}/socket`;
     const socket = new Socket(socketUrl, { params: { session_id: uuid() } });
     socket.connect();
+
     const channel = socket.channel(`auth:${uuid()}`);
+
+    const onAbort = () => socket.disconnect();
+
+    signal.addEventListener("abort", onAbort);
+
     await new Promise((resolve, reject) =>
       channel
         .join()
         .receive("ok", resolve)
-        .receive("error", reject)
+        .receive("error", err => {
+          signal.removeEventListener("abort", onAbort);
+          reject(err);
+        })
     );
 
     const authComplete = new Promise(resolve =>
@@ -135,6 +144,8 @@ export default class Project extends EventEmitter {
     );
 
     channel.push("auth_request", { email, origin: "spoke" });
+
+    signal.removeEventListener("abort", onAbort);
 
     return authComplete;
   }
