@@ -134,8 +134,16 @@ self.onmessage = async event => {
       detailSampleMaxError
     );
 
+    if (status === 13) {
+      // No contours could be generated. This happens when there are zero walkable cells.
+      self.postMessage({ indices: [], verts: [], heightfield: null });
+      recast.freeNavMesh();
+      return;
+    }
+
     if (status !== 0) {
       self.postMessage({ error: "unknown error building nav mesh", status });
+      recast.freeNavMesh();
       return;
     }
 
@@ -176,6 +184,7 @@ self.onmessage = async event => {
       geometry.addAttribute("position", new THREE.Float32BufferAttribute(verts, 3));
       geometry.setIndex(new THREE.Uint16BufferAttribute(indices, 1));
       heightfield = generateHeightfield(geometry);
+      console.log("generateHeightfield", heightfield);
     }
 
     self.postMessage(

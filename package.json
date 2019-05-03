@@ -86,7 +86,7 @@
     "react-select": "^2.4.1",
     "react-toggle": "^4.0.2",
     "react-tooltip": "^3.10.0",
-    "recast-wasm": "^0.1.0",
+    "recast-wasm": "^0.1.1",
     "signals": "^1.0.0",
     "three": "github:mozillareality/three.js#220c52eb20b5d8afce8aecc295283d7a7a1e0c62",
     "three-mesh-bvh": "^0.1.2",

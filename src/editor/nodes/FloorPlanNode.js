@@ -173,7 +173,7 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
 
     const heightfieldGeometry = mergeMeshGeometries(collidableMeshes);
     const { heightfield } = await this.generateNavGeometry(heightfieldGeometry, true, signal);
-    this.heightfield = heightfield;
+    this.heightfield = heightfield || null;
 
     return this;
   }
