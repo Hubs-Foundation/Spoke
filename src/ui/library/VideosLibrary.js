@@ -25,14 +25,6 @@ class VideosLibrary extends Component {
     this.state = {
       sources: [
         {
-          value: "youtube_videos",
-          label: "YouTube",
-          searchPlaceholder: "Search videos...",
-          legal: "Search by Google",
-          privacyPolicyUrl: "https://policies.google.com/privacy",
-          onSearch: (...args) => props.api.searchMedia(...args)
-        },
-        {
           value: "bing_videos",
           label: "Bing Videos",
           searchPlaceholder: "Search videos...",
