@@ -548,12 +548,12 @@ export default class Editor {
 
     let blob;
 
-    if (file.name.endsWith(".glb")) {
+    if (file.name.toLowerCase().endsWith(".glb")) {
       const gltf = await new Promise((resolve, reject) => new THREE.GLTFLoader().load(url, resolve, undefined, reject));
       blob = await this.viewport.generateThumbnail(gltf.scene, width, height);
-    } else if ([".png", ".jpg", ".jpeg", ".gif", ".webp"].some(ext => file.name.endsWith(ext))) {
+    } else if ([".png", ".jpg", ".jpeg", ".gif", ".webp"].some(ext => file.name.toLowerCase().endsWith(ext))) {
       blob = await generateImageFileThumbnail(file);
-    } else if (file.name.endsWith(".mp4")) {
+    } else if (file.name.toLowerCase().endsWith(".mp4")) {
       blob = await generateVideoFileThumbnail(file);
     }
 
