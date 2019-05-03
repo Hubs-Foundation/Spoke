@@ -8,13 +8,15 @@ import AuthForm from "./AuthForm";
 class AuthContainer extends Component {
   static propTypes = {
     api: PropTypes.object.isRequired,
-    onSuccess: PropTypes.func.isRequired
+    onSuccess: PropTypes.func.isRequired,
+    onChange: PropTypes.func
   };
 
   state = {
     error: null,
     emailSent: false,
-    email: null
+    email: null,
+    abortController: null
   };
 
   onSubmit = email => {
@@ -22,21 +24,54 @@ class AuthContainer extends Component {
       return;
     }
 
+    const abortController = new AbortController();
+
     this.props.api
-      .authenticate(email)
+      .authenticate(email, abortController.signal)
       .then(this.props.onSuccess)
       .catch(this.onError);
 
-    this.setState({ emailSent: true, email });
+    const nextState = { emailSent: true, email, abortController };
+
+    if (this.props.onChange) {
+      this.props.onChange(nextState);
+    }
+
+    this.setState(nextState);
   };
 
   onError = err => {
-    this.setState({ emailSent: false, email: null, error: err.message || "Error signing in. Please try again." });
+    const nextState = {
+      emailSent: false,
+      email: null,
+      error: err.message || "Error signing in. Please try again.",
+      abortController: null
+    };
+
+    if (this.props.onChange) {
+      this.props.onChange(nextState);
+    }
+
+    this.setState(nextState);
+  };
+
+  onCancel = () => {
+    const nextState = { emailSent: false, abortController: null };
+
+    if (this.state.abortController) {
+      this.state.abortController.abort();
+    }
+
+    if (this.props.onChange) {
+      this.props.onChange(nextState);
+    }
+
+    this.setState(nextState);
   };
 
   render() {
     if (this.state.emailSent) {
-      return <AuthEmailSentMessage email={this.state.email} />;
+      return <AuthEmailSentMessage email={this.state.email} onCancel={this.onCancel} />;
     }
 
     return <AuthForm error={this.state.error} onSubmit={this.onSubmit} />;
