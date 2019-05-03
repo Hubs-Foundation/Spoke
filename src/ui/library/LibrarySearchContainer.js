@@ -176,7 +176,7 @@ class LibrarySearchContainer extends Component {
   onError = err => {
     if (err.name !== "AbortError") {
       console.error(err);
-      this.setState({ loading: false });
+      this.setState({ loading: false, nextCursor: null });
     }
   };
 
