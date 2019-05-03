@@ -1,6 +1,7 @@
 import THREE from "../../vendor/three";
 import cloneObject3D from "../utils/cloneObject3D";
 import eventToMessage from "../utils/eventToMessage";
+import loadErrorTexture from "../utils/loadErrorTexture";
 
 export default class Model extends THREE.Object3D {
   constructor() {
@@ -8,6 +9,7 @@ export default class Model extends THREE.Object3D {
     this.type = "Model";
 
     this.model = null;
+    this.errorMesh = null;
     this._src = null;
     this.animations = [];
     this.clipActions = [];
@@ -38,21 +40,43 @@ export default class Model extends THREE.Object3D {
     this.clipActions = [];
     this._mixer = new THREE.AnimationMixer(this);
 
+    if (this.errorMesh) {
+      this.remove(this.errorMesh);
+      this.errorMesh = null;
+    }
+
     if (this.model) {
       this.remove(this.model);
+      this.model = null;
     }
 
-    const { scene, animations } = await this.loadGLTF(src);
+    try {
+      const { scene, animations } = await this.loadGLTF(src);
+      if (animations) {
+        this.animations = animations;
+      }
 
-    if (animations) {
-      this.animations = animations;
+      this.model = scene;
+      this.add(scene);
+
+      this.castShadow = this._castShadow;
+      this.receiveShadow = this._receiveShadow;
+    } catch (err) {
+      const texture = await loadErrorTexture();
+      const geometry = new THREE.PlaneGeometry();
+      const material = new THREE.MeshBasicMaterial();
+      material.side = THREE.DoubleSide;
+      material.map = texture;
+      material.transparent = true;
+      const mesh = new THREE.Mesh(geometry, material);
+      const ratio = (texture.image.height || 1.0) / (texture.image.width || 1.0);
+      const width = Math.min(1.0, 1.0 / ratio);
+      const height = Math.min(1.0, ratio);
+      mesh.scale.set(width, height, 1);
+      this.errorMesh = mesh;
+      this.add(mesh);
+      console.warn(`Error loading model node with src: "${src}": "${err.message || "unknown error"}"`);
     }
-
-    this.model = scene;
-    this.add(scene);
-
-    this.castShadow = this._castShadow;
-    this.receiveShadow = this._receiveShadow;
 
     return this;
   }
@@ -168,7 +192,7 @@ export default class Model extends THREE.Object3D {
       if (child === source.model) {
         clonedChild = cloneObject3D(child);
         this.model = clonedChild;
-      } else if (recursive === true) {
+      } else if (recursive === true && child !== source.errorMesh) {
         clonedChild = child.clone();
       }
 

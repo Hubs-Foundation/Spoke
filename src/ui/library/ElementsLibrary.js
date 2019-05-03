@@ -25,7 +25,7 @@ class ElementsLibrary extends Component {
   };
 
   onSelect = item => {
-    this.props.onSelectItem(item.node);
+    this.props.onSelectItem(item.node, item.node.initialElementProps);
   };
 
   renderTooltip = nodeName => {

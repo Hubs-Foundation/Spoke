@@ -18,6 +18,9 @@ export default function EditorNodeMixin(Object3DClass) {
 
     static ignoreRaycast = false;
 
+    // Used for props like src that have side effects that we don't want to happen in the constructor
+    static initialElementProps = {};
+
     static canAddNode(_editor) {
       return true;
     }

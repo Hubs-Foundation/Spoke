@@ -2,11 +2,16 @@ import EditorNodeMixin from "./EditorNodeMixin";
 import Video from "../objects/Video";
 import Hls from "hls.js/dist/hls.light";
 import isHLS from "../utils/isHLS";
+import spokeLandingVideo from "../../assets/video/landing-video.mp4";
 
 export default class VideoNode extends EditorNodeMixin(Video) {
   static legacyComponentName = "video";
 
   static nodeName = "Video";
+
+  static initialElementProps = {
+    src: new URL(spokeLandingVideo, location).href
+  };
 
   static async deserialize(editor, json, loadAsync) {
     const node = await super.deserialize(editor, json);

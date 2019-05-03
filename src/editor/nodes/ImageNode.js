@@ -1,10 +1,15 @@
 import EditorNodeMixin from "./EditorNodeMixin";
 import Image from "../objects/Image";
+import spokeLogoSrc from "../../assets/spoke-icon.png";
 
 export default class ImageNode extends EditorNodeMixin(Image) {
   static legacyComponentName = "image";
 
   static nodeName = "Image";
+
+  static initialElementProps = {
+    src: new URL(spokeLogoSrc, location).href
+  };
 
   static async deserialize(editor, json, loadAsync) {
     const node = await super.deserialize(editor, json);
