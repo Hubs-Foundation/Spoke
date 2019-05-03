@@ -251,7 +251,7 @@ class LibrarySearchContainer extends Component {
               />
             </span>
           )}
-          {filterOptions && filterOptions.length > 1 && (
+          {filterOptions && (filterOptions.length > 1 || filterIsClearable) && (
             <span className={styles.filterInputContainer}>
               <SelectInput
                 placeholder="Filter..."

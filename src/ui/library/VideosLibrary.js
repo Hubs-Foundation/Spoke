@@ -44,7 +44,7 @@ class VideosLibrary extends Component {
           value: "tenor",
           label: "GIFs",
           defaultFilter: "trending",
-          filterOptions: [{ label: "Trending", id: "trending" }],
+          filterOptions: [{ label: "Trending", value: "trending" }],
           filterIsClearable: true,
           searchPlaceholder: "Search gifs...",
           legal: "Search by Tenor",
