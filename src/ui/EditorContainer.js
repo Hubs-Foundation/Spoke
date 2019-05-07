@@ -475,6 +475,12 @@ class EditorContainer extends Component {
         const fileReader = new FileReader();
         fileReader.onload = () => {
           const json = JSON.parse(fileReader.result);
+
+          if (json.metadata) {
+            delete json.metadata.sceneUrl;
+            delete json.metadata.sceneId;
+          }
+
           this.loadProject(json);
         };
         fileReader.readAsText(el.files[0]);
@@ -486,6 +492,12 @@ class EditorContainer extends Component {
   onExportLegacyProject = async () => {
     const editor = this.state.editor;
     const project = editor.scene.serialize();
+
+    if (project.metadata) {
+      delete project.metadata.sceneUrl;
+      delete project.metadata.sceneId;
+    }
+
     const projectString = JSON.stringify(project);
     const projectBlob = new Blob([projectString]);
     const el = document.createElement("a");
