@@ -9,6 +9,7 @@ import styles from "./HierarchyPanelContainer.scss";
 import { withEditor } from "../contexts/EditorContext";
 import { withDialog } from "../contexts/DialogContext";
 import DefaultNodeEditor from "../properties/DefaultNodeEditor";
+import { cmdOrCtrlString } from "../utils";
 
 function collectNodeMenuProps({ node }) {
   return node;
@@ -163,7 +164,7 @@ class HierarchyPanelContainer extends Component {
       <ContextMenu id="hierarchy-node-menu">
         <MenuItem onClick={this.onDuplicateNode}>
           Duplicate
-          <div className={styles.menuHotkey}>⌘D</div>
+          <div className={styles.menuHotkey}>{cmdOrCtrlString + "+ D"}</div>
         </MenuItem>
         <MenuItem onClick={this.onDeleteNode}>Delete</MenuItem>
       </ContextMenu>
