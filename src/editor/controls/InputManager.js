@@ -121,6 +121,7 @@ export default class InputManager {
     canvas.addEventListener("click", this.onClick);
     canvas.addEventListener("contextmenu", this.onContextMenu);
     window.addEventListener("resize", this.onResize);
+    window.addEventListener("blur", this.onWindowBlur);
   }
 
   enableInputMapping(key, mapping) {
@@ -498,6 +499,12 @@ export default class InputManager {
     this.boundingClientRect = this.canvas.getBoundingClientRect();
   };
 
+  onWindowBlur = () => {
+    for (const key in this.initialState) {
+      this.state[key] = this.initialState[key];
+    }
+  };
+
   update(dt, time) {
     const computed = this.mapping.computed;
 
@@ -522,8 +529,20 @@ export default class InputManager {
   }
 
   dispose() {
+    const canvas = this.canvas;
+
     window.removeEventListener("keydown", this.onKeyDown);
     window.removeEventListener("keyup", this.onKeyUp);
-    window.removeEventListener("mousemove", this.onMouseMove);
+    canvas.removeEventListener("wheel", this.onWheel);
+    canvas.removeEventListener("mousemove", this.onMouseMove);
+    canvas.removeEventListener("mousedown", this.onMouseDown);
+    window.removeEventListener("mousedown", this.onWindowMouseDown);
+    canvas.removeEventListener("mouseup", this.onMouseUp);
+    window.removeEventListener("mouseup", this.onWindowMouseUp);
+    canvas.removeEventListener("dblclick", this.onDoubleClick);
+    canvas.removeEventListener("click", this.onClick);
+    canvas.removeEventListener("contextmenu", this.onContextMenu);
+    window.removeEventListener("resize", this.onResize);
+    window.removeEventListener("blur", this.onWindowBlur);
   }
 }
