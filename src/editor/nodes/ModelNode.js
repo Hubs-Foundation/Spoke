@@ -78,7 +78,7 @@ export default class ModelNode extends EditorNodeMixin(Model) {
 
     const sketchfabExtras = gltf.asset && gltf.asset.extras;
 
-    if (!this.attribution && sketchfabExtras) {
+    if (sketchfabExtras) {
       const name = sketchfabExtras && sketchfabExtras.title;
       const author = sketchfabExtras && sketchfabExtras.author.replace(/ \(http.+\)/, "");
       gltf.scene.name = name;
@@ -103,6 +103,7 @@ export default class ModelNode extends EditorNodeMixin(Model) {
     }
 
     this._canonicalUrl = src || "";
+    this.attribution = null;
 
     try {
       const { accessibleUrl, files } = await this.editor.api.resolveMedia(src);
