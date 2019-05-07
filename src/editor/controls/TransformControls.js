@@ -26,6 +26,7 @@ export default class TransformControls extends THREE.Object3D {
     this.showX = true;
     this.showY = true;
     this.showZ = true;
+    this.rotationSensitivity = 5;
 
     this.tempVector = new THREE.Vector3();
     this.tempVector2 = new THREE.Vector3();
@@ -260,8 +261,9 @@ export default class TransformControls extends THREE.Object3D {
 
         object.scale.copy(this.scaleStart).multiply(this.tempVector);
       } else if (mode === "rotate") {
-        const ROTATION_SPEED =
-          20 / this.worldPosition.distanceTo(this.tempVector.setFromMatrixPosition(this.camera.matrixWorld));
+        const rotationSpeed =
+          this.rotationSensitivity /
+          this.worldPosition.distanceTo(this.tempVector.setFromMatrixPosition(this.camera.matrixWorld));
 
         const quaternion = this.space === "local" ? this.worldQuaternion : this.identityQuaternion;
 
@@ -278,7 +280,7 @@ export default class TransformControls extends THREE.Object3D {
             .cross(this.eye)
             .normalize();
           this.rotationAxis.copy(this.tempVector);
-          this.rotationAngle = this.pointEnd.sub(this.pointStart).dot(this.tempVector.cross(this.eye)) * ROTATION_SPEED;
+          this.rotationAngle = this.pointEnd.sub(this.pointStart).dot(this.tempVector.cross(this.eye)) * rotationSpeed;
         } else if (axis === "X" || axis === "Y" || axis === "Z") {
           this.alignVector.copy(unit).applyQuaternion(quaternion);
 
@@ -290,7 +292,7 @@ export default class TransformControls extends THREE.Object3D {
             this.tempVector.applyQuaternion(quaternion);
             this.tempVector2.applyQuaternion(this.worldQuaternionStart);
           }
-          this.rotationAngle = this.tempVector2.dot(this.tempVector.cross(this.eye).normalize()) * ROTATION_SPEED;
+          this.rotationAngle = this.tempVector2.dot(this.tempVector.cross(this.eye).normalize()) * rotationSpeed;
         }
 
         // Apply rotation snap
