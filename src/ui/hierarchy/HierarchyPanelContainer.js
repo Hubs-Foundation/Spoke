@@ -9,6 +9,7 @@ import styles from "./HierarchyPanelContainer.scss";
 import { withEditor } from "../contexts/EditorContext";
 import { withDialog } from "../contexts/DialogContext";
 import DefaultNodeEditor from "../properties/DefaultNodeEditor";
+import { cmdOrCtrlString } from "../utils";
 
 function collectNodeMenuProps({ node }) {
   return node;
@@ -74,7 +75,7 @@ class HierarchyPanelContainer extends Component {
     this.props.editor.moveObject(object, newParent.object, newBefore);
   };
 
-  onMouseUpNode = (e, node) => {
+  onClickNode = (e, node) => {
     // Prevent double click on right click.
     if (e.button !== 0) {
       this.setState({ singleClicked: null });
@@ -118,23 +119,38 @@ class HierarchyPanelContainer extends Component {
   renderNode = node => {
     const iconClassName = this.getNodeIconClassName(node.object);
 
+    const className = classNames("node", {
+      "is-active": this.props.editor.selected && node.object.id === this.props.editor.selected.id
+    });
+    const onClick = e => this.onClickNode(e, node);
+
+    const content = (
+      <div className={styles.treeNode}>
+        <i className={classNames("fas", iconClassName)} />
+        {this.renderNodeName(node)}
+      </div>
+    );
+
+    if (!node.object.parent) {
+      return (
+        <div className={className} onClick={onClick}>
+          {content}
+        </div>
+      );
+    }
+
     return (
       <ContextMenuTrigger
         attributes={{
-          className: classNames("node", {
-            "is-active": this.props.editor.selected && node.object.id === this.props.editor.selected.id
-          }),
-          onMouseUp: e => this.onMouseUpNode(e, node)
+          className,
+          onClick
         }}
         holdToDisplay={-1}
         id="hierarchy-node-menu"
         node={node}
         collect={collectNodeMenuProps}
       >
-        <div className={styles.treeNode}>
-          <i className={classNames("fas", iconClassName)} />
-          {this.renderNodeName(node)}
-        </div>
+        {content}
       </ContextMenuTrigger>
     );
   };
@@ -143,20 +159,14 @@ class HierarchyPanelContainer extends Component {
     return <div>{node.object.name}</div>;
   };
 
-  renderHierarchyNodeMenu = props => {
-    const node = props.trigger;
-    const hasParent = node && node.object.parent;
-    if (!hasParent) return null;
-
+  renderHierarchyNodeMenu = () => {
     return (
       <ContextMenu id="hierarchy-node-menu">
-        {hasParent && (
-          <MenuItem onClick={this.onDuplicateNode}>
-            Duplicate
-            <div className={styles.menuHotkey}>⌘D</div>
-          </MenuItem>
-        )}
-        {hasParent && <MenuItem onClick={this.onDeleteNode}>Delete</MenuItem>}
+        <MenuItem onClick={this.onDuplicateNode}>
+          Duplicate
+          <div className={styles.menuHotkey}>{cmdOrCtrlString + "+ D"}</div>
+        </MenuItem>
+        <MenuItem onClick={this.onDeleteNode}>Delete</MenuItem>
       </ContextMenu>
     );
   };

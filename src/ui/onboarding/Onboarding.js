@@ -19,9 +19,7 @@ import snappingImage from "../../assets/onboarding/snapping.png";
 import { withApi } from "../contexts/ApiContext";
 import Button from "../inputs/Button";
 import Well from "../layout/Well";
-
-const isApple = /(Mac|iPhone|iPod|iPad)/i.test(navigator.platform);
-const cmdOrCtrlString = isApple ? "cmd" : "ctrl";
+import { cmdOrCtrlString } from "../utils";
 
 /* eslint-disable react/prop-types */
 

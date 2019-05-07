@@ -44,3 +44,7 @@ export function unique(arr, maybeComp) {
 
   return newArr;
 }
+
+export const isApple = /(Mac|iPhone|iPod|iPad)/i.test(navigator.platform);
+
+export const cmdOrCtrlString = isApple ? "⌘" : "ctrl";
