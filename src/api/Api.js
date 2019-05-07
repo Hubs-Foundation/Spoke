@@ -151,7 +151,11 @@ export default class Project extends EventEmitter {
   }
 
   isAuthenticated() {
-    return localStorage.getItem(LOCAL_STORE_KEY) !== null;
+    const value = localStorage.getItem(LOCAL_STORE_KEY);
+
+    const store = JSON.parse(value);
+
+    return !!(store && store.credentials && store.credentials.token);
   }
 
   getToken() {
