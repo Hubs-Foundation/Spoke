@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import PropTypes from "prop-types";
 import OnboardingContainer from "./OnboardingContainer";
 import OnboardingDialog from "./OnboardingDialog";
 import OnboardingPopover from "./OnboardingPopover";
@@ -408,6 +409,10 @@ const steps = [
   }
 ];
 
-export default function Onboarding() {
-  return <OnboardingContainer steps={steps} />;
+export default function Onboarding({ onFinish }) {
+  return <OnboardingContainer steps={steps} onFinish={onFinish} />;
 }
+
+Onboarding.propTypes = {
+  onFinish: PropTypes.func.isRequired
+};
