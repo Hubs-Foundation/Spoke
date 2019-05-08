@@ -11,3 +11,9 @@ export function forEachMaterial(object3D, fn) {
 export function traverseMaterials(object3D, fn) {
   object3D.traverse(obj => forEachMaterial(obj, fn));
 }
+
+export function collectUniqueMaterials(object3D) {
+  const materials = new Set();
+  traverseMaterials(object3D, material => materials.add(material));
+  return Array.from(materials);
+}
