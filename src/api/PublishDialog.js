@@ -37,7 +37,7 @@ export default class PublishDialog extends Component {
   onChangeAllowPromotion = allowPromotion => this.setState({ allowPromotion });
 
   onConfirm = () => {
-    const publishState = { ...this.state };
+    const publishState = { ...this.state, contentAttributions: this.props.contentAttributions };
     publishState.name = publishState.name.trim();
     publishState.creatorAttribution = publishState.creatorAttribution.trim();
     this.props.onPublish(publishState);
