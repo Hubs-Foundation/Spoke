@@ -847,7 +847,11 @@ export default class Project extends EventEmitter {
       showDialog(PublishedSceneDialog, {
         sceneName: sceneParams.name,
         screenshotUrl,
-        sceneUrl
+        sceneUrl,
+        onConfirm: () => {
+          this.emit("project-published");
+          hideDialog();
+        }
       });
     } catch (e) {
       throw e;
@@ -856,8 +860,6 @@ export default class Project extends EventEmitter {
         URL.revokeObjectURL(screenshotUrl);
       }
     }
-
-    this.emit("project-published");
   }
 
   upload(blob, onUploadProgress, signal) {
