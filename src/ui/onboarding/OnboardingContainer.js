@@ -4,7 +4,8 @@ import styles from "./OnboardingContainer.scss";
 
 export default class OnboardingContainer extends Component {
   static propTypes = {
-    steps: PropTypes.array.isRequired
+    steps: PropTypes.array.isRequired,
+    onFinish: PropTypes.func.isRequired
   };
 
   constructor(props) {
@@ -62,7 +63,15 @@ export default class OnboardingContainer extends Component {
       nextStep.onEnter(stepProps);
     }
 
+    if (index > steps.length) {
+      index = -1;
+    }
+
     this.setState({ curStepIdx: index });
+
+    if (index === -1) {
+      this.props.onFinish();
+    }
   };
 
   render() {

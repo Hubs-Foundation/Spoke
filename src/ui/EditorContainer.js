@@ -155,7 +155,13 @@ class EditorContainer extends Component {
         items: [
           {
             name: "Tutorial",
-            action: () => this.props.history.push("/projects/tutorial")
+            action: () => {
+              if (this.props.projectId === "tutorial") {
+                this.setState({ tutorialEnabled: true });
+              } else {
+                this.props.history.push("/projects/tutorial");
+              }
+            }
           },
           {
             name: "Keyboard and Mouse Controls",
@@ -543,6 +549,10 @@ class EditorContainer extends Component {
     window.open(url);
   };
 
+  onFinishTutorial = () => {
+    this.setState({ tutorialEnabled: false });
+  };
+
   renderPanel = (panelId, path) => {
     const panel = this.state.registeredPanels[panelId];
 
@@ -600,7 +610,7 @@ class EditorContainer extends Component {
                 } has unsaved changes, are you sure you wish to navigate away from the page?`}
                 when={editor.sceneModified && !creatingProject}
               />
-              {tutorialEnabled && <Onboarding />}
+              {tutorialEnabled && <Onboarding onFinish={this.onFinishTutorial} />}
             </DialogContextProvider>
           </EditorContextProvider>
         </SettingsContextProvider>
