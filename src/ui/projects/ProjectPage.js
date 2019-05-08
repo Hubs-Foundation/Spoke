@@ -64,7 +64,7 @@ class ProjectPage extends Component {
       .then(response => response.json())
       .then(project => this.setState({ loading: false, project }))
       .catch(err => {
-        console.log(err.response);
+        console.error(err.response);
         this.setState({ loading: false, error: err.message || "An unknown error occurred when loading the project" });
       });
   }
@@ -83,7 +83,7 @@ class ProjectPage extends Component {
           return this.props.history.push("/projects");
         }
 
-        console.log(err.response);
+        console.error(err.response);
         this.setState({ loading: false, error: err.message || "An unknown error occurred when loading the project" });
       });
   }

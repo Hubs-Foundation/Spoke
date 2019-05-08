@@ -12,7 +12,7 @@ if (process.env.SENTRY_DSN) {
 }
 
 // eslint-disable-next-line no-undef
-console.log(`Spoke version: ${process.env.BUILD_VERSION}`);
+console.info(`Spoke version: ${process.env.BUILD_VERSION}`);
 
 const api = new Api();
 

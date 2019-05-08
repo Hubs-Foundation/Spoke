@@ -18,7 +18,6 @@ export default class TemplatesPage extends Component {
   };
 
   render() {
-    console.log(templates);
     return (
       <>
         <NavBar />

@@ -184,7 +184,6 @@ self.onmessage = async event => {
       geometry.addAttribute("position", new THREE.Float32BufferAttribute(verts, 3));
       geometry.setIndex(new THREE.Uint16BufferAttribute(indices, 1));
       heightfield = generateHeightfield(geometry);
-      console.log("generateHeightfield", heightfield);
     }
 
     self.postMessage(
