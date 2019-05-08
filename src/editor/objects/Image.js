@@ -61,6 +61,8 @@ export default class Image extends THREE.Object3D {
     this.remove(this._mesh);
     this._mesh = new THREE.Mesh(geometry, material);
     this.add(this._mesh);
+
+    this.onResize();
   }
 
   async load(src) {
