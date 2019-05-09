@@ -32,7 +32,7 @@ export default class History {
       lastCmd.type === cmd.type &&
       lastCmd.attributeName === cmd.attributeName;
 
-    if (isUpdatableCmd && timeDifference < 500) {
+    if (isUpdatableCmd && timeDifference < 1000) {
       lastCmd.update(cmd);
       cmd = lastCmd;
     } else {
