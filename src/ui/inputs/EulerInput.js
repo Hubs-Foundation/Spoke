@@ -3,6 +3,7 @@ import PropTypes from "prop-types";
 import styles from "./Vector3Input.scss";
 import NumericInput from "./NumericInput";
 import THREE from "../../vendor/three";
+import Scrubber from "./Scrubber";
 
 const { RAD2DEG, DEG2RAD } = THREE.Math;
 
@@ -33,12 +34,18 @@ export default class EulerInput extends Component {
     const vz = value ? (value.z || 0) * RAD2DEG : 0;
     return (
       <div className={styles.inputGroup}>
-        <div className={styles.label}>X:</div>
-        <NumericInput {...rest} style={{ width: "22%" }} value={vx} onChange={x => this.onChange(x, vy, vz)} />
-        <div className={styles.label}>Y:</div>
-        <NumericInput {...rest} style={{ width: "22%" }} value={vy} onChange={y => this.onChange(vx, y, vz)} />
-        <div className={styles.label}>Z:</div>
-        <NumericInput {...rest} style={{ width: "22%" }} value={vz} onChange={z => this.onChange(vx, vy, z)} />
+        <Scrubber {...rest} tag="div" className={styles.label} value={vx} onChange={x => this.onChange(x, vy, vz)}>
+          X:
+        </Scrubber>
+        <NumericInput {...rest} value={vx} onChange={x => this.onChange(x, vy, vz)} />
+        <Scrubber {...rest} tag="div" className={styles.label} value={vy} onChange={y => this.onChange(vx, y, vz)}>
+          Y:
+        </Scrubber>
+        <NumericInput {...rest} value={vy} onChange={y => this.onChange(vx, y, vz)} />
+        <Scrubber {...rest} tag="div" className={styles.label} value={vz} onChange={z => this.onChange(vx, vy, z)}>
+          Z:
+        </Scrubber>
+        <NumericInput {...rest} value={vz} onChange={z => this.onChange(vx, vy, z)} />
       </div>
     );
   }

@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import NodeEditor from "./NodeEditor";
 import InputGroup from "../inputs/InputGroup";
 import ColorInput from "../inputs/ColorInput";
-import NumericInput from "../inputs/NumericInput";
+import NumericInputGroup from "../inputs/NumericInputGroup";
 
 export default class HemisphereLightNodeEditor extends Component {
   static propTypes = {
@@ -38,9 +38,7 @@ export default class HemisphereLightNodeEditor extends Component {
         <InputGroup name="Ground Color">
           <ColorInput value={node.groundColor} onChange={this.onChangeGroundColor} />
         </InputGroup>
-        <InputGroup name="Intensity">
-          <NumericInput min={0} value={node.intensity} onChange={this.onChangeIntensity} />
-        </InputGroup>
+        <NumericInputGroup name="Intensity" min={0} value={node.intensity} onChange={this.onChangeIntensity} />
       </NodeEditor>
     );
   }

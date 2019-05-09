@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import NodeEditor from "./NodeEditor";
 import InputGroup from "../inputs/InputGroup";
 import BooleanInput from "../inputs/BooleanInput";
-import NumericInput from "../inputs/NumericInput";
+import NumericInputGroup from "../inputs/NumericInputGroup";
 import Button from "../inputs/Button";
 import ProgressDialog from "../dialogs/ProgressDialog";
 import ErrorDialog from "../dialogs/ErrorDialog";
@@ -72,28 +72,36 @@ class FloorPlanNodeEditor extends Component {
           <BooleanInput value={node.autoCellSize} onChange={this.onChangeAutoCellSize} />
         </InputGroup>
         {!node.autoCellSize && (
-          <InputGroup name="Cell Size">
-            <NumericInput value={node.cellSize} min={0.1} precision={0.0001} onChange={this.onChangeCellSize} />
-          </InputGroup>
+          <NumericInputGroup
+            name="Cell Size"
+            value={node.cellSize}
+            min={0.1}
+            precision={0.0001}
+            onChange={this.onChangeCellSize}
+          />
         )}
-        <InputGroup name="Cell Height">
-          <NumericInput value={node.cellHeight} min={0.1} onChange={this.onChangeCellHeight} />
-        </InputGroup>
-        <InputGroup name="Agent Height">
-          <NumericInput value={node.agentHeight} min={0.1} onChange={this.onChangeAgentHeight} />
-        </InputGroup>
-        <InputGroup name="Agent Radius">
-          <NumericInput value={node.agentRadius} min={0} onChange={this.onChangeAgentRadius} />
-        </InputGroup>
-        <InputGroup name="Maximum Step Height">
-          <NumericInput value={node.agentMaxClimb} min={0} onChange={this.onChangeAgentMaxClimb} />
-        </InputGroup>
-        <InputGroup name="Maximum Slope">
-          <NumericInput value={node.agentMaxSlope} min={0.00001} max={90} onChange={this.onChangeAgentMaxSlope} />
-        </InputGroup>
-        <InputGroup name="Minimum Region Area">
-          <NumericInput value={node.regionMinSize} min={0.1} onChange={this.onChangeRegionMinSize} />
-        </InputGroup>
+        <NumericInputGroup name="Cell Height" value={node.cellHeight} min={0.1} onChange={this.onChangeCellHeight} />
+        <NumericInputGroup name="Agent Height" value={node.agentHeight} min={0.1} onChange={this.onChangeAgentHeight} />
+        <NumericInputGroup name="Agent Radius" value={node.agentRadius} min={0} onChange={this.onChangeAgentRadius} />
+        <NumericInputGroup
+          name="Maximum Step Height"
+          value={node.agentMaxClimb}
+          min={0}
+          onChange={this.onChangeAgentMaxClimb}
+        />
+        <NumericInputGroup
+          name="Maximum Slope"
+          value={node.agentMaxSlope}
+          min={0.00001}
+          max={90}
+          onChange={this.onChangeAgentMaxSlope}
+        />
+        <NumericInputGroup
+          name="Minimum Region Area"
+          value={node.regionMinSize}
+          min={0.1}
+          onChange={this.onChangeRegionMinSize}
+        />
         <Button className={styles.regenerateButton} onClick={this.onRegenerate}>
           Regenerate
         </Button>

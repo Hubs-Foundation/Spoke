@@ -2,11 +2,9 @@ import React, { Component } from "react";
 import PropTypes from "prop-types";
 import NodeEditor from "./NodeEditor";
 import InputGroup from "../inputs/InputGroup";
-import NumericInput from "../inputs/NumericInput";
+import NumericInputGroup from "../inputs/NumericInputGroup";
+import RadianNumericInputGroup from "../inputs/RadianNumericInputGroup";
 import CompoundNumericInput from "../inputs/CompoundNumericInput";
-import THREE from "../../vendor/three";
-
-const { degToRad, radToDeg } = THREE.Math;
 
 export default class SkyboxNodeEditor extends Component {
   static propTypes = {
@@ -71,38 +69,34 @@ export default class SkyboxNodeEditor extends Component {
         <InputGroup name="MIE Directional G">
           <CompoundNumericInput min={0} max={1} value={node.mieDirectionalG} onChange={this.onChangeMieDirectionalG} />
         </InputGroup>
-        <InputGroup name="Inclination">
-          <NumericInput
-            smallStep={1}
-            mediumStep={15}
-            bigStep={30}
-            value={node.inclination}
-            onChange={this.onChangeInclination}
-            format={radToDeg}
-            parse={degToRad}
-          />
-        </InputGroup>
-        <InputGroup name="Azimuth">
-          <NumericInput
-            smallStep={1}
-            mediumStep={15}
-            bigStep={30}
-            value={node.azimuth}
-            onChange={this.onChangeAzimuth}
-            format={radToDeg}
-            parse={degToRad}
-          />
-        </InputGroup>
-        <InputGroup name="Distance">
-          <NumericInput
-            smallStep={10}
-            mediumStep={100}
-            bigStep={250}
-            min={0}
-            value={node.distance}
-            onChange={this.onChangeDistance}
-          />
-        </InputGroup>
+        <RadianNumericInputGroup
+          name="Inclination"
+          smallStep={1}
+          mediumStep={5}
+          largeStep={15}
+          value={node.inclination}
+          onChange={this.onChangeInclination}
+          unit="°"
+        />
+        <RadianNumericInputGroup
+          name="Azimuth"
+          smallStep={1}
+          mediumStep={5}
+          largeStep={15}
+          value={node.azimuth}
+          onChange={this.onChangeAzimuth}
+          unit="°"
+        />
+        <NumericInputGroup
+          name="Distance"
+          smallStep={10}
+          mediumStep={100}
+          largeStep={250}
+          min={0}
+          value={node.distance}
+          onChange={this.onChangeDistance}
+          unit="m"
+        />
       </NodeEditor>
     );
   }

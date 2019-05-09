@@ -48,3 +48,26 @@ export function unique(arr, maybeComp) {
 export const isApple = /(Mac|iPhone|iPod|iPad)/i.test(navigator.platform);
 
 export const cmdOrCtrlString = isApple ? "⌘" : "ctrl";
+
+export function getStepSize(event, smallStep, mediumStep, largeStep) {
+  if (event.altKey) {
+    return smallStep;
+  } else if (event.shiftKey) {
+    return largeStep;
+  }
+  return mediumStep;
+}
+
+export function clamp(value, min, max) {
+  if (value < min) {
+    return min;
+  } else if (value > max) {
+    return max;
+  }
+  return value;
+}
+
+export function toPrecision(value, precision) {
+  const p = 1 / precision;
+  return Math.round(value * p) / p;
+}

@@ -1,227 +1,118 @@
-import React from "react";
+import React, { useState, useCallback } from "react";
 import PropTypes from "prop-types";
-
+import classNames from "classnames";
 import styles from "./NumericInput.scss";
+import { getStepSize, clamp, toPrecision } from "../utils";
 
-function round(value, precision) {
-  const p = 1 / precision;
-  return Math.round(value * p) / p;
-}
+export default function NumericInput({
+  className,
+  unit,
+  smallStep,
+  mediumStep,
+  largeStep,
+  min,
+  max,
+  precision,
+  value,
+  onChange,
+  onCommit,
+  ...rest
+}) {
+  const [state, setState] = useState({ tempValue: null, focused: false });
 
-function copyStepKeys({ ctrlKey, metaKey, shiftKey }) {
-  // Copy keys so we don't have to persist the SyntheticEvent
-  return { ctrlKey, metaKey, shiftKey };
-}
+  const handleKeyPress = useCallback(
+    event => {
+      let direction = 0;
 
-const partialValue = /[-.0]$/;
-const wholeNumber = /-?[0-9]+$/;
-
-export default class NumericInput extends React.Component {
-  static propTypes = {
-    value: PropTypes.number,
-    mediumStep: PropTypes.number,
-    smallStep: PropTypes.number,
-    bigStep: PropTypes.number,
-    min: PropTypes.number,
-    max: PropTypes.number,
-    format: PropTypes.func,
-    parse: PropTypes.func,
-    onChange: PropTypes.func,
-    precision: PropTypes.number,
-    style: PropTypes.object
-  };
-
-  static defaultProps = {
-    smallStep: 0.1,
-    mediumStep: 1,
-    bigStep: 10,
-    precision: 0.001
-  };
-
-  constructor(props) {
-    super(props);
-
-    const initialValue = this.formatValue(props.value);
-
-    this.state = {
-      value: initialValue.toString(),
-      step: props.mediumStep
-    };
-    this.lastValidValue = initialValue;
-  }
-
-  formatValue(value) {
-    const format = this.props.format;
-    return format ? format(value) : value;
-  }
-
-  parseValue(value) {
-    const parse = this.props.parse;
-    return parse ? parse(value) : value;
-  }
-
-  getStepForEvent(e) {
-    const { ctrlKey, metaKey, shiftKey } = e;
-    let step = this.props.mediumStep;
-    if (ctrlKey || metaKey) {
-      step = this.props.smallStep;
-    } else if (shiftKey) {
-      step = this.props.bigStep;
-    }
-    return step;
-  }
-
-  clamp(value) {
-    const { min, max } = this.props;
-    if (max !== null && max !== undefined) {
-      value = Math.min(value, this.props.max);
-    }
-    if (min !== null && min !== undefined) {
-      value = Math.max(value, this.props.min);
-    }
-    return value;
-  }
-
-  setValidValue(value) {
-    const validValue = this.clamp(round(value, this.props.precision));
-    this.lastValidValue = validValue;
-    return validValue;
-  }
-
-  setValidValueAndDispatch(value) {
-    const validValue = this.setValidValue(value);
-    const parsedValue = this.parseValue(validValue);
-    this.props.onChange(parsedValue);
-  }
-
-  onKeyDown = e => {
-    const { key } = e;
-    if (key !== "ArrowUp" && key !== "ArrowDown") return;
-
-    e.preventDefault();
-
-    const step = this.getStepForEvent(e);
-    let { value } = this.props;
-    if (key === "ArrowUp") {
-      value += step;
-    } else if (key === "ArrowDown") {
-      value -= step;
-    }
-    this.setValidValueAndDispatch(value);
-  };
-
-  onWheel = e => {
-    const { deltaY } = e;
-
-    e.stopPropagation();
-    e.preventDefault();
-
-    const step = this.getStepForEvent(e);
-    let { value } = this.props;
-    value += (deltaY > 0 ? 1 : -1) * step;
-    this.setValidValueAndDispatch(value);
-  };
-
-  setStep = e => {
-    const keys = copyStepKeys(e);
-    this.setState(prevState => {
-      const newStep = this.getStepForEvent(keys);
-      if (newStep === prevState.step) return;
-      return { step: newStep };
-    });
-  };
-
-  onMouseDown = e => {
-    e.target.select();
-    e.preventDefault();
-    const keys = copyStepKeys(e);
-    this.setState({ step: this.getStepForEvent(keys) });
-
-    if (e.button === 1) {
-      document.body.requestPointerLock();
-    }
-
-    window.addEventListener("keydown", this.setStep);
-    window.addEventListener("keyup", this.setStep);
-    window.addEventListener("mousemove", this.onMouseMove);
-    window.addEventListener("mouseup", this.cleanUpListeners);
-  };
-
-  onMouseMove = e => {
-    const value = this.formatValue(this.props.value);
-    this.setValidValueAndDispatch(value + (e.movementX / 100) * this.state.step);
-  };
-
-  cleanUpListeners = () => {
-    document.exitPointerLock();
-    window.removeEventListener("mousemove", this.onMouseMove);
-    window.removeEventListener("keydown", this.setStep);
-    window.removeEventListener("keyup", this.setStep);
-    window.removeEventListener("mouseup", this.cleanUpListeners);
-  };
-
-  validate = () => {
-    this.setState({ value: this.lastValidValue.toString() });
-    const parsedValue = this.parseValue(this.lastValidValue);
-    this.props.onChange(parsedValue);
-  };
-
-  setValue(value) {
-    const trimmed = value.trim();
-
-    this.setState({ value });
-
-    if (isNaN(trimmed)) return;
-
-    const looksValid = wholeNumber.test(trimmed) || (trimmed.length > 0 && !partialValue.test(trimmed));
-    if (looksValid) {
-      const parsed = parseFloat(trimmed);
-      if (this.clamp(parsed) === parsed) {
-        this.setValidValueAndDispatch(parsed);
+      if (event.key === "ArrowUp") {
+        direction = 1;
+      } else if (event.key === "ArrowDown") {
+        direction = -1;
       }
+
+      if (!direction) return;
+
+      event.preventDefault();
+
+      const nextValue = toPrecision(getStepSize(event, smallStep, mediumStep, largeStep) * direction, precision);
+      const clampedValue = clamp(nextValue, min, max);
+
+      if (onCommit) {
+        onCommit(clampedValue);
+      } else {
+        onChange(clampedValue);
+      }
+
+      setState({ tempValue: clampedValue.toString(), focused: true });
+    },
+    [smallStep, mediumStep, largeStep, value, min, max, precision, onCommit, onChange]
+  );
+
+  const handleChange = useCallback(
+    event => {
+      const tempValue = event.target.value;
+
+      setState({ tempValue, focused: true });
+
+      const parsedValue = parseFloat(tempValue);
+
+      if (!Number.isNaN(parsedValue)) {
+        const nextValue = clamp(toPrecision(parsedValue, precision), min, max);
+        onChange(nextValue);
+      }
+    },
+    [onChange]
+  );
+
+  const handleFocus = useCallback(() => {
+    setState({ tempValue: value.toString(), focused: true });
+  }, [value]);
+
+  const handleBlur = useCallback(() => {
+    setState({ tempValue: null, focused: false });
+
+    if (onCommit) {
+      onCommit(value);
+    } else {
+      onChange(value);
     }
-  }
+  }, [value, onChange, onCommit]);
 
-  componentDidUpdate(prevProps) {
-    const value = this.formatValue(this.props.value);
-    const propValueChanged = value !== this.formatValue(prevProps.value);
-    const currentStateIsDifferent = parseFloat(this.state.value.trim()) !== value;
-    if (propValueChanged && currentStateIsDifferent) {
-      this.setValidValue(value);
-      this.setState({ value: round(value, this.props.precision).toString() });
-    }
-  }
-
-  render() {
-    const {
-      value,
-      mediumStep,
-      smallStep,
-      bigStep,
-      min,
-      max,
-      format,
-      parse,
-      onChange,
-      precision,
-      style,
-      ...rest
-    } = this.props;
-
-    return (
-      <div className={styles.container}>
-        <input
-          {...rest}
-          className={styles.numericInput}
-          value={this.state.value}
-          onKeyDown={this.onKeyDown}
-          onKeyUp={this.setStep}
-          onMouseDown={this.onMouseDown}
-          onWheel={this.onWheel}
-          onChange={e => this.setValue(e.target.value)}
-          onBlur={this.validate}
-        />
-      </div>
-    );
-  }
+  return (
+    <div className={styles.container}>
+      <input
+        {...rest}
+        className={classNames(styles.numericInput, className)}
+        value={state.focused ? state.tempValue : value}
+        onKeyUp={handleKeyPress}
+        onChange={handleChange}
+        onFocus={handleFocus}
+        onBlur={handleBlur}
+      />
+      {unit && <div className={styles.unit}>{unit}</div>}
+    </div>
+  );
 }
+
+NumericInput.propTypes = {
+  className: PropTypes.string,
+  unit: PropTypes.node,
+  smallStep: PropTypes.number.isRequired,
+  mediumStep: PropTypes.number.isRequired,
+  largeStep: PropTypes.number.isRequired,
+  min: PropTypes.number.isRequired,
+  max: PropTypes.number.isRequired,
+  precision: PropTypes.number.isRequired,
+  value: PropTypes.number.isRequired,
+  onChange: PropTypes.func.isRequired,
+  onCommit: PropTypes.func
+};
+
+NumericInput.defaultProps = {
+  smallStep: 0.025,
+  mediumStep: 0.1,
+  largeStep: 0.25,
+  min: -Infinity,
+  max: Infinity,
+  precision: 0.00001
+};

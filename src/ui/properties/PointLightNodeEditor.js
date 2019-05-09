@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import NodeEditor from "./NodeEditor";
 import InputGroup from "../inputs/InputGroup";
 import ColorInput from "../inputs/ColorInput";
-import NumericInput from "../inputs/NumericInput";
+import NumericInputGroup from "../inputs/NumericInputGroup";
 import LightShadowProperties from "./LightShadowProperties";
 
 export default class PointLightNodeEditor extends Component {
@@ -36,12 +36,8 @@ export default class PointLightNodeEditor extends Component {
         <InputGroup name="Color">
           <ColorInput value={node.color} onChange={this.onChangeColor} />
         </InputGroup>
-        <InputGroup name="Intensity">
-          <NumericInput min={0} value={node.intensity} onChange={this.onChangeIntensity} />
-        </InputGroup>
-        <InputGroup name="Range">
-          <NumericInput min={0} value={node.range} onChange={this.onChangeRange} />
-        </InputGroup>
+        <NumericInputGroup name="Intensity" min={0} value={node.intensity} onChange={this.onChangeIntensity} />
+        <NumericInputGroup name="Range" min={0} value={node.range} onChange={this.onChangeRange} />
         <LightShadowProperties node={node} editor={editor} />
       </NodeEditor>
     );

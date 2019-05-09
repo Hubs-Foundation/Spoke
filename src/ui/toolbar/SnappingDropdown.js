@@ -2,8 +2,7 @@ import React from "react";
 import PropTypes from "prop-types";
 import classNames from "classnames";
 import styles from "./SnappingDropdown.scss";
-import NumericInput from "../inputs/NumericInput";
-import InputGroup from "../inputs/InputGroup";
+import NumericInputGroup from "../inputs/NumericInputGroup";
 
 const RAD2DEG = 180 / Math.PI;
 const DEG2RAD = Math.PI / 180;
@@ -74,14 +73,20 @@ export default class SnappingDropdown extends React.Component {
         {this.state.listOpen && (
           <ul className={styles.list}>
             <li className={styles.listItem}>
-              <InputGroup className={styles.snappingInput} name={"Move"}>
-                <NumericInput value={snapTranslateValue} onChange={value => this.setSnapValue("translate", value)} />
-              </InputGroup>
+              <NumericInputGroup
+                className={styles.snappingInput}
+                name="Move"
+                value={snapTranslateValue}
+                onChange={value => this.setSnapValue("translate", value)}
+              />
             </li>
             <li className={styles.listItem}>
-              <InputGroup className={styles.snappingInput} name={"Rotate"}>
-                <NumericInput value={snapRotateValue} onChange={value => this.setSnapValue("rotate", value)} />
-              </InputGroup>
+              <NumericInputGroup
+                className={styles.snappingInput}
+                name="Rotate"
+                value={snapRotateValue}
+                onChange={value => this.setSnapValue("rotate", value)}
+              />
             </li>
           </ul>
         )}
