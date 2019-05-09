@@ -35,6 +35,7 @@ export default class Editor {
 
     this.scene = new SceneNode(this);
     this.sceneModified = false;
+    this.sceneLoaded = false;
 
     this.camera = new THREE.PerspectiveCamera(80, window.innerWidth / window.innerHeight, 0.2, 8000);
     this.audioListener = new THREE.AudioListener();
@@ -171,6 +172,7 @@ export default class Editor {
   }
 
   setScene(scene) {
+    this.sceneLoaded = true;
     this.scene = scene;
     this.sceneUrl = null;
 
