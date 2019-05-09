@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import InputGroup from "../inputs/InputGroup";
 import SelectInput from "../inputs/SelectInput";
 import BooleanInput from "../inputs/BooleanInput";
-import NumericInput from "../inputs/NumericInput";
+import NumericInputGroup from "../inputs/NumericInputGroup";
 import THREE from "../../vendor/three";
 
 const ShadowMapResolutionOptions = [
@@ -66,26 +66,24 @@ export default class LightShadowProperties extends Component {
             onChange={this.onChangeShadowMapResolution}
           />
         </InputGroup>
-        <InputGroup name="Shadow Bias">
-          <NumericInput
-            mediumStep={0.00001}
-            smallStep={0.0001}
-            bigStep={0.001}
-            precision={0.000001}
-            value={node.shadowBias}
-            onChange={this.onChangeShadowBias}
-          />
-        </InputGroup>
-        <InputGroup name="Shadow Radius">
-          <NumericInput
-            mediumStep={0.01}
-            smallStep={0.1}
-            bigStep={1}
-            precision={0.0001}
-            value={node.shadowRadius}
-            onChange={this.onChangeShadowRadius}
-          />
-        </InputGroup>
+        <NumericInputGroup
+          name="Shadow Bias"
+          mediumStep={0.00001}
+          smallStep={0.0001}
+          largeStep={0.001}
+          precision={0.000001}
+          value={node.shadowBias}
+          onChange={this.onChangeShadowBias}
+        />
+        <NumericInputGroup
+          name="Shadow Radius"
+          mediumStep={0.01}
+          smallStep={0.1}
+          largeStep={1}
+          precision={0.0001}
+          value={node.shadowRadius}
+          onChange={this.onChangeShadowRadius}
+        />
       </Fragment>
     );
   }

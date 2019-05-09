@@ -3,11 +3,12 @@ import PropTypes from "prop-types";
 import NodeEditor from "./NodeEditor";
 import InputGroup from "../inputs/InputGroup";
 import ColorInput from "../inputs/ColorInput";
-import NumericInput from "../inputs/NumericInput";
+import NumericInputGroup from "../inputs/NumericInputGroup";
+import RadianNumericInputGroup from "../inputs/RadianNumericInputGroup";
 import THREE from "../../vendor/three";
 import LightShadowProperties from "./LightShadowProperties";
 
-const { degToRad, radToDeg } = THREE.Math;
+const radToDeg = THREE.Math.radToDeg;
 
 export default class SpotLightNodeEditor extends Component {
   static propTypes = {
@@ -47,32 +48,24 @@ export default class SpotLightNodeEditor extends Component {
         <InputGroup name="Color">
           <ColorInput value={node.color} onChange={this.onChangeColor} />
         </InputGroup>
-        <InputGroup name="Intensity">
-          <NumericInput min={0} value={node.intensity} onChange={this.onChangeIntensity} />
-        </InputGroup>
-        <InputGroup name="Inner Cone Angle">
-          <NumericInput
-            min={0}
-            max={radToDeg(node.outerConeAngle)}
-            value={node.innerConeAngle}
-            onChange={this.onChangeInnerConeAngle}
-            format={radToDeg}
-            parse={degToRad}
-          />
-        </InputGroup>
-        <InputGroup name="Outer Cone Angle">
-          <NumericInput
-            min={radToDeg(node.innerConeAngle + 0.00001)}
-            max={radToDeg(node.maxOuterConeAngle)}
-            value={node.outerConeAngle}
-            onChange={this.onChangeOuterConeAngle}
-            format={radToDeg}
-            parse={degToRad}
-          />
-        </InputGroup>
-        <InputGroup name="Range">
-          <NumericInput min={0} value={node.range} onChange={this.onChangeRange} />
-        </InputGroup>
+        <NumericInputGroup name="Intensity" min={0} value={node.intensity} onChange={this.onChangeIntensity} unit="°" />
+        <RadianNumericInputGroup
+          name="Inner Cone Angle"
+          min={0}
+          max={radToDeg(node.outerConeAngle)}
+          value={node.innerConeAngle}
+          onChange={this.onChangeInnerConeAngle}
+          unit="°"
+        />
+        <RadianNumericInputGroup
+          name="Outer Cone Angle"
+          min={radToDeg(node.innerConeAngle + 0.00001)}
+          max={radToDeg(node.maxOuterConeAngle)}
+          value={node.outerConeAngle}
+          onChange={this.onChangeOuterConeAngle}
+          unit="°"
+        />
+        <NumericInputGroup name="Range" min={0} value={node.range} onChange={this.onChangeRange} unit="m" />
         <LightShadowProperties node={node} editor={editor} />
       </NodeEditor>
     );

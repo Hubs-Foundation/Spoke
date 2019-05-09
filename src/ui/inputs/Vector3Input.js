@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import PropTypes from "prop-types";
 import styles from "./Vector3Input.scss";
 import NumericInput from "./NumericInput";
+import Scrubber from "./Scrubber";
 import THREE from "../../vendor/three";
 
 let uniqueId = 0;
@@ -74,12 +75,18 @@ export default class Vector3Input extends Component {
             <label title="Uniform Scale" htmlFor={checkboxId} />
           </div>
         )}
-        <div className={styles.label}>X:</div>
-        <NumericInput {...rest} style={{ width: "22%" }} value={vx} onChange={this.onChangeX} />
-        <div className={styles.label}>Y:</div>
-        <NumericInput {...rest} style={{ width: "22%" }} value={vy} onChange={this.onChangeY} />
-        <div className={styles.label}>Z:</div>
-        <NumericInput {...rest} style={{ width: "22%" }} value={vz} onChange={this.onChangeZ} />
+        <Scrubber {...rest} tag="div" className={styles.label} value={vx} onChange={this.onChangeX}>
+          X:
+        </Scrubber>
+        <NumericInput {...rest} value={vx} onChange={this.onChangeX} />
+        <Scrubber {...rest} tag="div" className={styles.label} value={vy} onChange={this.onChangeY}>
+          Y:
+        </Scrubber>
+        <NumericInput {...rest} value={vy} onChange={this.onChangeY} />
+        <Scrubber {...rest} tag="div" className={styles.label} value={vz} onChange={this.onChangeZ}>
+          Z:
+        </Scrubber>
+        <NumericInput {...rest} value={vz} onChange={this.onChangeZ} />
       </div>
     );
   }

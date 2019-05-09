@@ -4,7 +4,7 @@ import NodeEditor from "./NodeEditor";
 import InputGroup from "../inputs/InputGroup";
 import BooleanInput from "../inputs/BooleanInput";
 import SelectInput from "../inputs/SelectInput";
-import NumericInput from "../inputs/NumericInput";
+import NumericInputGroup from "../inputs/NumericInputGroup";
 import CompoundNumericInput from "../inputs/CompoundNumericInput";
 import { AudioType, DistanceModelType, VideoProjection } from "../../editor/objects/Video";
 import VideoInput from "../inputs/VideoInput";
@@ -79,46 +79,60 @@ export default class VideoNodeEditor extends Component {
                 onChange={this.onChangeDistanceModel}
               />
             </InputGroup>
-            <InputGroup name="Rolloff Factor">
-              {node.distanceModel === DistanceModelType.linear ? (
+
+            {node.distanceModel === DistanceModelType.linear ? (
+              <InputGroup name="Rolloff Factor">
                 <CompoundNumericInput
                   min={0}
                   max={1}
                   value={node.rolloffFactor}
                   onChange={this.onChangeRolloffFactor}
                 />
-              ) : (
-                <NumericInput min={0} value={node.rolloffFactor} onChange={this.onChangeRolloffFactor} />
-              )}
-            </InputGroup>
-            <InputGroup name="Ref Distance">
-              <NumericInput min={0} value={node.refDistance} onChange={this.onChangeRefDistance} />
-            </InputGroup>
-            <InputGroup name="Max Distance">
-              <NumericInput min={0} value={node.maxDistance} onChange={this.onChangeMaxDistance} />
-            </InputGroup>
-            <InputGroup name="Cone Inner Angle">
-              <NumericInput
+              </InputGroup>
+            ) : (
+              <NumericInputGroup
+                name="Rolloff Factor"
                 min={0}
-                max={360}
-                smallStep={1}
-                mediumStep={15}
-                bigStep={30}
-                value={node.coneInnerAngle}
-                onChange={this.onChangeConeInnerAngle}
+                value={node.rolloffFactor}
+                onChange={this.onChangeRolloffFactor}
               />
-            </InputGroup>
-            <InputGroup name="Cone Outer Angle">
-              <NumericInput
-                min={0}
-                max={360}
-                smallStep={1}
-                mediumStep={15}
-                bigStep={30}
-                value={node.coneOuterAngle}
-                onChange={this.onChangeConeOuterAngle}
-              />
-            </InputGroup>
+            )}
+            <NumericInputGroup
+              name="Ref Distance"
+              min={0}
+              value={node.refDistance}
+              onChange={this.onChangeRefDistance}
+              unit="m"
+            />
+            <NumericInputGroup
+              name="Max Distance"
+              min={0}
+              value={node.maxDistance}
+              onChange={this.onChangeMaxDistance}
+              unit="m"
+            />
+            <NumericInputGroup
+              name="Cone Inner Angle"
+              min={0}
+              max={360}
+              smallStep={1}
+              mediumStep={15}
+              largeStep={30}
+              value={node.coneInnerAngle}
+              onChange={this.onChangeConeInnerAngle}
+              unit="°"
+            />
+            <NumericInputGroup
+              name="Cone Outer Angle"
+              min={0}
+              max={360}
+              smallStep={1}
+              mediumStep={15}
+              largeStep={30}
+              value={node.coneOuterAngle}
+              onChange={this.onChangeConeOuterAngle}
+              unit="°"
+            />
             <InputGroup name="Cone Outer Gain">
               <CompoundNumericInput min={0} max={1} value={node.coneOuterGain} onChange={this.onChangeConeOuterGain} />
             </InputGroup>

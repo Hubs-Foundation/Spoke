@@ -30,9 +30,9 @@ export default class History {
       cmd.updatable &&
       lastCmd.object === cmd.object &&
       lastCmd.type === cmd.type &&
-      lastCmd.attributeName === cmd.attributeName;
+      lastCmd.propertyName === cmd.propertyName;
 
-    if (isUpdatableCmd && timeDifference < 500) {
+    if (isUpdatableCmd && timeDifference < 1000) {
       lastCmd.update(cmd);
       cmd = lastCmd;
     } else {
