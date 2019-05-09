@@ -8,6 +8,7 @@ export default class SetObjectPropertyCommand extends Command {
 
     this.object = object;
     this.propertyName = propertyName;
+    this.updatable = true;
 
     if (value && value.clone) {
       this.newValue = value.clone();
@@ -46,5 +47,15 @@ export default class SetObjectPropertyCommand extends Command {
     }
 
     this.editor.signals.objectChanged.dispatch(this.object);
+  }
+
+  update(command) {
+    const newValue = command.newValue;
+
+    if (newValue && newValue.clone) {
+      this.newValue = newValue.clone();
+    } else {
+      this.newValue = newValue;
+    }
   }
 }
