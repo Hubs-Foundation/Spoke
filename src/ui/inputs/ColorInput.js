@@ -66,7 +66,7 @@ export default class ColorInput extends Component {
     const hexColor = "#" + value.getHexString();
 
     return (
-      <div className={styles.colorInput}>
+      <div className={styles.colorInputContainer}>
         <div className={styles.block} onClick={this.handleClick}>
           <div className={styles.color} style={{ background: hexColor }} />
         </div>

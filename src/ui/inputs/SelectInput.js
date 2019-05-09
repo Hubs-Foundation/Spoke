@@ -6,7 +6,8 @@ import "../styles/vendor/react-select/index.scss";
 const staticStyle = {
   container: base => ({
     ...base,
-    width: "100%"
+    width: "100%",
+    maxWidth: "200px"
   }),
   control: (base, { isDisabled }) => ({
     ...base,
