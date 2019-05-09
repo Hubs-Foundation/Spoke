@@ -78,6 +78,7 @@ export default class SnappingDropdown extends React.Component {
                 name="Move"
                 value={snapTranslateValue}
                 onChange={value => this.setSnapValue("translate", value)}
+                unit="m"
               />
             </li>
             <li className={styles.listItem}>
@@ -86,6 +87,7 @@ export default class SnappingDropdown extends React.Component {
                 name="Rotate"
                 value={snapRotateValue}
                 onChange={value => this.setSnapValue("rotate", value)}
+                unit="°"
               />
             </li>
           </ul>

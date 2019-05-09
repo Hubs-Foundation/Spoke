@@ -54,7 +54,7 @@ export default class TransformPropertyGroup extends Component {
           <Vector3Input value={node.position} onChange={this.onChangePosition} />
         </InputGroup>
         <InputGroup name="Rotation">
-          <EulerInput value={node.rotation} onChange={this.onChangeRotation} />
+          <EulerInput value={node.rotation} onChange={this.onChangeRotation} unit="°" />
         </InputGroup>
         <InputGroup name="Scale">
           <Vector3Input uniformScaling value={node.scale} onChange={this.onChangeScale} />

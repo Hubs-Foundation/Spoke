@@ -102,12 +102,14 @@ export default class VideoNodeEditor extends Component {
               min={0}
               value={node.refDistance}
               onChange={this.onChangeRefDistance}
+              unit="m"
             />
             <NumericInputGroup
               name="Max Distance"
               min={0}
               value={node.maxDistance}
               onChange={this.onChangeMaxDistance}
+              unit="m"
             />
             <NumericInputGroup
               name="Cone Inner Angle"
@@ -118,6 +120,7 @@ export default class VideoNodeEditor extends Component {
               largeStep={30}
               value={node.coneInnerAngle}
               onChange={this.onChangeConeInnerAngle}
+              unit="°"
             />
             <NumericInputGroup
               name="Cone Outer Angle"
@@ -128,6 +131,7 @@ export default class VideoNodeEditor extends Component {
               largeStep={30}
               value={node.coneOuterAngle}
               onChange={this.onChangeConeOuterAngle}
+              unit="°"
             />
             <InputGroup name="Cone Outer Gain">
               <CompoundNumericInput min={0} max={1} value={node.coneOuterGain} onChange={this.onChangeConeOuterGain} />

@@ -31,7 +31,13 @@ export default class AmbientLightNodeEditor extends Component {
         <InputGroup name="Color">
           <ColorInput value={node.color} onChange={this.onChangeColor} />
         </InputGroup>
-        <NumericInputGroup name="Intensity" min={0} value={node.intensity} onChange={this.onChangeIntensity} />
+        <NumericInputGroup
+          name="Intensity"
+          min={0}
+          value={node.intensity}
+          onChange={this.onChangeIntensity}
+          unit="cd"
+        />
       </NodeEditor>
     );
   }

@@ -36,8 +36,14 @@ export default class PointLightNodeEditor extends Component {
         <InputGroup name="Color">
           <ColorInput value={node.color} onChange={this.onChangeColor} />
         </InputGroup>
-        <NumericInputGroup name="Intensity" min={0} value={node.intensity} onChange={this.onChangeIntensity} />
-        <NumericInputGroup name="Range" min={0} value={node.range} onChange={this.onChangeRange} />
+        <NumericInputGroup
+          name="Intensity"
+          min={0}
+          value={node.intensity}
+          onChange={this.onChangeIntensity}
+          unit="cd"
+        />
+        <NumericInputGroup name="Range" min={0} value={node.range} onChange={this.onChangeRange} unit="m" />
         <LightShadowProperties node={node} editor={editor} />
       </NodeEditor>
     );

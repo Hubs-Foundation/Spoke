@@ -38,7 +38,13 @@ export default class HemisphereLightNodeEditor extends Component {
         <InputGroup name="Ground Color">
           <ColorInput value={node.groundColor} onChange={this.onChangeGroundColor} />
         </InputGroup>
-        <NumericInputGroup name="Intensity" min={0} value={node.intensity} onChange={this.onChangeIntensity} />
+        <NumericInputGroup
+          name="Intensity"
+          min={0}
+          value={node.intensity}
+          onChange={this.onChangeIntensity}
+          unit="cd"
+        />
       </NodeEditor>
     );
   }

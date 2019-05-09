@@ -80,14 +80,33 @@ class FloorPlanNodeEditor extends Component {
             onChange={this.onChangeCellSize}
           />
         )}
-        <NumericInputGroup name="Cell Height" value={node.cellHeight} min={0.1} onChange={this.onChangeCellHeight} />
-        <NumericInputGroup name="Agent Height" value={node.agentHeight} min={0.1} onChange={this.onChangeAgentHeight} />
-        <NumericInputGroup name="Agent Radius" value={node.agentRadius} min={0} onChange={this.onChangeAgentRadius} />
+        <NumericInputGroup
+          name="Cell Height"
+          value={node.cellHeight}
+          min={0.1}
+          onChange={this.onChangeCellHeight}
+          unit="m"
+        />
+        <NumericInputGroup
+          name="Agent Height"
+          value={node.agentHeight}
+          min={0.1}
+          onChange={this.onChangeAgentHeight}
+          unit="m"
+        />
+        <NumericInputGroup
+          name="Agent Radius"
+          value={node.agentRadius}
+          min={0}
+          onChange={this.onChangeAgentRadius}
+          unit="m"
+        />
         <NumericInputGroup
           name="Maximum Step Height"
           value={node.agentMaxClimb}
           min={0}
           onChange={this.onChangeAgentMaxClimb}
+          unit="m"
         />
         <NumericInputGroup
           name="Maximum Slope"
@@ -95,12 +114,14 @@ class FloorPlanNodeEditor extends Component {
           min={0.00001}
           max={90}
           onChange={this.onChangeAgentMaxSlope}
+          unit="°"
         />
         <NumericInputGroup
           name="Minimum Region Area"
           value={node.regionMinSize}
           min={0.1}
           onChange={this.onChangeRegionMinSize}
+          unit="m²"
         />
         <Button className={styles.regenerateButton} onClick={this.onRegenerate}>
           Regenerate

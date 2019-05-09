@@ -48,13 +48,14 @@ export default class SpotLightNodeEditor extends Component {
         <InputGroup name="Color">
           <ColorInput value={node.color} onChange={this.onChangeColor} />
         </InputGroup>
-        <NumericInputGroup name="Intensity" min={0} value={node.intensity} onChange={this.onChangeIntensity} />
+        <NumericInputGroup name="Intensity" min={0} value={node.intensity} onChange={this.onChangeIntensity} unit="°" />
         <RadianNumericInputGroup
           name="Inner Cone Angle"
           min={0}
           max={radToDeg(node.outerConeAngle)}
           value={node.innerConeAngle}
           onChange={this.onChangeInnerConeAngle}
+          unit="°"
         />
         <RadianNumericInputGroup
           name="Outer Cone Angle"
@@ -62,8 +63,9 @@ export default class SpotLightNodeEditor extends Component {
           max={radToDeg(node.maxOuterConeAngle)}
           value={node.outerConeAngle}
           onChange={this.onChangeOuterConeAngle}
+          unit="°"
         />
-        <NumericInputGroup name="Range" min={0} value={node.range} onChange={this.onChangeRange} />
+        <NumericInputGroup name="Range" min={0} value={node.range} onChange={this.onChangeRange} unit="m" />
         <LightShadowProperties node={node} editor={editor} />
       </NodeEditor>
     );
