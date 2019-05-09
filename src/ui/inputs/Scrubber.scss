@@ -1,7 +1,9 @@
+@import "../styles/common";
 @import "../styles/icons";
 
 :local(.scrubber) {
   cursor: ew-resize;
+  @include no-select;
 }
 
 :local(.cursorContainer) {
