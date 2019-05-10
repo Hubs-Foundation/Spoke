@@ -9,7 +9,7 @@ export default class Footer extends Component {
         <nav>
           <ul className={styles.navList}>
             <li className={styles.mobileOnly}>
-              <a href="https://github.com/mozilla/spoke" rel="noopener noreferrer">
+              <a href="https://github.com/mozilla/Spoke" rel="noopener noreferrer">
                 Source
               </a>
             </li>
