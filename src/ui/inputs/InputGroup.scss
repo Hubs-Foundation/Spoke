@@ -1,0 +1,29 @@
+@import "../styles/theme";
+
+:local(.inputGroup) {
+  display: flex;
+  flex-direction: row;
+  padding: 4px 8px;
+  flex: 1;
+  min-height: 24px;
+
+  &.disabled {
+    pointer-events: none;
+    opacity: 0.3;
+  }
+
+  & > label {
+    display: block;
+    width: 25%;
+    color: $text2;
+    padding-bottom: 2px;
+    padding-top: 4px;
+  }
+
+  .content {
+    display: flex;
+    flex-direction: row;
+    flex: 1;
+    padding-left: 8px;
+  }
+}

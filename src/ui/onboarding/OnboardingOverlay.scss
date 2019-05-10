@@ -1,0 +1,12 @@
+:local(.onboardingOverlay) {
+  display: flex;
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.5);
+  pointer-events: all;
+}
+
+:local(.content) {
+  display: flex;
+}

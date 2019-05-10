@@ -1,0 +1,94 @@
+@import "../styles/theme";
+
+:local(.button) {
+  display: flex;
+  border: none;
+  border-radius: 4px;
+  background: $blue;
+  color: $white;
+  white-space: nowrap;
+  min-height: 24px;
+  font-size: 12px;
+  font-family: Lato;
+  text-align: center;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  padding: 1px 6px;
+
+  &:disabled {
+    background: $disabled;
+    color: $disabled-text;
+
+    &:hover {
+      background-color: $disabled;
+    }
+  }
+
+  &:hover {
+    color: $text;
+    background-color: $blue-pressed;
+  }
+
+  &:active {
+    color: $text;
+    background-color: $blue-pressed;
+  }
+}
+
+:local(.secondary) {
+  background-color: $hover;
+  color: $text;
+
+  &:disabled {
+    background-color: $disabled;
+    color: $disabled-text;
+
+    &:hover {
+      background-color: transparent;
+    }
+  }
+
+  &:hover {
+    background-color: $text2;
+  }
+
+  &:active {
+    background-color: $text2;
+  }
+}
+
+:local(.menuButton) {
+  background-color: transparent;
+  color: $text2;
+
+  &:disabled {
+    background-color: transparent;
+    color: $disabled-text;
+
+    &:hover {
+      background-color: transparent;
+    }
+  }
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+
+  &:active {
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+}
+
+:local(.medium) {
+  line-height: 1em;
+  height: 3em;
+  padding: 1em;
+}
+
+:local(.large) {
+  min-height: 24px;
+  padding: 1em 2em;
+  font-size: 1.5em;
+}

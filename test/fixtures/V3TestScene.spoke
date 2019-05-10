@@ -1,0 +1,981 @@
+{
+  "version": 3,
+  "root": "FC94D12B-39AB-493B-848F-5290FFD4ECF9",
+  "metadata": {},
+  "entities": {
+    "FC94D12B-39AB-493B-848F-5290FFD4ECF9": {
+      "name": "V1TestScene"
+    },
+    "BC9DF488-65F7-4C11-A606-14A86DFBA6D3": {
+      "name": "Skybox1",
+      "components": [
+        {
+          "name": "transform",
+          "props": {
+            "position": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        },
+        {
+          "name": "visible",
+          "props": {
+            "visible": true
+          }
+        },
+        {
+          "name": "skybox",
+          "props": {
+            "turbidity": 9,
+            "rayleigh": 1.2,
+            "luminance": 0.5,
+            "mieCoefficient": 0.006,
+            "mieDirectionalG": 0.7,
+            "inclination": 0.1,
+            "azimuth": 0.2,
+            "distance": 3000
+          }
+        }
+      ],
+      "parent": "FC94D12B-39AB-493B-848F-5290FFD4ECF9",
+      "index": 0
+    },
+    "4F5ADE83-E6E5-49BB-9BFE-C691DE92BBC0": {
+      "name": "Ambient Light1",
+      "components": [
+        {
+          "name": "transform",
+          "props": {
+            "position": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        },
+        {
+          "name": "visible",
+          "props": {
+            "visible": true
+          }
+        },
+        {
+          "name": "ambient-light",
+          "props": {
+            "color": "#ff0000",
+            "intensity": 0.6
+          }
+        }
+      ],
+      "parent": "FC94D12B-39AB-493B-848F-5290FFD4ECF9",
+      "index": 1
+    },
+    "78DAFA91-2820-4025-822B-E3511D0FA839": {
+      "name": "Directional Light1",
+      "components": [
+        {
+          "name": "transform",
+          "props": {
+            "position": {
+              "x": -1,
+              "y": 3,
+              "z": 0
+            },
+            "rotation": {
+              "x": 1.5707963267948966,
+              "y": 0.5235987755982988,
+              "z": -1.5707963267948966
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        },
+        {
+          "name": "visible",
+          "props": {
+            "visible": true
+          }
+        },
+        {
+          "name": "directional-light",
+          "props": {
+            "color": "#ff0000",
+            "intensity": 0.6,
+            "castShadow": true,
+            "shadowMapResolution": [
+              1024,
+              1024
+            ],
+            "shadowBias": 0.001,
+            "shadowRadius": 2
+          }
+        }
+      ],
+      "parent": "FC94D12B-39AB-493B-848F-5290FFD4ECF9",
+      "index": 2
+    },
+    "597F7D01-5961-4BB0-9611-CD00F31D7CA1": {
+      "name": "Spawn Point",
+      "components": [
+        {
+          "name": "transform",
+          "props": {
+            "position": {
+              "x": 0,
+              "y": 0,
+              "z": -5
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        },
+        {
+          "name": "visible",
+          "props": {
+            "visible": true
+          }
+        },
+        {
+          "name": "spawn-point",
+          "props": {}
+        }
+      ],
+      "parent": "FC94D12B-39AB-493B-848F-5290FFD4ECF9",
+      "index": 3
+    },
+    "C087232B-83B0-4972-B301-9C278BEECD28": {
+      "name": "Ground Plane1",
+      "components": [
+        {
+          "name": "transform",
+          "props": {
+            "position": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        },
+        {
+          "name": "visible",
+          "props": {
+            "visible": true
+          }
+        },
+        {
+          "name": "ground-plane",
+          "props": {
+            "color": "#ff0000"
+          }
+        },
+        {
+          "name": "shadow",
+          "props": {
+            "receive": true
+          }
+        },
+        {
+          "name": "walkable",
+          "props": {}
+        }
+      ],
+      "parent": "FC94D12B-39AB-493B-848F-5290FFD4ECF9",
+      "index": 4
+    },
+    "4BE76EE6-DE3C-4586-BEEA-B80759A5390F": {
+      "name": "Model1",
+      "components": [
+        {
+          "name": "transform",
+          "props": {
+            "position": {
+              "x": -5,
+              "y": 0,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 5,
+              "y": 5,
+              "z": 5
+            }
+          }
+        },
+        {
+          "name": "visible",
+          "props": {
+            "visible": true
+          }
+        },
+        {
+          "name": "gltf-model",
+          "props": {
+            "src": "https://asset-bundles-prod.reticulum.io/interactables/Ducky/DuckyMesh-438ff8e022.gltf",
+            "attribution": null
+          }
+        },
+        {
+          "name": "shadow",
+          "props": {
+            "cast": true,
+            "receive": true
+          }
+        },
+        {
+          "name": "collidable",
+          "props": {}
+        },
+        {
+          "name": "walkable",
+          "props": {}
+        }
+      ],
+      "parent": "FC94D12B-39AB-493B-848F-5290FFD4ECF9",
+      "index": 5
+    },
+    "5A96D084-5192-4429-A038-B8D029CEC1BF": {
+      "name": "Ceiling Fan",
+      "components": [
+        {
+          "name": "transform",
+          "props": {
+            "position": {
+              "x": 5,
+              "y": 2,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.01,
+              "y": 0.01,
+              "z": 0.01
+            }
+          }
+        },
+        {
+          "name": "visible",
+          "props": {
+            "visible": true
+          }
+        },
+        {
+          "name": "gltf-model",
+          "props": {
+            "src": "https://sketchfab.com/models/ec2c6087d4824211abc827f2a4c2b578",
+            "attribution": {
+              "name": "Ceiling Fan",
+              "author": "mozillareality",
+              "url": "https://sketchfab.com/models/ec2c6087d4824211abc827f2a4c2b578"
+            }
+          }
+        },
+        {
+          "name": "shadow",
+          "props": {
+            "cast": false,
+            "receive": false
+          }
+        },
+        {
+          "name": "loop-animation",
+          "props": {
+            "clip": "Take 001"
+          }
+        }
+      ],
+      "parent": "FC94D12B-39AB-493B-848F-5290FFD4ECF9",
+      "index": 6
+    },
+    "D764B33D-0B79-4CE5-962C-7935E2C79BD9": {
+      "name": "Spawn Point 1",
+      "components": [
+        {
+          "name": "transform",
+          "props": {
+            "position": {
+              "x": 0,
+              "y": 0,
+              "z": 5
+            },
+            "rotation": {
+              "x": 3.14,
+              "y": 0,
+              "z": 3.14
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        },
+        {
+          "name": "visible",
+          "props": {
+            "visible": true
+          }
+        },
+        {
+          "name": "spawn-point",
+          "props": {}
+        }
+      ],
+      "parent": "FC94D12B-39AB-493B-848F-5290FFD4ECF9",
+      "index": 7
+    },
+    "F4E819AA-2920-4EE2-9154-B9C387EFE6CD": {
+      "name": "Group",
+      "components": [
+        {
+          "name": "transform",
+          "props": {
+            "position": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        },
+        {
+          "name": "visible",
+          "props": {
+            "visible": true
+          }
+        },
+        {
+          "name": "group",
+          "props": {}
+        }
+      ],
+      "parent": "FC94D12B-39AB-493B-848F-5290FFD4ECF9",
+      "index": 8
+    },
+    "239F4B43-F48A-433B-9B86-E25C7565009B": {
+      "name": "Group 1",
+      "components": [
+        {
+          "name": "transform",
+          "props": {
+            "position": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        },
+        {
+          "name": "visible",
+          "props": {
+            "visible": true
+          }
+        },
+        {
+          "name": "group",
+          "props": {}
+        }
+      ],
+      "parent": "F4E819AA-2920-4EE2-9154-B9C387EFE6CD",
+      "index": 0
+    },
+    "F2AF796D-CE8C-43F8-95FF-729F5AF89100": {
+      "name": "Hemisphere Light1",
+      "components": [
+        {
+          "name": "transform",
+          "props": {
+            "position": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        },
+        {
+          "name": "visible",
+          "props": {
+            "visible": true
+          }
+        },
+        {
+          "name": "hemisphere-light",
+          "props": {
+            "skyColor": "#ff0000",
+            "groundColor": "#000000",
+            "intensity": 0.8
+          }
+        }
+      ],
+      "parent": "FC94D12B-39AB-493B-848F-5290FFD4ECF9",
+      "index": 9
+    },
+    "1380CDD4-C746-44FD-8640-26213C835F77": {
+      "name": "Spawner1",
+      "components": [
+        {
+          "name": "transform",
+          "props": {
+            "position": {
+              "x": 5,
+              "y": 1,
+              "z": 5
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.01,
+              "y": 0.01,
+              "z": 0.01
+            }
+          }
+        },
+        {
+          "name": "visible",
+          "props": {
+            "visible": true
+          }
+        },
+        {
+          "name": "spawner",
+          "props": {
+            "src": "https://sketchfab.com/models/2a09a3dc75364c8c84b25d2cc235cb9b"
+          }
+        }
+      ],
+      "parent": "FC94D12B-39AB-493B-848F-5290FFD4ECF9",
+      "index": 10
+    },
+    "81724800-9208-4BE8-92D0-5C25BFC2D107": {
+      "name": "Spot Light1",
+      "components": [
+        {
+          "name": "transform",
+          "props": {
+            "position": {
+              "x": 0,
+              "y": 4,
+              "z": -5
+            },
+            "rotation": {
+              "x": 1.5707963267948963,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        },
+        {
+          "name": "visible",
+          "props": {
+            "visible": true
+          }
+        },
+        {
+          "name": "spot-light",
+          "props": {
+            "color": "#00ff00",
+            "intensity": 11,
+            "range": 34,
+            "innerConeAngle": 0.16767115810815547,
+            "outerConeAngle": 0.78,
+            "castShadow": true,
+            "shadowMapResolution": [
+              1024,
+              1024
+            ],
+            "shadowBias": 0.1,
+            "shadowRadius": 1.1
+          }
+        }
+      ],
+      "parent": "FC94D12B-39AB-493B-848F-5290FFD4ECF9",
+      "index": 11
+    },
+    "6B22CCC6-1DD9-4D5E-B028-CAE1AE990534": {
+      "name": "Point Light1",
+      "components": [
+        {
+          "name": "transform",
+          "props": {
+            "position": {
+              "x": 0,
+              "y": 2,
+              "z": 5
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        },
+        {
+          "name": "visible",
+          "props": {
+            "visible": true
+          }
+        },
+        {
+          "name": "point-light",
+          "props": {
+            "color": "#0000ff",
+            "intensity": 13,
+            "range": 12,
+            "castShadow": false,
+            "shadowMapResolution": [
+              1024,
+              1024
+            ],
+            "shadowBias": 0.1,
+            "shadowRadius": 1.2
+          }
+        }
+      ],
+      "parent": "FC94D12B-39AB-493B-848F-5290FFD4ECF9",
+      "index": 12
+    },
+    "AD71505D-2329-4F20-8E38-B22D6DEE4AA0": {
+      "name": "Image",
+      "components": [
+        {
+          "name": "transform",
+          "props": {
+            "position": {
+              "x": -5,
+              "y": 1,
+              "z": -5
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0.7853981633974484,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        },
+        {
+          "name": "visible",
+          "props": {
+            "visible": true
+          }
+        },
+        {
+          "name": "image",
+          "props": {
+            "src": "https://assets-prod.reticulum.io/assets/images/hub-preview-light-no-shadow-5ebb166e8580d819b445892173ec0286.png",
+            "projection": "flat"
+          }
+        }
+      ],
+      "parent": "FC94D12B-39AB-493B-848F-5290FFD4ECF9",
+      "index": 13
+    },
+    "339B234C-67BE-43E5-9D9E-0B454A3A50A7": {
+      "name": "Video",
+      "components": [
+        {
+          "name": "transform",
+          "props": {
+            "position": {
+              "x": 5,
+              "y": 1,
+              "z": -5
+            },
+            "rotation": {
+              "x": 0,
+              "y": -0.7853981633974484,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        },
+        {
+          "name": "visible",
+          "props": {
+            "visible": true
+          }
+        },
+        {
+          "name": "video",
+          "props": {
+            "src": "https://www.youtube.com/watch?v=WmQKZJPhV7s",
+            "controls": false,
+            "autoPlay": true,
+            "loop": true,
+            "audioType": "pannernode",
+            "volume": 0.75,
+            "distanceModel": "inverse",
+            "rolloffFactor": 10,
+            "refDistance": 3,
+            "maxDistance": 100,
+            "coneInnerAngle": 20,
+            "coneOuterAngle": 180,
+            "coneOuterGain": 0.5,
+            "projection": "flat"
+          }
+        }
+      ],
+      "parent": "FC94D12B-39AB-493B-848F-5290FFD4ECF9",
+      "index": 14
+    },
+    "D60DF3B3-C27C-486F-829C-8EAC14FE0A5A": {
+      "name": "Video 1",
+      "components": [
+        {
+          "name": "transform",
+          "props": {
+            "position": {
+              "x": -5,
+              "y": 1,
+              "z": 5
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        },
+        {
+          "name": "visible",
+          "props": {
+            "visible": true
+          }
+        },
+        {
+          "name": "video",
+          "props": {
+            "src": "https://www.youtube.com/watch?v=H6SsB3JYqQg",
+            "controls": true,
+            "autoPlay": true,
+            "loop": false,
+            "audioType": "pannernode",
+            "volume": 0.5,
+            "distanceModel": "inverse",
+            "rolloffFactor": 1,
+            "refDistance": 1,
+            "maxDistance": 10000,
+            "coneInnerAngle": 360,
+            "coneOuterAngle": 360,
+            "coneOuterGain": 0,
+            "projection": "360-equirectangular"
+          }
+        }
+      ],
+      "parent": "FC94D12B-39AB-493B-848F-5290FFD4ECF9",
+      "index": 15
+    },
+    "48D51ECF-DCC3-4F47-BE02-9BD304BBADF9": {
+      "name": "Image 1",
+      "components": [
+        {
+          "name": "transform",
+          "props": {
+            "position": {
+              "x": -10,
+              "y": 1,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        },
+        {
+          "name": "visible",
+          "props": {
+            "visible": true
+          }
+        },
+        {
+          "name": "image",
+          "props": {
+            "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/SonyCenter_360panorama.jpg/2880px-SonyCenter_360panorama.jpg",
+            "projection": "360-equirectangular"
+          }
+        }
+      ],
+      "parent": "FC94D12B-39AB-493B-848F-5290FFD4ECF9",
+      "index": 16
+    },
+    "07B5C8A4-8227-4C1F-BF93-36F880C2D318": {
+      "name": "Box Collider1",
+      "components": [
+        {
+          "name": "transform",
+          "props": {
+            "position": {
+              "x": -10,
+              "y": 1,
+              "z": -5
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        },
+        {
+          "name": "visible",
+          "props": {
+            "visible": true
+          }
+        },
+        {
+          "name": "box-collider",
+          "props": {}
+        }
+      ],
+      "parent": "FC94D12B-39AB-493B-848F-5290FFD4ECF9",
+      "index": 17
+    },
+    "87203200-0209-4EA6-B250-A26515332942": {
+      "name": "Floor Plan1",
+      "components": [
+        {
+          "name": "transform",
+          "props": {
+            "position": {
+              "x": 0,
+              "y": 0.005,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        },
+        {
+          "name": "visible",
+          "props": {
+            "visible": true
+          }
+        },
+        {
+          "name": "floor-plan",
+          "props": {
+            "autoCellSize": true,
+            "cellSize": 1,
+            "cellHeight": 0.1,
+            "agentHeight": 1,
+            "agentRadius": 0.0001,
+            "agentMaxClimb": 0.5,
+            "agentMaxSlope": 45,
+            "regionMinSize": 4
+          }
+        }
+      ],
+      "parent": "FC94D12B-39AB-493B-848F-5290FFD4ECF9",
+      "index": 18
+    },
+    "BA252E26-9586-47C0-85CA-B73D2DBE76B6": {
+      "name": "Link",
+      "components": [
+        {
+          "name": "transform",
+          "props": {
+            "position": {
+              "x": 0,
+              "y": -0.049999999999999094,
+              "z": -0.09999999999999787
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        },
+        {
+          "name": "visible",
+          "props": {
+            "visible": true
+          }
+        },
+        {
+          "name": "link",
+          "props": {
+            "href": "https://hubs.mozilla.com/scenes/VfoICgK/too-late"
+          }
+        }
+      ],
+      "parent": "FC94D12B-39AB-493B-848F-5290FFD4ECF9",
+      "index": 19
+    },
+    "12CCC3A9-230B-4207-B5E9-D667B463C80F": {
+      "name": "Trigger Volume",
+      "components": [
+        {
+          "name": "transform",
+          "props": {
+            "position": {
+              "x": 10.1893397109767,
+              "y": -0.049999999999999094,
+              "z": -0.09999999999999787
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        },
+        {
+          "name": "visible",
+          "props": {
+            "visible": true
+          }
+        },
+        {
+          "name": "trigger-volume",
+          "props": {
+            "target": "5A96D084-5192-4429-A038-B8D029CEC1BF",
+            "enterComponent": "loop-animation",
+            "enterProperty": "paused",
+            "enterValue": false,
+            "leaveComponent": "loop-animation",
+            "leaveProperty": "paused",
+            "leaveValue": true
+          }
+        }
+      ],
+      "parent": "FC94D12B-39AB-493B-848F-5290FFD4ECF9",
+      "index": 20
+    }
+  }
+}

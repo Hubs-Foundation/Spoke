@@ -1,0 +1,72 @@
+@import "../styles/theme";
+
+:local(.dialogContainer) {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  border-radius: 4px;
+  background-color: #282C31;
+  max-width: 800px;
+  min-width: 400px;
+  min-height: 150px;
+  max-height: 80vh;
+}
+
+:local(.header) {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  padding: 0 8px;
+  font-size: 12px;
+  overflow: hidden;
+  height: 32px;
+  background: black;
+  border-top-left-radius: inherit;
+  border-top-right-radius: inherit;
+
+  > * {
+    display: flex;
+    align-items: center;
+  }
+}
+
+:local(.icon) {
+  padding-right: 8px;
+}
+
+:local(.content) {
+  color: $text2;
+  display: flex;
+  flex: 1;
+  flex-direction: row;
+  // This forces firefox to give the contents a proper height.
+  overflow: hidden;
+  padding: 8px;
+  white-space: pre;
+  min-height: 100px;
+}
+
+:local(.bottomNav) {
+  display: flex;
+  height: 64px;
+  flex-direction: row;
+  justify-content: flex-end;
+  align-items: center;
+  background-color: black;
+  border-bottom-left-radius: inherit;
+  border-bottom-right-radius: inherit;
+  padding: 8px;
+
+  a {
+    color: $text2;
+  }
+
+  button {
+    min-width: 84px;
+  }
+  
+  & > * {
+    margin: 0 8px;
+  }
+}
+

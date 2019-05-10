@@ -5,10 +5,11 @@ yarn-debug.log*
 yarn-error.log*
 yarn.lock
 node_modules/
-public/
+dist/
 example/generated/
 example/imported/
 .certs/
+certs/
 .env
 release/spoke-linux
 release/spoke-macos
@@ -17,3 +18,4 @@ release/*.zip
 bin/.spoke-server
 test/integration/.spoke-server
 test/integration/project/generated
+.tersercache

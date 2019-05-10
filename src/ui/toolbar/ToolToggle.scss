@@ -1,0 +1,85 @@
+@import "../styles/theme";
+
+:local(.wrapper) {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+:local(.toggleText){
+  width: 36px;
+}
+
+:local(.toggleSwitch) {
+  margin: 0px 16px;
+
+  &.react-toggle--checked &.react-toggle-track {
+    background-color: $panel;
+  }
+
+  &.react-toggle--checked:hover:not(.react-toggle--disabled) .react-toggle-track {
+    background-color: $background;
+  }
+
+  > .react-toggle-track {
+    background-color: $panel;
+
+    > .react-toggle-track-check {
+      height: 12px;
+      width: 12px;
+    }
+  
+    > .react-toggle-track-x {
+      height: 12px;
+      width: 12px;
+    }
+  }
+
+  > .react-toggle-thumb {
+    background-color: $blue;
+    border: none;
+    box-shadow: none;
+  }
+}
+
+:local(.toggleOnOff) {
+
+  margin: 0px 16px;
+  &.react-toggle--checked &.react-toggle-track {
+    background-color: $panel;
+  }
+
+  &.react-toggle--checked:hover:not(.react-toggle--disabled) .react-toggle-track {
+    background-color: $background;
+  }
+
+  &.react-toggle-x:hover:not(.react-toggle--disabled) .react-toggle-track {
+    color: $panel;
+  }
+
+  > .react-toggle-track {
+    background-color: $panel;
+
+    > .react-toggle-track-check {
+      height: 12px;
+      width: 12px;
+      color: $text;
+    }
+  
+    > .react-toggle-track-x {
+      height: 12px;
+      width: 12px;
+      color: $border;
+    }
+  }
+
+  &.react-toggle--checked .react-toggle-thumb {
+    background-color: $blue;
+  }
+
+  > .react-toggle-thumb {
+    background-color: $border;
+    border: none;
+    box-shadow: none;
+  }
+}

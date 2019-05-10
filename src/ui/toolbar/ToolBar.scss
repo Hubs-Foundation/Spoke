@@ -1,0 +1,66 @@
+@import "../styles/theme";
+
+:local(.toolbar) {
+  display: flex;
+  flex-direction: row;
+  height: 40px;
+  background-color: $toolbar;
+
+  :local(.logo) {
+    position: absolute;
+    top: 0;
+    left: 0;
+    text-align: center;
+    font-family: $zilla;
+    text-shadow: 0 0 4px black;
+    font-size: 24px;
+    width: 100%;
+    margin-top: 4px;
+    font-weight: bold;
+    display: flex;
+    justify-content: center;
+    pointer-events: none;
+
+    a {
+      color: white;
+      text-decoration: none;
+    }
+  }
+
+  :local(.logoContent) {
+    display: flex;
+    pointer-events: all;
+
+    img {
+      width: 32px;
+      height: 32px;
+      margin-right: 5px;
+    }
+  }
+
+  :local(.toolbtns) {
+    width: auto;
+    height: inherit;
+    display: flex;
+    flex-direction: row;
+  }
+
+  :local(.tooltoggles) {
+    width: auto;
+    height: inherit;
+    display: flex;
+    flex-direction: row;
+    background-color: $toolbar2;
+    align-items: center;
+  }
+
+  :local(.spacer) {
+    flex: 1;
+  }
+
+  :local(.publishButton) {
+    align-self: center;
+    margin: 1em;
+    padding: 0 2em;
+  }
+}

@@ -2,7 +2,7 @@
 ====================================================================
 
 
-Portions of this project, particularly code under src/client/editor/, are 
+Portions of this project, particularly code under src/editor/, are 
 derived from the "three.js / editor" project (https://github.com/mrdoob/three.js/), 
 licensed under the MIT License.
 
