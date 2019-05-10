@@ -6,8 +6,11 @@ import GroundPlaneNode from "./GroundPlaneNode";
 import BoxColliderNode from "./BoxColliderNode";
 import mergeMeshGeometries from "../utils/mergeMeshGeometries";
 import RecastClient from "../recast/RecastClient";
+import HeightfieldClient from "../heightfield/HeightfieldClient";
+import SpawnPointNode from "../nodes/SpawnPointNode";
 
 const recastClient = new RecastClient();
+const heightfieldClient = new HeightfieldClient();
 
 export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
   static nodeName = "Floor Plan";
@@ -62,11 +65,17 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
     if (this.navMesh) {
       this.navMesh.visible = true;
     }
+    if (this.navMesh) {
+      this.heightfieldMesh.visible = true;
+    }
   }
 
   onDeselect() {
     if (this.navMesh) {
       this.navMesh.visible = false;
+    }
+    if (this.navMesh) {
+      this.heightfieldMesh.visible = false;
     }
   }
 
@@ -100,21 +109,30 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
     // Tuned to produce cell sizes from ~0.5 to ~1.5 for areas from ~200 to ~350,000.
     const cellSize = this.autoCellSize ? Math.pow(area, 1 / 3) / 50 : this.cellSize;
 
-    return recastClient.buildNavMesh(
-      positions,
-      indices,
-      {
-        cellSize,
-        cellHeight: this.cellHeight,
-        agentHeight: this.agentHeight,
-        agentRadius: this.agentRadius,
-        agentMaxClimb: this.agentMaxClimb,
-        agentMaxSlope: this.agentMaxSlope,
-        regionMinSize: this.regionMinSize
-      },
-      generateHeightfield,
-      signal
-    );
+    if (generateHeightfield) {
+      const spawnPoints = this.editor.scene.getNodesByType(SpawnPointNode);
+
+      let minY = Number.POSITIVE_INFINITY;
+      for (let j = 0; j < spawnPoints.length; j++) {
+        minY = Math.min(minY, spawnPoints[j].position.y);
+      }
+      return heightfieldClient.buildHeightfield(positions, { minY: minY, agentHeight: this.agentHeight }, signal);
+    } else {
+      return recastClient.buildNavMesh(
+        positions,
+        indices,
+        {
+          cellSize,
+          cellHeight: this.cellHeight,
+          agentHeight: this.agentHeight,
+          agentRadius: this.agentRadius,
+          agentMaxClimb: this.agentMaxClimb,
+          agentMaxSlope: this.agentMaxSlope,
+          regionMinSize: this.regionMinSize
+        },
+        signal
+      );
+    }
   }
 
   async generate(signal) {
@@ -163,7 +181,10 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
 
     const walkableGeometry = mergeMeshGeometries(walkableMeshes);
     const { navmesh } = await this.generateNavGeometry(walkableGeometry, false, signal);
-    const navMesh = new THREE.Mesh(navmesh, new THREE.MeshBasicMaterial({ color: 0x0000ff }));
+    const navMesh = new THREE.Mesh(
+      navmesh,
+      new THREE.MeshBasicMaterial({ color: 0x0000ff, transparent: true, opacity: 0.2 })
+    );
 
     if (this.editor.selected !== this) {
       navMesh.visible = false;
@@ -174,6 +195,33 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
     const heightfieldGeometry = mergeMeshGeometries(collidableMeshes);
     const { heightfield } = await this.generateNavGeometry(heightfieldGeometry, true, signal);
     this.heightfield = heightfield || null;
+
+    const segments = heightfield.data[0].length;
+    const heightfieldMeshGeometry = new THREE.PlaneBufferGeometry(
+      heightfield.width,
+      heightfield.length,
+      segments - 1,
+      segments - 1
+    );
+    heightfieldMeshGeometry.rotateX(-Math.PI / 2);
+    const vertices = heightfieldMeshGeometry.attributes.position.array;
+
+    for (let i = 0, j = 0, l = vertices.length; i < l / 3; i++, j += 3) {
+      vertices[j + 1] = heightfield.data[Math.floor(i / segments)][i % segments];
+    }
+
+    const heightfieldMesh = new THREE.Mesh(
+      heightfieldMeshGeometry,
+      new THREE.MeshBasicMaterial({ wireframe: true, color: 0xffff00 })
+    );
+
+    this.setHeightfieldMesh(heightfieldMesh);
+
+    heightfieldMesh.position.set(heightfield.offset.x, 0, heightfield.offset.z);
+
+    if (this.editor.selected !== this) {
+      heightfieldMesh.visible = false;
+    }
 
     return this;
   }

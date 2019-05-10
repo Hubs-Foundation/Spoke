@@ -25,7 +25,7 @@ export default class RecastClient {
     this.working = false;
   }
 
-  async buildNavMesh(verts, faces, params, generateHeightfield, signal) {
+  async buildNavMesh(verts, faces, params, signal) {
     if (this.working) {
       throw new Error("Already building nav mesh");
     }
@@ -72,8 +72,7 @@ export default class RecastClient {
       {
         verts,
         faces,
-        params,
-        generateHeightfield
+        params
       },
       [verts.buffer, faces.buffer]
     );
@@ -88,6 +87,6 @@ export default class RecastClient {
     geometry.addAttribute("position", new THREE.Float32BufferAttribute(result.verts, 3));
     geometry.setIndex(new THREE.Uint16BufferAttribute(result.indices, 1));
 
-    return { navmesh: geometry, heightfield: result.heightfield };
+    return { navmesh: geometry };
   }
 }

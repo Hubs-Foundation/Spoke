@@ -6,6 +6,7 @@ export default class FloorPlan extends THREE.Object3D {
     this.position.y = 0.005;
     this.navMesh = null;
     this.heightfield = null;
+    this.heightfieldMesh = null;
   }
 
   setNavMesh(object) {
@@ -21,6 +22,19 @@ export default class FloorPlan extends THREE.Object3D {
     this.navMesh.layers.set(1);
   }
 
+  setHeightfieldMesh(object) {
+    if (this.heightfieldMesh) {
+      this.remove(this.heightfieldMesh);
+    }
+
+    if (object) {
+      this.add(object);
+    }
+
+    this.heightfieldMesh = object;
+    this.heightfieldMesh.layers.set(1);
+  }
+
   copy(source, recursive) {
     super.copy(source, false);
 
@@ -33,6 +47,8 @@ export default class FloorPlan extends THREE.Object3D {
         clonedChild = child.clone();
         clonedChild.material = child.material.clone();
         this.navMesh = clonedChild;
+      } else if (child === source.heightfieldMesh) {
+        //dont clone the heightfieldMesh
       } else if (recursive === true) {
         clonedChild = child.clone();
       }
