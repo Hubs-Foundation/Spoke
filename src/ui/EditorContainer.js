@@ -25,6 +25,7 @@ import ProgressDialog from "./dialogs/ProgressDialog";
 import ConfirmDialog from "./dialogs/ConfirmDialog";
 
 import Onboarding from "./onboarding/Onboarding";
+import SupportDialog from "./dialogs/SupportDialog";
 
 class EditorContainer extends Component {
   static propTypes = {
@@ -165,19 +166,23 @@ class EditorContainer extends Component {
           },
           {
             name: "Keyboard and Mouse Controls",
-            action: () => window.open("https://github.com/MozillaReality/Spoke/wiki/Keyboard-and-Mouse-Controls")
+            action: () => window.open("https://github.com/mozilla/Spoke/wiki/Keyboard-and-Mouse-Controls")
           },
           {
             name: "Get Support",
-            action: () => window.open("https://github.com/MozillaReality/Spoke/blob/master/SUPPORT.md")
+            action: () => this.showDialog(SupportDialog)
+          },
+          {
+            name: "Submit Feedback",
+            action: () => window.open("https://forms.gle/2PAFXKwW1SXdfSK17")
           },
           {
             name: "Report an Issue",
-            action: () => window.open("https://github.com/MozillaReality/Spoke/issues/new")
+            action: () => window.open("https://github.com/mozilla/Spoke/issues/new")
           },
           {
             name: "Join us on Discord",
-            action: () => window.open("https://discord.gg/XzrGUY8")
+            action: () => window.open("https://discord.gg/wHmY4nd")
           },
           {
             name: "Terms of Use",
@@ -203,6 +208,10 @@ class EditorContainer extends Component {
               )
           }
         ]
+      },
+      {
+        name: "Submit Feedback",
+        action: () => window.open("https://forms.gle/2PAFXKwW1SXdfSK17")
       }
     ];
   };
@@ -468,9 +477,9 @@ class EditorContainer extends Component {
       });
     });
 
-    if (!confirm) return;
-
     this.hideDialog();
+
+    if (!confirm) return;
 
     const el = document.createElement("input");
     el.type = "file";

@@ -22,12 +22,12 @@ class NavBar extends Component {
           <nav>
             <ul className={styles.navList}>
               <li>
-                <a href="https://github.com/mozillareality/spoke" rel="noopener noreferrer">
+                <a href="https://github.com/mozilla/spoke" rel="noopener noreferrer">
                   Source
                 </a>
               </li>
               <li>
-                <a href="https://discordapp.com/invite/wHmY4nd" rel="noopener noreferrer">
+                <a href="https://discord.gg/wHmY4nd" rel="noopener noreferrer">
                   Community
                 </a>
               </li>
