@@ -48,7 +48,7 @@ pipeline {
           def gitSha = sh(returnStdout: true, script: "git log -n 1 --pretty=format:'%h'").trim()
           def text = (
             "*<http://localhost:8080/job/${env.JOB_NAME}/${env.BUILD_NUMBER}|#${env.BUILD_NUMBER}>* *${env.JOB_NAME}* " +
-            "<https://github.com/mozillareality/spoke/commit/$gitSha|$gitSha> " +
+            "<https://github.com/mozilla/spoke/commit/$gitSha|$gitSha> " +
             "Spoke: ```${gitSha} ${gitMessage}```\n" +
             "<${smokeURL}?required_version=${env.BUILD_NUMBER}|Smoke Test> - to push:\n" +
             "`/mr spoke deploy ${env.BUILD_NUMBER} ${targetS3Url}`"

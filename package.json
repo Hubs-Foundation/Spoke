@@ -16,7 +16,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/MozillaReality/spoke.git"
+    "url": "https://github.com/mozilla/spoke.git"
   },
   "scripts": {
     "start": "cross-env NODE_ENV=development webpack-dev-server --mode development",

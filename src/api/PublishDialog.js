@@ -74,7 +74,7 @@ export default class PublishDialog extends Component {
           <label htmlFor="allowRemixing">
             Allow{" "}
             <a
-              href="https://github.com/MozillaReality/Spoke/blob/master/REMIXING.md"
+              href="https://github.com/mozilla/Spoke/blob/master/REMIXING.md"
               target="_blank"
               rel="noopener noreferrer"
             >
@@ -93,7 +93,7 @@ export default class PublishDialog extends Component {
           <label htmlFor="allowPromotion">
             Allow Mozilla to{" "}
             <a
-              href="https://github.com/MozillaReality/Spoke/blob/master/PROMOTION.md"
+              href="https://github.com/mozilla/Spoke/blob/master/PROMOTION.md"
               target="_blank"
               rel="noopener noreferrer"
             >

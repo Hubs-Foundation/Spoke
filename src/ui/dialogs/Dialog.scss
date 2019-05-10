@@ -44,6 +44,17 @@
   padding: 8px;
   white-space: pre;
   min-height: 100px;
+
+  h1 {
+    font-size: 2em;
+    color: $text;
+    margin-bottom: 16px;
+  }
+
+  p {
+    margin-bottom: 12px;
+    line-height: 1.5em;
+  }
 }
 
 :local(.bottomNav) {
