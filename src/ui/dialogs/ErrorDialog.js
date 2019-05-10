@@ -17,8 +17,10 @@ export default class ErrorDialog extends Component {
   onShowReportDialog = () => {
     Sentry.showReportDialog({
       eventId: this.state.eventId,
-      email: "anonymous.spoke.user@mozilla.com",
-      user: "Anonymous Spoke User"
+      user: {
+        name: "Anonymous Spoke User",
+        email: "anonymous.spoke.user@mozilla.com"
+      }
     });
   };
 
