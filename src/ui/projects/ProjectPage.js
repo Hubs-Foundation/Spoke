@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
+import * as Sentry from "@sentry/browser";
 import { withApi } from "../contexts/ApiContext";
 import EditorContainer from "../EditorContainer";
 import Loading from "../Loading";
@@ -27,8 +28,8 @@ class ProjectPage extends Component {
     const queryParams = new URLSearchParams(location.search);
 
     if (projectId === "new") {
-      if (queryParams.template) {
-        this.loadProjectTemplate(queryParams.template);
+      if (queryParams.has("template")) {
+        this.loadProjectTemplate(queryParams.get("template"));
       } else {
         this.loadProjectTemplate(defaultTemplateUrl);
       }
@@ -46,8 +47,8 @@ class ProjectPage extends Component {
 
     if (projectId !== prevProjectId) {
       if (projectId === "new") {
-        if (queryParams.template) {
-          this.loadProjectTemplate(queryParams.template);
+        if (queryParams.has("template")) {
+          this.loadProjectTemplate(queryParams.get("template"));
         } else {
           this.loadProjectTemplate(defaultTemplateUrl);
         }
@@ -60,10 +61,12 @@ class ProjectPage extends Component {
   }
 
   loadProjectTemplate(templateUrl) {
-    fetch(templateUrl)
+    this.props.api
+      .fetch(templateUrl)
       .then(response => response.json())
       .then(project => this.setState({ loading: false, project }))
       .catch(err => {
+        Sentry.captureException(err);
         console.error(err.response);
         this.setState({ loading: false, error: err.message || "An unknown error occurred when loading the project" });
       });
@@ -82,7 +85,7 @@ class ProjectPage extends Component {
           // User has an invalid auth token.
           return this.props.history.push("/projects");
         }
-
+        Sentry.captureException(err);
         console.error(err.response);
         this.setState({ loading: false, error: err.message || "An unknown error occurred when loading the project" });
       });
@@ -97,7 +100,7 @@ class ProjectPage extends Component {
     }
 
     if (error) {
-      return <Error message={error} />;
+      return <Error className="project-error" message={error} />;
     }
 
     return <EditorContainer api={api} history={history} projectId={match.params.projectId} project={project} />;
