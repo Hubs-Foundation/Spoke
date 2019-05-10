@@ -230,3 +230,11 @@ test("Editor should load V1TestScene", withPage(`/projects/new?template=${v1Test
   t.truthy(floorPlanEntity.components.find(c => c.name === "floor-plan"));
   t.is(floorPlanEntity.index, 18);
 });
+
+const v3TestSceneUrl = getFixtureUrl("V3TestScene.spoke");
+
+test("Editor should load V3TestScene", withPage(`/projects/new?template=${v3TestSceneUrl}`), async (t, page) => {
+  const sceneHandle = await waitForSceneLoaded(page);
+  const serializedScene = await getSerializedScene(page, sceneHandle);
+  t.snapshot(serializedScene);
+});
