@@ -24,7 +24,7 @@
     "bundle-analyzer": "cross-env NODE_ENV=production webpack-dev-server --mode=production --env.BUNDLE_ANALYZER",
     "precommit": "lint-staged",
     "lint": "eslint ./src",
-    "test": "concurrently --success \"last\" --kill-others \"npm:test-serve\" \"npm:test-all\"",
+    "test": "concurrently --success \"first\" --kill-others \"npm:test-all\" \"npm:test-serve\"",
     "test-serve": "cross-env NODE_ENV=test webpack-dev-server --mode development --port 9091 --content-base ./test/fixtures",
     "test-all": "ava"
   },
