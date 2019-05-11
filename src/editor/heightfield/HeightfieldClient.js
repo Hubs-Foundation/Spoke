@@ -6,7 +6,7 @@ export default class HeightfieldClient {
     this.working = false;
   }
 
-  async buildHeightfield(verts, params, signal) {
+  async buildHeightfield(geometry, params, signal) {
     if (this.working) {
       throw new Error("Already building heightfield");
     }
@@ -49,6 +49,8 @@ export default class HeightfieldClient {
       this.worker.addEventListener("error", onError);
     });
 
+    const verts = geometry.attributes.position.array;
+
     this.worker.postMessage(
       {
         verts,
@@ -62,6 +64,6 @@ export default class HeightfieldClient {
       throw new Error(result.error);
     }
 
-    return { heightfield: result.heightfield };
+    return result.heightfield;
   }
 }

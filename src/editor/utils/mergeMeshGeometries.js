@@ -1,5 +1,12 @@
 import THREE from "../../vendor/three";
 
+function createEmptyGeometry() {
+  const emptyGeometry = new THREE.BufferGeometry();
+  emptyGeometry.setIndex([]);
+  emptyGeometry.addAttribute("position", new THREE.Float32BufferAttribute([], 3));
+  return emptyGeometry;
+}
+
 export default function mergeMeshGeometries(meshes) {
   const geometries = [];
 
@@ -12,7 +19,13 @@ export default function mergeMeshGeometries(meshes) {
       attributes = geometry.attributes;
     }
 
-    if (!attributes.position || attributes.position.itemSize !== 3) return;
+    if (!attributes.position) {
+      continue;
+    }
+
+    if (attributes.position.itemSize !== 3) {
+      throw new Error("Tried to merge geometry with an invalid number of positions");
+    }
 
     if (geometry.index) geometry = geometry.toNonIndexed();
 
@@ -26,7 +39,7 @@ export default function mergeMeshGeometries(meshes) {
   }
 
   if (geometries.length === 0) {
-    return new THREE.BufferGeometry();
+    return createEmptyGeometry();
   }
 
   const geometry = THREE.BufferGeometryUtils.mergeBufferGeometries(geometries);
