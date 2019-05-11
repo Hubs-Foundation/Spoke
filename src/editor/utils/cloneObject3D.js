@@ -21,6 +21,10 @@ export default function cloneObject3D(source, preserveUUIDs) {
   source.traverse(function(curNode) {
     const clonedNode = cloneLookup.get(curNode);
 
+    if (!clonedNode) {
+      return;
+    }
+
     if (curNode.animations) {
       clonedNode.animations = curNode.animations;
     }

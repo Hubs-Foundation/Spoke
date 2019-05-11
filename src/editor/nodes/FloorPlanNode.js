@@ -6,8 +6,11 @@ import GroundPlaneNode from "./GroundPlaneNode";
 import BoxColliderNode from "./BoxColliderNode";
 import mergeMeshGeometries from "../utils/mergeMeshGeometries";
 import RecastClient from "../recast/RecastClient";
+import HeightfieldClient from "../heightfield/HeightfieldClient";
+import SpawnPointNode from "../nodes/SpawnPointNode";
 
 const recastClient = new RecastClient();
+const heightfieldClient = new HeightfieldClient();
 
 export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
   static nodeName = "Floor Plan";
@@ -56,11 +59,16 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
     this.agentMaxClimb = 0.3;
     this.agentMaxSlope = 45;
     this.regionMinSize = 4;
+    this.heightfieldMesh = null;
   }
 
   onSelect() {
     if (this.navMesh) {
       this.navMesh.visible = true;
+    }
+
+    if (this.heightfieldMesh) {
+      this.heightfieldMesh.visible = true;
     }
   }
 
@@ -68,53 +76,10 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
     if (this.navMesh) {
       this.navMesh.visible = false;
     }
-  }
 
-  async generateNavGeometry(geometry, generateHeightfield, signal) {
-    if (!geometry.attributes.position || geometry.attributes.position.count === 0) {
-      const emptyGeometry = new THREE.BufferGeometry();
-      emptyGeometry.setIndex([]);
-      emptyGeometry.addAttribute("position", new THREE.Float32BufferAttribute([], 3));
-      return emptyGeometry;
+    if (this.heightfieldMesh) {
+      this.heightfieldMesh.visible = false;
     }
-
-    const box = new THREE.Box3().setFromBufferAttribute(geometry.attributes.position);
-    const size = new THREE.Vector3();
-    box.getSize(size);
-    if (Math.max(size.x, size.y, size.z) > 2000) {
-      throw new Error(
-        `Scene is too large (${size.x.toFixed(3)} x ${size.y.toFixed(3)} x ${size.z.toFixed(3)}) ` +
-          `to generate a floor plan.\n` +
-          `You can un-check the "walkable" checkbox on models to exclude them from the floor plan.`
-      );
-    }
-
-    const positions = geometry.attributes.position.array;
-    const indices = new Int32Array(positions.length / 3);
-    for (let i = 0; i < indices.length; i++) {
-      indices[i] = i;
-    }
-
-    const area = size.x * size.z;
-
-    // Tuned to produce cell sizes from ~0.5 to ~1.5 for areas from ~200 to ~350,000.
-    const cellSize = this.autoCellSize ? Math.pow(area, 1 / 3) / 50 : this.cellSize;
-
-    return recastClient.buildNavMesh(
-      positions,
-      indices,
-      {
-        cellSize,
-        cellHeight: this.cellHeight,
-        agentHeight: this.agentHeight,
-        agentRadius: this.agentRadius,
-        agentMaxClimb: this.agentMaxClimb,
-        agentMaxSlope: this.agentMaxSlope,
-        regionMinSize: this.regionMinSize
-      },
-      generateHeightfield,
-      signal
-    );
   }
 
   async generate(signal) {
@@ -162,24 +127,115 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
     }
 
     const walkableGeometry = mergeMeshGeometries(walkableMeshes);
-    const { navmesh } = await this.generateNavGeometry(walkableGeometry, false, signal);
-    const navMesh = new THREE.Mesh(navmesh, new THREE.MeshBasicMaterial({ color: 0x0000ff }));
 
-    if (this.editor.selected !== this) {
-      navMesh.visible = false;
+    const box = new THREE.Box3().setFromBufferAttribute(walkableGeometry.attributes.position);
+    const size = new THREE.Vector3();
+    box.getSize(size);
+    if (Math.max(size.x, size.y, size.z) > 2000) {
+      throw new Error(
+        `Scene is too large (${size.x.toFixed(3)} x ${size.y.toFixed(3)} x ${size.z.toFixed(3)}) ` +
+          `to generate a floor plan.\n` +
+          `You can un-check the "walkable" checkbox on models to exclude them from the floor plan.`
+      );
     }
+
+    const area = size.x * size.z;
+
+    // Tuned to produce cell sizes from ~0.5 to ~1.5 for areas from ~200 to ~350,000.
+    const cellSize = this.autoCellSize ? Math.pow(area, 1 / 3) / 50 : this.cellSize;
+
+    const navGeometry = await recastClient.buildNavMesh(
+      walkableGeometry,
+      {
+        cellSize,
+        cellHeight: this.cellHeight,
+        agentHeight: this.agentHeight,
+        agentRadius: this.agentRadius,
+        agentMaxClimb: this.agentMaxClimb,
+        agentMaxSlope: this.agentMaxSlope,
+        regionMinSize: this.regionMinSize
+      },
+      signal
+    );
+
+    const navMesh = new THREE.Mesh(
+      navGeometry,
+      new THREE.MeshBasicMaterial({ color: 0x0000ff, transparent: true, opacity: 0.2 })
+    );
 
     this.setNavMesh(navMesh);
 
+    if (this.editor.selected === this) {
+      navMesh.visible = true;
+    }
+
     const heightfieldGeometry = mergeMeshGeometries(collidableMeshes);
-    const { heightfield } = await this.generateNavGeometry(heightfieldGeometry, true, signal);
-    this.heightfield = heightfield || null;
+
+    const spawnPoints = this.editor.scene.getNodesByType(SpawnPointNode);
+
+    let minY = Number.POSITIVE_INFINITY;
+    for (let j = 0; j < spawnPoints.length; j++) {
+      minY = Math.min(minY, spawnPoints[j].position.y);
+    }
+
+    const heightfield = await heightfieldClient.buildHeightfield(
+      heightfieldGeometry,
+      { minY: minY, agentHeight: this.agentHeight },
+      signal
+    );
+
+    this.setHeightfield(heightfield);
+
+    if (this.heightfieldMesh) {
+      this.remove(this.heightfieldMesh);
+    }
+
+    if (!heightfield) {
+      this.heightfieldMesh = null;
+    } else {
+      const segments = heightfield.data[0].length;
+      const heightfieldMeshGeometry = new THREE.PlaneBufferGeometry(
+        heightfield.width,
+        heightfield.length,
+        segments - 1,
+        segments - 1
+      );
+      heightfieldMeshGeometry.rotateX(-Math.PI / 2);
+      const vertices = heightfieldMeshGeometry.attributes.position.array;
+
+      for (let i = 0, j = 0, l = vertices.length; i < l / 3; i++, j += 3) {
+        vertices[j + 1] = heightfield.data[Math.floor(i / segments)][i % segments];
+      }
+
+      const heightfieldMesh = new THREE.Mesh(
+        heightfieldMeshGeometry,
+        new THREE.MeshBasicMaterial({ wireframe: true, color: 0xffff00 })
+      );
+
+      this.heightfieldMesh = heightfieldMesh;
+
+      this.add(heightfieldMesh);
+
+      this.heightfieldMesh.layers.set(1);
+      heightfieldMesh.position.set(heightfield.offset.x, 0, heightfield.offset.z);
+
+      if (this.editor.selected !== this) {
+        this.heightfieldMesh.visible = false;
+      }
+    }
 
     return this;
   }
 
   copy(source, recursive) {
     super.copy(source, recursive);
+
+    for (const child of source.children) {
+      if (recursive && child !== source.heightfieldMesh) {
+        this.add(child.clone());
+      }
+    }
+
     this.autoCellSize = source.autoCellSize;
     this.cellSize = source.cellSize;
     this.cellHeight = source.cellHeight;

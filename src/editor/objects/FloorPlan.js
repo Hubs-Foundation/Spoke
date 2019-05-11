@@ -6,6 +6,7 @@ export default class FloorPlan extends THREE.Object3D {
     this.position.y = 0.005;
     this.navMesh = null;
     this.heightfield = null;
+    this.heightfieldMesh = null;
   }
 
   setNavMesh(object) {
@@ -13,12 +14,17 @@ export default class FloorPlan extends THREE.Object3D {
       this.remove(this.navMesh);
     }
 
+    this.navMesh = object;
+
     if (object) {
       this.add(object);
+      this.navMesh.layers.set(1);
+      this.navMesh.visible = false;
     }
+  }
 
-    this.navMesh = object;
-    this.navMesh.layers.set(1);
+  setHeightfield(heightfield) {
+    this.heightfield = heightfield || null;
   }
 
   copy(source, recursive) {

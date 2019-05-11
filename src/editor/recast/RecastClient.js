@@ -25,12 +25,23 @@ export default class RecastClient {
     this.working = false;
   }
 
-  async buildNavMesh(verts, faces, params, generateHeightfield, signal) {
+  async buildNavMesh(geometry, params, signal) {
     if (this.working) {
       throw new Error("Already building nav mesh");
     }
 
     this.working = true;
+
+    if (geometry.attributes.position.count === 0) {
+      this.working = false;
+      return geometry;
+    }
+
+    const verts = geometry.attributes.position.array;
+    const faces = new Int32Array(verts.length / 3);
+    for (let i = 0; i < faces.length; i++) {
+      faces[i] = i;
+    }
 
     const navMeshPromise = new Promise((resolve, reject) => {
       let onMessage = null;
@@ -72,8 +83,7 @@ export default class RecastClient {
       {
         verts,
         faces,
-        params,
-        generateHeightfield
+        params
       },
       [verts.buffer, faces.buffer]
     );
@@ -84,10 +94,10 @@ export default class RecastClient {
       throw new Error(statuses[result.status] || result.error);
     }
 
-    const geometry = new THREE.BufferGeometry();
-    geometry.addAttribute("position", new THREE.Float32BufferAttribute(result.verts, 3));
-    geometry.setIndex(new THREE.Uint16BufferAttribute(result.indices, 1));
+    const navmesh = new THREE.BufferGeometry();
+    navmesh.addAttribute("position", new THREE.Float32BufferAttribute(result.verts, 3));
+    navmesh.setIndex(new THREE.Uint16BufferAttribute(result.indices, 1));
 
-    return { navmesh: geometry, heightfield: result.heightfield };
+    return navmesh;
   }
 }
