@@ -3,10 +3,10 @@ import classNames from "classnames";
 import PropTypes from "prop-types";
 import styles from "./ToolButton.scss";
 
-export default function ToolButton({ toolType, onClick, selected }) {
+export default function ToolButton({ id, toolType, onClick, selected }) {
   const btnColor = selected ? styles.selected : styles.unselected;
   return (
-    <div>
+    <div id={id}>
       <button className={classNames(styles.toolbtn, btnColor)} onClick={onClick}>
         <i className={classNames("fas", toolType)} />
       </button>
@@ -15,6 +15,7 @@ export default function ToolButton({ toolType, onClick, selected }) {
 }
 
 ToolButton.propTypes = {
+  id: PropTypes.string,
   toolType: PropTypes.string,
   onClick: PropTypes.func,
   selected: PropTypes.bool

@@ -18,12 +18,14 @@ export default class OnboardingPopover extends Component {
     disableNext: PropTypes.bool.isRequired,
     nextStep: PropTypes.func.isRequired,
     prevStep: PropTypes.func.isRequired,
+    disableSkip: PropTypes.bool.isRequired,
     skip: PropTypes.func.isRequired
   };
 
   static defaultProps = {
     disablePrev: false,
     disableNext: false,
+    disableSkip: false,
     position: "top",
     padding: 16
   };
@@ -90,7 +92,18 @@ export default class OnboardingPopover extends Component {
 
   render() {
     const { transform, transformOrigin } = this.state;
-    const { position, children, steps, curStepIdx, prevStep, disablePrev, nextStep, disableNext, skip } = this.props;
+    const {
+      position,
+      children,
+      steps,
+      curStepIdx,
+      prevStep,
+      disablePrev,
+      nextStep,
+      disableNext,
+      skip,
+      disableSkip
+    } = this.props;
 
     return (
       <Portal>
@@ -98,15 +111,17 @@ export default class OnboardingPopover extends Component {
           <div className={classNames(styles.popover, styles[position])} ref={this.popoverRef}>
             <div className={styles.content}>{children}</div>
             <div className={styles.bottomNav}>
-              <a
-                href="#"
-                onClick={e => {
-                  e.preventDefault();
-                  skip();
-                }}
-              >
-                Skip Tutorial
-              </a>
+              {!disableSkip && (
+                <a
+                  href="#"
+                  onClick={e => {
+                    e.preventDefault();
+                    skip();
+                  }}
+                >
+                  Skip Tutorial
+                </a>
+              )}
               {!disablePrev && curStepIdx > 0 && (
                 <Button secondary onClick={prevStep}>
                   Back

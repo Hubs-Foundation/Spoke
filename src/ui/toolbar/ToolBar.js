@@ -147,9 +147,9 @@ export default class ToolBar extends Component {
 
   renderToolButtons = buttons => {
     return buttons.map(btn => {
-      const { onClick, name, type } = btn;
+      const { onClick, type } = btn;
       const selected = btn.name === this.state.toolButtonSelected;
-      return <ToolButton toolType={type} key={type} onClick={onClick} selected={selected} id={name} />;
+      return <ToolButton toolType={type} key={type} onClick={onClick} selected={selected} />;
     });
   };
 
