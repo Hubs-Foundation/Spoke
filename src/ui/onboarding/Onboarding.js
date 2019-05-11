@@ -386,7 +386,7 @@ const steps = [
       return (
         <OnboardingDialog {...props} disablePrev>
           <h2>Saving and Publishing</h2>
-          <h1>Publishing Yor Project</h1>
+          <h1>Publishing Your Project</h1>
           <p>
             Once your project is ready, you can publish it to Mozilla Hubs and invite your friends with the click of a
             button.
