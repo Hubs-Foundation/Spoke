@@ -26,7 +26,8 @@
     "lint": "eslint ./src",
     "test": "concurrently --success \"first\" --kill-others \"npm:test-all\" \"npm:test-serve\"",
     "test-serve": "cross-env NODE_ENV=test webpack-dev-server --mode development --port 9091 --content-base ./test/fixtures",
-    "test-all": "ava"
+    "test-all": "ava",
+    "test-update-snapshots": "concurrently --success \"first\" --kill-others \"ava -u\" \"npm:test-serve\""
   },
   "ava": {
     "files": [
