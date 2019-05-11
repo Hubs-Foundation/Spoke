@@ -230,6 +230,12 @@ const steps = [
       return (
         <OnboardingPopover target=".hierarchyPanel" {...props} position="left">
           Objects you add to the scene show up in the hierarchy panel. Double click the object you added to focus it.
+          You can also press the F key to focus the selected object.
+          <Well>
+            <HotkeyDescription action="Focus Selected Object">
+              <div>F</div>
+            </HotkeyDescription>
+          </Well>
         </OnboardingPopover>
       );
     }
