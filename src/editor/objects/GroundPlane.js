@@ -6,7 +6,7 @@ export default class GroundPlane extends THREE.Object3D {
   constructor() {
     super();
 
-    this._receiveShadow = false;
+    this._receiveShadow = true;
 
     const material = new THREE.MeshStandardMaterial({ roughness: 1, metalness: 0, color: "#5DE336" });
     const mesh = new THREE.Mesh(GroundPlane._geometry, material);
