@@ -15,6 +15,7 @@ export default function OnboardingDialog({
   disablePrev,
   nextStep,
   disableNext,
+  disableSkip,
   skip
 }) {
   return (
@@ -30,15 +31,17 @@ export default function OnboardingDialog({
           <div className={styles.rightContent}>{children}</div>
         </div>
         <div className={styles.bottomNav}>
-          <a
-            href="#"
-            onClick={e => {
-              e.preventDefault();
-              skip();
-            }}
-          >
-            Skip Tutorial
-          </a>
+          {!disableSkip && (
+            <a
+              href="#"
+              onClick={e => {
+                e.preventDefault();
+                skip();
+              }}
+            >
+              Skip Tutorial
+            </a>
+          )}
           {!disablePrev && curStepIdx > 0 && (
             <Button secondary onClick={prevStep}>
               Back
@@ -62,5 +65,6 @@ OnboardingDialog.propTypes = {
   disableNext: PropTypes.bool,
   prevStep: PropTypes.func.isRequired,
   disablePrev: PropTypes.bool,
+  disableSkip: PropTypes.bool,
   skip: PropTypes.func.isRequired
 };

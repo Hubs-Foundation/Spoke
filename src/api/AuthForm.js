@@ -27,7 +27,7 @@ export default class AuthForm extends Component {
         {this.props.error && <p className={styles.error}>{this.props.error}</p>}
         <h3>Register or Login</h3>
         <h4>Login to save projects and publish scenes to Hubs.</h4>
-        <input type="email" placeholder="Email" value={this.state.email} onChange={this.onEmailChange} />
+        <input type="email" name="email" placeholder="Email" value={this.state.email} onChange={this.onEmailChange} />
         <p className={styles.legalText}>
           By proceeding, you agree to the{" "}
           <a rel="noopener noreferrer" target="_blank" href="https://github.com/mozilla/hubs/blob/master/TERMS.md">

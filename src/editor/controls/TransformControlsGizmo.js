@@ -734,21 +734,20 @@ export default class TransformControlsGizmo extends THREE.Object3D {
 
       if (!this.transformControls.enabled) {
         handle.material.opacity *= 0.5;
-        handle.material.color.lerp(new THREE.Color(1, 1, 1), 0.5);
+        handle.material.color.lerp(new THREE.Color(1, 1, 1), 0.25);
       } else if (this.transformControls.axis) {
         if (handle.name === this.transformControls.axis) {
           handle.material.opacity = 1.0;
-          handle.material.color.lerp(new THREE.Color(1, 1, 1), 0.5);
         } else if (
           this.transformControls.axis.split("").some(function(a) {
             return handle.name === a;
           })
         ) {
           handle.material.opacity = 1.0;
-          handle.material.color.lerp(new THREE.Color(1, 1, 1), 0.5);
+          handle.material.color.lerp(new THREE.Color(1, 1, 1), 0.25);
         } else {
-          handle.material.opacity *= 0.25;
-          handle.material.color.lerp(new THREE.Color(1, 1, 1), 0.5);
+          handle.material.opacity *= 0.5;
+          handle.material.color.lerp(new THREE.Color(1, 1, 1), 0.25);
         }
       }
     }

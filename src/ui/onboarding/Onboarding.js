@@ -94,34 +94,40 @@ class HideModelsPopover extends Component {
   }
 }
 
-class AuthenticationDialog extends Component {
+class SaveProjectDialog extends Component {
   componentDidMount() {
-    if (this.props.api.isAuthenticated()) {
-      this.props.nextStep();
-    }
+    this.props.api.addListener("project-saving", this.onProjectSaving);
+  }
+
+  onProjectSaving = () => {
+    this.props.nextStep();
+  };
+
+  componentWillUnmount() {
+    this.props.api.removeListener("project-saving", this.onProjectSaving);
   }
 
   render() {
-    if (this.props.api.isAuthenticated()) {
-      return <div />;
-    }
-
     return (
-      <OnboardingDialog {...this.props} disablePrev>
+      <OnboardingDialog {...this.props} disableNext>
         <h2>Saving and Publishing</h2>
-        <h1>Logging In</h1>
+        <h1>Saving Your Project</h1>
         <p>
-          In order for you to save your work and get back to it in the future, you&#39;ll need to sign in. After you
-          enter your email in the next step, we&#39;ll send you an email with a magic link to login. Do not close this
-          browser tab or you will have to start over. Click the link in the email and navigate back to this tab to
-          continue.
+          Before you navigate away from the page you&#39;ll want to save your work. You can do this by opening the menu
+          and clicking Save Project or by pressing {cmdOrCtrlString} + S.
         </p>
+        <Well>
+          <HotkeyDescription action="Save Project">
+            <div>{cmdOrCtrlString}</div>
+            <div>S</div>
+          </HotkeyDescription>
+        </Well>
       </OnboardingDialog>
     );
   }
 }
 
-const WrappedAuthenticationDialog = withApi(AuthenticationDialog);
+const WrappedSaveProjectDialog = withApi(SaveProjectDialog);
 
 class SaveProjectPopover extends Component {
   componentDidMount() {
@@ -230,6 +236,12 @@ const steps = [
       return (
         <OnboardingPopover target=".hierarchyPanel" {...props} position="left">
           Objects you add to the scene show up in the hierarchy panel. Double click the object you added to focus it.
+          You can also press the F key to focus the selected object.
+          <Well>
+            <HotkeyDescription action="Focus Selected Object">
+              <div>F</div>
+            </HotkeyDescription>
+          </Well>
         </OnboardingPopover>
       );
     }
@@ -350,27 +362,7 @@ const steps = [
     }
   },
   {
-    render(props) {
-      return (
-        <OnboardingDialog {...props}>
-          <h2>Saving and Publishing</h2>
-          <h1>Saving Your Project</h1>
-          <p>
-            Before you navigate away from the page you&#39;ll want to save your work. You can do this by opening the
-            menu and clicking Save Project or by pressing {cmdOrCtrlString} + S.
-          </p>
-          <Well>
-            <HotkeyDescription action="Save Project">
-              <div>{cmdOrCtrlString}</div>
-              <div>S</div>
-            </HotkeyDescription>
-          </Well>
-        </OnboardingDialog>
-      );
-    }
-  },
-  {
-    component: WrappedAuthenticationDialog
+    component: WrappedSaveProjectDialog
   },
   {
     component: WrappedSaveProjectPopover
@@ -380,7 +372,7 @@ const steps = [
       return (
         <OnboardingDialog {...props} disablePrev>
           <h2>Saving and Publishing</h2>
-          <h1>Publishing Yor Project</h1>
+          <h1>Publishing Your Project</h1>
           <p>
             Once your project is ready, you can publish it to Mozilla Hubs and invite your friends with the click of a
             button.
@@ -395,7 +387,7 @@ const steps = [
   {
     render(props) {
       return (
-        <OnboardingDialog {...props} disablePrev>
+        <OnboardingDialog {...props} disablePrev disableSkip>
           <h2>Saving and Publishing</h2>
           <h1>Great Job!</h1>
           <p>

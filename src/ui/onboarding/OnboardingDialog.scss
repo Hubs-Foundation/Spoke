@@ -21,6 +21,7 @@
   display: flex;
   width: 360px;
   background-color: #006EFF;
+  background-size: cover;
   border-top-left-radius: inherit;
   align-items: center;
   padding: 30px;
@@ -34,7 +35,7 @@
   display: flex;
   flex-direction: column;
   flex: 1;
-  padding: 90px 60px;
+  padding: 90px 60px 30px 60px;
 
   h1 {
     font-size: 3em;

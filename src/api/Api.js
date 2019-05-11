@@ -394,6 +394,8 @@ export default class Project extends EventEmitter {
   }
 
   async createProject(editor, showDialog, hideDialog) {
+    this.emit("project-saving");
+
     // Ensure the user is authenticated before continuing.
     if (!this.isAuthenticated()) {
       await new Promise(resolve => {
@@ -487,6 +489,8 @@ export default class Project extends EventEmitter {
   }
 
   async saveProject(projectId, editor, signal, showDialog, hideDialog) {
+    this.emit("project-saving");
+
     // Ensure the user is authenticated before continuing.
     if (!this.isAuthenticated()) {
       await new Promise(resolve => {
