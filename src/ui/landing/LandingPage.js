@@ -7,6 +7,9 @@ import NavBar from "../navigation/NavBar";
 import Footer from "../navigation/Footer";
 import Callout from "./Callout";
 import Button from "../inputs/Button";
+import benches from "../../assets/landing/benches.jpg";
+import editor from "../../assets/landing/environment-editor.jpg";
+import meeting from "../../assets/landing/meeting.jpg";
 
 export default class LandingPage extends Component {
   render() {
@@ -41,7 +44,7 @@ export default class LandingPage extends Component {
           </section>
           <section>
             <div className={styles.calloutContainer}>
-              <Callout>
+              <Callout imageSrc={benches}>
                 <h3>Discover</h3>
                 <p>
                   Explore images, videos, and 3D models from around the web, all without opening up a new tab. With
@@ -49,7 +52,7 @@ export default class LandingPage extends Component {
                   time.
                 </p>
               </Callout>
-              <Callout>
+              <Callout imageSrc={editor}>
                 <h3>Create</h3>
                 <p>
                   No external software or 3D modeling experience required - build 3D scenes using the Spoke web editor
@@ -57,7 +60,7 @@ export default class LandingPage extends Component {
                   beyond, your space is in your control.
                 </p>
               </Callout>
-              <Callout>
+              <Callout imageSrc={meeting}>
                 <h3>Share</h3>
                 <p>
                   Invite people to meet in your new space by publishing your content to Hubs immediately. With just a

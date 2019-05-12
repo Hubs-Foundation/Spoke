@@ -120,4 +120,14 @@ body {
       }
     }
   }
+
+  .sentry-error-embed {
+    .form-field {
+      margin-top: 20px;
+    }
+
+    .form-field:not(:last-child) {
+      display: none;
+    }
+  }
 }

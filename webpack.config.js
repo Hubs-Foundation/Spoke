@@ -3,6 +3,8 @@ const dotenv = require("dotenv");
 
 if (process.env.NODE_ENV === "production") {
   dotenv.config({ path: ".env.prod" });
+} else if (process.env.NODE_ENV === "test") {
+  dotenv.config({ path: ".env.test" });
 } else {
   dotenv.config({ path: ".env" });
   dotenv.config({ path: ".env.defaults" });
@@ -69,6 +71,7 @@ function createHTTPSConfig() {
 
 const defaultHostName = "hubs.local";
 const host = process.env.HOST_IP || defaultHostName;
+const port = process.env.HOST_PORT || 9090;
 
 module.exports = env => {
   return {
@@ -81,9 +84,9 @@ module.exports = env => {
     devServer: {
       https: createHTTPSConfig(),
       historyApiFallback: true,
-      port: 9090,
+      port,
       host: process.env.HOST_IP || "0.0.0.0",
-      public: `${host}:9090`,
+      public: `${host}:${port}`,
       publicPath: process.env.BASE_ASSETS_PATH || "",
       useLocalIp: true,
       allowedHosts: [host],

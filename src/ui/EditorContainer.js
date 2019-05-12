@@ -571,7 +571,7 @@ class EditorContainer extends Component {
     const modified = editor.sceneModified ? "*" : "";
 
     return (
-      <div className={styles.editorContainer}>
+      <div id="editor-container" className={styles.editorContainer}>
         <SettingsContextProvider value={settingsContext}>
           <EditorContextProvider value={editor}>
             <DialogContextProvider value={this.dialogContext}>
