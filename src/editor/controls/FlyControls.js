@@ -34,7 +34,6 @@ export default class FlyControls {
 
   enable() {
     this.enabled = true;
-    this.inputManager.canvas.requestPointerLock();
     this.inputManager.enableInputMapping(Fly, FlyMapping);
     this.inputManager.canvas.addEventListener("mouseup", this.onMouseUp);
   }
