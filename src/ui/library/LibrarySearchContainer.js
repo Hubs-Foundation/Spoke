@@ -65,9 +65,9 @@ class LibrarySearchContainer extends Component {
 
     this.update({
       selectedSourceId,
-      filter: defaultFilter,
+      filter: this.state.query ? null : defaultFilter,
       type: defaultType,
-      query: "",
+      query: this.state.query,
       items: [],
       loading: true,
       cursor: 0,
@@ -76,7 +76,7 @@ class LibrarySearchContainer extends Component {
   };
 
   onChangeFilter = filter => {
-    this.update({ filter, items: [], loading: true, cursor: 0, nextCursor: null });
+    this.update({ query: "", filter, items: [], loading: true, cursor: 0, nextCursor: null });
   };
 
   onChangeType = type => {
@@ -84,7 +84,7 @@ class LibrarySearchContainer extends Component {
   };
 
   onChangeQuery = e => {
-    this.update({ query: e.target.value, items: [], loading: true, cursor: 0, nextCursor: null });
+    this.update({ query: e.target.value, filter: null, items: [], loading: true, cursor: 0, nextCursor: null });
   };
 
   onUpload = async files => {

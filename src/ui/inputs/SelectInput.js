@@ -59,15 +59,16 @@ const staticStyle = {
 };
 
 export default function SelectInput({ value, options, onChange, placeholder, disabled, error, ...rest }) {
-  const selectedOption = options.find(o => {
-    if (o === null) {
-      return o;
-    } else if (o.value && o.value.equals) {
-      return o.value.equals(value);
-    } else {
-      return o.value === value;
-    }
-  });
+  const selectedOption =
+    options.find(o => {
+      if (o === null) {
+        return o;
+      } else if (o.value && o.value.equals) {
+        return o.value.equals(value);
+      } else {
+        return o.value === value;
+      }
+    }) || null;
 
   const dynamicStyle = {
     ...staticStyle,
