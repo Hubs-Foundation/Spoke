@@ -79,10 +79,11 @@ export default class ModelNode extends EditorNodeMixin(Model) {
     const sketchfabExtras = gltf.asset && gltf.asset.extras;
 
     if (sketchfabExtras) {
-      const name = sketchfabExtras && sketchfabExtras.title;
-      const author = sketchfabExtras && sketchfabExtras.author.replace(/ \(http.+\)/, "");
+      const name = sketchfabExtras.title;
+      const author = sketchfabExtras.author.replace(/ \(http.+\)/, "");
+      const url = sketchfabExtras.source || this._canonicalUrl;
       gltf.scene.name = name;
-      this.attribution = { name, author, url: this._canonicalUrl };
+      this.attribution = { name, author, url };
     }
 
     return gltf;

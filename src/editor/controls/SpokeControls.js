@@ -18,7 +18,7 @@ export default class SpokeControls extends EventEmitter {
     this.delta = new THREE.Vector3();
     this.center = new THREE.Vector3();
     this.spherical = new THREE.Spherical();
-    this.panSpeed = 0.002;
+    this.panSpeed = 1;
     this.zoomSpeed = 0.1;
     this.orbitSpeed = 5;
     this.lookSensitivity = 5;
@@ -185,7 +185,7 @@ export default class SpokeControls extends EventEmitter {
       const distance = camera.position.distanceTo(center);
 
       delta
-        .set(-dx, dy, 0)
+        .set(dx, -dy, 0)
         .multiplyScalar(distance * this.panSpeed)
         .applyMatrix3(this.normalMatrix.getNormalMatrix(this.camera.matrix));
 
