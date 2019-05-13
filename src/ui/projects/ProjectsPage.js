@@ -89,6 +89,12 @@ class ProjectsPage extends Component {
 
     const ProjectContextMenu = this.ProjectContextMenu;
 
+    const topTemplates = [];
+
+    for (let i = 0; i < templates.length && i < 4; i++) {
+      topTemplates.push(templates[i]);
+    }
+
     return (
       <>
         <NavBar />
@@ -99,7 +105,7 @@ class ProjectsPage extends Component {
                 <h1>Templates</h1>
                 <PrimaryLink to="/projects/templates">View More</PrimaryLink>
               </div>
-              <ProjectGrid projects={templates} />
+              <ProjectGrid projects={topTemplates} />
             </div>
           </section>
           <section className={styles.projectsSection}>
