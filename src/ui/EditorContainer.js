@@ -518,7 +518,8 @@ class EditorContainer extends Component {
     const projectString = JSON.stringify(project);
     const projectBlob = new Blob([projectString]);
     const el = document.createElement("a");
-    el.download = this.state.editor.scene.name + ".spoke";
+    const fileName = this.state.editor.scene.name.toLowerCase().replace(" ", "-");
+    el.download = fileName + ".spoke";
     el.href = URL.createObjectURL(projectBlob);
     document.body.appendChild(el);
     el.click();
