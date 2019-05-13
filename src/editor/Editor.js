@@ -299,6 +299,8 @@ export default class Editor {
       version: 1
     };
 
+    json.asset.generator = `Mozilla Spoke ${process.env.BUILD_VERSION}`;
+
     return await new Promise((resolve, reject) => {
       exporter.createGLBBlob(chunks, resolve, e => {
         reject(new Error(`Error creating glb blob. ${eventToMessage(e)}`));
