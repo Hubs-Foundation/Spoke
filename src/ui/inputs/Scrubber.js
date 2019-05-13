@@ -5,7 +5,7 @@ import Portal from "../layout/Portal";
 import styles from "./Scrubber.scss";
 import { getStepSize, clamp, toPrecision } from "../utils";
 
-export default function Scrubber({
+function Scrubber({
   tag: Container,
   children,
   className,
@@ -131,3 +131,5 @@ Scrubber.defaultProps = {
   max: Infinity,
   precision: 0.00001
 };
+
+export default React.memo(Scrubber);

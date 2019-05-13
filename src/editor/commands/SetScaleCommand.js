@@ -36,17 +36,20 @@ export default class SetScaleCommand extends Command {
     this.object.scale.copy(this.newScale);
     this.object.updateMatrixWorld(true);
     this.editor.signals.objectChanged.dispatch(this.object);
-    this.editor.signals.transformChanged.dispatch(this.object);
+    this.editor.signals.propertyChanged.dispatch("scale", this.object);
   }
 
   undo() {
     this.object.scale.copy(this.oldScale);
     this.object.updateMatrixWorld(true);
     this.editor.signals.objectChanged.dispatch(this.object);
-    this.editor.signals.transformChanged.dispatch(this.object);
+    this.editor.signals.propertyChanged.dispatch("scale", this.object);
   }
 
   update(command) {
     this.newScale.copy(command.newScale);
+    this.object.scale.copy(this.newScale);
+    this.object.updateMatrixWorld(true);
+    this.editor.signals.propertyChanged.dispatch("scale", this.object);
   }
 }

@@ -36,17 +36,20 @@ export default class SetPositionCommand extends Command {
     this.object.position.copy(this.newPosition);
     this.object.updateMatrixWorld(true);
     this.editor.signals.objectChanged.dispatch(this.object);
-    this.editor.signals.transformChanged.dispatch(this.object);
+    this.editor.signals.propertyChanged.dispatch("position", this.object);
   }
 
   undo() {
     this.object.position.copy(this.oldPosition);
     this.object.updateMatrixWorld(true);
     this.editor.signals.objectChanged.dispatch(this.object);
-    this.editor.signals.transformChanged.dispatch(this.object);
+    this.editor.signals.propertyChanged.dispatch("position", this.object);
   }
 
   update(command) {
     this.newPosition.copy(command.newPosition);
+    this.object.position.copy(this.newPosition);
+    this.object.updateMatrixWorld(true);
+    this.editor.signals.propertyChanged.dispatch("position", this.object);
   }
 }

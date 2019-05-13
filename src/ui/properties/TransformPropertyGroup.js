@@ -20,16 +20,22 @@ export default class TransformPropertyGroup extends Component {
   }
 
   componentDidMount() {
-    this.props.editor.signals.transformChanged.add(this.onTransformChanged);
-    this.props.editor.signals.objectChanged.add(this.onTransformChanged);
+    this.props.editor.signals.propertyChanged.add(this.onPropertyChanged);
+    this.props.editor.signals.objectChanged.add(this.onObjectChanged);
   }
 
   componentWillUnmount() {
-    this.props.editor.signals.transformChanged.remove(this.onTransformChanged);
-    this.props.editor.signals.objectChanged.remove(this.onTransformChanged);
+    this.props.editor.signals.propertyChanged.remove(this.onPropertyChanged);
+    this.props.editor.signals.objectChanged.remove(this.onObjectChanged);
   }
 
-  onTransformChanged = () => {
+  onPropertyChanged = (property, object) => {
+    if (object === this.props.node && (property === "position" || property === "rotation" || property === "scale")) {
+      this.forceUpdate();
+    }
+  };
+
+  onObjectChanged = () => {
     this.forceUpdate();
   };
 
