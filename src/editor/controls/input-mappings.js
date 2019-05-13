@@ -70,7 +70,8 @@ export const Spoke = {
   undo: "undo",
   redo: "redo",
   duplicateSelected: "duplicateSelected",
-  saveProject: "saveProject"
+  saveProject: "saveProject",
+  deselect: "deselect"
 };
 
 export const FlyMapping = {
@@ -148,7 +149,8 @@ export const SpokeMapping = {
       delete: Spoke.deleteSelected,
       "mod+z": Spoke.undo,
       "mod+shift+z": Spoke.redo,
-      "mod+d": Spoke.duplicateSelected
+      "mod+d": Spoke.duplicateSelected,
+      esc: Spoke.deselect
     },
     globalHotkeys: {
       "mod+s": Spoke.saveProject

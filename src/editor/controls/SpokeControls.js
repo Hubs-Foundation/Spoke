@@ -267,6 +267,8 @@ export default class SpokeControls extends EventEmitter {
       this.editor.deleteSelectedObject();
     } else if (input.get(Spoke.saveProject)) {
       this.editor.signals.saveProject.dispatch();
+    } else if (input.get(Spoke.deselect)) {
+      this.editor.deselect();
     }
   }
 
