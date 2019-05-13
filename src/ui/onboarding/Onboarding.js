@@ -6,6 +6,7 @@ import OnboardingPopover from "./OnboardingPopover";
 import { withEditor } from "../contexts/EditorContext";
 import libraryToolbarItemStyles from "../library/LibraryToolbarItem.scss";
 import Icon from "../inputs/Icon";
+import lmbIcon from "../../assets/onboarding/lmb.svg";
 import rmbIcon from "../../assets/onboarding/rmb.svg";
 import wasdIcon from "../../assets/onboarding/wasd.svg";
 import HotkeyDescription from "./HotkeyDescription";
@@ -220,8 +221,12 @@ const steps = [
     render(props) {
       return (
         <HideModelsPopover target=".viewportPanel .mosaic-window-title" {...props} position="bottom">
-          <p>You can move around the scene by holding the right mouse button and using the WASD keys.</p>
+          <p>You can orbit around the scene by holding the left mouse button and dragging.</p>
+          <p>You can also fly around the scene by holding the right mouse button and using the WASD keys.</p>
           <Well>
+            <HotkeyDescription action="Orbit">
+              <Icon src={lmbIcon} />
+            </HotkeyDescription>
             <HotkeyDescription action="Fly">
               <Icon src={rmbIcon} />
               <Icon src={wasdIcon} />

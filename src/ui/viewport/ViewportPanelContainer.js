@@ -52,8 +52,8 @@ class ViewportPanelContainer extends Component {
         </div>
         <div className={styles.controls}>
           {this.state.flyModeEnabled
-            ? "[W][A][S][D] Move Camera"
-            : `[LMB] Orbit / Select | [RMB] Fly ${this.state.objectSelected ? "| [F] Focus" : ""}`}
+            ? "[W][A][S][D] Move Camera | [Shift] Fly faster"
+            : `[LMB] Orbit / Select | [MMB] Pan | [RMB] Fly ${this.state.objectSelected ? "| [F] Focus" : ""}`}
         </div>
       </div>
     );
