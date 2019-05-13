@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import PropTypes from "prop-types";
 import { showMenu, ContextMenu, MenuItem, SubMenu } from "react-contextmenu";
 import { Link } from "react-router-dom";
+import ReactTooltip from "react-tooltip";
 
 import ToolButton from "./ToolButton";
 import Button from "../inputs/Button";
@@ -23,23 +24,26 @@ export default class ToolBar extends Component {
     this.state = {
       toolButtons: [
         {
-          name: "translate",
+          id: "translate",
+          tooltip: "[W] Translate",
           type: "fa-arrows-alt",
           onClick: () => this.onMoveSelected()
         },
         {
-          name: "rotate",
+          id: "rotate",
+          tooltip: "[E] Rotate",
           type: "fa-sync-alt",
           onClick: () => this.onRotateSelected()
         },
         {
-          name: "scale",
+          id: "scale",
+          tooltip: "[R] Scale",
           type: "fa-arrows-alt-v",
           onClick: () => this.onScaleSelected()
         }
       ],
       spaceToggle: {
-        name: "rotation-space",
+        tooltip: "[Z] Toggle Rotation Mode",
         type: "toggle",
         text: ["Global", "Local"],
         isSwitch: true,
@@ -51,7 +55,7 @@ export default class ToolBar extends Component {
         action: () => this.onRotationSpaceChanged()
       },
       snapToggle: {
-        name: "snap",
+        tooltip: "[X] Toggle Snap Mode",
         type: "toggle",
         text: ["Snapping", "Snapping"],
         children: <SnappingDropdown />,
@@ -94,9 +98,9 @@ export default class ToolBar extends Component {
     this.setState({ current });
   };
 
-  _updateToolBarStatus = selectedBtnName => {
+  _updateToolBarStatus = id => {
     this.setState({
-      toolButtonSelected: selectedBtnName
+      toolButtonSelected: id
     });
   };
 
@@ -146,10 +150,9 @@ export default class ToolBar extends Component {
   };
 
   renderToolButtons = buttons => {
-    return buttons.map(btn => {
-      const { onClick, type } = btn;
-      const selected = btn.name === this.state.toolButtonSelected;
-      return <ToolButton toolType={type} key={type} onClick={onClick} selected={selected} />;
+    return buttons.map(({ onClick, type, tooltip, id }) => {
+      const selected = id === this.state.toolButtonSelected;
+      return <ToolButton tooltip={tooltip} toolType={type} key={type} onClick={onClick} selected={selected} />;
     });
   };
 
@@ -158,6 +161,7 @@ export default class ToolBar extends Component {
       return (
         <MenuItem key={menu.name} onClick={menu.action}>
           {menu.name}
+          {menu.hotkey && <div className={styles.menuHotkey}>{menu.hotkey}</div>}
         </MenuItem>
       );
     } else {
@@ -190,7 +194,7 @@ export default class ToolBar extends Component {
           <ToolToggle
             text={spaceToggle.text}
             key={spaceToggle.name}
-            name={spaceToggle.name}
+            tooltip={spaceToggle.tooltip}
             action={spaceToggle.action}
             icons={spaceToggle.icons}
             isSwitch={spaceToggle.isSwitch}
@@ -201,8 +205,8 @@ export default class ToolBar extends Component {
           </ToolToggle>
           <ToolToggle
             text={snapToggle.text}
+            tooltip={snapToggle.tooltip}
             key={snapToggle.name}
-            name={snapToggle.name}
             action={snapToggle.action}
             icons={snapToggle.icons}
             isSwitch={snapToggle.isSwitch}
@@ -226,6 +230,7 @@ export default class ToolBar extends Component {
             return this.renderMenu(menu);
           })}
         </ContextMenu>
+        <ReactTooltip id="toolbar" className={styles.tooltip} />
       </div>
     );
   }

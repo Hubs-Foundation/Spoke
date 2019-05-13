@@ -26,6 +26,7 @@ import ConfirmDialog from "./dialogs/ConfirmDialog";
 
 import Onboarding from "./onboarding/Onboarding";
 import SupportDialog from "./dialogs/SupportDialog";
+import { cmdOrCtrlString } from "./utils";
 
 class EditorContainer extends Component {
   static propTypes = {
@@ -130,7 +131,8 @@ class EditorContainer extends Component {
             action: this.onNewProject
           },
           {
-            name: `Save Project`,
+            name: "Save Project",
+            hotkey: `${cmdOrCtrlString} + S`,
             action: this.onSaveProject
           },
           {

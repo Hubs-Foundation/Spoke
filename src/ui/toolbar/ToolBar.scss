@@ -1,3 +1,4 @@
+@import "../styles/common";
 @import "../styles/theme";
 
 :local(.toolbar) {
@@ -63,4 +64,11 @@
     margin: 1em;
     padding: 0 2em;
   }
+}
+
+:local(.tooltip) {
+  max-width: 200px;
+  overflow: hidden;
+  overflow-wrap: break-word;
+  @include no-select;
 }
