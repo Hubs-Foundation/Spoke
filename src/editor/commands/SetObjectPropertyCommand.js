@@ -35,6 +35,7 @@ export default class SetObjectPropertyCommand extends Command {
     }
 
     this.editor.signals.objectChanged.dispatch(this.object);
+    this.editor.signals.propertyChanged.dispatch(this.propertyName, this.object);
   }
 
   undo() {
@@ -47,15 +48,20 @@ export default class SetObjectPropertyCommand extends Command {
     }
 
     this.editor.signals.objectChanged.dispatch(this.object);
+    this.editor.signals.propertyChanged.dispatch(this.propertyName, this.object);
   }
 
   update(command) {
     const newValue = command.newValue;
 
-    if (newValue && newValue.clone) {
+    if (newValue && newValue.clone && newValue.copy) {
       this.newValue = newValue.clone();
+      this.object[this.propertyName].copy(this.newValue);
     } else {
       this.newValue = newValue;
+      this.object[this.propertyName] = this.newValue;
     }
+
+    this.editor.signals.propertyChanged.dispatch(this.propertyName, this.object);
   }
 }

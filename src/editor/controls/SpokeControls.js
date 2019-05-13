@@ -86,7 +86,13 @@ export default class SpokeControls {
       );
     }
 
-    if (input.get(Spoke.flying)) return;
+    const cursorPosition = input.get(Spoke.cursorPosition);
+
+    if (input.get(Spoke.flying)) {
+      this.raycaster.setFromCamera(cursorPosition, this.camera);
+      transformControls.update(this.raycaster, false, false, false);
+      return;
+    }
 
     const selectStart = input.get(Spoke.selectStart);
 
@@ -112,7 +118,6 @@ export default class SpokeControls {
     }
 
     const selecting = input.get(Spoke.selecting);
-    const cursorPosition = input.get(Spoke.cursorPosition);
 
     // Update Transform Controls selection
     const editorSelection = this.editor.selected;
@@ -204,10 +209,7 @@ export default class SpokeControls {
       camera.position.copy(center).add(vector);
 
       camera.lookAt(center);
-    } else if (transformControls.dragging) {
-      this.editor.signals.transformChanged.dispatch(transformObject);
-      return;
-    } else if (transformControls.endDrag) {
+    } else if (transformControls.dragging || transformControls.endDrag) {
       switch (transformControls.mode) {
         case "translate":
           if (!transformControls.positionStart.equals(transformObject.position)) {
@@ -235,6 +237,7 @@ export default class SpokeControls {
           }
           break;
       }
+      return;
     }
 
     if (input.get(Spoke.focusSelection)) {

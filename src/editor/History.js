@@ -37,12 +37,11 @@ export default class History {
       cmd = lastCmd;
     } else {
       // the command is not updatable and is added as a new part of the history
-
       this.undos.push(cmd);
       cmd.id = ++this.idCounter;
+      cmd.name = optionalName !== undefined ? optionalName : cmd.name;
+      cmd.execute();
     }
-    cmd.name = optionalName !== undefined ? optionalName : cmd.name;
-    cmd.execute();
 
     this.lastCmdTime = new Date();
 

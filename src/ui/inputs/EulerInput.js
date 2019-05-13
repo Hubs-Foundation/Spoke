@@ -19,7 +19,10 @@ export default class EulerInput extends Component {
 
   static defaultProps = {
     value: null,
-    onChange: () => {}
+    onChange: () => {},
+    smallStep: 1,
+    mediumStep: 15,
+    largeStep: 30
   };
 
   onChange = (x, y, z) => {

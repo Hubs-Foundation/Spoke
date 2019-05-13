@@ -20,11 +20,13 @@ class PropertiesPanelContainer extends Component {
   componentDidMount() {
     this.props.editor.signals.objectSelected.add(this.onNodeSelected);
     this.props.editor.signals.objectChanged.add(this.onNodeChanged);
+    this.props.editor.signals.propertyChanged.add(this.onPropertyChanged);
   }
 
   componentWillUnmount() {
     this.props.editor.signals.objectSelected.remove(this.onNodeSelected);
     this.props.editor.signals.objectChanged.remove(this.onNodeChanged);
+    this.props.editor.signals.propertyChanged.add(this.onPropertyChanged);
   }
 
   onNodeSelected = node => {
@@ -32,6 +34,12 @@ class PropertiesPanelContainer extends Component {
   };
 
   onNodeChanged = node => {
+    if (this.state.node === node) {
+      this.setState({ node });
+    }
+  };
+
+  onPropertyChanged = (property, node) => {
     if (this.state.node === node) {
       this.setState({ node });
     }

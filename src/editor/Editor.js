@@ -58,7 +58,7 @@ export default class Editor {
     this.signals = {
       deleteSelectedObject: new Signal(),
 
-      transformChanged: new Signal(),
+      propertyChanged: new Signal(),
       transformModeChanged: new Signal(),
       snapToggled: new Signal(),
       spaceChanged: new Signal(),

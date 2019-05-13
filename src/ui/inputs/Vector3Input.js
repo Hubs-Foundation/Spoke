@@ -24,6 +24,8 @@ export default class Vector3Input extends Component {
 
     this.id = uniqueId++;
 
+    this.newValue = new THREE.Vector3();
+
     this.state = {
       uniformEnabled: props.uniformScaling
     };
@@ -36,21 +38,19 @@ export default class Vector3Input extends Component {
   onChange = (field, fieldValue) => {
     const value = this.props.value;
 
-    const newValue = new THREE.Vector3();
-
     if (this.state.uniformEnabled) {
-      newValue.set(fieldValue, fieldValue, fieldValue);
+      this.newValue.set(fieldValue, fieldValue, fieldValue);
     } else {
       const x = value ? value.x : 0;
       const y = value ? value.y : 0;
       const z = value ? value.z : 0;
 
-      newValue.x = field === "x" ? fieldValue : x;
-      newValue.y = field === "y" ? fieldValue : y;
-      newValue.z = field === "z" ? fieldValue : z;
+      this.newValue.x = field === "x" ? fieldValue : x;
+      this.newValue.y = field === "y" ? fieldValue : y;
+      this.newValue.z = field === "z" ? fieldValue : z;
     }
 
-    this.props.onChange(newValue);
+    this.props.onChange(this.newValue);
   };
 
   onChangeX = x => this.onChange("x", x);
@@ -60,7 +60,7 @@ export default class Vector3Input extends Component {
   onChangeZ = z => this.onChange("z", z);
 
   render() {
-    const { uniformScaling, value, ...rest } = this.props;
+    const { uniformScaling, value, onChange, ...rest } = this.props;
     const { uniformEnabled } = this.state;
     const vx = value ? value.x : 0;
     const vy = value ? value.y : 0;
