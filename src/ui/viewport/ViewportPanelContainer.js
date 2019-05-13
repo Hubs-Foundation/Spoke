@@ -24,17 +24,23 @@ class ViewportPanelContainer extends Component {
 
   componentDidMount() {
     this.props.editor.initializeViewport(this.canvasRef.current);
+    this.props.editor.signals.objectSelected.add(this.onObjectSelected);
     this.props.editor.viewport.spokeControls.addListener("mode-changed", this.onFlyModeChanged);
   }
 
   componentWillUnmount() {
     this.props.editor.viewport.spokeControls.removeListener("mode-changed", this.onFlyModeChanged);
+    this.props.editor.signals.objectSelected.remove(this.onObjectSelected);
     this.props.editor.viewport.dispose();
   }
 
   onFlyModeChanged = () => {
     const flyModeEnabled = this.props.editor.viewport.spokeControls.flyControls.enabled;
     this.setState({ flyModeEnabled });
+  };
+
+  onObjectSelected = () => {
+    this.setState({ objectSelected: !!this.props.editor.selected });
   };
 
   render() {
@@ -45,7 +51,9 @@ class ViewportPanelContainer extends Component {
           <LibraryContainer />
         </div>
         <div className={styles.controls}>
-          {this.state.flyModeEnabled ? "[W][A][S][D] Move" : "[LMB] Orbit / Select | [RMB] Fly | [F] Focus"}
+          {this.state.flyModeEnabled
+            ? "[W][A][S][D] Move Camera"
+            : `[LMB] Orbit / Select | [RMB] Fly ${this.state.objectSelected ? "| [F] Focus" : ""}`}
         </div>
       </div>
     );
