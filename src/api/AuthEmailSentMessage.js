@@ -11,6 +11,7 @@ export default class AuthEmailSentMessage extends Component {
 
   onCancel = e => {
     e.preventDefault();
+    e.target.blur();
     this.props.onCancel();
   };
 
@@ -22,7 +23,7 @@ export default class AuthEmailSentMessage extends Component {
         <strong>Don&#39;t close this browser tab or you may lose your work!</strong>
         <ProgressBar />
         <div>
-          <a href="#" onClick={this.onCancel}>
+          <a href="" onClick={this.onCancel}>
             Cancel
           </a>
         </div>

@@ -1,10 +1,13 @@
+import EventEmitter from "eventemitter3";
 import { Spoke, SpokeMapping } from "./input-mappings";
 import THREE from "../../vendor/three";
 import SpokeTransformControls from "./SpokeTransformControls";
 import getIntersectingNode from "../utils/getIntersectingNode";
 
-export default class SpokeControls {
+export default class SpokeControls extends EventEmitter {
   constructor(camera, editor, inputManager, flyControls) {
+    super();
+
     this.camera = camera;
     this.editor = editor;
     this.inputManager = inputManager;
@@ -75,6 +78,7 @@ export default class SpokeControls {
       this.flyControls.moveSpeed = this.moveSpeed;
       this.flyControls.boostSpeed = this.boostSpeed;
       this.distance = this.camera.position.distanceTo(this.center);
+      this.emit("mode-changed");
     } else if (input.get(Spoke.disableFlyMode)) {
       this.flyControls.disable();
       this.flyControls.lookSensitivity = this.initialLookSensitivity;
@@ -84,6 +88,7 @@ export default class SpokeControls {
         this.camera.position,
         this.vector.set(0, 0, -this.distance).applyMatrix3(this.normalMatrix.getNormalMatrix(this.camera.matrix))
       );
+      this.emit("mode-changed");
     }
 
     const cursorPosition = input.get(Spoke.cursorPosition);
