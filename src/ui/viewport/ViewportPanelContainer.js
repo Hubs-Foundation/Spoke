@@ -16,15 +16,26 @@ class ViewportPanelContainer extends Component {
     super(props);
 
     this.canvasRef = React.createRef();
+
+    this.state = {
+      flyModeEnabled: false
+    };
   }
 
   componentDidMount() {
     this.props.editor.initializeViewport(this.canvasRef.current);
+    this.props.editor.viewport.spokeControls.addListener("mode-changed", this.onFlyModeChanged);
   }
 
   componentWillUnmount() {
+    this.props.editor.viewport.spokeControls.removeListener("mode-changed", this.onFlyModeChanged);
     this.props.editor.viewport.dispose();
   }
+
+  onFlyModeChanged = () => {
+    const flyModeEnabled = this.props.editor.viewport.spokeControls.flyControls.enabled;
+    this.setState({ flyModeEnabled });
+  };
 
   render() {
     return (
@@ -32,6 +43,9 @@ class ViewportPanelContainer extends Component {
         <Viewport ref={this.canvasRef} />
         <div className={styles.libraryToolbarContainer}>
           <LibraryContainer />
+        </div>
+        <div className={styles.controls}>
+          {this.state.flyModeEnabled ? "[W][A][S][D] Move" : "[LMB] Orbit / Select | [RMB] Fly | [F] Focus"}
         </div>
       </div>
     );

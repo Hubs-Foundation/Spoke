@@ -14,12 +14,13 @@ class LoginDialogLink extends Component {
   onClick = e => {
     const { api, showDialog, hideDialog } = this.props;
     e.preventDefault();
+    e.target.blur();
     api.showLoginDialog(showDialog, hideDialog);
   };
 
   render() {
     return (
-      <a href="#" onClick={this.onClick}>
+      <a href="" onClick={this.onClick}>
         {this.props.children}
       </a>
     );

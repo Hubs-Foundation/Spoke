@@ -22,3 +22,13 @@
   right: 0;
   pointer-events: none;
 }
+
+:local(.controls) {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  pointer-events: none;
+  color: white;
+  padding: 8px;
+  text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.5);
+}

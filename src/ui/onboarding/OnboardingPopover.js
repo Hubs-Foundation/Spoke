@@ -113,9 +113,10 @@ export default class OnboardingPopover extends Component {
             <div className={styles.bottomNav}>
               {!disableSkip && (
                 <a
-                  href="#"
+                  href=""
                   onClick={e => {
                     e.preventDefault();
+                    e.target.blur();
                     skip();
                   }}
                 >
