@@ -17,8 +17,9 @@ export default class SpokeControls {
     this.spherical = new THREE.Spherical();
     this.panSpeed = 0.002;
     this.zoomSpeed = 0.1;
-    this.orbitSpeed = 0.005;
+    this.orbitSpeed = 5;
     this.lookSensitivity = 5;
+    this.selectSensitivity = 0.001;
     this.boostSpeed = 4;
     this.moveSpeed = 4;
     this.initialLookSensitivity = flyControls.lookSensitivity;
@@ -39,7 +40,9 @@ export default class SpokeControls {
     this.rotationSnap = Math.PI / 4;
     this.currentSpace = "world";
     this.updateSnapSettings();
-    this.wasOrbiting = false;
+
+    this.selectStartPosition = new THREE.Vector2();
+    this.selectEndPosition = new THREE.Vector2();
   }
 
   onSceneSet(scene) {
@@ -83,109 +86,33 @@ export default class SpokeControls {
       );
     }
 
-    if (input.get(Spoke.flyMode)) return;
+    if (input.get(Spoke.flying)) return;
 
-    const zoom = input.get(Spoke.zoom);
+    const selectStart = input.get(Spoke.selectStart);
 
-    if (zoom !== 0) {
-      const camera = this.camera;
-      const delta = this.delta;
-      const center = this.center;
+    if (selectStart) {
+      const selectStartPosition = input.get(Spoke.selectStartPosition);
+      this.selectStartPosition.copy(selectStartPosition);
+    }
 
-      delta.set(0, 0, zoom);
+    const selectEnd = input.get(Spoke.selectEnd);
 
-      const distance = camera.position.distanceTo(center);
+    if (selectEnd && !transformControls.dragging) {
+      const selectEndPosition = input.get(Spoke.selectEndPosition);
 
-      delta.multiplyScalar(distance * this.zoomSpeed);
+      if (this.selectStartPosition.distanceTo(selectEndPosition) < this.selectSensitivity) {
+        const result = this.raycastNode(selectEndPosition);
 
-      if (delta.length() > distance) return;
-
-      delta.applyMatrix3(this.normalMatrix.getNormalMatrix(camera.matrix));
-
-      camera.position.add(delta);
-    } else if (input.get(Spoke.pan)) {
-      const camera = this.camera;
-      const delta = this.delta;
-      const center = this.center;
-
-      const dx = input.get(Spoke.mouseDeltaX);
-      const dy = input.get(Spoke.mouseDeltaY);
-
-      const distance = camera.position.distanceTo(center);
-
-      delta
-        .set(-dx, dy, 0)
-        .multiplyScalar(distance * this.panSpeed)
-        .applyMatrix3(this.normalMatrix.getNormalMatrix(this.camera.matrix));
-
-      camera.position.add(delta);
-      center.add(delta);
-    } else if (input.get(Spoke.orbit) && !transformControls.dragging) {
-      const camera = this.camera;
-      const center = this.center;
-      const vector = this.vector;
-      const spherical = this.spherical;
-
-      const dx = input.get(Spoke.mouseDeltaX);
-      const dy = input.get(Spoke.mouseDeltaY);
-
-      vector.copy(camera.position).sub(center);
-
-      spherical.setFromVector3(vector);
-
-      spherical.theta += -dx * this.orbitSpeed;
-      spherical.phi += -dy * this.orbitSpeed;
-
-      spherical.makeSafe();
-
-      vector.setFromSpherical(spherical);
-
-      camera.position.copy(center).add(vector);
-
-      camera.lookAt(center);
-
-      transformControls.update(this.raycaster, false, false);
-
-      this.wasOrbiting = true;
-      return;
+        if (result) {
+          this.editor.select(result.node);
+        } else {
+          this.editor.deselect();
+        }
+      }
     }
 
     const selecting = input.get(Spoke.selecting);
-    const selectEnd = input.get(Spoke.selectEnd);
-    const snapModifier = input.get(Spoke.snapModifier);
-
-    // TODO: Replace wasOrbiting with a rising action getter ex: input.actionRising(Spoke.orbit)
-    if (selectEnd && !transformControls.dragging && !this.wasOrbiting) {
-      this.raycaster.setFromCamera(input.get(Spoke.selectCoords), this.camera);
-      const results = this.raycaster.intersectObject(this.scene, true);
-      const result = getIntersectingNode(results, this.scene);
-
-      if (result) {
-        this.editor.select(result.node);
-      } else {
-        this.editor.deselect();
-      }
-    }
-
-    this.wasOrbiting = false;
-
-    const focusScreenCoords = input.get(Spoke.focus);
-
-    if (focusScreenCoords) {
-      this.raycaster.setFromCamera(focusScreenCoords, this.camera);
-      const results = this.raycaster.intersectObject(this.scene, true);
-      const result = getIntersectingNode(results, this.scene);
-
-      if (result) {
-        this.focus(result.node);
-      }
-    }
-
-    const moveScreenCoords = input.get(Spoke.move);
-
-    if (moveScreenCoords) {
-      this.raycaster.setFromCamera(moveScreenCoords, this.camera);
-    }
+    const cursorPosition = input.get(Spoke.cursorPosition);
 
     // Update Transform Controls selection
     const editorSelection = this.editor.selected;
@@ -203,30 +130,108 @@ export default class SpokeControls {
       }
     }
 
-    transformControls.update(this.raycaster, selecting, this.snapEnabled == !snapModifier);
+    const transformObject = transformControls.object;
 
-    const object = transformControls.object;
+    const invertSnap = input.get(Spoke.invertSnap);
 
-    if (transformControls.dragging && !transformControls.startDrag && !transformControls.endDrag) {
-      this.editor.signals.transformChanged.dispatch(object);
+    this.raycaster.setFromCamera(cursorPosition, this.camera);
+
+    transformControls.update(this.raycaster, selectStart, selectEnd, this.snapEnabled == !invertSnap);
+
+    const orbiting = selecting && !transformControls.dragging;
+
+    const zoomDelta = input.get(Spoke.zoomDelta);
+
+    if (zoomDelta !== 0) {
+      const camera = this.camera;
+      const delta = this.delta;
+      const center = this.center;
+
+      delta.set(0, 0, zoomDelta);
+
+      const distance = camera.position.distanceTo(center);
+
+      delta.multiplyScalar(distance * this.zoomSpeed);
+
+      if (delta.length() > distance) return;
+
+      delta.applyMatrix3(this.normalMatrix.getNormalMatrix(camera.matrix));
+
+      camera.position.add(delta);
+    } else if (input.get(Spoke.focus)) {
+      const result = this.raycastNode(input.get(Spoke.focusPosition));
+
+      if (result) {
+        this.focus(result.node);
+      }
+    } else if (input.get(Spoke.panning)) {
+      const camera = this.camera;
+      const delta = this.delta;
+      const center = this.center;
+
+      const dx = input.get(Spoke.cursorDeltaX);
+      const dy = input.get(Spoke.cursorDeltaY);
+
+      const distance = camera.position.distanceTo(center);
+
+      delta
+        .set(-dx, dy, 0)
+        .multiplyScalar(distance * this.panSpeed)
+        .applyMatrix3(this.normalMatrix.getNormalMatrix(this.camera.matrix));
+
+      camera.position.add(delta);
+      center.add(delta);
+    } else if (orbiting) {
+      const camera = this.camera;
+      const center = this.center;
+      const vector = this.vector;
+      const spherical = this.spherical;
+
+      const dx = input.get(Spoke.cursorDeltaX);
+      const dy = input.get(Spoke.cursorDeltaY);
+
+      vector.copy(camera.position).sub(center);
+
+      spherical.setFromVector3(vector);
+
+      spherical.theta += dx * this.orbitSpeed;
+      spherical.phi += dy * this.orbitSpeed;
+
+      spherical.makeSafe();
+
+      vector.setFromSpherical(spherical);
+
+      camera.position.copy(center).add(vector);
+
+      camera.lookAt(center);
+    } else if (transformControls.dragging) {
+      this.editor.signals.transformChanged.dispatch(transformObject);
       return;
-    }
-
-    if (transformControls.endDrag) {
+    } else if (transformControls.endDrag) {
       switch (transformControls.mode) {
         case "translate":
-          if (!transformControls.positionStart.equals(object.position)) {
-            this.editor.setNodeProperty(object, "position", object.position, transformControls.positionStart);
+          if (!transformControls.positionStart.equals(transformObject.position)) {
+            this.editor.setNodeProperty(
+              transformObject,
+              "position",
+              transformObject.position,
+              transformControls.positionStart
+            );
           }
           break;
         case "rotate":
-          if (!transformControls.rotationStart.equals(object.rotation)) {
-            this.editor.setNodeProperty(object, "rotation", object.rotation, transformControls.rotationStart);
+          if (!transformControls.rotationStart.equals(transformObject.rotation)) {
+            this.editor.setNodeProperty(
+              transformObject,
+              "rotation",
+              transformObject.rotation,
+              transformControls.rotationStart
+            );
           }
           break;
         case "scale":
-          if (!transformControls.scaleStart.equals(object.scale)) {
-            this.editor.setNodeProperty(object, "scale", object.scale, transformControls.scaleStart);
+          if (!transformControls.scaleStart.equals(transformObject.scale)) {
+            this.editor.setNodeProperty(transformObject, "scale", transformObject.scale, transformControls.scaleStart);
           }
           break;
       }
@@ -234,15 +239,15 @@ export default class SpokeControls {
 
     if (input.get(Spoke.focusSelection)) {
       this.focus(this.editor.selected);
-    } else if (input.get(Spoke.translateMode)) {
+    } else if (input.get(Spoke.setTranslateMode)) {
       this.setTransformControlsMode("translate");
-    } else if (input.get(Spoke.rotateMode)) {
+    } else if (input.get(Spoke.setRotateMode)) {
       this.setTransformControlsMode("rotate");
-    } else if (input.get(Spoke.scaleMode)) {
+    } else if (input.get(Spoke.setScaleMode)) {
       this.setTransformControlsMode("scale");
-    } else if (input.get(Spoke.snapToggle)) {
+    } else if (input.get(Spoke.toggleSnapMode)) {
       this.toggleSnapMode();
-    } else if (input.get(Spoke.rotationSpaceToggle)) {
+    } else if (input.get(Spoke.toggleRotationSpace)) {
       this.toggleRotationSpace();
     } else if (input.get(Spoke.undo)) {
       this.editor.undo();
@@ -255,6 +260,12 @@ export default class SpokeControls {
     } else if (input.get(Spoke.saveProject)) {
       this.editor.signals.saveProject.dispatch();
     }
+  }
+
+  raycastNode(coords) {
+    this.raycaster.setFromCamera(coords, this.camera);
+    const results = this.raycaster.intersectObject(this.scene, true);
+    return getIntersectingNode(results, this.scene);
   }
 
   focus(object) {

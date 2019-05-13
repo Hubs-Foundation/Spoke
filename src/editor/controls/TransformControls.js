@@ -74,10 +74,13 @@ export default class TransformControls extends THREE.Object3D {
     this.add(this.plane);
   }
 
-  update(raycaster, selecting, snap) {
+  update(raycaster, selectStart, selectEnd, snap) {
     if (!this.object) {
       this.visible = false;
       this.axis = null;
+      this.dragging = false;
+      this.startDrag = false;
+      this.endDrag = false;
       return;
     }
 
@@ -95,7 +98,7 @@ export default class TransformControls extends THREE.Object3D {
     }
 
     // Start Drag
-    if (selecting && !this.dragging && this.axis !== null) {
+    if (selectStart && !this.dragging && this.axis !== null) {
       const planeIntersect = raycaster.intersectObjects([this.plane], true)[0] || false;
 
       if (planeIntersect) {
@@ -140,7 +143,7 @@ export default class TransformControls extends THREE.Object3D {
     }
 
     // End Drag
-    if (!selecting && this.dragging) {
+    if (selectEnd && this.dragging) {
       this.dragging = false;
       this.axis = null;
       this.endDrag = true;

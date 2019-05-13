@@ -1,72 +1,32 @@
-import THREE from "../../vendor/three";
-
-function and(sourceAction1, sourceAction2, outputAction) {
+function requestPointerLockHandler(filter) {
   return {
-    transform: input => input.get(sourceAction1) && input.get(sourceAction2),
-    action: outputAction
-  };
-}
+    handler: (event, input) => {
+      const shouldRequest = filter ? filter(event, input) : true;
 
-function andNot(trueAction, falseAction, outputAction) {
-  return {
-    transform: input => input.get(trueAction) && !input.get(falseAction),
-    action: outputAction
-  };
-}
-
-function or(sourceAction1, sourceAction2, outputAction) {
-  return {
-    transform: input => input.get(sourceAction1) || input.get(sourceAction2),
-    action: outputAction
-  };
-}
-
-function copy(sourceAction, outputAction) {
-  return {
-    transform: input => input.get(sourceAction),
-    action: outputAction
-  };
-}
-
-function metaHotkey(metaAction, keyAction, shiftAction, expectedShiftValue, outputAction) {
-  return {
-    transform: input => input.get(metaAction) && input.get(keyAction) && input.get(shiftAction) == expectedShiftValue,
-    action: outputAction
-  };
-}
-
-function normalizeWheel(sourceAction, outputAction) {
-  return {
-    transform: input => {
-      const value = input.get(sourceAction);
-
-      if (value === 0) {
-        return value;
+      if (shouldRequest) {
+        input.canvas.requestPointerLock();
       }
-
-      return value > 0 ? 1 : -1;
-    },
-    action: outputAction
+    }
   };
 }
 
-function mouseEventToScreenSpaceCoords(sourceAction, outputAction) {
+function exitPointerLockHandler(filter) {
   return {
-    defaultValue: null,
-    state: new THREE.Vector2(),
-    transform: (input, computed) => {
-      const event = input.get(sourceAction);
+    handler: (event, input) => {
+      const shouldExit = filter ? filter(event, input) : true;
 
-      if (event) {
-        const rect = input.boundingClientRect;
-        return computed.state.set(
-          ((event.clientX - rect.left) / rect.width) * 2 - 1,
-          ((event.clientY - rect.top) / rect.height) * -2 + 1
-        );
+      if (shouldExit && document.pointerLockElement === input.canvas) {
+        document.exitPointerLock();
       }
+    }
+  };
+}
 
-      return null;
-    },
+function booleanEventHandler(outputAction) {
+  return {
+    reset: true,
+    defaultValue: false,
+    handler: () => true,
     action: outputAction
   };
 }
@@ -78,54 +38,39 @@ export const Fly = {
   moveForward: "moveForward",
   moveBackward: "moveBackward",
   moveZ: "moveZ",
-  lookDeltaX: "lookDeltaX",
-  lookDeltaY: "lookDeltaY",
   lookX: "lookX",
   lookY: "lookY",
   boost: "boost"
 };
 
 export const Spoke = {
-  flyMode: "flyMode",
+  focus: "focus",
+  focusPosition: "focusPosition",
+  focusSelection: "focusSelection",
+  zoomDelta: "zoomDelta",
   enableFlyMode: "enableFlyMode",
   disableFlyMode: "disableFlyMode",
-  pan: "pan",
-  mouseDeltaX: "mouseDeltaX",
-  mouseDeltaY: "mouseDeltaY",
-  zoom: "zoom",
-  zoomDeltaY: "zoomDeltaY",
-  orbit: "orbit",
-  alt: "alt",
-  cmd: "cmd",
-  ctrl: "ctrl",
-  cmdOrCtrl: "cmdOrCtrl",
-  shift: "shift",
-  rightMouse: "rightMouse",
-  leftMouse: "leftMouse",
-  clickEvent: "clickEvent",
-  doubleClick: "doubleClick",
-  focusSelection: "focusSelection",
-  focus: "focus",
-  translateMode: "translateMode",
-  rotateMode: "rotateMode",
-  scaleMode: "scaleMode",
-  rotationSpaceToggle: "rotationSpaceToggle",
-  snapToggle: "snapToggle",
+  flying: "flying",
+  selecting: "selecting",
+  selectStart: "selectStart",
+  selectStartPosition: "selectStartPosition",
+  selectEnd: "selectEnd",
+  selectEndPosition: "selectEndPosition",
+  cursorPosition: "cursorPosition",
+  cursorDeltaX: "cursorDeltaX",
+  cursorDeltaY: "cursorDeltaY",
+  panning: "panning",
+  setTranslateMode: "setTranslateMode",
+  setRotateMode: "setRotateMode",
+  setScaleMode: "setScaleMode",
+  toggleSnapMode: "toggleSnapMode",
+  invertSnap: "invertSnap",
+  toggleRotationSpace: "toggleRotationSpace",
+  deleteSelected: "deleteSelected",
   undo: "undo",
   redo: "redo",
-  z: "z",
-  s: "s",
-  saveProject: "saveProject",
-  d: "d",
   duplicateSelected: "duplicateSelected",
-  deleteSelected: "deleteSelected",
-  mouseMoveEvent: "mouseMoveEvent",
-  move: "move",
-  snapModifier: "snapModifier",
-  selecting: "selecting",
-  selectEnd: "selectEnd",
-  selectCoords: "selectCoords",
-  mouseUpEvent: "mouseUpEvent"
+  saveProject: "saveProject"
 };
 
 export const FlyMapping = {
@@ -140,8 +85,8 @@ export const FlyMapping = {
   },
   mouse: {
     move: {
-      movementX: Fly.lookDeltaX,
-      movementY: Fly.lookDeltaY
+      normalizedMovementX: Fly.lookX,
+      normalizedMovementY: Fly.lookY
     }
   },
   computed: [
@@ -152,14 +97,6 @@ export const FlyMapping = {
     {
       transform: input => input.get(Fly.moveBackward) - input.get(Fly.moveForward),
       action: Fly.moveZ
-    },
-    {
-      transform: input => -input.get(Fly.lookDeltaX) / input.canvas.clientWidth,
-      action: Fly.lookX
-    },
-    {
-      transform: input => -input.get(Fly.lookDeltaY) / input.canvas.clientHeight,
-      action: Fly.lookY
     }
   ]
 };
@@ -167,64 +104,54 @@ export const FlyMapping = {
 export const SpokeMapping = {
   mouse: {
     dblclick: {
-      event: Spoke.doubleClickEvent
+      event: [booleanEventHandler(Spoke.focus)],
+      position: Spoke.focusPosition
     },
     wheel: {
-      deltaY: Spoke.zoomDeltaY
+      normalizedDeltaY: Spoke.zoomDelta
     },
     pressed: {
-      left: Spoke.leftMouse,
-      middle: Spoke.pan,
-      right: Spoke.rightMouse
+      left: Spoke.selecting,
+      middle: Spoke.panning,
+      right: Spoke.flying
     },
     mousedown: {
+      event: [requestPointerLockHandler(event => event.button === 2)],
+      left: Spoke.selectStart,
+      position: Spoke.selectStartPosition,
       right: Spoke.enableFlyMode
     },
     mouseup: {
-      event: Spoke.mouseUpEvent,
+      event: [exitPointerLockHandler(event => event.button === 2)],
       left: Spoke.selectEnd,
+      position: Spoke.selectEndPosition,
       right: Spoke.disableFlyMode
     },
     move: {
-      event: Spoke.mouseMoveEvent,
-      movementX: Spoke.mouseDeltaX,
-      movementY: Spoke.mouseDeltaY
+      position: Spoke.cursorPosition,
+      normalizedMovementX: Spoke.cursorDeltaX,
+      normalizedMovementY: Spoke.cursorDeltaY
     }
   },
   keyboard: {
     pressed: {
-      alt: Spoke.alt,
-      control: Spoke.ctrl,
-      meta: Spoke.cmd,
-      shift: Spoke.shift
+      mod: Spoke.invertSnap
     },
-    keydown: {
+    hotkeys: {
       f: Spoke.focusSelection,
-      w: Spoke.translateMode,
-      e: Spoke.rotateMode,
-      r: Spoke.scaleMode,
-      s: Spoke.s,
-      x: Spoke.snapToggle,
-      z: Spoke.z,
-      d: Spoke.d,
+      w: Spoke.setTranslateMode,
+      e: Spoke.setRotateMode,
+      r: Spoke.setScaleMode,
+      x: Spoke.toggleSnapMode,
+      z: Spoke.toggleRotationSpace,
       backspace: Spoke.deleteSelected,
-      delete: Spoke.deleteSelected
+      delete: Spoke.deleteSelected,
+      "mod+z": Spoke.undo,
+      "mod+shift+z": Spoke.redo,
+      "mod+d": Spoke.duplicateSelected
+    },
+    globalHotkeys: {
+      "mod+s": Spoke.saveProject
     }
-  },
-  computed: [
-    or(Spoke.cmd, Spoke.ctrl, Spoke.cmdOrCtrl),
-    mouseEventToScreenSpaceCoords(Spoke.mouseUpEvent, Spoke.selectCoords),
-    mouseEventToScreenSpaceCoords(Spoke.doubleClickEvent, Spoke.focus),
-    mouseEventToScreenSpaceCoords(Spoke.mouseMoveEvent, Spoke.move),
-    copy(Spoke.rightMouse, Spoke.flyMode),
-    and(Spoke.alt, Spoke.leftMouse, Spoke.orbit),
-    normalizeWheel(Spoke.zoomDeltaY, Spoke.zoom),
-    metaHotkey(Spoke.cmdOrCtrl, Spoke.z, Spoke.shift, false, Spoke.undo),
-    metaHotkey(Spoke.cmdOrCtrl, Spoke.z, Spoke.shift, true, Spoke.redo),
-    and(Spoke.cmdOrCtrl, Spoke.d, Spoke.duplicateSelected),
-    and(Spoke.cmdOrCtrl, Spoke.s, Spoke.saveProject),
-    andNot(Spoke.z, Spoke.cmdOrCtrl, Spoke.rotationSpaceToggle),
-    copy(Spoke.cmdOrCtrl, Spoke.snapModifier),
-    copy(Spoke.leftMouse, Spoke.selecting)
-  ]
+  }
 };

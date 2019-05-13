@@ -1,4 +1,53 @@
-function initializeValue(source, initialState, state, resetKeys, value, reset) {
+import Mousetrap from "mousetrap";
+
+const _globalCallbacks = {};
+const _originalStopCallback = Mousetrap.prototype.stopCallback;
+
+Mousetrap.prototype.stopCallback = function(e, element, combo, sequence) {
+  const self = this;
+
+  if (self.paused) {
+    return true;
+  }
+
+  if (_globalCallbacks[combo] || _globalCallbacks[sequence]) {
+    return false;
+  }
+
+  return _originalStopCallback.call(self, e, element, combo);
+};
+
+Mousetrap.prototype.bindGlobal = function(keys, callback, action) {
+  const self = this;
+  self.bind(keys, callback, action);
+
+  if (keys instanceof Array) {
+    for (let i = 0; i < keys.length; i++) {
+      _globalCallbacks[keys[i]] = true;
+    }
+    return;
+  }
+
+  _globalCallbacks[keys] = true;
+};
+
+Mousetrap.prototype.unbindGlobal = function(keys, callback, action) {
+  const self = this;
+  self.unbind(keys, callback, action);
+
+  if (keys instanceof Array) {
+    for (let i = 0; i < keys.length; i++) {
+      delete _globalCallbacks[keys[i]];
+    }
+    return;
+  }
+
+  delete _globalCallbacks[keys];
+};
+
+Mousetrap.init();
+
+function initializeValue(source, initialState, state, resetKeys, value, reset, resetPosition = true) {
   if (!source) return;
 
   for (const sourceKey in source) {
@@ -6,21 +55,24 @@ function initializeValue(source, initialState, state, resetKeys, value, reset) {
       const targetKey = source[sourceKey];
 
       if (sourceKey === "event") {
-        if (typeof targetKey === "object" && targetKey !== null) {
-          const defaultValue = targetKey.defaultValue === undefined ? null : targetKey.defaultValue;
+        for (const { defaultValue, action, reset } of targetKey) {
+          if (action !== undefined && defaultValue !== undefined) {
+            initialState[action] = defaultValue;
+            state[action] = defaultValue;
 
-          initialState[targetKey.action] = defaultValue;
-          state[targetKey.action] = state[targetKey] !== undefined ? state[targetKey] : defaultValue;
-
-          if (targetKey.reset && targetKey.action) {
-            resetKeys.push(targetKey.action);
+            if (reset) {
+              resetKeys.push(action);
+            }
           }
-        } else {
-          initialState[targetKey] = null;
-          state[targetKey] = state[targetKey] !== undefined ? state[targetKey] : null;
+        }
+        continue;
+      } else if (sourceKey === "position") {
+        initialState[targetKey] = { x: 0, y: 0 };
+        state[targetKey] = state[targetKey] !== undefined ? state[targetKey] : { x: 0, y: 0 };
+
+        if (resetPosition) {
           resetKeys.push(targetKey);
         }
-
         continue;
       }
 
@@ -40,12 +92,22 @@ function isInputSelected() {
   return el.isContentEditable || nodeName === "INPUT" || nodeName === "SELECT" || nodeName === "TEXTAREA";
 }
 
+function normalizeWheel(value) {
+  if (value === 0) {
+    return value;
+  }
+
+  return value > 0 ? 1 : -1;
+}
+
 function mergeMappings(mappings) {
   const output = {
     keyboard: {
       pressed: {},
       keyup: {},
-      keydown: {}
+      keydown: {},
+      hotkeys: {},
+      globalHotkeys: {}
     },
     mouse: {
       click: {},
@@ -66,6 +128,8 @@ function mergeMappings(mappings) {
       if (keyboard.pressed) Object.assign(output.keyboard.pressed, keyboard.pressed);
       if (keyboard.keyup) Object.assign(output.keyboard.keyup, keyboard.keyup);
       if (keyboard.keydown) Object.assign(output.keyboard.keydown, keyboard.keydown);
+      if (keyboard.hotkeys) Object.assign(output.keyboard.hotkeys, keyboard.hotkeys);
+      if (keyboard.globalHotkeys) Object.assign(output.keyboard.globalHotkeys, keyboard.globalHotkeys);
     }
 
     if (mouse) {
@@ -96,6 +160,15 @@ function deleteValues(state, mappingObj) {
 }
 
 const mouseButtons = ["left", "middle", "right", "button4", "button5"];
+
+const SPECIAL_ALIASES = {
+  option: "alt",
+  command: "meta",
+  return: "enter",
+  escape: "esc",
+  plus: "+",
+  mod: /Mac|iPod|iPhone|iPad/.test(navigator.platform) ? "meta" : "ctrl"
+};
 
 export default class InputManager {
   constructor(canvas) {
@@ -140,6 +213,18 @@ export default class InputManager {
         if (keyboard.pressed) deleteValues(state, keyboard.pressed);
         if (keyboard.keyup) deleteValues(state, keyboard.keyup);
         if (keyboard.keydown) deleteValues(state, keyboard.keydown);
+        if (keyboard.hotkeys) {
+          for (const binding in keyboard.hotkeys) {
+            Mousetrap.unbind(binding);
+          }
+          deleteValues(state, keyboard.hotkeys);
+        }
+        if (keyboard.globalHotkeys) {
+          for (const binding in keyboard.globalHotkeys) {
+            Mousetrap.unbindGlobal(binding);
+          }
+          deleteValues(state, keyboard.globalHotkeys);
+        }
       }
 
       if (mouse) {
@@ -176,6 +261,36 @@ export default class InputManager {
       initializeValue(keyboard.pressed, initialState, state, resetKeys, 0, false);
       initializeValue(keyboard.keydown, initialState, state, resetKeys, 0, true);
       initializeValue(keyboard.keyup, initialState, state, resetKeys, 0, true);
+
+      const hotkeys = keyboard.hotkeys;
+
+      if (hotkeys) {
+        for (const binding in hotkeys) {
+          const action = hotkeys[binding];
+          Mousetrap.bind(binding, () => {
+            state[action] = true;
+            return false;
+          });
+          initialState[action] = false;
+          state[action] = false;
+          resetKeys.push(action);
+        }
+      }
+
+      const globalHotkeys = keyboard.globalHotkeys;
+
+      if (globalHotkeys) {
+        for (const binding in globalHotkeys) {
+          const action = globalHotkeys[binding];
+          Mousetrap.bindGlobal(binding, () => {
+            state[action] = true;
+            return false;
+          });
+          initialState[action] = false;
+          state[action] = false;
+          resetKeys.push(action);
+        }
+      }
     }
 
     const mouse = mapping.mouse;
@@ -183,7 +298,7 @@ export default class InputManager {
     if (mouse) {
       initializeValue(mouse.click, initialState, state, resetKeys, 0, true);
       initializeValue(mouse.dblclick, initialState, state, resetKeys, 0, true);
-      initializeValue(mouse.move, initialState, state, resetKeys, 0, true);
+      initializeValue(mouse.move, initialState, state, resetKeys, 0, true, false);
       initializeValue(mouse.wheel, initialState, state, resetKeys, 0, true);
       initializeValue(mouse.pressed, initialState, state, resetKeys, 0, false);
       initializeValue(mouse.mousedown, initialState, state, resetKeys, 0, true);
@@ -214,6 +329,51 @@ export default class InputManager {
     this.resetKeys = resetKeys;
   }
 
+  handleEventMappings(eventMappings, event) {
+    for (let i = 0; i < eventMappings.length; i++) {
+      const eventMapping = eventMappings[i];
+      const { handler, action } = eventMapping;
+      const result = handler(event, this, eventMapping);
+      if (action) {
+        this.state[action] = result;
+      }
+    }
+  }
+
+  handleKeyMappings(keyMappings, event, value) {
+    const eventKey = event.key.toLowerCase();
+    let preventDefault = false;
+
+    for (const key in keyMappings) {
+      const action = keyMappings[key];
+
+      if (eventKey === key) {
+        this.state[action] = value;
+        preventDefault = true;
+        continue;
+      }
+
+      const specialAlias = SPECIAL_ALIASES[key];
+
+      if (eventKey === specialAlias) {
+        this.state[action] = value;
+        preventDefault = true;
+      }
+    }
+
+    return preventDefault;
+  }
+
+  handlePosition(positionAction, event) {
+    const position = this.state[positionAction];
+
+    if (position) {
+      const rect = this.boundingClientRect;
+      position.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+      position.y = ((event.clientY - rect.top) / rect.height) * -2 + 1;
+    }
+  }
+
   onKeyDown = event => {
     if (isInputSelected()) return;
 
@@ -224,30 +384,20 @@ export default class InputManager {
     if (!keyboardMapping) return;
 
     if (keyboardMapping.event) {
-      this.state[keyboardMapping.event] = event;
+      this.handleEventMappings(keyboardMapping.event, event);
       preventDefault = true;
     }
 
     const pressedMapping = keyboardMapping.pressed;
 
     if (pressedMapping) {
-      const action = pressedMapping[event.key.toLowerCase()];
-
-      if (action) {
-        this.state[action] = 1;
-        preventDefault = true;
-      }
+      preventDefault = this.handleKeyMappings(pressedMapping, event, 1);
     }
 
     const keydownMapping = keyboardMapping.keydown;
 
     if (keydownMapping) {
-      const action = keydownMapping[event.key.toLowerCase()];
-
-      if (action) {
-        this.state[action] = 1;
-        preventDefault = true;
-      }
+      preventDefault = this.handleKeyMappings(keydownMapping, event, 1);
     }
 
     if (preventDefault) {
@@ -265,30 +415,20 @@ export default class InputManager {
     if (!keyboardMapping) return;
 
     if (keyboardMapping.event) {
-      this.state[keyboardMapping.event] = event;
+      this.handleEventMappings(keyboardMapping.event, event);
       preventDefault = true;
     }
 
     const pressedMapping = keyboardMapping.pressed;
 
     if (pressedMapping) {
-      const key = pressedMapping[event.key.toLowerCase()];
-
-      if (key) {
-        this.state[key] = 0;
-        preventDefault = true;
-      }
+      preventDefault = this.handleKeyMappings(pressedMapping, event, 0);
     }
 
     const keyupMapping = keyboardMapping.keyup;
 
     if (keyupMapping) {
-      const key = keyupMapping[event.key.toLowerCase()];
-
-      if (key) {
-        this.state[key] = 1;
-        preventDefault = true;
-      }
+      preventDefault = this.handleKeyMappings(keyupMapping, event, 0);
     }
 
     if (preventDefault) {
@@ -328,10 +468,12 @@ export default class InputManager {
         this.state[action] = 1;
       }
 
-      const eventAction = mousedownMapping.event;
+      if (mousedownMapping.event) {
+        this.handleEventMappings(mousedownMapping.event, event);
+      }
 
-      if (eventAction) {
-        this.state[eventAction] = event;
+      if (mousedownMapping.position) {
+        this.handlePosition(mousedownMapping.position, event);
       }
     }
   };
@@ -375,10 +517,12 @@ export default class InputManager {
         this.state[action] = 1;
       }
 
-      const eventAction = mouseupMapping.event;
+      if (mouseupMapping.event) {
+        this.handleEventMappings(mouseupMapping.event, event);
+      }
 
-      if (eventAction) {
-        this.state[eventAction] = event;
+      if (mouseupMapping.position) {
+        this.handlePosition(mouseupMapping.position, event);
       }
     }
   };
@@ -397,9 +541,15 @@ export default class InputManager {
     for (const key in moveMapping) {
       if (moveMapping.hasOwnProperty(key)) {
         if (key === "event") {
-          this.state[moveMapping[key]] = event;
+          this.handleEventMappings(moveMapping.event, event);
         } else if (key === "movementX" || key === "movementY") {
           this.state[moveMapping[key]] += event[key];
+        } else if (key === "normalizedMovementX") {
+          this.state[moveMapping[key]] += -event.movementX / this.canvas.clientWidth;
+        } else if (key === "normalizedMovementY") {
+          this.state[moveMapping[key]] += -event.movementY / this.canvas.clientHeight;
+        } else if (key === "position") {
+          this.handlePosition(moveMapping.position, event);
         } else {
           this.state[moveMapping[key]] = event[key];
         }
@@ -419,9 +569,13 @@ export default class InputManager {
     for (const key in wheelMapping) {
       if (wheelMapping.hasOwnProperty(key)) {
         if (key === "event") {
-          this.state[wheelMapping[key]] = event;
+          this.handleEventMappings(wheelMapping.event, event);
         } else if (key === "deltaX" || key === "deltaY") {
           this.state[wheelMapping[key]] += event[key];
+        } else if (key === "normalizedDeltaX") {
+          this.state[wheelMapping[key]] = normalizeWheel(event.deltaX);
+        } else if (key === "normalizedDeltaY") {
+          this.state[wheelMapping[key]] = normalizeWheel(event.deltaY);
         } else {
           this.state[wheelMapping[key]] = event[key];
         }
@@ -437,26 +591,11 @@ export default class InputManager {
     const clickMapping = mouseMapping.click;
 
     if (clickMapping && clickMapping.event) {
-      const eventMapping = clickMapping.event;
-      let value;
-      let action;
+      this.handleEventMappings(mouseMapping.event, event);
+    }
 
-      if (typeof eventMapping === "object" && eventMapping !== null) {
-        action = eventMapping.action;
-
-        if (eventMapping.handler) {
-          value = eventMapping.handler(event, this);
-        } else {
-          value = event;
-        }
-      } else {
-        value = event;
-        action = eventMapping;
-      }
-
-      if (action) {
-        this.state[action] = value;
-      }
+    if (clickMapping.position) {
+      this.handlePosition(clickMapping.position, event);
     }
   };
 
@@ -467,27 +606,16 @@ export default class InputManager {
 
     const dblclickMapping = mouseMapping.dblclick;
 
-    if (dblclickMapping && dblclickMapping.event) {
-      const eventMapping = dblclickMapping.event;
-      let value;
-      let action;
+    if (!dblclickMapping) {
+      return;
+    }
 
-      if (typeof eventMapping === "object" && eventMapping !== null) {
-        action = eventMapping.action;
+    if (dblclickMapping.event) {
+      this.handleEventMappings(dblclickMapping.event, event);
+    }
 
-        if (eventMapping.handler) {
-          value = eventMapping.handler(event, this);
-        } else {
-          value = event;
-        }
-      } else {
-        value = event;
-        action = eventMapping;
-      }
-
-      if (action) {
-        this.state[action] = value;
-      }
+    if (dblclickMapping.position) {
+      this.handlePosition(dblclickMapping.position, event);
     }
   };
 
@@ -520,7 +648,19 @@ export default class InputManager {
   reset() {
     for (let i = 0; i < this.resetKeys.length; i++) {
       const key = this.resetKeys[i];
-      this.state[key] = this.initialState[key];
+
+      const actionState = this.state[key];
+      const initialActionState = this.initialState[key];
+
+      if (typeof actionState === "object" && typeof initialState === "object") {
+        if (actionState !== null && initialActionState !== null) {
+          this.state[key] = Object.assign(this.state[key], initialActionState);
+        } else if (initialActionState !== null) {
+          this.state[key] = Object.assign({}, initialActionState);
+        }
+      } else {
+        this.state[key] = initialActionState;
+      }
     }
   }
 
