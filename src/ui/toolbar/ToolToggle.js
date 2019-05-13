@@ -41,7 +41,13 @@ export default class ToolToggle extends Component {
 
   render() {
     return (
-      <div className={styles.wrapper}>
+      <div
+        className={styles.wrapper}
+        data-tip={this.props.tooltip}
+        data-for="toolbar"
+        data-delay-show="500"
+        data-place="bottom"
+      >
         <Toggle
           checked={this.props.isChecked}
           onChange={this.onChange}
@@ -64,5 +70,6 @@ ToolToggle.propTypes = {
     checked: PropTypes.string,
     unchecked: PropTypes.string
   }),
-  editor: PropTypes.object
+  editor: PropTypes.object,
+  tooltip: PropTypes.string
 };
