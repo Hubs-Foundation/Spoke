@@ -30,7 +30,19 @@ class VideosLibrary extends Component {
           searchPlaceholder: "Search videos...",
           legal: "Search by Bing",
           privacyPolicyUrl: "https://privacy.microsoft.com/en-us/privacystatement",
-          onSearch: (...args) => props.api.searchMedia(...args)
+          onSearch: async (...args) => {
+            const params = args[1];
+
+            if (!params.query || params.query.trim() === "") {
+              return {
+                results: [],
+                suggestions: [],
+                nextCursor: null
+              };
+            }
+
+            return props.api.searchMedia(...args);
+          }
         },
         {
           value: "twitch",
