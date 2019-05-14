@@ -1,8 +1,8 @@
 import React, { Component } from "react";
 import styles from "./LandingPage.scss";
 import spokeLogo from "../../assets/spoke-logo.png";
-import landingVideoMp4 from "../../assets/video/landing-video.mp4";
-import landingVideoWebm from "../../assets/video/landing-video.webm";
+import landingVideoMp4 from "../../assets/video/SpokePromo.mp4";
+import landingVideoWebm from "../../assets/video/SpokePromo.webm";
 import NavBar from "../navigation/NavBar";
 import Footer from "../navigation/Footer";
 import Callout from "./Callout";

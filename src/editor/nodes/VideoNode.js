@@ -2,7 +2,7 @@ import EditorNodeMixin from "./EditorNodeMixin";
 import Video from "../objects/Video";
 import Hls from "hls.js/dist/hls.light";
 import isHLS from "../utils/isHLS";
-import spokeLandingVideo from "../../assets/video/landing-video.mp4";
+import spokeLandingVideo from "../../assets/video/SpokePromo.mp4";
 
 export default class VideoNode extends EditorNodeMixin(Video) {
   static legacyComponentName = "video";
