@@ -146,7 +146,7 @@ export const SpokeMapping = {
       x: Spoke.toggleSnapMode,
       z: Spoke.toggleRotationSpace,
       backspace: Spoke.deleteSelected,
-      delete: Spoke.deleteSelected,
+      del: Spoke.deleteSelected,
       "mod+z": Spoke.undo,
       "mod+shift+z": Spoke.redo,
       "mod+d": Spoke.duplicateSelected,
