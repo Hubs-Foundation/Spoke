@@ -49,9 +49,17 @@ export default class ImageNode extends EditorNodeMixin(Image) {
   }
 
   async load(src) {
-    this.showLoadingCube();
+    const nextSrc = src || "";
+
+    if (nextSrc === this._canonicalUrl) {
+      return;
+    }
+
+    this._canonicalUrl = nextSrc;
+
     this._mesh.visible = false;
-    this._canonicalUrl = src || "";
+
+    this.showLoadingCube();
 
     try {
       const { accessibleUrl } = await this.editor.api.resolveMedia(src);

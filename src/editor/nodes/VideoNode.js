@@ -80,9 +80,17 @@ export default class VideoNode extends EditorNodeMixin(Video) {
   }
 
   async load(src) {
-    this.showLoadingCube();
-    this._mesh.visible = false;
+    const nextSrc = src || "";
+
+    if (nextSrc === this._canonicalUrl) {
+      return;
+    }
+
     this._canonicalUrl = src || "";
+
+    this._mesh.visible = false;
+
+    this.showLoadingCube();
 
     if (this.editor.playing) {
       this.videoEl.pause();

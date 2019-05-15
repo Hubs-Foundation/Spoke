@@ -47,7 +47,13 @@ export default class SpawnerNode extends EditorNodeMixin(Model) {
 
   // Overrides Model's load method and resolves the src url before loading.
   async load(src) {
-    this.showLoadingCube();
+    const nextSrc = src || "";
+
+    if (nextSrc === this._canonicalUrl) {
+      return;
+    }
+
+    this._canonicalUrl = nextSrc;
 
     if (this.model) {
       this.remove(this.model);
@@ -59,7 +65,7 @@ export default class SpawnerNode extends EditorNodeMixin(Model) {
       this.errorMesh = null;
     }
 
-    this._canonicalUrl = src || "";
+    this.showLoadingCube();
 
     try {
       const { accessibleUrl, files } = await this.editor.api.resolveMedia(src);
