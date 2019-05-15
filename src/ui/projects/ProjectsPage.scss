@@ -29,9 +29,12 @@
 :local(.header) {
   align-items: center;
 
+  & > * {
+    text-align: center;
+  }
+
   & > *:not(:first-child) {
     margin-top: 20px;
-    text-align: center;
   }
 
   h2 {
