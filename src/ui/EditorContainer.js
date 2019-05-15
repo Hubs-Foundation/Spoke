@@ -2,7 +2,6 @@ import React, { Component } from "react";
 import PropTypes from "prop-types";
 import { MosaicWindow, Mosaic } from "react-mosaic-component";
 import Modal from "react-modal";
-import { Prompt } from "react-router-dom";
 import { Helmet } from "react-helmet";
 
 import styles from "./EditorContainer.scss";
@@ -16,7 +15,6 @@ import ViewportPanelContainer from "./viewport/ViewportPanelContainer";
 import { defaultSettings, SettingsContextProvider } from "./contexts/SettingsContext";
 import { EditorContextProvider } from "./contexts/EditorContext";
 import { DialogContextProvider } from "./contexts/DialogContext";
-import { withAuth } from "./contexts/AuthContext";
 
 import { createEditor } from "../config";
 
@@ -27,14 +25,14 @@ import ConfirmDialog from "./dialogs/ConfirmDialog";
 import Onboarding from "./onboarding/Onboarding";
 import SupportDialog from "./dialogs/SupportDialog";
 import { cmdOrCtrlString } from "./utils";
+import BrowserPrompt from "./router/BrowserPrompt";
 
-class EditorContainer extends Component {
+export default class EditorContainer extends Component {
   static propTypes = {
     api: PropTypes.object.isRequired,
     projectId: PropTypes.string,
     project: PropTypes.object,
-    history: PropTypes.object.isRequired,
-    isAuthenticated: PropTypes.bool.isRequired
+    history: PropTypes.object.isRequired
   };
 
   constructor(props) {
@@ -107,22 +105,11 @@ class EditorContainer extends Component {
   }
 
   generateToolbarMenu = () => {
-    let projectsOrLoginItem;
-
-    if (this.props.isAuthenticated) {
-      projectsOrLoginItem = {
+    return [
+      {
         name: "Back to Projects",
         action: this.onOpenProject
-      };
-    } else {
-      projectsOrLoginItem = {
-        name: "Login",
-        action: this.onLogin
-      };
-    }
-
-    return [
-      projectsOrLoginItem,
+      },
       {
         name: "File",
         items: [
@@ -616,7 +603,7 @@ class EditorContainer extends Component {
                 <title>{`${modified}${editor.scene.name} | Spoke by Mozilla`}</title>
                 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
               </Helmet>
-              <Prompt
+              <BrowserPrompt
                 message={`${
                   editor.scene.name
                 } has unsaved changes, are you sure you wish to navigate away from the page?`}
@@ -630,5 +617,3 @@ class EditorContainer extends Component {
     );
   }
 }
-
-export default withAuth(EditorContainer);

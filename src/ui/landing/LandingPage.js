@@ -30,7 +30,7 @@ export default class LandingPage extends Component {
                     Hubs
                   </a>
                 </h3>
-                <Button large to="/projects/tutorial">
+                <Button large to="/new">
                   Get Started
                 </Button>
               </div>
