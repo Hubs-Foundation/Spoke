@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
+import classNames from "classnames";
 import { withApi } from "../contexts/ApiContext";
 import NavBar from "../navigation/NavBar";
 import styles from "./ProjectsPage.scss";
@@ -23,36 +24,42 @@ class ProjectsPage extends Component {
   constructor(props) {
     super(props);
 
+    const isAuthenticated = this.props.api.isAuthenticated();
+
     this.state = {
       projects: [],
-      loading: true,
+      loading: isAuthenticated,
+      isAuthenticated,
       error: null
     };
   }
 
   componentDidMount() {
-    this.props.api
-      .getProjects()
-      .then(projects => {
-        this.setState({
-          projects: projects.map(project => ({
-            ...project,
-            url: `/projects/${project.id}`
-          })),
-          loading: false
+    // We dont need to load projects if the user isn't logged in
+    if (this.state.isAuthenticated) {
+      this.props.api
+        .getProjects()
+        .then(projects => {
+          this.setState({
+            projects: projects.map(project => ({
+              ...project,
+              url: `/projects/${project.id}`
+            })),
+            loading: false
+          });
+        })
+        .catch(error => {
+          console.error(error);
+
+          if (error.response && error.response.status === 401) {
+            // User has an invalid auth token. Prompt them to login again.
+            this.props.api.logout();
+            return this.props.history.push("/login", { from: "/projects" });
+          }
+
+          this.setState({ error, loading: false });
         });
-      })
-      .catch(error => {
-        console.error(error);
-
-        if (error.response && error.response.status === 401) {
-          // User has an invalid auth token. Prompt them to login again.
-          this.props.api.logout();
-          return this.props.history.push("/login", { from: "/projects" });
-        }
-
-        this.setState({ error, loading: false });
-      });
+    }
   }
 
   onDeleteProject = project => {
@@ -73,7 +80,7 @@ class ProjectsPage extends Component {
   ProjectContextMenu = connectMenu(contextMenuId)(this.renderContextMenu);
 
   render() {
-    const { error, loading, projects } = this.state;
+    const { error, loading, projects, isAuthenticated } = this.state;
 
     let content;
 
@@ -99,6 +106,20 @@ class ProjectsPage extends Component {
       <>
         <NavBar />
         <main>
+          {(!isAuthenticated || (projects.length === 0 && !loading)) && (
+            <section className={styles.projectsSection}>
+              <div className={classNames(styles.projectsContainer, styles.header)}>
+                <h1>Welcome to Spoke</h1>
+                <h2>
+                  If you&#39;re new here we recommend going through the tutorial. Otherwise, jump right in and create a
+                  project from scratch or one of our templates.
+                </h2>
+                <Button medium to="/projects/tutorial">
+                  Start Tutorial
+                </Button>
+              </div>
+            </section>
+          )}
           <section className={styles.projectsSection}>
             <div className={styles.projectsContainer}>
               <div className={styles.projectsHeader}>

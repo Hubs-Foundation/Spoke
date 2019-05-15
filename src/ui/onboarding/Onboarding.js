@@ -197,10 +197,7 @@ const steps = [
         <OnboardingDialog {...props}>
           <h2>Introduction</h2>
           <h1>Welcome to Spoke</h1>
-          <p>
-            Welcome to Spoke, a browser based 3D editor for creating environments for Mozilla Hubs. Spoke allows you to
-            intuitively build, edit, and create virtual worlds using your assets and creativity.
-          </p>
+          <p>In this tutorial we&#39;ll go over how to create and publish a scene with Spoke.</p>
         </OnboardingDialog>
       );
     }

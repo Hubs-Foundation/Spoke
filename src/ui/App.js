@@ -11,7 +11,8 @@ import Error from "./Error";
 import { ApiContextProvider } from "./contexts/ApiContext";
 import { AuthContextProvider } from "./contexts/AuthContext";
 
-import AuthenticatedRoute from "./auth/AuthenticatedRoute";
+import RedirectRoute from "./router/RedirectRoute";
+
 import LandingPage from "./landing/LandingPage";
 import LoginPage from "./auth/LoginPage";
 import LogoutPage from "./auth/LogoutPage";
@@ -57,10 +58,11 @@ export default class App extends Component {
             <Suspense fallback={<Loading message="Loading..." fullScreen />} className={styles.flexColumn}>
               <Switch>
                 <Route path="/" exact component={LandingPage} />
+                <RedirectRoute path="/new" exact to="/projects" />
                 <Route path="/login" exact component={LoginPage} />
                 <Route path="/logout" exact component={LogoutPage} />
-                <AuthenticatedRoute path="/projects/templates" exact component={TemplatesPage} />
-                <AuthenticatedRoute path="/projects" exact component={ProjectsPage} />
+                <Route path="/projects/templates" exact component={TemplatesPage} />
+                <Route path="/projects" exact component={ProjectsPage} />
                 <Route path="/projects/:projectId" component={ProjectPage} />
                 <Route render={() => <Error message="Page not found." />} />
               </Switch>

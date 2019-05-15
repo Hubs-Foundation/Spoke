@@ -7,6 +7,14 @@
   &:first-child {
     padding-top: 100px;
   }
+
+  h1 {
+    font-size: 36px;
+  }
+
+  h2 {
+    font-size: 16px;
+  }
 }
 
 :local(.projectsContainer) {
@@ -18,16 +26,28 @@
   padding: 0 20px;
 }
 
+:local(.header) {
+  align-items: center;
+
+  & > * {
+    text-align: center;
+  }
+
+  & > *:not(:first-child) {
+    margin-top: 20px;
+  }
+
+  h2 {
+    max-width: 480px;
+  }
+}
+
 :local(.projectsHeader) {
   margin-bottom: 36px;
 
   display: flex;
   justify-content: space-between;
   align-items: center;
-
-  h1 {
-    font-size: 36px;
-  }
 }
 
 :local(.loadingContainer) {
