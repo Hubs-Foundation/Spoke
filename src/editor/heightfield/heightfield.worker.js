@@ -37,7 +37,7 @@ function generateHeightfield(geometry, params) {
       raycaster.set(position, down);
 
       const hits = [];
-      bvh.raycast(heightfieldMesh, raycaster, raycaster.ray, hits);
+      heightfieldMesh.raycast(raycaster, hits);
       let hit;
 
       if (hits.length === 1) {
