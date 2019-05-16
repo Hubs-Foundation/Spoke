@@ -1,6 +1,7 @@
 import ReactDOM from "react-dom";
 import React from "react";
 import * as Sentry from "@sentry/browser";
+import "abortcontroller-polyfill/dist/polyfill-patch-fetch";
 import App from "./ui/App";
 import Api from "./api/Api";
 
