@@ -43,6 +43,10 @@ export default class GLTFCache extends Cache {
             const prop = obj.material[key];
             if (prop instanceof THREE.Texture) {
               if (prop.image.src) {
+                if (key === "map") {
+                  prop.format = obj.material.transparent ? THREE.RGBAFormat : THREE.RGBFormat;
+                }
+
                 const absoluteTextureURL = new URL(prop.image.src, window.location).href;
                 this.textureCache._cache.set(absoluteTextureURL, Promise.resolve(prop));
               }
