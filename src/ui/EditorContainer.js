@@ -3,6 +3,7 @@ import PropTypes from "prop-types";
 import { MosaicWindow, Mosaic } from "react-mosaic-component";
 import Modal from "react-modal";
 import { Helmet } from "react-helmet";
+import * as Sentry from "@sentry/browser";
 
 import styles from "./EditorContainer.scss";
 
@@ -210,6 +211,7 @@ export default class EditorContainer extends Component {
     this.state.editor.signals.sceneModified.add(this.onSceneModified);
     this.state.editor.signals.editorError.add(this.onEditorError);
     this.state.editor.signals.saveProject.add(this.onSaveProject);
+    this.state.editor.signals.viewportInitialized.add(this.onViewportInitialized);
 
     this.state.editorInitPromise
       .then(() => {
@@ -237,6 +239,7 @@ export default class EditorContainer extends Component {
     this.state.editor.signals.sceneModified.remove(this.onSceneModified);
     this.state.editor.signals.editorError.remove(this.onEditorError);
     this.state.editor.signals.saveProject.remove(this.onSaveProject);
+    this.state.editor.signals.viewportInitialized.remove(this.onViewportInitialized);
   }
 
   onWindowResize = () => {
@@ -245,6 +248,25 @@ export default class EditorContainer extends Component {
 
   onPanelChange = () => {
     this.state.editor.signals.windowResize.dispatch();
+  };
+
+  onViewportInitialized = viewport => {
+    const gl = viewport.renderer.context;
+
+    const debugInfo = gl.getExtension("WEBGL_debug_renderer_info");
+
+    let webglVendor = "Unknown";
+    let webglRenderer = "Unknown";
+
+    if (debugInfo) {
+      webglVendor = gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL);
+      webglRenderer = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
+    }
+
+    Sentry.configureScope(scope => {
+      scope.setTag("webgl-vendor", webglVendor);
+      scope.setTag("webgl-renderer", webglRenderer);
+    });
   };
 
   /**
