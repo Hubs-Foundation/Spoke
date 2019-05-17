@@ -77,7 +77,7 @@ function generateHeightfield(geometry, params) {
     return null;
   }
 
-  offset.y = (max - min) / 2; //Bullet expect this to be the center between the max and min heights.
+  offset.y = (max + min) / 2; //Bullet expect this to be the center between the max and min heights.
 
   return { offset, distance, data, width: size.x, length: size.z };
 }
