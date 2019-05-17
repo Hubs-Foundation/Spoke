@@ -7,6 +7,8 @@ export default class SpotLightNode extends EditorNodeMixin(PhysicalSpotLight) {
 
   static nodeName = "Spot Light";
 
+  static ignoreRaycast = true;
+
   static async deserialize(editor, json) {
     const node = await super.deserialize(editor, json);
 
