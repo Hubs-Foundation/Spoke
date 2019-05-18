@@ -1,14 +1,15 @@
 import * as THREE from "three";
-import { MeshBVH, acceleratedRaycast } from "three-mesh-bvh";
+import { MeshBVH, acceleratedRaycast, computeBoundsTree } from "three-mesh-bvh";
 
 THREE.Mesh.prototype.raycast = acceleratedRaycast;
+THREE.BufferGeometry.prototype.computeBoundsTree = computeBoundsTree;
 
 function generateHeightfield(geometry, params) {
   geometry.computeBoundingBox();
   const size = new THREE.Vector3();
   geometry.boundingBox.getSize(size);
 
-  const bvh = new MeshBVH(geometry);
+  geometry.computeBoundsTree();
 
   const heightfieldMesh = new THREE.Mesh(geometry);
 
@@ -25,8 +26,8 @@ function generateHeightfield(geometry, params) {
   const position = new THREE.Vector3();
   const raycaster = new THREE.Raycaster();
 
-  const offsetX = -size.x / 2 + offset.x;
-  const offsetZ = -size.z / 2 + offset.z;
+  const offsetX = -maxSide / 2 + offset.x;
+  const offsetZ = -maxSide / 2 + offset.z;
 
   let min = Number.POSITIVE_INFINITY;
   let max = Number.NEGATIVE_INFINITY;
@@ -79,7 +80,7 @@ function generateHeightfield(geometry, params) {
 
   offset.y = (max + min) / 2; //Bullet expect this to be the center between the max and min heights.
 
-  return { offset, distance, data, width: size.x, length: size.z };
+  return { offset, distance, data, width: maxSide, length: maxSide };
 }
 
 const defaultParams = {
