@@ -1,7 +1,7 @@
 import THREE from "../vendor/three";
 import GridHelper from "./helpers/GridHelper";
 import resizeShadowCameraFrustum from "./utils/resizeShadowCameraFrustum";
-import OutlinePass from "./renderer/OutlinePass";
+// import OutlinePass from "./renderer/OutlinePass";
 import { environmentMap } from "./utils/EnvironmentMap";
 import { traverseMaterials } from "./utils/materials";
 import { getCanvasBlob } from "./utils/thumbnails";
@@ -45,15 +45,16 @@ export default class Viewport {
     const effectComposer = (this.effectComposer = new THREE.EffectComposer(renderer));
     const renderPass = (this.renderPass = new THREE.RenderPass(editor.scene, editor.camera));
     effectComposer.addPass(renderPass);
-    const outlinePass = (this.outlinePass = new OutlinePass(
-      new THREE.Vector2(canvas.parentElement.offsetWidth, canvas.parentElement.offsetHeight),
-      editor.scene,
-      editor.camera,
-      this.selectedObjects
-    ));
-    outlinePass.edgeColor = new THREE.Color("#006EFF");
-    outlinePass.renderToScreen = true;
-    effectComposer.addPass(outlinePass);
+    renderPass.renderToScreen = true; // temp
+    // const outlinePass = (this.outlinePass = new OutlinePass(
+    //   new THREE.Vector2(canvas.parentElement.offsetWidth, canvas.parentElement.offsetHeight),
+    //   editor.scene,
+    //   editor.camera,
+    //   this.selectedObjects
+    // ));
+    // outlinePass.edgeColor = new THREE.Color("#006EFF");
+    // outlinePass.renderToScreen = true;
+    // effectComposer.addPass(outlinePass);
 
     this.screenshotRenderer = makeRenderer(1920, 1080);
     this.thumbnailRenderer = makeRenderer(512, 512, { alpha: true });
@@ -123,8 +124,8 @@ export default class Viewport {
     renderer.dispose();
     this.renderPass.scene = this.editor.scene;
     this.renderPass.camera = this.editor.camera;
-    this.outlinePass.renderScene = this.editor.scene;
-    this.outlinePass.renderCamera = this.editor.camera;
+    // this.outlinePass.renderScene = this.editor.scene;
+    // this.outlinePass.renderCamera = this.editor.camera;
     this.spokeControls.center.set(0, 0, 0);
     this.editor.scene.add(this.grid);
     this.spokeControls.onSceneSet(this.editor.scene);

@@ -13,7 +13,9 @@ export default class GLTFCache extends Cache {
     const absoluteURL = new URL(url, window.location).href;
     if (!this._cache.has(absoluteURL)) {
       const gltfPromise = new Promise((resolve, reject) => {
-        new THREE.GLTFLoader().load(absoluteURL, resolve, null, e => {
+        const loader = new THREE.GLTFLoader();
+        loader.revokeObjectURLs = false;
+        loader.load(absoluteURL, resolve, null, e => {
           reject(new Error(`Error loading glTF model with url: ${absoluteURL}. ${eventToMessage(e)}`));
         });
       }).then(gltf => {
