@@ -51,13 +51,10 @@ export default class HeightfieldClient {
 
     const verts = geometry.attributes.position.array;
 
-    this.worker.postMessage(
-      {
-        verts,
-        params
-      },
-      [verts.buffer]
-    );
+    this.worker.postMessage({
+      verts,
+      params
+    });
     const result = await heightfieldPromise;
 
     if (result.error) {

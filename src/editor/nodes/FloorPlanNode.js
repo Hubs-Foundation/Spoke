@@ -67,6 +67,10 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
       this.navMesh.visible = true;
     }
 
+    if (this.trimesh) {
+      this.trimesh.visible = true;
+    }
+
     if (this.heightfieldMesh) {
       this.heightfieldMesh.visible = true;
     }
@@ -75,6 +79,10 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
   onDeselect() {
     if (this.navMesh) {
       this.navMesh.visible = false;
+    }
+
+    if (this.trimesh) {
+      this.trimesh.visible = false;
     }
 
     if (this.heightfieldMesh) {
@@ -169,7 +177,7 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
       navMesh.visible = true;
     }
 
-    const heightfieldGeometry = mergeMeshGeometries(collidableMeshes);
+    const collidableGeometry = mergeMeshGeometries(collidableMeshes);
 
     const spawnPoints = this.editor.scene.getNodesByType(SpawnPointNode);
 
@@ -179,7 +187,7 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
     }
 
     const heightfield = await heightfieldClient.buildHeightfield(
-      heightfieldGeometry,
+      collidableGeometry,
       { minY: minY, agentHeight: this.agentHeight },
       signal
     );
@@ -224,6 +232,17 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
       }
     }
 
+    const trimesh = new THREE.Mesh(
+      collidableGeometry,
+      new THREE.MeshBasicMaterial({ wireframe: true, color: 0xff0000 })
+    );
+
+    this.setTrimesh(trimesh);
+
+    if (this.editor.selected === this) {
+      trimesh.visible = true;
+    }
+
     return this;
   }
 
@@ -264,14 +283,39 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
 
   prepareForExport() {
     super.prepareForExport();
-    const material = this.navMesh.material;
-    material.transparent = true;
-    material.opacity = 0;
-    this.addGLTFComponent("visible", { visible: false });
-    this.addGLTFComponent("nav-mesh", {});
+
+    const navMeshMaterial = this.navMesh.material;
+    navMeshMaterial.transparent = true;
+    navMeshMaterial.opacity = 0;
+
+    this.navMesh.userData.gltfExtensions = {
+      MOZ_hubs_components: {
+        "nav-mesh": {},
+        visible: { visible: false }
+      }
+    };
+
+    if (this.trimesh) {
+      const trimeshMaterial = this.trimesh.material;
+      trimeshMaterial.transparent = true;
+      trimeshMaterial.opacity = 0;
+
+      this.trimesh.userData.gltfExtensions = {
+        MOZ_hubs_components: {
+          trimesh: {},
+          visible: { visible: false }
+        }
+      };
+    }
 
     if (this.heightfield) {
-      this.addGLTFComponent("heightfield", this.heightfield);
+      const heightfield = new THREE.Object3D();
+      heightfield.userData.gltfExtensions = {
+        MOZ_hubs_components: {
+          heightfield: this.heightfield
+        }
+      };
+      this.add(heightfield);
     }
   }
 }
