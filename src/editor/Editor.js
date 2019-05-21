@@ -1,5 +1,3 @@
-import WebXRPolyfill from "webxr-polyfill";
-
 import signals from "signals";
 import THREE from "../vendor/three";
 import History from "./History";
@@ -124,8 +122,6 @@ export default class Editor {
   async init() {
     const tasks = [];
 
-    new WebXRPolyfill(window, { cardboard: false });
-
     if (!this.viewport) {
       tasks.push(
         new Promise(resolve => {
@@ -149,9 +145,8 @@ export default class Editor {
     await Promise.all(tasks);
   }
 
-  async initializeViewport(canvas) {
+  initializeViewport(canvas) {
     this.viewport = new Viewport(this, canvas);
-    await this.viewport.xrControls.setup();
     this.signals.viewportInitialized.dispatch(this.viewport);
   }
 

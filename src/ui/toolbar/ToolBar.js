@@ -167,9 +167,11 @@ export default class ToolBar extends Component {
     } else {
       return (
         <SubMenu key={menu.name} title={menu.name} hoverDelay={0}>
-          {menu.items.map(item => {
-            return this.renderMenu(item);
-          })}
+          {menu.items
+            .filter(item => !!item)
+            .map(item => {
+              return this.renderMenu(item);
+            })}
         </SubMenu>
       );
     }
@@ -226,9 +228,11 @@ export default class ToolBar extends Component {
           Publish to Hubs...
         </Button>
         <ContextMenu id="menu">
-          {this.props.menu.map(menu => {
-            return this.renderMenu(menu);
-          })}
+          {this.props.menu
+            .filter(item => !!item)
+            .map(menu => {
+              return this.renderMenu(menu);
+            })}
         </ContextMenu>
         <ReactTooltip id="toolbar" className={styles.tooltip} />
       </div>

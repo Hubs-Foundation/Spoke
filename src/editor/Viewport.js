@@ -128,7 +128,6 @@ export default class Viewport {
     this.spokeControls.center.set(0, 0, 0);
     this.editor.scene.add(this.grid);
     this.spokeControls.onSceneSet(this.editor.scene);
-    this.xrControls.onSceneSet(this.editor.scene);
     this.editor.scene.background = new THREE.Color(0xaaaaaa);
   };
 

@@ -22,8 +22,8 @@ class ViewportPanelContainer extends Component {
     };
   }
 
-  async componentDidMount() {
-    await this.props.editor.initializeViewport(this.canvasRef.current);
+  componentDidMount() {
+    this.props.editor.initializeViewport(this.canvasRef.current);
     this.props.editor.signals.objectSelected.add(this.onObjectSelected);
     this.props.editor.viewport.spokeControls.addListener("mode-changed", this.onFlyModeChanged);
   }

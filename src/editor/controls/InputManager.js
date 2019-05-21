@@ -1,4 +1,5 @@
 import Mousetrap from "mousetrap";
+import EventEmitter from "eventemitter3";
 
 const _globalCallbacks = {};
 const _originalStopCallback = Mousetrap.prototype.stopCallback;
@@ -122,7 +123,7 @@ function mergeMappings(mappings) {
   };
 
   for (const mapping of mappings.values()) {
-    const { keyboard, mouse, computed } = mapping;
+    const { keyboard, mouse, computed, ...rest } = mapping;
 
     if (keyboard) {
       if (keyboard.pressed) Object.assign(output.keyboard.pressed, keyboard.pressed);
@@ -141,6 +142,8 @@ function mergeMappings(mappings) {
       if (mouse.mouseup) Object.assign(output.mouse.mouseup, mouse.mouseup);
       if (mouse.mousedown) Object.assign(output.mouse.mousedown, mouse.mousedown);
     }
+
+    Object.assign(output, rest);
 
     if (computed) {
       for (const obj of computed) {
@@ -170,12 +173,11 @@ const SPECIAL_ALIASES = {
   mod: /Mac|iPod|iPhone|iPad/.test(navigator.platform) ? "meta" : "ctrl"
 };
 
-export default class InputManager {
+export default class InputManager extends EventEmitter {
   constructor(canvas) {
-    this.canvas = canvas;
+    super();
 
-    this.xrDevice = null;
-    this.xrSession = null;
+    this.canvas = canvas;
 
     this.mappings = new Map();
     this.mapping = {};
@@ -198,6 +200,74 @@ export default class InputManager {
     canvas.addEventListener("contextmenu", this.onContextMenu);
     window.addEventListener("resize", this.onResize);
     window.addEventListener("blur", this.onWindowBlur);
+
+    this.xrDevice = null;
+    this.xrSession = null;
+
+    if ("xr" in navigator) {
+      navigator.xr
+        .requestDevice()
+        .then(device => {
+          device
+            .supportsSession({ immersive: true, exclusive: true /* DEPRECATED */ })
+            .then(() => {
+              this.xrDevice = device;
+              this.emit("xrdisplayconnect", this.xrDevice);
+            })
+            .catch(console.error);
+        })
+        .catch(console.error);
+    } else if ("getVRDisplays" in navigator) {
+      window.addEventListener("vrdisplayconnect", event => {
+        this.xrDevice = event.display;
+        this.emit("xrdisplayconnect", this.xrDevice);
+      });
+
+      window.addEventListener("vrdisplaydisconnect", () => {
+        this.emit("xrdevicedisconnect");
+      });
+
+      window.addEventListener("vrdisplaypresentchange", () => {
+        this.emit("xrdisplaypresentchange");
+      });
+
+      window.addEventListener("vrdisplayactivate", event => {
+        this.xrDevice = event.display;
+        this.xrDevice.requestPresent([{ source: canvas }]);
+        this.emit("xrdisplayactivate");
+      });
+
+      navigator
+        .getVRDisplays()
+        .then(displays => {
+          if (displays.length > 0) {
+            this.xrDevice = displays[0];
+            this.emit("xrdisplayconnect", this.xrDevice);
+          }
+        })
+        .catch(console.error);
+    }
+
+    this.registeredGamepads = [];
+    this.connectedGamepads = [];
+
+    for (const gamepad of navigator.getGamepads()) {
+      console.log("getGamepads", gamepad);
+      for (const { test, key, mapping } of this.registeredGamepads) {
+        if (test(gamepad)) {
+          this.connectedGamepads.push({
+            test,
+            gamepad,
+            key,
+            mapping
+          });
+          break;
+        }
+      }
+    }
+
+    window.addEventListener("gamepadconnected", this.onGamepadConnected);
+    window.addEventListener("gamepaddisconnected", this.onGamepadDisconnected);
   }
 
   enableInputMapping(key, mapping) {
@@ -636,50 +706,98 @@ export default class InputManager {
     }
   };
 
-  async setupXR() {
-    let xrDevice = null;
-
+  async enterXR() {
     if ("xr" in navigator) {
-      xrDevice = await navigator.xr.requestDevice();
+      if (this.xrDevice === null) {
+        throw new Error("XR device not initialized. Await inputManager.setupXR() first.");
+      }
 
       try {
-        await xrDevice.supportsSession({ immersive: true, exclusive: true /* DEPRECATED */ });
-        this.xrDevice = xrDevice;
-      } catch (error) {
-        console.warn(`XR Device Unsupported: ${error}`);
+        this.xrSession = await this.xrDevice.requestSession({ immersive: true, exclusive: true /* DEPRECATED */ });
+      } catch (err) {
+        console.error(err);
       }
+
+      this.xrSession.addEventListener("end", this.onXRSessionEnded);
+
+      return this.xrSession;
+    } else if ("getVRDisplays" in navigator) {
+      await this.xrDevice.requestPresent([{ source: this.canvas }]);
+      return null;
+    } else {
+      throw new Error("WebXR not supported.");
     }
-
-    return xrDevice;
-  }
-
-  async enterXR() {
-    if (this.xrDevice === null) {
-      throw new Error("XR device not initialized. Await inputManager.setupXR() first.");
-    }
-
-    try {
-      this.xrSession = await this.xrDevice.requestSession({ immersive: true });
-    } catch (err) {
-      console.error(err);
-    }
-
-    this.xrSession.addEventListener("end", this.onXRSessionEnded);
-
-    return this.xrSession;
   }
 
   exitXR() {
-    if (!this.xrSession) return false;
-    this.xrSession.end();
-    return true;
+    if ("xr" in navigator) {
+      if (!this.xrSession) return false;
+      this.xrSession.end();
+      return true;
+    } else if ("getVRDisplays" in navigator) {
+      if (!this.xrDevice || !this.xrDevice.isPresenting) return false;
+      return this.xrDevice.exitPresent();
+    }
+
+    return false;
   }
 
   onXRSessionEnded = () => {
     this.xrSession = null;
   };
 
+  registerGamepad(key, test, mapping) {
+    this.registeredGamepads.push({ test, key, mapping });
+  }
+
+  onGamepadConnected = event => {
+    const gamepad = event.gamepad;
+
+    console.log(gamepad);
+
+    for (const { test, key, mapping } of this.registeredGamepads) {
+      if (test(gamepad)) {
+        this.connectedGamepads.push({
+          test,
+          gamepad,
+          key,
+          mapping
+        });
+        return;
+      }
+    }
+  };
+
+  onGamepadDisconnected = () => {
+    const gamepad = event.gamepad;
+    const index = this.connectedGamepads.findIndex(g => g.test(gamepad));
+    if (index !== -1) {
+      this.connectedGamepads.splice(index, 1);
+    }
+  };
+
   update(dt, time) {
+    const connectedGamepads = this.connectedGamepads;
+
+    for (let i = 0; i < connectedGamepads.length; i++) {
+      const { gamepad, key, mapping } = connectedGamepads[i];
+      const gamepadActionMapping = this.mapping[key];
+
+      if (gamepadActionMapping) {
+        for (const key in gamepadActionMapping) {
+          const action = gamepadActionMapping[key];
+
+          if (mapping.buttons && mapping.buttons[key] !== undefined) {
+            const button = mapping.buttons[key];
+            this.state[action] = gamepad.buttons[button].pressed;
+          } else if (mapping.axes && mapping.axes[key] !== undefined) {
+            const axis = mapping.axes[key];
+            this.state[action] = gamepad.axes[axis].value;
+          }
+        }
+      }
+    }
+
     const computed = this.mapping.computed;
 
     if (computed) {

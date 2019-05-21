@@ -106,6 +106,9 @@ export default class EditorContainer extends Component {
   }
 
   generateToolbarMenu = () => {
+    const experimentalFeatures = this.state.settingsContext.settings.enableExperimentalFeatures;
+    const vrEnabled = this.state.editor.viewport && this.state.editor.viewport.xrControls.enabled;
+
     return [
       {
         name: "Back to Projects",
@@ -188,21 +191,22 @@ export default class EditorContainer extends Component {
         name: "Developer",
         items: [
           {
-            name: this.state.settingsContext.settings.enableExperimentalFeatures
-              ? "Disable Experimental Features"
-              : "Enable Experimental Features",
-            action: () =>
-              this.updateSetting(
-                "enableExperimentalFeatures",
-                !this.state.settingsContext.settings.enableExperimentalFeatures
-              )
+            name: experimentalFeatures ? "Disable Experimental Features" : "Enable Experimental Features",
+            action: () => this.updateSetting("enableExperimentalFeatures", !experimentalFeatures)
           }
         ]
       },
-      {
-        name: "Toggle VR",
-        action: () => this.state.editor.viewport.xrControls.toggle()
-      },
+      experimentalFeatures
+        ? vrEnabled
+          ? {
+              name: "Exit VR",
+              action: () => this.state.editor.viewport.xrControls.disable()
+            }
+          : {
+              name: "Enter VR",
+              action: () => this.state.editor.viewport.xrControls.enable()
+            }
+        : null,
       {
         name: "Submit Feedback",
         action: () => window.open("https://forms.gle/2PAFXKwW1SXdfSK17")
@@ -244,6 +248,15 @@ export default class EditorContainer extends Component {
     this.state.editor.signals.editorError.remove(this.onEditorError);
     this.state.editor.signals.saveProject.remove(this.onSaveProject);
     this.state.editor.signals.viewportInitialized.remove(this.onViewportInitialized);
+
+    const viewport = this.state.editor.viewport;
+
+    if (viewport) {
+      const inputManager = viewport.inputManager;
+      inputManager.removeListener("xrdisplayconnect", this.onXRChange);
+      inputManager.removeListener("xrdisplaydisconnect", this.onXRChange);
+      inputManager.removeListener("xrdisplaypresentchange", this.onXRChange);
+    }
   }
 
   onWindowResize = () => {
@@ -271,6 +284,16 @@ export default class EditorContainer extends Component {
       scope.setTag("webgl-vendor", webglVendor);
       scope.setTag("webgl-renderer", webglRenderer);
     });
+
+    const inputManager = viewport.inputManager;
+    inputManager.addListener("xrdisplayconnect", this.onXRChange);
+    inputManager.addListener("xrdisplaydisconnect", this.onXRChange);
+    inputManager.addListener("xrdisplaypresentchange", this.onXRChange);
+  };
+
+  onXRChange = () => {
+    const viewport = this.state.editor.viewport;
+    this.setState({ xrAvailible: !!viewport.inputManager.xrDevice, xrEnabled: viewport.xrControls.enabled });
   };
 
   /**

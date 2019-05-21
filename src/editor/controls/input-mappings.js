@@ -74,7 +74,9 @@ export const Spoke = {
   deselect: "deselect"
 };
 
-export const XR = {};
+export const XR = {
+  teleport: "teleport"
+};
 
 export const FlyMapping = {
   keyboard: {
@@ -160,4 +162,14 @@ export const SpokeMapping = {
   }
 };
 
-export const XRMapping = {};
+export const OculusTouchMapping = {
+  buttons: {
+    trigger: 1
+  }
+};
+
+export const XRMapping = {
+  rightOculusTouch: {
+    trigger: XR.teleport
+  }
+};
