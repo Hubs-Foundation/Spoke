@@ -33,6 +33,7 @@ class FloorPlanNodeEditor extends Component {
     this.onChangeAgentMaxClimb = createPropSetter("agentMaxClimb");
     this.onChangeAgentMaxSlope = createPropSetter("agentMaxSlope");
     this.onChangeRegionMinSize = createPropSetter("regionMinSize");
+    this.onChangeMaxTriangles = createPropSetter("maxTriangles");
   }
 
   onRegenerate = async () => {
@@ -122,6 +123,14 @@ class FloorPlanNodeEditor extends Component {
           min={0.1}
           onChange={this.onChangeRegionMinSize}
           unit="m²"
+        />
+        <NumericInputGroup
+          name="Collision Geo Triangle Threshold"
+          value={node.maxTriangles}
+          min={10}
+          max={10000}
+          precision={1}
+          onChange={this.onChangeMaxTriangles}
         />
         <Button className={styles.regenerateButton} onClick={this.onRegenerate}>
           Regenerate

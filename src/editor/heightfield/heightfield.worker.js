@@ -1,15 +1,67 @@
 import * as THREE from "three";
-import { MeshBVH, acceleratedRaycast, computeBoundsTree } from "three-mesh-bvh";
+import { acceleratedRaycast, computeBoundsTree } from "three-mesh-bvh";
 
 THREE.Mesh.prototype.raycast = acceleratedRaycast;
 THREE.BufferGeometry.prototype.computeBoundsTree = computeBoundsTree;
+
+function exceedsDensityThreshold(count, subtree, params) {
+  const bounds = subtree.boundingData;
+  const triangleThreshold = params.triangleThreshold;
+  const minimumVolume = params.minimumVolume;
+  const minimumTriangles = params.minimumTriangles;
+  const dx = bounds[3] - bounds[0];
+  const dy = bounds[4] - bounds[1];
+  const dz = bounds[5] - bounds[2];
+  const volume = dx * dy * dz;
+
+  if (volume < minimumVolume) {
+    return false;
+  }
+
+  if (count < minimumTriangles) {
+    return false;
+  }
+
+  return count / volume > triangleThreshold;
+}
+
+function isHighDensity(subtree, params) {
+  if (subtree.count) {
+    const result = exceedsDensityThreshold(subtree.count, subtree, params);
+    return result === true ? true : subtree.count;
+  } else {
+    const leftResult = isHighDensity(subtree.left, params);
+    if (leftResult === true) return true;
+    const rightResult = isHighDensity(subtree.right, params);
+    if (rightResult === true) return true;
+
+    const count = leftResult + rightResult;
+    const result = exceedsDensityThreshold(count, subtree, params);
+    return result === true ? true : count;
+  }
+}
+
+function isGeometryHighDensity(geo, params) {
+  const bvh = geo.boundsTree;
+  const roots = bvh._roots;
+  for (let i = 0; i < roots.length; ++i) {
+    if (isHighDensity(roots[i], params) === true) {
+      return true;
+    }
+  }
+  return false;
+}
 
 function generateHeightfield(geometry, params) {
   geometry.computeBoundingBox();
   const size = new THREE.Vector3();
   geometry.boundingBox.getSize(size);
 
-  geometry.computeBoundsTree();
+  geometry.computeBoundsTree({ strategy: 1, maxDepth: 40 });
+
+  if (!isGeometryHighDensity(geometry, params)) {
+    return null;
+  }
 
   const heightfieldMesh = new THREE.Mesh(geometry);
 
@@ -86,7 +138,10 @@ function generateHeightfield(geometry, params) {
 const defaultParams = {
   raycastY: 1000,
   minY: 0,
-  agentHeight: 1.7
+  agentHeight: 1.7,
+  triangleThreshold: 1000,
+  minimumVolume: 0.1,
+  minimumTriangles: 100
 };
 
 self.onmessage = async event => {
