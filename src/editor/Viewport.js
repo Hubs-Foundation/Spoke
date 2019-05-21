@@ -9,6 +9,7 @@ import InputManager from "./controls/InputManager";
 import FlyControls from "./controls/FlyControls";
 import SpokeControls from "./controls/SpokeControls";
 import PlayModeControls from "./controls/PlayModeControls";
+import XRControls from "./controls/XRControls";
 
 /**
  * @author mrdoob / http://mrdoob.com/
@@ -70,45 +71,14 @@ export default class Viewport {
     this.flyControls = new FlyControls(camera, this.inputManager);
     this.spokeControls = new SpokeControls(camera, editor, this.inputManager, this.flyControls);
     this.playModeControls = new PlayModeControls(this.inputManager, this.spokeControls, this.flyControls);
+    this.xrControls = new XRControls(editor, this, this.inputManager);
     this.spokeControls.enable();
 
     this.skipRender = false;
 
     this.clock = new THREE.Clock();
 
-    const render = () => {
-      if (!this.skipRender) {
-        const delta = this.clock.getDelta();
-        const time = this.clock.getElapsedTime();
-        editor.scene.updateMatrixWorld();
-        this.inputManager.update(delta, time);
-
-        editor.scene.traverse(node => {
-          if (node.isDirectionalLight) {
-            resizeShadowCameraFrustum(node, editor.scene);
-          }
-
-          if (node.isNode) {
-            node.onUpdate(delta);
-          }
-        });
-        this.flyControls.update(delta);
-        this.spokeControls.update(delta);
-
-        if (editor.selected) {
-          this.selectedObjects[0] = editor.selected;
-        } else if (this.selectedObjects.length === 1) {
-          this.selectedObjects.pop();
-        }
-
-        effectComposer.render();
-        this.inputManager.reset();
-      }
-
-      this.rafId = requestAnimationFrame(render);
-    };
-
-    this.rafId = requestAnimationFrame(render);
+    renderer.setAnimationLoop(this.render);
 
     // signals
     signals.sceneSet.add(this.onSceneSet);
@@ -117,10 +87,40 @@ export default class Viewport {
     this.onWindowResized();
   }
 
+  render = () => {
+    if (this.skipRender) return;
+
+    const delta = this.clock.getDelta();
+    const time = this.clock.getElapsedTime();
+    this.editor.scene.updateMatrixWorld();
+    this.inputManager.update(delta, time);
+
+    this.editor.scene.traverse(node => {
+      if (node.isDirectionalLight) {
+        resizeShadowCameraFrustum(node, this.editor.scene);
+      }
+
+      if (node.isNode) {
+        node.onUpdate(delta);
+      }
+    });
+    this.flyControls.update(delta);
+    this.spokeControls.update(delta);
+    this.xrControls.update(delta);
+
+    if (this.editor.selected) {
+      this.selectedObjects[0] = this.editor.selected;
+    } else if (this.selectedObjects.length === 1) {
+      this.selectedObjects.pop();
+    }
+
+    //this.effectComposer.render();
+    this.renderer.render(this.editor.scene, this.camera);
+    this.inputManager.reset();
+  };
+
   onSceneSet = () => {
-    const renderer = this.renderer;
     this.screenshotRenderer.dispose();
-    renderer.dispose();
     this.renderPass.scene = this.editor.scene;
     this.renderPass.camera = this.editor.camera;
     this.outlinePass.renderScene = this.editor.scene;
@@ -128,6 +128,7 @@ export default class Viewport {
     this.spokeControls.center.set(0, 0, 0);
     this.editor.scene.add(this.grid);
     this.spokeControls.onSceneSet(this.editor.scene);
+    this.xrControls.onSceneSet(this.editor.scene);
     this.editor.scene.background = new THREE.Color(0xaaaaaa);
   };
 
@@ -153,7 +154,7 @@ export default class Viewport {
     camera.aspect = width / height;
     camera.updateProjectionMatrix();
 
-    camera.layers.disable(1);
+    camera.layers.disable(3);
 
     screenshotRenderer.setSize(width, height, true);
 
@@ -167,7 +168,7 @@ export default class Viewport {
 
     screenshotRenderer.render(this.editor.scene, camera);
 
-    camera.layers.enable(1);
+    camera.layers.enable(3);
 
     camera.updateMatrixWorld();
     const cameraTransform = camera.matrixWorld.clone();
@@ -231,7 +232,7 @@ export default class Viewport {
     camera.position.z += size;
     camera.lookAt(center);
 
-    camera.layers.disable(1);
+    camera.layers.disable(3);
 
     this.thumbnailRenderer.setSize(width, height, true);
     this.thumbnailRenderer.render(scene, camera);
@@ -245,6 +246,5 @@ export default class Viewport {
     const signals = this.editor.signals;
     signals.sceneSet.remove(this.onSceneSet);
     signals.windowResize.remove(this.onWindowResized);
-    cancelAnimationFrame(this.rafId);
   }
 }

@@ -174,6 +174,9 @@ export default class InputManager {
   constructor(canvas) {
     this.canvas = canvas;
 
+    this.xrDevice = null;
+    this.xrSession = null;
+
     this.mappings = new Map();
     this.mapping = {};
     this.initialState = {};
@@ -631,6 +634,49 @@ export default class InputManager {
     for (const key in this.initialState) {
       this.state[key] = this.initialState[key];
     }
+  };
+
+  async setupXR() {
+    let xrDevice = null;
+
+    if ("xr" in navigator) {
+      xrDevice = await navigator.xr.requestDevice();
+
+      try {
+        await xrDevice.supportsSession({ immersive: true, exclusive: true /* DEPRECATED */ });
+        this.xrDevice = xrDevice;
+      } catch (error) {
+        console.warn(`XR Device Unsupported: ${error}`);
+      }
+    }
+
+    return xrDevice;
+  }
+
+  async enterXR() {
+    if (this.xrDevice === null) {
+      throw new Error("XR device not initialized. Await inputManager.setupXR() first.");
+    }
+
+    try {
+      this.xrSession = await this.xrDevice.requestSession({ immersive: true });
+    } catch (err) {
+      console.error(err);
+    }
+
+    this.xrSession.addEventListener("end", this.onXRSessionEnded);
+
+    return this.xrSession;
+  }
+
+  exitXR() {
+    if (!this.xrSession) return false;
+    this.xrSession.end();
+    return true;
+  }
+
+  onXRSessionEnded = () => {
+    this.xrSession = null;
   };
 
   update(dt, time) {

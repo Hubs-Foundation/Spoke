@@ -216,7 +216,7 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
 
       this.add(heightfieldMesh);
 
-      this.heightfieldMesh.layers.set(1);
+      this.heightfieldMesh.layers.enable(3);
       heightfieldMesh.position.set(heightfield.offset.x, 0, heightfield.offset.z);
 
       if (this.editor.selected !== this) {

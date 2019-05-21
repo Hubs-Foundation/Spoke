@@ -16,7 +16,7 @@ export default class GridHelper extends THREE.GridHelper {
       }
     }
 
-    this.layers.set(1);
+    this.layers.enable(3);
 
     addIsHelperFlag(this);
   }

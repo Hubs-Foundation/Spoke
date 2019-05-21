@@ -43,7 +43,7 @@ export default class TriggerVolumeNode extends EditorNodeMixin(THREE.Object3D) {
 
     const boxMesh = new THREE.Mesh(TriggerVolumeNode._geometry, TriggerVolumeNode._material);
     const box = new THREE.BoxHelper(boxMesh, 0xffff00);
-    box.layers.set(1);
+    box.layers.enable(3);
     this.helper = box;
     this.add(box);
     this.target = null;

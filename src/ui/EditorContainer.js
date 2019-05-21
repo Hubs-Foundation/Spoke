@@ -200,6 +200,10 @@ export default class EditorContainer extends Component {
         ]
       },
       {
+        name: "Toggle VR",
+        action: () => this.state.editor.viewport.xrControls.toggle()
+      },
+      {
         name: "Submit Feedback",
         action: () => window.open("https://forms.gle/2PAFXKwW1SXdfSK17")
       }

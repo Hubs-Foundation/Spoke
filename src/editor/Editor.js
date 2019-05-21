@@ -1,3 +1,5 @@
+import WebXRPolyfill from "webxr-polyfill";
+
 import signals from "signals";
 import THREE from "../vendor/three";
 import History from "./History";
@@ -40,7 +42,7 @@ export default class Editor {
     this.camera = new THREE.PerspectiveCamera(80, window.innerWidth / window.innerHeight, 0.2, 8000);
     this.audioListener = new THREE.AudioListener();
     this.camera.add(this.audioListener);
-    this.camera.layers.enable(1);
+    this.camera.layers.enable(3);
     this.camera.name = "Camera";
 
     // TODO: Support multiple viewports
@@ -122,6 +124,8 @@ export default class Editor {
   async init() {
     const tasks = [];
 
+    new WebXRPolyfill(window, { cardboard: false });
+
     if (!this.viewport) {
       tasks.push(
         new Promise(resolve => {
@@ -145,8 +149,9 @@ export default class Editor {
     await Promise.all(tasks);
   }
 
-  initializeViewport(canvas) {
+  async initializeViewport(canvas) {
     this.viewport = new Viewport(this, canvas);
+    await this.viewport.xrControls.setup();
     this.signals.viewportInitialized.dispatch(this.viewport);
   }
 
@@ -573,7 +578,7 @@ export default class Editor {
   enterPlayMode() {
     this.playing = true;
     this.deselect();
-    this.camera.layers.disable(1);
+    this.camera.layers.disable(3);
     this.viewport.playModeControls.enable();
     this.scene.traverse(node => {
       if (node.isNode) {
@@ -584,7 +589,7 @@ export default class Editor {
 
   leavePlayMode() {
     this.playing = false;
-    this.camera.layers.enable(1);
+    this.camera.layers.enable(3);
     this.viewport.playModeControls.disable();
     this.scene.traverse(node => {
       if (node.isNode) {

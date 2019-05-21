@@ -74,6 +74,8 @@ export const Spoke = {
   deselect: "deselect"
 };
 
+export const XR = {};
+
 export const FlyMapping = {
   keyboard: {
     pressed: {
@@ -157,3 +159,5 @@ export const SpokeMapping = {
     }
   }
 };
+
+export const XRMapping = {};
