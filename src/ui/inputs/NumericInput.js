@@ -1,97 +1,121 @@
-import React, { useState, useCallback } from "react";
+import React, { Component } from "react";
 import PropTypes from "prop-types";
 import classNames from "classnames";
 import styles from "./NumericInput.scss";
 import { getStepSize, clamp, toPrecision } from "../utils";
 
-export default function NumericInput({
-  className,
-  unit,
-  smallStep,
-  mediumStep,
-  largeStep,
-  min,
-  max,
-  precision,
-  value,
-  onChange,
-  onCommit,
-  ...rest
-}) {
-  const [state, setState] = useState({ tempValue: null, focused: false });
+export default class NumericInput extends Component {
+  constructor(props) {
+    super(props);
 
-  const handleKeyPress = useCallback(
-    event => {
-      let direction = 0;
+    this.state = { tempValue: null, focused: false };
+  }
 
-      if (event.key === "ArrowUp") {
-        direction = 1;
-      } else if (event.key === "ArrowDown") {
-        direction = -1;
-      }
+  handleKeyPress = event => {
+    const { smallStep, mediumStep, largeStep, min, max, precision, convertTo, onChange, onCommit } = this.props;
 
-      if (!direction) return;
+    let direction = 0;
 
-      event.preventDefault();
+    if (event.key === "ArrowUp") {
+      direction = 1;
+    } else if (event.key === "ArrowDown") {
+      direction = -1;
+    }
 
-      const nextValue = toPrecision(getStepSize(event, smallStep, mediumStep, largeStep) * direction, precision);
-      const clampedValue = clamp(nextValue, min, max);
+    if (!direction) return;
 
-      if (onCommit) {
-        onCommit(clampedValue);
-      } else {
-        onChange(clampedValue);
-      }
+    event.preventDefault();
 
-      setState({ tempValue: clampedValue.toString(), focused: true });
-    },
-    [smallStep, mediumStep, largeStep, value, min, max, precision, onCommit, onChange]
-  );
+    const nextValue = parseFloat(event.target.value) + getStepSize(event, smallStep, mediumStep, largeStep) * direction;
+    const clampedValue = clamp(nextValue, min, max);
+    const roundedValue = precision ? toPrecision(clampedValue, precision) : nextValue;
+    const finalValue = convertTo(roundedValue);
 
-  const handleChange = useCallback(
-    event => {
-      const tempValue = event.target.value;
+    if (onCommit) {
+      onCommit(finalValue);
+    } else {
+      onChange(finalValue);
+    }
 
-      setState({ tempValue, focused: true });
+    this.setState({ tempValue: roundedValue.toString(), focused: true });
+  };
 
-      const parsedValue = parseFloat(tempValue);
+  handleChange = event => {
+    const { min, max, precision, convertTo, onChange } = this.props;
 
-      if (!Number.isNaN(parsedValue)) {
-        const nextValue = clamp(toPrecision(parsedValue, precision), min, max);
-        onChange(nextValue);
-      }
-    },
-    [onChange]
-  );
+    const tempValue = event.target.value;
 
-  const handleFocus = useCallback(() => {
-    setState({ tempValue: value.toString(), focused: true });
-  }, [value]);
+    this.setState({ tempValue, focused: true });
 
-  const handleBlur = useCallback(() => {
-    setState({ tempValue: null, focused: false });
+    const parsedValue = parseFloat(tempValue);
+
+    if (!Number.isNaN(parsedValue)) {
+      const clampedValue = clamp(parsedValue, min, max);
+      const roundedValue = precision ? toPrecision(clampedValue, precision) : clampedValue;
+      const finalValue = convertTo(roundedValue);
+      onChange(finalValue);
+    }
+  };
+
+  handleFocus = () => {
+    const { value, convertFrom } = this.props;
+    this.setState({ tempValue: convertFrom(value).toString(), focused: true });
+  };
+
+  handleBlur = () => {
+    const { value, onCommit, onChange } = this.props;
+
+    this.setState({ tempValue: null, focused: false });
 
     if (onCommit) {
       onCommit(value);
     } else {
       onChange(value);
     }
-  }, [value, onChange, onCommit]);
+  };
 
-  return (
-    <div className={styles.container}>
-      <input
-        {...rest}
-        className={classNames(styles.numericInput, className)}
-        value={state.focused ? state.tempValue : value}
-        onKeyUp={handleKeyPress}
-        onChange={handleChange}
-        onFocus={handleFocus}
-        onBlur={handleBlur}
-      />
-      {unit && <div className={styles.unit}>{unit}</div>}
-    </div>
-  );
+  render() {
+    const {
+      className,
+      unit,
+      smallStep,
+      mediumStep,
+      largeStep,
+      min,
+      max,
+      precision,
+      value,
+      convertTo,
+      convertFrom,
+      onChange,
+      onCommit,
+      ...rest
+    } = this.props;
+
+    return (
+      <div className={styles.container}>
+        <input
+          {...rest}
+          className={classNames(styles.numericInput, className)}
+          value={
+            this.state.focused
+              ? this.state.tempValue
+              : precision
+              ? convertFrom(value).toLocaleString(undefined, {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: -Math.log10(precision)
+                })
+              : convertFrom(value).toString()
+          }
+          onKeyUp={this.handleKeyPress}
+          onChange={this.handleChange}
+          onFocus={this.handleFocus}
+          onBlur={this.handleBlur}
+        />
+        {unit && <div className={styles.unit}>{unit}</div>}
+      </div>
+    );
+  }
 }
 
 NumericInput.propTypes = {
@@ -102,10 +126,12 @@ NumericInput.propTypes = {
   largeStep: PropTypes.number.isRequired,
   min: PropTypes.number.isRequired,
   max: PropTypes.number.isRequired,
-  precision: PropTypes.number.isRequired,
   value: PropTypes.number.isRequired,
   onChange: PropTypes.func.isRequired,
-  onCommit: PropTypes.func
+  onCommit: PropTypes.func,
+  convertTo: PropTypes.func.isRequired,
+  convertFrom: PropTypes.func.isRequired,
+  precision: PropTypes.number
 };
 
 NumericInput.defaultProps = {
@@ -114,5 +140,6 @@ NumericInput.defaultProps = {
   largeStep: 0.25,
   min: -Infinity,
   max: Infinity,
-  precision: 0.00001
+  convertTo: value => value,
+  convertFrom: value => value
 };

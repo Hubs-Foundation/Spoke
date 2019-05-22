@@ -34,6 +34,9 @@ export default class AmbientLightNodeEditor extends Component {
         <NumericInputGroup
           name="Intensity"
           min={0}
+          smallStep={0.001}
+          mediumStep={0.01}
+          largeStep={0.1}
           value={node.intensity}
           onChange={this.onChangeIntensity}
           unit="cd"

@@ -85,6 +85,10 @@ export default class VideoNodeEditor extends Component {
                 <CompoundNumericInput
                   min={0}
                   max={1}
+                  smallStep={0.001}
+                  mediumStep={0.01}
+                  largeStep={0.1}
+                  precision={0.001}
                   value={node.rolloffFactor}
                   onChange={this.onChangeRolloffFactor}
                 />
@@ -93,6 +97,10 @@ export default class VideoNodeEditor extends Component {
               <NumericInputGroup
                 name="Rolloff Factor"
                 min={0}
+                smallStep={0.1}
+                mediumStep={1}
+                largeStep={10}
+                precision={0.001}
                 value={node.rolloffFactor}
                 onChange={this.onChangeRolloffFactor}
               />
@@ -100,6 +108,9 @@ export default class VideoNodeEditor extends Component {
             <NumericInputGroup
               name="Ref Distance"
               min={0}
+              smallStep={0.1}
+              mediumStep={1}
+              largeStep={10}
               value={node.refDistance}
               onChange={this.onChangeRefDistance}
               unit="m"
@@ -107,6 +118,9 @@ export default class VideoNodeEditor extends Component {
             <NumericInputGroup
               name="Max Distance"
               min={0}
+              smallStep={0.1}
+              mediumStep={1}
+              largeStep={10}
               value={node.maxDistance}
               onChange={this.onChangeMaxDistance}
               unit="m"
@@ -115,9 +129,9 @@ export default class VideoNodeEditor extends Component {
               name="Cone Inner Angle"
               min={0}
               max={360}
-              smallStep={1}
-              mediumStep={15}
-              largeStep={30}
+              smallStep={0.1}
+              mediumStep={1}
+              largeStep={10}
               value={node.coneInnerAngle}
               onChange={this.onChangeConeInnerAngle}
               unit="°"
@@ -126,15 +140,22 @@ export default class VideoNodeEditor extends Component {
               name="Cone Outer Angle"
               min={0}
               max={360}
-              smallStep={1}
-              mediumStep={15}
-              largeStep={30}
+              smallStep={0.1}
+              mediumStep={1}
+              largeStep={10}
               value={node.coneOuterAngle}
               onChange={this.onChangeConeOuterAngle}
               unit="°"
             />
             <InputGroup name="Cone Outer Gain">
-              <CompoundNumericInput min={0} max={1} value={node.coneOuterGain} onChange={this.onChangeConeOuterGain} />
+              <CompoundNumericInput
+                min={0}
+                max={1}
+                step={0.01}
+                precision={0.01}
+                value={node.coneOuterGain}
+                onChange={this.onChangeConeOuterGain}
+              />
             </InputGroup>
           </Fragment>
         )}

@@ -75,6 +75,9 @@ class FloorPlanNodeEditor extends Component {
           <NumericInputGroup
             name="Cell Size"
             value={node.cellSize}
+            smallStep={0.001}
+            mediumStep={0.01}
+            largeStep={0.1}
             min={0.1}
             precision={0.0001}
             onChange={this.onChangeCellSize}
@@ -83,6 +86,9 @@ class FloorPlanNodeEditor extends Component {
         <NumericInputGroup
           name="Cell Height"
           value={node.cellHeight}
+          smallStep={0.001}
+          mediumStep={0.01}
+          largeStep={0.1}
           min={0.1}
           onChange={this.onChangeCellHeight}
           unit="m"
@@ -90,6 +96,9 @@ class FloorPlanNodeEditor extends Component {
         <NumericInputGroup
           name="Agent Height"
           value={node.agentHeight}
+          smallStep={0.001}
+          mediumStep={0.01}
+          largeStep={0.1}
           min={0.1}
           onChange={this.onChangeAgentHeight}
           unit="m"
@@ -98,6 +107,9 @@ class FloorPlanNodeEditor extends Component {
           name="Agent Radius"
           value={node.agentRadius}
           min={0}
+          smallStep={0.001}
+          mediumStep={0.01}
+          largeStep={0.1}
           onChange={this.onChangeAgentRadius}
           unit="m"
         />
@@ -105,6 +117,9 @@ class FloorPlanNodeEditor extends Component {
           name="Maximum Step Height"
           value={node.agentMaxClimb}
           min={0}
+          smallStep={0.001}
+          mediumStep={0.01}
+          largeStep={0.1}
           onChange={this.onChangeAgentMaxClimb}
           unit="m"
         />
@@ -113,6 +128,9 @@ class FloorPlanNodeEditor extends Component {
           value={node.agentMaxSlope}
           min={0.00001}
           max={90}
+          smallStep={1}
+          mediumStep={5}
+          largeStep={15}
           onChange={this.onChangeAgentMaxSlope}
           unit="°"
         />
@@ -120,6 +138,9 @@ class FloorPlanNodeEditor extends Component {
           name="Minimum Region Area"
           value={node.regionMinSize}
           min={0.1}
+          smallStep={0.1}
+          mediumStep={1}
+          largeStep={10}
           onChange={this.onChangeRegionMinSize}
           unit="m²"
         />
