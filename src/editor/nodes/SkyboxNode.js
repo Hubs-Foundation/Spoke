@@ -25,7 +25,8 @@ export default class SkyboxNode extends EditorNodeMixin(Sky) {
       mieCoefficient,
       mieDirectionalG,
       inclination,
-      azimuth
+      azimuth,
+      distance
     } = json.components.find(c => c.name === "skybox").props;
 
     node.turbidity = turbidity;
@@ -35,7 +36,7 @@ export default class SkyboxNode extends EditorNodeMixin(Sky) {
     node.mieDirectionalG = mieDirectionalG;
     node.inclination = inclination;
     node.azimuth = azimuth;
-    node.distance = 8000;
+    node.distance = distance;
 
     return node;
   }
