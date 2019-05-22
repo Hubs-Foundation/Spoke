@@ -16,6 +16,8 @@ function Scrubber({
   min,
   max,
   precision,
+  convertFrom,
+  convertTo,
   value,
   onChange,
   onCommit,
@@ -32,9 +34,11 @@ function Scrubber({
         const mouseY = state.mouseY + event.movementY;
         const nextDelta = state.delta + event.movementX;
         const stepSize = getStepSize(event, smallStep, mediumStep, largeStep);
-        const nextValue = state.startValue + toPrecision(Math.round(nextDelta / sensitivity) * stepSize, precision);
+        const nextValue = state.startValue + Math.round(nextDelta / sensitivity) * stepSize;
         const clampedValue = clamp(nextValue, min, max);
-        onChange(clampedValue);
+        const roundedValue = precision ? toPrecision(clampedValue, precision) : clampedValue;
+        const finalValue = convertTo(roundedValue);
+        onChange(finalValue);
         setState({ ...state, delta: nextDelta, mouseX, mouseY });
       }
     },
@@ -50,7 +54,8 @@ function Scrubber({
       largeStep,
       min,
       max,
-      precision
+      precision,
+      convertTo
     ]
   );
 
@@ -70,10 +75,16 @@ function Scrubber({
 
   const handleMouseDown = useCallback(
     event => {
-      setState({ isDragging: true, startValue: value, delta: 0, mouseX: event.clientX, mouseY: event.clientY });
+      setState({
+        isDragging: true,
+        startValue: convertFrom(value),
+        delta: 0,
+        mouseX: event.clientX,
+        mouseY: event.clientY
+      });
       scrubberEl.current.requestPointerLock();
     },
-    [value, scrubberEl]
+    [value, scrubberEl, convertFrom]
   );
 
   useEffect(() => {
@@ -115,10 +126,12 @@ Scrubber.propTypes = {
   sensitivity: PropTypes.number.isRequired,
   min: PropTypes.number.isRequired,
   max: PropTypes.number.isRequired,
-  precision: PropTypes.number.isRequired,
+  precision: PropTypes.number,
   value: PropTypes.number.isRequired,
   onChange: PropTypes.func.isRequired,
-  onCommit: PropTypes.func
+  onCommit: PropTypes.func,
+  convertFrom: PropTypes.func.isRequired,
+  convertTo: PropTypes.func.isRequired
 };
 
 Scrubber.defaultProps = {
@@ -129,7 +142,8 @@ Scrubber.defaultProps = {
   sensitivity: 5,
   min: -Infinity,
   max: Infinity,
-  precision: 0.00001
+  convertFrom: value => value,
+  convertTo: value => value
 };
 
 export default React.memo(Scrubber);

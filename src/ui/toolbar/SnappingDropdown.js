@@ -76,6 +76,9 @@ export default class SnappingDropdown extends React.Component {
               <NumericInputGroup
                 className={styles.snappingInput}
                 name="Move"
+                smallStep={0.01}
+                mediumStep={0.1}
+                largeStep={1}
                 value={snapTranslateValue}
                 onChange={value => this.setSnapValue("translate", value)}
                 unit="m"
@@ -85,6 +88,9 @@ export default class SnappingDropdown extends React.Component {
               <NumericInputGroup
                 className={styles.snappingInput}
                 name="Rotate"
+                smallStep={1}
+                mediumStep={15}
+                largeStep={45}
                 value={snapRotateValue}
                 onChange={value => this.setSnapValue("rotate", value)}
                 unit="°"

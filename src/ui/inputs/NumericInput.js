@@ -14,6 +14,8 @@ export default function NumericInput({
   max,
   precision,
   value,
+  convertTo,
+  convertFrom,
   onChange,
   onCommit,
   ...rest
@@ -34,18 +36,21 @@ export default function NumericInput({
 
       event.preventDefault();
 
-      const nextValue = toPrecision(getStepSize(event, smallStep, mediumStep, largeStep) * direction, precision);
+      const nextValue =
+        parseFloat(event.target.value) + getStepSize(event, smallStep, mediumStep, largeStep) * direction;
       const clampedValue = clamp(nextValue, min, max);
+      const roundedValue = precision ? toPrecision(clampedValue, precision) : nextValue;
+      const finalValue = convertTo(roundedValue);
 
       if (onCommit) {
-        onCommit(clampedValue);
+        onCommit(finalValue);
       } else {
-        onChange(clampedValue);
+        onChange(finalValue);
       }
 
-      setState({ tempValue: clampedValue.toString(), focused: true });
+      setState({ tempValue: roundedValue.toString(), focused: true });
     },
-    [smallStep, mediumStep, largeStep, value, min, max, precision, onCommit, onChange]
+    [smallStep, mediumStep, largeStep, min, max, precision, convertTo, onCommit, onChange]
   );
 
   const handleChange = useCallback(
@@ -57,16 +62,18 @@ export default function NumericInput({
       const parsedValue = parseFloat(tempValue);
 
       if (!Number.isNaN(parsedValue)) {
-        const nextValue = clamp(toPrecision(parsedValue, precision), min, max);
-        onChange(nextValue);
+        const clampedValue = clamp(parsedValue, min, max);
+        const roundedValue = precision ? toPrecision(clampedValue, precision) : clampedValue;
+        const finalValue = convertTo(roundedValue);
+        onChange(finalValue);
       }
     },
-    [onChange]
+    [onChange, precision, convertTo, min, max]
   );
 
   const handleFocus = useCallback(() => {
-    setState({ tempValue: value.toString(), focused: true });
-  }, [value]);
+    setState({ tempValue: convertFrom(value).toString(), focused: true });
+  }, [value, convertFrom]);
 
   const handleBlur = useCallback(() => {
     setState({ tempValue: null, focused: false });
@@ -83,7 +90,16 @@ export default function NumericInput({
       <input
         {...rest}
         className={classNames(styles.numericInput, className)}
-        value={state.focused ? state.tempValue : value}
+        value={
+          state.focused
+            ? state.tempValue
+            : precision
+            ? convertFrom(value).toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: -Math.log10(precision)
+              })
+            : convertFrom(value).toString()
+        }
         onKeyUp={handleKeyPress}
         onChange={handleChange}
         onFocus={handleFocus}
@@ -102,10 +118,12 @@ NumericInput.propTypes = {
   largeStep: PropTypes.number.isRequired,
   min: PropTypes.number.isRequired,
   max: PropTypes.number.isRequired,
-  precision: PropTypes.number.isRequired,
   value: PropTypes.number.isRequired,
   onChange: PropTypes.func.isRequired,
-  onCommit: PropTypes.func
+  onCommit: PropTypes.func,
+  convertTo: PropTypes.func.isRequired,
+  convertFrom: PropTypes.func.isRequired,
+  precision: PropTypes.number
 };
 
 NumericInput.defaultProps = {
@@ -114,5 +132,6 @@ NumericInput.defaultProps = {
   largeStep: 0.25,
   min: -Infinity,
   max: Infinity,
-  precision: 0.00001
+  convertTo: value => value,
+  convertFrom: value => value
 };

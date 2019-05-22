@@ -6,6 +6,9 @@ import NumericInputGroup from "../inputs/NumericInputGroup";
 import RadianNumericInputGroup from "../inputs/RadianNumericInputGroup";
 import CompoundNumericInput from "../inputs/CompoundNumericInput";
 
+const hoursToRadians = hours => hours / 24;
+const radiansToHours = rads => rads * 24;
+
 export default class SkyboxNodeEditor extends Component {
   static propTypes = {
     editor: PropTypes.object,
@@ -54,49 +57,65 @@ export default class SkyboxNodeEditor extends Component {
 
     return (
       <NodeEditor description={SkyboxNodeEditor.description} {...this.props}>
-        <InputGroup name="Turbidity">
-          <CompoundNumericInput min={1} max={20} value={node.turbidity} onChange={this.onChangeTurbidity} />
-        </InputGroup>
-        <InputGroup name="Rayleigh">
-          <CompoundNumericInput min={0} max={4} value={node.rayleigh} onChange={this.onChangeRayleigh} />
-        </InputGroup>
-        <InputGroup name="Luminance">
-          <CompoundNumericInput min={0} max={2} value={node.luminance} onChange={this.onChangeLuminance} />
-        </InputGroup>
-        <InputGroup name="MIE Coefficient">
-          <CompoundNumericInput min={0} max={0.1} value={node.mieCoefficient} onChange={this.onChangeMieCoefficient} />
-        </InputGroup>
-        <InputGroup name="MIE Directional G">
-          <CompoundNumericInput min={0} max={1} value={node.mieDirectionalG} onChange={this.onChangeMieDirectionalG} />
-        </InputGroup>
-        <RadianNumericInputGroup
-          name="Inclination"
-          smallStep={1}
-          mediumStep={5}
-          largeStep={15}
-          value={node.inclination}
-          onChange={this.onChangeInclination}
-          unit="°"
-        />
-        <RadianNumericInputGroup
-          name="Azimuth"
-          smallStep={1}
-          mediumStep={5}
-          largeStep={15}
+        <NumericInputGroup
+          name="Time of Day"
+          smallStep={0.1}
+          mediumStep={0.5}
+          largeStep={1}
+          min={0}
+          max={24}
+          convertFrom={radiansToHours}
+          convertTo={hoursToRadians}
           value={node.azimuth}
           onChange={this.onChangeAzimuth}
-          unit="°"
+          unit="h"
         />
-        <NumericInputGroup
-          name="Distance"
-          smallStep={10}
-          mediumStep={100}
-          largeStep={250}
-          min={0}
-          value={node.distance}
-          onChange={this.onChangeDistance}
-          unit="m"
+        <RadianNumericInputGroup
+          name="Latitude"
+          min={-90}
+          max={90}
+          smallStep={0.1}
+          mediumStep={0.5}
+          largeStep={1}
+          value={node.inclination}
+          onChange={this.onChangeInclination}
         />
+        <InputGroup name="Luminance">
+          <CompoundNumericInput
+            min={0.001}
+            max={1.189}
+            step={0.001}
+            precision={0.001}
+            value={node.luminance}
+            onChange={this.onChangeLuminance}
+          />
+        </InputGroup>
+        <InputGroup name="Scattering Amount">
+          <CompoundNumericInput
+            min={0}
+            max={0.1}
+            step={0.001}
+            precision={0.001}
+            value={node.mieCoefficient}
+            onChange={this.onChangeMieCoefficient}
+          />
+        </InputGroup>
+        <InputGroup name="Scattering Distance">
+          <CompoundNumericInput
+            min={0}
+            max={1}
+            step={0.001}
+            precision={0.001}
+            value={node.mieDirectionalG}
+            onChange={this.onChangeMieDirectionalG}
+          />
+        </InputGroup>
+        <InputGroup name="Horizon Start">
+          <CompoundNumericInput min={1} max={20} value={node.turbidity} onChange={this.onChangeTurbidity} />
+        </InputGroup>
+        <InputGroup name="Horizon End">
+          <CompoundNumericInput min={0} max={4} value={node.rayleigh} onChange={this.onChangeRayleigh} />
+        </InputGroup>
       </NodeEditor>
     );
   }
