@@ -57,6 +57,7 @@ export default class FloorPlan extends THREE.Object3D {
       } else if (child === source.trimesh) {
         clonedChild = child.clone();
         clonedChild.material = child.material.clone();
+        clonedChild.material.wireframe = false;
         this.trimesh = clonedChild;
       } else if (recursive === true) {
         clonedChild = child.clone();
