@@ -16,7 +16,7 @@ export default class Vector3Input extends Component {
 
   static defaultProps = {
     value: new THREE.Vector3(),
-    precision: 0.00001,
+    precision: 0.01,
     onChange: () => {}
   };
 

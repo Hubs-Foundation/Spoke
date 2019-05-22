@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { Component, createRef } from "react";
 import PropTypes from "prop-types";
 import classNames from "classnames";
 import styles from "./NumericInput.scss";
@@ -9,6 +9,7 @@ export default class NumericInput extends Component {
     super(props);
 
     this.state = { tempValue: null, focused: false };
+    this.inputEl = createRef();
   }
 
   handleKeyPress = event => {
@@ -59,7 +60,9 @@ export default class NumericInput extends Component {
 
   handleFocus = () => {
     const { value, convertFrom } = this.props;
-    this.setState({ tempValue: convertFrom(value).toString(), focused: true });
+    this.setState({ tempValue: convertFrom(value).toString(), focused: true }, () => {
+      this.inputEl.current.select();
+    });
   };
 
   handleBlur = () => {
@@ -97,6 +100,7 @@ export default class NumericInput extends Component {
         <input
           {...rest}
           className={classNames(styles.numericInput, className)}
+          ref={this.inputEl}
           value={
             this.state.focused
               ? this.state.tempValue
