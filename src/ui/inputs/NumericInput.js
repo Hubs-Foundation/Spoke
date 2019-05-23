@@ -4,6 +4,21 @@ import classNames from "classnames";
 import styles from "./NumericInput.scss";
 import { getStepSize, clamp, toPrecision } from "../utils";
 
+function toPrecisionString(value, precision) {
+  if (precision && precision <= 1) {
+    const numDigits = Math.abs(Math.log10(precision));
+    const minimumFractionDigits = Math.min(numDigits, 2);
+    const maximumFractionDigits = Math.max(minimumFractionDigits, numDigits);
+
+    return value.toLocaleString(undefined, {
+      minimumFractionDigits,
+      maximumFractionDigits
+    });
+  } else {
+    return value.toString();
+  }
+}
+
 export default class NumericInput extends Component {
   constructor(props) {
     super(props);
@@ -39,6 +54,12 @@ export default class NumericInput extends Component {
     }
 
     this.setState({ tempValue: roundedValue.toString(), focused: true });
+  };
+
+  handleKeyDown = event => {
+    if (event.key === "ArrowUp" || event.key === "ArrowDown") {
+      event.preventDefault();
+    }
   };
 
   handleChange = event => {
@@ -101,17 +122,9 @@ export default class NumericInput extends Component {
           {...rest}
           className={classNames(styles.numericInput, className)}
           ref={this.inputEl}
-          value={
-            this.state.focused
-              ? this.state.tempValue
-              : precision
-              ? convertFrom(value).toLocaleString(undefined, {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: -Math.log10(precision)
-                })
-              : convertFrom(value).toString()
-          }
+          value={this.state.focused ? this.state.tempValue : toPrecisionString(convertFrom(value), precision)}
           onKeyUp={this.handleKeyPress}
+          onKeyDown={this.handleKeyDown}
           onChange={this.handleChange}
           onFocus={this.handleFocus}
           onBlur={this.handleBlur}

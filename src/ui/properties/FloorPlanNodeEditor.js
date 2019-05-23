@@ -157,6 +157,9 @@ class FloorPlanNodeEditor extends Component {
             value={node.maxTriangles}
             min={10}
             max={10000}
+            smallStep={1}
+            mediumStep={100}
+            largeStep={1000}
             precision={1}
             onChange={this.onChangeMaxTriangles}
           />
