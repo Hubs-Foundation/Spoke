@@ -173,7 +173,8 @@ export default class MeshCombinationGroup {
     if (
       object.visible !== this.initialObject.visible ||
       object.castShadow !== this.initialObject.castShadow ||
-      object.receiveShadow !== this.initialObject.receiveShadow
+      object.receiveShadow !== this.initialObject.receiveShadow ||
+      object.userData.gltfExtensions
     ) {
       return false;
     }

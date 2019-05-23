@@ -5,6 +5,7 @@ export default class FloorPlan extends THREE.Object3D {
     super();
     this.position.y = 0.005;
     this.navMesh = null;
+    this.trimesh = null;
     this.heightfield = null;
     this.heightfieldMesh = null;
   }
@@ -20,6 +21,20 @@ export default class FloorPlan extends THREE.Object3D {
       this.add(object);
       this.navMesh.layers.set(1);
       this.navMesh.visible = false;
+    }
+  }
+
+  setTrimesh(object) {
+    if (this.trimesh) {
+      this.remove(this.trimesh);
+    }
+
+    this.trimesh = object;
+
+    if (object) {
+      this.add(object);
+      this.trimesh.layers.set(1);
+      this.trimesh.visible = false;
     }
   }
 
@@ -39,6 +54,11 @@ export default class FloorPlan extends THREE.Object3D {
         clonedChild = child.clone();
         clonedChild.material = child.material.clone();
         this.navMesh = clonedChild;
+      } else if (child === source.trimesh) {
+        clonedChild = child.clone();
+        clonedChild.material = child.material.clone();
+        clonedChild.material.wireframe = false;
+        this.trimesh = clonedChild;
       } else if (recursive === true) {
         clonedChild = child.clone();
       }

@@ -296,7 +296,7 @@ export default class Editor {
     }
 
     json.extensions.MOZ_hubs_components = {
-      version: 1
+      version: 2
     };
 
     json.asset.generator = `Mozilla Spoke ${process.env.BUILD_VERSION}`;

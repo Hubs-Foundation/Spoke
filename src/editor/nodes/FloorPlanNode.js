@@ -34,7 +34,9 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
       agentRadius,
       agentMaxClimb,
       agentMaxSlope,
-      regionMinSize
+      regionMinSize,
+      maxTriangles,
+      forceTrimesh
     } = json.components.find(c => c.name === "floor-plan").props;
 
     node.autoCellSize = autoCellSize;
@@ -45,6 +47,8 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
     node.agentMaxClimb = agentMaxClimb;
     node.agentMaxSlope = agentMaxSlope;
     node.regionMinSize = regionMinSize;
+    node.maxTriangles = maxTriangles || 1000;
+    node.forceTrimesh = forceTrimesh || false;
 
     return node;
   }
@@ -59,12 +63,18 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
     this.agentMaxClimb = 0.3;
     this.agentMaxSlope = 45;
     this.regionMinSize = 4;
+    this.maxTriangles = 1000;
+    this.forceTrimesh = false;
     this.heightfieldMesh = null;
   }
 
   onSelect() {
     if (this.navMesh) {
       this.navMesh.visible = true;
+    }
+
+    if (this.trimesh) {
+      this.trimesh.visible = true;
     }
 
     if (this.heightfieldMesh) {
@@ -77,12 +87,17 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
       this.navMesh.visible = false;
     }
 
+    if (this.trimesh) {
+      this.trimesh.visible = false;
+    }
+
     if (this.heightfieldMesh) {
       this.heightfieldMesh.visible = false;
     }
   }
 
   async generate(signal) {
+    window.scene = this;
     const collidableMeshes = [];
     const walkableMeshes = [];
 
@@ -169,30 +184,31 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
       navMesh.visible = true;
     }
 
-    const heightfieldGeometry = mergeMeshGeometries(collidableMeshes);
+    const collidableGeometry = mergeMeshGeometries(collidableMeshes);
 
-    const spawnPoints = this.editor.scene.getNodesByType(SpawnPointNode);
+    let heightfield = null;
+    if (!this.forceTrimesh) {
+      const spawnPoints = this.editor.scene.getNodesByType(SpawnPointNode);
 
-    let minY = Number.POSITIVE_INFINITY;
-    for (let j = 0; j < spawnPoints.length; j++) {
-      minY = Math.min(minY, spawnPoints[j].position.y);
+      let minY = Number.POSITIVE_INFINITY;
+      for (let j = 0; j < spawnPoints.length; j++) {
+        minY = Math.min(minY, spawnPoints[j].position.y);
+      }
+      heightfield = await heightfieldClient.buildHeightfield(
+        collidableGeometry,
+        { minY: minY, agentHeight: this.agentHeight, triangleThreshold: this.maxTriangles },
+        signal
+      );
     }
 
-    const heightfield = await heightfieldClient.buildHeightfield(
-      heightfieldGeometry,
-      { minY: minY, agentHeight: this.agentHeight },
-      signal
-    );
+    if (heightfield !== null) {
+      this.setTrimesh(null);
+      this.setHeightfield(heightfield);
 
-    this.setHeightfield(heightfield);
+      if (this.heightfieldMesh) {
+        this.remove(this.heightfieldMesh);
+      }
 
-    if (this.heightfieldMesh) {
-      this.remove(this.heightfieldMesh);
-    }
-
-    if (!heightfield) {
-      this.heightfieldMesh = null;
-    } else {
       const segments = heightfield.data[0].length;
       const heightfieldMeshGeometry = new THREE.PlaneBufferGeometry(
         heightfield.width,
@@ -222,6 +238,20 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
       if (this.editor.selected !== this) {
         this.heightfieldMesh.visible = false;
       }
+    } else {
+      const trimesh = new THREE.Mesh(
+        collidableGeometry,
+        new THREE.MeshBasicMaterial({ wireframe: true, color: 0xff0000 })
+      );
+
+      this.setTrimesh(trimesh);
+      if (this.heightfieldMesh) {
+        this.remove(this.heightfieldMesh);
+      }
+
+      if (this.editor.selected === this) {
+        trimesh.visible = true;
+      }
     }
 
     return this;
@@ -244,6 +274,8 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
     this.agentMaxClimb = source.agentMaxClimb;
     this.agentMaxSlope = source.agentMaxSlope;
     this.regionMinSize = source.regionMinSize;
+    this.maxTriangles = source.maxTriangles;
+    this.forceTrimesh = source.forceTrimesh;
     return this;
   }
 
@@ -257,21 +289,51 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
         agentRadius: this.agentRadius,
         agentMaxClimb: this.agentMaxClimb,
         agentMaxSlope: this.agentMaxSlope,
-        regionMinSize: this.regionMinSize
+        regionMinSize: this.regionMinSize,
+        maxTriangles: this.maxTriangles,
+        forceTrimesh: this.forceTrimesh
       }
     });
   }
 
   prepareForExport() {
     super.prepareForExport();
-    const material = this.navMesh.material;
-    material.transparent = true;
-    material.opacity = 0;
-    this.addGLTFComponent("visible", { visible: false });
-    this.addGLTFComponent("nav-mesh", {});
+
+    const navMeshMaterial = this.navMesh.material;
+    navMeshMaterial.transparent = true;
+    navMeshMaterial.opacity = 0;
+
+    this.navMesh.name = "navMesh";
+    this.navMesh.userData.gltfExtensions = {
+      MOZ_hubs_components: {
+        "nav-mesh": {},
+        visible: { visible: false }
+      }
+    };
+
+    if (this.trimesh) {
+      this.trimesh.name = "trimesh";
+      const trimeshMaterial = this.trimesh.material;
+      trimeshMaterial.transparent = true;
+      trimeshMaterial.opacity = 0;
+
+      this.trimesh.userData.gltfExtensions = {
+        MOZ_hubs_components: {
+          trimesh: {},
+          visible: { visible: false }
+        }
+      };
+    }
 
     if (this.heightfield) {
-      this.addGLTFComponent("heightfield", this.heightfield);
+      const heightfield = new THREE.Object3D();
+      heightfield.name = "heightfield";
+      heightfield.userData.gltfExtensions = {
+        MOZ_hubs_components: {
+          heightfield: this.heightfield
+        }
+      };
+      this.add(heightfield);
     }
   }
 }
