@@ -80,7 +80,7 @@
     "react-tooltip": "^3.10.0",
     "recast-wasm": "^0.1.1",
     "signals": "^1.0.0",
-    "three": "github:mozillareality/three.js#220c52eb20b5d8afce8aecc295283d7a7a1e0c62",
+    "three": "github:mozillareality/three.js#105dev-gltf-exporter",
     "three-mesh-bvh": "^0.1.2",
     "url-toolkit": "^2.1.6",
     "uuid": "^3.3.2"
