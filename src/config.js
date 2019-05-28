@@ -36,6 +36,12 @@ import TriggerVolumeNode from "./editor/nodes/TriggerVolumeNode";
 import TriggerVolumeNodeEditor from "./ui/properties/TriggerVolumeNodeEditor";
 import LinkNode from "./editor/nodes/LinkNode";
 import LinkNodeEditor from "./ui/properties/LinkNodeEditor";
+import BoxNode from "./editor/nodes/BoxNode";
+import BoxNodeEditor from "./ui/properties/BoxNodeEditor";
+import SphereNode from "./editor/nodes/SphereNode";
+import SphereNodeEditor from "./ui/properties/SphereNodeEditor";
+import ParticleNode from "./editor/nodes/ParticleNode";
+import ParticleNodeEditor from "./ui/properties/ParticleNodeEditor";
 
 export function createEditor(api) {
   const editor = new Editor(api);
@@ -43,6 +49,8 @@ export function createEditor(api) {
   editor.registerNode(GroupNode, GroupNodeEditor);
   editor.registerNode(ModelNode, ModelNodeEditor);
   editor.registerNode(GroundPlaneNode, GroundPlaneNodeEditor);
+  editor.registerNode(BoxNode, BoxNodeEditor);
+  editor.registerNode(SphereNode, SphereNodeEditor);
   editor.registerNode(BoxColliderNode, BoxColliderNodeEditor);
   editor.registerNode(AmbientLightNode, AmbientLightNodeEditor);
   editor.registerNode(DirectionalLightNode, DirectionalLightNodeEditor);
@@ -57,5 +65,6 @@ export function createEditor(api) {
   editor.registerNode(SpawnerNode, SpawnerNodeEditor);
   editor.registerNode(TriggerVolumeNode, TriggerVolumeNodeEditor);
   editor.registerNode(LinkNode, LinkNodeEditor);
+  editor.registerNode(ParticleNode, ParticleNodeEditor);
   return editor;
 }

@@ -89,7 +89,7 @@ export default class Viewport {
           }
 
           if (node.isNode) {
-            node.onUpdate(delta);
+            node.onUpdate(delta, time);
           }
         });
         this.flyControls.update(delta);
