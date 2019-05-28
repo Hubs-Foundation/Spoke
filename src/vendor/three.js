@@ -2,7 +2,7 @@ const THREE = require("three");
 
 window.THREE = THREE;
 
-require("three/examples/js/BufferGeometryUtils");
+require("three/examples/js/utils/BufferGeometryUtils");
 require("three/examples/js/exporters/GLTFExporter");
 require("three/examples/js/loaders/GLTFLoader");
 require("three/examples/js/shaders/CopyShader");

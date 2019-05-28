@@ -233,7 +233,9 @@ export default class OutlinePass extends THREE.Pass {
 
       // Draw Non Selected objects in the depth buffer
       this.renderScene.overrideMaterial = this.depthMaterial;
-      renderer.render(this.renderScene, this.renderCamera, this.renderTargetDepthBuffer, true);
+      renderer.setRenderTarget(this.renderTargetDepthBuffer);
+      renderer.clear();
+      renderer.render(this.renderScene, this.renderCamera);
 
       // Restore selected mesh visibility.
       for (const mesh of this.selectedRenderables) {
@@ -264,7 +266,9 @@ export default class OutlinePass extends THREE.Pass {
       );
       this.depthMaskMaterial.uniforms["depthTexture"].value = this.renderTargetDepthBuffer.texture;
       this.depthMaskMaterial.uniforms["textureMatrix"].value = this.textureMatrix;
-      renderer.render(this.renderScene, this.renderCamera, this.renderTargetMaskBuffer, true);
+      renderer.setRenderTarget(this.renderTargetMaskBuffer);
+      renderer.clear();
+      renderer.render(this.renderScene, this.renderCamera);
       this.renderScene.overrideMaterial = null;
 
       // Restore non-selected mesh visibility
@@ -285,7 +289,9 @@ export default class OutlinePass extends THREE.Pass {
         this.renderTargetMaskBuffer.width,
         this.renderTargetMaskBuffer.height
       );
-      renderer.render(this.outlineScene, this.outlineCamera, this.renderTargetEdgeBuffer, true);
+      renderer.setRenderTarget(this.renderTargetEdgeBuffer);
+      renderer.clear();
+      renderer.render(this.outlineScene, this.outlineCamera);
 
       // Blend it additively over the input texture
       this.quad.material = this.overlayMaterial;
@@ -298,7 +304,8 @@ export default class OutlinePass extends THREE.Pass {
 
       if (maskActive) renderer.context.enable(renderer.context.STENCIL_TEST);
 
-      renderer.render(this.outlineScene, this.outlineCamera, readBuffer, false);
+      renderer.setRenderTarget(readBuffer);
+      renderer.render(this.outlineScene, this.outlineCamera);
 
       renderer.setClearColor(this.oldClearColor, this.oldClearAlpha);
       renderer.autoClear = oldAutoClear;
@@ -308,6 +315,7 @@ export default class OutlinePass extends THREE.Pass {
     if (this.renderToScreen) {
       this.quad.material = this.copyMaterial;
       this.copyUniforms["tDiffuse"].value = readBuffer.texture;
+      renderer.setRenderTarget(null);
       renderer.render(this.outlineScene, this.outlineCamera);
     }
   }

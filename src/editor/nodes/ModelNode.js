@@ -146,9 +146,9 @@ export default class ModelNode extends EditorNodeMixin(Model) {
 
       if (files) {
         // Revoke any object urls from the SketchfabZipLoader.
-        for (const key in files) {
-          URL.revokeObjectURL(files[key]);
-        }
+        // for (const key in files) {
+        //   URL.revokeObjectURL(files[key]);
+        // }
       }
     } catch (e) {
       console.error(e);
