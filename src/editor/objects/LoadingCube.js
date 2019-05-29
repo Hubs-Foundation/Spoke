@@ -1,7 +1,7 @@
 import THREE from "../../vendor/three";
 import loadingCubeUrl from "../../assets/loading-cube.glb";
 import cloneObject3D from "../utils/cloneObject3D";
-import eventToMessage from "../utils/eventToMessage";
+import loadGLTF from "../utils/loadGLTF";
 
 let cubeGltf = null;
 
@@ -11,11 +11,7 @@ export default class LoadingCube extends THREE.Object3D {
       return Promise.resolve(cubeGltf);
     }
 
-    const gltf = await new Promise((resolve, reject) => {
-      new THREE.GLTFLoader().load(loadingCubeUrl, resolve, null, e => {
-        reject(new Error(`Error loading Model. ${eventToMessage(e)}`));
-      });
-    });
+    const gltf = await loadGLTF(loadingCubeUrl);
 
     cubeGltf = gltf;
 
