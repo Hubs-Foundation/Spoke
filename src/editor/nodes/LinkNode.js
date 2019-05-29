@@ -39,7 +39,7 @@ export default class LinkNode extends EditorNodeMixin(THREE.Object3D) {
     material.side = THREE.DoubleSide;
     material.transparent = true;
     this.helper = new THREE.Mesh(geometry, material);
-    this.helper.layers.set(1);
+    this.helper.layers.enable(3);
     this.add(this.helper);
   }
 

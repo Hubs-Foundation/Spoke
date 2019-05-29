@@ -74,6 +74,10 @@ export const Spoke = {
   deselect: "deselect"
 };
 
+export const XR = {
+  teleport: "teleport"
+};
+
 export const FlyMapping = {
   keyboard: {
     pressed: {
@@ -155,5 +159,17 @@ export const SpokeMapping = {
     globalHotkeys: {
       "mod+s": Spoke.saveProject
     }
+  }
+};
+
+export const OculusTouchMapping = {
+  buttons: {
+    trigger: 1
+  }
+};
+
+export const XRMapping = {
+  rightOculusTouch: {
+    trigger: XR.teleport
   }
 };

@@ -14,6 +14,7 @@ import DirectionalLightNode from "./nodes/DirectionalLightNode";
 import traverseVisible from "./utils/traverseVisible";
 
 const tempVec3 = new THREE.Vector3();
+import XRControls from "./controls/XRControls";
 
 /**
  * @author mrdoob / http://mrdoob.com/
@@ -26,10 +27,21 @@ export default class Viewport {
     const signals = editor.signals;
 
     function makeRenderer(width, height, options = {}) {
+      const context = canvas.getContext("webgl2", {
+        alpha: true,
+        depth: true,
+        stencil: true,
+        antialias: true,
+        premultipliedAlpha: true,
+        preserveDrawingBuffer: false,
+        powerPreference: "default"
+      });
+
       const renderer = new THREE.WebGLRenderer({
         ...options,
         antialias: true,
-        preserveDrawingBuffer: true
+        preserveDrawingBuffer: true,
+        context
       });
 
       renderer.gammaOutput = true;
@@ -83,59 +95,14 @@ export default class Viewport {
     this.flyControls = new FlyControls(camera, this.inputManager);
     this.spokeControls = new SpokeControls(camera, editor, this.inputManager, this.flyControls);
     this.playModeControls = new PlayModeControls(this.inputManager, this.spokeControls, this.flyControls);
+    this.xrControls = new XRControls(editor, this, this.inputManager);
     this.spokeControls.enable();
 
     this.skipRender = false;
 
     this.clock = new THREE.Clock();
 
-    const render = () => {
-      if (!this.skipRender) {
-        const delta = this.clock.getDelta();
-        const time = this.clock.getElapsedTime();
-
-        this.inputManager.update(delta, time);
-        this.flyControls.update(delta);
-        this.spokeControls.update(delta);
-
-        if (this.shadowsNeedUpdate) {
-          const directionalLightNodes = editor.nodesByType[DirectionalLightNode.nodeName];
-
-          for (let i = 0; i < directionalLightNodes.length; i++) {
-            resizeShadowCameraFrustum(directionalLightNodes[i], editor.scene);
-          }
-        }
-
-        const nodes = editor.nodes;
-
-        for (let i = 0; i < nodes.length; i++) {
-          nodes[i].onUpdate(delta, time);
-        }
-
-        if (editor.selected) {
-          this.selectedObjects[0] = editor.selected;
-        } else if (this.selectedObjects.length === 1) {
-          this.selectedObjects.pop();
-        }
-
-        renderer.shadowMap.needsUpdate = this.shadowsNeedUpdate;
-
-        if (quality === "high") {
-          effectComposer.render(delta);
-        } else {
-          // EffectComposer introduces extra overhead with the CopyPass
-          // Use the normal renderer in non-high quality mode for now.
-          this.renderer.render(this.editor.scene, this.camera);
-        }
-
-        this.inputManager.reset();
-        this.shadowsNeedUpdate = false;
-      }
-
-      this.rafId = requestAnimationFrame(render);
-    };
-
-    this.rafId = requestAnimationFrame(render);
+    renderer.setAnimationLoop(this.render);
 
     // signals
     signals.sceneSet.add(this.onSceneSet);
@@ -251,10 +218,55 @@ export default class Viewport {
     this.renderListNeedsUpdate = true;
   };
 
-  onSceneSet = () => {
+  render = () => {
+    if (this.skipRender) return;
+
     const renderer = this.renderer;
+    const editor = this.editor;
+    const delta = this.clock.getDelta();
+    const time = this.clock.getElapsedTime();
+
+    this.inputManager.update(delta, time);
+    this.flyControls.update(delta);
+    this.spokeControls.update(delta);
+    this.xrControls.update(delta);
+
+    if (this.shadowsNeedUpdate) {
+      const directionalLightNodes = editor.nodesByType[DirectionalLightNode.nodeName];
+
+      for (let i = 0; i < directionalLightNodes.length; i++) {
+        resizeShadowCameraFrustum(directionalLightNodes[i], editor.scene);
+      }
+    }
+
+    const nodes = editor.nodes;
+
+    for (let i = 0; i < nodes.length; i++) {
+      nodes[i].onUpdate(delta, time);
+    }
+
+    if (editor.selected) {
+      this.selectedObjects[0] = editor.selected;
+    } else if (this.selectedObjects.length === 1) {
+      this.selectedObjects.pop();
+    }
+
+    renderer.shadowMap.needsUpdate = this.shadowsNeedUpdate;
+
+    if (quality === "high") {
+      this.effectComposer.render(delta);
+    } else {
+      // EffectComposer introduces extra overhead with the CopyPass
+      // Use the normal renderer in non-high quality mode for now.
+      renderer.render(this.editor.scene, this.camera);
+    }
+
+    this.inputManager.reset();
+    this.shadowsNeedUpdate = false;
+  };
+
+  onSceneSet = () => {
     this.screenshotRenderer.dispose();
-    renderer.dispose();
     this.renderPass.scene = this.editor.scene;
     this.renderPass.camera = this.editor.camera;
     this.outlinePass.renderScene = this.editor.scene;
@@ -292,7 +304,7 @@ export default class Viewport {
     camera.aspect = width / height;
     camera.updateProjectionMatrix();
 
-    camera.layers.disable(1);
+    camera.layers.disable(3);
 
     screenshotRenderer.setSize(width, height, true);
 
@@ -306,7 +318,7 @@ export default class Viewport {
 
     screenshotRenderer.render(this.editor.scene, camera);
 
-    camera.layers.enable(1);
+    camera.layers.enable(3);
 
     camera.updateMatrixWorld();
     const cameraTransform = camera.matrixWorld.clone();
@@ -370,7 +382,7 @@ export default class Viewport {
     camera.position.z += size;
     camera.lookAt(center);
 
-    camera.layers.disable(1);
+    camera.layers.disable(3);
 
     this.thumbnailRenderer.setSize(width, height, true);
     this.thumbnailRenderer.render(scene, camera);
@@ -384,6 +396,5 @@ export default class Viewport {
     const signals = this.editor.signals;
     signals.sceneSet.remove(this.onSceneSet);
     signals.windowResize.remove(this.onWindowResized);
-    cancelAnimationFrame(this.rafId);
   }
 }

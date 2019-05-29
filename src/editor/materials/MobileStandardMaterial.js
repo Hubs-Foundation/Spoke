@@ -90,7 +90,7 @@ export default class MobileStandardMaterial extends THREE.ShaderMaterial {
       vertexColors: material.vertexColors
     };
 
-    const mobileMaterial = new MobileStandardMaterial(parameters);
+    const mobileMaterial = new MobileStandardMaterial(parameters, material);
 
     mobileMaterial.color = material.color;
     mobileMaterial.map = material.map;
@@ -102,7 +102,14 @@ export default class MobileStandardMaterial extends THREE.ShaderMaterial {
     return mobileMaterial;
   }
 
+  constructor(parameters, originalMaterial) {
+    super(parameters);
+    this.originalMaterial = originalMaterial;
+  }
+
   clone() {
-    return MobileStandardMaterial.fromStandardMaterial(this);
+    const material = MobileStandardMaterial.fromStandardMaterial(this);
+    material.originalMaterial = this.originalMaterial;
+    return material;
   }
 }

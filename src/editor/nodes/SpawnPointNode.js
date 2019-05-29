@@ -15,7 +15,7 @@ export default class SpawnPointNode extends EditorNodeMixin(THREE.Object3D) {
 
     scene.traverse(child => {
       if (child.isMesh) {
-        child.layers.set(1);
+        child.layers.enable(3);
       }
     });
 

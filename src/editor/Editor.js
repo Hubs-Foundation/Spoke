@@ -27,6 +27,7 @@ import isEmptyObject from "./utils/isEmptyObject";
 import { loadEnvironmentMap } from "./utils/EnvironmentMap";
 import { generateImageFileThumbnail, generateVideoFileThumbnail } from "./utils/thumbnails";
 import getIntersectingNode from "./utils/getIntersectingNode";
+import SkyboxNode from "./nodes/SkyboxNode";
 
 export default class Editor {
   constructor(api) {
@@ -43,7 +44,7 @@ export default class Editor {
     this.camera = new THREE.PerspectiveCamera(80, window.innerWidth / window.innerHeight, 0.2, 8000);
     this.audioListener = new THREE.AudioListener();
     this.camera.add(this.audioListener);
-    this.camera.layers.enable(1);
+    this.camera.layers.enable(3);
     this.camera.name = "Camera";
 
     // TODO: Support multiple viewports
@@ -324,6 +325,25 @@ export default class Editor {
         reject(new Error(`Error creating glb blob. ${eventToMessage(e)}`));
       });
     });
+  }
+
+  async optimizeScene() {
+    const scene = this.scene;
+
+    const abortController = new AbortController();
+
+    const floorPlanNode = scene.findNodeByType(FloorPlanNode);
+
+    if (floorPlanNode) {
+      await floorPlanNode.generate(abortController.signal);
+    }
+
+    const clonedScene = cloneObject3D(scene, true);
+    clonedScene.prepareForExport();
+    await clonedScene.combineMeshes();
+    clonedScene.removeUnusedObjects();
+    clonedScene.add(new SkyboxNode(this));
+    this.setScene(clonedScene);
   }
 
   getSpawnPosition(target) {
@@ -612,7 +632,7 @@ export default class Editor {
   enterPlayMode() {
     this.playing = true;
     this.deselect();
-    this.camera.layers.disable(1);
+    this.camera.layers.disable(3);
     this.viewport.playModeControls.enable();
     this.scene.traverse(node => {
       if (node.isNode) {
@@ -623,7 +643,7 @@ export default class Editor {
 
   leavePlayMode() {
     this.playing = false;
-    this.camera.layers.enable(1);
+    this.camera.layers.enable(3);
     this.viewport.playModeControls.disable();
     this.scene.traverse(node => {
       if (node.isNode) {

@@ -83,7 +83,8 @@
     "three": "github:mozillareality/three.js#WebGLRenderer/customProjectObject",
     "three-mesh-bvh": "^0.1.2",
     "url-toolkit": "^2.1.6",
-    "uuid": "^3.3.2"
+    "uuid": "^3.3.2",
+    "webxr-polyfill": "^1.0.13"
   },
   "devDependencies": {
     "@babel/cli": "^7.0.0",

@@ -18,7 +18,7 @@ export default class TransformControlsPlane extends THREE.Mesh {
 
     super(geometry, material);
 
-    this.layers.set(1);
+    this.layers.enable(3);
 
     this.type = "TransformControlsPlane";
     this.transformControls = transformControls;

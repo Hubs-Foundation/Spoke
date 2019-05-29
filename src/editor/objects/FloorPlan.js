@@ -19,7 +19,7 @@ export default class FloorPlan extends THREE.Object3D {
 
     if (object) {
       this.add(object);
-      this.navMesh.layers.set(1);
+      this.navMesh.layers.enable(3);
       this.navMesh.visible = false;
     }
   }

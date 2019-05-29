@@ -80,6 +80,11 @@ async function meshStandardMaterialComparator(group, a, b) {
   );
 }
 
+function mobileStandardMaterialComparator(group, a, b) {
+  if (!a.originalMaterial || !b.originalMaterial) return false;
+  return meshStandardMaterialComparator(group, a.originalMaterial, b.originalMaterial);
+}
+
 async function dedupeTexture(imageHashes, textureCache, texture) {
   if (!texture || !texture.image) return texture;
 
@@ -99,7 +104,8 @@ async function dedupeTexture(imageHashes, textureCache, texture) {
 export default class MeshCombinationGroup {
   static MaterialComparators = {
     MeshStandardMaterial: meshStandardMaterialComparator,
-    MeshBasicMaterial: meshBasicMaterialComparator
+    MeshBasicMaterial: meshBasicMaterialComparator,
+    MobileStandardMaterial: mobileStandardMaterialComparator
   };
 
   static async combineMeshes(rootObject) {

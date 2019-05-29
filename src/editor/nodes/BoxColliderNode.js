@@ -23,7 +23,7 @@ export default class BoxColliderNode extends EditorNodeMixin(THREE.Object3D) {
 
     const boxMesh = new THREE.Mesh(BoxColliderNode._geometry, BoxColliderNode._material);
     const box = new THREE.BoxHelper(boxMesh, 0x00ff00);
-    box.layers.set(1);
+    box.layers.enable(3);
     this.helper = box;
     this.add(box);
     this.walkable = false;
