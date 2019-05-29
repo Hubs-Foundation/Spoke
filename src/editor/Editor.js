@@ -37,6 +37,9 @@ export default class Editor {
     this.sceneModified = false;
     this.sceneLoaded = false;
 
+    this.nodes = [];
+    this.nodesByType = {};
+
     this.camera = new THREE.PerspectiveCamera(80, window.innerWidth / window.innerHeight, 0.2, 8000);
     this.audioListener = new THREE.AudioListener();
     this.camera.add(this.audioListener);
@@ -172,6 +175,13 @@ export default class Editor {
   }
 
   setScene(scene) {
+    this.scene.traverse(child => {
+      if (child.isNode) {
+        child.onRemove();
+        this.onNodeRemoved(child);
+      }
+    });
+
     this.sceneLoaded = true;
     this.scene = scene;
     this.sceneUrl = null;
@@ -182,6 +192,14 @@ export default class Editor {
 
     this.history.clear();
     this.deselect();
+
+    this.scene.traverse(child => {
+      if (child.isNode) {
+        child.onAdd();
+        this.onNodeAdded(child);
+      }
+    });
+
     this.signals.sceneSet.dispatch();
     this.signals.sceneGraphChanged.dispatch();
     this.sceneModified = false;
@@ -351,6 +369,7 @@ export default class Editor {
     object.traverse(child => {
       if (child.isNode) {
         child.onAdd();
+        this.onNodeAdded(child);
       }
     });
   }
@@ -369,10 +388,29 @@ export default class Editor {
     object.traverse(child => {
       if (child.isNode) {
         child.onRemove();
+        this.onNodeRemoved(child);
       }
     });
 
     object.parent.remove(object);
+  }
+
+  onNodeAdded(node) {
+    this.nodes.push(node);
+    this.nodesByType[node.nodeName].push(node);
+  }
+
+  onNodeRemoved(node) {
+    const nodeIndex = this.nodes.findIndex(n => n === node);
+    if (nodeIndex !== -1) {
+      this.nodes.splice(nodeIndex, 1);
+    }
+
+    const nodeByType = this.nodesByType[node.nodeName];
+    const nodeByTypeIndex = nodeByType.findIndex(n => n === node);
+    if (nodeByTypeIndex !== -1) {
+      nodeByType.splice(nodeByTypeIndex, 1);
+    }
   }
 
   setTransformMode(mode) {
@@ -382,6 +420,7 @@ export default class Editor {
   registerNode(nodeConstructor, nodeEditor) {
     this.nodeTypes.add(nodeConstructor);
     this.nodeEditors.set(nodeConstructor, nodeEditor);
+    this.nodesByType[nodeConstructor.nodeName] = [];
   }
 
   getNodeEditor(node) {

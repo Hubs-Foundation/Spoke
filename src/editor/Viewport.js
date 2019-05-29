@@ -9,6 +9,8 @@ import InputManager from "./controls/InputManager";
 import FlyControls from "./controls/FlyControls";
 import SpokeControls from "./controls/SpokeControls";
 import PlayModeControls from "./controls/PlayModeControls";
+import { quality } from "./utils/queryparams";
+import DirectionalLightNode from "./nodes/DirectionalLightNode";
 
 /**
  * @author mrdoob / http://mrdoob.com/
@@ -89,15 +91,19 @@ export default class Viewport {
         this.flyControls.update(delta);
         this.spokeControls.update(delta);
 
-        editor.scene.traverse(node => {
-          if (node.isDirectionalLight && this.shadowsNeedUpdate) {
-            resizeShadowCameraFrustum(node, editor.scene);
-          }
+        if (this.shadowsNeedUpdate) {
+          const directionalLightNodes = editor.nodesByType[DirectionalLightNode.nodeName];
 
-          if (node.isNode) {
-            node.onUpdate(delta);
+          for (let i = 0; i < directionalLightNodes.length; i++) {
+            resizeShadowCameraFrustum(directionalLightNodes[i], editor.scene);
           }
-        });
+        }
+
+        const nodes = editor.nodes;
+
+        for (let i = 0; i < nodes.length; i++) {
+          nodes[i].onUpdate(delta, time);
+        }
 
         if (editor.selected) {
           this.selectedObjects[0] = editor.selected;
@@ -106,7 +112,15 @@ export default class Viewport {
         }
 
         renderer.shadowMap.needsUpdate = this.shadowsNeedUpdate;
-        effectComposer.render();
+
+        if (quality === "high") {
+          effectComposer.render(delta);
+        } else {
+          // EffectComposer introduces extra overhead with the CopyPass
+          // Use the normal renderer in non-high quality mode for now.
+          this.renderer.render(this.editor.scene, this.camera);
+        }
+
         this.inputManager.reset();
         this.shadowsNeedUpdate = false;
       }
