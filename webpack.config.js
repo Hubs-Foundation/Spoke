@@ -217,7 +217,7 @@ module.exports = env => {
 
     resolve: {
       alias: {
-        three$: path.join(__dirname, "node_modules/three/build/three.module.js")
+        three$: path.join(__dirname, "node_modules/three/src/Three.js")
       }
     },
 

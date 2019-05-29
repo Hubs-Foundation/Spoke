@@ -11,6 +11,9 @@ import SpokeControls from "./controls/SpokeControls";
 import PlayModeControls from "./controls/PlayModeControls";
 import { quality } from "./utils/queryparams";
 import DirectionalLightNode from "./nodes/DirectionalLightNode";
+import traverseVisible from "./utils/traverseVisible";
+
+const tempVec3 = new THREE.Vector3();
 
 /**
  * @author mrdoob / http://mrdoob.com/
@@ -41,11 +44,15 @@ export default class Viewport {
     }
 
     this.shadowsNeedUpdate = true;
+    this.renderListNeedsUpdate = true;
 
     this.selectedObjects = [];
+    this.meshes = [];
+    this.lights = [];
 
     const renderer = makeRenderer(canvas.parentElement.offsetWidth, canvas.parentElement.offsetHeight, { canvas });
     renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setBuildRenderList(this.buildRenderList);
     this.renderer = renderer;
 
     const effectComposer = (this.effectComposer = new THREE.EffectComposer(renderer));
@@ -135,12 +142,93 @@ export default class Viewport {
     signals.windowResize.add(this.onWindowResized);
     signals.propertyChanged.add(this.onPropertyChanged);
     signals.sceneGraphChanged.add(this.onSceneGraphChanged);
+    signals.objectSelected.add(this.onObjectSelected);
 
     this.onWindowResized();
   }
 
+  buildRenderList = (
+    currentRenderList,
+    currentRenderState,
+    scene,
+    camera,
+    sortObjects,
+    frustum,
+    glObjects,
+    projScreenMatrix
+  ) => {
+    if (scene !== this.editor.scene) return true;
+
+    if (!currentRenderList) return false;
+
+    if (this.renderListNeedsUpdate) {
+      this.lights = [];
+      this.meshes = [];
+
+      traverseVisible(this.editor.scene, object => {
+        if (object.isLight) {
+          this.lights.push(object);
+        } else if (object.isMesh || object.isLine || object.isPoints) {
+          this.meshes.push(object);
+        }
+      });
+
+      this.renderListNeedsUpdate = false;
+    }
+
+    const lights = this.lights;
+
+    for (let i = 0; i < lights.length; i++) {
+      const light = lights[i];
+
+      if (!light.layers.test(camera.layers)) continue;
+
+      currentRenderState.pushLight(light);
+
+      if (light.castShadow) {
+        currentRenderState.pushShadow(light);
+      }
+    }
+
+    const meshes = this.meshes;
+
+    for (let i = 0; i < meshes.length; i++) {
+      const mesh = meshes[i];
+
+      if (!mesh.layers.test(camera.layers)) continue;
+
+      if (!mesh.frustumCulled || frustum.intersectsObject(mesh)) {
+        if (sortObjects) {
+          tempVec3.setFromMatrixPosition(mesh.matrixWorld).applyMatrix4(projScreenMatrix);
+        }
+
+        const geometry = glObjects.update(mesh);
+        const material = mesh.material;
+
+        if (Array.isArray(material)) {
+          const groups = geometry.groups;
+
+          for (let j = 0, l = groups.length; j < l; j++) {
+            const group = groups[i];
+            const groupMaterial = material[group.materialIndex];
+
+            if (groupMaterial && groupMaterial.visible) {
+              currentRenderList.push(mesh, geometry, groupMaterial, 0, tempVec3.z, group);
+            }
+          }
+        } else if (material.visible) {
+          currentRenderList.push(mesh, geometry, material, 0, tempVec3.z, null);
+        }
+      }
+    }
+
+    return false;
+  };
+
   onSceneGraphChanged = () => {
     this.shadowsNeedUpdate = true;
+    this.renderListNeedsUpdate = true;
+    this.editor.scene.updateMatrixWorld(true);
   };
 
   onPropertyChanged = (propertyName, node) => {
@@ -151,7 +239,16 @@ export default class Viewport {
       propertyName === "receiveShadow"
     ) {
       this.shadowsNeedUpdate = true;
+      this.editor.scene.updateMatrixWorld(true);
     }
+
+    if (propertyName === "visible") {
+      this.renderListNeedsUpdate = true;
+    }
+  };
+
+  onObjectSelected = () => {
+    this.renderListNeedsUpdate = true;
   };
 
   onSceneSet = () => {
@@ -166,6 +263,7 @@ export default class Viewport {
     this.editor.scene.add(this.grid);
     this.spokeControls.onSceneSet(this.editor.scene);
     this.editor.scene.background = new THREE.Color(0xaaaaaa);
+    this.editor.scene.autoUpdate = false;
 
     requestAnimationFrame(() => {
       this.shadowsNeedUpdate = true;
