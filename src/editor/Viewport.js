@@ -31,10 +31,14 @@ export default class Viewport {
       renderer.gammaFactor = 2.2;
       renderer.physicallyCorrectLights = true;
       renderer.shadowMap.enabled = true;
+      renderer.shadowMap.autoUpdate = false;
+      renderer.shadowMap.needsUpdate = true;
       renderer.shadowMap.type = THREE.PCFSoftShadowMap;
       renderer.setSize(width, height);
       return renderer;
     }
+
+    this.shadowsNeedUpdate = true;
 
     this.selectedObjects = [];
 
@@ -80,11 +84,13 @@ export default class Viewport {
       if (!this.skipRender) {
         const delta = this.clock.getDelta();
         const time = this.clock.getElapsedTime();
-        editor.scene.updateMatrixWorld();
+
         this.inputManager.update(delta, time);
+        this.flyControls.update(delta);
+        this.spokeControls.update(delta);
 
         editor.scene.traverse(node => {
-          if (node.isDirectionalLight) {
+          if (node.isDirectionalLight && this.shadowsNeedUpdate) {
             resizeShadowCameraFrustum(node, editor.scene);
           }
 
@@ -92,8 +98,6 @@ export default class Viewport {
             node.onUpdate(delta);
           }
         });
-        this.flyControls.update(delta);
-        this.spokeControls.update(delta);
 
         if (editor.selected) {
           this.selectedObjects[0] = editor.selected;
@@ -101,8 +105,10 @@ export default class Viewport {
           this.selectedObjects.pop();
         }
 
+        renderer.shadowMap.needsUpdate = this.shadowsNeedUpdate;
         effectComposer.render();
         this.inputManager.reset();
+        this.shadowsNeedUpdate = false;
       }
 
       this.rafId = requestAnimationFrame(render);
@@ -113,9 +119,26 @@ export default class Viewport {
     // signals
     signals.sceneSet.add(this.onSceneSet);
     signals.windowResize.add(this.onWindowResized);
+    signals.propertyChanged.add(this.onPropertyChanged);
+    signals.sceneGraphChanged.add(this.onSceneGraphChanged);
 
     this.onWindowResized();
   }
+
+  onSceneGraphChanged = () => {
+    this.shadowsNeedUpdate = true;
+  };
+
+  onPropertyChanged = (propertyName, node) => {
+    if (
+      ((propertyName === "position" || propertyName === "rotation" || propertyName === "scale") &&
+        (node.castShadow || node.receiveShadow)) ||
+      propertyName === "castShadow" ||
+      propertyName === "receiveShadow"
+    ) {
+      this.shadowsNeedUpdate = true;
+    }
+  };
 
   onSceneSet = () => {
     const renderer = this.renderer;
@@ -129,6 +152,10 @@ export default class Viewport {
     this.editor.scene.add(this.grid);
     this.spokeControls.onSceneSet(this.editor.scene);
     this.editor.scene.background = new THREE.Color(0xaaaaaa);
+
+    requestAnimationFrame(() => {
+      this.shadowsNeedUpdate = true;
+    });
   };
 
   onWindowResized = () => {
