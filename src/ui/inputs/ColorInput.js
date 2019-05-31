@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import { SketchPicker } from "react-color";
 import { EditableInput } from "react-color/lib/components/common";
 import styles from "./ColorInput.scss";
-import THREE from "../../vendor/three";
+import { Color } from "three";
 
 export default class ColorInput extends Component {
   static propTypes = {
@@ -53,11 +53,11 @@ export default class ColorInput extends Component {
   };
 
   onChangeText = value => {
-    this.props.onChange(new THREE.Color(value));
+    this.props.onChange(new Color(value));
   };
 
   onChangePicker = ({ hex }) => {
-    this.props.onChange(new THREE.Color(hex));
+    this.props.onChange(new Color(hex));
   };
 
   render() {

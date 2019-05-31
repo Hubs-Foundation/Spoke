@@ -1,4 +1,4 @@
-import THREE from "../../vendor/three";
+import { Box3, Sphere } from "three";
 import Model from "../objects/Model";
 import EditorNodeMixin from "./EditorNodeMixin";
 
@@ -26,8 +26,8 @@ export default class SpawnerNode extends EditorNodeMixin(Model) {
     super(editor);
     this._canonicalUrl = "";
     this.scaleToFit = false;
-    this.boundingBox = new THREE.Box3();
-    this.boundingSphere = new THREE.Sphere();
+    this.boundingBox = new Box3();
+    this.boundingSphere = new Sphere();
   }
 
   // Overrides Model's src property and stores the original (non-resolved) url.

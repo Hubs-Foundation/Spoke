@@ -6,7 +6,7 @@ import {
   isInherits,
   isStatic
 } from "../StaticMode";
-import THREE from "../../vendor/three";
+import { Color, Object3D } from "three";
 import serializeColor from "../utils/serializeColor";
 import LoadingCube from "../objects/LoadingCube";
 
@@ -154,7 +154,7 @@ export default function EditorNodeMixin(Object3DClass) {
           for (const propName in componentProps) {
             const propValue = componentProps[propName];
 
-            if (propValue instanceof THREE.Color) {
+            if (propValue instanceof Color) {
               serializedProps[propName] = serializeColor(propValue);
             } else {
               serializedProps[propName] = propValue;
@@ -199,7 +199,7 @@ export default function EditorNodeMixin(Object3DClass) {
       for (const key in props) {
         const value = props[key];
 
-        if (value instanceof THREE.Color) {
+        if (value instanceof Color) {
           componentProps[key] = serializeColor(value);
         } else {
           componentProps[key] = value;
@@ -210,7 +210,7 @@ export default function EditorNodeMixin(Object3DClass) {
     }
 
     replaceObject(replacementObject) {
-      replacementObject = replacementObject || new THREE.Object3D().copy(this, false);
+      replacementObject = replacementObject || new Object3D().copy(this, false);
 
       replacementObject.uuid = this.uuid;
 

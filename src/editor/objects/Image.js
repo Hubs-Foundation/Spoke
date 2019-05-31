@@ -1,4 +1,15 @@
-import THREE from "../../vendor/three";
+import {
+  Object3D,
+  TextureLoader,
+  MeshBasicMaterial,
+  SphereBufferGeometry,
+  PlaneGeometry,
+  DoubleSide,
+  Mesh,
+  sRGBEncoding,
+  LinearFilter,
+  RGBAFormat
+} from "three";
 import eventToMessage from "../utils/eventToMessage";
 import loadErrorTexture from "../utils/loadErrorTexture";
 
@@ -7,16 +18,16 @@ export const ImageProjection = {
   Equirectangular360: "360-equirectangular"
 };
 
-export default class Image extends THREE.Object3D {
+export default class Image extends Object3D {
   constructor() {
     super();
     this._src = null;
     this._projection = "flat";
 
-    const geometry = new THREE.PlaneGeometry();
-    const material = new THREE.MeshBasicMaterial();
-    material.side = THREE.DoubleSide;
-    this._mesh = new THREE.Mesh(geometry, material);
+    const geometry = new PlaneGeometry();
+    const material = new MeshBasicMaterial();
+    material.side = DoubleSide;
+    this._mesh = new Mesh(geometry, material);
     this.add(this._mesh);
     this._texture = null;
   }
@@ -31,7 +42,7 @@ export default class Image extends THREE.Object3D {
 
   loadTexture(src) {
     return new Promise((resolve, reject) => {
-      new THREE.TextureLoader().load(src, resolve, null, e => reject(`Error loading Image. ${eventToMessage(e)}`));
+      new TextureLoader().load(src, resolve, null, e => reject(`Error loading Image. ${eventToMessage(e)}`));
     });
   }
 
@@ -40,17 +51,17 @@ export default class Image extends THREE.Object3D {
   }
 
   set projection(projection) {
-    const material = new THREE.MeshBasicMaterial();
+    const material = new MeshBasicMaterial();
 
     let geometry;
 
     if (projection === "360-equirectangular") {
-      geometry = new THREE.SphereBufferGeometry(1, 64, 32);
+      geometry = new SphereBufferGeometry(1, 64, 32);
       // invert the geometry on the x-axis so that all of the faces point inward
       geometry.scale(-1, 1, 1);
     } else {
-      geometry = new THREE.PlaneGeometry();
-      material.side = THREE.DoubleSide;
+      geometry = new PlaneGeometry();
+      material.side = DoubleSide;
     }
 
     material.map = this._texture;
@@ -59,7 +70,7 @@ export default class Image extends THREE.Object3D {
 
     // Replace existing mesh
     this.remove(this._mesh);
-    this._mesh = new THREE.Mesh(geometry, material);
+    this._mesh = new Mesh(geometry, material);
     this.add(this._mesh);
 
     this.onResize();
@@ -87,8 +98,8 @@ export default class Image extends THREE.Object3D {
       if (src) {
         texture = await this.loadTexture(src);
         // TODO: resize to maintain aspect ratio but still allow scaling.
-        texture.encoding = THREE.sRGBEncoding;
-        texture.minFilter = THREE.LinearFilter;
+        texture.encoding = sRGBEncoding;
+        texture.minFilter = LinearFilter;
       } else {
         texture = await loadErrorTexture();
       }
@@ -101,7 +112,7 @@ export default class Image extends THREE.Object3D {
 
     this.onResize();
 
-    if (texture.format === THREE.RGBAFormat) {
+    if (texture.format === RGBAFormat) {
       this._mesh.material.transparent = true;
     }
 

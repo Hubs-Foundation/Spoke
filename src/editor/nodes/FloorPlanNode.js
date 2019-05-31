@@ -1,5 +1,5 @@
 import EditorNodeMixin from "./EditorNodeMixin";
-import THREE from "../../vendor/three";
+import { Mesh, MeshBasicMaterial, Box3, Vector3, PlaneBufferGeometry, Object3D } from "three";
 import FloorPlan from "../objects/FloorPlan";
 import ModelNode from "./ModelNode";
 import GroundPlaneNode from "./GroundPlaneNode";
@@ -134,7 +134,7 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
     for (const node of boxColliderNodes) {
       if (node.walkable) {
         const helperMesh = node.helper.object;
-        const boxColliderMesh = new THREE.Mesh(helperMesh.geometry, new THREE.MeshBasicMaterial());
+        const boxColliderMesh = new Mesh(helperMesh.geometry, new MeshBasicMaterial());
         boxColliderMesh.applyMatrix(node.matrixWorld);
         boxColliderMesh.updateMatrixWorld();
         walkableMeshes.push(boxColliderMesh);
@@ -143,8 +143,8 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
 
     const walkableGeometry = mergeMeshGeometries(walkableMeshes);
 
-    const box = new THREE.Box3().setFromBufferAttribute(walkableGeometry.attributes.position);
-    const size = new THREE.Vector3();
+    const box = new Box3().setFromBufferAttribute(walkableGeometry.attributes.position);
+    const size = new Vector3();
     box.getSize(size);
     if (Math.max(size.x, size.y, size.z) > 2000) {
       throw new Error(
@@ -173,10 +173,7 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
       signal
     );
 
-    const navMesh = new THREE.Mesh(
-      navGeometry,
-      new THREE.MeshBasicMaterial({ color: 0x0000ff, transparent: true, opacity: 0.2 })
-    );
+    const navMesh = new Mesh(navGeometry, new MeshBasicMaterial({ color: 0x0000ff, transparent: true, opacity: 0.2 }));
 
     this.setNavMesh(navMesh);
 
@@ -210,7 +207,7 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
       }
 
       const segments = heightfield.data[0].length;
-      const heightfieldMeshGeometry = new THREE.PlaneBufferGeometry(
+      const heightfieldMeshGeometry = new PlaneBufferGeometry(
         heightfield.width,
         heightfield.length,
         segments - 1,
@@ -223,9 +220,9 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
         vertices[j + 1] = heightfield.data[Math.floor(i / segments)][i % segments];
       }
 
-      const heightfieldMesh = new THREE.Mesh(
+      const heightfieldMesh = new Mesh(
         heightfieldMeshGeometry,
-        new THREE.MeshBasicMaterial({ wireframe: true, color: 0xffff00 })
+        new MeshBasicMaterial({ wireframe: true, color: 0xffff00 })
       );
 
       this.heightfieldMesh = heightfieldMesh;
@@ -239,10 +236,7 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
         this.heightfieldMesh.visible = false;
       }
     } else {
-      const trimesh = new THREE.Mesh(
-        collidableGeometry,
-        new THREE.MeshBasicMaterial({ wireframe: true, color: 0xff0000 })
-      );
+      const trimesh = new Mesh(collidableGeometry, new MeshBasicMaterial({ wireframe: true, color: 0xff0000 }));
 
       this.setTrimesh(trimesh);
       if (this.heightfieldMesh) {
@@ -326,7 +320,7 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
     }
 
     if (this.heightfield) {
-      const heightfield = new THREE.Object3D();
+      const heightfield = new Object3D();
       heightfield.name = "heightfield";
       heightfield.userData.gltfExtensions = {
         MOZ_hubs_components: {

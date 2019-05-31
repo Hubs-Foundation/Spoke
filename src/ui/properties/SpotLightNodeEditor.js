@@ -5,10 +5,10 @@ import InputGroup from "../inputs/InputGroup";
 import ColorInput from "../inputs/ColorInput";
 import NumericInputGroup from "../inputs/NumericInputGroup";
 import RadianNumericInputGroup from "../inputs/RadianNumericInputGroup";
-import THREE from "../../vendor/three";
+import { Math as _Math } from "three";
 import LightShadowProperties from "./LightShadowProperties";
 
-const radToDeg = THREE.Math.radToDeg;
+const radToDeg = _Math.radToDeg;
 
 export default class SpotLightNodeEditor extends Component {
   static propTypes = {

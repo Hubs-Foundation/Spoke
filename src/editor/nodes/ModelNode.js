@@ -1,4 +1,4 @@
-import THREE from "../../vendor/three";
+import { Box3, Sphere, PropertyBinding } from "three";
 import Model from "../objects/Model";
 import EditorNodeMixin from "./EditorNodeMixin";
 import { setStaticMode, StaticModes } from "../StaticMode";
@@ -58,8 +58,8 @@ export default class ModelNode extends EditorNodeMixin(Model) {
     this.collidable = true;
     this.walkable = true;
     this.scaleToFit = false;
-    this.boundingBox = new THREE.Box3();
-    this.boundingSphere = new THREE.Sphere();
+    this.boundingBox = new Box3();
+    this.boundingSphere = new Sphere();
   }
 
   // Overrides Model's src property and stores the original (non-resolved) url.
@@ -180,7 +180,7 @@ export default class ModelNode extends EditorNodeMixin(Model) {
     if (this.animations.length > 0) {
       for (const animation of this.animations) {
         for (const track of animation.tracks) {
-          const { nodeName } = THREE.PropertyBinding.parseTrackName(track.name);
+          const { nodeName } = PropertyBinding.parseTrackName(track.name);
           const animatedNode = this.model.getObjectByName(nodeName);
           setStaticMode(animatedNode, StaticModes.Dynamic);
         }

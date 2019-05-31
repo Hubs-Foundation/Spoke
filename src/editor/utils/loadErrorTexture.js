@@ -1,4 +1,4 @@
-import THREE from "../../vendor/three";
+import { TextureLoader, RGBAFormat, NearestFilter } from "three";
 import eventToMessage from "./eventToMessage";
 import mediaErrorImageUrl from "../../assets/media-error.png";
 
@@ -10,11 +10,11 @@ export default function loadErrorTexture() {
   }
 
   const texturePromise = new Promise((resolve, reject) => {
-    new THREE.TextureLoader().load(
+    new TextureLoader().load(
       mediaErrorImageUrl,
       texture => {
-        texture.format = THREE.RGBAFormat;
-        texture.magFilter = THREE.NearestFilter;
+        texture.format = RGBAFormat;
+        texture.magFilter = NearestFilter;
         resolve(texture);
       },
       null,

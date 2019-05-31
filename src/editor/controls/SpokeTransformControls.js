@@ -1,4 +1,4 @@
-import THREE from "../../vendor/three";
+import { Object3D } from "three";
 import TransformControls from "./TransformControls";
 
 export default class SpokeTransformControls extends TransformControls {
@@ -10,6 +10,6 @@ export default class SpokeTransformControls extends TransformControls {
 
   clone() {
     // You can only have one instance of TransformControls so return a dummy object when cloning.
-    return new THREE.Object3D().copy(this);
+    return new Object3D().copy(this);
   }
 }

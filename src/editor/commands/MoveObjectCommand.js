@@ -1,5 +1,5 @@
 import Command from "./Command";
-import THREE from "../../vendor/three";
+import { Matrix4 } from "three";
 
 /**
  * @author dforrer / https://github.com/dforrer
@@ -7,13 +7,13 @@ import THREE from "../../vendor/three";
  */
 
 /**
- * @param object THREE.Object3D
- * @param newParent THREE.Object3D
- * @param newBefore THREE.Object3D
+ * @param object Object3D
+ * @param newParent Object3D
+ * @param newBefore Object3D
  * @constructor
  */
 
-const matrix = new THREE.Matrix4();
+const matrix = new Matrix4();
 export default class MoveObjectCommand extends Command {
   constructor(object, newParent, newBefore) {
     super();

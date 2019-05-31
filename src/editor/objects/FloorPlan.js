@@ -1,6 +1,6 @@
-import THREE from "../../vendor/three";
+import { Object3D } from "three";
 
-export default class FloorPlan extends THREE.Object3D {
+export default class FloorPlan extends Object3D {
   constructor() {
     super();
     this.position.y = 0.005;

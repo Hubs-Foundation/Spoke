@@ -1,4 +1,4 @@
-import THREE from "../../vendor/three";
+import { Mesh, CircleBufferGeometry, MeshBasicMaterial, Object3D } from "three";
 import EditorNodeMixin from "./EditorNodeMixin";
 import GroundPlane from "../objects/GroundPlane";
 
@@ -32,7 +32,8 @@ export default class GroundPlaneNode extends EditorNodeMixin(GroundPlane) {
   constructor(editor) {
     super(editor);
     this.walkable = true;
-    this.walkableMesh = new THREE.Mesh(new THREE.CircleBufferGeometry(1, 32), new THREE.MeshBasicMaterial());
+    this.walkableMesh = new Mesh(new CircleBufferGeometry(1, 32), new MeshBasicMaterial());
+    this.walkableMesh.name = "WalkableMesh";
     this.walkableMesh.scale.set(100, 100, 100);
     this.walkableMesh.position.y = -0.05;
     this.walkableMesh.rotation.x = -Math.PI / 2;
@@ -41,14 +42,17 @@ export default class GroundPlaneNode extends EditorNodeMixin(GroundPlane) {
   }
 
   copy(source, recursive) {
-    super.copy(source, false);
+    if (recursive) {
+      this.remove(this.walkableMesh);
+    }
+
+    super.copy(source, recursive);
 
     if (recursive) {
-      for (const child of source.children) {
-        if (child !== this.walkableMesh) {
-          const clonedChild = child.clone();
-          this.add(clonedChild);
-        }
+      const meshIndex = source.children.findIndex(child => child === source.walkableMesh);
+
+      if (meshIndex !== -1) {
+        this.walkableMesh = this.children[meshIndex];
       }
     }
 
@@ -77,7 +81,7 @@ export default class GroundPlaneNode extends EditorNodeMixin(GroundPlane) {
   prepareForExport() {
     super.prepareForExport();
 
-    const groundPlaneCollider = new THREE.Object3D();
+    const groundPlaneCollider = new Object3D();
     groundPlaneCollider.scale.set(this.walkableMesh.scale.x, 0.1, this.walkableMesh.scale.z);
     groundPlaneCollider.userData.gltfExtensions = {
       MOZ_hubs_components: {

@@ -1,9 +1,10 @@
-import THREE from "../../vendor/three";
+import { BufferGeometry, Float32BufferAttribute } from "three";
+import { BufferGeometryUtils } from "three/examples/jsm/utils/BufferGeometryUtils";
 
 function createEmptyGeometry() {
-  const emptyGeometry = new THREE.BufferGeometry();
+  const emptyGeometry = new BufferGeometry();
   emptyGeometry.setIndex([]);
-  emptyGeometry.addAttribute("position", new THREE.Float32BufferAttribute([], 3));
+  emptyGeometry.addAttribute("position", new Float32BufferAttribute([], 3));
   return emptyGeometry;
 }
 
@@ -15,7 +16,7 @@ export default function mergeMeshGeometries(meshes) {
     let attributes = geometry.attributes;
 
     if (!geometry.isBufferGeometry) {
-      geometry = new THREE.BufferGeometry().fromGeometry(geometry);
+      geometry = new BufferGeometry().fromGeometry(geometry);
       attributes = geometry.attributes;
     }
 
@@ -29,7 +30,7 @@ export default function mergeMeshGeometries(meshes) {
 
     if (geometry.index) geometry = geometry.toNonIndexed();
 
-    const cloneGeometry = new THREE.BufferGeometry();
+    const cloneGeometry = new BufferGeometry();
     cloneGeometry.addAttribute("position", geometry.attributes.position.clone());
     mesh.updateMatrixWorld();
     cloneGeometry.applyMatrix(mesh.matrixWorld);
@@ -42,7 +43,7 @@ export default function mergeMeshGeometries(meshes) {
     return createEmptyGeometry();
   }
 
-  const geometry = THREE.BufferGeometryUtils.mergeBufferGeometries(geometries);
+  const geometry = BufferGeometryUtils.mergeBufferGeometries(geometries);
 
   const flippedGeometry = geometry.clone();
 
@@ -60,5 +61,5 @@ export default function mergeMeshGeometries(meshes) {
     positions[i + offset + 2] = z0;
   }
 
-  return THREE.BufferGeometryUtils.mergeBufferGeometries([geometry, flippedGeometry]);
+  return BufferGeometryUtils.mergeBufferGeometries([geometry, flippedGeometry]);
 }

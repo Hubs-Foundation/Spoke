@@ -1,17 +1,17 @@
-import THREE from "../../vendor/three";
+import { PlaneBufferGeometry, MeshBasicMaterial, DoubleSide, Mesh, Vector3, Matrix4, Quaternion } from "three";
 
 /**
- * Ported from https://github.com/mrdoob/three.js/blob/dev/examples/js/controls/TransformControls.js
+ * Ported from https://github.com/mrdoob/js/blob/dev/examples/js/controls/TransformControls.js
  */
-export default class TransformControlsPlane extends THREE.Mesh {
+export default class TransformControlsPlane extends Mesh {
   static isTransformControlsPlane = true;
 
   constructor(transformControls) {
-    const geometry = new THREE.PlaneBufferGeometry(100000, 100000, 2, 2);
-    const material = new THREE.MeshBasicMaterial({
+    const geometry = new PlaneBufferGeometry(100000, 100000, 2, 2);
+    const material = new MeshBasicMaterial({
       visible: false,
       wireframe: true,
-      side: THREE.DoubleSide,
+      side: DoubleSide,
       transparent: true,
       opacity: 0.1
     });
@@ -23,15 +23,15 @@ export default class TransformControlsPlane extends THREE.Mesh {
     this.type = "TransformControlsPlane";
     this.transformControls = transformControls;
 
-    this.unitX = new THREE.Vector3(1, 0, 0);
-    this.unitY = new THREE.Vector3(0, 1, 0);
-    this.unitZ = new THREE.Vector3(0, 0, 1);
+    this.unitX = new Vector3(1, 0, 0);
+    this.unitY = new Vector3(0, 1, 0);
+    this.unitZ = new Vector3(0, 0, 1);
 
-    this.tempVector = new THREE.Vector3();
-    this.dirVector = new THREE.Vector3();
-    this.alignVector = new THREE.Vector3();
-    this.tempMatrix = new THREE.Matrix4();
-    this.identityQuaternion = new THREE.Quaternion();
+    this.tempVector = new Vector3();
+    this.dirVector = new Vector3();
+    this.alignVector = new Vector3();
+    this.tempMatrix = new Matrix4();
+    this.identityQuaternion = new Quaternion();
   }
 
   update() {

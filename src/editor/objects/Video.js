@@ -1,4 +1,17 @@
-import THREE from "../../vendor/three";
+import {
+  Object3D,
+  VideoTexture,
+  LinearFilter,
+  sRGBEncoding,
+  PlaneGeometry,
+  MeshBasicMaterial,
+  DoubleSide,
+  Mesh,
+  PositionalAudio,
+  Audio,
+  SphereBufferGeometry,
+  RGBAFormat
+} from "three";
 import eventToMessage from "../utils/eventToMessage";
 import Hls from "hls.js/dist/hls.light";
 import isHLS from "../utils/isHLS";
@@ -20,21 +33,21 @@ export const DistanceModelType = {
   Exponential: "exponential"
 };
 
-export default class Video extends THREE.Object3D {
+export default class Video extends Object3D {
   constructor(audioListener) {
     super();
 
     const videoEl = document.createElement("video");
-    this._videoTexture = new THREE.VideoTexture(videoEl);
-    this._videoTexture.minFilter = THREE.LinearFilter;
-    this._videoTexture.encoding = THREE.sRGBEncoding;
+    this._videoTexture = new VideoTexture(videoEl);
+    this._videoTexture.minFilter = LinearFilter;
+    this._videoTexture.encoding = sRGBEncoding;
     this._texture = this._videoTexture;
 
-    const geometry = new THREE.PlaneGeometry();
-    const material = new THREE.MeshBasicMaterial();
+    const geometry = new PlaneGeometry();
+    const material = new MeshBasicMaterial();
     material.map = this._texture;
-    material.side = THREE.DoubleSide;
-    this._mesh = new THREE.Mesh(geometry, material);
+    material.side = DoubleSide;
+    this._mesh = new Mesh(geometry, material);
     this.add(this._mesh);
     this._projection = "flat";
 
@@ -92,9 +105,9 @@ export default class Video extends THREE.Object3D {
     const oldAudio = this.audio;
 
     if (type === AudioType.PannerNode) {
-      audio = new THREE.PositionalAudio(this.audioListener);
+      audio = new PositionalAudio(this.audioListener);
     } else {
-      audio = new THREE.Audio(this.audioListener);
+      audio = new Audio(this.audioListener);
     }
 
     if (oldAudio) {
@@ -260,17 +273,17 @@ export default class Video extends THREE.Object3D {
   }
 
   set projection(projection) {
-    const material = new THREE.MeshBasicMaterial();
+    const material = new MeshBasicMaterial();
 
     let geometry;
 
     if (projection === "360-equirectangular") {
-      geometry = new THREE.SphereBufferGeometry(1, 64, 32);
+      geometry = new SphereBufferGeometry(1, 64, 32);
       // invert the geometry on the x-axis so that all of the faces point inward
       geometry.scale(-1, 1, 1);
     } else {
-      geometry = new THREE.PlaneGeometry();
-      material.side = THREE.DoubleSide;
+      geometry = new PlaneGeometry();
+      material.side = DoubleSide;
     }
 
     material.map = this._texture;
@@ -279,7 +292,7 @@ export default class Video extends THREE.Object3D {
 
     // Replace existing mesh
     this.remove(this._mesh);
-    this._mesh = new THREE.Mesh(geometry, material);
+    this._mesh = new Mesh(geometry, material);
     this.add(this._mesh);
     this.onResize();
   }
@@ -307,7 +320,7 @@ export default class Video extends THREE.Object3D {
     this.audioSource = this.audioListener.context.createMediaElementSource(this.videoEl);
     this.audio.setNodeSource(this.audioSource);
 
-    if (this._texture.format === THREE.RGBAFormat) {
+    if (this._texture.format === RGBAFormat) {
       this._mesh.material.transparent = true;
     }
 

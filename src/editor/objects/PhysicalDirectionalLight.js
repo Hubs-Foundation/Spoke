@@ -1,7 +1,7 @@
-import THREE from "../../vendor/three";
+import { DirectionalLight, Object3D } from "three";
 import createShadowMapResolutionProxy from "../utils/createShadowMapResolutionProxy";
 
-export default class PhysicalDirectionalLight extends THREE.DirectionalLight {
+export default class PhysicalDirectionalLight extends DirectionalLight {
   constructor() {
     super();
     this.position.set(0, 0, 0);
@@ -29,7 +29,7 @@ export default class PhysicalDirectionalLight extends THREE.DirectionalLight {
 
   copy(source, recursive) {
     // Override DirectionalLight's copy method and pass the recursive parameter so we can avoid cloning children.
-    THREE.Object3D.prototype.copy.call(this, source, recursive);
+    Object3D.prototype.copy.call(this, source, recursive);
 
     this.color.copy(source.color);
     this.intensity = source.intensity;
