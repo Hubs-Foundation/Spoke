@@ -1,17 +1,21 @@
 import test from "ava";
-
+import { createEditor } from "../../src/config";
+import Api from "../../src/api/Api";
 import GroupNode from "../../src/editor/nodes/GroupNode";
-import GroundPlaneNode from "../../src/editor/nodes/GroundPlaneNode";
 
-test("GroundPlaneNode.prototype.clone(true)", t => {
-  const groundPlaneNode = new GroundPlaneNode();
-  const groupNode = new GroupNode();
-  groundPlaneNode.add(groupNode);
-  const clonedNode = groundPlaneNode.clone(true);
+const editor = createEditor(new Api());
 
-  t.is(groundPlaneNode.children.length, clonedNode.children.length);
+for (const nodeType of editor.nodeTypes) {
+  test(`${nodeType.name}.prototype.clone(true)`, t => {
+    const groundPlaneNode = new nodeType();
+    const groupNode = new GroupNode();
+    groundPlaneNode.add(groupNode);
+    const clonedNode = groundPlaneNode.clone(true);
 
-  for (let i = 0; i < groundPlaneNode.children.length; i++) {
-    t.is(groundPlaneNode.children[i].name, clonedNode.children[i].name);
-  }
-});
+    t.is(groundPlaneNode.children.length, clonedNode.children.length);
+
+    for (let i = 0; i < groundPlaneNode.children.length; i++) {
+      t.is(groundPlaneNode.children[i].name, clonedNode.children[i].name);
+    }
+  });
+}
