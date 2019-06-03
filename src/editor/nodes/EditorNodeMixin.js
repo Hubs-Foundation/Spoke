@@ -80,11 +80,17 @@ export default function EditorNodeMixin(Object3DClass) {
     }
 
     copy(source, recursive) {
+      if (recursive) {
+        this.remove(this.loadingCube);
+      }
+
       super.copy(source, recursive);
 
-      for (const child of this.children) {
-        if (child instanceof LoadingCube) {
-          this.remove(child);
+      if (recursive) {
+        const loadingCubeIndex = source.children.findIndex(child => child === source.loadingCube);
+
+        if (loadingCubeIndex !== -1) {
+          this.loadingCube = this.children[loadingCubeIndex];
         }
       }
 

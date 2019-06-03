@@ -5,6 +5,8 @@ export default class SpokeSpotLightHelper extends Object3D {
   constructor(light, color) {
     super();
 
+    this.name = "SpokeSpotLightHelper";
+
     this.light = light;
 
     this.color = color;

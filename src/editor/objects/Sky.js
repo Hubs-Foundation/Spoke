@@ -217,6 +217,7 @@ export default class Sky extends Object3D {
     });
 
     this.sky = new Mesh(Sky._geometry, material);
+    this.sky.name = "Sky";
     this.add(this.sky);
 
     this._inclination = 0;
@@ -307,14 +308,17 @@ export default class Sky extends Object3D {
   }
 
   copy(source, recursive) {
-    super.copy(source, false);
+    if (recursive) {
+      this.remove(this.sky);
+    }
+
+    super.copy(source, recursive);
 
     if (recursive) {
-      for (const child of source.children) {
-        if (child !== this.sky) {
-          const clonedChild = child.clone();
-          this.add(clonedChild);
-        }
+      const skyIndex = source.children.indexOf(source.sky);
+
+      if (skyIndex !== -1) {
+        this.sky = this.children[skyIndex];
       }
     }
 

@@ -25,6 +25,7 @@ export default class LoadingCube extends Object3D {
 
   constructor() {
     super();
+    this.name = "LoadingCube";
     this.type = "LoadingCube";
 
     if (!cubeGltf) {

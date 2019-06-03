@@ -48,6 +48,7 @@ export default class Video extends Object3D {
     material.map = this._texture;
     material.side = DoubleSide;
     this._mesh = new Mesh(geometry, material);
+    this._mesh.name = "VideoMesh";
     this.add(this._mesh);
     this._projection = "flat";
 
@@ -290,10 +291,20 @@ export default class Video extends Object3D {
 
     this._projection = projection;
 
-    // Replace existing mesh
-    this.remove(this._mesh);
-    this._mesh = new Mesh(geometry, material);
-    this.add(this._mesh);
+    const nextMesh = new Mesh(geometry, material);
+    nextMesh.name = "VideoMesh";
+
+    const meshIndex = this.children.indexOf(this._mesh);
+
+    if (meshIndex === -1) {
+      this.add(nextMesh);
+    } else {
+      this.children.splice(meshIndex, 1, nextMesh);
+      nextMesh.parent = this;
+    }
+
+    this._mesh = nextMesh;
+
     this.onResize();
   }
 
@@ -347,9 +358,27 @@ export default class Video extends Object3D {
   copy(source, recursive) {
     super.copy(source, false);
 
-    for (const child of source.children) {
-      if (recursive === true && (child !== source._mesh && child !== source.audio)) {
-        this.add(child.clone());
+    if (recursive) {
+      this.remove(this.audio);
+      this.remove(this._mesh);
+
+      for (let i = 0; i < source.children.length; i++) {
+        const child = source.children[i];
+        if (child === source.audio) {
+          let audio = null;
+          if (source.audioType === AudioType.Stereo) {
+            audio = new Audio(this.audioListener);
+          } else {
+            audio = new PositionalAudio(this.audioListener);
+          }
+          this.audio = audio;
+          this.add(audio);
+        } else if (child === source._mesh) {
+          this._mesh = child.clone();
+          this.add(this._mesh);
+        } else {
+          this.add(child.clone());
+        }
       }
     }
 

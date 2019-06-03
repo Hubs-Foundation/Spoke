@@ -30,14 +30,22 @@ export default class BoxColliderNode extends EditorNodeMixin(Object3D) {
   }
 
   copy(source, recursive) {
-    super.copy(source, false);
+    if (recursive) {
+      this.remove(this.helper);
+    }
+
+    super.copy(source, recursive);
 
     if (recursive) {
-      for (const child of source.children) {
-        if (child !== this.helper) {
-          const clonedChild = child.clone();
-          this.add(clonedChild);
-        }
+      const helperIndex = source.children.indexOf(this.helper);
+
+      if (helperIndex !== -1) {
+        const boxMesh = new Mesh(BoxColliderNode._geometry, BoxColliderNode._material);
+        const box = new BoxHelper(boxMesh, 0x00ff00);
+        box.layers.set(1);
+        this.helper = box;
+        box.parent = this;
+        this.children.splice(helperIndex, 1, box);
       }
     }
 

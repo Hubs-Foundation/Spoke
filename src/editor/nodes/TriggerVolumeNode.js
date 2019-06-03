@@ -56,14 +56,17 @@ export default class TriggerVolumeNode extends EditorNodeMixin(Object3D) {
   }
 
   copy(source, recursive) {
-    super.copy(source, false);
+    if (recursive) {
+      this.remove(this.helper);
+    }
+
+    super.copy(source, recursive);
 
     if (recursive) {
-      for (const child of source.children) {
-        if (child !== this.helper) {
-          const clonedChild = child.clone();
-          this.add(clonedChild);
-        }
+      const helperIndex = source.children.indexOf(source.helper);
+
+      if (helperIndex !== -1) {
+        this.helper = this.children[helperIndex];
       }
     }
 

@@ -52,7 +52,7 @@ export default class GroundPlane extends Object3D {
     super.copy(source, recursive);
 
     if (recursive) {
-      const meshIndex = source.children.findIndex(child => child === source.mesh);
+      const meshIndex = source.children.indexOf(source.mesh);
 
       if (meshIndex !== -1) {
         this.mesh = this.children[meshIndex];

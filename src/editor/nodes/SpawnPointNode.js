@@ -29,19 +29,28 @@ export default class SpawnPointNode extends EditorNodeMixin(Object3D) {
 
   constructor(editor) {
     super(editor);
-    this.helper = spawnPointHelperModel.clone();
-    this.add(this.helper);
+
+    if (spawnPointHelperModel) {
+      this.helper = spawnPointHelperModel.clone();
+      this.add(this.helper);
+    } else {
+      console.warn("SpawnPointNode: helper model was not loaded before creating a new SpawnPointNode");
+      this.helper = null;
+    }
   }
 
   copy(source, recursive) {
-    super.copy(source, false);
+    if (recursive) {
+      this.remove(this.helper);
+    }
+
+    super.copy(source, recursive);
 
     if (recursive) {
-      for (const child of source.children) {
-        if (child !== this.helper) {
-          const clonedChild = child.clone();
-          this.add(clonedChild);
-        }
+      const helperIndex = source.children.findIndex(child => child === source.helper);
+
+      if (helperIndex !== -1) {
+        this.helper = this.children[helperIndex];
       }
     }
 

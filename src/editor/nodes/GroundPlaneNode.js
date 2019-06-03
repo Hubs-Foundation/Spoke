@@ -49,10 +49,10 @@ export default class GroundPlaneNode extends EditorNodeMixin(GroundPlane) {
     super.copy(source, recursive);
 
     if (recursive) {
-      const meshIndex = source.children.findIndex(child => child === source.walkableMesh);
+      const walkableMeshIndex = source.children.findIndex(child => child === source.walkableMesh);
 
-      if (meshIndex !== -1) {
-        this.walkableMesh = this.children[meshIndex];
+      if (walkableMeshIndex !== -1) {
+        this.walkableMesh = this.children[walkableMeshIndex];
       }
     }
 

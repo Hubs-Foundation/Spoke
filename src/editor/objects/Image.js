@@ -28,6 +28,7 @@ export default class Image extends Object3D {
     const material = new MeshBasicMaterial();
     material.side = DoubleSide;
     this._mesh = new Mesh(geometry, material);
+    this._mesh.name = "ImageMesh";
     this.add(this._mesh);
     this._texture = null;
   }
@@ -68,10 +69,19 @@ export default class Image extends Object3D {
 
     this._projection = projection;
 
-    // Replace existing mesh
-    this.remove(this._mesh);
-    this._mesh = new Mesh(geometry, material);
-    this.add(this._mesh);
+    const nextMesh = new Mesh(geometry, material);
+    nextMesh.name = "ImageMesh";
+
+    const meshIndex = this.children.indexOf(this._mesh);
+
+    if (meshIndex === -1) {
+      this.add(nextMesh);
+    } else {
+      this.children.splice(meshIndex, 1, nextMesh);
+      nextMesh.parent = this;
+    }
+
+    this._mesh = nextMesh;
 
     this.onResize();
   }
@@ -133,11 +143,17 @@ export default class Image extends Object3D {
   }
 
   copy(source, recursive) {
-    super.copy(source, false);
+    if (recursive) {
+      this.remove(this._mesh);
+    }
 
-    for (const child of source.children) {
-      if (recursive === true && child !== source._mesh) {
-        this.add(child.clone());
+    super.copy(source, recursive);
+
+    if (recursive) {
+      const _meshIndex = source.children.indexOf(source._mesh);
+
+      if (_meshIndex !== -1) {
+        this._mesh = this.children[_meshIndex];
       }
     }
 

@@ -24,8 +24,13 @@ global.cancelAnimationFrame = function(id) {
 copyProps(window, global);
 window.Number = global.Number;
 
-const { AudioContext } = require("standardized-audio-context-mock");
+const { AudioContext, AudioNode } = require("standardized-audio-context-mock");
 window.AudioContext = AudioContext;
+AudioContext.prototype.createPanner = () => {
+  return new AudioNode({
+    context: new AudioContext()
+  });
+};
 
 function warnSkipAsset(mod) {
   console.warn(`Skip loading Webpack Asset "${mod.filename}" in file: "${mod.parent.filename}"`);

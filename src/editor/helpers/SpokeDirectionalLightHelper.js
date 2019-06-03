@@ -5,6 +5,8 @@ export default class SpokeDirectionalLightHelper extends Object3D {
   constructor(light, size, color) {
     super();
 
+    this.name = "SpokeDirectionalLightHelper";
+
     this.light = light;
 
     this.color = color;

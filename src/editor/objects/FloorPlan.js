@@ -43,28 +43,26 @@ export default class FloorPlan extends Object3D {
   }
 
   copy(source, recursive) {
-    super.copy(source, false);
-
     this.heightfield = JSON.parse(JSON.stringify(source.heightfield));
 
-    for (const child of source.children) {
-      let clonedChild;
+    if (recursive) {
+      this.remove(this.navMesh);
+      this.remove(this.trimesh);
+    }
 
-      if (child === source.navMesh) {
-        clonedChild = child.clone();
-        clonedChild.material = child.material.clone();
-        this.navMesh = clonedChild;
-      } else if (child === source.trimesh) {
-        clonedChild = child.clone();
-        clonedChild.material = child.material.clone();
-        clonedChild.material.wireframe = false;
-        this.trimesh = clonedChild;
-      } else if (recursive === true) {
-        clonedChild = child.clone();
+    super.copy(source, recursive);
+
+    if (recursive) {
+      const navMeshIndex = source.children.indexOf(source.navMesh);
+
+      if (navMeshIndex !== -1) {
+        this.navMesh = this.children[navMeshIndex];
       }
 
-      if (clonedChild) {
-        this.add(clonedChild);
+      const trimeshIndex = source.children.indexOf(source.trimesh);
+
+      if (trimeshIndex !== -1) {
+        this.trimesh = this.children[trimeshIndex];
       }
     }
 

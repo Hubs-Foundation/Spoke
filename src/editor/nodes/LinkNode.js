@@ -42,7 +42,19 @@ export default class LinkNode extends EditorNodeMixin(Object3D) {
   }
 
   copy(source, recursive) {
+    if (recursive) {
+      this.remove(this.helper);
+    }
+
     super.copy(source, recursive);
+
+    if (recursive) {
+      const helperIndex = source.children.findIndex(child => child === source.helper);
+
+      if (helperIndex !== -1) {
+        this.helper = this.children[helperIndex];
+      }
+    }
 
     this.href = source.href;
 

@@ -252,11 +252,17 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
   }
 
   copy(source, recursive) {
+    if (recursive) {
+      this.remove(this.heightfieldMesh);
+    }
+
     super.copy(source, recursive);
 
-    for (const child of source.children) {
-      if (recursive && child !== source.heightfieldMesh) {
-        this.add(child.clone());
+    if (recursive) {
+      const heightfieldMeshIndex = source.children.findIndex(child => child === source.heightfieldMesh);
+
+      if (heightfieldMeshIndex !== -1) {
+        this.heightfieldMesh = this.children[heightfieldMeshIndex];
       }
     }
 
@@ -310,6 +316,7 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
       const trimeshMaterial = this.trimesh.material;
       trimeshMaterial.transparent = true;
       trimeshMaterial.opacity = 0;
+      trimeshMaterial.wireframe = false;
 
       this.trimesh.userData.gltfExtensions = {
         MOZ_hubs_components: {

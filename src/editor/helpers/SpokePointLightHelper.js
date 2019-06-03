@@ -8,6 +8,8 @@ export default class SpokePointLightHelper extends Mesh {
 
     super(geometry, material);
 
+    this.name = "SpokePointLightHelper";
+
     this.light = light;
 
     const distanceGeometry = new IcosahedronBufferGeometry(1, 2);

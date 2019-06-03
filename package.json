@@ -24,12 +24,12 @@
     "bundle-analyzer": "cross-env NODE_ENV=production webpack-dev-server --mode=production --env.BUNDLE_ANALYZER",
     "precommit": "lint-staged",
     "lint": "eslint ./src",
-    "test": "concurrently --success \"first\" --kill-others \"npm:test-all\" \"npm:test-serve\"",
-    "test-serve": "cross-env NODE_ENV=test webpack-dev-server --mode development --port 9091 --content-base ./test/fixtures",
+    "test": "concurrently --success \"first\" --kill-others \"npm:test-all\" \"npm:test-server\"",
+    "test-server": "cross-env NODE_ENV=test webpack-dev-server --mode development --port 9091 --content-base ./test/fixtures",
     "test-all": "ava",
-    "test-unit": "ava ./test/unit",
-    "test-integration": "concurrently --success \"first\" --kill-others \"ava ./test/integration\" \"npm:test-serve\"",
-    "test-update-snapshots": "concurrently --success \"first\" --kill-others \"ava -u\" \"npm:test-serve\""
+    "unit-tests": "ava ./test/unit",
+    "integration-tests": "concurrently --success \"first\" --kill-others \"ava ./test/integration\" \"npm:test-server\"",
+    "update-test-snapshots": "concurrently --success \"first\" --kill-others \"ava -u\" \"npm:test-serve\""
   },
   "ava": {
     "files": [
