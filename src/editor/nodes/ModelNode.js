@@ -93,6 +93,8 @@ export default class ModelNode extends EditorNodeMixin(Model) {
   async load(src) {
     const nextSrc = src || "";
 
+    console.log("load", src, this._canonicalUrl);
+
     if (nextSrc === this._canonicalUrl) {
       return;
     }
@@ -259,8 +261,15 @@ export default class ModelNode extends EditorNodeMixin(Model) {
 
   copy(source, recursive) {
     super.copy(source, recursive);
-    this.updateStaticModes();
-    this._canonicalUrl = source._canonicalUrl;
+
+    if (source.loadingCube) {
+      this.scaleToFit = source.scaleToFit;
+      this.load(source.src);
+    } else {
+      this.updateStaticModes();
+      this._canonicalUrl = source._canonicalUrl;
+    }
+
     this.attribution = source.attribution;
     this.collidable = source.collidable;
     this.walkable = source.walkable;

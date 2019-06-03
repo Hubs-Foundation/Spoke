@@ -135,7 +135,14 @@ export default class SpawnerNode extends EditorNodeMixin(Model) {
 
   copy(source, recursive) {
     super.copy(source, recursive);
-    this._canonicalUrl = source._canonicalUrl;
+
+    if (source.loadingCube) {
+      this.scaleToFit = source.scaleToFit;
+      this.load(source.src);
+    } else {
+      this._canonicalUrl = source._canonicalUrl;
+    }
+
     return this;
   }
 
