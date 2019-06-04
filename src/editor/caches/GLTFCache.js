@@ -47,7 +47,7 @@ export default class GLTFCache extends Cache {
             if (prop instanceof Texture) {
               if (prop.image.src) {
                 if (key === "map") {
-                  prop.format = obj.material.transparent ? RGBAFormat : RGBFormat;
+                  prop.format = obj.material.transparent || obj.material.alphaTest !== 0 ? RGBAFormat : RGBFormat;
                 }
 
                 const absoluteTextureURL = new URL(prop.image.src, window.location).href;
