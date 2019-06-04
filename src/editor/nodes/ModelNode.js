@@ -259,7 +259,7 @@ export default class ModelNode extends EditorNodeMixin(Model) {
     return super.serialize(components);
   }
 
-  copy(source, recursive) {
+  copy(source, recursive = true) {
     super.copy(source, recursive);
 
     if (source.loadingCube) {

@@ -55,7 +55,7 @@ export default class TriggerVolumeNode extends EditorNodeMixin(Object3D) {
     this.leaveValue = null;
   }
 
-  copy(source, recursive) {
+  copy(source, recursive = true) {
     if (recursive) {
       this.remove(this.helper);
     }

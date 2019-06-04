@@ -56,7 +56,7 @@ export default class PhysicalSpotLight extends SpotLight {
     this.shadow.radius = value;
   }
 
-  copy(source, recursive) {
+  copy(source, recursive = true) {
     // Override SpotLight's copy method and pass the recursive parameter so we can avoid cloning children.
     Object3D.prototype.copy.call(this, source, false);
 

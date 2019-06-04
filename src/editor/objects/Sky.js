@@ -307,7 +307,7 @@ export default class Sky extends Object3D {
     this.sky.scale.set(distance, distance, distance);
   }
 
-  copy(source, recursive) {
+  copy(source, recursive = true) {
     if (recursive) {
       this.remove(this.sky);
     }

@@ -33,7 +33,7 @@ export default class PhysicalPointLight extends PointLight {
     this.shadow.radius = value;
   }
 
-  copy(source, recursive) {
+  copy(source, recursive = true) {
     // Override PointLight's copy method and pass the recursive parameter so we can avoid cloning children.
     Object3D.prototype.copy.call(this, source, false);
 

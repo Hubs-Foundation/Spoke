@@ -27,7 +27,7 @@ export default class PhysicalDirectionalLight extends DirectionalLight {
     this.shadow.radius = value;
   }
 
-  copy(source, recursive) {
+  copy(source, recursive = true) {
     // Override DirectionalLight's copy method and pass the recursive parameter so we can avoid cloning children.
     Object3D.prototype.copy.call(this, source, false);
 

@@ -29,7 +29,7 @@ export default class BoxColliderNode extends EditorNodeMixin(Object3D) {
     this.walkable = false;
   }
 
-  copy(source, recursive) {
+  copy(source, recursive = true) {
     if (recursive) {
       this.remove(this.helper);
     }

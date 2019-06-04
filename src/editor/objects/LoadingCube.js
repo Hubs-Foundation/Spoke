@@ -39,7 +39,7 @@ export default class LoadingCube extends Object3D {
     this.worldScale = new Vector3();
   }
 
-  copy(source, recursive) {
+  copy(source, recursive = true) {
     super.copy(source, false);
 
     for (const child of source.children) {

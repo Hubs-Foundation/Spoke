@@ -251,7 +251,7 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
     return this;
   }
 
-  copy(source, recursive) {
+  copy(source, recursive = true) {
     if (recursive) {
       this.remove(this.heightfieldMesh);
     }

@@ -79,7 +79,7 @@ export default function EditorNodeMixin(Object3DClass) {
       return new this.constructor(this.editor).copy(this, recursive);
     }
 
-    copy(source, recursive) {
+    copy(source, recursive = true) {
       if (recursive) {
         this.remove(this.loadingCube);
       }

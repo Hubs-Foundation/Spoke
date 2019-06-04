@@ -41,7 +41,7 @@ export default class LinkNode extends EditorNodeMixin(Object3D) {
     this.add(this.helper);
   }
 
-  copy(source, recursive) {
+  copy(source, recursive = true) {
     if (recursive) {
       this.remove(this.helper);
     }

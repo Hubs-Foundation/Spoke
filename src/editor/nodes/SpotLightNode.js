@@ -64,7 +64,7 @@ export default class SpotLightNode extends EditorNodeMixin(PhysicalSpotLight) {
     this.helper.visible = false;
   }
 
-  copy(source, recursive) {
+  copy(source, recursive = true) {
     super.copy(source, false);
 
     if (recursive) {

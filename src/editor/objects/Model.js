@@ -184,7 +184,7 @@ export default class Model extends Object3D {
 
   // TODO: Add play/pause methods for previewing animations.
 
-  copy(source, recursive) {
+  copy(source, recursive = true) {
     super.copy(source, false);
 
     for (const child of source.children) {

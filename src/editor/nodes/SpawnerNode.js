@@ -133,7 +133,7 @@ export default class SpawnerNode extends EditorNodeMixin(Model) {
     });
   }
 
-  copy(source, recursive) {
+  copy(source, recursive = true) {
     super.copy(source, recursive);
 
     if (source.loadingCube) {

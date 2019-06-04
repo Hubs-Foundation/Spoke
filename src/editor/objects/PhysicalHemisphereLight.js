@@ -10,7 +10,7 @@ export default class PhysicalHemisphereLight extends HemisphereLight {
     return this.color;
   }
 
-  copy(source, recursive) {
+  copy(source, recursive = true) {
     // Override HemisphereLight's copy method and pass the recursive parameter so we can avoid cloning children.
     Object3D.prototype.copy.call(this, source, recursive);
 

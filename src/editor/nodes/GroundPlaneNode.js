@@ -41,7 +41,7 @@ export default class GroundPlaneNode extends EditorNodeMixin(GroundPlane) {
     this.add(this.walkableMesh);
   }
 
-  copy(source, recursive) {
+  copy(source, recursive = true) {
     if (recursive) {
       this.remove(this.walkableMesh);
     }

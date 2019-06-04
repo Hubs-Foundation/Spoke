@@ -51,7 +51,7 @@ export default class DirectionalLightNode extends EditorNodeMixin(PhysicalDirect
     this.helper.visible = false;
   }
 
-  copy(source, recursive) {
+  copy(source, recursive = true) {
     super.copy(source, false);
 
     if (recursive) {

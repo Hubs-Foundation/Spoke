@@ -148,7 +148,7 @@ export default class VideoNode extends EditorNodeMixin(Video) {
     return new this.constructor(this.editor, this.audioListener).copy(this, recursive);
   }
 
-  copy(source, recursive) {
+  copy(source, recursive = true) {
     super.copy(source, recursive);
 
     this._canonicalUrl = source._canonicalUrl;

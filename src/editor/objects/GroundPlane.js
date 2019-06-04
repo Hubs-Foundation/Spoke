@@ -44,7 +44,7 @@ export default class GroundPlane extends Object3D {
     }
   }
 
-  copy(source, recursive) {
+  copy(source, recursive = true) {
     if (recursive) {
       this.remove(this.mesh);
     }

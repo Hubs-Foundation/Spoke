@@ -42,7 +42,7 @@ export default class FloorPlan extends Object3D {
     this.heightfield = heightfield || null;
   }
 
-  copy(source, recursive) {
+  copy(source, recursive = true) {
     this.heightfield = JSON.parse(JSON.stringify(source.heightfield));
 
     if (recursive) {

@@ -355,7 +355,7 @@ export default class Video extends Object3D {
     return new this.constructor(this.audioListener).copy(this, recursive);
   }
 
-  copy(source, recursive) {
+  copy(source, recursive = true) {
     super.copy(source, false);
 
     if (recursive) {
