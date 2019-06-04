@@ -224,6 +224,7 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
         heightfieldMeshGeometry,
         new MeshBasicMaterial({ wireframe: true, color: 0xffff00 })
       );
+      heightfieldMesh.name = "HeightfieldMesh";
 
       this.heightfieldMesh = heightfieldMesh;
 
@@ -299,7 +300,9 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
   prepareForExport() {
     super.prepareForExport();
 
-    this.remove(this.heightfieldMesh);
+    if (this.heightfieldMesh) {
+      this.remove(this.heightfieldMesh);
+    }
 
     const navMeshMaterial = this.navMesh.material;
     navMeshMaterial.transparent = true;
