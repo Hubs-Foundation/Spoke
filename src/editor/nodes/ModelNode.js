@@ -93,8 +93,6 @@ export default class ModelNode extends EditorNodeMixin(Model) {
   async load(src) {
     const nextSrc = src || "";
 
-    console.log("load", src, this._canonicalUrl);
-
     if (nextSrc === this._canonicalUrl) {
       return;
     }
