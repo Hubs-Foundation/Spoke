@@ -1,11 +1,11 @@
-import THREE from "../../vendor/three";
+import { Object3D, Vector3, Quaternion, Euler, PerspectiveCamera, OrthographicCamera } from "three";
 import TransformControlsGizmo from "./TransformControlsGizmo";
 import TransformControlsPlane from "./TransformControlsPlane";
 
 /**
- * Ported from https://github.com/mrdoob/three.js/blob/dev/examples/js/controls/TransformControls.js
+ * Ported from https://github.com/mrdoob/js/blob/dev/examples/js/controls/TransformControls.js
  */
-export default class TransformControls extends THREE.Object3D {
+export default class TransformControls extends Object3D {
   static isTransformControls = true;
 
   constructor(camera) {
@@ -28,44 +28,44 @@ export default class TransformControls extends THREE.Object3D {
     this.showZ = true;
     this.rotationSensitivity = 5;
 
-    this.tempVector = new THREE.Vector3();
-    this.tempVector2 = new THREE.Vector3();
-    this.tempQuaternion = new THREE.Quaternion();
+    this.tempVector = new Vector3();
+    this.tempVector2 = new Vector3();
+    this.tempQuaternion = new Quaternion();
     this.unit = {
-      X: new THREE.Vector3(1, 0, 0),
-      Y: new THREE.Vector3(0, 1, 0),
-      Z: new THREE.Vector3(0, 0, 1)
+      X: new Vector3(1, 0, 0),
+      Y: new Vector3(0, 1, 0),
+      Z: new Vector3(0, 0, 1)
     };
-    this.identityQuaternion = new THREE.Quaternion();
-    this.alignVector = new THREE.Vector3();
+    this.identityQuaternion = new Quaternion();
+    this.alignVector = new Vector3();
 
-    this.pointStart = new THREE.Vector3();
-    this.pointEnd = new THREE.Vector3();
-    this.rotationAxis = new THREE.Vector3();
+    this.pointStart = new Vector3();
+    this.pointEnd = new Vector3();
+    this.rotationAxis = new Vector3();
     this.rotationAngle = 0;
 
-    this.cameraPosition = new THREE.Vector3();
-    this.cameraQuaternion = new THREE.Quaternion();
-    this.cameraScale = new THREE.Vector3();
+    this.cameraPosition = new Vector3();
+    this.cameraQuaternion = new Quaternion();
+    this.cameraScale = new Vector3();
 
-    this.parentPosition = new THREE.Vector3();
-    this.parentQuaternion = new THREE.Quaternion();
-    this.parentScale = new THREE.Vector3();
+    this.parentPosition = new Vector3();
+    this.parentQuaternion = new Quaternion();
+    this.parentScale = new Vector3();
 
-    this.worldPositionStart = new THREE.Vector3();
-    this.worldQuaternionStart = new THREE.Quaternion();
-    this.worldScaleStart = new THREE.Vector3();
+    this.worldPositionStart = new Vector3();
+    this.worldQuaternionStart = new Quaternion();
+    this.worldScaleStart = new Vector3();
 
-    this.worldPosition = new THREE.Vector3();
-    this.worldQuaternion = new THREE.Quaternion();
-    this.worldScale = new THREE.Vector3();
+    this.worldPosition = new Vector3();
+    this.worldQuaternion = new Quaternion();
+    this.worldScale = new Vector3();
 
-    this.eye = new THREE.Vector3();
+    this.eye = new Vector3();
 
-    this.positionStart = new THREE.Vector3();
-    this.quaternionStart = new THREE.Quaternion();
-    this.rotationStart = new THREE.Euler();
-    this.scaleStart = new THREE.Vector3();
+    this.positionStart = new Vector3();
+    this.quaternionStart = new Quaternion();
+    this.rotationStart = new Euler();
+    this.scaleStart = new Vector3();
 
     this.gizmo = new TransformControlsGizmo(this);
     this.add(this.gizmo);
@@ -324,12 +324,12 @@ export default class TransformControls extends THREE.Object3D {
     this.camera.updateMatrixWorld();
     this.camera.matrixWorld.decompose(this.cameraPosition, this.cameraQuaternion, this.cameraScale);
 
-    if (this.camera instanceof THREE.PerspectiveCamera) {
+    if (this.camera instanceof PerspectiveCamera) {
       this.eye
         .copy(this.cameraPosition)
         .sub(this.worldPosition)
         .normalize();
-    } else if (this.camera instanceof THREE.OrthographicCamera) {
+    } else if (this.camera instanceof OrthographicCamera) {
       this.eye.copy(this.cameraPosition).normalize();
     }
   }

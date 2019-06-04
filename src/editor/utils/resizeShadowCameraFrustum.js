@@ -1,21 +1,21 @@
-import THREE from "../../vendor/three";
+import { Box3, Matrix4, Vector3 } from "three";
 
-const boundingBox = new THREE.Box3();
-const frustumBox = new THREE.Box3();
-const inverseLightMatrixWorld = new THREE.Matrix4();
-const tempBox = new THREE.Box3();
+const boundingBox = new Box3();
+const frustumBox = new Box3();
+const inverseLightMatrixWorld = new Matrix4();
+const tempBox = new Box3();
 const FRUSTUM_PADDING = 1;
 const NEAR_CLIPPING_PLANE = -500;
 const FAR_CLIPPING_PLANE = 500;
 const verts = [
-  new THREE.Vector3(),
-  new THREE.Vector3(),
-  new THREE.Vector3(),
-  new THREE.Vector3(),
-  new THREE.Vector3(),
-  new THREE.Vector3(),
-  new THREE.Vector3(),
-  new THREE.Vector3()
+  new Vector3(),
+  new Vector3(),
+  new Vector3(),
+  new Vector3(),
+  new Vector3(),
+  new Vector3(),
+  new Vector3(),
+  new Vector3()
 ];
 
 export default function resizeShadowCameraFrustum(light, scene) {

@@ -1,9 +1,10 @@
-import THREE from "../../vendor/three";
+import { Object3D, AnimationMixer, PlaneGeometry, MeshBasicMaterial, DoubleSide, Mesh } from "three";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import cloneObject3D from "../utils/cloneObject3D";
 import eventToMessage from "../utils/eventToMessage";
 import loadErrorTexture from "../utils/loadErrorTexture";
 
-export default class Model extends THREE.Object3D {
+export default class Model extends Object3D {
   constructor() {
     super();
     this.type = "Model";
@@ -15,7 +16,7 @@ export default class Model extends THREE.Object3D {
     this.clipActions = [];
     this._castShadow = false;
     this._receiveShadow = false;
-    this._mixer = new THREE.AnimationMixer(this);
+    this._mixer = new AnimationMixer(this);
   }
 
   get src() {
@@ -28,7 +29,7 @@ export default class Model extends THREE.Object3D {
 
   loadGLTF(src) {
     return new Promise((resolve, reject) => {
-      new THREE.GLTFLoader().load(src, resolve, null, e => {
+      new GLTFLoader().load(src, resolve, null, e => {
         reject(new Error(`Error loading Model. ${eventToMessage(e)}`));
       });
     });
@@ -38,7 +39,7 @@ export default class Model extends THREE.Object3D {
     this._src = src;
     this.animations = [];
     this.clipActions = [];
-    this._mixer = new THREE.AnimationMixer(this);
+    this._mixer = new AnimationMixer(this);
 
     if (this.errorMesh) {
       this.remove(this.errorMesh);
@@ -63,12 +64,12 @@ export default class Model extends THREE.Object3D {
       this.receiveShadow = this._receiveShadow;
     } catch (err) {
       const texture = await loadErrorTexture();
-      const geometry = new THREE.PlaneGeometry();
-      const material = new THREE.MeshBasicMaterial();
-      material.side = THREE.DoubleSide;
+      const geometry = new PlaneGeometry();
+      const material = new MeshBasicMaterial();
+      material.side = DoubleSide;
       material.map = texture;
       material.transparent = true;
-      const mesh = new THREE.Mesh(geometry, material);
+      const mesh = new Mesh(geometry, material);
       const ratio = (texture.image.height || 1.0) / (texture.image.width || 1.0);
       const width = Math.min(1.0, 1.0 / ratio);
       const height = Math.min(1.0, ratio);
@@ -183,7 +184,7 @@ export default class Model extends THREE.Object3D {
 
   // TODO: Add play/pause methods for previewing animations.
 
-  copy(source, recursive) {
+  copy(source, recursive = true) {
     super.copy(source, false);
 
     for (const child of source.children) {

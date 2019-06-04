@@ -1,7 +1,7 @@
-import THREE from "../../vendor/three";
+import { GridHelper } from "three";
 import { addIsHelperFlag } from "./utils";
 
-export default class GridHelper extends THREE.GridHelper {
+export default class SpokeGridHelper extends GridHelper {
   constructor() {
     super(30, 30, 0x444444, 0x888888);
 

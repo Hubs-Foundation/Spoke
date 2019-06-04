@@ -1,15 +1,16 @@
-import THREE from "../../vendor/three";
+import { Object3D, CircleBufferGeometry, MeshStandardMaterial, Mesh } from "three";
 
-export default class GroundPlane extends THREE.Object3D {
-  static _geometry = new THREE.CircleBufferGeometry(4000, 32);
+export default class GroundPlane extends Object3D {
+  static _geometry = new CircleBufferGeometry(4000, 32);
 
   constructor() {
     super();
 
     this._receiveShadow = true;
 
-    const material = new THREE.MeshStandardMaterial({ roughness: 1, metalness: 0, color: "#5DE336" });
-    const mesh = new THREE.Mesh(GroundPlane._geometry, material);
+    const material = new MeshStandardMaterial({ roughness: 1, metalness: 0, color: "#5DE336" });
+    const mesh = new Mesh(GroundPlane._geometry, material);
+    mesh.name = "GroundPlaneMesh";
     mesh.position.y = -0.05;
     mesh.rotation.x = -Math.PI / 2;
     this.mesh = mesh;
@@ -43,15 +44,18 @@ export default class GroundPlane extends THREE.Object3D {
     }
   }
 
-  copy(source, recursive) {
-    super.copy(source, false);
+  copy(source, recursive = true) {
+    if (recursive) {
+      this.remove(this.mesh);
+    }
+
+    super.copy(source, recursive);
 
     if (recursive) {
-      for (const child of source.children) {
-        if (child !== this.mesh) {
-          const clonedChild = child.clone();
-          this.add(clonedChild);
-        }
+      const meshIndex = source.children.indexOf(source.mesh);
+
+      if (meshIndex !== -1) {
+        this.mesh = this.children[meshIndex];
       }
     }
 

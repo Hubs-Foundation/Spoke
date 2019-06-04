@@ -1,24 +1,26 @@
-import THREE from "../../vendor/three";
+import { Mesh, SphereBufferGeometry, MeshBasicMaterial, IcosahedronBufferGeometry } from "three";
 import { addIsHelperFlag } from "./utils";
 
-export default class SpokePointLightHelper extends THREE.Mesh {
+export default class SpokePointLightHelper extends Mesh {
   constructor(light, sphereSize) {
-    const geometry = new THREE.SphereBufferGeometry(sphereSize, 4, 2);
-    const material = new THREE.MeshBasicMaterial({ wireframe: true, fog: false });
+    const geometry = new SphereBufferGeometry(sphereSize, 4, 2);
+    const material = new MeshBasicMaterial({ wireframe: true, fog: false });
 
     super(geometry, material);
 
+    this.name = "SpokePointLightHelper";
+
     this.light = light;
 
-    const distanceGeometry = new THREE.IcosahedronBufferGeometry(1, 2);
-    const distanceMaterial = new THREE.MeshBasicMaterial({
+    const distanceGeometry = new IcosahedronBufferGeometry(1, 2);
+    const distanceMaterial = new MeshBasicMaterial({
       fog: false,
       wireframe: true,
       opacity: 0.1,
       transparent: true
     });
 
-    this.lightDistanceHelper = new THREE.Mesh(distanceGeometry, distanceMaterial);
+    this.lightDistanceHelper = new Mesh(distanceGeometry, distanceMaterial);
     this.lightDistanceHelper.layers.set(1);
 
     this.add(this.lightDistanceHelper);

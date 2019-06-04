@@ -1,4 +1,4 @@
-import THREE from "../../vendor/three";
+import { CubeTextureLoader, RGBFormat } from "three";
 import eventToMessage from "./eventToMessage";
 import negx from "../../assets/cubemap/negx.jpg";
 import negy from "../../assets/cubemap/negy.jpg";
@@ -18,10 +18,10 @@ export function loadEnvironmentMap() {
 
   cubeMapTexturePromise = new Promise((resolve, reject) => {
     const cubeMapURLs = [posx, negx, posy, negy, posz, negz];
-    cubeMapTexturePromise = new THREE.CubeTextureLoader().load(
+    cubeMapTexturePromise = new CubeTextureLoader().load(
       cubeMapURLs,
       texture => {
-        texture.format = THREE.RGBFormat;
+        texture.format = RGBFormat;
         environmentMap = texture;
         resolve(texture);
       },

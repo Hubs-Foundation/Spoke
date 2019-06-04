@@ -1,4 +1,17 @@
-import THREE from "../../vendor/three";
+import {
+  Object3D,
+  VideoTexture,
+  LinearFilter,
+  sRGBEncoding,
+  PlaneGeometry,
+  MeshBasicMaterial,
+  DoubleSide,
+  Mesh,
+  PositionalAudio,
+  Audio,
+  SphereBufferGeometry,
+  RGBAFormat
+} from "three";
 import eventToMessage from "../utils/eventToMessage";
 import Hls from "hls.js/dist/hls.light";
 import isHLS from "../utils/isHLS";
@@ -20,21 +33,22 @@ export const DistanceModelType = {
   Exponential: "exponential"
 };
 
-export default class Video extends THREE.Object3D {
+export default class Video extends Object3D {
   constructor(audioListener) {
     super();
 
     const videoEl = document.createElement("video");
-    this._videoTexture = new THREE.VideoTexture(videoEl);
-    this._videoTexture.minFilter = THREE.LinearFilter;
-    this._videoTexture.encoding = THREE.sRGBEncoding;
+    this._videoTexture = new VideoTexture(videoEl);
+    this._videoTexture.minFilter = LinearFilter;
+    this._videoTexture.encoding = sRGBEncoding;
     this._texture = this._videoTexture;
 
-    const geometry = new THREE.PlaneGeometry();
-    const material = new THREE.MeshBasicMaterial();
+    const geometry = new PlaneGeometry();
+    const material = new MeshBasicMaterial();
     material.map = this._texture;
-    material.side = THREE.DoubleSide;
-    this._mesh = new THREE.Mesh(geometry, material);
+    material.side = DoubleSide;
+    this._mesh = new Mesh(geometry, material);
+    this._mesh.name = "VideoMesh";
     this.add(this._mesh);
     this._projection = "flat";
 
@@ -92,9 +106,9 @@ export default class Video extends THREE.Object3D {
     const oldAudio = this.audio;
 
     if (type === AudioType.PannerNode) {
-      audio = new THREE.PositionalAudio(this.audioListener);
+      audio = new PositionalAudio(this.audioListener);
     } else {
-      audio = new THREE.Audio(this.audioListener);
+      audio = new Audio(this.audioListener);
     }
 
     if (oldAudio) {
@@ -260,27 +274,37 @@ export default class Video extends THREE.Object3D {
   }
 
   set projection(projection) {
-    const material = new THREE.MeshBasicMaterial();
+    const material = new MeshBasicMaterial();
 
     let geometry;
 
     if (projection === "360-equirectangular") {
-      geometry = new THREE.SphereBufferGeometry(1, 64, 32);
+      geometry = new SphereBufferGeometry(1, 64, 32);
       // invert the geometry on the x-axis so that all of the faces point inward
       geometry.scale(-1, 1, 1);
     } else {
-      geometry = new THREE.PlaneGeometry();
-      material.side = THREE.DoubleSide;
+      geometry = new PlaneGeometry();
+      material.side = DoubleSide;
     }
 
     material.map = this._texture;
 
     this._projection = projection;
 
-    // Replace existing mesh
-    this.remove(this._mesh);
-    this._mesh = new THREE.Mesh(geometry, material);
-    this.add(this._mesh);
+    const nextMesh = new Mesh(geometry, material);
+    nextMesh.name = "VideoMesh";
+
+    const meshIndex = this.children.indexOf(this._mesh);
+
+    if (meshIndex === -1) {
+      this.add(nextMesh);
+    } else {
+      this.children.splice(meshIndex, 1, nextMesh);
+      nextMesh.parent = this;
+    }
+
+    this._mesh = nextMesh;
+
     this.onResize();
   }
 
@@ -307,7 +331,7 @@ export default class Video extends THREE.Object3D {
     this.audioSource = this.audioListener.context.createMediaElementSource(this.videoEl);
     this.audio.setNodeSource(this.audioSource);
 
-    if (this._texture.format === THREE.RGBAFormat) {
+    if (this._texture.format === RGBAFormat) {
       this._mesh.material.transparent = true;
     }
 
@@ -331,12 +355,30 @@ export default class Video extends THREE.Object3D {
     return new this.constructor(this.audioListener).copy(this, recursive);
   }
 
-  copy(source, recursive) {
+  copy(source, recursive = true) {
     super.copy(source, false);
 
-    for (const child of source.children) {
-      if (recursive === true && (child !== source._mesh && child !== source.audio)) {
-        this.add(child.clone());
+    if (recursive) {
+      this.remove(this.audio);
+      this.remove(this._mesh);
+
+      for (let i = 0; i < source.children.length; i++) {
+        const child = source.children[i];
+        if (child === source.audio) {
+          let audio = null;
+          if (source.audioType === AudioType.Stereo) {
+            audio = new Audio(this.audioListener);
+          } else {
+            audio = new PositionalAudio(this.audioListener);
+          }
+          this.audio = audio;
+          this.add(audio);
+        } else if (child === source._mesh) {
+          this._mesh = child.clone();
+          this.add(this._mesh);
+        } else {
+          this.add(child.clone());
+        }
       }
     }
 

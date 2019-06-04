@@ -1,4 +1,4 @@
-import THREE from "../../vendor/three";
+import { Material, BoxBufferGeometry, Object3D, Mesh, BoxHelper, Vector3 } from "three";
 import EditorNodeMixin from "./EditorNodeMixin";
 
 const requiredProperties = [
@@ -11,16 +11,16 @@ const requiredProperties = [
   "leaveValue"
 ];
 
-export default class TriggerVolumeNode extends EditorNodeMixin(THREE.Object3D) {
+export default class TriggerVolumeNode extends EditorNodeMixin(Object3D) {
   static legacyComponentName = "trigger-volume";
 
   static experimental = true;
 
   static nodeName = "Trigger Volume";
 
-  static _geometry = new THREE.BoxBufferGeometry();
+  static _geometry = new BoxBufferGeometry();
 
-  static _material = new THREE.Material();
+  static _material = new Material();
 
   static async deserialize(editor, json) {
     const node = await super.deserialize(editor, json);
@@ -41,8 +41,8 @@ export default class TriggerVolumeNode extends EditorNodeMixin(THREE.Object3D) {
   constructor(editor) {
     super(editor);
 
-    const boxMesh = new THREE.Mesh(TriggerVolumeNode._geometry, TriggerVolumeNode._material);
-    const box = new THREE.BoxHelper(boxMesh, 0xffff00);
+    const boxMesh = new Mesh(TriggerVolumeNode._geometry, TriggerVolumeNode._material);
+    const box = new BoxHelper(boxMesh, 0xffff00);
     box.layers.set(1);
     this.helper = box;
     this.add(box);
@@ -55,15 +55,18 @@ export default class TriggerVolumeNode extends EditorNodeMixin(THREE.Object3D) {
     this.leaveValue = null;
   }
 
-  copy(source, recursive) {
-    super.copy(source, false);
+  copy(source, recursive = true) {
+    if (recursive) {
+      this.remove(this.helper);
+    }
+
+    super.copy(source, recursive);
 
     if (recursive) {
-      for (const child of source.children) {
-        if (child !== this.helper) {
-          const clonedChild = child.clone();
-          this.add(clonedChild);
-        }
+      const helperIndex = source.children.indexOf(source.helper);
+
+      if (helperIndex !== -1) {
+        this.helper = this.children[helperIndex];
       }
     }
 
@@ -103,7 +106,7 @@ export default class TriggerVolumeNode extends EditorNodeMixin(THREE.Object3D) {
       }
     }
 
-    const scale = new THREE.Vector3();
+    const scale = new Vector3();
     this.getWorldScale(scale);
 
     this.addGLTFComponent("trigger-volume", {

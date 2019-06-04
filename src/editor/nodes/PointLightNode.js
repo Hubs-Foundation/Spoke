@@ -52,14 +52,19 @@ export default class PointLightNode extends EditorNodeMixin(PhysicalPointLight) 
     this.helper.visible = false;
   }
 
-  copy(source, recursive) {
+  copy(source, recursive = true) {
     super.copy(source, false);
 
     if (recursive) {
-      for (const child of source.children) {
-        if (child !== this.helper) {
-          const clonedChild = child.clone();
-          this.add(clonedChild);
+      this.remove(this.helper);
+
+      for (let i = 0; i < source.children.length; i++) {
+        const child = source.children[i];
+        if (child === source.helper) {
+          this.helper = new SpokePointLightHelper(this);
+          this.add(this.helper);
+        } else {
+          this.add(child.clone());
         }
       }
     }

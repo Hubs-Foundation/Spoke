@@ -24,10 +24,12 @@
     "bundle-analyzer": "cross-env NODE_ENV=production webpack-dev-server --mode=production --env.BUNDLE_ANALYZER",
     "precommit": "lint-staged",
     "lint": "eslint ./src",
-    "test": "concurrently --success \"first\" --kill-others \"npm:test-all\" \"npm:test-serve\"",
-    "test-serve": "cross-env NODE_ENV=test webpack-dev-server --mode development --port 9091 --content-base ./test/fixtures",
+    "test": "concurrently --success \"first\" --kill-others \"npm:test-all\" \"npm:test-server\"",
+    "test-server": "cross-env NODE_ENV=test webpack-dev-server --mode development --port 9091 --content-base ./test/fixtures",
     "test-all": "ava",
-    "test-update-snapshots": "concurrently --success \"first\" --kill-others \"ava -u\" \"npm:test-serve\""
+    "unit-tests": "ava ./test/unit",
+    "integration-tests": "concurrently --success \"first\" --kill-others \"ava ./test/integration\" \"npm:test-server\"",
+    "update-test-snapshots": "concurrently --success \"first\" --kill-others \"ava -u\" \"npm:test-serve\""
   },
   "ava": {
     "files": [
@@ -80,7 +82,7 @@
     "react-tooltip": "^3.10.0",
     "recast-wasm": "^0.1.1",
     "signals": "^1.0.0",
-    "three": "github:mozillareality/three.js#105dev-gltf-exporter",
+    "three": "github:mozillareality/three.js#903c91eb3f5179c5895c8de8040b9a8063c36907",
     "three-mesh-bvh": "^0.1.2",
     "url-toolkit": "^2.1.6",
     "uuid": "^3.3.2"
@@ -98,7 +100,6 @@
     "ava": "^0.25.0",
     "babel-eslint": "^9.0.0",
     "babel-loader": "^8.0.0",
-    "browser-env": "^3.2.6",
     "concurrently": "^4.1.0",
     "copy-webpack-plugin": "^5.0.0",
     "cors": "^2.8.5",
@@ -115,6 +116,7 @@
     "get-chrome": "0.0.2",
     "html-webpack-plugin": "^3.2.0",
     "husky": "^0.14.3",
+    "jsdom": "^15.1.1",
     "lint-staged": "^7.3.0",
     "mini-css-extract-plugin": "^0.5.0",
     "optimize-css-assets-webpack-plugin": "^5.0.1",
@@ -123,6 +125,7 @@
     "sass": "^1.18.0",
     "sass-loader": "^7.1.0",
     "selfsigned": "^1.10.4",
+    "standardized-audio-context-mock": "^7.0.1",
     "style-loader": "^0.21.0",
     "terser-webpack-plugin": "^1.2.3",
     "webpack": "^4.28.4",

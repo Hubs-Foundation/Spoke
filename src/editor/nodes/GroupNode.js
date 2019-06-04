@@ -1,7 +1,7 @@
-import THREE from "../../vendor/three";
+import { Group } from "three";
 import EditorNodeMixin from "./EditorNodeMixin";
 
-export default class GroupNode extends EditorNodeMixin(THREE.Group) {
+export default class GroupNode extends EditorNodeMixin(Group) {
   static legacyComponentName = "group";
 
   static nodeName = "Group";

@@ -2,10 +2,10 @@ import React, { Component } from "react";
 import PropTypes from "prop-types";
 import styles from "./Vector3Input.scss";
 import NumericInput from "./NumericInput";
-import THREE from "../../vendor/three";
+import { Math as _Math, Euler } from "three";
 import Scrubber from "./Scrubber";
 
-const { RAD2DEG, DEG2RAD } = THREE.Math;
+const { RAD2DEG, DEG2RAD } = _Math;
 
 export default class EulerInput extends Component {
   static propTypes = {
@@ -27,7 +27,7 @@ export default class EulerInput extends Component {
   };
 
   onChange = (x, y, z) => {
-    this.props.onChange(new THREE.Euler(x * DEG2RAD, y * DEG2RAD, z * DEG2RAD));
+    this.props.onChange(new Euler(x * DEG2RAD, y * DEG2RAD, z * DEG2RAD));
   };
 
   render() {

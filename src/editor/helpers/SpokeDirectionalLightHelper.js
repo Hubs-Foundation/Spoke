@@ -1,9 +1,11 @@
-import THREE from "../../vendor/three";
+import { Line, Object3D, BufferGeometry, LineBasicMaterial, Float32BufferAttribute } from "three";
 import { addIsHelperFlag } from "./utils";
 
-export default class SpokeDirectionalLightHelper extends THREE.Object3D {
+export default class SpokeDirectionalLightHelper extends Object3D {
   constructor(light, size, color) {
     super();
+
+    this.name = "SpokeDirectionalLightHelper";
 
     this.light = light;
 
@@ -11,25 +13,22 @@ export default class SpokeDirectionalLightHelper extends THREE.Object3D {
 
     if (size === undefined) size = 1;
 
-    let geometry = new THREE.BufferGeometry();
+    let geometry = new BufferGeometry();
     geometry.addAttribute(
       "position",
-      new THREE.Float32BufferAttribute(
-        [-size, size, 0, size, size, 0, size, -size, 0, -size, -size, 0, -size, size, 0],
-        3
-      )
+      new Float32BufferAttribute([-size, size, 0, size, size, 0, size, -size, 0, -size, -size, 0, -size, size, 0], 3)
     );
 
-    const material = new THREE.LineBasicMaterial({ fog: false });
+    const material = new LineBasicMaterial({ fog: false });
 
-    this.lightPlane = new THREE.Line(geometry, material);
+    this.lightPlane = new Line(geometry, material);
     this.lightPlane.layers.set(1);
     this.add(this.lightPlane);
 
-    geometry = new THREE.BufferGeometry();
-    geometry.addAttribute("position", new THREE.Float32BufferAttribute([0, 0, 0, 0, 0, 1], 3));
+    geometry = new BufferGeometry();
+    geometry.addAttribute("position", new Float32BufferAttribute([0, 0, 0, 0, 0, 1], 3));
 
-    this.targetLine = new THREE.Line(geometry, material);
+    this.targetLine = new Line(geometry, material);
     this.targetLine.layers.set(1);
     this.add(this.targetLine);
 

@@ -1,14 +1,14 @@
-import THREE from "../../vendor/three";
+import { Object3D, BoxBufferGeometry, Material, Mesh, BoxHelper } from "three";
 import EditorNodeMixin from "./EditorNodeMixin";
 
-export default class BoxColliderNode extends EditorNodeMixin(THREE.Object3D) {
+export default class BoxColliderNode extends EditorNodeMixin(Object3D) {
   static legacyComponentName = "box-collider";
 
   static nodeName = "Box Collider";
 
-  static _geometry = new THREE.BoxBufferGeometry();
+  static _geometry = new BoxBufferGeometry();
 
-  static _material = new THREE.Material();
+  static _material = new Material();
 
   static async deserialize(editor, json) {
     const node = await super.deserialize(editor, json);
@@ -21,23 +21,31 @@ export default class BoxColliderNode extends EditorNodeMixin(THREE.Object3D) {
   constructor(editor) {
     super(editor);
 
-    const boxMesh = new THREE.Mesh(BoxColliderNode._geometry, BoxColliderNode._material);
-    const box = new THREE.BoxHelper(boxMesh, 0x00ff00);
+    const boxMesh = new Mesh(BoxColliderNode._geometry, BoxColliderNode._material);
+    const box = new BoxHelper(boxMesh, 0x00ff00);
     box.layers.set(1);
     this.helper = box;
     this.add(box);
     this.walkable = false;
   }
 
-  copy(source, recursive) {
-    super.copy(source, false);
+  copy(source, recursive = true) {
+    if (recursive) {
+      this.remove(this.helper);
+    }
+
+    super.copy(source, recursive);
 
     if (recursive) {
-      for (const child of source.children) {
-        if (child !== this.helper) {
-          const clonedChild = child.clone();
-          this.add(clonedChild);
-        }
+      const helperIndex = source.children.indexOf(this.helper);
+
+      if (helperIndex !== -1) {
+        const boxMesh = new Mesh(BoxColliderNode._geometry, BoxColliderNode._material);
+        const box = new BoxHelper(boxMesh, 0x00ff00);
+        box.layers.set(1);
+        this.helper = box;
+        box.parent = this;
+        this.children.splice(helperIndex, 1, box);
       }
     }
 

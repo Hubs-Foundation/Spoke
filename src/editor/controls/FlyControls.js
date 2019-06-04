@@ -1,16 +1,16 @@
 import { Fly, FlyMapping } from "./input-mappings";
-import THREE from "../../vendor/three";
+import { Vector3, Matrix4, Quaternion, Math as _Math } from "three";
 
 const EPSILON = 10e-5;
-const UP = new THREE.Vector3(0, 1, 0);
-const parentInverse = new THREE.Matrix4();
-const IDENTITY = new THREE.Matrix4().identity();
-const vec = new THREE.Vector3();
-const quat = new THREE.Quaternion();
-const worldPos = new THREE.Vector3();
-const worldQuat = new THREE.Quaternion();
-const worldScale = new THREE.Vector3();
-const candidateWorldQuat = new THREE.Quaternion();
+const UP = new Vector3(0, 1, 0);
+const parentInverse = new Matrix4();
+const IDENTITY = new Matrix4().identity();
+const vec = new Vector3();
+const quat = new Quaternion();
+const worldPos = new Vector3();
+const worldQuat = new Quaternion();
+const worldScale = new Vector3();
+const candidateWorldQuat = new Quaternion();
 
 export default class FlyControls {
   constructor(camera, inputManager) {
@@ -20,8 +20,8 @@ export default class FlyControls {
     this.moveSpeed = 2;
     this.boostSpeed = 2;
     this.lookSensitivity = 10;
-    this.maxXRotation = THREE.Math.degToRad(80);
-    this.direction = new THREE.Vector3();
+    this.maxXRotation = _Math.degToRad(80);
+    this.direction = new Vector3();
 
     this.onMouseUp = e => {
       if (this.enabled && e.button === 2) {
