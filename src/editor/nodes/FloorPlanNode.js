@@ -299,6 +299,8 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
   prepareForExport() {
     super.prepareForExport();
 
+    this.remove(this.heightfieldMesh);
+
     const navMeshMaterial = this.navMesh.material;
     navMeshMaterial.transparent = true;
     navMeshMaterial.opacity = 0;
