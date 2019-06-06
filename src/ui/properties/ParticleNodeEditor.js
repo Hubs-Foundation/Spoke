@@ -29,6 +29,11 @@ export default class ParticleNodeEditor extends Component {
     this.props.editor.setNodeProperty(this.props.node, "range", range);
   };
 
+  onCommitRange = range => {
+    this.props.editor.setNodeProperty(this.props.node, "range", range);
+    this.props.node.rebuildGeometry();
+  };
+
   onChangeSize = size => {
     this.props.editor.setNodeProperty(this.props.node, "size", size);
   };
@@ -41,11 +46,30 @@ export default class ParticleNodeEditor extends Component {
     this.props.editor.setNodeProperty(this.props.node, "speed", speed);
   };
 
+  onChangeScatter = scatter => {
+    this.props.editor.setNodeProperty(this.props.node, "scatter", scatter);
+  };
+
+  onCommitScatter = scatter => {
+    this.props.editor.setNodeProperty(this.props.node, "scatter", scatter);
+    this.props.node.rebuildGeometry();
+  };
+
+  onCommitParticleCount = particleCount => {
+    this.props.editor.setNodeProperty(this.props.node, "particleCount", particleCount);
+    this.props.node.rebuildGeometry();
+  };
+
   onChangeParticleCount = particleCount => {
     this.props.editor.setNodeProperty(this.props.node, "particleCount", particleCount);
   };
 
+  onChangeLifeTime = lifeTime => {
+    this.props.editor.setNodeProperty(this.props.node, "lifeTime", lifeTime);
+  };
+
   render() {
+    //console.log(this.props.node.particleCount, this.props.node.range, this.props.node.size, this.props.node.speed);
     return (
       <NodeEditor {...this.props} description={ParticleNodeEditor.description}>
         <InputGroup name="Image">
@@ -65,6 +89,18 @@ export default class ParticleNodeEditor extends Component {
           largeStep={1}
           value={this.props.node.particleCount}
           onChange={this.onChangeParticleCount}
+          onCommit={this.onCommitParticleCount}
+          unit=""
+        />
+        <NumericInputGroup
+          name="Scatter"
+          min={0}
+          smallStep={0.01}
+          mediumStep={0.1}
+          largeStep={1}
+          value={this.props.node.scatter}
+          onChange={this.onChangeScatter}
+          onCommit={this.onCommitScatter}
           unit=""
         />
         <NumericInputGroup
@@ -75,11 +111,12 @@ export default class ParticleNodeEditor extends Component {
           largeStep={1}
           value={this.props.node.range}
           onChange={this.onChangeRange}
+          onCommit={this.onCommitRange}
           unit=""
         />
         <NumericInputGroup
           name="Size"
-          min={0.1}
+          min={0}
           smallStep={0.01}
           mediumStep={0.1}
           largeStep={1}
@@ -89,12 +126,22 @@ export default class ParticleNodeEditor extends Component {
         />
         <NumericInputGroup
           name="Speed"
-          min={0.1}
+          min={0}
           smallStep={0.01}
           mediumStep={0.1}
           largeStep={1}
           value={this.props.node.speed}
           onChange={this.onChangeSpeed}
+          unit=""
+        />
+        <NumericInputGroup
+          name="Lifetime"
+          min={0}
+          smallStep={0.01}
+          mediumStep={0.1}
+          largeStep={1}
+          value={this.props.node.lifeTime}
+          onChange={this.onChangeLifeTime}
           unit=""
         />
       </NodeEditor>

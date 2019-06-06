@@ -7,34 +7,33 @@ import spokeLogoSrc from "../../assets/spoke-icon.png";
 let defaultParticleSprite = null;
 
 const vertexShader = `
-attribute float size;
+      #define BASE_PARTICLE_SIZE 300.0
+
+      attribute float size;
       attribute vec3 customColor;
       attribute float age;
       varying float vAge;
-			//varying vec3 vColor;
 			void main() {
         //vColor = customColor;
         vAge = age;
 				vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
-				gl_PointSize = size * ( 300.0 / -mvPosition.z );
+				gl_PointSize = size * ( BASE_PARTICLE_SIZE / -mvPosition.z );
 				gl_Position = projectionMatrix * mvPosition;
       }
       `;
 
 const fragmentShader = `
-  uniform vec3 color;
-  //uniform float opacity;
+      uniform vec3 color;
 			uniform sampler2D texture;
-    //	varying vec3 vColor;
-    varying float vAge;
+      varying float vAge;
 			void main() {
+
         gl_FragColor = vec4( color , vAge );
-        vec2 uv = vec2 (gl_PointCoord.s, gl_PointCoord.t);
 				gl_FragColor = gl_FragColor * texture2D( texture, gl_PointCoord );
 			//	if ( gl_FragColor.a < ALPHATEST ) discard;
 			}
   `;
-const c = [] || "";
+
 export default class ParticleNode extends EditorNodeMixin(THREE.Points) {
   static legacyComponentName = "particle";
 
@@ -47,11 +46,12 @@ export default class ParticleNode extends EditorNodeMixin(THREE.Points) {
   static async deserialize(editor, json, loadAsync) {
     const node = await super.deserialize(editor, json);
 
-    const { src, color, range, size, idle, speed, particleCount } = json.components.find(
+    const { src, color, range, size, idle, speed, particleCount, lifeTime } = json.components.find(
       c => c.name === "particle"
     ).props;
 
     node.color.set(color);
+    node.lifeTime = lifeTime || 5; // use the bouding as life time, should be timed -1 later
     node.range = range || 5;
     node.size = size || 1;
     node.idle = idle || false;
@@ -67,6 +67,7 @@ export default class ParticleNode extends EditorNodeMixin(THREE.Points) {
         await node.load(src);
       })()
     );
+    node.rebuildGeometry();
 
     return node;
   }
@@ -85,48 +86,29 @@ export default class ParticleNode extends EditorNodeMixin(THREE.Points) {
     const material = new THREE.ShaderMaterial({
       uniforms: {
         color: { value: new THREE.Color(0xffffff) },
-        texture: { value: defaultParticleSprite },
-        opacity: { value: 0.5 }
+        texture: { value: defaultParticleSprite }
       },
       vertexShader,
       fragmentShader,
-      transparent: true
+      transparent: true,
+      blendEquation: THREE.AdditiveBlending
+      // TODO: Fix alpha parameters
     });
 
     super(editor, geometry, material);
 
     this.lastUpdated = 0;
     this._canonicalUrl = "";
-    this._range = 5;
-    this._scatter = [];
-    this._size = 1;
-    this._idle = false;
-    this._speed = 4;
+    this.range = 5;
+    this.initialPositions = [];
+    this.size = 1;
+    this.idle = false;
+    this._speed = 1;
     this._idleSpeed = 0.5;
-    this._pCount = 1000;
-
-    const positions = [];
-    const sizes = [];
-    const ages = [];
-
-    for (let i = 0; i < this._pCount; i++) {
-      this._scatter[i] = Math.random() * 5 - 1; // scattered position x
-      this._scatter[i + 1] = Math.random() * 5 - 1; // scattered position y
-      this._scatter[i + 2] = Math.random() * 5 - 1; // scattered position z
-
-      positions.push(this._scatter[i] * this._range);
-      positions.push(this._scatter[i + 1] * this._range);
-      positions.push(this._scatter[i + 2] * this._range);
-      sizes.push(this._size);
-      ages.push(0);
-    }
-    this.geometry.addAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
-    this.geometry.addAttribute("age", new THREE.Float32BufferAttribute(ages, 1).setDynamic(true));
-    this.geometry.addAttribute("size", new THREE.Float32BufferAttribute(sizes, 1).setDynamic(true));
-
-    for (let i = 0; i < 3 * this._pCount; i++) {
-      c[i] = this.geometry.attributes.position.array[i];
-    }
+    this.particleCount = 100;
+    this.lifeTime = 10;
+    this.scatter = 5;
+    this.rebuildGeometry();
   }
 
   get color() {
@@ -141,54 +123,29 @@ export default class ParticleNode extends EditorNodeMixin(THREE.Points) {
     this.load(value).catch(console.error);
   }
 
-  get range() {
-    return this._range;
-  }
+  rebuildGeometry() {
+    const tempGeo = new THREE.BufferGeometry();
+    const positions = [];
+    const sizes = [];
+    const ages = [];
+    const initialPositions = [];
 
-  get particleCount() {
-    return this._pCount;
-  }
+    for (let i = 0; i < this.particleCount; i++) {
+      initialPositions[i] = this.scatter * (Math.random() * 2 - 1); // X
+      initialPositions[i + 1] = this.scatter * (Math.random() * 2 - 1); // Y
+      initialPositions[i + 2] = this.scatter * (Math.random() * 2 - 1); // Z
 
-  set particleCount(num) {
-    this._pCount = num;
-
-    const positions = [] || "";
-    const sizes = [] || "";
-    for (let i = 0; i < this._pCount; i++) {
-      positions.push(this._scatter[i] * this.range);
-      positions.push(this._scatter[i + 1] * this.range);
-      positions.push(this._scatter[i + 2] * this.range);
-      sizes.push(this._size);
+      positions.push(initialPositions[i] * this.scatter);
+      positions.push(initialPositions[i + 1] * this.scatter);
+      positions.push(initialPositions[i + 2] * this.scatter);
+      sizes.push(this.size);
+      ages.push(0);
     }
-
-    this.geometry.addAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
-    this.geometry.addAttribute("size", new THREE.Float32BufferAttribute(sizes, 1).setDynamic(true));
-  }
-
-  set range(range) {
-    this._range = range;
-    const positions = [] || "";
-    for (let i = 0; i < this._pCount; i++) {
-      positions.push(this._scatter[i] * this._range);
-      positions.push(this._scatter[i + 1] * this._range);
-      positions.push(this._scatter[i + 2] * this._range);
-    }
-    this.geometry.addAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
-    //console.log("set range to " + this._range);
-  }
-
-  get size() {
-    return this._size;
-  }
-
-  set size(size) {
-    this._size = size;
-    const sizes = [] || "";
-    for (let i = 0; i < this._pCount; i++) {
-      sizes.push(this._size);
-    }
-    this.geometry.addAttribute("size", new THREE.Float32BufferAttribute(sizes, 1).setDynamic(true));
-    console.log("set size to " + this._size);
+    tempGeo.addAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
+    tempGeo.addAttribute("age", new THREE.Float32BufferAttribute(ages, 1).setDynamic(true));
+    tempGeo.addAttribute("size", new THREE.Float32BufferAttribute(sizes, 1).setDynamic(true));
+    this.geometry = tempGeo;
+    this.initialPositions = initialPositions;
   }
 
   get idle() {
@@ -238,38 +195,56 @@ export default class ParticleNode extends EditorNodeMixin(THREE.Points) {
   onUpdate(dt, time) {
     const position = this.geometry.attributes.position.array;
     const age = this.geometry.attributes.age.array;
-    // console.log("p count " + this._pCount);
-    for (let i = 0; i < 3 * this._pCount; i++) {
+    const lifeTime = this.lifeTime * -1; // turm it to actual position, which is negetive
+    const tempPos = [];
+    const tempScatter = [];
+    let count = 0;
+    for (let i = 0; i < 3 * this.particleCount; i++) {
       const check = (i - 1) % 3;
       if (check == 0) {
         const t = dt * 10;
 
         if (this._idle) {
-          position[i] = this.range * (c[i] + this._idleSpeed * Math.sin(0.4 * i + time)); // jellyfish
+          position[i] = this.scatter * (this.initialPositions[i] + this._idleSpeed * Math.sin(0.4 * i + time)); // jellyfish
         } else {
-          position[i] += this.speed * t * t * this.range;
+          position[i] -= this.speed * t; // * -1 for default particle falling behaviour
 
-          if (position[i] > 5) {
-            position[i] = this._scatter[i] * this.range;
+          if (position[i] < lifeTime) {
+            position[i] = this.initialPositions[i]; // * this.range;
           }
         }
-        age[i] = 1 - (5 - position[i]) / 5;
+        //tempPos.push(position[i]); //position 是原来的ARRAY, temppos是新的ARRAY
+        //tempScatter.push(this.scatter[i]);
+        tempPos[count] = position[i];
+        tempScatter[count] = this.initialPositions[i];
+        count++;
+
+        //age[i] = 1 - (this.lifeTime - position[i]) / this.lifeTime; // normalized age, oldest euquals to 0
 
         // if (position[i] < -10) {
         //   position[i] = this._scatter[i] * this.range;
         // }
       }
     }
+    count = 0;
     const sizes = this.geometry.attributes.size.array;
-    for (let i = 0; i < this._pCount; i++) {
+    for (let i = 0; i < this.particleCount; i++) {
       if (this._idle) {
-        sizes[i] = this._size + this._idleSpeed * 5 * Math.sin(0.1 * i + time);
+        sizes[i] = this.size + this._idleSpeed * 5 * Math.sin(0.1 * i + time);
+        age[i] = 1;
       } else {
-        sizes[i] = this._size;
+        sizes[i] = this.size;
+        age[i] = 1;
+        // age[i] = (this.lifeTime + tempPos[i]) / (this.lifeTime - tempScatter[i]);
       }
+
+      // normalized age, oldest euquals to 0
+      //console.log("age 10 " + age[10]);
       //sizes[i] = 2 + 0.5 * Math.sin(0.1 * i + time);
       //sizes[i] = 1;
     }
+    //tempPos = [];
+    //tempScatter = [];
 
     if (time - this.lastUpdated > 2) {
       //this.material.uniforms.color.value.setRGB(Math.random(), Math.random(), Math.random());
@@ -289,7 +264,8 @@ export default class ParticleNode extends EditorNodeMixin(THREE.Points) {
         size: this.size,
         idle: this.idle,
         speed: this.speed,
-        particleCount: this.particleCount
+        particleCount: this.particleCount,
+        lifeTime: this.lifeTime
 
         //particleSystem: this.particleSystem
       }
