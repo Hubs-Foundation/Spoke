@@ -233,7 +233,9 @@ export default class Video extends Object3D {
 
   loadVideo(src, contentType) {
     return new Promise((resolve, reject) => {
-      if (isHLS(src, contentType)) {
+      const _isHLS = isHLS(src, contentType);
+
+      if (_isHLS) {
         if (!this.hls) {
           this.hls = new Hls();
         }
@@ -264,6 +266,9 @@ export default class Video extends Object3D {
         this.videoEl.removeEventListener("error", onError);
       };
 
+      if (_isHLS) {
+        this.hls.on(Hls.Events.ERROR, onError);
+      }
       this.videoEl.addEventListener("loadeddata", onLoadedMetadata);
       this.videoEl.addEventListener("error", onError);
     });
