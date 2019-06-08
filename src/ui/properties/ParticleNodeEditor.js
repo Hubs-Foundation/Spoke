@@ -25,51 +25,56 @@ export default class ParticleNodeEditor extends Component {
     this.props.editor.setNodeProperty(this.props.node, "src", src);
   };
 
-  onChangeRange = range => {
-    this.props.editor.setNodeProperty(this.props.node, "range", range);
-  };
-
-  onCommitRange = range => {
-    this.props.editor.setNodeProperty(this.props.node, "range", range);
-    this.props.node.rebuildGeometry();
-  };
-
   onChangeSize = size => {
     this.props.editor.setNodeProperty(this.props.node, "size", size);
   };
 
-  onChangeIdle = idle => {
-    this.props.editor.setNodeProperty(this.props.node, "idle", idle);
-  };
-
-  onChangeSpeed = speed => {
-    this.props.editor.setNodeProperty(this.props.node, "speed", speed);
-  };
-
-  onChangeScatter = scatter => {
-    this.props.editor.setNodeProperty(this.props.node, "scatter", scatter);
-  };
-
-  onCommitScatter = scatter => {
-    this.props.editor.setNodeProperty(this.props.node, "scatter", scatter);
-    this.props.node.rebuildGeometry();
+  onChangeVelocity = velocity => {
+    this.props.editor.setNodeProperty(this.props.node, "velocity", velocity);
   };
 
   onCommitParticleCount = particleCount => {
     this.props.editor.setNodeProperty(this.props.node, "particleCount", particleCount);
-    this.props.node.rebuildGeometry();
+    this.props.node.createParticle();
   };
 
   onChangeParticleCount = particleCount => {
     this.props.editor.setNodeProperty(this.props.node, "particleCount", particleCount);
   };
 
+  onCommitEmitterHeight = emitterHeight => {
+    this.props.editor.setNodeProperty(this.props.node, "emitterHeight", emitterHeight);
+    this.props.node.createParticle();
+  };
+
+  onChangeEmitterHeight = emitterHeight => {
+    this.props.editor.setNodeProperty(this.props.node, "emitterHeight", emitterHeight);
+  };
+
+  onCommitEmitterWidth = emitterWidth => {
+    this.props.editor.setNodeProperty(this.props.node, "emitterWidth", emitterWidth);
+    this.props.node.createParticle();
+  };
+
+  onChangeEmitterWidth = emitterWidth => {
+    this.props.editor.setNodeProperty(this.props.node, "emitterWidth", emitterWidth);
+  };
+
   onChangeLifeTime = lifeTime => {
     this.props.editor.setNodeProperty(this.props.node, "lifeTime", lifeTime);
   };
 
+  onChangelifeTimeRandomnessRate = lifeTimeRandomnessRate => {
+    this.props.editor.setNodeProperty(this.props.node, "lifeTimeRandomnessRate", lifeTimeRandomnessRate);
+  };
+
+  onCommitlifeTimeRandomnessRate = lifeTimeRandomnessRate => {
+    this.props.editor.setNodeProperty(this.props.node, "lifeTimeRandomnessRate", lifeTimeRandomnessRate);
+    this.props.node.createParticle();
+  };
+
   render() {
-    //console.log(this.props.node.particleCount, this.props.node.range, this.props.node.size, this.props.node.speed);
+    //console.log(this.props.node);
     return (
       <NodeEditor {...this.props} description={ParticleNodeEditor.description}>
         <InputGroup name="Image">
@@ -93,25 +98,25 @@ export default class ParticleNodeEditor extends Component {
           unit=""
         />
         <NumericInputGroup
-          name="Scatter"
+          name="Emitter Height"
           min={0}
           smallStep={0.01}
           mediumStep={0.1}
           largeStep={1}
-          value={this.props.node.scatter}
-          onChange={this.onChangeScatter}
-          onCommit={this.onCommitScatter}
+          value={this.props.node.emitterHeight}
+          onChange={this.onChangeEmitterHeight}
+          onCommit={this.onCommitEmitterHeight}
           unit=""
         />
         <NumericInputGroup
-          name="Range"
+          name="Emitter Width"
           min={0}
           smallStep={0.01}
           mediumStep={0.1}
           largeStep={1}
-          value={this.props.node.range}
-          onChange={this.onChangeRange}
-          onCommit={this.onCommitRange}
+          value={this.props.node.emitterWidth}
+          onChange={this.onChangeEmitterWidth}
+          onCommit={this.onCommitEmitterWidth}
           unit=""
         />
         <NumericInputGroup
@@ -125,13 +130,13 @@ export default class ParticleNodeEditor extends Component {
           unit=""
         />
         <NumericInputGroup
-          name="Speed"
+          name="Velocity"
           min={0}
           smallStep={0.01}
           mediumStep={0.1}
           largeStep={1}
-          value={this.props.node.speed}
-          onChange={this.onChangeSpeed}
+          value={this.props.node.velocity}
+          onChange={this.onChangeVelocity}
           unit=""
         />
         <NumericInputGroup
@@ -142,6 +147,18 @@ export default class ParticleNodeEditor extends Component {
           largeStep={1}
           value={this.props.node.lifeTime}
           onChange={this.onChangeLifeTime}
+          unit=""
+        />
+
+        <NumericInputGroup
+          name="Lifetime Randomness"
+          min={0}
+          smallStep={0.01}
+          mediumStep={0.1}
+          largeStep={1}
+          value={this.props.node.lifeTimeRandomnessRate}
+          onChange={this.onChangelifeTimeRandomnessRate}
+          //onCommit={this.onCommitlifeTimeRandomnessRate}
           unit=""
         />
       </NodeEditor>
