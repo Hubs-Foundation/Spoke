@@ -5,7 +5,7 @@ import ColorInput from "../inputs/ColorInput";
 import InputGroup from "../inputs/InputGroup";
 import ImageInput from "../inputs/ImageInput";
 import NumericInputGroup from "../inputs/NumericInputGroup";
-import BooleanInput from "../inputs/BooleanInput";
+import Vector3Input from "../inputs/Vector3Input";
 
 export default class ParticleNodeEditor extends Component {
   static propTypes = {
@@ -19,6 +19,7 @@ export default class ParticleNodeEditor extends Component {
 
   onChangeColor = color => {
     this.props.editor.setNodeProperty(this.props.node, "color", color);
+    this.props.node.colorNeedsUpdate = true;
   };
 
   onChangeSrc = src => {
@@ -60,16 +61,21 @@ export default class ParticleNodeEditor extends Component {
     this.props.editor.setNodeProperty(this.props.node, "emitterWidth", emitterWidth);
   };
 
-  onChangeLifeTime = lifeTime => {
-    this.props.editor.setNodeProperty(this.props.node, "lifeTime", lifeTime);
+  onChangeLifetime = lifetime => {
+    this.props.editor.setNodeProperty(this.props.node, "lifetime", lifetime);
   };
 
-  onChangelifeTimeRandomnessRate = lifeTimeRandomnessRate => {
-    this.props.editor.setNodeProperty(this.props.node, "lifeTimeRandomnessRate", lifeTimeRandomnessRate);
+  onCommitLifetime = lifetime => {
+    this.props.editor.setNodeProperty(this.props.node, "lifetime", lifetime);
+    this.props.node.createParticle();
   };
 
-  onCommitlifeTimeRandomnessRate = lifeTimeRandomnessRate => {
-    this.props.editor.setNodeProperty(this.props.node, "lifeTimeRandomnessRate", lifeTimeRandomnessRate);
+  onChangeLifetimeRandomness = lifetimeRandomness => {
+    this.props.editor.setNodeProperty(this.props.node, "lifetimeRandomness", lifetimeRandomness);
+  };
+
+  onCommitLifetimeRandomness = lifetimeRandomness => {
+    this.props.editor.setNodeProperty(this.props.node, "lifetimeRandomness", lifetimeRandomness);
     this.props.node.createParticle();
   };
 
@@ -82,9 +88,6 @@ export default class ParticleNodeEditor extends Component {
         </InputGroup>
         <InputGroup name="Color">
           <ColorInput value={this.props.node.color} onChange={this.onChangeColor} />
-        </InputGroup>
-        <InputGroup name="Idle">
-          <BooleanInput value={this.props.node.idle} onChange={this.onChangeIdle} />
         </InputGroup>
         <NumericInputGroup
           name="Particle Count"
@@ -129,24 +132,24 @@ export default class ParticleNodeEditor extends Component {
           onChange={this.onChangeSize}
           unit=""
         />
-        <NumericInputGroup
-          name="Velocity"
-          min={0}
-          smallStep={0.01}
-          mediumStep={0.1}
-          largeStep={1}
-          value={this.props.node.velocity}
-          onChange={this.onChangeVelocity}
-          unit=""
-        />
+        <InputGroup name="Velocity">
+          <Vector3Input
+            value={this.props.node.velocity}
+            smallStep={0.01}
+            mediumStep={0.1}
+            largeStep={1}
+            onChange={this.onChangeVelocity}
+          />
+        </InputGroup>
         <NumericInputGroup
           name="Lifetime"
           min={0}
           smallStep={0.01}
           mediumStep={0.1}
           largeStep={1}
-          value={this.props.node.lifeTime}
-          onChange={this.onChangeLifeTime}
+          value={this.props.node.lifetime}
+          onChange={this.onChangeLifetime}
+          onCommit={this.onCommitLifetime}
           unit=""
         />
 
@@ -156,9 +159,9 @@ export default class ParticleNodeEditor extends Component {
           smallStep={0.01}
           mediumStep={0.1}
           largeStep={1}
-          value={this.props.node.lifeTimeRandomnessRate}
-          onChange={this.onChangelifeTimeRandomnessRate}
-          //onCommit={this.onCommitlifeTimeRandomnessRate}
+          value={this.props.node.lifetimeRandomness}
+          onChange={this.onChangeLifetimeRandomness}
+          onCommit={this.onCommitLifetimeRandomness}
           unit=""
         />
       </NodeEditor>
