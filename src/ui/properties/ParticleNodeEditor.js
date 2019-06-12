@@ -4,8 +4,10 @@ import NodeEditor from "./NodeEditor";
 import ColorInput from "../inputs/ColorInput";
 import InputGroup from "../inputs/InputGroup";
 import ImageInput from "../inputs/ImageInput";
+import CompoundNumericInput from "../inputs/CompoundNumericInput";
 import NumericInputGroup from "../inputs/NumericInputGroup";
 import Vector3Input from "../inputs/Vector3Input";
+import PropertyGroup from "./PropertyGroup";
 
 export default class ParticleNodeEditor extends Component {
   static propTypes = {
@@ -17,9 +19,20 @@ export default class ParticleNodeEditor extends Component {
 
   static description = "Particles with maximum number 1000.";
 
-  onChangeColor = color => {
-    this.props.editor.setNodeProperty(this.props.node, "color", color);
-    this.props.node.colorNeedsUpdate = true;
+  onChangeStartColor = startColor => {
+    this.props.editor.setNodeProperty(this.props.node, "startColor", startColor);
+  };
+
+  onChangeEndColor = endColor => {
+    this.props.editor.setNodeProperty(this.props.node, "endColor", endColor);
+  };
+
+  onChangeStartaOpacity = startOpacity => {
+    this.props.editor.setNodeProperty(this.props.node, "startOpacity", startOpacity);
+  };
+
+  onChangeEndOpacity = endOpacity => {
+    this.props.editor.setNodeProperty(this.props.node, "endOpacity", endOpacity);
   };
 
   onChangeSrc = src => {
@@ -86,9 +99,34 @@ export default class ParticleNodeEditor extends Component {
         <InputGroup name="Image">
           <ImageInput value={this.props.node.src} onChange={this.onChangeSrc} />
         </InputGroup>
-        <InputGroup name="Color">
-          <ColorInput value={this.props.node.color} onChange={this.onChangeColor} />
+
+        <InputGroup name="Start Color">
+          <ColorInput value={this.props.node.startColor} onChange={this.onChangeStartColor} />
         </InputGroup>
+        <InputGroup name="Start Opacity">
+          <CompoundNumericInput
+            min={0}
+            max={1}
+            step={0.01}
+            precision={0.01}
+            value={this.props.node.startOpacity}
+            onChange={this.onChangeStartaOpacity}
+          />
+        </InputGroup>
+        <InputGroup name="End Color">
+          <ColorInput value={this.props.node.endColor} onChange={this.onChangeEndColor} />
+        </InputGroup>
+        <InputGroup name="End Opacity">
+          <CompoundNumericInput
+            min={0}
+            max={1}
+            step={0.01}
+            precision={0.01}
+            value={this.props.node.endOpacity}
+            onChange={this.onChangeEndOpacity}
+          />
+        </InputGroup>
+
         <NumericInputGroup
           name="Particle Count"
           min={1}
