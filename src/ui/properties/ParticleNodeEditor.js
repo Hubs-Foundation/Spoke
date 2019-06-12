@@ -7,7 +7,6 @@ import ImageInput from "../inputs/ImageInput";
 import CompoundNumericInput from "../inputs/CompoundNumericInput";
 import NumericInputGroup from "../inputs/NumericInputGroup";
 import Vector3Input from "../inputs/Vector3Input";
-import PropertyGroup from "./PropertyGroup";
 
 export default class ParticleNodeEditor extends Component {
   static propTypes = {
