@@ -7,6 +7,22 @@ import ImageInput from "../inputs/ImageInput";
 import CompoundNumericInput from "../inputs/CompoundNumericInput";
 import NumericInputGroup from "../inputs/NumericInputGroup";
 import Vector3Input from "../inputs/Vector3Input";
+import SelectInput from "../inputs/SelectInput";
+
+const CurveOptions = [
+  {
+    label: "Linear",
+    value: 0
+  },
+  {
+    label: "Power",
+    value: 1
+  },
+  {
+    label: "Smoothstep",
+    value: 2
+  }
+];
 
 export default class ParticleNodeEditor extends Component {
   static propTypes = {
@@ -17,6 +33,10 @@ export default class ParticleNodeEditor extends Component {
   static iconClassName = "fa-spray-can";
 
   static description = "Particles with maximum number 1000.";
+
+  onChangeCurve = curve => {
+    this.props.editor.setNodeProperty(this.props.node, "curve", curve);
+  };
 
   onChangeStartColor = startColor => {
     this.props.editor.setNodeProperty(this.props.node, "startColor", startColor);
@@ -98,7 +118,9 @@ export default class ParticleNodeEditor extends Component {
         <InputGroup name="Image">
           <ImageInput value={this.props.node.src} onChange={this.onChangeSrc} />
         </InputGroup>
-
+        <InputGroup name=" Curve">
+          <SelectInput options={CurveOptions} value={this.props.node.curve} onChange={this.onChangeCurve} />
+        </InputGroup>
         <InputGroup name="Start Color">
           <ColorInput value={this.props.node.startColor} onChange={this.onChangeStartColor} />
         </InputGroup>

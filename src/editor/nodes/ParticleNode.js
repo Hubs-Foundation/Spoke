@@ -16,15 +16,18 @@ const vertexShader = `
 
       attribute vec4 color;
       attribute vec4 position;
+      //attribute bool prewarm;
 
       varying vec4 vColor;
       varying float vPosZ;
+      //varyung bool vPrewarm;
 
       
 
 			void main() {
         vPosZ = position.z;
         vColor = color;
+       // vPrewarm = prewarm;
     
 				vec4 mvPosition = modelViewMatrix * vec4( position.xyz, 1.0 );
 				gl_PointSize = position.w * ( BASE_PARTICLE_SIZE / -mvPosition.z );
@@ -39,6 +42,7 @@ const fragmentShader = `
 
       varying vec4 vColor;
       varying float vPosZ;
+      //varying bool vPrewarm;
       
       vec4 colorB = vec4(1.000,0.833,0.224,1.0);
 
@@ -47,8 +51,11 @@ const fragmentShader = `
         //vec4 temoColor = vec4(0.0);
        // temoColor = mix(vColor, colorB, a);
         gl_FragColor = vColor; //vec4(temoColor.rgb, 1.0);
-				gl_FragColor = gl_FragColor * texture2D( texture, gl_PointCoord );
-				if ( vPosZ < 0.0 || gl_FragColor.a < 0.001) discard;
+        gl_FragColor = gl_FragColor * texture2D( texture, gl_PointCoord );
+        
+        if ( vPosZ < -0.1) discard;
+        
+				
 			}
   `;
 
@@ -66,6 +73,8 @@ export default class ParticleNode extends EditorNodeMixin(THREE.Points) {
 
     const {
       src,
+      prewarm,
+      curve,
       startColor,
       endColor,
       startOpacity,
@@ -81,6 +90,8 @@ export default class ParticleNode extends EditorNodeMixin(THREE.Points) {
 
     node.startColor.set(startColor);
     node.endColor.set(endColor);
+    node.curve = curve;
+    node.prewarm = prewarm;
     node.startOpacity = startOpacity || 1;
     node.endOpacity = endOpacity || 1;
     node.emitterHeight = emitterHeight || 1;
@@ -119,6 +130,7 @@ export default class ParticleNode extends EditorNodeMixin(THREE.Points) {
       vertexShader,
       fragmentShader,
       transparent: true,
+      depthWrite: false,
       blendEquation: THREE.AdditiveBlending
       // TODO: Fix alpha parameters
     });
@@ -137,13 +149,15 @@ export default class ParticleNode extends EditorNodeMixin(THREE.Points) {
     this.lifetime = 5;
     this.lifetimes = [];
     this.lifetimeRandomness = 5;
-    this.ageRandomness = Math.random();
+    this.ageRandomness = 5;
     this.ages = [];
     this.colors = [];
     this.endColor = new THREE.Color();
     this.startColor = new THREE.Color();
     this.startOpacity = 1;
     this.endOpacity = 0;
+    this.prewarm = false;
+    this.curve = 0;
     this.createParticle();
   }
 
@@ -163,14 +177,15 @@ export default class ParticleNode extends EditorNodeMixin(THREE.Points) {
     const ages = [];
     const initialAges = [];
     const initialPositions = [];
+
     for (let i = 0; i < this.particleCount; i++) {
       initialAges[i] = ages[i] = Math.random() * this.ageRandomness - this.ageRandomness;
       lifetimes[i] = this.lifetime + Math.random() * 2 * this.lifetimeRandomness;
 
       initialPositions[i] = this.emitterWidth * (Math.random() * 2 - 1); // x
       initialPositions[i + 1] = this.emitterHeight * (Math.random() * 2 - 1); // Y
-      initialPositions[i + 2] =
-        Math.random() * (this.lifetime - initialAges[i]) * 2 - (this.lifetime - initialAges[i]) * 2; // Z
+      initialPositions[i + 2] = 0; // Z
+      //Math.random() * (this.lifetime - initialAges[i]) * 2 - (this.lifetime - initialAges[i]) * 2;
 
       positions.push(initialPositions[i]);
       positions.push(initialPositions[i + 1]);
@@ -220,8 +235,10 @@ export default class ParticleNode extends EditorNodeMixin(THREE.Points) {
     const color = this.geometry.attributes.color.array;
     const colorFactor = [] || 0;
     const opacityFactor = [] || 0;
+
     for (let i = 0; i < this.particleCount; i++) {
       this.ages[i] += dt;
+      position[i * 4 + 3] = this.size;
 
       if (this.ages[i] < 0) {
         color[i * 4] = this.startColor.r;
@@ -236,7 +253,7 @@ export default class ParticleNode extends EditorNodeMixin(THREE.Points) {
         opacityFactor[i] = 0;
         position[i * 4] = this.initialPositions[i * 3];
         position[i * 4 + 1] = this.initialPositions[i * 3 + 1];
-        position[i * 4 + 2] = this.initialPositions[i * 3 + 2];
+        position[i * 4 + 2] = -1; //this.initialPositions[i * 3 + 2];
         this.ages[i] = this.initialAges[i];
 
         continue;
@@ -253,6 +270,17 @@ export default class ParticleNode extends EditorNodeMixin(THREE.Points) {
       colorFactor[i] = position[i * 4 + 2] / (this.lifetimes[i] - this.initialAges[i] + 0.2); // color colorFactor
       opacityFactor[i] = position[i * 4 + 2] / (this.lifetimes[i] - this.initialAges[i] + 0.2);
 
+      switch (this.curve) {
+        case 0:
+          break;
+        case 1:
+          colorFactor[i] = Math.pow(colorFactor[i], 0.6);
+          break;
+        case 2:
+          colorFactor[i] = this.smoothstep(0.0, 1.0, colorFactor[i]);
+          break;
+      }
+
       color[i * 4] = this.gradient(this.startColor.r, this.endColor.r, colorFactor[i]);
       color[i * 4 + 1] = this.gradient(this.startColor.g, this.endColor.g, colorFactor[i]);
       color[i * 4 + 2] = this.gradient(this.startColor.b, this.endColor.b, colorFactor[i]);
@@ -265,6 +293,17 @@ export default class ParticleNode extends EditorNodeMixin(THREE.Points) {
 
   gradient(start, end, a) {
     return (end - start) * a + start;
+  }
+
+  smoothstep(min, max, x) {
+    x = this.clamp((x - min) / (max - min), 0.0, 1.0);
+    return x * x * (3 - 2 * x);
+  }
+
+  clamp(x, min, max) {
+    if (x < min) x = min;
+    if (x > max) x = max;
+    return x;
   }
 
   serialize() {
@@ -281,7 +320,8 @@ export default class ParticleNode extends EditorNodeMixin(THREE.Points) {
         velocity: this.velocity,
         particleCount: this.particleCount,
         lifetime: this.lifetime,
-        lifetimeRandomness: this.lifetimeRandomness
+        lifetimeRandomness: this.lifetimeRandomness,
+        curve: this.curve
       }
     });
   }
