@@ -190,8 +190,7 @@ export default class ParticleNode extends EditorNodeMixin(THREE.Points) {
 
       initialPositions[i] = this.emitterWidth * (Math.random() * 2 - 1); // x
       initialPositions[i + 1] = this.emitterHeight * (Math.random() * 2 - 1); // Y
-      initialPositions[i + 2] = -1; // Z
-      //Math.random() * (this.lifetime - initialAges[i]) * 2 - (this.lifetime - initialAges[i]) * 2;
+      initialPositions[i + 2] = 0; // Z
 
       positions.push(initialPositions[i]);
       positions.push(initialPositions[i + 1]);
