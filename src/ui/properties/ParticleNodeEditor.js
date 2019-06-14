@@ -42,12 +42,20 @@ export default class ParticleNodeEditor extends Component {
     this.props.editor.setNodeProperty(this.props.node, "startColor", startColor);
   };
 
+  onChangeMiddleColor = middleColor => {
+    this.props.editor.setNodeProperty(this.props.node, "middleColor", middleColor);
+  };
+
   onChangeEndColor = endColor => {
     this.props.editor.setNodeProperty(this.props.node, "endColor", endColor);
   };
 
-  onChangeStartaOpacity = startOpacity => {
+  onChangeStartOpacity = startOpacity => {
     this.props.editor.setNodeProperty(this.props.node, "startOpacity", startOpacity);
+  };
+
+  onChangeMiddleOpacity = middleOpacity => {
+    this.props.editor.setNodeProperty(this.props.node, "middleOpacity", middleOpacity);
   };
 
   onChangeEndOpacity = endOpacity => {
@@ -118,7 +126,7 @@ export default class ParticleNodeEditor extends Component {
         <InputGroup name="Image">
           <ImageInput value={this.props.node.src} onChange={this.onChangeSrc} />
         </InputGroup>
-        <InputGroup name=" Curve">
+        <InputGroup name="Color Curve">
           <SelectInput options={CurveOptions} value={this.props.node.curve} onChange={this.onChangeCurve} />
         </InputGroup>
         <InputGroup name="Start Color">
@@ -131,7 +139,20 @@ export default class ParticleNodeEditor extends Component {
             step={0.01}
             precision={0.01}
             value={this.props.node.startOpacity}
-            onChange={this.onChangeStartaOpacity}
+            onChange={this.onChangeStartOpacity}
+          />
+        </InputGroup>
+        <InputGroup name="Middle Color">
+          <ColorInput value={this.props.node.middleColor} onChange={this.onChangeMiddleColor} />
+        </InputGroup>
+        <InputGroup name="Middle Opacity">
+          <CompoundNumericInput
+            min={0}
+            max={1}
+            step={0.01}
+            precision={0.01}
+            value={this.props.node.middleOpacity}
+            onChange={this.onChangeMiddleOpacity}
           />
         </InputGroup>
         <InputGroup name="End Color">
