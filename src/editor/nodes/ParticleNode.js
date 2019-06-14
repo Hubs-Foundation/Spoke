@@ -100,7 +100,7 @@ export default class ParticleNode extends EditorNodeMixin(THREE.Points) {
     node.endOpacity = endOpacity || 1;
     node.emitterHeight = emitterHeight || 1;
     node.emitterWidth = emitterWidth || 1;
-    node.lifetime = lifetime || 5; // use the bouding as life time, should be timed -1 later
+    node.lifetime = lifetime || 5;
     node.size = size || 1;
     node.lifetimeRandomness = lifetimeRandomness || 5;
     node.particleCount = particleCount || 1000;
