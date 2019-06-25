@@ -246,7 +246,6 @@ export default class ParticleNode extends EditorNodeMixin(THREE.Points) {
     const position = this.geometry.attributes.position.array;
     const color = this.geometry.attributes.color.array;
     const colorFactor = [] || 0;
-    const opacityFactor = [] || 0;
 
     const velFactor = [] || 1;
 
