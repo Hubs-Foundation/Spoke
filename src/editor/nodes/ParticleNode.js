@@ -47,9 +47,6 @@ const fragmentShader = `
       vec4 colorB = vec4(1.000,0.833,0.224,1.0);
 
       void main() {
-        //float a = vColor.a;
-        //vec4 temoColor = vec4(0.0);
-       // temoColor = mix(vColor, colorB, a);
         gl_FragColor = vColor; //vec4(temoColor.rgb, 1.0);
         gl_FragColor = gl_FragColor * texture2D( texture, gl_PointCoord );
         
@@ -74,7 +71,8 @@ export default class ParticleNode extends EditorNodeMixin(THREE.Points) {
     const {
       src,
       prewarm,
-      curve,
+      colorCurve,
+      velocityCurve,
       startColor,
       middleColor,
       endColor,
@@ -93,7 +91,8 @@ export default class ParticleNode extends EditorNodeMixin(THREE.Points) {
     node.startColor.set(startColor);
     node.middleColor.set(middleColor);
     node.endColor.set(endColor);
-    node.curve = curve;
+    node.colorCurve = colorCurve;
+    node.velocityCurve = velocityCurve;
     node.prewarm = prewarm;
     node.startOpacity = startOpacity || 1;
     node.middleOpacity = middleOpacity || 1;
@@ -136,7 +135,6 @@ export default class ParticleNode extends EditorNodeMixin(THREE.Points) {
       transparent: true,
       depthWrite: false,
       blendEquation: THREE.AdditiveBlending
-      // TODO: Fix alpha parameters
     });
 
     super(editor, geometry, material);
@@ -148,6 +146,7 @@ export default class ParticleNode extends EditorNodeMixin(THREE.Points) {
     this.emitterWidth = 1;
     this.initialPositions = [];
     this.size = 1;
+    this.velocities = [];
     this.velocity = new THREE.Vector3(0, 0, 0.5);
     this.particleCount = 100;
     this.lifetime = 5;
@@ -163,7 +162,8 @@ export default class ParticleNode extends EditorNodeMixin(THREE.Points) {
     this.middleOpacity = 1;
     this.endOpacity = 1;
     this.prewarm = false;
-    this.curve = 0;
+    this.colorCurve = 0;
+    this.velocityCurve = 0;
     this.createParticle();
   }
 
@@ -183,6 +183,7 @@ export default class ParticleNode extends EditorNodeMixin(THREE.Points) {
     const ages = [];
     const initialAges = [];
     const initialPositions = [];
+    //const initialVelocities = [];
 
     for (let i = 0; i < this.particleCount; i++) {
       initialAges[i] = ages[i] = Math.random() * this.ageRandomness - this.ageRandomness;
@@ -196,6 +197,11 @@ export default class ParticleNode extends EditorNodeMixin(THREE.Points) {
       positions.push(initialPositions[i + 1]);
       positions.push(initialPositions[i + 2]);
       positions.push(this.size);
+
+      // initialVelocities.push(this.velocity.x);
+      // initialVelocities.push(this.velocity.y);
+      // initialVelocities.push(this.velocity.z);
+      //console.log("initial vel: " + this.velocity);
 
       colors.push(this.startColor.r);
       colors.push(this.startColor.g);
@@ -211,8 +217,9 @@ export default class ParticleNode extends EditorNodeMixin(THREE.Points) {
     this.initialAges = initialAges;
     this.lifetimes = lifetimes;
     this.colors = colors;
+    //this.velocities = initialVelocities;
 
-    console.log(this);
+    //console.log(this);
   }
 
   async load(src) {
@@ -241,8 +248,13 @@ export default class ParticleNode extends EditorNodeMixin(THREE.Points) {
     const colorFactor = [] || 0;
     const opacityFactor = [] || 0;
 
+    const velFactor = [] || 1;
+
     for (let i = 0; i < this.particleCount; i++) {
       this.ages[i] += dt;
+
+      //console.log("velFactor[1]" + velFactor[1]);
+      velFactor[i] = this.clamp(0, 1, this.ages[i] / this.lifetimes[i]);
       position[i * 4 + 3] = this.size;
 
       if (this.ages[i] < 0) {
@@ -250,52 +262,79 @@ export default class ParticleNode extends EditorNodeMixin(THREE.Points) {
         color[i * 4 + 1] = this.startColor.g;
         color[i * 4 + 2] = this.startColor.b;
         color[i * 4 + 3] = this.startColor;
+        velFactor[i] = 1;
         continue;
       }
 
       if (this.ages[i] > this.lifetimes[i]) {
         colorFactor[i] = 0;
-        opacityFactor[i] = 0;
+
         position[i * 4] = this.initialPositions[i * 3];
         position[i * 4 + 1] = this.initialPositions[i * 3 + 1];
-        position[i * 4 + 2] = -1; //this.initialPositions[i * 3 + 2];
+        position[i * 4 + 2] = this.initialAges[i]; //this.initialPositions[i * 3 + 2];
+
         this.ages[i] = this.initialAges[i];
 
         continue;
       }
-      if (this.ages[i] == this.initialAges[i]) {
-        colorFactor[i] = 0;
-        opacityFactor[i] = 0;
-      }
+      // if (this.ages[i] == this.initialAges[i]) {
+      //   colorFactor[i] = 0;
+      //   opacityFactor[i] = 0;
+      // }
 
-      position[i * 4] += this.velocity.x * dt;
-      position[i * 4 + 1] += this.velocity.y * dt;
-      position[i * 4 + 2] += this.velocity.z * dt;
-
-      colorFactor[i] = position[i * 4 + 2] / (this.lifetimes[i] - this.initialAges[i] + 0.2); // color colorFactor
-      opacityFactor[i] = position[i * 4 + 2] / (this.lifetimes[i] - this.initialAges[i] + 0.2);
-
-      switch (this.curve) {
-        case 0:
+      switch (this.velocityCurve) {
+        case "Linear":
           break;
-        case 1:
-          colorFactor[i] = Math.pow(colorFactor[i], 0.6);
+        case "Ease-in":
+          velFactor[i] = this.EaseIn(velFactor[i]);
           break;
-        case 2:
-          colorFactor[i] = this.smoothstep(0.0, 1.0, colorFactor[i]);
+        case "Ease-out":
+          velFactor[i] = this.EaseOut(velFactor[i]);
+          break;
+        case "Ease-in, out":
+          velFactor[i] = this.EaseInOut(velFactor[i]);
           break;
       }
 
-      if (colorFactor[i] <= 0.25) {
-        color[i * 4] = this.gradient(this.startColor.r, this.middleColor.r, colorFactor[i] / 0.25);
-        color[i * 4 + 1] = this.gradient(this.startColor.g, this.middleColor.g, colorFactor[i] / 0.25);
-        color[i * 4 + 2] = this.gradient(this.startColor.b, this.middleColor.b, colorFactor[i] / 0.25);
-        color[i * 4 + 3] = this.gradient(this.startOpacity, this.middleOpacity, opacityFactor[i] / 0.25);
-      } else if (colorFactor[i] > 0.25) {
-        color[i * 4] = this.gradient(this.middleColor.r, this.endColor.r, colorFactor[i] / 0.5);
-        color[i * 4 + 1] = this.gradient(this.middleColor.g, this.endColor.g, colorFactor[i] / 0.5);
-        color[i * 4 + 2] = this.gradient(this.middleColor.b, this.endColor.b, colorFactor[i] / 0.5);
-        color[i * 4 + 3] = this.gradient(this.middleOpacity, this.endOpacity, opacityFactor[i] / 0.5);
+      //velFactor[i] = this.lerp(1, 0, this.clamp(0, 1, this.ages[i] / this.lifetimes[i]));
+
+      this.velocities[i * 3] = this.velocity.x * velFactor[i]; //Even
+      this.velocities[i * 3 + 1] = this.velocity.y * velFactor[i]; //Even
+      this.velocities[i * 3 + 2] = this.velocity.z * velFactor[i]; //Even
+
+      position[i * 4] += this.velocities[i * 3] * dt;
+      position[i * 4 + 1] += this.velocities[i * 3 + 1] * dt;
+      position[i * 4 + 2] += this.velocities[i * 3 + 2] * dt;
+
+      colorFactor[i] = this.ages[i] / this.lifetimes[i]; //position[i * 4 + 2] / (this.lifetimes[i] * this.velocity.z); // color colorFactor
+      // opacityFactor[i] = this.Even(this.clamp(0, 1, this.ages[i] / this.lifetimes[i])); //position[i * 4 + 2] / (this.lifetimes[i] * this.velocity.z);
+
+      switch (this.colorCurve) {
+        case "Even":
+          colorFactor[i] = this.Even(colorFactor[i]);
+          break;
+        case "Ease-in":
+          colorFactor[i] = this.EaseIn(colorFactor[i]);
+          break;
+        case "Ease-out":
+          colorFactor[i] = this.EaseOut(colorFactor[i]);
+          break;
+        case "Ease-in, out":
+          colorFactor[i] = this.EaseInOut(colorFactor[i]);
+          break;
+      }
+
+      if (colorFactor[i] <= 0.5) {
+        // console.log(colorFactor[1]);
+        color[i * 4] = this.lerp(this.startColor.r, this.middleColor.r, colorFactor[i] / 0.5);
+        color[i * 4 + 1] = this.lerp(this.startColor.g, this.middleColor.g, colorFactor[i] / 0.5);
+        color[i * 4 + 2] = this.lerp(this.startColor.b, this.middleColor.b, colorFactor[i] / 0.5);
+        color[i * 4 + 3] = this.lerp(this.startOpacity, this.middleOpacity, colorFactor[i] / 0.5);
+      } else if (colorFactor[i] > 0.5) {
+        color[i * 4] = this.lerp(this.middleColor.r, this.endColor.r, (colorFactor[i] - 0.5) / 0.5);
+        color[i * 4 + 1] = this.lerp(this.middleColor.g, this.endColor.g, (colorFactor[i] - 0.5) / 0.5);
+        color[i * 4 + 2] = this.lerp(this.middleColor.b, this.endColor.b, (colorFactor[i] - 0.5) / 0.5);
+        color[i * 4 + 3] = this.lerp(this.middleOpacity, this.endOpacity, (colorFactor[i] - 0.5) / 0.5);
       }
 
       this.geometry.attributes.position.needsUpdate = true;
@@ -303,8 +342,28 @@ export default class ParticleNode extends EditorNodeMixin(THREE.Points) {
     }
   }
 
-  gradient(start, end, a) {
+  lerp(start, end, a) {
     return (end - start) * a + start;
+  }
+
+  Even(k) {
+    return k * k;
+  }
+
+  EaseIn(k) {
+    return k * k * k * k; //Quadratic
+  }
+
+  EaseOut(k) {
+    return Math.sin((k * Math.PI) / 2);
+  }
+
+  EaseInOut(k) {
+    if ((k *= 2) < 1) {
+      return 0.5 * k * k * k * k * k;
+    }
+
+    return 0.5 * ((k -= 2) * k * k * k * k + 2);
   }
 
   smoothstep(min, max, x) {
@@ -312,7 +371,7 @@ export default class ParticleNode extends EditorNodeMixin(THREE.Points) {
     return x * x * (3 - 2 * x);
   }
 
-  clamp(x, min, max) {
+  clamp(min, max, x) {
     if (x < min) x = min;
     if (x > max) x = max;
     return x;
@@ -335,7 +394,7 @@ export default class ParticleNode extends EditorNodeMixin(THREE.Points) {
         particleCount: this.particleCount,
         lifetime: this.lifetime,
         lifetimeRandomness: this.lifetimeRandomness,
-        curve: this.curve
+        colorCurve: this.colorCurve
       }
     });
   }

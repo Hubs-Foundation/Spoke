@@ -9,18 +9,41 @@ import NumericInputGroup from "../inputs/NumericInputGroup";
 import Vector3Input from "../inputs/Vector3Input";
 import SelectInput from "../inputs/SelectInput";
 
-const CurveOptions = [
+const ColorCurveOptions = [
+  {
+    label: "Even",
+    value: "Even"
+  },
+  {
+    label: "Ease-in",
+    value: "Ease-in"
+  },
+  {
+    label: "Ease-out",
+    value: "Ease-out"
+  },
+  {
+    label: "Ease-in,out",
+    value: "Ease-in,out"
+  }
+];
+
+const VelocityCurveOptions = [
   {
     label: "Linear",
-    value: 0
+    value: "Linear"
   },
   {
-    label: "Power",
-    value: 1
+    label: "Ease-in",
+    value: "Ease-in"
   },
   {
-    label: "Smoothstep",
-    value: 2
+    label: "Ease-out",
+    value: "Ease-out"
+  },
+  {
+    label: "Ease-in,out",
+    value: "Ease-in,out"
   }
 ];
 
@@ -34,8 +57,12 @@ export default class ParticleNodeEditor extends Component {
 
   static description = "Particles with maximum number 1000.";
 
-  onChangeCurve = curve => {
-    this.props.editor.setNodeProperty(this.props.node, "curve", curve);
+  onChangeColorCurve = colorCurve => {
+    this.props.editor.setNodeProperty(this.props.node, "colorCurve", colorCurve);
+  };
+
+  onChangeVelocityCurve = velocityCurve => {
+    this.props.editor.setNodeProperty(this.props.node, "velocityCurve", velocityCurve);
   };
 
   onChangeStartColor = startColor => {
@@ -72,6 +99,7 @@ export default class ParticleNodeEditor extends Component {
 
   onChangeVelocity = velocity => {
     this.props.editor.setNodeProperty(this.props.node, "velocity", velocity);
+    console.log("this.velocities[1]: " + this.props.node.velocities[2]);
   };
 
   onCommitParticleCount = particleCount => {
@@ -127,7 +155,11 @@ export default class ParticleNodeEditor extends Component {
           <ImageInput value={this.props.node.src} onChange={this.onChangeSrc} />
         </InputGroup>
         <InputGroup name="Color Curve">
-          <SelectInput options={CurveOptions} value={this.props.node.curve} onChange={this.onChangeCurve} />
+          <SelectInput
+            options={ColorCurveOptions}
+            value={this.props.node.colorCurve}
+            onChange={this.onChangeColorCurve}
+          />
         </InputGroup>
         <InputGroup name="Start Color">
           <ColorInput value={this.props.node.startColor} onChange={this.onChangeStartColor} />
@@ -212,6 +244,13 @@ export default class ParticleNodeEditor extends Component {
           onChange={this.onChangeSize}
           unit=""
         />
+        <InputGroup name="Velocity Curve">
+          <SelectInput
+            options={VelocityCurveOptions}
+            value={this.props.node.velocityCurve}
+            onChange={this.onChangeVelocityCurve}
+          />
+        </InputGroup>
         <InputGroup name="Velocity">
           <Vector3Input
             value={this.props.node.velocity}
@@ -223,7 +262,7 @@ export default class ParticleNodeEditor extends Component {
         </InputGroup>
         <NumericInputGroup
           name="Lifetime"
-          min={0}
+          min={2}
           smallStep={0.01}
           mediumStep={0.1}
           largeStep={1}
