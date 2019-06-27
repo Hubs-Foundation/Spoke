@@ -99,7 +99,15 @@ export default class ParticleNodeEditor extends Component {
 
   onChangeVelocity = velocity => {
     this.props.editor.setNodeProperty(this.props.node, "velocity", velocity);
-    console.log("this.velocities[1]: " + this.props.node.velocities[2]);
+  };
+
+  onChangeAngularvelocity = angularVelocity => {
+    this.props.editor.setNodeProperty(this.props.node, "angularVelocity", angularVelocity);
+  };
+
+  onCommitAngularvelocity = angularVelocity => {
+    this.props.editor.setNodeProperty(this.props.node, "angularVelocity", angularVelocity);
+    this.props.node.createParticle();
   };
 
   onCommitParticleCount = particleCount => {
@@ -154,6 +162,7 @@ export default class ParticleNodeEditor extends Component {
         <InputGroup name="Image">
           <ImageInput value={this.props.node.src} onChange={this.onChangeSrc} />
         </InputGroup>
+
         <InputGroup name="Color Curve">
           <SelectInput
             options={ColorCurveOptions}
@@ -161,9 +170,11 @@ export default class ParticleNodeEditor extends Component {
             onChange={this.onChangeColorCurve}
           />
         </InputGroup>
+
         <InputGroup name="Start Color">
           <ColorInput value={this.props.node.startColor} onChange={this.onChangeStartColor} />
         </InputGroup>
+
         <InputGroup name="Start Opacity">
           <CompoundNumericInput
             min={0}
@@ -174,9 +185,11 @@ export default class ParticleNodeEditor extends Component {
             onChange={this.onChangeStartOpacity}
           />
         </InputGroup>
+
         <InputGroup name="Middle Color">
           <ColorInput value={this.props.node.middleColor} onChange={this.onChangeMiddleColor} />
         </InputGroup>
+
         <InputGroup name="Middle Opacity">
           <CompoundNumericInput
             min={0}
@@ -187,9 +200,11 @@ export default class ParticleNodeEditor extends Component {
             onChange={this.onChangeMiddleOpacity}
           />
         </InputGroup>
+
         <InputGroup name="End Color">
           <ColorInput value={this.props.node.endColor} onChange={this.onChangeEndColor} />
         </InputGroup>
+
         <InputGroup name="End Opacity">
           <CompoundNumericInput
             min={0}
@@ -244,6 +259,7 @@ export default class ParticleNodeEditor extends Component {
           onChange={this.onChangeSize}
           unit=""
         />
+
         <InputGroup name="Velocity Curve">
           <SelectInput
             options={VelocityCurveOptions}
@@ -251,6 +267,7 @@ export default class ParticleNodeEditor extends Component {
             onChange={this.onChangeVelocityCurve}
           />
         </InputGroup>
+
         <InputGroup name="Velocity">
           <Vector3Input
             value={this.props.node.velocity}
@@ -260,6 +277,19 @@ export default class ParticleNodeEditor extends Component {
             onChange={this.onChangeVelocity}
           />
         </InputGroup>
+
+        <NumericInputGroup
+          name="Angular Velocity"
+          min={0}
+          smallStep={1}
+          mediumStep={1}
+          largeStep={1}
+          value={this.props.node.angularVelocity}
+          onChange={this.onChangeAngularvelocity}
+          onCommit={this.onCommitAngularvelocity}
+          unit=""
+        />
+
         <NumericInputGroup
           name="Lifetime"
           min={2}

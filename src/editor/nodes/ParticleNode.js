@@ -16,18 +16,19 @@ const vertexShader = `
 
       attribute vec4 color;
       attribute vec4 position;
-      //attribute bool prewarm;
+      attribute float customAngle;
 
+      varying float vAngle;
       varying vec4 vColor;
       varying float vPosZ;
-      //varyung bool vPrewarm;
+
 
       
 
 			void main() {
         vPosZ = position.z;
         vColor = color;
-       // vPrewarm = prewarm;
+        vAngle = customAngle;
     
 				vec4 mvPosition = modelViewMatrix * vec4( position.xyz, 1.0 );
 				gl_PointSize = position.w * ( BASE_PARTICLE_SIZE / -mvPosition.z );
@@ -40,15 +41,24 @@ const fragmentShader = `
 
       uniform sampler2D texture;
 
+      varying float vAngle;
       varying vec4 vColor;
       varying float vPosZ;
-      //varying bool vPrewarm;
       
-      vec4 colorB = vec4(1.000,0.833,0.224,1.0);
 
       void main() {
-        gl_FragColor = vColor; //vec4(temoColor.rgb, 1.0);
-        gl_FragColor = gl_FragColor * texture2D( texture, gl_PointCoord );
+       
+        
+        float c = cos(vAngle);
+        float s = sin(vAngle);
+        
+        gl_FragColor = vColor; 
+
+	      vec2 rotatedUV = vec2(c * (gl_PointCoord.x - 0.5) + s * (gl_PointCoord.y - 0.5) + 0.5, 
+	      c * (gl_PointCoord.y - 0.5) - s * (gl_PointCoord.x - 0.5) + 0.5);  // rotate UV coordinates to rotate texture
+    	  vec4 rotatedTexture = texture2D( texture,  rotatedUV );
+        gl_FragColor = gl_FragColor * rotatedTexture;
+        //gl_FragColor = gl_FragColor * texture2D( texture, gl_PointCoord );
         
         if ( vPosZ < -0.1) discard;
         
@@ -83,6 +93,7 @@ export default class ParticleNode extends EditorNodeMixin(THREE.Points) {
       emitterHeight,
       size,
       velocity,
+      angularVelocity,
       particleCount,
       lifetime,
       lifetimeRandomness
@@ -104,6 +115,7 @@ export default class ParticleNode extends EditorNodeMixin(THREE.Points) {
     node.lifetimeRandomness = lifetimeRandomness || 5;
     node.particleCount = particleCount || 1000;
     node.velocity.copy(velocity);
+    node.angularVelocity = angularVelocity || 0;
 
     loadAsync(
       (async () => {
@@ -148,6 +160,7 @@ export default class ParticleNode extends EditorNodeMixin(THREE.Points) {
     this.size = 1;
     this.velocities = [];
     this.velocity = new THREE.Vector3(0, 0, 0.5);
+    this.angularVelocity = 0;
     this.particleCount = 100;
     this.lifetime = 5;
     this.lifetimes = [];
@@ -183,7 +196,7 @@ export default class ParticleNode extends EditorNodeMixin(THREE.Points) {
     const ages = [];
     const initialAges = [];
     const initialPositions = [];
-    //const initialVelocities = [];
+    const angles = [];
 
     for (let i = 0; i < this.particleCount; i++) {
       initialAges[i] = ages[i] = Math.random() * this.ageRandomness - this.ageRandomness;
@@ -198,11 +211,7 @@ export default class ParticleNode extends EditorNodeMixin(THREE.Points) {
       positions.push(initialPositions[i + 2]);
       positions.push(this.size);
 
-      // initialVelocities.push(this.velocity.x);
-      // initialVelocities.push(this.velocity.y);
-      // initialVelocities.push(this.velocity.z);
-      //console.log("initial vel: " + this.velocity);
-
+      angles.push(0);
       colors.push(this.startColor.r);
       colors.push(this.startColor.g);
       colors.push(this.startColor.b);
@@ -210,6 +219,7 @@ export default class ParticleNode extends EditorNodeMixin(THREE.Points) {
     }
     tempGeo.addAttribute("position", new THREE.Float32BufferAttribute(positions, 4).setDynamic(true));
     tempGeo.addAttribute("color", new THREE.Float32BufferAttribute(colors, 4).setDynamic(true));
+    tempGeo.addAttribute("customAngle", new THREE.Float32BufferAttribute(angles, 1).setDynamic(true));
 
     this.geometry = tempGeo;
     this.initialPositions = initialPositions;
@@ -245,14 +255,15 @@ export default class ParticleNode extends EditorNodeMixin(THREE.Points) {
   onUpdate(dt) {
     const position = this.geometry.attributes.position.array;
     const color = this.geometry.attributes.color.array;
+    const customAngle = this.geometry.attributes.customAngle.array;
     const colorFactor = [] || 0;
+    let angleVel = 0;
 
     const velFactor = [] || 1;
 
     for (let i = 0; i < this.particleCount; i++) {
       this.ages[i] += dt;
 
-      //console.log("velFactor[1]" + velFactor[1]);
       velFactor[i] = this.clamp(0, 1, this.ages[i] / this.lifetimes[i]);
       position[i * 4 + 3] = this.size;
 
@@ -270,16 +281,12 @@ export default class ParticleNode extends EditorNodeMixin(THREE.Points) {
 
         position[i * 4] = this.initialPositions[i * 3];
         position[i * 4 + 1] = this.initialPositions[i * 3 + 1];
-        position[i * 4 + 2] = this.initialAges[i]; //this.initialPositions[i * 3 + 2];
+        position[i * 4 + 2] = -1; //this.initialPositions[i * 3 + 2];
 
         this.ages[i] = this.initialAges[i];
 
         continue;
       }
-      // if (this.ages[i] == this.initialAges[i]) {
-      //   colorFactor[i] = 0;
-      //   opacityFactor[i] = 0;
-      // }
 
       switch (this.velocityCurve) {
         case "Linear":
@@ -297,13 +304,18 @@ export default class ParticleNode extends EditorNodeMixin(THREE.Points) {
 
       //velFactor[i] = this.lerp(1, 0, this.clamp(0, 1, this.ages[i] / this.lifetimes[i]));
 
-      this.velocities[i * 3] = this.velocity.x * velFactor[i]; //Even
-      this.velocities[i * 3 + 1] = this.velocity.y * velFactor[i]; //Even
-      this.velocities[i * 3 + 2] = this.velocity.z * velFactor[i]; //Even
+      this.velocities[i * 3] = this.velocity.x * velFactor[i];
+      this.velocities[i * 3 + 1] = this.velocity.y * velFactor[i];
+      this.velocities[i * 3 + 2] = this.velocity.z * velFactor[i];
 
       position[i * 4] += this.velocities[i * 3] * dt;
       position[i * 4 + 1] += this.velocities[i * 3 + 1] * dt;
       position[i * 4 + 2] += this.velocities[i * 3 + 2] * dt;
+
+      angleVel = this.angularVelocity;
+      customAngle[i] += angleVel * 0.01745329251 * dt;
+      //angleVel += 60 * 0.01745329251 * dt; //added acceceration
+      //console.log(customAngle[0]);
 
       colorFactor[i] = this.ages[i] / this.lifetimes[i]; //position[i * 4 + 2] / (this.lifetimes[i] * this.velocity.z); // color colorFactor
       // opacityFactor[i] = this.Even(this.clamp(0, 1, this.ages[i] / this.lifetimes[i])); //position[i * 4 + 2] / (this.lifetimes[i] * this.velocity.z);
@@ -338,6 +350,9 @@ export default class ParticleNode extends EditorNodeMixin(THREE.Points) {
 
       this.geometry.attributes.position.needsUpdate = true;
       this.geometry.attributes.color.needsUpdate = true;
+      this.geometry.attributes.customAngle.needsUpdate = true;
+
+      //console.log(customAngle[1]);
     }
   }
 
@@ -390,6 +405,7 @@ export default class ParticleNode extends EditorNodeMixin(THREE.Points) {
         endOpacity: this.endOpacity,
         size: this.size,
         velocity: this.velocity,
+        angularVelocity: this.angularVelocity,
         particleCount: this.particleCount,
         lifetime: this.lifetime,
         lifetimeRandomness: this.lifetimeRandomness,
