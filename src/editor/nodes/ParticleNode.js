@@ -396,6 +396,7 @@ export default class ParticleNode extends EditorNodeMixin(THREE.Points) {
         endOpacity: this.endOpacity,
         size: this.size,
         velocity: this.velocity,
+        endVelocity: this.endVelocity,
         angularVelocity: this.angularVelocity,
         particleCount: this.particleCount,
         lifetime: this.lifetime,

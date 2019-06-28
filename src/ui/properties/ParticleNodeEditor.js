@@ -294,7 +294,7 @@ export default class ParticleNodeEditor extends Component {
 
         <NumericInputGroup
           name="Angular Velocity"
-          min={0}
+          min={-100}
           smallStep={1}
           mediumStep={1}
           largeStep={1}
