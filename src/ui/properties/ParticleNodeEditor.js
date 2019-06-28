@@ -101,6 +101,10 @@ export default class ParticleNodeEditor extends Component {
     this.props.editor.setNodeProperty(this.props.node, "velocity", velocity);
   };
 
+  onChangeEndVelocity = endVelocity => {
+    this.props.editor.setNodeProperty(this.props.node, "endVelocity", endVelocity);
+  };
+
   onChangeAngularvelocity = angularVelocity => {
     this.props.editor.setNodeProperty(this.props.node, "angularVelocity", angularVelocity);
   };
@@ -268,13 +272,23 @@ export default class ParticleNodeEditor extends Component {
           />
         </InputGroup>
 
-        <InputGroup name="Velocity">
+        <InputGroup name="Start Velocity">
           <Vector3Input
             value={this.props.node.velocity}
             smallStep={0.01}
             mediumStep={0.1}
             largeStep={1}
             onChange={this.onChangeVelocity}
+          />
+        </InputGroup>
+
+        <InputGroup name="End Velocity">
+          <Vector3Input
+            value={this.props.node.endVelocity}
+            smallStep={0.01}
+            mediumStep={0.1}
+            largeStep={1}
+            onChange={this.onChangeEndVelocity}
           />
         </InputGroup>
 
@@ -292,7 +306,7 @@ export default class ParticleNodeEditor extends Component {
 
         <NumericInputGroup
           name="Lifetime"
-          min={2}
+          min={0}
           smallStep={0.01}
           mediumStep={0.1}
           largeStep={1}

@@ -93,6 +93,7 @@ export default class ParticleNode extends EditorNodeMixin(THREE.Points) {
       emitterHeight,
       size,
       velocity,
+      endVelocity,
       angularVelocity,
       particleCount,
       lifetime,
@@ -116,6 +117,7 @@ export default class ParticleNode extends EditorNodeMixin(THREE.Points) {
     node.particleCount = particleCount || 1000;
     node.velocity.copy(velocity);
     node.angularVelocity = angularVelocity || 0;
+    node.endVelocity = endVelocity || new THREE.Vector3(0, 0, 0.5);
 
     loadAsync(
       (async () => {
@@ -151,7 +153,6 @@ export default class ParticleNode extends EditorNodeMixin(THREE.Points) {
 
     super(editor, geometry, material);
 
-    //this.colorNeedsUpdate = false;
     this.lastUpdated = 0;
     this._canonicalUrl = "";
     this.emitterHeight = 1;
@@ -160,6 +161,7 @@ export default class ParticleNode extends EditorNodeMixin(THREE.Points) {
     this.size = 1;
     this.velocities = [];
     this.velocity = new THREE.Vector3(0, 0, 0.5);
+    this.endVelocity = new THREE.Vector3(0, 0, 0.5);
     this.angularVelocity = 0;
     this.particleCount = 100;
     this.lifetime = 5;
@@ -227,7 +229,6 @@ export default class ParticleNode extends EditorNodeMixin(THREE.Points) {
     this.initialAges = initialAges;
     this.lifetimes = lifetimes;
     this.colors = colors;
-    //this.velocities = initialVelocities;
 
     //console.log(this);
   }
@@ -265,6 +266,7 @@ export default class ParticleNode extends EditorNodeMixin(THREE.Points) {
       this.ages[i] += dt;
 
       velFactor[i] = this.clamp(0, 1, this.ages[i] / this.lifetimes[i]);
+      colorFactor[i] = this.clamp(0, 1, this.ages[i] / this.lifetimes[i]);
       position[i * 4 + 3] = this.size;
 
       if (this.ages[i] < 0) {
@@ -272,18 +274,17 @@ export default class ParticleNode extends EditorNodeMixin(THREE.Points) {
         color[i * 4 + 1] = this.startColor.g;
         color[i * 4 + 2] = this.startColor.b;
         color[i * 4 + 3] = this.startColor;
-        velFactor[i] = 1;
+        velFactor[i] = 0;
         continue;
       }
 
       if (this.ages[i] > this.lifetimes[i]) {
-        colorFactor[i] = 0;
-
         position[i * 4] = this.initialPositions[i * 3];
         position[i * 4 + 1] = this.initialPositions[i * 3 + 1];
-        position[i * 4 + 2] = -1; //this.initialPositions[i * 3 + 2];
-
+        position[i * 4 + 2] = -2; //this.initialPositions[i * 3 + 2];
+        velFactor[i] = 0;
         this.ages[i] = this.initialAges[i];
+        colorFactor[i] = 0;
 
         continue;
       }
@@ -302,11 +303,9 @@ export default class ParticleNode extends EditorNodeMixin(THREE.Points) {
           break;
       }
 
-      //velFactor[i] = this.lerp(1, 0, this.clamp(0, 1, this.ages[i] / this.lifetimes[i]));
-
-      this.velocities[i * 3] = this.velocity.x * velFactor[i];
-      this.velocities[i * 3 + 1] = this.velocity.y * velFactor[i];
-      this.velocities[i * 3 + 2] = this.velocity.z * velFactor[i];
+      this.velocities[i * 3] = this.lerp(this.velocity.x, this.endVelocity.x, velFactor[i]);
+      this.velocities[i * 3 + 1] = this.lerp(this.velocity.y, this.endVelocity.y, velFactor[i]);
+      this.velocities[i * 3 + 2] = this.lerp(this.velocity.z, this.endVelocity.z, velFactor[i]);
 
       position[i * 4] += this.velocities[i * 3] * dt;
       position[i * 4 + 1] += this.velocities[i * 3 + 1] * dt;
@@ -314,11 +313,6 @@ export default class ParticleNode extends EditorNodeMixin(THREE.Points) {
 
       angleVel = this.angularVelocity;
       customAngle[i] += angleVel * 0.01745329251 * dt;
-      //angleVel += 60 * 0.01745329251 * dt; //added acceceration
-      //console.log(customAngle[0]);
-
-      colorFactor[i] = this.ages[i] / this.lifetimes[i]; //position[i * 4 + 2] / (this.lifetimes[i] * this.velocity.z); // color colorFactor
-      // opacityFactor[i] = this.Even(this.clamp(0, 1, this.ages[i] / this.lifetimes[i])); //position[i * 4 + 2] / (this.lifetimes[i] * this.velocity.z);
 
       switch (this.colorCurve) {
         case "Even":
@@ -336,7 +330,6 @@ export default class ParticleNode extends EditorNodeMixin(THREE.Points) {
       }
 
       if (colorFactor[i] <= 0.5) {
-        // console.log(colorFactor[1]);
         color[i * 4] = this.lerp(this.startColor.r, this.middleColor.r, colorFactor[i] / 0.5);
         color[i * 4 + 1] = this.lerp(this.startColor.g, this.middleColor.g, colorFactor[i] / 0.5);
         color[i * 4 + 2] = this.lerp(this.startColor.b, this.middleColor.b, colorFactor[i] / 0.5);
@@ -351,8 +344,6 @@ export default class ParticleNode extends EditorNodeMixin(THREE.Points) {
       this.geometry.attributes.position.needsUpdate = true;
       this.geometry.attributes.color.needsUpdate = true;
       this.geometry.attributes.customAngle.needsUpdate = true;
-
-      //console.log(customAngle[1]);
     }
   }
 
