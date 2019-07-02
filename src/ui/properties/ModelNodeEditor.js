@@ -44,6 +44,10 @@ export default class ModelNodeEditor extends Component {
     this.props.editor.setNodeProperty(this.props.node, "receiveShadow", receiveShadow);
   };
 
+  onChangeReference = reference => {
+    this.props.editor.setNodeProperty(this.props.node, "reference", reference);
+  };
+
   render() {
     const node = this.props.node;
     const activeClipName = node.activeClipName;
@@ -69,6 +73,9 @@ export default class ModelNodeEditor extends Component {
         </InputGroup>
         <InputGroup name="Receive Shadow">
           <BooleanInput value={node.receiveShadow} onChange={this.onChangeReceiveShadow} />
+        </InputGroup>
+        <InputGroup name="Is Reference?">
+          <BooleanInput value={node.reference} onChange={this.onChangeReference} />
         </InputGroup>
       </NodeEditor>
     );

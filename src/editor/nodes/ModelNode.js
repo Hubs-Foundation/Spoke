@@ -18,9 +18,11 @@ export default class ModelNode extends EditorNodeMixin(Model) {
 
     loadAsync(
       (async () => {
-        const { src, attribution } = json.components.find(c => c.name === "gltf-model").props;
+        const { src, attribution, reference } = json.components.find(c => c.name === "gltf-model").props;
 
         await node.load(src);
+
+        node.reference = reference || false;
 
         // Legacy, might be a raw string left over before switch to JSON.
         if (attribution && typeof attribution === "string") {
@@ -232,7 +234,8 @@ export default class ModelNode extends EditorNodeMixin(Model) {
     const components = {
       "gltf-model": {
         src: this._canonicalUrl,
-        attribution: this.attribution
+        attribution: this.attribution,
+        reference: this.reference
       },
       shadow: {
         cast: this.castShadow,
@@ -271,6 +274,7 @@ export default class ModelNode extends EditorNodeMixin(Model) {
     this.attribution = source.attribution;
     this.collidable = source.collidable;
     this.walkable = source.walkable;
+    this.reference = source.reference;
     return this;
   }
 
@@ -286,6 +290,15 @@ export default class ModelNode extends EditorNodeMixin(Model) {
       this.addGLTFComponent("loop-animation", {
         clip: this.clipActions[0].getClip().name
       });
+    }
+
+    if (this.reference) {
+      this.addGLTFComponent("media-loader", {
+        src: this._canonicalUrl,
+        resolve: true
+      });
+
+      this.replaceObject();
     }
   }
 }
