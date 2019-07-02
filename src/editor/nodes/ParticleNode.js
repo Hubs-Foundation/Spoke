@@ -1,7 +1,7 @@
 import THREE from "../../vendor/three";
 import EditorNodeMixin from "./EditorNodeMixin";
 import eventToMessage from "../utils/eventToMessage";
-import spokeLogoSrc from "../../assets/spoke-icon.png";
+import defaultParticleUrl from "../../assets/dot.png";
 
 let defaultParticleSprite = null;
 
@@ -72,7 +72,7 @@ export default class ParticleNode extends EditorNodeMixin(THREE.Points) {
   static nodeName = "Particle";
 
   static initialElementProps = {
-    src: new URL(spokeLogoSrc, location).href
+    src: new URL(defaultParticleUrl, location).href
   };
 
   static async deserialize(editor, json, loadAsync) {
@@ -131,7 +131,7 @@ export default class ParticleNode extends EditorNodeMixin(THREE.Points) {
 
   static async load() {
     defaultParticleSprite = await new Promise((resolve, reject) => {
-      new THREE.TextureLoader().load(spokeLogoSrc, resolve, null, e =>
+      new THREE.TextureLoader().load(defaultParticleUrl, resolve, null, e =>
         reject(`Error loading Image. ${eventToMessage(e)}`)
       );
     });
