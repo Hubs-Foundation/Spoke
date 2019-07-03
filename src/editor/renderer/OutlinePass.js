@@ -218,7 +218,7 @@ export default class OutlinePass extends THREE.Pass {
       for (const selectedObject of this.selectedObjects) {
         selectedObject.traverse(child => {
           // Don't include helper objects in the outline.
-          if ((child.isMesh || child.isLine || child.isSprite) && !child.isHelper) {
+          if ((child.isMesh || child.isLine || child.isSprite) && !child.isHelper && !child.disableOutline) {
             this.selectedRenderables.push(child);
 
             // Make selected meshes invisible

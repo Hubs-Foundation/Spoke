@@ -16,15 +16,15 @@ const ColorCurveOptions = [
   },
   {
     label: "Ease-in",
-    value: "Ease-in"
+    value: "EaseIn"
   },
   {
     label: "Ease-out",
-    value: "Ease-out"
+    value: "EaseOut"
   },
   {
     label: "Ease-in,out",
-    value: "Ease-in,out"
+    value: "EaseInOut"
   }
 ];
 
@@ -35,15 +35,15 @@ const VelocityCurveOptions = [
   },
   {
     label: "Ease-in",
-    value: "Ease-in"
+    value: "EaseIn"
   },
   {
     label: "Ease-out",
-    value: "Ease-out"
+    value: "EaseOut"
   },
   {
     label: "Ease-in,out",
-    value: "Ease-in,out"
+    value: "EaseInOut"
   }
 ];
 
@@ -160,7 +160,6 @@ export default class ParticleNodeEditor extends Component {
   };
 
   render() {
-    //console.log(this.props.node);
     return (
       <NodeEditor {...this.props} description={ParticleNodeEditor.description}>
         <InputGroup name="Image">
@@ -229,7 +228,6 @@ export default class ParticleNodeEditor extends Component {
           value={this.props.node.particleCount}
           onChange={this.onChangeParticleCount}
           onCommit={this.onCommitParticleCount}
-          unit=""
         />
         <NumericInputGroup
           name="Emitter Height"
@@ -240,7 +238,6 @@ export default class ParticleNodeEditor extends Component {
           value={this.props.node.emitterHeight}
           onChange={this.onChangeEmitterHeight}
           onCommit={this.onCommitEmitterHeight}
-          unit=""
         />
         <NumericInputGroup
           name="Emitter Width"
@@ -251,7 +248,6 @@ export default class ParticleNodeEditor extends Component {
           value={this.props.node.emitterWidth}
           onChange={this.onChangeEmitterWidth}
           onCommit={this.onCommitEmitterWidth}
-          unit=""
         />
         <NumericInputGroup
           name="Size"
@@ -261,7 +257,6 @@ export default class ParticleNodeEditor extends Component {
           largeStep={1}
           value={this.props.node.size}
           onChange={this.onChangeSize}
-          unit=""
         />
 
         <InputGroup name="Velocity Curve">
@@ -301,7 +296,6 @@ export default class ParticleNodeEditor extends Component {
           value={this.props.node.angularVelocity}
           onChange={this.onChangeAngularvelocity}
           onCommit={this.onCommitAngularvelocity}
-          unit=""
         />
 
         <NumericInputGroup
