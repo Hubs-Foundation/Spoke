@@ -53,6 +53,36 @@ const fragmentShader = `
 			}
   `;
 
+function lerp(start, end, a) {
+  return (end - start) * a + start;
+}
+
+function Even(k) {
+  return k * k;
+}
+
+function EaseIn(k) {
+  return k * k * k * k; //Quadratic
+}
+
+function EaseOut(k) {
+  return Math.sin((k * Math.PI) / 2);
+}
+
+function EaseInOut(k) {
+  if ((k *= 2) < 1) {
+    return 0.5 * k * k * k * k * k;
+  }
+
+  return 0.5 * ((k -= 2) * k * k * k * k + 2);
+}
+
+function clamp(min, max, x) {
+  if (x < min) x = min;
+  if (x > max) x = max;
+  return x;
+}
+
 export default class ParticleNode extends EditorNodeMixin(THREE.Points) {
   static legacyComponentName = "particle";
 
@@ -251,8 +281,8 @@ export default class ParticleNode extends EditorNodeMixin(THREE.Points) {
     for (let i = 0; i < this.particleCount; i++) {
       this.ages[i] += dt;
 
-      velFactor[i] = this.clamp(0, 1, this.ages[i] / this.lifetimes[i]);
-      colorFactor[i] = this.clamp(0, 1, this.ages[i] / this.lifetimes[i]);
+      velFactor[i] = clamp(0, 1, this.ages[i] / this.lifetimes[i]);
+      colorFactor[i] = clamp(0, 1, this.ages[i] / this.lifetimes[i]);
       position[i * 4 + 3] = this.size;
 
       if (this.ages[i] < 0) {
@@ -279,19 +309,19 @@ export default class ParticleNode extends EditorNodeMixin(THREE.Points) {
         case "Linear":
           break;
         case "EaseIn":
-          velFactor[i] = this.EaseIn(velFactor[i]);
+          velFactor[i] = EaseIn(velFactor[i]);
           break;
         case "EaseOut":
-          velFactor[i] = this.EaseOut(velFactor[i]);
+          velFactor[i] = EaseOut(velFactor[i]);
           break;
         case "EaseInOut":
-          velFactor[i] = this.EaseInOut(velFactor[i]);
+          velFactor[i] = EaseInOut(velFactor[i]);
           break;
       }
 
-      this.velocities[i * 3] = this.lerp(this.velocity.x, this.endVelocity.x, velFactor[i]);
-      this.velocities[i * 3 + 1] = this.lerp(this.velocity.y, this.endVelocity.y, velFactor[i]);
-      this.velocities[i * 3 + 2] = this.lerp(this.velocity.z, this.endVelocity.z, velFactor[i]);
+      this.velocities[i * 3] = lerp(this.velocity.x, this.endVelocity.x, velFactor[i]);
+      this.velocities[i * 3 + 1] = lerp(this.velocity.y, this.endVelocity.y, velFactor[i]);
+      this.velocities[i * 3 + 2] = lerp(this.velocity.z, this.endVelocity.z, velFactor[i]);
 
       position[i * 4] += this.velocities[i * 3] * dt;
       position[i * 4 + 1] += this.velocities[i * 3 + 1] * dt;
@@ -302,65 +332,35 @@ export default class ParticleNode extends EditorNodeMixin(THREE.Points) {
 
       switch (this.colorCurve) {
         case "Even":
-          colorFactor[i] = this.Even(colorFactor[i]);
+          colorFactor[i] = Even(colorFactor[i]);
           break;
         case "EaseIn":
-          colorFactor[i] = this.EaseIn(colorFactor[i]);
+          colorFactor[i] = EaseIn(colorFactor[i]);
           break;
         case "EaseOut":
-          colorFactor[i] = this.EaseOut(colorFactor[i]);
+          colorFactor[i] = EaseOut(colorFactor[i]);
           break;
         case "EaseInOut":
-          colorFactor[i] = this.EaseInOut(colorFactor[i]);
+          colorFactor[i] = EaseInOut(colorFactor[i]);
           break;
       }
 
       if (colorFactor[i] <= 0.5) {
-        color[i * 4] = this.lerp(this.startColor.r, this.middleColor.r, colorFactor[i] / 0.5);
-        color[i * 4 + 1] = this.lerp(this.startColor.g, this.middleColor.g, colorFactor[i] / 0.5);
-        color[i * 4 + 2] = this.lerp(this.startColor.b, this.middleColor.b, colorFactor[i] / 0.5);
-        color[i * 4 + 3] = this.lerp(this.startOpacity, this.middleOpacity, colorFactor[i] / 0.5);
+        color[i * 4] = lerp(this.startColor.r, this.middleColor.r, colorFactor[i] / 0.5);
+        color[i * 4 + 1] = lerp(this.startColor.g, this.middleColor.g, colorFactor[i] / 0.5);
+        color[i * 4 + 2] = lerp(this.startColor.b, this.middleColor.b, colorFactor[i] / 0.5);
+        color[i * 4 + 3] = lerp(this.startOpacity, this.middleOpacity, colorFactor[i] / 0.5);
       } else if (colorFactor[i] > 0.5) {
-        color[i * 4] = this.lerp(this.middleColor.r, this.endColor.r, (colorFactor[i] - 0.5) / 0.5);
-        color[i * 4 + 1] = this.lerp(this.middleColor.g, this.endColor.g, (colorFactor[i] - 0.5) / 0.5);
-        color[i * 4 + 2] = this.lerp(this.middleColor.b, this.endColor.b, (colorFactor[i] - 0.5) / 0.5);
-        color[i * 4 + 3] = this.lerp(this.middleOpacity, this.endOpacity, (colorFactor[i] - 0.5) / 0.5);
+        color[i * 4] = lerp(this.middleColor.r, this.endColor.r, (colorFactor[i] - 0.5) / 0.5);
+        color[i * 4 + 1] = lerp(this.middleColor.g, this.endColor.g, (colorFactor[i] - 0.5) / 0.5);
+        color[i * 4 + 2] = lerp(this.middleColor.b, this.endColor.b, (colorFactor[i] - 0.5) / 0.5);
+        color[i * 4 + 3] = lerp(this.middleOpacity, this.endOpacity, (colorFactor[i] - 0.5) / 0.5);
       }
 
       this.geometry.attributes.position.needsUpdate = true;
       this.geometry.attributes.color.needsUpdate = true;
       this.geometry.attributes.customAngle.needsUpdate = true;
     }
-  }
-
-  lerp(start, end, a) {
-    return (end - start) * a + start;
-  }
-
-  Even(k) {
-    return k * k;
-  }
-
-  EaseIn(k) {
-    return k * k * k * k; //Quadratic
-  }
-
-  EaseOut(k) {
-    return Math.sin((k * Math.PI) / 2);
-  }
-
-  EaseInOut(k) {
-    if ((k *= 2) < 1) {
-      return 0.5 * k * k * k * k * k;
-    }
-
-    return 0.5 * ((k -= 2) * k * k * k * k + 2);
-  }
-
-  clamp(min, max, x) {
-    if (x < min) x = min;
-    if (x > max) x = max;
-    return x;
   }
 
   serialize() {
