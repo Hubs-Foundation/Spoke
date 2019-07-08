@@ -7,26 +7,6 @@ function lerp(start, end, a) {
   return (end - start) * a + start;
 }
 
-function Even(k) {
-  return k * k;
-}
-
-function EaseIn(k) {
-  return k * k * k * k; //Quadratic
-}
-
-function EaseOut(k) {
-  return Math.sin((k * Math.PI) / 2);
-}
-
-function EaseInOut(k) {
-  if ((k *= 2) < 1) {
-    return 0.5 * k * k * k * k * k;
-  }
-
-  return 0.5 * ((k -= 2) * k * k * k * k + 2);
-}
-
 function clamp(min, max, x) {
   if (x < min) x = min;
   if (x > max) x = max;
@@ -121,22 +101,21 @@ export default class ParticleEmitterNode extends EditorNodeMixin(THREE.Points) {
     node.middleColor.set(middleColor);
     node.endColor.set(endColor);
     node.colorCurve = colorCurve;
-    node.velocityCurve = velocityCurve;
+    node.velocityCurve = velocityCurve || "Linear";
     node.prewarm = prewarm;
-    node.startOpacity = startOpacity || 1;
-    node.middleOpacity = middleOpacity || 1;
-    node.endOpacity = endOpacity || 1;
-    node.emitterHeight = emitterHeight || 1;
-    node.emitterWidth = emitterWidth || 1;
-    node.lifetime = lifetime || 5;
-    node.size = size || 1;
-    node.lifetimeRandomness = lifetimeRandomness || 5;
-    node.particleCount = particleCount || 1000;
+    node.startOpacity = startOpacity;
+    node.middleOpacity = middleOpacity;
+    node.endOpacity = endOpacity;
+    node.emitterHeight = emitterHeight;
+    node.emitterWidth = emitterWidth;
+    node.lifetime = lifetime;
+    node.size = size;
+    node.lifetimeRandomness = lifetimeRandomness;
+    node.particleCount = particleCount;
     node.velocity.copy(velocity);
-    node.angularVelocity = angularVelocity || 0;
-    //node.endVelocity = endVelocity || new THREE.Vector3(0, 0, 0.5);
+    node.angularVelocity = angularVelocity;
     node.endVelocity.copy(endVelocity);
-    // console.log("endVel: " + velocity + " , node.endVel: " + node.endVelocity);
+
     loadAsync(
       (async () => {
         await node.load(src);
@@ -277,7 +256,30 @@ export default class ParticleEmitterNode extends EditorNodeMixin(THREE.Points) {
     const colorFactor = [];
 
     const velFactor = [];
+    const Curves = {
+      Even(k) {
+        return k * k;
+      },
 
+      EaseIn(k) {
+        return k * k * k * k; //Quadratic
+      },
+
+      EaseOut(k) {
+        return Math.sin((k * Math.PI) / 2);
+      },
+
+      EaseInOut(k) {
+        if ((k *= 2) < 1) {
+          return 0.5 * k * k * k * k * k;
+        }
+
+        return 0.5 * ((k -= 2) * k * k * k * k + 2);
+      },
+      Linear(k) {
+        return k;
+      }
+    };
     for (let i = 0; i < this.particleCount; i++) {
       this.ages[i] += dt;
 
@@ -305,19 +307,8 @@ export default class ParticleEmitterNode extends EditorNodeMixin(THREE.Points) {
         continue;
       }
 
-      switch (this.velocityCurve) {
-        case "Linear":
-          break;
-        case "EaseIn":
-          velFactor[i] = EaseIn(velFactor[i]);
-          break;
-        case "EaseOut":
-          velFactor[i] = EaseOut(velFactor[i]);
-          break;
-        case "EaseInOut":
-          velFactor[i] = EaseInOut(velFactor[i]);
-          break;
-      }
+      const VelCurveFunction = Curves[this.velocityCurve];
+      velFactor[i] = VelCurveFunction(velFactor[i]);
 
       this.velocities[i * 3] = lerp(this.velocity.x, this.endVelocity.x, velFactor[i]);
       this.velocities[i * 3 + 1] = lerp(this.velocity.y, this.endVelocity.y, velFactor[i]);
@@ -326,24 +317,10 @@ export default class ParticleEmitterNode extends EditorNodeMixin(THREE.Points) {
       position[i * 4] += this.velocities[i * 3] * dt;
       position[i * 4 + 1] += this.velocities[i * 3 + 1] * dt;
       position[i * 4 + 2] += this.velocities[i * 3 + 2] * dt;
-
-      //angleVel = this.angularVelocity;
       customAngle[i] += this.angularVelocity * THREE.Math.DEG2RAD * dt;
 
-      switch (this.colorCurve) {
-        case "Even":
-          colorFactor[i] = Even(colorFactor[i]);
-          break;
-        case "EaseIn":
-          colorFactor[i] = EaseIn(colorFactor[i]);
-          break;
-        case "EaseOut":
-          colorFactor[i] = EaseOut(colorFactor[i]);
-          break;
-        case "EaseInOut":
-          colorFactor[i] = EaseInOut(colorFactor[i]);
-          break;
-      }
+      const ColCurveFunction = Curves[this.colorCurve];
+      colorFactor[i] = ColCurveFunction(colorFactor[i]);
 
       if (colorFactor[i] <= 0.5) {
         color[i * 4] = lerp(this.startColor.r, this.middleColor.r, colorFactor[i] / 0.5);
