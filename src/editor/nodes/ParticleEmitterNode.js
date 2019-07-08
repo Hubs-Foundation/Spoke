@@ -3,6 +3,36 @@ import EditorNodeMixin from "./EditorNodeMixin";
 import eventToMessage from "../utils/eventToMessage";
 import spokeLogoSrc from "../../assets/spoke-icon.png";
 
+function lerp(start, end, a) {
+  return (end - start) * a + start;
+}
+
+function Even(k) {
+  return k * k;
+}
+
+function EaseIn(k) {
+  return k * k * k * k; //Quadratic
+}
+
+function EaseOut(k) {
+  return Math.sin((k * Math.PI) / 2);
+}
+
+function EaseInOut(k) {
+  if ((k *= 2) < 1) {
+    return 0.5 * k * k * k * k * k;
+  }
+
+  return 0.5 * ((k -= 2) * k * k * k * k + 2);
+}
+
+function clamp(min, max, x) {
+  if (x < min) x = min;
+  if (x > max) x = max;
+  return x;
+}
+
 let defaultParticleSprite = null;
 
 const vertexShader = `
@@ -53,40 +83,10 @@ const fragmentShader = `
 			}
   `;
 
-function lerp(start, end, a) {
-  return (end - start) * a + start;
-}
-
-function Even(k) {
-  return k * k;
-}
-
-function EaseIn(k) {
-  return k * k * k * k; //Quadratic
-}
-
-function EaseOut(k) {
-  return Math.sin((k * Math.PI) / 2);
-}
-
-function EaseInOut(k) {
-  if ((k *= 2) < 1) {
-    return 0.5 * k * k * k * k * k;
-  }
-
-  return 0.5 * ((k -= 2) * k * k * k * k + 2);
-}
-
-function clamp(min, max, x) {
-  if (x < min) x = min;
-  if (x > max) x = max;
-  return x;
-}
-
-export default class ParticleNode extends EditorNodeMixin(THREE.Points) {
+export default class ParticleEmitterNode extends EditorNodeMixin(THREE.Points) {
   static legacyComponentName = "particle";
 
-  static nodeName = "Particle";
+  static nodeName = "Particle Emitter";
 
   static initialElementProps = {
     src: new URL(spokeLogoSrc, location).href

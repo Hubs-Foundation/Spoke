@@ -47,7 +47,7 @@ const VelocityCurveOptions = [
   }
 ];
 
-export default class ParticleNodeEditor extends Component {
+export default class ParticleEmitterNodeEditor extends Component {
   static propTypes = {
     editor: PropTypes.object,
     node: PropTypes.object
@@ -55,7 +55,7 @@ export default class ParticleNodeEditor extends Component {
 
   static iconClassName = "fa-spray-can";
 
-  static description = "Particles with maximum number 1000.";
+  static description = "Particle emitter to create particles.";
 
   onChangeColorCurve = colorCurve => {
     this.props.editor.setNodeProperty(this.props.node, "colorCurve", colorCurve);
@@ -161,7 +161,7 @@ export default class ParticleNodeEditor extends Component {
 
   render() {
     return (
-      <NodeEditor {...this.props} description={ParticleNodeEditor.description}>
+      <NodeEditor {...this.props} description={ParticleEmitterNodeEditor.description}>
         <InputGroup name="Image">
           <ImageInput value={this.props.node.src} onChange={this.onChangeSrc} />
         </InputGroup>
