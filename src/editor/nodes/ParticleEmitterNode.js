@@ -64,7 +64,7 @@ const fragmentShader = `
   `;
 
 export default class ParticleEmitterNode extends EditorNodeMixin(THREE.Points) {
-  static legacyComponentName = "particle";
+  static legacyComponentName = "particle-emitter";
 
   static nodeName = "Particle Emitter";
 
@@ -77,7 +77,6 @@ export default class ParticleEmitterNode extends EditorNodeMixin(THREE.Points) {
 
     const {
       src,
-      prewarm,
       colorCurve,
       velocityCurve,
       startColor,
@@ -95,26 +94,25 @@ export default class ParticleEmitterNode extends EditorNodeMixin(THREE.Points) {
       particleCount,
       lifetime,
       lifetimeRandomness
-    } = json.components.find(c => c.name === "particle").props;
+    } = json.components.find(c => c.name === "particle-emitter").props;
 
     node.startColor.set(startColor);
     node.middleColor.set(middleColor);
     node.endColor.set(endColor);
-    node.colorCurve = colorCurve;
-    node.velocityCurve = velocityCurve || "Linear";
-    node.prewarm = prewarm;
     node.startOpacity = startOpacity;
     node.middleOpacity = middleOpacity;
     node.endOpacity = endOpacity;
+    node.colorCurve = colorCurve;
     node.emitterHeight = emitterHeight;
     node.emitterWidth = emitterWidth;
-    node.lifetime = lifetime;
     node.size = size;
+    node.lifetime = lifetime;
     node.lifetimeRandomness = lifetimeRandomness;
     node.particleCount = particleCount;
     node.velocity.copy(velocity);
-    node.angularVelocity = angularVelocity;
     node.endVelocity.copy(endVelocity);
+    node.velocityCurve = velocityCurve || "Linear";
+    node.angularVelocity = angularVelocity;
 
     loadAsync(
       (async () => {
@@ -174,7 +172,6 @@ export default class ParticleEmitterNode extends EditorNodeMixin(THREE.Points) {
     this.startOpacity = 1;
     this.middleOpacity = 1;
     this.endOpacity = 1;
-    this.prewarm = false;
     this.colorCurve = "Even";
     this.velocityCurve = "Linear";
     this.createParticle();
@@ -341,48 +338,50 @@ export default class ParticleEmitterNode extends EditorNodeMixin(THREE.Points) {
 
   serialize() {
     return super.serialize({
-      particle: {
+      "particle-emitter": {
         src: this._canonicalUrl,
-        emitterHeight: this.emitterHeight,
-        emitterWidth: this.emitterWidth,
         startColor: this.startColor,
         middleColor: this.middleColor,
         endColor: this.endColor,
         startOpacity: this.startOpacity,
         middleOpacity: this.middleOpacity,
         endOpacity: this.endOpacity,
+        colorCurve: this.colorCurve,
+        emitterHeight: this.emitterHeight,
+        emitterWidth: this.emitterWidth,
         size: this.size,
-        velocity: this.velocity,
-        endVelocity: this.endVelocity,
-        angularVelocity: this.angularVelocity,
-        particleCount: this.particleCount,
         lifetime: this.lifetime,
         lifetimeRandomness: this.lifetimeRandomness,
-        colorCurve: this.colorCurve
+        particleCount: this.particleCount,
+        velocity: this.velocity,
+        endVelocity: this.endVelocity,
+        velocityCurve: this.velocityCurve,
+        angularVelocity: this.angularVelocity
       }
     });
   }
 
   prepareForExport() {
     super.prepareForExport();
-    this.addGLTFComponent("particle", {
+    this.addGLTFComponent("particle-emitter", {
       src: this._canonicalUrl,
-      emitterHeight: this.emitterHeight,
-      emitterWidth: this.emitterWidth,
       startColor: this.startColor,
       middleColor: this.middleColor,
       endColor: this.endColor,
       startOpacity: this.startOpacity,
       middleOpacity: this.middleOpacity,
       endOpacity: this.endOpacity,
+      colorCurve: this.colorCurve,
+      emitterHeight: this.emitterHeight,
+      emitterWidth: this.emitterWidth,
       size: this.size,
-      velocity: this.velocity,
-      endVelocity: this.endVelocity,
-      angularVelocity: this.angularVelocity,
-      particleCount: this.particleCount,
       lifetime: this.lifetime,
       lifetimeRandomness: this.lifetimeRandomness,
-      colorCurve: this.colorCurve
+      particleCount: this.particleCount,
+      velocity: this.velocity,
+      endVelocity: this.endVelocity,
+      velocityCurve: this.velocityCurve,
+      angularVelocity: this.angularVelocity
     });
     this.replaceObject();
   }
