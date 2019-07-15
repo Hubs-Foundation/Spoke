@@ -30,12 +30,12 @@ const vertexShader = `
       varying float vAngle;
       varying vec4 vColor;
 
-			void main() {
+      void main() {
         vColor = color;
         vAngle = customAngle;
     
-				vec4 mvPosition = modelViewMatrix * vec4( position.xyz, 1.0 );
-				gl_PointSize = position.w * ( BASE_PARTICLE_SIZE / -mvPosition.z );
+        vec4 mvPosition = modelViewMatrix * vec4( position.xyz, 1.0 );
+        gl_PointSize = position.w * ( BASE_PARTICLE_SIZE / -mvPosition.z );
         gl_Position = projectionMatrix * mvPosition;
         if ( position.z < -0.1) gl_PointSize = 0.0;	
       }
@@ -54,13 +54,13 @@ const fragmentShader = `
         float s = sin(vAngle);  
         gl_FragColor = vColor; 
 
-	      vec2 rotatedUV = vec2(c * (gl_PointCoord.x - 0.5) + s * (gl_PointCoord.y - 0.5) + 0.5, 
-	      c * (gl_PointCoord.y - 0.5) - s * (gl_PointCoord.x - 0.5) + 0.5);  // rotate UV coordinates to rotate texture
-    	  vec4 rotatedTexture = texture2D( texture,  rotatedUV );
+        vec2 rotatedUV = vec2(c * (gl_PointCoord.x - 0.5) + s * (gl_PointCoord.y - 0.5) + 0.5, 
+        c * (gl_PointCoord.y - 0.5) - s * (gl_PointCoord.x - 0.5) + 0.5);  // rotate UV coordinates to rotate texture
+        vec4 rotatedTexture = texture2D( texture,  rotatedUV );
         gl_FragColor = gl_FragColor * rotatedTexture;
 
   
-			}
+      }
   `;
 
 export default class ParticleEmitterNode extends EditorNodeMixin(THREE.Points) {
