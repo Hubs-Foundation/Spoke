@@ -105,11 +105,11 @@ export default class ParticleEmitterNodeEditor extends Component {
     this.props.editor.setNodeProperty(this.props.node, "endVelocity", endVelocity);
   };
 
-  onChangeAngularvelocity = angularVelocity => {
+  onChangeAngularVelocity = angularVelocity => {
     this.props.editor.setNodeProperty(this.props.node, "angularVelocity", angularVelocity);
   };
 
-  onCommitAngularvelocity = angularVelocity => {
+  onCommitAngularVelocity = angularVelocity => {
     this.props.editor.setNodeProperty(this.props.node, "angularVelocity", angularVelocity);
     this.props.node.createParticle();
   };
@@ -294,8 +294,8 @@ export default class ParticleEmitterNodeEditor extends Component {
           mediumStep={1}
           largeStep={1}
           value={this.props.node.angularVelocity}
-          onChange={this.onChangeAngularvelocity}
-          onCommit={this.onCommitAngularvelocity}
+          onChange={this.onChangeAngularVelocity}
+          onCommit={this.onCommitAngularVelocity}
         />
 
         <NumericInputGroup
