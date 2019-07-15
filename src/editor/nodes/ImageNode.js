@@ -73,7 +73,7 @@ export default class ImageNode extends EditorNodeMixin(Image) {
     return this;
   }
 
-  copy(source, recursive) {
+  copy(source, recursive = true) {
     super.copy(source, recursive);
 
     this._canonicalUrl = source._canonicalUrl;

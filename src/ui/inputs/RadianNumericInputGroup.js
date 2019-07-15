@@ -1,10 +1,10 @@
 import React from "react";
 import PropTypes from "prop-types";
 import NumericInputGroup from "./NumericInputGroup";
-import THREE from "../../vendor/three";
+import { Math as _Math } from "three";
 
-const radToDeg = THREE.Math.radToDeg;
-const degToRad = THREE.Math.degToRad;
+const radToDeg = _Math.radToDeg;
+const degToRad = _Math.degToRad;
 
 export default function RadianNumericInputGroup({ convertTo, convertFrom, ...rest }) {
   return <NumericInputGroup {...rest} convertFrom={radToDeg} convertTo={degToRad} />;

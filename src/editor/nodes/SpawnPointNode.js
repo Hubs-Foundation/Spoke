@@ -1,18 +1,19 @@
-import THREE from "../../vendor/three";
+import { Object3D } from "three";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import EditorNodeMixin from "./EditorNodeMixin";
 import spawnPointModelUrl from "../../assets/spawn-point.glb";
 import eventToMessage from "../utils/eventToMessage";
 
 let spawnPointHelperModel = null;
 
-export default class SpawnPointNode extends EditorNodeMixin(THREE.Object3D) {
+export default class SpawnPointNode extends EditorNodeMixin(Object3D) {
   static legacyComponentName = "spawn-point";
 
   static nodeName = "Spawn Point";
 
   static async load() {
     const { scene } = await new Promise((resolve, reject) => {
-      new THREE.GLTFLoader().load(spawnPointModelUrl, resolve, null, e => {
+      new GLTFLoader().load(spawnPointModelUrl, resolve, null, e => {
         reject(new Error(`Error loading SpawnPointNode helper with url: ${spawnPointModelUrl}. ${eventToMessage(e)}`));
       });
     });
@@ -28,19 +29,28 @@ export default class SpawnPointNode extends EditorNodeMixin(THREE.Object3D) {
 
   constructor(editor) {
     super(editor);
-    this.helper = spawnPointHelperModel.clone();
-    this.add(this.helper);
+
+    if (spawnPointHelperModel) {
+      this.helper = spawnPointHelperModel.clone();
+      this.add(this.helper);
+    } else {
+      console.warn("SpawnPointNode: helper model was not loaded before creating a new SpawnPointNode");
+      this.helper = null;
+    }
   }
 
-  copy(source, recursive) {
-    super.copy(source, false);
+  copy(source, recursive = true) {
+    if (recursive) {
+      this.remove(this.helper);
+    }
+
+    super.copy(source, recursive);
 
     if (recursive) {
-      for (const child of source.children) {
-        if (child !== this.helper) {
-          const clonedChild = child.clone();
-          this.add(clonedChild);
-        }
+      const helperIndex = source.children.findIndex(child => child === source.helper);
+
+      if (helperIndex !== -1) {
+        this.helper = this.children[helperIndex];
       }
     }
 

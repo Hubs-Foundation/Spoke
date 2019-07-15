@@ -1,6 +1,6 @@
 import EventEmitter from "eventemitter3";
 import { Spoke, SpokeMapping } from "./input-mappings";
-import THREE from "../../vendor/three";
+import { Matrix3, Vector2, Vector3, Spherical, Box3, Raycaster, Sphere } from "three";
 import SpokeTransformControls from "./SpokeTransformControls";
 import getIntersectingNode from "../utils/getIntersectingNode";
 
@@ -13,11 +13,11 @@ export default class SpokeControls extends EventEmitter {
     this.inputManager = inputManager;
     this.flyControls = flyControls;
     this.enabled = false;
-    this.normalMatrix = new THREE.Matrix3();
-    this.vector = new THREE.Vector3();
-    this.delta = new THREE.Vector3();
-    this.center = new THREE.Vector3();
-    this.spherical = new THREE.Spherical();
+    this.normalMatrix = new Matrix3();
+    this.vector = new Vector3();
+    this.delta = new Vector3();
+    this.center = new Vector3();
+    this.spherical = new Spherical();
     this.panSpeed = 1;
     this.zoomSpeed = 0.1;
     this.orbitSpeed = 5;
@@ -30,10 +30,10 @@ export default class SpokeControls extends EventEmitter {
     this.initialMoveSpeed = flyControls.moveSpeed;
     this.distance = 0;
     this.maxFocusDistance = 1000;
-    this.raycaster = new THREE.Raycaster();
+    this.raycaster = new Raycaster();
     this.scene = null;
-    this.box = new THREE.Box3();
-    this.sphere = new THREE.Sphere();
+    this.box = new Box3();
+    this.sphere = new Sphere();
     this.transformControls = new SpokeTransformControls(camera);
     this.objectPositionOnDown = null;
     this.objectRotationOnDown = null;
@@ -44,8 +44,8 @@ export default class SpokeControls extends EventEmitter {
     this.currentSpace = "world";
     this.updateSnapSettings();
 
-    this.selectStartPosition = new THREE.Vector2();
-    this.selectEndPosition = new THREE.Vector2();
+    this.selectStartPosition = new Vector2();
+    this.selectEndPosition = new Vector2();
   }
 
   onSceneSet(scene) {

@@ -1,11 +1,11 @@
-import THREE from "../../vendor/three";
+import { TextureLoader } from "three";
 import Cache from "./Cache";
 import eventToMessage from "../utils/eventToMessage";
 
 export default class TextureCache extends Cache {
   constructor() {
     super();
-    this.textureLoader = new THREE.TextureLoader();
+    this.textureLoader = new TextureLoader();
   }
 
   get(url) {

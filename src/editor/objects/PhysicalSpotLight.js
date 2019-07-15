@@ -1,7 +1,7 @@
-import THREE from "../../vendor/three";
+import { SpotLight, Object3D } from "three";
 import createShadowMapResolutionProxy from "../utils/createShadowMapResolutionProxy";
 
-export default class PhysicalSpotLight extends THREE.SpotLight {
+export default class PhysicalSpotLight extends SpotLight {
   constructor() {
     super();
     this.position.set(0, 0, 0);
@@ -56,9 +56,9 @@ export default class PhysicalSpotLight extends THREE.SpotLight {
     this.shadow.radius = value;
   }
 
-  copy(source, recursive) {
+  copy(source, recursive = true) {
     // Override SpotLight's copy method and pass the recursive parameter so we can avoid cloning children.
-    THREE.Object3D.prototype.copy.call(this, source, recursive);
+    Object3D.prototype.copy.call(this, source, false);
 
     this.color.copy(source.color);
     this.intensity = source.intensity;
@@ -69,6 +69,21 @@ export default class PhysicalSpotLight extends THREE.SpotLight {
     this.decay = source.decay;
 
     this.shadow.copy(source.shadow);
+
+    if (recursive) {
+      this.remove(this.target);
+
+      for (let i = 0; i < source.children.length; i++) {
+        const child = source.children[i];
+        if (child === source.target) {
+          this.target = child.clone();
+          this.target.position.set(0, 0, 1);
+          this.add(this.target);
+        } else {
+          this.add(child.clone());
+        }
+      }
+    }
 
     return this;
   }

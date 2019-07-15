@@ -1,6 +1,6 @@
-import THREE from "../../vendor/three";
+import { Object3D, HemisphereLight } from "three";
 
-export default class PhysicalHemisphereLight extends THREE.HemisphereLight {
+export default class PhysicalHemisphereLight extends HemisphereLight {
   constructor() {
     super();
     this.position.set(0, 0, 0);
@@ -10,9 +10,9 @@ export default class PhysicalHemisphereLight extends THREE.HemisphereLight {
     return this.color;
   }
 
-  copy(source, recursive) {
+  copy(source, recursive = true) {
     // Override HemisphereLight's copy method and pass the recursive parameter so we can avoid cloning children.
-    THREE.Object3D.prototype.copy.call(this, source, recursive);
+    Object3D.prototype.copy.call(this, source, recursive);
 
     this.color.copy(source.color);
     this.intensity = source.intensity;

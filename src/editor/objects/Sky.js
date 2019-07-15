@@ -1,4 +1,4 @@
-import THREE from "../../vendor/three";
+import { Object3D, Vector3, BoxBufferGeometry, ShaderMaterial, UniformsUtils, BackSide, Mesh } from "three";
 /**
  * @author zz85 / https://github.com/zz85
  *
@@ -190,7 +190,7 @@ void main() {
 }
 `;
 
-export default class Sky extends THREE.Object3D {
+export default class Sky extends Object3D {
   static shader = {
     uniforms: {
       luminance: { value: 1 },
@@ -198,25 +198,26 @@ export default class Sky extends THREE.Object3D {
       rayleigh: { value: 2 },
       mieCoefficient: { value: 0.005 },
       mieDirectionalG: { value: 0.8 },
-      sunPosition: { value: new THREE.Vector3() }
+      sunPosition: { value: new Vector3() }
     },
     vertexShader,
     fragmentShader
   };
 
-  static _geometry = new THREE.BoxBufferGeometry(1, 1, 1);
+  static _geometry = new BoxBufferGeometry(1, 1, 1);
 
   constructor() {
     super();
 
-    const material = new THREE.ShaderMaterial({
+    const material = new ShaderMaterial({
       fragmentShader: Sky.shader.fragmentShader,
       vertexShader: Sky.shader.vertexShader,
-      uniforms: THREE.UniformsUtils.clone(Sky.shader.uniforms),
-      side: THREE.BackSide
+      uniforms: UniformsUtils.clone(Sky.shader.uniforms),
+      side: BackSide
     });
 
-    this.sky = new THREE.Mesh(Sky._geometry, material);
+    this.sky = new Mesh(Sky._geometry, material);
+    this.sky.name = "Sky";
     this.add(this.sky);
 
     this._inclination = 0;
@@ -306,15 +307,18 @@ export default class Sky extends THREE.Object3D {
     this.sky.scale.set(distance, distance, distance);
   }
 
-  copy(source, recursive) {
-    super.copy(source, false);
+  copy(source, recursive = true) {
+    if (recursive) {
+      this.remove(this.sky);
+    }
+
+    super.copy(source, recursive);
 
     if (recursive) {
-      for (const child of source.children) {
-        if (child !== this.sky) {
-          const clonedChild = child.clone();
-          this.add(clonedChild);
-        }
+      const skyIndex = source.children.indexOf(source.sky);
+
+      if (skyIndex !== -1) {
+        this.sky = this.children[skyIndex];
       }
     }
 

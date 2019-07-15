@@ -1,4 +1,5 @@
-import THREE from "../vendor/three";
+import { Mesh } from "three";
+import { BufferGeometryUtils } from "three/examples/jsm/utils/BufferGeometryUtils";
 import { isStatic } from "./StaticMode";
 import asyncTraverse from "./utils/asyncTraverse";
 import keysEqual from "./utils/keysEqual";
@@ -151,7 +152,7 @@ export default class MeshCombinationGroup {
 
   constructor(initialObject, imageHashes) {
     if (!initialObject.isMesh) {
-      throw new Error("MeshCombinationGroup must be initialized with a THREE.Mesh.");
+      throw new Error("MeshCombinationGroup must be initialized with a Mesh.");
     }
 
     this.initialObject = initialObject;
@@ -173,7 +174,8 @@ export default class MeshCombinationGroup {
     if (
       object.visible !== this.initialObject.visible ||
       object.castShadow !== this.initialObject.castShadow ||
-      object.receiveShadow !== this.initialObject.receiveShadow
+      object.receiveShadow !== this.initialObject.receiveShadow ||
+      object.userData.gltfExtensions
     ) {
       return false;
     }
@@ -208,9 +210,9 @@ export default class MeshCombinationGroup {
       mesh.parent.remove(mesh);
     }
 
-    const combinedGeometry = THREE.BufferGeometryUtils.mergeBufferGeometries(bufferGeometries);
+    const combinedGeometry = BufferGeometryUtils.mergeBufferGeometries(bufferGeometries);
     delete combinedGeometry.userData.mergedUserData;
-    const combinedMesh = new THREE.Mesh(combinedGeometry, originalMesh.material);
+    const combinedMesh = new Mesh(combinedGeometry, originalMesh.material);
     combinedMesh.name = "CombinedMesh";
     combinedMesh.userData.gltfExtensions = {
       MOZ_hubs_components: {

@@ -1,4 +1,4 @@
-import THREE from "../../vendor/three";
+import { Box3, Sphere, PropertyBinding } from "three";
 import Model from "../objects/Model";
 import EditorNodeMixin from "./EditorNodeMixin";
 import { setStaticMode, StaticModes } from "../StaticMode";
@@ -58,8 +58,8 @@ export default class ModelNode extends EditorNodeMixin(Model) {
     this.collidable = true;
     this.walkable = true;
     this.scaleToFit = false;
-    this.boundingBox = new THREE.Box3();
-    this.boundingSphere = new THREE.Sphere();
+    this.boundingBox = new Box3();
+    this.boundingSphere = new Sphere();
   }
 
   // Overrides Model's src property and stores the original (non-resolved) url.
@@ -146,9 +146,9 @@ export default class ModelNode extends EditorNodeMixin(Model) {
 
       if (files) {
         // Revoke any object urls from the SketchfabZipLoader.
-        for (const key in files) {
-          URL.revokeObjectURL(files[key]);
-        }
+        // for (const key in files) {
+        //   URL.revokeObjectURL(files[key]);
+        // }
       }
     } catch (e) {
       console.error(e);
@@ -180,7 +180,7 @@ export default class ModelNode extends EditorNodeMixin(Model) {
     if (this.animations.length > 0) {
       for (const animation of this.animations) {
         for (const track of animation.tracks) {
-          const { nodeName } = THREE.PropertyBinding.parseTrackName(track.name);
+          const { nodeName } = PropertyBinding.parseTrackName(track.name);
           const animatedNode = this.model.getObjectByName(nodeName);
           setStaticMode(animatedNode, StaticModes.Dynamic);
         }
@@ -257,10 +257,17 @@ export default class ModelNode extends EditorNodeMixin(Model) {
     return super.serialize(components);
   }
 
-  copy(source, recursive) {
+  copy(source, recursive = true) {
     super.copy(source, recursive);
-    this.updateStaticModes();
-    this._canonicalUrl = source._canonicalUrl;
+
+    if (source.loadingCube) {
+      this.scaleToFit = source.scaleToFit;
+      this.load(source.src);
+    } else {
+      this.updateStaticModes();
+      this._canonicalUrl = source._canonicalUrl;
+    }
+
     this.attribution = source.attribution;
     this.collidable = source.collidable;
     this.walkable = source.walkable;

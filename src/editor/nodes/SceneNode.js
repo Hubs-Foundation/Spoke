@@ -1,4 +1,4 @@
-import THREE from "../../vendor/three";
+import { Math as _Math, Scene, Group, Object3D } from "three";
 import EditorNodeMixin from "./EditorNodeMixin";
 import { setStaticMode, StaticModes, isStatic } from "../StaticMode";
 import sortEntities from "../utils/sortEntities";
@@ -11,10 +11,10 @@ function migrateV1ToV2(json) {
   const { root, metadata, entities } = json;
 
   // Generate UUIDs for all existing entity names.
-  const rootUUID = THREE.Math.generateUUID();
+  const rootUUID = _Math.generateUUID();
   const nameToUUID = { [root]: rootUUID };
   for (const name in entities) {
-    nameToUUID[name] = THREE.Math.generateUUID();
+    nameToUUID[name] = _Math.generateUUID();
   }
 
   // Replace names with uuids in entities and add the name property.
@@ -130,7 +130,7 @@ function migrateV3ToV4(json) {
   return json;
 }
 
-export default class SceneNode extends EditorNodeMixin(THREE.Scene) {
+export default class SceneNode extends EditorNodeMixin(Scene) {
   static nodeName = "Scene";
 
   static disableTransform = true;
@@ -247,7 +247,7 @@ export default class SceneNode extends EditorNodeMixin(THREE.Scene) {
     });
   }
 
-  copy(source, recursive) {
+  copy(source, recursive = true) {
     super.copy(source, recursive);
 
     this.url = source.url;
@@ -338,9 +338,9 @@ export default class SceneNode extends EditorNodeMixin(THREE.Scene) {
 
       const shouldRemove =
         canBeRemoved &&
-        (object.constructor === THREE.Object3D ||
-          object.constructor === THREE.Scene ||
-          object.constructor === THREE.Group ||
+        (object.constructor === Object3D ||
+          object.constructor === Scene ||
+          object.constructor === Group ||
           object.constructor === GroupNode) &&
         object.children.length === 0 &&
         isStatic(object) &&

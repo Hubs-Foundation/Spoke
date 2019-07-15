@@ -1,5 +1,19 @@
-import THREE from "../vendor/three";
-import GridHelper from "./helpers/GridHelper";
+import {
+  WebGLRenderer,
+  PCFSoftShadowMap,
+  Vector2,
+  Color,
+  Clock,
+  Scene,
+  AmbientLight,
+  DirectionalLight,
+  PerspectiveCamera,
+  Box3,
+  Vector3
+} from "three";
+import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer";
+import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass";
+import SpokeGridHelper from "./helpers/SpokeGridHelper";
 import resizeShadowCameraFrustum from "./utils/resizeShadowCameraFrustum";
 import OutlinePass from "./renderer/OutlinePass";
 import { environmentMap } from "./utils/EnvironmentMap";
@@ -21,7 +35,7 @@ export default class Viewport {
     const signals = editor.signals;
 
     function makeRenderer(width, height, options = {}) {
-      const renderer = new THREE.WebGLRenderer({
+      const renderer = new WebGLRenderer({
         ...options,
         antialias: true,
         preserveDrawingBuffer: true
@@ -31,7 +45,7 @@ export default class Viewport {
       renderer.gammaFactor = 2.2;
       renderer.physicallyCorrectLights = true;
       renderer.shadowMap.enabled = true;
-      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      renderer.shadowMap.type = PCFSoftShadowMap;
       renderer.setSize(width, height);
       return renderer;
     }
@@ -42,28 +56,28 @@ export default class Viewport {
     renderer.setPixelRatio(window.devicePixelRatio);
     this.renderer = renderer;
 
-    const effectComposer = (this.effectComposer = new THREE.EffectComposer(renderer));
-    const renderPass = (this.renderPass = new THREE.RenderPass(editor.scene, editor.camera));
+    const effectComposer = (this.effectComposer = new EffectComposer(renderer));
+    const renderPass = (this.renderPass = new RenderPass(editor.scene, editor.camera));
     effectComposer.addPass(renderPass);
     const outlinePass = (this.outlinePass = new OutlinePass(
-      new THREE.Vector2(canvas.parentElement.offsetWidth, canvas.parentElement.offsetHeight),
+      new Vector2(canvas.parentElement.offsetWidth, canvas.parentElement.offsetHeight),
       editor.scene,
       editor.camera,
       this.selectedObjects
     ));
-    outlinePass.edgeColor = new THREE.Color("#006EFF");
+    outlinePass.edgeColor = new Color("#006EFF");
     outlinePass.renderToScreen = true;
     effectComposer.addPass(outlinePass);
 
     this.screenshotRenderer = makeRenderer(1920, 1080);
     this.thumbnailRenderer = makeRenderer(512, 512, { alpha: true });
 
-    editor.scene.background = new THREE.Color(0xaaaaaa);
+    editor.scene.background = new Color(0xaaaaaa);
 
     const camera = editor.camera;
     this.camera = camera;
 
-    const grid = (this.grid = new GridHelper());
+    const grid = (this.grid = new SpokeGridHelper());
     editor.scene.add(grid);
 
     this.inputManager = new InputManager(canvas);
@@ -74,7 +88,7 @@ export default class Viewport {
 
     this.skipRender = false;
 
-    this.clock = new THREE.Clock();
+    this.clock = new Clock();
 
     const render = () => {
       if (!this.skipRender) {
@@ -128,7 +142,7 @@ export default class Viewport {
     this.spokeControls.center.set(0, 0, 0);
     this.editor.scene.add(this.grid);
     this.spokeControls.onSceneSet(this.editor.scene);
-    this.editor.scene.background = new THREE.Color(0xaaaaaa);
+    this.editor.scene.background = new Color(0xaaaaaa);
   };
 
   onWindowResized = () => {
@@ -190,17 +204,17 @@ export default class Viewport {
   };
 
   generateThumbnail = async (object, width = 256, height = 256) => {
-    const scene = new THREE.Scene();
+    const scene = new Scene();
     scene.add(object);
 
-    const light1 = new THREE.AmbientLight(0xffffff, 0.3);
+    const light1 = new AmbientLight(0xffffff, 0.3);
     scene.add(light1);
 
-    const light2 = new THREE.DirectionalLight(0xffffff, 0.8 * Math.PI);
+    const light2 = new DirectionalLight(0xffffff, 0.8 * Math.PI);
     light2.position.set(0.5, 0, 0.866);
     scene.add(light2);
 
-    const camera = new THREE.PerspectiveCamera();
+    const camera = new PerspectiveCamera();
     scene.add(camera);
 
     traverseMaterials(object, material => {
@@ -212,9 +226,9 @@ export default class Viewport {
 
     object.updateMatrixWorld();
 
-    const box = new THREE.Box3().setFromObject(object);
-    const size = box.getSize(new THREE.Vector3()).length();
-    const center = box.getCenter(new THREE.Vector3());
+    const box = new Box3().setFromObject(object);
+    const size = box.getSize(new Vector3()).length();
+    const center = box.getCenter(new Vector3());
 
     object.position.x += object.position.x - center.x;
     object.position.y += object.position.y - center.y;

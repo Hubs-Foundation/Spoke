@@ -13,6 +13,11 @@ export default class HeightfieldClient {
 
     this.working = true;
 
+    if (geometry.attributes.position.count === 0) {
+      this.working = false;
+      return null;
+    }
+
     const heightfieldPromise = new Promise((resolve, reject) => {
       let onMessage = null;
       let onError = null;
@@ -51,13 +56,10 @@ export default class HeightfieldClient {
 
     const verts = geometry.attributes.position.array;
 
-    this.worker.postMessage(
-      {
-        verts,
-        params
-      },
-      [verts.buffer]
-    );
+    this.worker.postMessage({
+      verts,
+      params
+    });
     const result = await heightfieldPromise;
 
     if (result.error) {

@@ -1,27 +1,49 @@
-import browserEnv from "browser-env";
-// import webpack from "webpack";
-// import WebpackDevServer from "webpack-dev-server/lib/Server";
-// import webpackConfigFn from "../webpack.config";
+const { JSDOM } = require("jsdom");
 
-// Initialize browser-env for unit tests
-browserEnv();
+const jsdom = new JSDOM("<!doctype html><html><body></body></html>");
+const { window } = jsdom;
 
-// Compile webpack bundle and start static server for integration tests
+function copyProps(src, target) {
+  Object.defineProperties(target, {
+    ...Object.getOwnPropertyDescriptors(src),
+    ...Object.getOwnPropertyDescriptors(target)
+  });
+}
 
-// const webpackConfigEnv = {};
-// const webpackConfig = webpackConfigFn(webpackConfigEnv);
-// const compiler = webpack(webpackConfig);
+global.window = window;
+global.document = window.document;
+global.navigator = {
+  userAgent: "node.js"
+};
+global.requestAnimationFrame = function(callback) {
+  return setTimeout(callback, 0);
+};
+global.cancelAnimationFrame = function(id) {
+  clearTimeout(id);
+};
+copyProps(window, global);
+window.Number = global.Number;
 
-// const devServerOptions = Object.assign({}, webpackConfig.devServer, {
-//   logLevel: "error",
-//   clientLogLevel: "none"
-// });
+const { AudioContext, AudioNode } = require("standardized-audio-context-mock");
+window.AudioContext = AudioContext;
+AudioContext.prototype.createPanner = () => {
+  return new AudioNode({
+    context: new AudioContext()
+  });
+};
 
-// const server = new WebpackDevServer(compiler, devServerOptions);
+function warnSkipAsset(mod) {
+  console.warn(`Skip loading Webpack Asset "${mod.filename}" in file: "${mod.parent.filename}"`);
+  mod.exports = "https://example.com";
+  return mod;
+}
 
-// const { https, host, port } = devServerOptions;
-// export const SERVER_URL = `${https ? "https" : "http"}://${host}:${port}`;
+[".css", ".scss", ".jpg", ".png", ".glb", ".mp4", ".webm", ".spoke", ".wasm"].forEach(extension => {
+  require.extensions[extension] = warnSkipAsset;
+});
 
-// server.listen(devServerOptions.port, devServerOptions.host, () => {
-//   console.log(`Starting server on ${SERVER_URL}`);
-// });
+require.extensions[".worker.js"] = mod => {
+  console.warn(`Skip loading WebWorker "${mod.filename}" in file: "${mod.parent.filename}"`);
+  mod.exports = function() {};
+  return mod;
+};

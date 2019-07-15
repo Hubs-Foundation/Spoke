@@ -1,15 +1,17 @@
-import THREE from "../../vendor/three";
+import { Object3D, BufferGeometry, Float32BufferAttribute, LineBasicMaterial, LineSegments } from "three";
 import { addIsHelperFlag } from "./utils";
 
-export default class SpokeSpotLightHelper extends THREE.Object3D {
+export default class SpokeSpotLightHelper extends Object3D {
   constructor(light, color) {
     super();
+
+    this.name = "SpokeSpotLightHelper";
 
     this.light = light;
 
     this.color = color;
 
-    const geometry = new THREE.BufferGeometry();
+    const geometry = new BufferGeometry();
 
     const positions = [0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, -1, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, -1, 1];
 
@@ -20,15 +22,15 @@ export default class SpokeSpotLightHelper extends THREE.Object3D {
       positions.push(Math.cos(p1), Math.sin(p1), 1, Math.cos(p2), Math.sin(p2), 1);
     }
 
-    geometry.addAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
+    geometry.addAttribute("position", new Float32BufferAttribute(positions, 3));
 
-    const material = new THREE.LineBasicMaterial({ fog: false });
+    const material = new LineBasicMaterial({ fog: false });
 
-    this.outerCone = new THREE.LineSegments(geometry, material);
+    this.outerCone = new LineSegments(geometry, material);
     this.outerCone.layers.set(1);
     this.add(this.outerCone);
 
-    this.innerCone = new THREE.LineSegments(geometry, material);
+    this.innerCone = new LineSegments(geometry, material);
     this.innerCone.layers.set(1);
     this.add(this.innerCone);
 

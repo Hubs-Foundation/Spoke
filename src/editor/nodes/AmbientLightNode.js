@@ -1,7 +1,7 @@
-import THREE from "../../vendor/three";
+import { AmbientLight } from "three";
 import EditorNodeMixin from "./EditorNodeMixin";
 
-export default class AmbientLightNode extends EditorNodeMixin(THREE.AmbientLight) {
+export default class AmbientLightNode extends EditorNodeMixin(AmbientLight) {
   static legacyComponentName = "ambient-light";
 
   static nodeName = "Ambient Light";

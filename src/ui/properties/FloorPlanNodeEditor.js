@@ -8,6 +8,7 @@ import Button from "../inputs/Button";
 import ProgressDialog from "../dialogs/ProgressDialog";
 import ErrorDialog from "../dialogs/ErrorDialog";
 import { withDialog } from "../contexts/DialogContext";
+import { withSettings } from "../contexts/SettingsContext";
 import styles from "./FloorPlanNodeEditor.scss";
 
 class FloorPlanNodeEditor extends Component {
@@ -15,6 +16,7 @@ class FloorPlanNodeEditor extends Component {
     hideDialog: PropTypes.func.isRequired,
     showDialog: PropTypes.func.isRequired,
     editor: PropTypes.object,
+    settings: PropTypes.object.isRequired,
     node: PropTypes.object
   };
 
@@ -33,6 +35,8 @@ class FloorPlanNodeEditor extends Component {
     this.onChangeAgentMaxClimb = createPropSetter("agentMaxClimb");
     this.onChangeAgentMaxSlope = createPropSetter("agentMaxSlope");
     this.onChangeRegionMinSize = createPropSetter("regionMinSize");
+    this.onChangeMaxTriangles = createPropSetter("maxTriangles");
+    this.onChangeForceTrimesh = createPropSetter("forceTrimesh");
   }
 
   onRegenerate = async () => {
@@ -64,7 +68,7 @@ class FloorPlanNodeEditor extends Component {
   };
 
   render() {
-    const node = this.props.node;
+    const { node, settings } = this.props;
 
     return (
       <NodeEditor {...this.props} description={FloorPlanNodeEditor.description}>
@@ -144,6 +148,22 @@ class FloorPlanNodeEditor extends Component {
           onChange={this.onChangeRegionMinSize}
           unit="m²"
         />
+        <InputGroup name="Force Trimesh">
+          <BooleanInput value={node.forceTrimesh} onChange={this.onChangeForceTrimesh} />
+        </InputGroup>
+        {!node.forceTrimesh && settings.enableExperimentalFeatures && (
+          <NumericInputGroup
+            name="Collision Geo Triangle Threshold"
+            value={node.maxTriangles}
+            min={10}
+            max={10000}
+            smallStep={1}
+            mediumStep={100}
+            largeStep={1000}
+            precision={1}
+            onChange={this.onChangeMaxTriangles}
+          />
+        )}
         <Button className={styles.regenerateButton} onClick={this.onRegenerate}>
           Regenerate
         </Button>
@@ -152,7 +172,7 @@ class FloorPlanNodeEditor extends Component {
   }
 }
 
-const FloorPlanNodeEditorContainer = withDialog(FloorPlanNodeEditor);
+const FloorPlanNodeEditorContainer = withDialog(withSettings(FloorPlanNodeEditor));
 FloorPlanNodeEditorContainer.iconClassName = FloorPlanNodeEditor.iconClassName;
 FloorPlanNodeEditorContainer.description = FloorPlanNodeEditor.description;
 export default FloorPlanNodeEditorContainer;

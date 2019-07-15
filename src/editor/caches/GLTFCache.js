@@ -1,4 +1,5 @@
-import THREE from "../../vendor/three";
+import { Texture, RGBAFormat, RGBFormat } from "three";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import Cache from "./Cache";
 import cloneObject3D from "../utils/cloneObject3D";
 import eventToMessage from "../utils/eventToMessage";
@@ -13,7 +14,9 @@ export default class GLTFCache extends Cache {
     const absoluteURL = new URL(url, window.location).href;
     if (!this._cache.has(absoluteURL)) {
       const gltfPromise = new Promise((resolve, reject) => {
-        new THREE.GLTFLoader().load(absoluteURL, resolve, null, e => {
+        const loader = new GLTFLoader();
+        loader.revokeObjectURLs = false;
+        loader.load(absoluteURL, resolve, null, e => {
           reject(new Error(`Error loading glTF model with url: ${absoluteURL}. ${eventToMessage(e)}`));
         });
       }).then(gltf => {
@@ -41,10 +44,10 @@ export default class GLTFCache extends Cache {
 
           for (const key in obj.material) {
             const prop = obj.material[key];
-            if (prop instanceof THREE.Texture) {
+            if (prop instanceof Texture) {
               if (prop.image.src) {
                 if (key === "map") {
-                  prop.format = obj.material.transparent ? THREE.RGBAFormat : THREE.RGBFormat;
+                  prop.format = obj.material.transparent || obj.material.alphaTest !== 0 ? RGBAFormat : RGBFormat;
                 }
 
                 const absoluteTextureURL = new URL(prop.image.src, window.location).href;
@@ -69,7 +72,7 @@ export default class GLTFCache extends Cache {
           if (obj.material) {
             for (const key in obj.material) {
               const prop = obj.material[key];
-              if (prop instanceof THREE.Texture) {
+              if (prop instanceof Texture) {
                 prop.dispose();
               }
             }

@@ -4,28 +4,28 @@ import InputGroup from "../inputs/InputGroup";
 import SelectInput from "../inputs/SelectInput";
 import BooleanInput from "../inputs/BooleanInput";
 import NumericInputGroup from "../inputs/NumericInputGroup";
-import THREE from "../../vendor/three";
+import { Vector2 } from "three";
 
 const ShadowMapResolutionOptions = [
   {
     label: "256px",
-    value: new THREE.Vector2(256, 256)
+    value: new Vector2(256, 256)
   },
   {
     label: "512px",
-    value: new THREE.Vector2(512, 512)
+    value: new Vector2(512, 512)
   },
   {
     label: "1024px",
-    value: new THREE.Vector2(1024, 1024)
+    value: new Vector2(1024, 1024)
   },
   {
     label: "2048px",
-    value: new THREE.Vector2(2048, 2048)
+    value: new Vector2(2048, 2048)
   },
   {
     label: "4096px (not recommended)",
-    value: new THREE.Vector2(4096, 4096)
+    value: new Vector2(4096, 4096)
   }
 ];
 

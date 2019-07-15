@@ -1,4 +1,4 @@
-import THREE from "../../vendor/three";
+import { BufferGeometry, Float32BufferAttribute, Uint16BufferAttribute } from "three";
 import RecastWorker from "./recast.worker";
 
 const statuses = [
@@ -94,9 +94,9 @@ export default class RecastClient {
       throw new Error(statuses[result.status] || result.error);
     }
 
-    const navmesh = new THREE.BufferGeometry();
-    navmesh.addAttribute("position", new THREE.Float32BufferAttribute(result.verts, 3));
-    navmesh.setIndex(new THREE.Uint16BufferAttribute(result.indices, 1));
+    const navmesh = new BufferGeometry();
+    navmesh.addAttribute("position", new Float32BufferAttribute(result.verts, 3));
+    navmesh.setIndex(new Uint16BufferAttribute(result.indices, 1));
 
     return navmesh;
   }

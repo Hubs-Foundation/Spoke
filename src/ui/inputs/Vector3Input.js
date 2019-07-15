@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import styles from "./Vector3Input.scss";
 import NumericInput from "./NumericInput";
 import Scrubber from "./Scrubber";
-import THREE from "../../vendor/three";
+import { Vector3 } from "three";
 
 let uniqueId = 0;
 
@@ -15,7 +15,7 @@ export default class Vector3Input extends Component {
   };
 
   static defaultProps = {
-    value: new THREE.Vector3(),
+    value: new Vector3(),
     precision: 0.01,
     onChange: () => {}
   };
@@ -25,7 +25,7 @@ export default class Vector3Input extends Component {
 
     this.id = uniqueId++;
 
-    this.newValue = new THREE.Vector3();
+    this.newValue = new Vector3();
 
     this.state = {
       uniformEnabled: props.uniformScaling

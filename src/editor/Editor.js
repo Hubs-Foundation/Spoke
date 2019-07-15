@@ -1,5 +1,7 @@
 import signals from "signals";
-import THREE from "../vendor/three";
+import { PerspectiveCamera, AudioListener, Raycaster, Vector2, Vector3 } from "three";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
+import { GLTFExporter } from "three/examples/jsm/exporters/GLTFExporter";
 import History from "./History";
 import Viewport from "./Viewport";
 
@@ -37,8 +39,8 @@ export default class Editor {
     this.sceneModified = false;
     this.sceneLoaded = false;
 
-    this.camera = new THREE.PerspectiveCamera(80, window.innerWidth / window.innerHeight, 0.2, 8000);
-    this.audioListener = new THREE.AudioListener();
+    this.camera = new PerspectiveCamera(80, window.innerWidth / window.innerHeight, 0.2, 8000);
+    this.audioListener = new AudioListener();
     this.camera.add(this.audioListener);
     this.camera.layers.enable(1);
     this.camera.name = "Camera";
@@ -91,9 +93,9 @@ export default class Editor {
 
     this.history = new History(this);
 
-    this.raycaster = new THREE.Raycaster();
+    this.raycaster = new Raycaster();
     // Center at 0, 0
-    this.centerScreenSpace = new THREE.Vector2();
+    this.centerScreenSpace = new Vector2();
   }
 
   onSceneGraphChanged = () => {
@@ -177,7 +179,7 @@ export default class Editor {
     this.sceneUrl = null;
 
     this.camera.position.set(0, 5, 10);
-    this.camera.lookAt(new THREE.Vector3());
+    this.camera.lookAt(new Vector3());
     this.scene.add(this.camera);
 
     this.history.clear();
@@ -209,7 +211,7 @@ export default class Editor {
 
     const animations = clonedScene.getAnimationClips();
 
-    const exporter = new THREE.GLTFExporter();
+    const exporter = new GLTFExporter();
     // TODO: export animations
     const chunks = await new Promise((resolve, reject) => {
       exporter.parseChunks(
@@ -296,7 +298,7 @@ export default class Editor {
     }
 
     json.extensions.MOZ_hubs_components = {
-      version: 1
+      version: 2
     };
 
     json.asset.generator = `Mozilla Spoke ${process.env.BUILD_VERSION}`;
@@ -553,7 +555,7 @@ export default class Editor {
     let blob;
 
     if (file.name.toLowerCase().endsWith(".glb")) {
-      const gltf = await new Promise((resolve, reject) => new THREE.GLTFLoader().load(url, resolve, undefined, reject));
+      const gltf = await new Promise((resolve, reject) => new GLTFLoader().load(url, resolve, undefined, reject));
       blob = await this.viewport.generateThumbnail(gltf.scene, width, height);
     } else if ([".png", ".jpg", ".jpeg", ".gif", ".webp"].some(ext => file.name.toLowerCase().endsWith(ext))) {
       blob = await generateImageFileThumbnail(file);

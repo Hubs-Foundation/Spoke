@@ -1,10 +1,11 @@
-import THREE from "../../vendor/three";
+import { Object3D } from "three";
 
-export default class FloorPlan extends THREE.Object3D {
+export default class FloorPlan extends Object3D {
   constructor() {
     super();
     this.position.y = 0.005;
     this.navMesh = null;
+    this.trimesh = null;
     this.heightfield = null;
     this.heightfieldMesh = null;
   }
@@ -23,28 +24,45 @@ export default class FloorPlan extends THREE.Object3D {
     }
   }
 
+  setTrimesh(object) {
+    if (this.trimesh) {
+      this.remove(this.trimesh);
+    }
+
+    this.trimesh = object;
+
+    if (object) {
+      this.add(object);
+      this.trimesh.layers.set(1);
+      this.trimesh.visible = false;
+    }
+  }
+
   setHeightfield(heightfield) {
     this.heightfield = heightfield || null;
   }
 
-  copy(source, recursive) {
-    super.copy(source, false);
-
+  copy(source, recursive = true) {
     this.heightfield = JSON.parse(JSON.stringify(source.heightfield));
 
-    for (const child of source.children) {
-      let clonedChild;
+    if (recursive) {
+      this.remove(this.navMesh);
+      this.remove(this.trimesh);
+    }
 
-      if (child === source.navMesh) {
-        clonedChild = child.clone();
-        clonedChild.material = child.material.clone();
-        this.navMesh = clonedChild;
-      } else if (recursive === true) {
-        clonedChild = child.clone();
+    super.copy(source, recursive);
+
+    if (recursive) {
+      const navMeshIndex = source.children.indexOf(source.navMesh);
+
+      if (navMeshIndex !== -1) {
+        this.navMesh = this.children[navMeshIndex];
       }
 
-      if (clonedChild) {
-        this.add(clonedChild);
+      const trimeshIndex = source.children.indexOf(source.trimesh);
+
+      if (trimeshIndex !== -1) {
+        this.trimesh = this.children[trimeshIndex];
       }
     }
 
