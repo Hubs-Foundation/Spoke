@@ -238,7 +238,6 @@ export default class ParticleEmitterNode extends EditorNodeMixin(THREE.Points) {
     this._canonicalUrl = nextSrc;
 
     const { accessibleUrl } = await this.editor.api.resolveMedia(src);
-    console.log("accessibleUrl: " + accessibleUrl);
     this.material.uniforms.texture.value = await new Promise((resolve, reject) => {
       new THREE.TextureLoader().load(accessibleUrl, resolve, null, e =>
         reject(`Error loading Image. ${eventToMessage(e)}`)
