@@ -89,6 +89,8 @@ const Curves = {
 export default class ParticleEmitterNode extends EditorNodeMixin(THREE.Points) {
   static legacyComponentName = "particle-emitter";
 
+  static experimental = true;
+
   static nodeName = "Particle Emitter";
 
   static initialElementProps = {
@@ -248,8 +250,6 @@ export default class ParticleEmitterNode extends EditorNodeMixin(THREE.Points) {
     this.initialAges = initialAges;
     this.lifetimes = lifetimes;
     this.colors = colors;
-
-    console.log("initialAges", initialAges, this.ageRandomness);
   }
 
   async load(src) {
