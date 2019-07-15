@@ -150,6 +150,15 @@ export default class ParticleEmitterNodeEditor extends Component {
     this.props.node.createParticle();
   };
 
+  onChangeAgeRandomness = ageRandomness => {
+    this.props.editor.setNodeProperty(this.props.node, "ageRandomness", ageRandomness);
+  };
+
+  onCommitAgeRandomness = ageRandomness => {
+    this.props.editor.setNodeProperty(this.props.node, "ageRandomness", ageRandomness);
+    this.props.node.createParticle();
+  };
+
   onChangeLifetimeRandomness = lifetimeRandomness => {
     this.props.editor.setNodeProperty(this.props.node, "lifetimeRandomness", lifetimeRandomness);
   };
@@ -296,6 +305,18 @@ export default class ParticleEmitterNodeEditor extends Component {
           value={this.props.node.angularVelocity}
           onChange={this.onChangeAngularVelocity}
           onCommit={this.onCommitAngularVelocity}
+        />
+
+        <NumericInputGroup
+          name="Age Randomness"
+          min={0}
+          smallStep={0.01}
+          mediumStep={0.1}
+          largeStep={1}
+          value={this.props.node.ageRandomness}
+          onChange={this.onChangeAgeRandomness}
+          onCommit={this.onCommitAgeRandomness}
+          unit=""
         />
 
         <NumericInputGroup

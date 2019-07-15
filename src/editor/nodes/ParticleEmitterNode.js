@@ -33,11 +33,10 @@ const vertexShader = `
       void main() {
         vColor = color;
         vAngle = customAngle;
-    
+
         vec4 mvPosition = modelViewMatrix * vec4( position.xyz, 1.0 );
         gl_PointSize = position.w * ( BASE_PARTICLE_SIZE / -mvPosition.z );
         gl_Position = projectionMatrix * mvPosition;
-        if ( position.z < -0.1) gl_PointSize = 0.0;	
       }
       `;
 
@@ -49,19 +48,43 @@ const fragmentShader = `
       varying float vAngle;
       varying vec4 vColor;
 
-      void main() { 
+      void main() {
         float c = cos(vAngle);
-        float s = sin(vAngle);  
-        gl_FragColor = vColor; 
+        float s = sin(vAngle);
+        gl_FragColor = vColor;
 
-        vec2 rotatedUV = vec2(c * (gl_PointCoord.x - 0.5) + s * (gl_PointCoord.y - 0.5) + 0.5, 
+        vec2 rotatedUV = vec2(c * (gl_PointCoord.x - 0.5) + s * (gl_PointCoord.y - 0.5) + 0.5,
         c * (gl_PointCoord.y - 0.5) - s * (gl_PointCoord.x - 0.5) + 0.5);  // rotate UV coordinates to rotate texture
         vec4 rotatedTexture = texture2D( texture,  rotatedUV );
-        gl_FragColor = gl_FragColor * rotatedTexture;
 
-  
+        gl_FragColor = gl_FragColor * rotatedTexture;
       }
   `;
+
+const Curves = {
+  Even(k) {
+    return k * k;
+  },
+
+  EaseIn(k) {
+    return k * k * k * k; //Quadratic
+  },
+
+  EaseOut(k) {
+    return Math.sin((k * Math.PI) / 2);
+  },
+
+  EaseInOut(k) {
+    if ((k *= 2) < 1) {
+      return 0.5 * k * k * k * k * k;
+    }
+
+    return 0.5 * ((k -= 2) * k * k * k * k + 2);
+  },
+  Linear(k) {
+    return k;
+  }
+};
 
 export default class ParticleEmitterNode extends EditorNodeMixin(THREE.Points) {
   static legacyComponentName = "particle-emitter";
@@ -92,6 +115,7 @@ export default class ParticleEmitterNode extends EditorNodeMixin(THREE.Points) {
       endVelocity,
       angularVelocity,
       particleCount,
+      ageRandomness,
       lifetime,
       lifetimeRandomness
     } = json.components.find(c => c.name === "particle-emitter").props;
@@ -106,6 +130,7 @@ export default class ParticleEmitterNode extends EditorNodeMixin(THREE.Points) {
     node.emitterHeight = emitterHeight;
     node.emitterWidth = emitterWidth;
     node.size = size;
+    node.ageRandomness = ageRandomness;
     node.lifetime = lifetime;
     node.lifetimeRandomness = lifetimeRandomness;
     node.particleCount = particleCount;
@@ -163,7 +188,7 @@ export default class ParticleEmitterNode extends EditorNodeMixin(THREE.Points) {
     this.lifetime = 5;
     this.lifetimes = [];
     this.lifetimeRandomness = 5;
-    this.ageRandomness = 5;
+    this.ageRandomness = 10;
     this.ages = [];
     this.colors = [];
     this.endColor = new THREE.Color();
@@ -174,6 +199,8 @@ export default class ParticleEmitterNode extends EditorNodeMixin(THREE.Points) {
     this.endOpacity = 1;
     this.colorCurve = "Even";
     this.velocityCurve = "Linear";
+    this.colorFactor = [];
+    this.velFactor = [];
     this.createParticle();
   }
 
@@ -209,10 +236,7 @@ export default class ParticleEmitterNode extends EditorNodeMixin(THREE.Points) {
       positions.push(this.size);
 
       angles.push(0);
-      colors.push(this.startColor.r);
-      colors.push(this.startColor.g);
-      colors.push(this.startColor.b);
-      colors.push(this.startOpacity);
+      colors.push(0, 0, 0, 0);
     }
     tempGeo.addAttribute("position", new THREE.Float32BufferAttribute(positions, 4).setDynamic(true));
     tempGeo.addAttribute("color", new THREE.Float32BufferAttribute(colors, 4).setDynamic(true));
@@ -224,6 +248,8 @@ export default class ParticleEmitterNode extends EditorNodeMixin(THREE.Points) {
     this.initialAges = initialAges;
     this.lifetimes = lifetimes;
     this.colors = colors;
+
+    console.log("initialAges", initialAges, this.ageRandomness);
   }
 
   async load(src) {
@@ -249,57 +275,41 @@ export default class ParticleEmitterNode extends EditorNodeMixin(THREE.Points) {
     const position = this.geometry.attributes.position.array;
     const color = this.geometry.attributes.color.array;
     const customAngle = this.geometry.attributes.customAngle.array;
-    const colorFactor = [];
+    const colorFactor = this.colorFactor;
+    const velFactor = this.velFactor;
 
-    const velFactor = [];
-    const Curves = {
-      Even(k) {
-        return k * k;
-      },
-
-      EaseIn(k) {
-        return k * k * k * k; //Quadratic
-      },
-
-      EaseOut(k) {
-        return Math.sin((k * Math.PI) / 2);
-      },
-
-      EaseInOut(k) {
-        if ((k *= 2) < 1) {
-          return 0.5 * k * k * k * k * k;
-        }
-
-        return 0.5 * ((k -= 2) * k * k * k * k + 2);
-      },
-      Linear(k) {
-        return k;
-      }
-    };
     for (let i = 0; i < this.particleCount; i++) {
+      const prevAge = this.ages[i];
       this.ages[i] += dt;
+
+      // Particle is dead
+      if (this.ages[i] < 0) {
+        continue;
+      }
 
       velFactor[i] = clamp(0, 1, this.ages[i] / this.lifetimes[i]);
       colorFactor[i] = clamp(0, 1, this.ages[i] / this.lifetimes[i]);
       position[i * 4 + 3] = this.size;
 
-      if (this.ages[i] < 0) {
+      // Particle became alive
+      if (this.ages[i] > 0 && prevAge <= 0) {
         color[i * 4] = this.startColor.r;
         color[i * 4 + 1] = this.startColor.g;
         color[i * 4 + 2] = this.startColor.b;
-        color[i * 4 + 3] = this.startColor;
+        color[i * 4 + 3] = this.startOpacity;
         velFactor[i] = 0;
         continue;
       }
 
+      // Particle died
       if (this.ages[i] > this.lifetimes[i]) {
         position[i * 4] = this.initialPositions[i * 3];
         position[i * 4 + 1] = this.initialPositions[i * 3 + 1];
-        position[i * 4 + 2] = -1;
+        position[i * 4 + 2] = this.initialPositions[i * 3 + 2];
         velFactor[i] = 0;
         this.ages[i] = this.initialAges[i];
+        color[i * 4 + 3] = 0;
         colorFactor[i] = 0;
-
         continue;
       }
 
@@ -350,6 +360,7 @@ export default class ParticleEmitterNode extends EditorNodeMixin(THREE.Points) {
         emitterHeight: this.emitterHeight,
         emitterWidth: this.emitterWidth,
         size: this.size,
+        ageRandomness: this.ageRandomness,
         lifetime: this.lifetime,
         lifetimeRandomness: this.lifetimeRandomness,
         particleCount: this.particleCount,
@@ -375,6 +386,7 @@ export default class ParticleEmitterNode extends EditorNodeMixin(THREE.Points) {
       emitterHeight: this.emitterHeight,
       emitterWidth: this.emitterWidth,
       size: this.size,
+      ageRandomness: this.ageRandomness,
       lifetime: this.lifetime,
       lifetimeRandomness: this.lifetimeRandomness,
       particleCount: this.particleCount,
