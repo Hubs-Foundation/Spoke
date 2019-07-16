@@ -67,6 +67,10 @@ const fragmentShader = `
         c * (gl_PointCoord.y - 0.5) - s * (gl_PointCoord.x - 0.5) + 0.5);  // rotate UV coordinates to rotate texture
         vec4 rotatedTexture = texture2D( texture,  rotatedUV );
 
+        if (rotatedUV.s < 0.0 || rotatedUV.t < 0.0 || rotatedUV.s > 1.0 || rotatedUV.t > 1.0) {
+          discard;
+        }
+
         gl_FragColor = gl_FragColor * rotatedTexture;
         
       }
