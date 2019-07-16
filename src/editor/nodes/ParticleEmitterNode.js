@@ -359,6 +359,32 @@ export default class ParticleEmitterNode extends EditorNodeMixin(Points) {
     }
   }
 
+  copy(source, recursive = true) {
+    super.copy(source, recursive);
+
+    this.src = source._canonicalUrl;
+    this.startColor = source.startColor;
+    this.middleColor = source.middleColor;
+    this.endColor = source.endColor;
+    this.startOpacity = source.startOpacity;
+    this.middleOpacity = source.middleOpacity;
+    this.endOpacity = source.endOpacity;
+    this.colorCurve = source.colorCurve;
+    this.emitterHeight = source.emitterHeight;
+    this.emitterWidth = source.emitterWidth;
+    this.size = source.size;
+    this.ageRandomness = source.ageRandomness;
+    this.lifetime = source.lifetime;
+    this.lifetimeRandomness = source.lifetimeRandomness;
+    this.particleCount = source.particleCount;
+    this.velocity = source.velocity;
+    this.endVelocity = source.endVelocity;
+    this.velocityCurve = source.velocityCurve;
+    this.angularVelocity = source.angularVelocity;
+
+    return this;
+  }
+
   serialize() {
     return super.serialize({
       "particle-emitter": {
