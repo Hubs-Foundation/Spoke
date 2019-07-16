@@ -1,4 +1,14 @@
-import THREE from "../../vendor/three";
+import {
+  Points,
+  TextureLoader,
+  BufferGeometry,
+  RawShaderMaterial,
+  AdditiveBlending,
+  Vector3,
+  Color,
+  Float32BufferAttribute,
+  Math as _Math
+} from "three";
 import EditorNodeMixin from "./EditorNodeMixin";
 import eventToMessage from "../utils/eventToMessage";
 import defaultParticleUrl from "../../assets/dot.png";
@@ -86,7 +96,7 @@ const Curves = {
   }
 };
 
-export default class ParticleEmitterNode extends EditorNodeMixin(THREE.Points) {
+export default class ParticleEmitterNode extends EditorNodeMixin(Points) {
   static legacyComponentName = "particle-emitter";
 
   static experimental = true;
@@ -153,7 +163,7 @@ export default class ParticleEmitterNode extends EditorNodeMixin(THREE.Points) {
 
   static async load() {
     defaultParticleSprite = await new Promise((resolve, reject) => {
-      new THREE.TextureLoader().load(defaultParticleUrl, resolve, null, e =>
+      new TextureLoader().load(defaultParticleUrl, resolve, null, e =>
         reject(`Error loading Image. ${eventToMessage(e)}`)
       );
     });
@@ -161,8 +171,8 @@ export default class ParticleEmitterNode extends EditorNodeMixin(THREE.Points) {
   }
 
   constructor(editor) {
-    const geometry = new THREE.BufferGeometry();
-    const material = new THREE.RawShaderMaterial({
+    const geometry = new BufferGeometry();
+    const material = new RawShaderMaterial({
       uniforms: {
         texture: { value: defaultParticleSprite }
       },
@@ -170,7 +180,7 @@ export default class ParticleEmitterNode extends EditorNodeMixin(THREE.Points) {
       fragmentShader,
       transparent: true,
       depthWrite: false,
-      blendEquation: THREE.AdditiveBlending
+      blendEquation: AdditiveBlending
     });
 
     super(editor, geometry, material);
@@ -183,8 +193,8 @@ export default class ParticleEmitterNode extends EditorNodeMixin(THREE.Points) {
     this.initialPositions = [];
     this.size = 0.25;
     this.velocities = [];
-    this.velocity = new THREE.Vector3(0, 0, 0.5);
-    this.endVelocity = new THREE.Vector3(0, 0, 0.5);
+    this.velocity = new Vector3(0, 0, 0.5);
+    this.endVelocity = new Vector3(0, 0, 0.5);
     this.angularVelocity = 0;
     this.particleCount = 100;
     this.lifetime = 5;
@@ -193,9 +203,9 @@ export default class ParticleEmitterNode extends EditorNodeMixin(THREE.Points) {
     this.ageRandomness = 10;
     this.ages = [];
     this.colors = [];
-    this.endColor = new THREE.Color();
-    this.middleColor = new THREE.Color();
-    this.startColor = new THREE.Color();
+    this.endColor = new Color();
+    this.middleColor = new Color();
+    this.startColor = new Color();
     this.startOpacity = 1;
     this.middleOpacity = 1;
     this.endOpacity = 1;
@@ -215,7 +225,7 @@ export default class ParticleEmitterNode extends EditorNodeMixin(THREE.Points) {
   }
 
   createParticle() {
-    const tempGeo = new THREE.BufferGeometry();
+    const tempGeo = new BufferGeometry();
     const positions = [];
     const colors = [];
     const lifetimes = [];
@@ -240,9 +250,9 @@ export default class ParticleEmitterNode extends EditorNodeMixin(THREE.Points) {
       angles.push(0);
       colors.push(0, 0, 0, 0);
     }
-    tempGeo.addAttribute("position", new THREE.Float32BufferAttribute(positions, 4).setDynamic(true));
-    tempGeo.addAttribute("color", new THREE.Float32BufferAttribute(colors, 4).setDynamic(true));
-    tempGeo.addAttribute("customAngle", new THREE.Float32BufferAttribute(angles, 1).setDynamic(true));
+    tempGeo.addAttribute("position", new Float32BufferAttribute(positions, 4).setDynamic(true));
+    tempGeo.addAttribute("color", new Float32BufferAttribute(colors, 4).setDynamic(true));
+    tempGeo.addAttribute("customAngle", new Float32BufferAttribute(angles, 1).setDynamic(true));
 
     this.geometry = tempGeo;
     this.initialPositions = initialPositions;
@@ -262,9 +272,7 @@ export default class ParticleEmitterNode extends EditorNodeMixin(THREE.Points) {
 
     const { accessibleUrl } = await this.editor.api.resolveMedia(src);
     this.material.uniforms.texture.value = await new Promise((resolve, reject) => {
-      new THREE.TextureLoader().load(accessibleUrl, resolve, null, e =>
-        reject(`Error loading Image. ${eventToMessage(e)}`)
-      );
+      new TextureLoader().load(accessibleUrl, resolve, null, e => reject(`Error loading Image. ${eventToMessage(e)}`));
     });
     this.material.uniforms.texture.value.flipY = false;
 
@@ -323,7 +331,7 @@ export default class ParticleEmitterNode extends EditorNodeMixin(THREE.Points) {
       position[i * 4] += this.velocities[i * 3] * dt;
       position[i * 4 + 1] += this.velocities[i * 3 + 1] * dt;
       position[i * 4 + 2] += this.velocities[i * 3 + 2] * dt;
-      customAngle[i] += this.angularVelocity * THREE.Math.DEG2RAD * dt;
+      customAngle[i] += this.angularVelocity * _Math.DEG2RAD * dt;
 
       const ColCurveFunction = Curves[this.colorCurve];
       colorFactor[i] = ColCurveFunction(colorFactor[i]);
