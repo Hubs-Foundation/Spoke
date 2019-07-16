@@ -68,6 +68,7 @@ const fragmentShader = `
         vec4 rotatedTexture = texture2D( texture,  rotatedUV );
 
         gl_FragColor = gl_FragColor * rotatedTexture;
+        
       }
   `;
 
@@ -235,16 +236,16 @@ export default class ParticleEmitterNode extends EditorNodeMixin(Points) {
     const angles = [];
 
     for (let i = 0; i < this.particleCount; i++) {
-      initialAges[i] = ages[i] = Math.random() * this.ageRandomness - this.ageRandomness;
+      initialAges[i] = Math.random() * this.ageRandomness - this.ageRandomness;
       lifetimes[i] = this.lifetime + Math.random() * 2 * this.lifetimeRandomness;
+      ages[i] = initialAges[i];
+      initialPositions[i * 3] = this.emitterWidth * (Math.random() * 2 - 1); // X
+      initialPositions[i * 3 + 1] = this.emitterHeight * (Math.random() * 2 - 1); // Y
+      initialPositions[i * 3 + 2] = 0; // Z
 
-      initialPositions[i] = this.emitterWidth * (Math.random() * 2 - 1); // X
-      initialPositions[i + 1] = this.emitterHeight * (Math.random() * 2 - 1); // Y
-      initialPositions[i + 2] = 0; // Z
-
-      positions.push(initialPositions[i]);
-      positions.push(initialPositions[i + 1]);
-      positions.push(initialPositions[i + 2]);
+      positions.push(initialPositions[i * 3]);
+      positions.push(initialPositions[i * 3 + 1]);
+      positions.push(initialPositions[i * 3 + 2]);
       positions.push(this.size);
 
       angles.push(0);
@@ -299,7 +300,7 @@ export default class ParticleEmitterNode extends EditorNodeMixin(Points) {
       colorFactor[i] = clamp(0, 1, this.ages[i] / this.lifetimes[i]);
       position[i * 4 + 3] = this.size;
 
-      // Particle became alive
+      // // Particle became alive
       if (this.ages[i] > 0 && prevAge <= 0) {
         color[i * 4] = this.startColor.r;
         color[i * 4 + 1] = this.startColor.g;
@@ -311,11 +312,11 @@ export default class ParticleEmitterNode extends EditorNodeMixin(Points) {
 
       // Particle died
       if (this.ages[i] > this.lifetimes[i]) {
+        this.ages[i] = this.initialAges[i];
+
         position[i * 4] = this.initialPositions[i * 3];
         position[i * 4 + 1] = this.initialPositions[i * 3 + 1];
-        position[i * 4 + 2] = this.initialPositions[i * 3 + 2];
-        velFactor[i] = 0;
-        this.ages[i] = this.initialAges[i];
+        position[i * 4 + 2] = 0;
         color[i * 4 + 3] = 0;
         colorFactor[i] = 0;
         continue;
