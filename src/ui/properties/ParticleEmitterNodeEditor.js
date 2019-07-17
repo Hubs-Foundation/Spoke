@@ -94,13 +94,9 @@ export default class ParticleEmitterNodeEditor extends Component {
     this.props.node.createParticle();
   };
 
-  onCommitParticleCount = particleCount => {
-    this.props.editor.setNodeProperty(this.props.node, "particleCount", particleCount);
-    this.props.node.createParticle();
-  };
-
   onChangeParticleCount = particleCount => {
     this.props.editor.setNodeProperty(this.props.node, "particleCount", particleCount);
+    this.props.node.createParticle();
   };
 
   onCommitEmitterHeight = emitterHeight => {
@@ -182,7 +178,6 @@ export default class ParticleEmitterNodeEditor extends Component {
           largeStep={1}
           value={this.props.node.particleCount}
           onChange={this.onChangeParticleCount}
-          onCommit={this.onCommitParticleCount}
         />
 
         <InputGroup name="Image">
