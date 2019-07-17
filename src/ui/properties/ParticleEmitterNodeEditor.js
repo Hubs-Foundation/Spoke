@@ -171,9 +171,93 @@ export default class ParticleEmitterNodeEditor extends Component {
   render() {
     return (
       <NodeEditor {...this.props} description={ParticleEmitterNodeEditor.description}>
+        <NumericInputGroup
+          name="Emitter Width"
+          min={0}
+          smallStep={0.01}
+          mediumStep={0.1}
+          largeStep={1}
+          value={this.props.node.emitterWidth}
+          onChange={this.onChangeEmitterWidth}
+          onCommit={this.onCommitEmitterWidth}
+          unit="m"
+        />
+        <NumericInputGroup
+          name="Emitter Height"
+          min={0}
+          smallStep={0.01}
+          mediumStep={0.1}
+          largeStep={1}
+          value={this.props.node.emitterHeight}
+          onChange={this.onChangeEmitterHeight}
+          onCommit={this.onCommitEmitterHeight}
+          unit="m"
+        />
+
+        <NumericInputGroup
+          name="Particle Size"
+          min={0}
+          smallStep={0.01}
+          mediumStep={0.1}
+          largeStep={1}
+          value={this.props.node.size}
+          onChange={this.onChangeSize}
+          unit="m"
+        />
+
+        <NumericInputGroup
+          name="Particle Count"
+          min={1}
+          smallStep={1}
+          mediumStep={1}
+          largeStep={1}
+          value={this.props.node.particleCount}
+          onChange={this.onChangeParticleCount}
+          onCommit={this.onCommitParticleCount}
+        />
+
         <InputGroup name="Image">
           <ImageInput value={this.props.node.src} onChange={this.onChangeSrc} />
         </InputGroup>
+
+        <NumericInputGroup
+          name="Age Randomness"
+          info="The amount of variation between when particles are spawned."
+          min={0}
+          smallStep={0.01}
+          mediumStep={0.1}
+          largeStep={1}
+          value={this.props.node.ageRandomness}
+          onChange={this.onChangeAgeRandomness}
+          onCommit={this.onCommitAgeRandomness}
+          unit="s"
+        />
+
+        <NumericInputGroup
+          name="Lifetime"
+          info="The maximum age of a particle before it is respawned."
+          min={0}
+          smallStep={0.01}
+          mediumStep={0.1}
+          largeStep={1}
+          value={this.props.node.lifetime}
+          onChange={this.onChangeLifetime}
+          onCommit={this.onCommitLifetime}
+          unit="s"
+        />
+
+        <NumericInputGroup
+          name="Lifetime Randomness"
+          info="The amount of variation between particle lifetimes."
+          min={0}
+          smallStep={0.01}
+          mediumStep={0.1}
+          largeStep={1}
+          value={this.props.node.lifetimeRandomness}
+          onChange={this.onChangeLifetimeRandomness}
+          onCommit={this.onCommitLifetimeRandomness}
+          unit="s"
+        />
 
         <InputGroup name="Color Curve">
           <SelectInput
@@ -228,46 +312,6 @@ export default class ParticleEmitterNodeEditor extends Component {
           />
         </InputGroup>
 
-        <NumericInputGroup
-          name="Particle Count"
-          min={1}
-          smallStep={1}
-          mediumStep={1}
-          largeStep={1}
-          value={this.props.node.particleCount}
-          onChange={this.onChangeParticleCount}
-          onCommit={this.onCommitParticleCount}
-        />
-        <NumericInputGroup
-          name="Emitter Height"
-          min={0}
-          smallStep={0.01}
-          mediumStep={0.1}
-          largeStep={1}
-          value={this.props.node.emitterHeight}
-          onChange={this.onChangeEmitterHeight}
-          onCommit={this.onCommitEmitterHeight}
-        />
-        <NumericInputGroup
-          name="Emitter Width"
-          min={0}
-          smallStep={0.01}
-          mediumStep={0.1}
-          largeStep={1}
-          value={this.props.node.emitterWidth}
-          onChange={this.onChangeEmitterWidth}
-          onCommit={this.onCommitEmitterWidth}
-        />
-        <NumericInputGroup
-          name="Size"
-          min={0}
-          smallStep={0.01}
-          mediumStep={0.1}
-          largeStep={1}
-          value={this.props.node.size}
-          onChange={this.onChangeSize}
-        />
-
         <InputGroup name="Velocity Curve">
           <SelectInput
             options={VelocityCurveOptions}
@@ -305,42 +349,7 @@ export default class ParticleEmitterNodeEditor extends Component {
           value={this.props.node.angularVelocity}
           onChange={this.onChangeAngularVelocity}
           onCommit={this.onCommitAngularVelocity}
-        />
-
-        <NumericInputGroup
-          name="Age Randomness"
-          min={0}
-          smallStep={0.01}
-          mediumStep={0.1}
-          largeStep={1}
-          value={this.props.node.ageRandomness}
-          onChange={this.onChangeAgeRandomness}
-          onCommit={this.onCommitAgeRandomness}
-          unit=""
-        />
-
-        <NumericInputGroup
-          name="Lifetime"
-          min={0}
-          smallStep={0.01}
-          mediumStep={0.1}
-          largeStep={1}
-          value={this.props.node.lifetime}
-          onChange={this.onChangeLifetime}
-          onCommit={this.onCommitLifetime}
-          unit=""
-        />
-
-        <NumericInputGroup
-          name="Lifetime Randomness"
-          min={0}
-          smallStep={0.01}
-          mediumStep={0.1}
-          largeStep={1}
-          value={this.props.node.lifetimeRandomness}
-          onChange={this.onChangeLifetimeRandomness}
-          onCommit={this.onCommitLifetimeRandomness}
-          unit=""
+          unit="°/s"
         />
       </NodeEditor>
     );

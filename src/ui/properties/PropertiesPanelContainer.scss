@@ -95,3 +95,10 @@
 .static-select__option:hover {
   background-color: $blue;
 }
+
+:local(.tooltip) {
+  max-width: 200px;
+  overflow: hidden;
+  overflow-wrap: break-word;
+  @include no-select;
+}
