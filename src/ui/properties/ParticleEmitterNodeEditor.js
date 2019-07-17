@@ -8,44 +8,7 @@ import CompoundNumericInput from "../inputs/CompoundNumericInput";
 import NumericInputGroup from "../inputs/NumericInputGroup";
 import Vector3Input from "../inputs/Vector3Input";
 import SelectInput from "../inputs/SelectInput";
-
-const ColorCurveOptions = [
-  {
-    label: "Even",
-    value: "Even"
-  },
-  {
-    label: "Ease-in",
-    value: "EaseIn"
-  },
-  {
-    label: "Ease-out",
-    value: "EaseOut"
-  },
-  {
-    label: "Ease-in,out",
-    value: "EaseInOut"
-  }
-];
-
-const VelocityCurveOptions = [
-  {
-    label: "Linear",
-    value: "Linear"
-  },
-  {
-    label: "Ease-in",
-    value: "EaseIn"
-  },
-  {
-    label: "Ease-out",
-    value: "EaseOut"
-  },
-  {
-    label: "Ease-in,out",
-    value: "EaseInOut"
-  }
-];
+import { CurveOptions } from "../../editor/utils/Curves";
 
 export default class ParticleEmitterNodeEditor extends Component {
   static propTypes = {
@@ -93,12 +56,29 @@ export default class ParticleEmitterNodeEditor extends Component {
     this.props.editor.setNodeProperty(this.props.node, "src", src);
   };
 
-  onChangeSize = size => {
-    this.props.editor.setNodeProperty(this.props.node, "size", size);
+  onChangeSizeCurve = sizeCurve => {
+    this.props.editor.setNodeProperty(this.props.node, "sizeCurve", sizeCurve);
   };
 
-  onChangeVelocity = velocity => {
-    this.props.editor.setNodeProperty(this.props.node, "velocity", velocity);
+  onChangeStartSize = startSize => {
+    this.props.editor.setNodeProperty(this.props.node, "startSize", startSize);
+  };
+
+  onChangeEndSize = endSize => {
+    this.props.editor.setNodeProperty(this.props.node, "endSize", endSize);
+  };
+
+  onChangeSizeRandomness = sizeRandomness => {
+    this.props.editor.setNodeProperty(this.props.node, "sizeRandomness", sizeRandomness);
+  };
+
+  onCommitSizeRandomness = sizeRandomness => {
+    this.props.editor.setNodeProperty(this.props.node, "sizeRandomness", sizeRandomness);
+    this.props.node.createParticle();
+  };
+
+  onChangeStartVelocity = startVelocity => {
+    this.props.editor.setNodeProperty(this.props.node, "startVelocity", startVelocity);
   };
 
   onChangeEndVelocity = endVelocity => {
@@ -195,17 +175,6 @@ export default class ParticleEmitterNodeEditor extends Component {
         />
 
         <NumericInputGroup
-          name="Particle Size"
-          min={0}
-          smallStep={0.01}
-          mediumStep={0.1}
-          largeStep={1}
-          value={this.props.node.size}
-          onChange={this.onChangeSize}
-          unit="m"
-        />
-
-        <NumericInputGroup
           name="Particle Count"
           min={1}
           smallStep={1}
@@ -259,12 +228,47 @@ export default class ParticleEmitterNodeEditor extends Component {
           unit="s"
         />
 
+        <InputGroup name="Size Curve">
+          <SelectInput options={CurveOptions} value={this.props.node.sizeCurve} onChange={this.onChangeSizeCurve} />
+        </InputGroup>
+
+        <NumericInputGroup
+          name="Start Particle Size"
+          min={0}
+          smallStep={0.01}
+          mediumStep={0.1}
+          largeStep={1}
+          value={this.props.node.startSize}
+          onChange={this.onChangeStartSize}
+          unit="m"
+        />
+
+        <NumericInputGroup
+          name="End Particle Size"
+          min={0}
+          smallStep={0.01}
+          mediumStep={0.1}
+          largeStep={1}
+          value={this.props.node.endSize}
+          onChange={this.onChangeEndSize}
+          unit="m"
+        />
+
+        <NumericInputGroup
+          name="Size Randomness"
+          info="The amount of variation between particle starting sizes."
+          min={0}
+          smallStep={0.01}
+          mediumStep={0.1}
+          largeStep={1}
+          value={this.props.node.sizeRandomness}
+          onChange={this.onChangeSizeRandomness}
+          onCommit={this.onCommitSizeRandomness}
+          unit="m"
+        />
+
         <InputGroup name="Color Curve">
-          <SelectInput
-            options={ColorCurveOptions}
-            value={this.props.node.colorCurve}
-            onChange={this.onChangeColorCurve}
-          />
+          <SelectInput options={CurveOptions} value={this.props.node.colorCurve} onChange={this.onChangeColorCurve} />
         </InputGroup>
 
         <InputGroup name="Start Color">
@@ -314,7 +318,7 @@ export default class ParticleEmitterNodeEditor extends Component {
 
         <InputGroup name="Velocity Curve">
           <SelectInput
-            options={VelocityCurveOptions}
+            options={CurveOptions}
             value={this.props.node.velocityCurve}
             onChange={this.onChangeVelocityCurve}
           />
@@ -322,11 +326,11 @@ export default class ParticleEmitterNodeEditor extends Component {
 
         <InputGroup name="Start Velocity">
           <Vector3Input
-            value={this.props.node.velocity}
+            value={this.props.node.startVelocity}
             smallStep={0.01}
             mediumStep={0.1}
             largeStep={1}
-            onChange={this.onChangeVelocity}
+            onChange={this.onChangeStartVelocity}
           />
         </InputGroup>
 
