@@ -30,7 +30,7 @@ export default class ParticleEmitterNodeEditor extends Component {
 
   onChangeStartColor = startColor => {
     this.props.editor.setNodeProperty(this.props.node, "startColor", startColor);
-    this.props.node.createParticle();
+    this.props.node.updateParticles();
   };
 
   onChangeMiddleColor = middleColor => {
@@ -63,7 +63,7 @@ export default class ParticleEmitterNodeEditor extends Component {
 
   onChangeStartSize = startSize => {
     this.props.editor.setNodeProperty(this.props.node, "startSize", startSize);
-    this.props.node.createParticle();
+    this.props.node.updateParticles();
   };
 
   onChangeEndSize = endSize => {
@@ -72,7 +72,7 @@ export default class ParticleEmitterNodeEditor extends Component {
 
   onChangeSizeRandomness = sizeRandomness => {
     this.props.editor.setNodeProperty(this.props.node, "sizeRandomness", sizeRandomness);
-    this.props.node.createParticle();
+    this.props.node.updateParticles();
   };
 
   onChangeStartVelocity = startVelocity => {
@@ -89,32 +89,32 @@ export default class ParticleEmitterNodeEditor extends Component {
 
   onChangeParticleCount = particleCount => {
     this.props.editor.setNodeProperty(this.props.node, "particleCount", particleCount);
-    this.props.node.createParticle();
+    this.props.node.updateParticles();
   };
 
   onChangeEmitterHeight = emitterHeight => {
     this.props.editor.setNodeProperty(this.props.node, "emitterHeight", emitterHeight);
-    this.props.node.createParticle();
+    this.props.node.updateParticles();
   };
 
   onChangeEmitterWidth = emitterWidth => {
     this.props.editor.setNodeProperty(this.props.node, "emitterWidth", emitterWidth);
-    this.props.node.createParticle();
+    this.props.node.updateParticles();
   };
 
   onChangeLifetime = lifetime => {
     this.props.editor.setNodeProperty(this.props.node, "lifetime", lifetime);
-    this.props.node.createParticle();
+    this.props.node.updateParticles();
   };
 
   onChangeAgeRandomness = ageRandomness => {
     this.props.editor.setNodeProperty(this.props.node, "ageRandomness", ageRandomness);
-    this.props.node.createParticle();
+    this.props.node.updateParticles();
   };
 
   onChangeLifetimeRandomness = lifetimeRandomness => {
     this.props.editor.setNodeProperty(this.props.node, "lifetimeRandomness", lifetimeRandomness);
-    this.props.node.createParticle();
+    this.props.node.updateParticles();
   };
 
   render() {

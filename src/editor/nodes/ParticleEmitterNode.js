@@ -141,7 +141,7 @@ export default class ParticleEmitterNode extends EditorNodeMixin(Mesh) {
         await node.load(src);
       })()
     );
-    node.createParticle();
+    node.updateParticles();
 
     return node;
   }
@@ -201,7 +201,7 @@ export default class ParticleEmitterNode extends EditorNodeMixin(Mesh) {
     this.colorCurve = "Linear";
     this.velocityCurve = "Linear";
     this.sizeCurve = "Linear";
-    this.createParticle();
+    this.updateParticles();
   }
 
   get src() {
@@ -212,7 +212,7 @@ export default class ParticleEmitterNode extends EditorNodeMixin(Mesh) {
     this.load(value).catch(console.error);
   }
 
-  createParticle() {
+  updateParticles() {
     const planeGeometry = new PlaneBufferGeometry();
     const tempGeo = new InstancedBufferGeometry();
     tempGeo.index = planeGeometry.index;
