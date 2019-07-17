@@ -30,6 +30,7 @@ export default class ParticleEmitterNodeEditor extends Component {
 
   onChangeStartColor = startColor => {
     this.props.editor.setNodeProperty(this.props.node, "startColor", startColor);
+    this.props.node.createParticle();
   };
 
   onChangeMiddleColor = middleColor => {
@@ -62,6 +63,7 @@ export default class ParticleEmitterNodeEditor extends Component {
 
   onChangeStartSize = startSize => {
     this.props.editor.setNodeProperty(this.props.node, "startSize", startSize);
+    this.props.node.createParticle();
   };
 
   onChangeEndSize = endSize => {
@@ -69,10 +71,6 @@ export default class ParticleEmitterNodeEditor extends Component {
   };
 
   onChangeSizeRandomness = sizeRandomness => {
-    this.props.editor.setNodeProperty(this.props.node, "sizeRandomness", sizeRandomness);
-  };
-
-  onCommitSizeRandomness = sizeRandomness => {
     this.props.editor.setNodeProperty(this.props.node, "sizeRandomness", sizeRandomness);
     this.props.node.createParticle();
   };
@@ -89,57 +87,32 @@ export default class ParticleEmitterNodeEditor extends Component {
     this.props.editor.setNodeProperty(this.props.node, "angularVelocity", angularVelocity);
   };
 
-  onCommitAngularVelocity = angularVelocity => {
-    this.props.editor.setNodeProperty(this.props.node, "angularVelocity", angularVelocity);
-    this.props.node.createParticle();
-  };
-
   onChangeParticleCount = particleCount => {
     this.props.editor.setNodeProperty(this.props.node, "particleCount", particleCount);
     this.props.node.createParticle();
   };
 
-  onCommitEmitterHeight = emitterHeight => {
-    this.props.editor.setNodeProperty(this.props.node, "emitterHeight", emitterHeight);
-    this.props.node.createParticle();
-  };
-
   onChangeEmitterHeight = emitterHeight => {
     this.props.editor.setNodeProperty(this.props.node, "emitterHeight", emitterHeight);
-  };
-
-  onCommitEmitterWidth = emitterWidth => {
-    this.props.editor.setNodeProperty(this.props.node, "emitterWidth", emitterWidth);
     this.props.node.createParticle();
   };
 
   onChangeEmitterWidth = emitterWidth => {
     this.props.editor.setNodeProperty(this.props.node, "emitterWidth", emitterWidth);
+    this.props.node.createParticle();
   };
 
   onChangeLifetime = lifetime => {
-    this.props.editor.setNodeProperty(this.props.node, "lifetime", lifetime);
-  };
-
-  onCommitLifetime = lifetime => {
     this.props.editor.setNodeProperty(this.props.node, "lifetime", lifetime);
     this.props.node.createParticle();
   };
 
   onChangeAgeRandomness = ageRandomness => {
     this.props.editor.setNodeProperty(this.props.node, "ageRandomness", ageRandomness);
-  };
-
-  onCommitAgeRandomness = ageRandomness => {
-    this.props.editor.setNodeProperty(this.props.node, "ageRandomness", ageRandomness);
     this.props.node.createParticle();
   };
 
   onChangeLifetimeRandomness = lifetimeRandomness => {
-    this.props.editor.setNodeProperty(this.props.node, "lifetimeRandomness", lifetimeRandomness);
-  };
-
-  onCommitLifetimeRandomness = lifetimeRandomness => {
     this.props.editor.setNodeProperty(this.props.node, "lifetimeRandomness", lifetimeRandomness);
     this.props.node.createParticle();
   };
@@ -155,7 +128,6 @@ export default class ParticleEmitterNodeEditor extends Component {
           largeStep={1}
           value={this.props.node.emitterWidth}
           onChange={this.onChangeEmitterWidth}
-          onCommit={this.onCommitEmitterWidth}
           unit="m"
         />
         <NumericInputGroup
@@ -166,7 +138,6 @@ export default class ParticleEmitterNodeEditor extends Component {
           largeStep={1}
           value={this.props.node.emitterHeight}
           onChange={this.onChangeEmitterHeight}
-          onCommit={this.onCommitEmitterHeight}
           unit="m"
         />
 
@@ -193,7 +164,6 @@ export default class ParticleEmitterNodeEditor extends Component {
           largeStep={1}
           value={this.props.node.ageRandomness}
           onChange={this.onChangeAgeRandomness}
-          onCommit={this.onCommitAgeRandomness}
           unit="s"
         />
 
@@ -206,7 +176,6 @@ export default class ParticleEmitterNodeEditor extends Component {
           largeStep={1}
           value={this.props.node.lifetime}
           onChange={this.onChangeLifetime}
-          onCommit={this.onCommitLifetime}
           unit="s"
         />
 
@@ -219,7 +188,6 @@ export default class ParticleEmitterNodeEditor extends Component {
           largeStep={1}
           value={this.props.node.lifetimeRandomness}
           onChange={this.onChangeLifetimeRandomness}
-          onCommit={this.onCommitLifetimeRandomness}
           unit="s"
         />
 
@@ -258,7 +226,6 @@ export default class ParticleEmitterNodeEditor extends Component {
           largeStep={1}
           value={this.props.node.sizeRandomness}
           onChange={this.onChangeSizeRandomness}
-          onCommit={this.onCommitSizeRandomness}
           unit="m"
         />
 
@@ -347,7 +314,6 @@ export default class ParticleEmitterNodeEditor extends Component {
           largeStep={1}
           value={this.props.node.angularVelocity}
           onChange={this.onChangeAngularVelocity}
-          onCommit={this.onCommitAngularVelocity}
           unit="°/s"
         />
       </NodeEditor>
