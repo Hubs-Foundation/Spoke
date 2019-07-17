@@ -1,12 +1,13 @@
 import {
-  Points,
+  Mesh,
   TextureLoader,
-  BufferGeometry,
+  InstancedBufferGeometry,
+  PlaneBufferGeometry,
   RawShaderMaterial,
   AdditiveBlending,
   Vector3,
   Color,
-  Float32BufferAttribute,
+  InstancedBufferAttribute,
   Math as _Math
 } from "three";
 import EditorNodeMixin from "./EditorNodeMixin";
@@ -34,20 +35,30 @@ const vertexShader = `
       uniform mat4 modelViewMatrix;
       uniform mat4 projectionMatrix;
 
-      attribute vec4 color;
-      attribute vec4 position;
-      attribute float customAngle;
+      attribute vec3 position;
+      attribute vec2 uv;
 
-      varying float vAngle;
+      attribute vec4 particlePosition;
+      attribute vec4 particleColor;
+      attribute float particleAngle;
+
       varying vec4 vColor;
+      varying vec2 vUV;
 
       void main() {
-        vColor = color;
-        vAngle = customAngle;
+        vUV = uv;
+        vColor = particleColor;
 
-        vec4 mvPosition = modelViewMatrix * vec4( position.xyz, 1.0 );
-        gl_PointSize = position.w * ( BASE_PARTICLE_SIZE / -mvPosition.z );
-        gl_Position = projectionMatrix * mvPosition;
+        float particleScale = particlePosition.w;
+        vec4 transformedPosition = modelViewMatrix * vec4(particlePosition.xyz, 1.0);
+        
+        vec3 rotatedPosition = position;
+        rotatedPosition.x = cos( particleAngle ) * position.x - sin( particleAngle ) * position.y;
+        rotatedPosition.y = sin( particleAngle ) * position.x + cos( particleAngle ) * position.y;
+
+        transformedPosition.xyz += rotatedPosition * particleScale;
+
+        gl_Position = projectionMatrix * transformedPosition;
       }
       `;
 
@@ -56,28 +67,15 @@ const fragmentShader = `
 
       uniform sampler2D texture;
 
-      varying float vAngle;
+      varying vec2 vUV;
       varying vec4 vColor;
 
       void main() {
-        float c = cos(vAngle);
-        float s = sin(vAngle);
-        gl_FragColor = vColor;
-
-        vec2 rotatedUV = vec2(c * (gl_PointCoord.x - 0.5) + s * (gl_PointCoord.y - 0.5) + 0.5,
-        c * (gl_PointCoord.y - 0.5) - s * (gl_PointCoord.x - 0.5) + 0.5);  // rotate UV coordinates to rotate texture
-        vec4 rotatedTexture = texture2D( texture,  rotatedUV );
-
-        if (rotatedUV.s < 0.0 || rotatedUV.t < 0.0 || rotatedUV.s > 1.0 || rotatedUV.t > 1.0) {
-          discard;
-        }
-
-        gl_FragColor = gl_FragColor * rotatedTexture;
-        
+        gl_FragColor = texture2D(texture,  vUV) * vColor;
       }
   `;
 
-export default class ParticleEmitterNode extends EditorNodeMixin(Points) {
+export default class ParticleEmitterNode extends EditorNodeMixin(Mesh) {
   static legacyComponentName = "particle-emitter";
 
   static experimental = true;
@@ -158,7 +156,10 @@ export default class ParticleEmitterNode extends EditorNodeMixin(Points) {
   }
 
   constructor(editor) {
-    const geometry = new BufferGeometry();
+    const planeGeometry = new PlaneBufferGeometry();
+    const geometry = new InstancedBufferGeometry();
+    geometry.index = planeGeometry.index;
+    geometry.attributes = planeGeometry.attributes;
     const material = new RawShaderMaterial({
       uniforms: {
         texture: { value: defaultParticleSprite }
@@ -212,7 +213,11 @@ export default class ParticleEmitterNode extends EditorNodeMixin(Points) {
   }
 
   createParticle() {
-    const tempGeo = new BufferGeometry();
+    const planeGeometry = new PlaneBufferGeometry();
+    const tempGeo = new InstancedBufferGeometry();
+    tempGeo.index = planeGeometry.index;
+    tempGeo.attributes = planeGeometry.attributes;
+
     const positions = [];
     const colors = [];
     const lifetimes = [];
@@ -239,9 +244,12 @@ export default class ParticleEmitterNode extends EditorNodeMixin(Points) {
       angles.push(0);
       colors.push(this.startColor.r, this.startColor.g, this.startColor.b, 0);
     }
-    tempGeo.addAttribute("position", new Float32BufferAttribute(positions, 4).setDynamic(true));
-    tempGeo.addAttribute("color", new Float32BufferAttribute(colors, 4).setDynamic(true));
-    tempGeo.addAttribute("customAngle", new Float32BufferAttribute(angles, 1).setDynamic(true));
+    tempGeo.addAttribute(
+      "particlePosition",
+      new InstancedBufferAttribute(new Float32Array(positions), 4).setDynamic(true)
+    );
+    tempGeo.addAttribute("particleColor", new InstancedBufferAttribute(new Float32Array(colors), 4).setDynamic(true));
+    tempGeo.addAttribute("particleAngle", new InstancedBufferAttribute(new Float32Array(angles), 1).setDynamic(true));
 
     this.geometry = tempGeo;
     this.initialPositions = initialPositions;
@@ -270,9 +278,9 @@ export default class ParticleEmitterNode extends EditorNodeMixin(Points) {
   }
 
   onUpdate(dt) {
-    const position = this.geometry.attributes.position.array;
-    const color = this.geometry.attributes.color.array;
-    const customAngle = this.geometry.attributes.customAngle.array;
+    const position = this.geometry.attributes.particlePosition.array;
+    const color = this.geometry.attributes.particleColor.array;
+    const particleAngle = this.geometry.attributes.particleAngle.array;
 
     for (let i = 0; i < this.particleCount; i++) {
       const prevAge = this.ages[i];
@@ -316,7 +324,7 @@ export default class ParticleEmitterNode extends EditorNodeMixin(Points) {
         this.endSize + this.particleSizeRandomness[i],
         sizeFactor
       );
-      customAngle[i] += this.angularVelocity * _Math.DEG2RAD * dt;
+      particleAngle[i] += this.angularVelocity * _Math.DEG2RAD * dt;
 
       if (colorFactor <= 0.5) {
         const colorFactor1 = colorFactor / 0.5;
@@ -333,9 +341,9 @@ export default class ParticleEmitterNode extends EditorNodeMixin(Points) {
       }
     }
 
-    this.geometry.attributes.position.needsUpdate = true;
-    this.geometry.attributes.color.needsUpdate = true;
-    this.geometry.attributes.customAngle.needsUpdate = true;
+    this.geometry.attributes.particlePosition.needsUpdate = true;
+    this.geometry.attributes.particleColor.needsUpdate = true;
+    this.geometry.attributes.particleAngle.needsUpdate = true;
   }
 
   copy(source, recursive = true) {
