@@ -8,7 +8,13 @@ import CompoundNumericInput from "../inputs/CompoundNumericInput";
 import NumericInputGroup from "../inputs/NumericInputGroup";
 import Vector3Input from "../inputs/Vector3Input";
 import SelectInput from "../inputs/SelectInput";
-import { CurveOptions } from "../../editor/utils/Curves";
+import * as EasingFunctions from "@mozillareality/easing-functions";
+import { camelPad } from "../utils";
+
+const CurveOptions = Object.keys(EasingFunctions).map(name => ({
+  label: camelPad(name),
+  value: name
+}));
 
 export default class ParticleEmitterNodeEditor extends Component {
   static propTypes = {
