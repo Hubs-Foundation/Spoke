@@ -26,4 +26,16 @@
     flex: 1;
     padding-left: 8px;
   }
+
+  :local(.info) {
+    display: flex;
+    padding-left: 8px;
+    color: $blue;
+    cursor: pointer;
+    align-self: center;
+
+    &:after {
+      content: "\24D8";
+    }
+  }
 }

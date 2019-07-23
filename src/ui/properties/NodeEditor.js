@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
+import ReactTooltip from "react-tooltip";
 import styles from "./PropertiesPanelContainer.scss";
 import PropertyGroup from "./PropertyGroup";
 import TransformPropertyGroup from "./TransformPropertyGroup";
@@ -44,6 +45,7 @@ export default class NodeEditor extends Component {
         <PropertyGroup name={node.nodeName} description={description}>
           {children}
         </PropertyGroup>
+        <ReactTooltip id="node-editor" className={styles.tooltip} />
       </div>
     );
   }
