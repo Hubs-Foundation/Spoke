@@ -120,22 +120,23 @@ export default class ParticleEmitterNode extends EditorNodeMixin(ParticleEmitter
   }
 
   copy(source, recursive = true) {
-    this.src = source._canonicalUrl;
+    if (recursive) {
+      this.remove(this.helper);
+    }
 
-    super.copy(source, false);
+    super.copy(source, recursive);
 
     if (recursive) {
-      for (let i = 0; i < source.children.length; i++) {
-        const child = source.children[i];
-        const clonedChild = child.clone();
+      const helperIndex = source.children.indexOf(source.helper);
 
-        this.add(clonedChild);
-
-        if (child === source.helper) {
-          this.helper = clonedChild;
-        }
+      if (helperIndex === -1) {
+        throw new Error("Source helper could not be found.");
       }
+
+      this.helper = this.children[helperIndex];
     }
+
+    this.src = source._canonicalUrl;
 
     return this;
   }
