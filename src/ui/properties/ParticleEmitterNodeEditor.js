@@ -98,16 +98,6 @@ export default class ParticleEmitterNodeEditor extends Component {
     this.props.node.updateParticles();
   };
 
-  onChangeEmitterHeight = emitterHeight => {
-    this.props.editor.setNodeProperty(this.props.node, "emitterHeight", emitterHeight);
-    this.props.node.updateParticles();
-  };
-
-  onChangeEmitterWidth = emitterWidth => {
-    this.props.editor.setNodeProperty(this.props.node, "emitterWidth", emitterWidth);
-    this.props.node.updateParticles();
-  };
-
   onChangeLifetime = lifetime => {
     this.props.editor.setNodeProperty(this.props.node, "lifetime", lifetime);
     this.props.node.updateParticles();
@@ -126,27 +116,6 @@ export default class ParticleEmitterNodeEditor extends Component {
   render() {
     return (
       <NodeEditor {...this.props} description={ParticleEmitterNodeEditor.description}>
-        <NumericInputGroup
-          name="Emitter Width"
-          min={0}
-          smallStep={0.01}
-          mediumStep={0.1}
-          largeStep={1}
-          value={this.props.node.emitterWidth}
-          onChange={this.onChangeEmitterWidth}
-          unit="m"
-        />
-        <NumericInputGroup
-          name="Emitter Height"
-          min={0}
-          smallStep={0.01}
-          mediumStep={0.1}
-          largeStep={1}
-          value={this.props.node.emitterHeight}
-          onChange={this.onChangeEmitterHeight}
-          unit="m"
-        />
-
         <NumericInputGroup
           name="Particle Count"
           min={1}

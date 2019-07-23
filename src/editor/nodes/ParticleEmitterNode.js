@@ -31,8 +31,6 @@ export default class ParticleEmitterNode extends EditorNodeMixin(ParticleEmitter
       startOpacity,
       middleOpacity,
       endOpacity,
-      emitterWidth,
-      emitterHeight,
       sizeCurve,
       startSize,
       endSize,
@@ -53,8 +51,6 @@ export default class ParticleEmitterNode extends EditorNodeMixin(ParticleEmitter
     node.middleOpacity = middleOpacity;
     node.endOpacity = endOpacity;
     node.colorCurve = colorCurve;
-    node.emitterHeight = emitterHeight;
-    node.emitterWidth = emitterWidth;
     node.startSize = startSize;
     node.endSize = endSize;
     node.sizeRandomness = sizeRandomness;
@@ -155,8 +151,6 @@ export default class ParticleEmitterNode extends EditorNodeMixin(ParticleEmitter
         middleOpacity: this.middleOpacity,
         endOpacity: this.endOpacity,
         colorCurve: this.colorCurve,
-        emitterHeight: this.emitterHeight,
-        emitterWidth: this.emitterWidth,
         sizeCurve: this.sizeCurve,
         startSize: this.startSize,
         endSize: this.endSize,
@@ -184,8 +178,6 @@ export default class ParticleEmitterNode extends EditorNodeMixin(ParticleEmitter
       middleOpacity: this.middleOpacity,
       endOpacity: this.endOpacity,
       colorCurve: this.colorCurve,
-      emitterHeight: this.emitterHeight,
-      emitterWidth: this.emitterWidth,
       sizeCurve: this.sizeCurve,
       startSize: this.startSize,
       endSize: this.endSize,
