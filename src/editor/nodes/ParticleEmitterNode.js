@@ -3,6 +3,7 @@ import { ParticleEmitter } from "@mozillareality/three-particle-emitter";
 import EditorNodeMixin from "./EditorNodeMixin";
 import eventToMessage from "../utils/eventToMessage";
 import defaultParticleUrl from "../../assets/dot.png";
+import DirectionalPlaneHelper from "../helpers/DirectionalPlaneHelper";
 
 let defaultParticleSprite = null;
 
@@ -90,6 +91,8 @@ export default class ParticleEmitterNode extends EditorNodeMixin(ParticleEmitter
     super(editor, defaultParticleSprite);
     this.disableOutline = true;
     this._canonicalUrl = "";
+    this.helper = new DirectionalPlaneHelper();
+    this.add(this.helper);
   }
 
   get src() {
@@ -122,7 +125,22 @@ export default class ParticleEmitterNode extends EditorNodeMixin(ParticleEmitter
 
   copy(source, recursive = true) {
     this.src = source._canonicalUrl;
-    super.copy(source, recursive);
+
+    super.copy(source, false);
+
+    if (recursive) {
+      for (let i = 0; i < source.children.length; i++) {
+        const child = source.children[i];
+        const clonedChild = child.clone();
+
+        this.add(clonedChild);
+
+        if (child === source.helper) {
+          this.helper = clonedChild;
+        }
+      }
+    }
+
     return this;
   }
 
