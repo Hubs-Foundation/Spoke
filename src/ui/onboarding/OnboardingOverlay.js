@@ -1,12 +1,25 @@
 import React from "react";
 import PropTypes from "prop-types";
-import styles from "./OnboardingOverlay.scss";
+import styled from "styled-components";
+
+const StyledOnboardingOverlay = styled.div`
+  display: flex;
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.5);
+  pointer-events: all;
+`;
+
+const Content = styled.div`
+  display: flex;
+`;
 
 export default function OnboardingOverlay({ children }) {
   return (
-    <div className={styles.onboardingOverlay}>
-      <div className={styles.content}>{children}</div>
-    </div>
+    <StyledOnboardingOverlay>
+      <Content>{children}</Content>
+    </StyledOnboardingOverlay>
   );
 }
 OnboardingOverlay.propTypes = {

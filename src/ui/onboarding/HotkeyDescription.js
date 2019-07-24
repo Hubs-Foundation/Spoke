@@ -1,19 +1,27 @@
 import React from "react";
 import PropTypes from "prop-types";
-import styles from "./HotkeyDescription.scss";
 import { insertSeparator } from "../utils";
+import styled from "styled-components";
+
+const StyledHotkeyDescription = styled.div`
+  display: flex;
+  align-items: center;
+  margin: 4px 4px;
+`;
+
+const HotkeySeparator = styled.div`
+  margin: 0 4px;
+`;
 
 export default function HotkeyDescription({ children, action }) {
   return (
-    <div className={styles.hotkeyDescription}>
+    <StyledHotkeyDescription>
       {insertSeparator(children, index => (
-        <div key={index} className={styles.separator}>
-          +
-        </div>
+        <HotkeySeparator key={index}>+</HotkeySeparator>
       ))}
-      <div className={styles.separator}>=</div>
+      <HotkeySeparator>=</HotkeySeparator>
       <div>{action}</div>
-    </div>
+    </StyledHotkeyDescription>
   );
 }
 

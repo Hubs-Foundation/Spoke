@@ -1,11 +1,14 @@
-import React from "react";
-import PropTypes from "prop-types";
-import styles from "./Well.scss";
+import styled from "styled-components";
 
-export default function Well(props) {
-  return <div className={styles.well}>{props.children}</div>;
-}
+const Well = styled.div`
+  display: flex;
+  flex-direction: column;
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 6px;
+  padding: 4px;
+  margin: 8px;
+`;
 
-Well.propTypes = {
-  children: PropTypes.node
-};
+Well.displayName = "Well";
+
+export default Well;

@@ -2,7 +2,7 @@ import React, { Component, Suspense, lazy } from "react";
 import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
 import PropTypes from "prop-types";
 
-import "./styles/global.scss";
+import GlobalStyle from "./GlobalStyle";
 import styles from "./styles/common.scss";
 
 import Loading from "./Loading";
@@ -18,6 +18,10 @@ import LoginPage from "./auth/LoginPage";
 import LogoutPage from "./auth/LogoutPage";
 import ProjectsPage from "./projects/ProjectsPage";
 import TemplatesPage from "./projects/TemplatesPage";
+
+import { ThemeProvider } from "styled-components";
+
+import theme from "./theme";
 
 const ProjectPage = lazy(() =>
   import(/* webpackChunkName: "project-page", webpackPrefetch: true */ "./projects/ProjectPage")
@@ -54,20 +58,23 @@ export default class App extends Component {
     return (
       <ApiContextProvider value={api}>
         <AuthContextProvider value={this.state.isAuthenticated}>
-          <Router basename={process.env.ROUTER_BASE_PATH}>
-            <Suspense fallback={<Loading message="Loading..." fullScreen />} className={styles.flexColumn}>
-              <Switch>
-                <Route path="/" exact component={LandingPage} />
-                <RedirectRoute path="/new" exact to="/projects" />
-                <Route path="/login" exact component={LoginPage} />
-                <Route path="/logout" exact component={LogoutPage} />
-                <Route path="/projects/templates" exact component={TemplatesPage} />
-                <Route path="/projects" exact component={ProjectsPage} />
-                <Route path="/projects/:projectId" component={ProjectPage} />
-                <Route render={() => <Error message="Page not found." />} />
-              </Switch>
-            </Suspense>
-          </Router>
+          <ThemeProvider theme={theme}>
+            <Router basename={process.env.ROUTER_BASE_PATH}>
+              <GlobalStyle />
+              <Suspense fallback={<Loading message="Loading..." fullScreen />} className={styles.flexColumn}>
+                <Switch>
+                  <Route path="/" exact component={LandingPage} />
+                  <RedirectRoute path="/new" exact to="/projects" />
+                  <Route path="/login" exact component={LoginPage} />
+                  <Route path="/logout" exact component={LogoutPage} />
+                  <Route path="/projects/templates" exact component={TemplatesPage} />
+                  <Route path="/projects" exact component={ProjectsPage} />
+                  <Route path="/projects/:projectId" component={ProjectPage} />
+                  <Route render={() => <Error message="Page not found." />} />
+                </Switch>
+              </Suspense>
+            </Router>
+          </ThemeProvider>
         </AuthContextProvider>
       </ApiContextProvider>
     );

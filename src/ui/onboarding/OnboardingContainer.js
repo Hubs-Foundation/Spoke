@@ -1,6 +1,17 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
-import styles from "./OnboardingContainer.scss";
+import styled from "styled-components";
+
+const StyledOnboardingContainer = styled.div`
+  position: absolute;
+  display: flex;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 1000;
+`;
 
 export default class OnboardingContainer extends Component {
   static propTypes = {
@@ -88,9 +99,9 @@ export default class OnboardingContainer extends Component {
     };
 
     return (
-      <div className={styles.onboardingContainer}>
+      <StyledOnboardingContainer>
         {step && (step.render ? step.render(stepProps) : React.createElement(step.component, stepProps))}
-      </div>
+      </StyledOnboardingContainer>
     );
   }
 }

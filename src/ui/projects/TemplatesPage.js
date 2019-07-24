@@ -1,11 +1,11 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
 import NavBar from "../navigation/NavBar";
-import styles from "./ProjectsPage.scss";
 import ProjectGrid from "./ProjectGrid";
 import Footer from "../navigation/Footer";
 import templates from "./templates";
 import PrimaryLink from "../inputs/PrimaryLink";
+import { ProjectsSection, ProjectsContainer, ProjectsHeader } from "./ProjectsPage";
 
 export default class TemplatesPage extends Component {
   static propTypes = {
@@ -23,15 +23,15 @@ export default class TemplatesPage extends Component {
       <>
         <NavBar />
         <main>
-          <section className={styles.projectsSection}>
-            <div className={styles.projectsContainer}>
-              <div className={styles.projectsHeader}>
+          <ProjectsSection>
+            <ProjectsContainer>
+              <ProjectsHeader>
                 <h1>Templates</h1>
                 <PrimaryLink to="/projects">Back to projects</PrimaryLink>
-              </div>
+              </ProjectsHeader>
               <ProjectGrid projects={templates} onSelectProject={this.onSelectTemplate} />
-            </div>
-          </section>
+            </ProjectsContainer>
+          </ProjectsSection>
         </main>
         <Footer />
       </>

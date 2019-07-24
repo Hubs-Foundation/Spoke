@@ -4,7 +4,7 @@ import OnboardingContainer from "./OnboardingContainer";
 import OnboardingDialog from "./OnboardingDialog";
 import OnboardingPopover from "./OnboardingPopover";
 import { withEditor } from "../contexts/EditorContext";
-import libraryToolbarItemStyles from "../library/LibraryToolbarItem.scss";
+import { selectedClassName } from "../library/LibraryToolbarItem";
 import Icon from "../inputs/Icon";
 import lmbIcon from "../../assets/onboarding/lmb.svg";
 import rmbIcon from "../../assets/onboarding/rmb.svg";
@@ -33,7 +33,7 @@ class CreateModelPopover extends Component {
   componentDidMount() {
     const libraryButton = document.getElementById("models-library-btn");
 
-    if (!libraryButton.classList.contains(libraryToolbarItemStyles.selected)) {
+    if (!libraryButton.classList.contains(selectedClassName)) {
       libraryButton.click();
     }
 
@@ -75,7 +75,7 @@ class HideModelsPopover extends Component {
   componentDidMount() {
     const libraryButton = document.getElementById("models-library-btn");
 
-    if (libraryButton.classList.contains(libraryToolbarItemStyles.selected)) {
+    if (libraryButton.classList.contains(selectedClassName)) {
       libraryButton.click();
     }
 

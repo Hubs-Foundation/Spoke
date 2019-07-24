@@ -2,9 +2,162 @@ import React, { Component } from "react";
 import PropTypes from "prop-types";
 import Button from "../inputs/Button";
 import Portal from "../layout/Portal";
-import styles from "./OnboardingPopover.scss";
-import classNames from "classnames";
 import getPosition from "evergreen-ui/esm/positioner/src/getPosition";
+import styled, { css } from "styled-components";
+
+const TransformContainer = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  pointer-events: none;
+`;
+
+const PositionStyles = {
+  left: css`
+    &:after {
+      left: 100%;
+      top: 50%;
+      border-left-color: #006eff;
+      margin-top: -8px;
+    }
+  `,
+
+  right: css`
+    &:after {
+      right: 100%;
+      top: 50%;
+      border-right-color: #006eff;
+      margin-top: -8px;
+    }
+  `,
+
+  top: css`
+    &:after {
+      top: 100%;
+      left: 50%;
+      border-top-color: #000000;
+      margin-left: -8px;
+    }
+  `,
+
+  "top-right": css`
+    &:after {
+      top: 100%;
+      left: 10%;
+      border-top-color: #000000;
+      margin-left: -8px;
+    }
+  `,
+
+  "top-left": css`
+    &:after {
+      top: 100%;
+      left: 90%;
+      border-top-color: #000000;
+      margin-left: -8px;
+    }
+  `,
+
+  bottom: css`
+    &:after {
+      bottom: 100%;
+      left: 50%;
+      border-bottom-color: #006eff;
+      margin-left: -8px;
+    }
+  `,
+
+  "bottom-right": css`
+    &:after {
+      bottom: 100%;
+      left: 10%;
+      border-bottom-color: #006eff;
+      margin-left: -8px;
+    }
+  `,
+
+  "bottom-left": css`
+    &:after {
+      bottom: 100%;
+      left: 90%;
+      border-bottom-color: #006eff;
+      margin-left: -8px;
+    }
+  `
+};
+
+const Popover = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: all;
+  background-color: #006eff;
+  border-radius: 4px;
+  border-color: #000000;
+  border-width: 1px;
+  max-width: 360px;
+
+  &:after {
+    border: solid transparent;
+    content: " ";
+    height: 0;
+    width: 0;
+    position: absolute;
+    pointer-events: none;
+    border-color: rgba(0, 0, 0, 0);
+    border-width: 8px;
+  }
+
+  ${props => PositionStyles[props.position]}
+`;
+
+const PopoverContent = styled.div`
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: 30px;
+
+  h1 {
+    font-size: 3em;
+    font-weight: lighter;
+    margin-bottom: 16px;
+  }
+
+  h2 {
+    color: ${props => props.theme.text2};
+    margin-bottom: 8px;
+  }
+
+  p {
+    margin-bottom: 12px;
+    line-height: 1.5em;
+  }
+`;
+
+const PopoverNav = styled.div`
+  display: flex;
+  height: 50px;
+  flex-direction: row;
+  justify-content: flex-end;
+  align-items: center;
+  background-color: black;
+  border-bottom-left-radius: inherit;
+  border-bottom-right-radius: inherit;
+  padding: 8px;
+
+  a {
+    color: ${props => props.theme.text2};
+  }
+
+  button {
+    width: 84px;
+  }
+
+  & > * {
+    margin: 0 8px;
+  }
+`;
 
 export default class OnboardingPopover extends Component {
   static propTypes = {
@@ -107,10 +260,10 @@ export default class OnboardingPopover extends Component {
 
     return (
       <Portal>
-        <div className={styles.container} style={{ transform, transformOrigin }}>
-          <div className={classNames(styles.popover, styles[position])} ref={this.popoverRef}>
-            <div className={styles.content}>{children}</div>
-            <div className={styles.bottomNav}>
+        <TransformContainer style={{ transform, transformOrigin }}>
+          <Popover position={position} ref={this.popoverRef}>
+            <PopoverContent>{children}</PopoverContent>
+            <PopoverNav>
               {!disableSkip && (
                 <a
                   href=""
@@ -130,9 +283,9 @@ export default class OnboardingPopover extends Component {
               )}
               {!disableNext && curStepIdx < steps.length - 1 && <Button onClick={nextStep}>Next</Button>}
               {!disableNext && curStepIdx === steps.length - 1 && <Button onClick={nextStep}>Finish</Button>}
-            </div>
-          </div>
-        </div>
+            </PopoverNav>
+          </Popover>
+        </TransformContainer>
       </Portal>
     );
   }

@@ -1,8 +1,15 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
-import styles from "./ProjectGrid.scss";
+import styled from "styled-components";
 import ProjectGridItem from "./ProjectGridItem";
 import NewProjectGridItem from "./NewProjectGridItem";
+
+const StyledProjectGrid = styled.div`
+  display: grid;
+  grid-gap: 20px;
+  width: 100%;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+`;
 
 export default class ProjectGrid extends Component {
   static propTypes = {
@@ -13,12 +20,12 @@ export default class ProjectGrid extends Component {
 
   render() {
     return (
-      <div className={styles.projectGrid}>
+      <StyledProjectGrid>
         {this.props.projects.map(project => (
           <ProjectGridItem key={project.id} project={project} contextMenuId={this.props.contextMenuId} />
         ))}
         {this.props.newProjectUrl && <NewProjectGridItem newProjectUrl={this.props.newProjectUrl} />}
-      </div>
+      </StyledProjectGrid>
     );
   }
 }

@@ -2,8 +2,60 @@ import React, { Component } from "react";
 import { Link } from "react-router-dom";
 import PropTypes from "prop-types";
 import { withAuth } from "../contexts/AuthContext";
-import styles from "./NavBar.scss";
 import spokeIcon from "../../assets/spoke-icon.png";
+import styled from "styled-components";
+
+const StyledNavBar = styled.header`
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: 12px 20px;
+  font-size: 1.4em;
+
+  a {
+    color: ${props => props.theme.text};
+    text-decoration: none;
+  }
+`;
+
+const IconContainer = styled.div`
+  margin-right: 20px;
+
+  a {
+    display: block;
+  }
+
+  img {
+    width: 48px;
+    display: block;
+  }
+`;
+
+const MiddleContainer = styled.div`
+  display: flex;
+  flex: 1;
+
+  @media (max-width: 600px) {
+    display: none;
+  }
+`;
+
+const NavList = styled.ul`
+  display: flex;
+
+  li {
+    padding: 0 20px;
+  }
+`;
+
+const RightContainer = styled.div`
+  display: flex;
+  justify-content: flex-end;
+
+  @media (max-width: 600px) {
+    flex: 1;
+  }
+`;
 
 class NavBar extends Component {
   static propTypes = {
@@ -12,15 +64,15 @@ class NavBar extends Component {
 
   render() {
     return (
-      <header className={styles.navBar}>
-        <div className={styles.iconContainer}>
+      <StyledNavBar>
+        <IconContainer>
           <Link to="/">
             <img src={spokeIcon} alt="Spoke" />
           </Link>
-        </div>
-        <div className={styles.middleContainer}>
+        </IconContainer>
+        <MiddleContainer>
           <nav>
-            <ul className={styles.navList}>
+            <NavList>
               <li>
                 <a href="https://github.com/mozilla/Spoke" rel="noopener noreferrer">
                   Source
@@ -36,11 +88,11 @@ class NavBar extends Component {
                   Hubs
                 </a>
               </li>
-            </ul>
+            </NavList>
           </nav>
-        </div>
-        <div className={styles.rightContainer}>
-          <ul className={styles.navList}>
+        </MiddleContainer>
+        <RightContainer>
+          <NavList>
             {this.props.isAuthenticated ? (
               <>
                 <li>
@@ -55,9 +107,9 @@ class NavBar extends Component {
                 <Link to="/login">Login</Link>
               </li>
             )}
-          </ul>
-        </div>
-      </header>
+          </NavList>
+        </RightContainer>
+      </StyledNavBar>
     );
   }
 }

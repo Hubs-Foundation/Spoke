@@ -83,6 +83,7 @@
     "react-tooltip": "^3.10.0",
     "recast-wasm": "^0.1.1",
     "signals": "^1.0.0",
+    "styled-components": "^4.3.2",
     "three": "github:mozillareality/three.js#hubs/master",
     "three-mesh-bvh": "^0.1.2",
     "url-toolkit": "^2.1.6",
