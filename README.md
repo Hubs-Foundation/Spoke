@@ -1,4 +1,4 @@
-# Spoke (beta)
+# Spoke
 
 [![CircleCI](https://circleci.com/gh/mozilla/Spoke.svg?style=svg)](https://circleci.com/gh/mozilla/Spoke)
 
