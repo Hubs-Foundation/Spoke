@@ -3,12 +3,12 @@ import {
   TextureLoader,
   MeshBasicMaterial,
   SphereBufferGeometry,
-  PlaneGeometry,
   DoubleSide,
   Mesh,
   sRGBEncoding,
   LinearFilter,
-  RGBAFormat
+  RGBAFormat,
+  PlaneBufferGeometry
 } from "three";
 import eventToMessage from "../utils/eventToMessage";
 import loadErrorTexture from "../utils/loadErrorTexture";
@@ -24,7 +24,7 @@ export default class Image extends Object3D {
     this._src = null;
     this._projection = "flat";
 
-    const geometry = new PlaneGeometry();
+    const geometry = new PlaneBufferGeometry();
     const material = new MeshBasicMaterial();
     material.side = DoubleSide;
     this._mesh = new Mesh(geometry, material);
@@ -61,7 +61,7 @@ export default class Image extends Object3D {
       // invert the geometry on the x-axis so that all of the faces point inward
       geometry.scale(-1, 1, 1);
     } else {
-      geometry = new PlaneGeometry();
+      geometry = new PlaneBufferGeometry();
       material.side = DoubleSide;
     }
 

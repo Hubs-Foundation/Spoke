@@ -1,4 +1,4 @@
-import { Object3D, AnimationMixer, PlaneGeometry, MeshBasicMaterial, DoubleSide, Mesh } from "three";
+import { Object3D, AnimationMixer, PlaneBufferGeometry, MeshBasicMaterial, DoubleSide, Mesh } from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import cloneObject3D from "../utils/cloneObject3D";
 import eventToMessage from "../utils/eventToMessage";
@@ -64,7 +64,7 @@ export default class Model extends Object3D {
       this.receiveShadow = this._receiveShadow;
     } catch (err) {
       const texture = await loadErrorTexture();
-      const geometry = new PlaneGeometry();
+      const geometry = new PlaneBufferGeometry();
       const material = new MeshBasicMaterial();
       material.side = DoubleSide;
       material.map = texture;
