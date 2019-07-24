@@ -5,8 +5,7 @@
   "license": "MPL-2.0",
   "version": "0.8.6",
   "engines": {
-    "node": ">=10",
-    "npm": ">=6.4"
+    "node": ">=10"
   },
   "main": "lib/server/index.js",
   "files": [
@@ -24,12 +23,12 @@
     "bundle-analyzer": "cross-env NODE_ENV=production webpack-dev-server --mode=production --env.BUNDLE_ANALYZER",
     "precommit": "lint-staged",
     "lint": "eslint ./src",
-    "test": "concurrently --success \"first\" --kill-others \"npm:test-all\" \"npm:test-server\"",
+    "test": "concurrently --success \"first\" --kill-others \"yarn test-all\" \"yarn test-server\"",
     "test-server": "cross-env NODE_ENV=test webpack-dev-server --mode development --port 9091 --content-base ./test/fixtures",
     "test-all": "ava",
     "unit-tests": "ava ./test/unit",
-    "integration-tests": "concurrently --success \"first\" --kill-others \"ava ./test/integration\" \"npm:test-server\"",
-    "update-test-snapshots": "concurrently --success \"first\" --kill-others \"ava -u\" \"npm:test-serve\""
+    "integration-tests": "concurrently --success \"first\" --kill-others \"ava ./test/integration\" \"yarn test-server\"",
+    "update-test-snapshots": "concurrently --success \"first\" --kill-others \"ava -u\" \"yarn test-serve\""
   },
   "ava": {
     "files": [
