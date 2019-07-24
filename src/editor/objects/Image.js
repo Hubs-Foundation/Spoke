@@ -3,7 +3,6 @@ import {
   TextureLoader,
   MeshBasicMaterial,
   SphereBufferGeometry,
-  PlaneGeometry,
   DoubleSide,
   Mesh,
   sRGBEncoding,
@@ -25,7 +24,7 @@ export default class Image extends Object3D {
     this._src = null;
     this._projection = "flat";
 
-    const geometry = new PlaneGeometry();
+    const geometry = new PlaneBufferGeometry();
     const material = new MeshBasicMaterial();
     material.side = DoubleSide;
     this._mesh = new Mesh(geometry, material);
