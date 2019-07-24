@@ -16,5 +16,5 @@ jobs:
             rm google-chrome.deb
             echo 'export CHROME_PATH=/opt/google/chrome/google-chrome' >> $BASH_ENV
             source $BASH_ENV
-      - run: npm ci
-      - run: npm test
+      - run: yarn
+      - run: yarn test

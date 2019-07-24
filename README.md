@@ -10,8 +10,8 @@ Easily create custom 3D environments for [Mozilla Hubs](https://hubs.mozilla.com
 
 - `git clone https://github.com/mozilla/Spoke.git`
 - `cd Spoke`
-- `npm ci`
-- `npm run start`
+- `yarn install`
+- `yarn start`
 
 Then open http://localhost:9090.
 
