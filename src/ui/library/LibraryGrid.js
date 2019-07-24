@@ -1,9 +1,24 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
-import styles from "./LibraryGrid.scss";
 import LibraryGridItem from "./LibraryGridItem";
 import Tooltip from "react-tooltip";
 import { unique } from "../utils";
+import styled from "styled-components";
+
+const StyledLibraryGrid = styled.div`
+  display: grid;
+  grid-gap: 10px;
+  width: 100%;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  padding: 10px;
+`;
+
+const StyledTooltip = styled(Tooltip)`
+  max-width: 200px;
+  overflow: hidden;
+  overflow-wrap: break-word;
+  user-select: none;
+`;
 
 export default class LibraryGrid extends Component {
   static propTypes = {
@@ -37,13 +52,13 @@ export default class LibraryGrid extends Component {
     const { items, onSelect, tooltipId, renderTooltip, renderItem } = this.props;
 
     return (
-      <div className={styles.libraryGrid}>
+      <StyledLibraryGrid>
         {unique(items, "id").map(item => (
           <LibraryGridItem key={item.id} item={item} onClick={onSelect} renderItem={renderItem} tooltipId={tooltipId} />
         ))}
         {this.props.children}
-        {renderTooltip && <Tooltip className={styles.tooltip} id={tooltipId} getContent={renderTooltip} />}
-      </div>
+        {renderTooltip && <StyledTooltip id={tooltipId} getContent={renderTooltip} />}
+      </StyledLibraryGrid>
     );
   }
 }

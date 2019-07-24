@@ -4,8 +4,8 @@ import { MosaicWindow, Mosaic } from "react-mosaic-component";
 import Modal from "react-modal";
 import { Helmet } from "react-helmet";
 import * as Sentry from "@sentry/browser";
-
-import styles from "./EditorContainer.scss";
+import "react-mosaic-component/react-mosaic-component.css";
+import styled, { createGlobalStyle } from "styled-components";
 
 import ToolBar from "./toolbar/ToolBar";
 
@@ -27,6 +27,67 @@ import Onboarding from "./onboarding/Onboarding";
 import SupportDialog from "./dialogs/SupportDialog";
 import { cmdOrCtrlString } from "./utils";
 import BrowserPrompt from "./router/BrowserPrompt";
+
+const MosaicStyles = createGlobalStyle`
+  .mosaic.mosaic-theme {
+    flex: 1;
+
+    .mosaic-window {
+      border-radius: 4px;
+    }
+
+    .mosaic-window-toolbar {
+      background-color: ${props => props.theme.panel};
+      height: 24px;
+      box-shadow: none;
+    }
+
+    .mosaic-window-title {
+      user-select: none;
+      padding-left: 8px;
+      font-size: 12px;
+      line-height: 24px;
+    }
+
+    .mosaic-window-body {
+      background-color: ${props => props.theme.panel};
+      display: flex;
+    }
+
+    .mosaic-window-controls {
+      align-items: center;
+      padding-right: 0px;
+
+      .mosaic-default-control {
+        &.pt-button {
+          background-color: rgba(255, 255, 255, 0.5);
+          width: 12px;
+          height: 12px;
+          border-radius: 12px;
+          border: none;
+          padding: 0;
+
+          &:hover {
+            background-color: ${props => props.theme.red};
+          }
+        }
+
+        &.pt-icon-cross:before {
+          content: none;
+        }
+      }
+    }
+  }
+`;
+
+const StyledEditorContainer = styled.div`
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  height: 100vh;
+  width: 100vw;
+  position: fixed;
+`;
 
 export default class EditorContainer extends Component {
   static propTypes = {
@@ -592,7 +653,8 @@ export default class EditorContainer extends Component {
     const modified = editor.sceneModified ? "*" : "";
 
     return (
-      <div id="editor-container" className={styles.editorContainer}>
+      <StyledEditorContainer id="editor-container">
+        <MosaicStyles />
         <SettingsContextProvider value={settingsContext}>
           <EditorContextProvider value={editor}>
             <DialogContextProvider value={this.dialogContext}>
@@ -635,7 +697,7 @@ export default class EditorContainer extends Component {
             </DialogContextProvider>
           </EditorContextProvider>
         </SettingsContextProvider>
-      </div>
+      </StyledEditorContainer>
     );
   }
 }

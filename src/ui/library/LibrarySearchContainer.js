@@ -4,9 +4,10 @@ import LibraryPanel from "./LibraryPanel";
 import SelectInput from "../inputs/SelectInput";
 import FileInput from "../inputs/FileInput";
 import { withDialog } from "../contexts/DialogContext";
-import styles from "./LibrarySearchContainer.scss";
 import ErrorDialog from "../dialogs/ErrorDialog";
 import ProgressDialog from "../dialogs/ProgressDialog";
+import styled from "styled-components";
+import inputMixin from "../inputs/inputMixin";
 
 const filterFileTypes = {
   all: ".png,.jpeg,.jpg,.gif,.mp4,.glb,image/png,image/jpeg,image/gif,video/mp4,model/gltf-binary",
@@ -14,6 +15,29 @@ const filterFileTypes = {
   video: ".mp4,video/mp4",
   model: ".glb,model/gltf-binary"
 };
+
+const InputContainer = styled.span`
+  width: 100px;
+  height: 24px;
+`;
+
+const SearchInputContainer = styled.span`
+  display: flex;
+  flex: 1;
+  align-items: center;
+
+  a {
+    color: ${props => props.theme.text};
+  }
+
+  input {
+    ${inputMixin}
+    height: 25px;
+    margin-right: 8px;
+    max-width: 300px;
+    flex: 1;
+  }
+`;
 
 class LibrarySearchContainer extends Component {
   static propTypes = {
@@ -236,12 +260,12 @@ class LibrarySearchContainer extends Component {
           renderTooltip={this.renderTooltip}
         >
           {sources.length > 1 && (
-            <span className={styles.sourceInputContainer}>
+            <InputContainer>
               <SelectInput options={sources} value={selectedSourceId} onChange={this.onChangeSource} />
-            </span>
+            </InputContainer>
           )}
           {typeOptions && typeOptions.length > 1 && (
-            <span className={styles.filterInputContainer}>
+            <InputContainer>
               <SelectInput
                 placeholder="Type..."
                 isClearable={typeIsClearable}
@@ -249,10 +273,10 @@ class LibrarySearchContainer extends Component {
                 value={type}
                 onChange={this.onChangeType}
               />
-            </span>
+            </InputContainer>
           )}
           {filterOptions && (filterOptions.length > 1 || filterIsClearable) && (
-            <span className={styles.filterInputContainer}>
+            <InputContainer>
               <SelectInput
                 placeholder="Filter..."
                 isClearable={filterIsClearable}
@@ -260,9 +284,9 @@ class LibrarySearchContainer extends Component {
                 value={filter}
                 onChange={this.onChangeFilter}
               />
-            </span>
+            </InputContainer>
           )}
-          <span className={styles.searchContainer}>
+          <SearchInputContainer>
             <input placeholder={searchPlaceholder} value={query} onChange={this.onChangeQuery} />
             <span>
               {legal}
@@ -275,7 +299,7 @@ class LibrarySearchContainer extends Component {
                 </>
               )}
             </span>
-          </span>
+          </SearchInputContainer>
           {onUpload && (
             <FileInput accept={filterFileTypes[type || "all"]} multiple={uploadMultiple} onChange={this.onUpload} />
           )}

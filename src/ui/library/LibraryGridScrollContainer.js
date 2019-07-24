@@ -1,13 +1,7 @@
-import React, { Component } from "react";
-import PropTypes from "prop-types";
-import styles from "./LibraryGridScrollContainer.scss";
+import styled from "styled-components";
 
-export default class LibraryGridScrollContainer extends Component {
-  static propTypes = {
-    children: PropTypes.node
-  };
+const LibraryGridScrollContainer = styled.div`
+  overflow-y: auto;
+`;
 
-  render() {
-    return <div className={styles.libraryGridScrollContainer}>{this.props.children}</div>;
-  }
-}
+export default LibraryGridScrollContainer;

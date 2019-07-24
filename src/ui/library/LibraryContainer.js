@@ -1,8 +1,6 @@
 import React, { Component } from "react";
 import LibraryToolbar from "./LibraryToolbar";
-import styles from "./LibraryContainer.scss";
 import ElementsLibrary from "./ElementsLibrary";
-//import PrimitivesLibrary from "./PrimitivesLibrary";
 import ModelsLibrary from "./ModelsLibrary";
 import VideosLibrary from "./VideosLibrary";
 import ImagesLibrary from "./ImagesLibrary";
@@ -10,6 +8,20 @@ import AssetsLibrary from "./AssetsLibrary";
 import { withEditor } from "../contexts/EditorContext";
 import { withApi } from "../contexts/ApiContext";
 import PropTypes from "prop-types";
+import styled from "styled-components";
+
+const StyledLibraryContainer = styled.div`
+  position: relative;
+`;
+
+const LibraryPanelContainer = styled.div`
+  pointer-events: all;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 200px;
+  display: flex;
+`;
 
 class LibraryContainer extends Component {
   static propTypes = {
@@ -87,14 +99,14 @@ class LibraryContainer extends Component {
     const Component = selected && selected.component;
 
     return (
-      <div id="library-container" className={styles.libraryContainer}>
+      <StyledLibraryContainer id="library-container">
         {Component && (
-          <div className={styles.libraryPanelContainer}>
+          <LibraryPanelContainer>
             <Component onSelectItem={this.onSelectItem} tooltipId="library-container" />
-          </div>
+          </LibraryPanelContainer>
         )}
         <LibraryToolbar items={items} selected={selected} onSelect={this.onSelect} />
-      </div>
+      </StyledLibraryContainer>
     );
   }
 }

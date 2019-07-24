@@ -1,7 +1,18 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
-import styles from "./LibraryToolbar.scss";
 import LibraryToolbarItem from "./LibraryToolbarItem";
+import styled from "styled-components";
+
+const StyledLibraryToolbar = styled.div`
+  display: flex;
+  height: 32px;
+  justify-content: center;
+  pointer-events: none;
+
+  & > * {
+    pointer-events: all;
+  }
+`;
 
 export default class LibraryToolbar extends Component {
   static propTypes = {
@@ -24,7 +35,7 @@ export default class LibraryToolbar extends Component {
     const { items, selected, onSelect } = this.props;
 
     return (
-      <div className={styles.libraryToolbar}>
+      <StyledLibraryToolbar>
         {items.map(item => (
           <LibraryToolbarItem
             key={item.id}
@@ -33,7 +44,7 @@ export default class LibraryToolbar extends Component {
             onClick={onSelect}
           />
         ))}
-      </div>
+      </StyledLibraryToolbar>
     );
   }
 }

@@ -1,9 +1,7 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
-import classNames from "classnames";
 import { withApi } from "../contexts/ApiContext";
 import NavBar from "../navigation/NavBar";
-import styles from "./ProjectsPage.scss";
 import ProjectGrid from "./ProjectGrid";
 import Footer from "../navigation/Footer";
 import Button from "../inputs/Button";
@@ -12,6 +10,66 @@ import Loading from "../Loading";
 import { connectMenu, ContextMenu, MenuItem } from "react-contextmenu";
 import "../styles/vendor/react-contextmenu/index.scss";
 import templates from "./templates";
+import styled from "styled-components";
+
+export const ProjectsSection = styled.section`
+  padding-bottom: 100px;
+  display: flex;
+
+  &:first-child {
+    padding-top: 100px;
+  }
+
+  h1 {
+    font-size: 36px;
+  }
+
+  h2 {
+    font-size: 16px;
+  }
+`;
+
+export const ProjectsContainer = styled.div`
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  margin: 0 auto;
+  max-width: 1200px;
+  padding: 0 20px;
+`;
+
+const WelcomeContainer = styled(ProjectsContainer)`
+  align-items: center;
+
+  & > * {
+    text-align: center;
+  }
+
+  & > *:not(:first-child) {
+    margin-top: 20px;
+  }
+
+  h2 {
+    max-width: 480px;
+  }
+`;
+
+export const ProjectsHeader = styled.div`
+  margin-bottom: 36px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+`;
+
+const LoadingContainer = styled.div`
+  display: flex;
+  flex: 1;
+`;
+
+const ErrorMessage = styled.div`
+  margin-bottom: 20px;
+  color: ${props => props.theme.red};
+`;
 
 const contextMenuId = "project-menu";
 
@@ -86,9 +144,9 @@ class ProjectsPage extends Component {
 
     if (loading) {
       content = (
-        <div className={styles.loadingContainer}>
+        <LoadingContainer>
           <Loading message="Loading projects..." />
-        </div>
+        </LoadingContainer>
       );
     } else {
       content = <ProjectGrid projects={projects} newProjectUrl="/projects/new" contextMenuId={contextMenuId} />;
@@ -107,8 +165,8 @@ class ProjectsPage extends Component {
         <NavBar />
         <main>
           {(!isAuthenticated || (projects.length === 0 && !loading)) && (
-            <section className={styles.projectsSection}>
-              <div className={classNames(styles.projectsContainer, styles.header)}>
+            <ProjectsSection>
+              <WelcomeContainer>
                 <h1>Welcome to Spoke</h1>
                 <h2>
                   If you&#39;re new here we recommend going through the tutorial. Otherwise, jump right in and create a
@@ -117,30 +175,30 @@ class ProjectsPage extends Component {
                 <Button medium to="/projects/tutorial">
                   Start Tutorial
                 </Button>
-              </div>
-            </section>
+              </WelcomeContainer>
+            </ProjectsSection>
           )}
-          <section className={styles.projectsSection}>
-            <div className={styles.projectsContainer}>
-              <div className={styles.projectsHeader}>
+          <ProjectsSection>
+            <ProjectsContainer>
+              <ProjectsHeader>
                 <h1>Templates</h1>
                 <PrimaryLink to="/projects/templates">View More</PrimaryLink>
-              </div>
+              </ProjectsHeader>
               <ProjectGrid projects={topTemplates} />
-            </div>
-          </section>
-          <section className={styles.projectsSection}>
-            <div className={styles.projectsContainer}>
-              <div className={styles.projectsHeader}>
+            </ProjectsContainer>
+          </ProjectsSection>
+          <ProjectsSection>
+            <ProjectsContainer>
+              <ProjectsHeader>
                 <h1>Projects</h1>
                 <Button medium to="/projects/new">
                   New Project
                 </Button>
-              </div>
-              {error && <div className={styles.error}>{error.message || "There was an unknown error."}</div>}
+              </ProjectsHeader>
+              {error && <ErrorMessage>{error.message || "There was an unknown error."}</ErrorMessage>}
               {content}
-            </div>
-          </section>
+            </ProjectsContainer>
+          </ProjectsSection>
           <ProjectContextMenu />
         </main>
         <Footer />

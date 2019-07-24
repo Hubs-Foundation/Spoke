@@ -1,11 +1,12 @@
-import React from "react";
-import PropTypes from "prop-types";
-import styles from "./Center.scss";
+import styled from "styled-components";
 
-export default function Center(props) {
-  return <div className={styles.center}>{props.children}</div>;
-}
+const Center = styled.div`
+  display: flex;
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+`;
 
-Center.propTypes = {
-  children: PropTypes.node
-};
+Center.displayName = "Center";
+
+export default Center;

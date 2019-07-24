@@ -10,7 +10,7 @@ import LibrarySearchContainer from "./LibrarySearchContainer";
 import AssetContextMenu from "./AssetContextMenu";
 import ProjectAssetContextMenu from "./ProjectAssetContextMenu";
 import LoginDialogLink from "../dialogs/LoginDialogLink";
-import styles from "./LibraryPanel.scss";
+import { LibraryPanelContainer } from "./LibraryPanel";
 import Center from "../layout/Center";
 
 const assetTypeToNode = {
@@ -88,11 +88,11 @@ class AssetsLibrary extends Component {
   render() {
     if (!this.props.isAuthenticated) {
       return (
-        <div className={styles.libraryPanel}>
+        <LibraryPanelContainer>
           <Center>
             <LoginDialogLink>Login to upload assets</LoginDialogLink>
           </Center>
-        </div>
+        </LibraryPanelContainer>
       );
     }
 

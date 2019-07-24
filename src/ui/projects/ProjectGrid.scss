@@ -1,6 +1,0 @@
-:local(.projectGrid) {
-  display: grid;
-  grid-gap: 20px;
-  width: 100%;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr) ) ;
-}
