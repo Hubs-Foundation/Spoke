@@ -10,8 +10,6 @@ let defaultParticleSprite = null;
 export default class ParticleEmitterNode extends EditorNodeMixin(ParticleEmitter) {
   static legacyComponentName = "particle-emitter";
 
-  static experimental = true;
-
   static nodeName = "Particle Emitter";
 
   static initialElementProps = {
@@ -88,6 +86,7 @@ export default class ParticleEmitterNode extends EditorNodeMixin(ParticleEmitter
     this.disableOutline = true;
     this._canonicalUrl = "";
     this.helper = new DirectionalPlaneHelper();
+    this.helper.visible = false;
     this.add(this.helper);
   }
 
@@ -113,6 +112,14 @@ export default class ParticleEmitterNode extends EditorNodeMixin(ParticleEmitter
     });
 
     return this;
+  }
+
+  onSelect() {
+    this.helper.visible = true;
+  }
+
+  onDeselect() {
+    this.helper.visible = false;
   }
 
   onUpdate(dt) {
