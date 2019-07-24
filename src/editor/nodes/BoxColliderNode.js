@@ -37,7 +37,7 @@ export default class BoxColliderNode extends EditorNodeMixin(Object3D) {
     super.copy(source, recursive);
 
     if (recursive) {
-      const helperIndex = source.children.indexOf(this.helper);
+      const helperIndex = source.children.indexOf(source.helper);
 
       if (helperIndex !== -1) {
         const boxMesh = new Mesh(BoxColliderNode._geometry, BoxColliderNode._material);
