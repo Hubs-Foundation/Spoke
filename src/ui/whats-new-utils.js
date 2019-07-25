@@ -1,10 +1,7 @@
 import markdownit from "markdown-it";
-let markdown;
+const markdown = markdownit();
 
 function formatBody(body) {
-  // Lazily initialize markdownit.
-  if (!markdown) markdown = markdownit();
-
   const paragraphs = body.split("\r\n\r\n").filter(l => l.trim());
 
   const paraAndImage = [paragraphs[0]];
