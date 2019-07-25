@@ -74,6 +74,9 @@ class NavBar extends Component {
           <nav>
             <NavList>
               <li>
+                <Link to="/whats-new">What&apos;s New</Link>
+              </li>
+              <li>
                 <a href="https://github.com/mozilla/Spoke" rel="noopener noreferrer">
                   Source
                 </a>

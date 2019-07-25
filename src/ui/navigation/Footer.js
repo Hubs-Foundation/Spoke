@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import { Link } from "react-router-dom";
 import mozillaLogo from "../../assets/mozilla-logo.png";
 import styled from "styled-components";
 
@@ -61,6 +62,9 @@ export default class Footer extends Component {
       <StyledFooter>
         <nav>
           <NavList>
+            <NavListItem mobileOnly>
+              <Link to="/whats-new">What&apos;s New</Link>
+            </NavListItem>
             <NavListItem mobileOnly>
               <a href="https://github.com/mozilla/Spoke" rel="noopener noreferrer">
                 Source
