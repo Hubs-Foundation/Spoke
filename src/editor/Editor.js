@@ -29,6 +29,7 @@ import isEmptyObject from "./utils/isEmptyObject";
 import { loadEnvironmentMap } from "./utils/EnvironmentMap";
 import { generateImageFileThumbnail, generateVideoFileThumbnail } from "./utils/thumbnails";
 import getIntersectingNode from "./utils/getIntersectingNode";
+import { PropertyBinding } from "three";
 
 export default class Editor {
   constructor(api) {
@@ -199,8 +200,29 @@ export default class Editor {
     }
 
     const clonedScene = cloneObject3D(scene, true);
+    const animations = clonedScene.getAnimationClips();
 
-    clonedScene.prepareForExport();
+    for (const clip of animations) {
+      for (const track of clip.tracks) {
+        const { nodeName: uuid } = PropertyBinding.parseTrackName(track.name);
+
+        const object = clonedScene.getObjectByProperty("uuid", uuid);
+
+        if (!object) {
+          const originalSceneObject = scene.getObjectByProperty("uuid", uuid);
+
+          if (originalSceneObject) {
+            console.log(`Couldn't find object with uuid: "${uuid}" in cloned scene but was found in original scene!`);
+          } else {
+            console.log(`Couldn't find object with uuid: "${uuid}" in cloned or original scene!`);
+          }
+        }
+      }
+    }
+
+    const exportContext = { animations };
+
+    clonedScene.prepareForExport(exportContext);
     await clonedScene.combineMeshes();
     clonedScene.removeUnusedObjects();
 
@@ -208,8 +230,6 @@ export default class Editor {
     const previewCamera = this.camera.clone();
     previewCamera.name = "scene-preview-camera";
     clonedScene.add(previewCamera);
-
-    const animations = clonedScene.getAnimationClips();
 
     const exporter = new GLTFExporter();
     // TODO: export animations

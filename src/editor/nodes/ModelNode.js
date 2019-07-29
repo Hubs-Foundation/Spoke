@@ -35,8 +35,19 @@ export default class ModelNode extends EditorNodeMixin(Model) {
 
         const loopAnimationComponent = json.components.find(c => c.name === "loop-animation");
 
-        if (loopAnimationComponent && loopAnimationComponent.props.clip) {
-          node.activeClipName = loopAnimationComponent.props.clip;
+        if (loopAnimationComponent && loopAnimationComponent.props) {
+          const { clip, activeClipIndex } = loopAnimationComponent.props;
+
+          if (activeClipIndex !== undefined) {
+            node.activeClipIndex = loopAnimationComponent.props.activeClipIndex;
+          } else if (clip !== undefined) {
+            // DEPRECATED: Old loop-animation component stored the clip name rather than the clip index
+            node.activeClipIndex =
+              (node.model &&
+                node.model.animations &&
+                node.model.animations.findIndex(animation => animation.name === clip)) ||
+              -1;
+          }
         }
 
         const shadowComponent = json.components.find(c => c.name === "shadow");
@@ -177,54 +188,19 @@ export default class ModelNode extends EditorNodeMixin(Model) {
 
     setStaticMode(this.model, StaticModes.Static);
 
-    if (this.animations.length > 0) {
-      for (const animation of this.animations) {
+    if (this.model.animations.length > 0) {
+      for (const animation of this.model.animations) {
         for (const track of animation.tracks) {
-          const { nodeName } = PropertyBinding.parseTrackName(track.name);
-          const animatedNode = this.model.getObjectByName(nodeName);
+          const { nodeName: uuid } = PropertyBinding.parseTrackName(track.name);
+          const animatedNode = this.model.getObjectByProperty("uuid", uuid);
+
+          if (!animatedNode) {
+            throw new Error(`Model.updateStaticModes: Couldn't find object with uuid: "${uuid}"`);
+          }
+
           setStaticMode(animatedNode, StaticModes.Dynamic);
         }
       }
-    }
-  }
-
-  get activeClipName() {
-    if (this.clipActions.length > 0) {
-      return this.clipActions[0].getClip().name;
-    }
-
-    return null;
-  }
-
-  set activeClipName(clipName) {
-    if (!clipName && this.editor.playing) {
-      for (const clipAction of this.clipActions) {
-        clipAction.stop();
-      }
-    }
-
-    this.clipActions = [];
-    const clipAction = this.addClipAction(clipName);
-
-    if (clipAction && this.editor.playing) {
-      clipAction.play();
-    }
-  }
-
-  onPlay() {
-    for (const clipAction of this.clipActions) {
-      clipAction.play();
-    }
-  }
-
-  onUpdate(dt) {
-    super.onUpdate(dt);
-    this.update(dt);
-  }
-
-  onPause() {
-    for (const clipAction of this.clipActions) {
-      clipAction.stop();
     }
   }
 
@@ -240,9 +216,9 @@ export default class ModelNode extends EditorNodeMixin(Model) {
       }
     };
 
-    if (this.clipActions.length > 0) {
+    if (this.activeClipIndex !== -1) {
       components["loop-animation"] = {
-        clip: this.clipActions[0].getClip().name
+        activeClipIndex: this.activeClipIndex
       };
     }
 
@@ -274,7 +250,7 @@ export default class ModelNode extends EditorNodeMixin(Model) {
     return this;
   }
 
-  prepareForExport() {
+  prepareForExport(ctx) {
     super.prepareForExport();
     this.addGLTFComponent("shadow", {
       cast: this.castShadow,
@@ -282,10 +258,18 @@ export default class ModelNode extends EditorNodeMixin(Model) {
     });
 
     // TODO: Support exporting more than one active clip.
-    if (this.clipActions.length > 0) {
-      this.addGLTFComponent("loop-animation", {
-        clip: this.clipActions[0].getClip().name
-      });
+    if (this.activeClip) {
+      const activeClipIndex = ctx.animations.indexOf(this.activeClip);
+
+      if (activeClipIndex === -1) {
+        throw new Error(
+          `Error exporting model "${this.name}" with url "${this._canonicalUrl}". Animation could not be found.`
+        );
+      } else {
+        this.addGLTFComponent("loop-animation", {
+          activeClipIndex: activeClipIndex
+        });
+      }
     }
   }
 }
