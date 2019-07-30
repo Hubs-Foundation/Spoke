@@ -222,14 +222,19 @@ export default class Editor {
 
     const exportContext = { animations };
 
-    clonedScene.prepareForExport(exportContext);
-    await clonedScene.combineMeshes();
-    clonedScene.removeUnusedObjects();
-
     // Add a preview camera to the exported GLB if there is a transform in the metadata.
     const previewCamera = this.camera.clone();
     previewCamera.name = "scene-preview-camera";
+    previewCamera.userData.gltfExtensions = {
+      MOZ_hubs_components: {
+        "scene-preview-camera": {}
+      }
+    };
     clonedScene.add(previewCamera);
+
+    clonedScene.prepareForExport(exportContext);
+    await clonedScene.combineMeshes();
+    clonedScene.removeUnusedObjects();
 
     const exporter = new GLTFExporter();
     // TODO: export animations
@@ -243,6 +248,7 @@ export default class Editor {
         {
           mode: "glb",
           onlyVisible: false,
+          includeCustomExtensions: true,
           animations
         }
       );
