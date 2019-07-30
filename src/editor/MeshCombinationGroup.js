@@ -161,7 +161,7 @@ export default class MeshCombinationGroup {
   }
 
   async _tryAdd(object) {
-    if (!object.isMesh) {
+    if (!object.isMesh || object.isSkinnedMesh) {
       return false;
     }
 
