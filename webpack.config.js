@@ -215,12 +215,6 @@ module.exports = env => {
       process: false
     },
 
-    resolve: {
-      alias: {
-        three$: path.join(__dirname, "node_modules/three/build/three.module.js")
-      }
-    },
-
     optimization: {
       minimizer: [
         new TerserJSPlugin({ sourceMap: true, parallel: true, cache: path.join(__dirname, ".tersercache") }),
