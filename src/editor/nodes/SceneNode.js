@@ -259,7 +259,7 @@ export default class SceneNode extends EditorNodeMixin(Scene) {
 
   serialize() {
     const sceneJson = {
-      version: 3,
+      version: 4,
       root: this.uuid,
       metadata: this.metadata,
       entities: {
