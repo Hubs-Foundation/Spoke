@@ -28,7 +28,7 @@
     "test-all": "ava",
     "unit-tests": "ava ./test/unit",
     "integration-tests": "concurrently --success \"first\" --kill-others \"ava ./test/integration\" \"yarn test-server\"",
-    "update-test-snapshots": "concurrently --success \"first\" --kill-others \"ava -u\" \"yarn test-serve\""
+    "update-test-snapshots": "concurrently --success \"first\" --kill-others \"ava -u\" \"yarn test-server\""
   },
   "ava": {
     "files": [
