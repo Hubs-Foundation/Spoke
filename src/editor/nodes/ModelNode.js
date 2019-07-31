@@ -40,13 +40,9 @@ export default class ModelNode extends EditorNodeMixin(Model) {
 
           if (activeClipIndex !== undefined) {
             node.activeClipIndex = loopAnimationComponent.props.activeClipIndex;
-          } else if (clip !== undefined) {
+          } else if (clip !== undefined && node.model && node.model.animations) {
             // DEPRECATED: Old loop-animation component stored the clip name rather than the clip index
-            node.activeClipIndex =
-              (node.model &&
-                node.model.animations &&
-                node.model.animations.findIndex(animation => animation.name === clip)) ||
-              -1;
+            node.activeClipIndex = node.model.animations.findIndex(animation => animation.name === clip);
           }
         }
 
