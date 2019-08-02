@@ -36,6 +36,7 @@ pipeline {
           def smokeURL = env.SMOKE_URL
           def reticulumServer = env.RETICULUM_SERVER
           def farsparkServer = env.FARSPARK_SERVER
+          def thumbnailServer = env.THUMBNAIL_SERVER
           def corsProxyServer = env.CORS_PROXY_SERVER
           def nonCorsProxyDomains = env.NON_CORS_PROXY_DOMAINS
           def slackURL = env.SLACK_URL

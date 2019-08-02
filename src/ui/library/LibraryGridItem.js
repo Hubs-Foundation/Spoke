@@ -33,6 +33,10 @@ const Thumbnail = styled.div`
   background-position: 50%;
   background-repeat: no-repeat;
 `;
+const ThumbnailVideo = styled.video`
+  display: flex;
+  flex: 1;
+`;
 const IconLibraryItem = styled.div`
   display: flex;
   flex: 1;
@@ -66,9 +70,13 @@ function renderItem(item) {
   if (item.images && item.images.preview && item.images.preview.url) {
     return (
       <ThumbnailContainer>
-        {item.images && item.images.preview && (
-          <Thumbnail style={{ backgroundImage: `url(${item.images.preview.url})` }} />
-        )}
+        {item.images &&
+          item.images.preview &&
+          (item.images.preview.type !== "mp4" ? (
+            <Thumbnail style={{ backgroundImage: `url(${item.images.preview.url})` }} />
+          ) : (
+            <ThumbnailVideo autoPlay src={item.images.preview.url} />
+          ))}
       </ThumbnailContainer>
     );
   }
