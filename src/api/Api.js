@@ -74,7 +74,7 @@ export const scaledThumbnailUrlFor = (url, width, height) => {
     return url;
   }
 
-  return `https://${process.env.FARSPARK_SERVER}/thumbnail/${farsparkEncodeUrl(url)}?w=${width}&h=${height}`;
+  return `https://${process.env.THUMBNAIL_SERVER}/thumbnail/${farsparkEncodeUrl(url)}?w=${width}&h=${height}`;
 };
 
 const CommonKnownContentTypes = {
@@ -379,15 +379,19 @@ export default class Project extends EventEmitter {
 
     const json = await resp.json();
 
-    const farsparkedEntries = json.entries.map(entry => {
+    const thumbnailedEntries = json.entries.map(entry => {
       if (entry.images && entry.images.preview && entry.images.preview.url) {
-        entry.images.preview.url = scaledThumbnailUrlFor(entry.images.preview.url, 100, 100);
+        if (entry.images.preview.type === "mp4") {
+          entry.images.preview.url = proxiedUrlFor(entry.images.preview.url);
+        } else {
+          entry.images.preview.url = scaledThumbnailUrlFor(entry.images.preview.url, 100, 100);
+        }
       }
       return entry;
     });
 
     return {
-      results: farsparkedEntries,
+      results: thumbnailedEntries,
       suggestions: json.suggestions,
       nextCursor: json.meta.next_cursor
     };
