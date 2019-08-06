@@ -261,7 +261,7 @@ export default class SceneNode extends EditorNodeMixin(Scene) {
     const sceneJson = {
       version: 3,
       root: this.uuid,
-      metadata: this.metadata,
+      metadata: JSON.parse(JSON.stringify(this.metadata)),
       entities: {
         [this.uuid]: {
           name: this.name
