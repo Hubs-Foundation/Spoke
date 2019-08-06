@@ -627,8 +627,11 @@ export default class EditorContainer extends Component {
 
   onOpenScene = () => {
     const sceneId = this.getSceneId();
-    const url = this.props.api.getSceneUrl(sceneId);
-    window.open(url);
+
+    if (sceneId) {
+      const url = this.props.api.getSceneUrl(sceneId);
+      window.open(url);
+    }
   };
 
   onFinishTutorial = () => {
@@ -688,9 +691,7 @@ export default class EditorContainer extends Component {
                 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
               </Helmet>
               <BrowserPrompt
-                message={`${
-                  editor.scene.name
-                } has unsaved changes, are you sure you wish to navigate away from the page?`}
+                message={`${editor.scene.name} has unsaved changes, are you sure you wish to navigate away from the page?`}
                 when={editor.sceneModified && !creatingProject}
               />
               {tutorialEnabled && <Onboarding onFinish={this.onFinishTutorial} />}
