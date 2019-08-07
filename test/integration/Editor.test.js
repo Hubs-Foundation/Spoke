@@ -121,7 +121,7 @@ test("Editor should load V1TestScene", withPage(`/projects/new?template=${v1Test
   t.is(shadow2Props.cast, false);
   t.is(shadow2Props.receive, false);
   const loopAnimation2Props = model2Entity.components.find(c => c.name === "loop-animation").props;
-  t.is(loopAnimation2Props.clip, "Take 001");
+  t.is(loopAnimation2Props.activeClipIndex, 0);
 
   const groupNode1Entity = entities.find(e => e.name === "Group");
   const groupNode1EntityIndex = entities.findIndex(e => e.name === "Group");

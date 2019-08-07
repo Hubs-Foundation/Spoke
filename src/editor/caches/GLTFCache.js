@@ -30,7 +30,8 @@ export default class GLTFCache extends Cache {
       this._cache.set(absoluteURL, gltfPromise);
     }
     return this._cache.get(absoluteURL).then(gltf => {
-      const clonedGLTF = { ...gltf, scene: cloneObject3D(gltf.scene) };
+      const clonedScene = cloneObject3D(gltf.scene);
+      const clonedGLTF = { ...gltf, scene: clonedScene, animations: clonedScene.animations };
       clonedGLTF.scene.traverse(obj => {
         if (!obj.material) return;
         if (obj.material.clone) {

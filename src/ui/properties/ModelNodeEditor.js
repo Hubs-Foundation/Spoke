@@ -24,8 +24,8 @@ export default class ModelNodeEditor extends Component {
     this.props.editor.setNodeProperty(this.props.node, "src", src);
   };
 
-  onChangeAnimation = activeClipName => {
-    this.props.editor.setNodeProperty(this.props.node, "activeClipName", activeClipName);
+  onChangeAnimation = activeClipIndex => {
+    this.props.editor.setNodeProperty(this.props.node, "activeClipIndex", activeClipIndex);
   };
 
   onChangeCollidable = collidable => {
@@ -46,9 +46,6 @@ export default class ModelNodeEditor extends Component {
 
   render() {
     const node = this.props.node;
-    const activeClipName = node.activeClipName;
-    const clipOptions = node.getClipNames().map(name => ({ label: name, value: name }));
-    clipOptions.unshift({ label: "None", value: null });
 
     return (
       <NodeEditor description={ModelNodeEditor.description} {...this.props}>
@@ -56,7 +53,7 @@ export default class ModelNodeEditor extends Component {
           <ModelInput value={node.src} onChange={this.onChangeSrc} />
         </InputGroup>
         <InputGroup name="Loop Animation">
-          <SelectInput options={clipOptions} value={activeClipName} onChange={this.onChangeAnimation} />
+          <SelectInput options={node.getClipOptions()} value={node.activeClipIndex} onChange={this.onChangeAnimation} />
         </InputGroup>
         <InputGroup name="Collidable">
           <BooleanInput value={node.collidable} onChange={this.onChangeCollidable} />
