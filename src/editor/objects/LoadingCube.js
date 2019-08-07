@@ -18,6 +18,8 @@ export default class LoadingCube extends Object3D {
       });
     });
 
+    gltf.scene.animations = gltf.animations;
+
     cubeGltf = gltf;
 
     return cubeGltf;
@@ -35,7 +37,7 @@ export default class LoadingCube extends Object3D {
     this.model = cloneObject3D(cubeGltf.scene);
     this.add(this.model);
     this.mixer = new AnimationMixer(this);
-    this.mixer.clipAction(cubeGltf.animations[0]).play();
+    this.mixer.clipAction(this.model.animations[0]).play();
     this.worldScale = new Vector3();
   }
 
