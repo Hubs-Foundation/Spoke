@@ -12,6 +12,7 @@ export default class Model extends Object3D {
     this.model = null;
     this.errorMesh = null;
     this._src = null;
+    this._nodeId = null;
     this._castShadow = false;
     this._receiveShadow = false;
     // Use index instead of references to AnimationClips to simplify animation cloning / track name remapping
@@ -23,19 +24,38 @@ export default class Model extends Object3D {
   }
 
   set src(value) {
-    this.load(value).catch(console.error);
+    this.load(value, this.nodeId).catch(console.error);
   }
 
-  loadGLTF(src) {
-    return new Promise((resolve, reject) => {
-      new GLTFLoader().load(src, resolve, null, e => {
-        reject(new Error(`Error loading Model. ${eventToMessage(e)}`));
+  get nodeId() {
+    return this._nodeId;
+  }
+
+  set nodeId(value) {
+    this.load(this.src, value).catch(console.error);
+  }
+
+  async loadGLTF(src, nodeId) {
+    try {
+      const gltf = await new Promise((resolve, reject) => {
+        new GLTFLoader().load(src, resolve, null, reject);
       });
-    });
+
+      let model = gltf.scene;
+
+      if (nodeId !== null) {
+        model = model.getObjectByName(nodeId);
+      }
+
+      return model;
+    } catch (e) {
+      throw new Error(`Error loading Model. ${eventToMessage(e)}`);
+    }
   }
 
-  async load(src) {
+  async load(src, nodeId) {
     this._src = src;
+    this._nodeId = nodeId || null;
 
     if (this.errorMesh) {
       this.remove(this.errorMesh);
@@ -48,9 +68,9 @@ export default class Model extends Object3D {
     }
 
     try {
-      const { scene } = await this.loadGLTF(src);
-      this.model = scene;
-      this.add(scene);
+      const model = await this.loadGLTF(src, nodeId);
+      this.model = model;
+      this.add(model);
 
       this.castShadow = this._castShadow;
       this.receiveShadow = this._receiveShadow;
@@ -83,7 +103,7 @@ export default class Model extends Object3D {
   }
 
   get activeClip() {
-    return (this.model && this.model.animations[this.activeClipIndex]) || null;
+    return (this.model && this.model.animations && this.model.animations[this.activeClipIndex]) || null;
   }
 
   get castShadow() {
@@ -159,6 +179,7 @@ export default class Model extends Object3D {
     }
 
     this._src = source._src;
+    this._nodeId = source._nodeId;
     this.activeClipIndex = source.activeClipIndex;
 
     return this;

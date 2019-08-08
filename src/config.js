@@ -38,6 +38,8 @@ import LinkNode from "./editor/nodes/LinkNode";
 import LinkNodeEditor from "./ui/properties/LinkNodeEditor";
 import ParticleEmitterNode from "./editor/nodes/ParticleEmitterNode";
 import ParticleEmitterNodeEditor from "./ui/properties/ParticleEmitterNodeEditor";
+import KitPieceNode from "./editor/nodes/KitPieceNode";
+import KitPieceNodeEditor from "./ui/properties/KitPieceNodeEditor";
 
 export function createEditor(api) {
   const editor = new Editor(api);
@@ -60,5 +62,6 @@ export function createEditor(api) {
   editor.registerNode(TriggerVolumeNode, TriggerVolumeNodeEditor);
   editor.registerNode(LinkNode, LinkNodeEditor);
   editor.registerNode(ParticleEmitterNode, ParticleEmitterNodeEditor);
+  editor.registerNode(KitPieceNode, KitPieceNodeEditor);
   return editor;
 }

@@ -93,7 +93,7 @@ export default class ModelNode extends EditorNodeMixin(Model) {
       this.attribution = { name, author, url };
     }
 
-    return gltf;
+    return gltf.scene;
   }
 
   // Overrides Model's load method and resolves the src url before loading.
@@ -184,7 +184,7 @@ export default class ModelNode extends EditorNodeMixin(Model) {
 
     setStaticMode(this.model, StaticModes.Static);
 
-    if (this.model.animations.length > 0) {
+    if (this.model.animations && this.model.animations.length > 0) {
       for (const animation of this.model.animations) {
         for (const track of animation.tracks) {
           const { nodeName: uuid } = PropertyBinding.parseTrackName(track.name);

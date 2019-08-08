@@ -9,6 +9,7 @@ import { withEditor } from "../contexts/EditorContext";
 import { withApi } from "../contexts/ApiContext";
 import PropTypes from "prop-types";
 import styled from "styled-components";
+import KitsLibrary from "./KitsLibrary";
 
 const StyledLibraryContainer = styled.div`
   position: relative;
@@ -37,6 +38,12 @@ class LibraryContainer extends Component {
         label: "Elements",
         iconClassName: "fa-code",
         component: ElementsLibrary
+      },
+      {
+        id: "kits",
+        label: "Kits",
+        iconClassName: "fa-toolbox",
+        component: KitsLibrary
       },
       {
         id: "models",

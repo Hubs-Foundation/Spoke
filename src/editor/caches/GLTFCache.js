@@ -10,8 +10,9 @@ export default class GLTFCache extends Cache {
     this.textureCache = textureCache;
   }
 
-  get(url) {
+  get(url, options = {}) {
     const absoluteURL = new URL(url, window.location).href;
+
     if (!this._cache.has(absoluteURL)) {
       const gltfPromise = new Promise((resolve, reject) => {
         const loader = new GLTFLoader();
@@ -30,7 +31,15 @@ export default class GLTFCache extends Cache {
       this._cache.set(absoluteURL, gltfPromise);
     }
     return this._cache.get(absoluteURL).then(gltf => {
-      const clonedScene = cloneObject3D(gltf.scene);
+      let clonedScene;
+
+      if (options.nodeId !== undefined) {
+        const scene = gltf.scene.getObjectByName(options.nodeId);
+        clonedScene = cloneObject3D(scene);
+      } else {
+        clonedScene = cloneObject3D(gltf.scene);
+      }
+
       const clonedGLTF = { ...gltf, scene: clonedScene, animations: clonedScene.animations };
       clonedGLTF.scene.traverse(obj => {
         if (!obj.material) return;
@@ -64,6 +73,11 @@ export default class GLTFCache extends Cache {
       });
       return clonedGLTF;
     });
+  }
+
+  async getNode(url, nodeId) {
+    const gltf = await this.get(url, { nodeId });
+    return gltf.scene;
   }
 
   disposeAndClear() {

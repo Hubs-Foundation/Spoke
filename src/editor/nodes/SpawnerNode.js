@@ -42,7 +42,7 @@ export default class SpawnerNode extends EditorNodeMixin(Model) {
 
   // Overrides Model's loadGLTF method and uses the Editor's gltf cache.
   async loadGLTF(src) {
-    return await this.editor.gltfCache.get(src);
+    return await this.editor.gltfCache.get(src).then(gltf => gltf.scene);
   }
 
   // Overrides Model's load method and resolves the src url before loading.
