@@ -149,6 +149,8 @@ export default class Viewport {
     const camera = this.camera;
     const canvas = this.canvas;
 
+    this.inputManager.onResize();
+
     camera.aspect = canvas.parentElement.offsetWidth / canvas.parentElement.offsetHeight;
     camera.updateProjectionMatrix();
 
