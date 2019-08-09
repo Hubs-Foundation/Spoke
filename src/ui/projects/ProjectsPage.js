@@ -7,6 +7,7 @@ import Footer from "../navigation/Footer";
 import Button from "../inputs/Button";
 import PrimaryLink from "../inputs/PrimaryLink";
 import Loading from "../Loading";
+import LatestUpdate from "../whats-new/LatestUpdate";
 import { connectMenu, ContextMenu, MenuItem } from "react-contextmenu";
 import "../styles/vendor/react-contextmenu/index.scss";
 import templates from "./templates";
@@ -164,7 +165,7 @@ class ProjectsPage extends Component {
       <>
         <NavBar />
         <main>
-          {(!isAuthenticated || (projects.length === 0 && !loading)) && (
+          {!isAuthenticated || (projects.length === 0 && !loading) ? (
             <ProjectsSection>
               <WelcomeContainer>
                 <h1>Welcome to Spoke</h1>
@@ -177,6 +178,8 @@ class ProjectsPage extends Component {
                 </Button>
               </WelcomeContainer>
             </ProjectsSection>
+          ) : (
+            <LatestUpdate />
           )}
           <ProjectsSection>
             <ProjectsContainer>

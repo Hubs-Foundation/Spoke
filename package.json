@@ -65,6 +65,7 @@
     "hls.js": "^0.12.3",
     "jszip": "^3.2.0",
     "jwt-decode": "^2.2.0",
+    "markdown-it": "^9.0.1",
     "mousetrap": "^1.6.3",
     "phoenix": "^1.4.1",
     "prop-types": "^15.7.2",
