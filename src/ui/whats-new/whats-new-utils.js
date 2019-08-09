@@ -71,7 +71,7 @@ export async function* getUpdates(perPage = 30) {
     yield edges.map(({ node }) => ({
       ...node,
       formattedMergedAt: formatDate(node.mergedAt),
-      body: formatBody(node.body)
+      formattedBody: formatBody(node.body)
     }));
   } while (hasMore);
 }
