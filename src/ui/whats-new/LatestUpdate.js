@@ -13,9 +13,10 @@ const LatestUpdateContainer = styled.div`
 
 const StyledLatestUpdate = styled.div`
   min-height: 24px;
-  margin: 1em 0;
+  margin: 1em 20px;
   display: flex;
   justify-content: center;
+  align-items: center;
   font-size: 1.1em;
   padding: 1em;
   border-radius: 6px;
@@ -23,17 +24,26 @@ const StyledLatestUpdate = styled.div`
 `;
 
 const Title = styled.span`
+  text-align: center;
   font-weight: bold;
   padding-right: 0.5em;
 `;
 
+const Content = styled.span`
+  max-width: 50vw;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+`;
+
 const Date = styled.span`
+  white-space: nowrap;
   margin-right: 8px;
   color: ${props => props.theme.text2};
 `;
 
 const ViewMore = styled.div`
-  text-align: right;
+  text-align: center;
   margin-left: 1em;
   a {
     color: ${props => props.theme.blue};
@@ -50,15 +60,18 @@ export default class LatestUpdate extends Component {
   }
 
   render() {
-    if (!this.state.latestUpdate) {
+    const latestUpdate = this.state.latestUpdate;
+
+    if (!latestUpdate) {
       return <LatestUpdateContainer></LatestUpdateContainer>;
     }
+
     return (
       <LatestUpdateContainer>
         <StyledLatestUpdate>
           <Title>Latest Update:</Title>
-          <Date>{this.state.latestUpdate.formattedMergedAt}</Date>
-          {this.state.latestUpdate.title}
+          <Date>{latestUpdate.formattedMergedAt}</Date>
+          <Content>{latestUpdate.title}</Content>
           <ViewMore>
             <Link to="/whats-new">View More</Link>
           </ViewMore>
