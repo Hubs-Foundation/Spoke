@@ -99,5 +99,7 @@ export default class FlyControls {
     if (this.direction.lengthSq() > EPSILON) {
       this.camera.translateOnAxis(this.direction, speed);
     }
+
+    this.camera.position.y += input.get(Fly.moveY) * dt * this.moveSpeed * boostSpeed;
   }
 }
