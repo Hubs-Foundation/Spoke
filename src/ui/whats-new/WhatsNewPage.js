@@ -4,7 +4,7 @@ import styled from "styled-components";
 
 import NavBar from "../navigation/NavBar";
 import Loading from "../Loading";
-import { getUpdatesPage } from "../whats-new-utils";
+import { getUpdates } from "./whats-new-utils";
 
 const WhatsNewContainer = styled.main`
   display: flex;
@@ -28,7 +28,7 @@ const WhatsNewContent = styled.div`
 const WhatsNewTitle = styled.h1`
   font-size: 36px;
   text-align: center;
-  margin-bottom: 0.5em;
+  margin: 1em 0 1.5em 0;
 `;
 
 const Update = styled.article`
@@ -83,18 +83,27 @@ const Body = styled.p`
 `;
 
 export default class WhatsNewPage extends Component {
-  state = {
-    updates: [],
-    hasMore: true
-  };
+  constructor(props) {
+    super(props);
 
-  onLoadMore = async pageIndex => {
-    const pageData = await getUpdatesPage(pageIndex);
+    this.state = {
+      updates: [],
+      loading: false,
+      hasMore: true
+    };
+
+    this.updatesIterator = getUpdates(30);
+  }
+
+  onLoadMore = async () => {
+    this.setState({ loading: true });
+
+    const { value: updates, done } = await this.updatesIterator.next();
 
     let currentDate;
 
     // Blank out duplicate dates
-    for (const update of pageData.updates) {
+    for (const update of updates) {
       if (update.formattedMergedAt === currentDate) {
         update.formattedMergedAt = null;
       } else {
@@ -102,7 +111,7 @@ export default class WhatsNewPage extends Component {
       }
     }
 
-    this.setState({ updates: [...this.state.updates, ...pageData.updates], hasMore: pageData.hasMore });
+    this.setState({ updates: [...this.state.updates, ...updates], loading: false, hasMore: !done });
   };
 
   render() {
@@ -117,14 +126,19 @@ export default class WhatsNewPage extends Component {
         <WhatsNewContainer>
           <WhatsNewContent>
             <WhatsNewTitle>What&apos;s New</WhatsNewTitle>
-            <InfiniteScroll pageStart={0} loadMore={this.onLoadMore} hasMore={this.state.hasMore} loader={loader}>
+            <InfiniteScroll
+              pageStart={0}
+              loadMore={this.onLoadMore}
+              hasMore={!this.state.loading && this.state.hasMore}
+              loader={loader}
+            >
               {this.state.updates.map((update, i) => {
                 return (
                   <Update key={i}>
                     <Header>
                       <Date blank={!update.formattedMergedAt}>{update.formattedMergedAt}</Date>
                       <Title>
-                        <a href={update.html_url}>{update.title}</a>
+                        <a href={update.url}>{update.title}</a>
                       </Title>
                     </Header>
                     {/*

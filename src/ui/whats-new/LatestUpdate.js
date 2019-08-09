@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import { Link } from "react-router-dom";
 import styled from "styled-components";
 
-import { getLatestUpdate } from "../whats-new-utils";
+import { getLatestUpdate } from "./whats-new-utils";
 
 const LatestUpdateContainer = styled.section`
   height: 100px;

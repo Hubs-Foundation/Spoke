@@ -7,7 +7,7 @@ import Footer from "../navigation/Footer";
 import Button from "../inputs/Button";
 import PrimaryLink from "../inputs/PrimaryLink";
 import Loading from "../Loading";
-import LatestUpdate from "./LatestUpdate";
+import LatestUpdate from "../whats-new/LatestUpdate";
 import { connectMenu, ContextMenu, MenuItem } from "react-contextmenu";
 import "../styles/vendor/react-contextmenu/index.scss";
 import templates from "./templates";

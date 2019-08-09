@@ -14,7 +14,7 @@ import { AuthContextProvider } from "./contexts/AuthContext";
 import RedirectRoute from "./router/RedirectRoute";
 
 import LandingPage from "./landing/LandingPage";
-import WhatsNewPage from "./landing/WhatsNewPage";
+import WhatsNewPage from "./whats-new/WhatsNewPage";
 import LoginPage from "./auth/LoginPage";
 import LogoutPage from "./auth/LogoutPage";
 import ProjectsPage from "./projects/ProjectsPage";
