@@ -4,12 +4,22 @@ import styled from "styled-components";
 
 import { getLatestUpdate } from "./whats-new-utils";
 
-const LatestUpdateContainer = styled.section`
-  height: 100px;
+const LatestUpdateContainer = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+`;
+
+const StyledLatestUpdate = styled.div`
+  min-height: 24px;
+  margin: 1em 0;
   display: flex;
   justify-content: center;
-  align-items: center;
   font-size: 1.1em;
+  padding: 1em;
+  border-radius: 6px;
+  background-color: ${props => props.theme.panel};
 `;
 
 const Title = styled.span`
@@ -18,11 +28,13 @@ const Title = styled.span`
 `;
 
 const Date = styled.span`
+  margin-right: 8px;
   color: ${props => props.theme.text2};
 `;
 
 const ViewMore = styled.div`
   text-align: right;
+  margin-left: 1em;
   a {
     color: ${props => props.theme.blue};
   }
@@ -43,13 +55,14 @@ export default class LatestUpdate extends Component {
     }
     return (
       <LatestUpdateContainer>
-        <div>
+        <StyledLatestUpdate>
           <Title>Latest Update:</Title>
-          <Date>{this.state.latestUpdate.formattedMergedAt}</Date> - {this.state.latestUpdate.title}
+          <Date>{this.state.latestUpdate.formattedMergedAt}</Date>
+          {this.state.latestUpdate.title}
           <ViewMore>
-            <Link to="/whats-new">View more recent updates</Link>
+            <Link to="/whats-new">View More</Link>
           </ViewMore>
-        </div>
+        </StyledLatestUpdate>
       </LatestUpdateContainer>
     );
   }

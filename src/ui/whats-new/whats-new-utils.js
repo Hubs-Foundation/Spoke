@@ -25,7 +25,7 @@ export async function* getUpdates(perPage = 30) {
 
     const query = `query {
       repository(owner: "${process.env.GITHUB_ORG}", name: "${process.env.GITHUB_REPO}") {
-        pullRequests(labels: ["whats new"], states: [MERGED], first: ${perPage}, orderBy: { field: UPDATED_AT, direction: DESC }${cursorStr}) {
+        pullRequests(states: [MERGED], first: ${perPage}, orderBy: { field: UPDATED_AT, direction: DESC }${cursorStr}) {
           edges {
             node {
               title
