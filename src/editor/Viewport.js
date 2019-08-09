@@ -13,7 +13,7 @@ import {
 } from "three";
 import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer";
 import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass";
-import SpokeGridHelper from "./helpers/SpokeGridHelper";
+import SpokeInfiniteGridHelper from "./helpers/SpokeInfiniteGridHelper";
 import resizeShadowCameraFrustum from "./utils/resizeShadowCameraFrustum";
 import OutlinePass from "./renderer/OutlinePass";
 import { environmentMap } from "./utils/EnvironmentMap";
@@ -77,7 +77,7 @@ export default class Viewport {
     const camera = editor.camera;
     this.camera = camera;
 
-    const grid = (this.grid = new SpokeGridHelper());
+    const grid = (this.grid = new SpokeInfiniteGridHelper());
     editor.scene.add(grid);
 
     this.inputManager = new InputManager(canvas);

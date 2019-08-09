@@ -41,16 +41,26 @@ export default class MoveObjectCommand extends Command {
   }
 
   execute() {
-    this.oldParent.remove(this.object);
-
     if (this.newParent !== this.oldParent) {
       // Maintain world position when reparenting.
-      this.object.matrix.multiplyMatrices(this.oldParent.matrixWorld, this.object.matrix);
-      this.object.applyMatrix(matrix.getInverse(this.newParent.matrixWorld));
+      this.newParent.updateWorldMatrix(true, false);
+
+      matrix.getInverse(this.newParent.matrixWorld);
+
+      this.oldParent.updateWorldMatrix(true, false);
+      matrix.multiply(this.oldParent.matrixWorld);
+
+      this.object.applyMatrix(matrix);
+
+      this.object.updateWorldMatrix(false, false);
     }
+
+    this.oldParent.children.splice(this.oldIndex, 1);
+
+    this.object.parent = this.newParent;
+
     const children = this.newParent.children;
     children.splice(this.newIndex, 0, this.object);
-    this.object.parent = this.newParent;
 
     this.editor.signals.sceneGraphChanged.dispatch();
   }

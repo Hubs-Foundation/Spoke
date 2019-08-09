@@ -259,9 +259,9 @@ export default class SceneNode extends EditorNodeMixin(Scene) {
 
   serialize() {
     const sceneJson = {
-      version: 3,
+      version: 4,
       root: this.uuid,
-      metadata: this.metadata,
+      metadata: JSON.parse(JSON.stringify(this.metadata)),
       entities: {
         [this.uuid]: {
           name: this.name
@@ -294,7 +294,7 @@ export default class SceneNode extends EditorNodeMixin(Scene) {
     return sceneJson;
   }
 
-  prepareForExport() {
+  prepareForExport(ctx) {
     this.children = this.children.filter(c => c.isNode);
 
     const nodeList = [];
@@ -306,7 +306,7 @@ export default class SceneNode extends EditorNodeMixin(Scene) {
     });
 
     for (const node of nodeList) {
-      node.prepareForExport();
+      node.prepareForExport(ctx);
     }
   }
 
@@ -364,7 +364,7 @@ export default class SceneNode extends EditorNodeMixin(Scene) {
         const activeClip = child.activeClip;
 
         if (activeClip) {
-          animations.push(activeClip);
+          animations.push(child.activeClip);
         }
       }
     });

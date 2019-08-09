@@ -40,6 +40,9 @@ export const Fly = {
   moveZ: "moveZ",
   lookX: "lookX",
   lookY: "lookY",
+  moveDown: "moveDown",
+  moveUp: "moveUp",
+  moveY: "moveY",
   boost: "boost"
 };
 
@@ -81,6 +84,8 @@ export const FlyMapping = {
       a: Fly.moveLeft,
       s: Fly.moveBackward,
       d: Fly.moveRight,
+      q: Fly.moveDown,
+      e: Fly.moveUp,
       shift: Fly.boost
     }
   },
@@ -94,6 +99,10 @@ export const FlyMapping = {
     {
       transform: input => input.get(Fly.moveRight) - input.get(Fly.moveLeft),
       action: Fly.moveX
+    },
+    {
+      transform: input => input.get(Fly.moveUp) - input.get(Fly.moveDown),
+      action: Fly.moveY
     },
     {
       transform: input => input.get(Fly.moveBackward) - input.get(Fly.moveForward),

@@ -10678,9 +10678,9 @@ three-mesh-bvh@^0.1.2:
   resolved "https://registry.yarnpkg.com/three-mesh-bvh/-/three-mesh-bvh-0.1.3.tgz#8ff79fc82cc2cb30a2e053bc825e4928d56f4d4c"
   integrity sha512-m1vkDPok3kHy3Az4u7EivY0HrycTPOTe9maXdlTr0UlJ+9zbYO39nJZOhtofnw9zRQmjJH10bpiVaqmhzsHXgg==
 
-"three@github:mozillareality/three.js#hubs/master":
+"three@https://github.com/MozillaReality/three.js.git#0f9b0024725f0dd917caa54c2934a4ba1fc12c4f":
   version "0.105.1"
-  resolved "https://codeload.github.com/mozillareality/three.js/tar.gz/6041920b6f3c8929ee631a5e14460bf9db85835d"
+  resolved "https://github.com/MozillaReality/three.js.git#0f9b0024725f0dd917caa54c2934a4ba1fc12c4f"
 
 through2@^2.0.0:
   version "2.0.5"

@@ -1,4 +1,4 @@
-import { Object3D, AnimationMixer, PlaneBufferGeometry, MeshBasicMaterial, DoubleSide, Mesh } from "three";
+import { Object3D, PlaneBufferGeometry, MeshBasicMaterial, DoubleSide, Mesh } from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import cloneObject3D from "../utils/cloneObject3D";
 import eventToMessage from "../utils/eventToMessage";
@@ -12,11 +12,10 @@ export default class Model extends Object3D {
     this.model = null;
     this.errorMesh = null;
     this._src = null;
-    this.animations = [];
-    this.clipActions = [];
     this._castShadow = false;
     this._receiveShadow = false;
-    this._mixer = new AnimationMixer(this);
+    // Use index instead of references to AnimationClips to simplify animation cloning / track name remapping
+    this.activeClipIndex = -1;
   }
 
   get src() {
@@ -37,9 +36,6 @@ export default class Model extends Object3D {
 
   async load(src) {
     this._src = src;
-    this.animations = [];
-    this.clipActions = [];
-    this._mixer = new AnimationMixer(this);
 
     if (this.errorMesh) {
       this.remove(this.errorMesh);
@@ -52,11 +48,7 @@ export default class Model extends Object3D {
     }
 
     try {
-      const { scene, animations } = await this.loadGLTF(src);
-      if (animations) {
-        this.animations = animations;
-      }
-
+      const { scene } = await this.loadGLTF(src);
       this.model = scene;
       this.add(scene);
 
@@ -82,52 +74,16 @@ export default class Model extends Object3D {
     return this;
   }
 
+  getClipOptions() {
+    const clipOptions = this.model
+      ? this.model.animations.map((clip, index) => ({ label: clip.name, value: index }))
+      : [];
+    clipOptions.unshift({ label: "None", value: -1 });
+    return clipOptions;
+  }
+
   get activeClip() {
-    if (this.clipActions.length > 0) {
-      return this.clipActions[0].getClip();
-    }
-
-    return null;
-  }
-
-  getClipNames() {
-    return this.animations.map(clip => clip.name);
-  }
-
-  get activeClipName() {
-    if (this.clipActions.length > 0) {
-      return this.clipActions[0].getClip().name;
-    }
-
-    return null;
-  }
-
-  set activeClipName(clipName) {
-    this.clipActions = [];
-    this.addClipAction(clipName);
-  }
-
-  addClipAction(clipName) {
-    const clip = this.animations.find(c => c.name === clipName) || null;
-
-    if (!clip) {
-      return null;
-    }
-
-    const clipAction = this._mixer.clipAction(clip);
-    this.clipActions.push(clipAction);
-    return clipAction;
-  }
-
-  removeClipAction(clipName) {
-    const index = this.clipActions.findIndex(a => a.getClip().name === clipName);
-
-    if (index === -1) {
-      this.clipActions.splice(index, 1);
-      return true;
-    }
-
-    return false;
+    return (this.model && this.model.animations[this.activeClipIndex]) || null;
   }
 
   get castShadow() {
@@ -202,17 +158,9 @@ export default class Model extends Object3D {
       }
     }
 
-    this.animations = this.animations.concat(source.animations);
     this._src = source._src;
-
-    for (const clipAction of source.clipActions) {
-      this.addClipAction(clipAction.getClip().name);
-    }
+    this.activeClipIndex = source.activeClipIndex;
 
     return this;
-  }
-
-  update(dt) {
-    this._mixer.update(dt);
   }
 }
