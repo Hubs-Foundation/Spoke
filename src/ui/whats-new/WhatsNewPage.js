@@ -77,6 +77,14 @@ const Title = styled.h2`
 const Body = styled.p`
   margin-left: ${margin}px;
   font-size: 1.1em;
+  padding: 2em;
+  background-color: ${props => props.theme.panel};
+  border-radius: 6px;
+
+  p {
+    margin-bottom: 1em;
+  }
+
   @media ${breakpoint} {
     margin-left: 0;
   }
@@ -100,18 +108,26 @@ export default class WhatsNewPage extends Component {
 
     const { value: updates, done } = await this.updatesIterator.next();
 
-    let currentDate;
+    let nextUpdates;
 
-    // Blank out duplicate dates
-    for (const update of updates) {
-      if (update.formattedMergedAt === currentDate) {
-        update.formattedMergedAt = null;
-      } else {
-        currentDate = update.formattedMergedAt;
+    if (updates) {
+      let currentDate;
+
+      // Blank out duplicate dates
+      for (const update of updates) {
+        if (update.formattedMergedAt === currentDate) {
+          update.formattedMergedAt = null;
+        } else {
+          currentDate = update.formattedMergedAt;
+        }
       }
+
+      nextUpdates = [...this.state.updates, ...updates];
+    } else {
+      nextUpdates = this.state.updates;
     }
 
-    this.setState({ updates: [...this.state.updates, ...updates], loading: false, hasMore: !done });
+    this.setState({ updates: nextUpdates, loading: false, hasMore: !done });
   };
 
   render() {
