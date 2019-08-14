@@ -1,26 +1,17 @@
-import Command from "./commands/Command";
-
 /**
  * @author dforrer / https://github.com/dforrer
  * Developed as part of a project at University of Applied Sciences and Arts Northwestern Switzerland (www.fhnw.ch)
  */
 
 export default class History {
-  constructor(editor) {
-    this.editor = editor;
+  constructor() {
     this.undos = [];
     this.redos = [];
     this.lastCmdTime = new Date();
     this.idCounter = 0;
-
-    this.historyDisabled = false;
-
-    //Set editor-reference in Command
-
-    Command.editor = editor;
   }
 
-  execute(cmd, optionalName) {
+  execute(cmd) {
     const lastCmd = this.undos[this.undos.length - 1];
     const timeDifference = new Date().getTime() - this.lastCmdTime.getTime();
 
@@ -29,7 +20,7 @@ export default class History {
       lastCmd.updatable &&
       cmd.updatable &&
       lastCmd.object === cmd.object &&
-      lastCmd.type === cmd.type &&
+      lastCmd.constructor === cmd.constructor &&
       lastCmd.propertyName === cmd.propertyName;
 
     if (isUpdatableCmd && timeDifference < 1000) {
@@ -39,7 +30,6 @@ export default class History {
       // the command is not updatable and is added as a new part of the history
       this.undos.push(cmd);
       cmd.id = ++this.idCounter;
-      cmd.name = optionalName !== undefined ? optionalName : cmd.name;
       cmd.execute();
     }
 
@@ -48,15 +38,9 @@ export default class History {
     // clearing all the redo-commands
 
     this.redos = [];
-    this.editor.signals.historyChanged.dispatch(cmd);
   }
 
   undo() {
-    if (this.historyDisabled) {
-      alert("Undo/Redo disabled while scene is playing.");
-      return;
-    }
-
     let cmd = undefined;
 
     if (this.undos.length > 0) {
@@ -66,18 +50,12 @@ export default class History {
     if (cmd !== undefined) {
       cmd.undo();
       this.redos.push(cmd);
-      this.editor.signals.historyChanged.dispatch(cmd);
     }
 
     return cmd;
   }
 
   redo() {
-    if (this.historyDisabled) {
-      alert("Undo/Redo disabled while scene is playing.");
-      return;
-    }
-
     let cmd = undefined;
 
     if (this.redos.length > 0) {
@@ -87,7 +65,6 @@ export default class History {
     if (cmd !== undefined) {
       cmd.execute();
       this.undos.push(cmd);
-      this.editor.signals.historyChanged.dispatch(cmd);
     }
 
     return cmd;
@@ -97,7 +74,5 @@ export default class History {
     this.undos = [];
     this.redos = [];
     this.idCounter = 0;
-
-    this.editor.signals.historyChanged.dispatch();
   }
 }
