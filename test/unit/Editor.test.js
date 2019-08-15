@@ -1579,3 +1579,72 @@ test("duplicateSelected", t => {
   t.is(sceneGraphChangedHandler.callCount, 2);
   t.is(selectionChangedHandler.callCount, 2);
 });
+
+test("reparent", t => {
+  const editor = new Editor();
+
+  const sceneGraphChangedHandler = sinon.spy();
+  const selectionChangedHandler = sinon.spy();
+  editor.addListener("sceneGraphChanged", sceneGraphChangedHandler);
+  editor.addListener("selectionChanged", selectionChangedHandler);
+
+  const nodeA = new MockNode();
+  nodeA.name = "NodeA";
+  const nodeB = new MockNode();
+  nodeB.name = "NodeB";
+  const nodeC = new MockNode();
+  nodeC.name = "NodeC";
+  const nodeD = new MockNode();
+  nodeD.name = "NodeD";
+
+  editor.addObject(nodeA);
+  editor.addObject(nodeB);
+  editor.addObject(nodeC, nodeA);
+  editor.addObject(nodeD, nodeB);
+
+  sceneGraphChangedHandler.resetHistory();
+  selectionChangedHandler.resetHistory();
+
+  t.is(nodeA.children.length, 1);
+  t.is(nodeA.children[0], nodeC);
+  t.is(nodeB.children.length, 1);
+  t.is(nodeB.children[0], nodeD);
+  t.is(sceneGraphChangedHandler.callCount, 0);
+  t.is(selectionChangedHandler.callCount, 0);
+
+  editor.reparent(nodeC, nodeB); // Move nodeC to nodeB as the last child
+
+  t.is(nodeA.children.length, 0);
+  t.is(nodeB.children.length, 2);
+  t.is(nodeB.children[0], nodeD);
+  t.is(nodeB.children[1], nodeC);
+  t.is(sceneGraphChangedHandler.callCount, 1);
+  t.is(selectionChangedHandler.callCount, 1);
+
+  editor.history.undo();
+
+  t.is(nodeA.children.length, 1);
+  t.is(nodeA.children[0], nodeC);
+  t.is(nodeB.children.length, 1);
+  t.is(nodeB.children[0], nodeD);
+  t.is(sceneGraphChangedHandler.callCount, 2);
+  t.is(selectionChangedHandler.callCount, 2);
+
+  editor.reparent(nodeD, nodeA, nodeC); // Move nodeD to nodeA before nodeC
+
+  t.is(nodeA.children.length, 2);
+  t.is(nodeA.children[0], nodeD);
+  t.is(nodeA.children[1], nodeC);
+  t.is(nodeB.children.length, 0);
+  t.is(sceneGraphChangedHandler.callCount, 3);
+  t.is(selectionChangedHandler.callCount, 2);
+
+  editor.history.undo();
+
+  t.is(nodeA.children.length, 1);
+  t.is(nodeA.children[0], nodeC);
+  t.is(nodeB.children.length, 1);
+  t.is(nodeB.children[0], nodeD);
+  t.is(sceneGraphChangedHandler.callCount, 4);
+  t.is(selectionChangedHandler.callCount, 2);
+});

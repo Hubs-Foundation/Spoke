@@ -19,6 +19,10 @@ import { loadEnvironmentMap } from "./utils/EnvironmentMap";
 import TextureCache from "./caches/TextureCache";
 import GLTFCache from "./caches/GLTFCache";
 import getDetachedObjectsRoots from "./utils/getDetachedObjectsRoots";
+import ReparentCommand from "./commands/ReparentCommand";
+import { Matrix4 } from "three";
+
+const tempMatrix = new Matrix4();
 
 // const TransformSpace = {
 //   World: "World",
@@ -504,7 +508,53 @@ export default class Editor2 extends EventEmitter {
     this.duplicateMultiple(this.selected, parent, before, useHistory, emitEvent, selectObject);
   }
 
-  // reparent(object, parent, before, useHistory = true, emitEvent = true, updateTransformRoots = true) {}
+  reparent(object, newParent, newBefore, useHistory = true, emitEvent = true, selectObject = true) {
+    if (!object.parent) {
+      throw new Error("Object has no parent. Reparent only works on objects that are currently in the scene.");
+    }
+
+    if (!newParent) {
+      throw new Error("editor.reparent: newParent is undefined");
+    }
+
+    if (useHistory) {
+      return this.history.execute(new ReparentCommand(this, object, newParent, newBefore));
+    }
+
+    if (newParent !== object.parent) {
+      // Maintain world position when reparenting.
+      newParent.updateWorldMatrix(true, false);
+
+      tempMatrix.getInverse(newParent.matrixWorld);
+
+      object.parent.updateWorldMatrix(true, false);
+      tempMatrix.multiply(object.parent.matrixWorld);
+
+      object.applyMatrix(tempMatrix);
+
+      object.updateWorldMatrix(false, false);
+    }
+
+    const objectIndex = object.parent.children.indexOf(object);
+    object.parent.children.splice(objectIndex, 1);
+
+    if (newBefore) {
+      const newObjectIndex = newParent.children.indexOf(newBefore);
+      newParent.children.splice(newObjectIndex, 0, object);
+    } else {
+      newParent.children.push(object);
+    }
+
+    object.parent = newParent;
+
+    if (selectObject) {
+      this.setSelection([object], false, emitEvent);
+    }
+
+    if (emitEvent) {
+      this.emit("sceneGraphChanged");
+    }
+  }
 
   // reparentMultiple(objects, parent, before, useHistory = true, emitEvent = true, updateTransformRoots = true) {}
 

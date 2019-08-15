@@ -18,6 +18,7 @@ export default class ReparentCommand extends Command {
 
     this.newParent = newParent;
     this.newBefore = newBefore;
+    this.oldSelection = editor.selected.slice(0);
   }
 
   execute() {
@@ -25,6 +26,7 @@ export default class ReparentCommand extends Command {
   }
 
   undo() {
-    this.editor.reparent(this.object, this.oldParent, this.oldBefore, false);
+    this.editor.reparent(this.object, this.oldParent, this.oldBefore, false, true, false);
+    this.editor.setSelection(this.oldSelection, false);
   }
 }
