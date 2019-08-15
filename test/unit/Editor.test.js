@@ -1609,6 +1609,8 @@ test("reparent", t => {
   t.is(nodeA.children[0], nodeC);
   t.is(nodeB.children.length, 1);
   t.is(nodeB.children[0], nodeD);
+  t.is(editor.selectedTransformRoots.length, 1);
+  t.is(editor.selectedTransformRoots[0], nodeD);
   t.is(sceneGraphChangedHandler.callCount, 0);
   t.is(selectionChangedHandler.callCount, 0);
 
@@ -1618,6 +1620,8 @@ test("reparent", t => {
   t.is(nodeB.children.length, 2);
   t.is(nodeB.children[0], nodeD);
   t.is(nodeB.children[1], nodeC);
+  t.is(editor.selectedTransformRoots.length, 1);
+  t.is(editor.selectedTransformRoots[0], nodeC);
   t.is(sceneGraphChangedHandler.callCount, 1);
   t.is(selectionChangedHandler.callCount, 1);
 
@@ -1627,6 +1631,8 @@ test("reparent", t => {
   t.is(nodeA.children[0], nodeC);
   t.is(nodeB.children.length, 1);
   t.is(nodeB.children[0], nodeD);
+  t.is(editor.selectedTransformRoots.length, 1);
+  t.is(editor.selectedTransformRoots[0], nodeD);
   t.is(sceneGraphChangedHandler.callCount, 2);
   t.is(selectionChangedHandler.callCount, 2);
 
@@ -1636,6 +1642,8 @@ test("reparent", t => {
   t.is(nodeA.children[0], nodeD);
   t.is(nodeA.children[1], nodeC);
   t.is(nodeB.children.length, 0);
+  t.is(editor.selectedTransformRoots.length, 1);
+  t.is(editor.selectedTransformRoots[0], nodeD);
   t.is(sceneGraphChangedHandler.callCount, 3);
   t.is(selectionChangedHandler.callCount, 2);
 
@@ -1645,6 +1653,8 @@ test("reparent", t => {
   t.is(nodeA.children[0], nodeC);
   t.is(nodeB.children.length, 1);
   t.is(nodeB.children[0], nodeD);
+  t.is(editor.selectedTransformRoots.length, 1);
+  t.is(editor.selectedTransformRoots[0], nodeD);
   t.is(sceneGraphChangedHandler.callCount, 4);
   t.is(selectionChangedHandler.callCount, 2);
 });
