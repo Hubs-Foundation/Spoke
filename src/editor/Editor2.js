@@ -20,6 +20,9 @@ import TextureCache from "./caches/TextureCache";
 import GLTFCache from "./caches/GLTFCache";
 import getDetachedObjectsRoots from "./utils/getDetachedObjectsRoots";
 import ReparentCommand from "./commands/ReparentCommand";
+import ReparentMultipleCommand from "./commands/ReparentMultipleCommand";
+import DuplicateCommand from "./commands/DuplicateCommand";
+import DuplicateMultipleCommand from "./commands/DuplicateMultipleCommand";
 import { Matrix4 } from "three";
 
 const tempMatrix = new Matrix4();
@@ -87,7 +90,7 @@ export default class Editor2 extends EventEmitter {
 
   select(object, useHistory = true, emitEvent = true, updateTransformRoots = true) {
     if (this.selected.indexOf(object) !== -1) {
-      return;
+      return this.selected;
     }
 
     if (useHistory) {
@@ -101,12 +104,14 @@ export default class Editor2 extends EventEmitter {
     }
 
     if (updateTransformRoots) {
-      this._updateTransformRoots();
+      this.updateTransformRoots();
     }
 
     if (emitEvent) {
       this.emit("selectionChanged");
     }
+
+    return this.selected;
   }
 
   selectMultiple(objects, useHistory = true, emitEvent = true, updateTransformRoots = true) {
@@ -120,7 +125,7 @@ export default class Editor2 extends EventEmitter {
     }
 
     if (!selectionChanged) {
-      return;
+      return this.selected;
     }
 
     if (useHistory) {
@@ -131,18 +136,20 @@ export default class Editor2 extends EventEmitter {
       this.select(objects[i], false, false, false);
     }
 
-    if (updateTransformRoots) {
-      this._updateTransformRoots();
-    }
-
     if (emitEvent) {
       this.emit("selectionChanged");
     }
+
+    if (updateTransformRoots) {
+      this.updateTransformRoots();
+    }
+
+    return this.selected;
   }
 
   selectAll(useHistory = true, emitEvent = true, updateTransformRoots = true) {
     if (this.selected.length === this.nodes.length) {
-      return;
+      return this.selected;
     }
 
     if (useHistory) {
@@ -155,20 +162,22 @@ export default class Editor2 extends EventEmitter {
       this.select(objects[i], false, false, false);
     }
 
-    if (updateTransformRoots) {
-      this._updateTransformRoots();
-    }
-
     if (emitEvent) {
       this.emit("selectionChanged");
     }
+
+    if (updateTransformRoots) {
+      this.updateTransformRoots();
+    }
+
+    return this.selected;
   }
 
   deselect(object, useHistory = true, emitEvent = true, updateTransformRoots = true) {
     const index = this.selected.indexOf(object);
 
     if (index === -1) {
-      return;
+      return this.selected;
     }
 
     if (useHistory) {
@@ -181,13 +190,15 @@ export default class Editor2 extends EventEmitter {
       object.onDeselect();
     }
 
-    if (updateTransformRoots) {
-      this._updateTransformRoots();
-    }
-
     if (emitEvent) {
       this.emit("selectionChanged");
     }
+
+    if (updateTransformRoots) {
+      this.updateTransformRoots();
+    }
+
+    return this.selected;
   }
 
   deselectMultiple(objects, useHistory = true, emitEvent = true, updateTransformRoots = true) {
@@ -201,7 +212,7 @@ export default class Editor2 extends EventEmitter {
     }
 
     if (!selectionChanged) {
-      return;
+      return this.selected;
     }
 
     if (useHistory) {
@@ -212,18 +223,20 @@ export default class Editor2 extends EventEmitter {
       this.deselect(objects[i], false, false, false);
     }
 
-    if (updateTransformRoots) {
-      this._updateTransformRoots();
-    }
-
     if (emitEvent) {
       this.emit("selectionChanged");
     }
+
+    if (updateTransformRoots) {
+      this.updateTransformRoots();
+    }
+
+    return this.selected;
   }
 
   deselectAll(useHistory = true, emitEvent = true, updateTransformRoots = true) {
     if (this.selected.length === 0) {
-      return;
+      return this.selected;
     }
 
     if (useHistory) {
@@ -236,20 +249,22 @@ export default class Editor2 extends EventEmitter {
       this.deselect(objects[i], false, false, false);
     }
 
-    if (updateTransformRoots) {
-      this._updateTransformRoots();
-    }
-
     if (emitEvent) {
       this.emit("selectionChanged");
     }
+
+    if (updateTransformRoots) {
+      this.updateTransformRoots();
+    }
+
+    return this.selected;
   }
 
   toggleSelection(object, useHistory = true, emitEvent = true, updateTransformRoots = true) {
     if (this.selected.indexOf(object) !== -1) {
-      this.deselect(object, useHistory, emitEvent, updateTransformRoots);
+      return this.deselect(object, useHistory, emitEvent, updateTransformRoots);
     } else {
-      this.select(object, useHistory, emitEvent, updateTransformRoots);
+      return this.select(object, useHistory, emitEvent, updateTransformRoots);
     }
   }
 
@@ -266,7 +281,7 @@ export default class Editor2 extends EventEmitter {
       }
 
       if (equalSelection) {
-        return;
+        return this.selected;
       }
     }
 
@@ -294,42 +309,15 @@ export default class Editor2 extends EventEmitter {
       }
     }
 
-    if (updateTransformRoots) {
-      this._updateTransformRoots();
-    }
-
     if (emitEvent) {
       this.emit("selectionChanged");
     }
-  }
 
-  getTransformRoots(objects, target = []) {
-    // Recursively find the transformable nodes in the tree with the lowest depth
-    const traverse = curObject => {
-      if (!curObject.disableTransform && objects.indexOf(curObject) !== -1) {
-        target.push(curObject);
-        return;
-      }
+    if (updateTransformRoots) {
+      this.updateTransformRoots();
+    }
 
-      const children = curObject.children;
-
-      for (let i = 0; i < children.length; i++) {
-        const child = children[i];
-
-        if (child.isNode) {
-          traverse(child);
-        }
-      }
-    };
-
-    traverse(this.scene);
-
-    return target;
-  }
-
-  _updateTransformRoots() {
-    this.selectedTransformRoots.length = 0;
-    this.getTransformRoots(this.selected, this.selectedTransformRoots);
+    return this.selected;
   }
 
   addObject(object, parent, before, useHistory = true, emitEvent = true, selectObject = true) {
@@ -371,6 +359,8 @@ export default class Editor2 extends EventEmitter {
     if (emitEvent) {
       this.emit("sceneGraphChanged");
     }
+
+    return object;
   }
 
   addMultipleObjects(objects, parent, before, useHistory = true, emitEvent = true, selectObjects = true) {
@@ -391,6 +381,8 @@ export default class Editor2 extends EventEmitter {
     if (emitEvent) {
       this.emit("sceneGraphChanged");
     }
+
+    return rootObjects;
   }
 
   _addMultipleObjectsWithParentsAndBefores(objects, parents, befores, oldNodes, emitEvent = true) {
@@ -421,7 +413,7 @@ export default class Editor2 extends EventEmitter {
       return this.history.execute(new RemoveObjectCommand(this, object));
     }
 
-    if (object.parent === null) return; // avoid deleting the camera or scene
+    if (object.parent === null) return null; // avoid deleting the camera or scene
 
     object.traverse(child => {
       if (child.isNode) {
@@ -447,6 +439,8 @@ export default class Editor2 extends EventEmitter {
     if (emitEvent) {
       this.emit("sceneGraphChanged");
     }
+
+    return object;
   }
 
   removeMultipleObjects(objects, useHistory = true, emitEvent = true, deselectObjects = true) {
@@ -467,13 +461,19 @@ export default class Editor2 extends EventEmitter {
     if (emitEvent) {
       this.emit("sceneGraphChanged");
     }
+
+    return transformRoots;
   }
 
   removeSelectedObjects(useHistory = true, emitEvent = true, deselectObjects = true) {
-    this.removeMultipleObjects(this.selected, useHistory, emitEvent, deselectObjects);
+    return this.removeMultipleObjects(this.selected, useHistory, emitEvent, deselectObjects);
   }
 
   duplicate(object, parent, before, useHistory = true, emitEvent = true, selectObject = true) {
+    if (useHistory) {
+      return this.history.execute(new DuplicateCommand(this, object, parent, before));
+    }
+
     if (!object.constructor.canAddNode(this)) {
       return;
     }
@@ -486,10 +486,26 @@ export default class Editor2 extends EventEmitter {
       }
     });
 
-    this.addObject(clonedObject, parent, before, useHistory, emitEvent, selectObject);
+    this.addObject(clonedObject, parent, before, false, false, false);
+
+    if (selectObject) {
+      this.setSelection([clonedObject], false, true, false);
+    }
+
+    this.updateTransformRoots();
+
+    if (emitEvent) {
+      this.emit("sceneGraphChanged");
+    }
+
+    return clonedObject;
   }
 
-  duplicateMultiple(objects, parent, before, useHistory = true, emitEvent = true, selectObject = true) {
+  duplicateMultiple(objects, parent, before, useHistory = true, emitEvent = true, selectObjects = true) {
+    if (useHistory) {
+      return this.history.execute(new DuplicateMultipleCommand(this, objects, parent, before));
+    }
+
     const validNodes = objects.filter(object => object.constructor.canAddNode(this));
     const duplicatedRoots = getDetachedObjectsRoots(validNodes).map(object => object.clone());
 
@@ -501,7 +517,19 @@ export default class Editor2 extends EventEmitter {
       });
     }
 
-    this.addMultipleObjects(duplicatedRoots, parent, before, useHistory, emitEvent, selectObject);
+    this.addMultipleObjects(duplicatedRoots, parent, before, false, false, false);
+
+    if (selectObjects) {
+      this.setSelection(duplicatedRoots, false, true, false);
+    }
+
+    this.updateTransformRoots();
+
+    if (emitEvent) {
+      this.emit("sceneGraphChanged");
+    }
+
+    return duplicatedRoots;
   }
 
   duplicateSelected(parent, before, useHistory = true, emitEvent = true, selectObject = true) {
@@ -548,17 +576,43 @@ export default class Editor2 extends EventEmitter {
     object.parent = newParent;
 
     if (selectObject) {
-      this.setSelection([object], false, emitEvent);
+      this.setSelection([object], false, emitEvent, false);
     }
+
+    this.updateTransformRoots();
 
     if (emitEvent) {
       this.emit("sceneGraphChanged");
     }
+
+    return object;
   }
 
-  // reparentMultiple(objects, parent, before, useHistory = true, emitEvent = true, updateTransformRoots = true) {}
+  reparentMultiple(objects, newParent, newBefore, useHistory = true, emitEvent = true, selectObjects = true) {
+    if (useHistory) {
+      return this.history.execute(new ReparentMultipleCommand(this, objects, newParent, newBefore));
+    }
 
-  // reparentSelected(parent, before, useHistory = true, emitEvent = true, updateTransformRoots = true) {}
+    for (let i = 0; i < objects.length; i++) {
+      this.reparent(objects[i], newParent, newBefore, false, false, false);
+    }
+
+    if (selectObjects) {
+      this.setSelection(objects, false, emitEvent, false);
+    }
+
+    this.updateTransformRoots();
+
+    if (emitEvent) {
+      this.emit("sceneGraphChanged");
+    }
+
+    return objects;
+  }
+
+  reparentSelected(newParent, newBefore, useHistory = true, emitEvent = true, selectObjects = true) {
+    return this.reparentMultiple(this.selected, newParent, newBefore, useHistory, emitEvent, selectObjects);
+  }
 
   // translate(object, translation, space = TransformSpace.World, useHistory = true, emitEvent = true) {}
 
@@ -607,4 +661,33 @@ export default class Editor2 extends EventEmitter {
   // setObjectPropertiesMultiple(objects, properties, oldValues, useHistory = true, emitEvent = true) {}
 
   // setObjectPropertiesSelected(properties, oldValues, useHistory = true, emitEvent = true) {}
+
+  getTransformRoots(objects, target = []) {
+    // Recursively find the transformable nodes in the tree with the lowest depth
+    const traverse = curObject => {
+      if (!curObject.disableTransform && objects.indexOf(curObject) !== -1) {
+        target.push(curObject);
+        return;
+      }
+
+      const children = curObject.children;
+
+      for (let i = 0; i < children.length; i++) {
+        const child = children[i];
+
+        if (child.isNode) {
+          traverse(child);
+        }
+      }
+    };
+
+    traverse(this.scene);
+
+    return target;
+  }
+
+  updateTransformRoots() {
+    this.selectedTransformRoots.length = 0;
+    this.getTransformRoots(this.selected, this.selectedTransformRoots);
+  }
 }

@@ -1658,3 +1658,188 @@ test("reparent", t => {
   t.is(sceneGraphChangedHandler.callCount, 4);
   t.is(selectionChangedHandler.callCount, 2);
 });
+
+test("reparentMultiple", t => {
+  const editor = new Editor();
+
+  const sceneGraphChangedHandler = sinon.spy();
+  const selectionChangedHandler = sinon.spy();
+  editor.addListener("sceneGraphChanged", sceneGraphChangedHandler);
+  editor.addListener("selectionChanged", selectionChangedHandler);
+
+  const nodeA = new MockNode();
+  nodeA.name = "NodeA";
+  const nodeB = new MockNode();
+  nodeB.name = "NodeB";
+  const nodeC = new MockNode();
+  nodeC.name = "NodeC";
+  const nodeD = new MockNode();
+  nodeD.name = "NodeD";
+  const nodeE = new MockNode();
+  nodeE.name = "NodeE";
+
+  editor.addObject(nodeA);
+  editor.addObject(nodeB);
+  editor.addObject(nodeC, nodeA);
+  editor.addObject(nodeD, nodeB);
+  editor.addObject(nodeE, nodeB);
+
+  sceneGraphChangedHandler.resetHistory();
+  selectionChangedHandler.resetHistory();
+
+  t.is(nodeA.children.length, 1);
+  t.is(nodeA.children[0], nodeC);
+  t.is(nodeB.children.length, 2);
+  t.is(nodeB.children[0], nodeD);
+  t.is(nodeB.children[1], nodeE);
+  t.is(editor.selectedTransformRoots.length, 1);
+  t.is(editor.selectedTransformRoots[0], nodeE);
+  t.is(sceneGraphChangedHandler.callCount, 0);
+  t.is(selectionChangedHandler.callCount, 0);
+
+  editor.reparentMultiple([nodeE, nodeD], nodeA); // Move nodeE and nodeD to nodeA as the last children, in the order provided
+
+  t.is(nodeA.children.length, 3);
+  t.is(nodeA.children[0], nodeC);
+  t.is(nodeA.children[1], nodeE);
+  t.is(nodeA.children[2], nodeD);
+  t.is(nodeB.children.length, 0);
+  t.is(editor.selectedTransformRoots.length, 2);
+  t.is(editor.selectedTransformRoots[0], nodeE);
+  t.is(editor.selectedTransformRoots[1], nodeD);
+  t.is(sceneGraphChangedHandler.callCount, 1);
+  t.is(selectionChangedHandler.callCount, 1);
+
+  editor.history.undo();
+
+  t.is(nodeA.children.length, 1);
+  t.is(nodeA.children[0], nodeC);
+  t.is(nodeB.children.length, 2);
+  t.is(nodeB.children[0], nodeD);
+  t.is(nodeB.children[1], nodeE);
+  t.is(editor.selectedTransformRoots.length, 1);
+  t.is(editor.selectedTransformRoots[0], nodeE);
+  t.is(sceneGraphChangedHandler.callCount, 2);
+  t.is(selectionChangedHandler.callCount, 2);
+
+  editor.reparentMultiple([nodeE, nodeD], nodeA, nodeC); // Move nodeE and nodeD to nodeA before nodeC, in the order provided
+
+  t.is(nodeA.children.length, 3);
+  t.is(nodeA.children[0], nodeE);
+  t.is(nodeA.children[1], nodeD);
+  t.is(nodeA.children[2], nodeC);
+  t.is(nodeB.children.length, 0);
+  t.is(editor.selectedTransformRoots.length, 2);
+  t.is(editor.selectedTransformRoots[0], nodeE);
+  t.is(editor.selectedTransformRoots[1], nodeD);
+  t.is(sceneGraphChangedHandler.callCount, 3);
+  t.is(selectionChangedHandler.callCount, 3);
+
+  editor.history.undo();
+
+  t.is(nodeA.children.length, 1);
+  t.is(nodeA.children[0], nodeC);
+  t.is(nodeB.children.length, 2);
+  t.is(nodeB.children[0], nodeD);
+  t.is(nodeB.children[1], nodeE);
+  t.is(editor.selectedTransformRoots.length, 1);
+  t.is(editor.selectedTransformRoots[0], nodeE);
+  t.is(sceneGraphChangedHandler.callCount, 4);
+  t.is(selectionChangedHandler.callCount, 4);
+});
+
+test("reparentSelected", t => {
+  const editor = new Editor();
+
+  const sceneGraphChangedHandler = sinon.spy();
+  const selectionChangedHandler = sinon.spy();
+  editor.addListener("sceneGraphChanged", sceneGraphChangedHandler);
+  editor.addListener("selectionChanged", selectionChangedHandler);
+
+  const nodeA = new MockNode();
+  nodeA.name = "NodeA";
+  const nodeB = new MockNode();
+  nodeB.name = "NodeB";
+  const nodeC = new MockNode();
+  nodeC.name = "NodeC";
+  const nodeD = new MockNode();
+  nodeD.name = "NodeD";
+  const nodeE = new MockNode();
+  nodeE.name = "NodeE";
+
+  editor.addObject(nodeA);
+  editor.addObject(nodeB);
+  editor.addObject(nodeC, nodeA);
+  editor.addObject(nodeD, nodeB);
+  editor.addObject(nodeE, nodeB);
+
+  sceneGraphChangedHandler.resetHistory();
+  selectionChangedHandler.resetHistory();
+
+  t.is(nodeA.children.length, 1);
+  t.is(nodeA.children[0], nodeC);
+  t.is(nodeB.children.length, 2);
+  t.is(nodeB.children[0], nodeD);
+  t.is(nodeB.children[1], nodeE);
+  t.is(editor.selectedTransformRoots.length, 1);
+  t.is(editor.selectedTransformRoots[0], nodeE);
+  t.is(sceneGraphChangedHandler.callCount, 0);
+  t.is(selectionChangedHandler.callCount, 0);
+
+  editor.setSelection([nodeE, nodeD]);
+  editor.reparentSelected(nodeA); // Move nodeE and nodeD to nodeA as the last children, in the order the objects were selected
+
+  t.is(nodeA.children.length, 3);
+  t.is(nodeA.children[0], nodeC);
+  t.is(nodeA.children[1], nodeE);
+  t.is(nodeA.children[2], nodeD);
+  t.is(nodeB.children.length, 0);
+  t.is(editor.selected.length, 2);
+  t.is(editor.selected[0], nodeE);
+  t.is(editor.selected[1], nodeD);
+  t.is(editor.selectedTransformRoots.length, 2);
+  t.is(editor.selectedTransformRoots[0], nodeE);
+  t.is(editor.selectedTransformRoots[1], nodeD);
+  t.is(sceneGraphChangedHandler.callCount, 1);
+  t.is(selectionChangedHandler.callCount, 1);
+
+  editor.history.undo();
+  editor.history.undo();
+
+  t.is(nodeA.children.length, 1);
+  t.is(nodeA.children[0], nodeC);
+  t.is(nodeB.children.length, 2);
+  t.is(nodeB.children[0], nodeD);
+  t.is(nodeB.children[1], nodeE);
+  t.is(editor.selectedTransformRoots.length, 1);
+  t.is(editor.selectedTransformRoots[0], nodeE);
+  t.is(sceneGraphChangedHandler.callCount, 2);
+  t.is(selectionChangedHandler.callCount, 2);
+
+  editor.setSelection([nodeE, nodeD]);
+  editor.reparentSelected(nodeA, nodeC); // Move nodeE and nodeD to nodeA before nodeC, in the order the objects were selected
+
+  t.is(nodeA.children.length, 3);
+  t.is(nodeA.children[0], nodeE);
+  t.is(nodeA.children[1], nodeD);
+  t.is(nodeA.children[2], nodeC);
+  t.is(nodeB.children.length, 0);
+  t.is(editor.selectedTransformRoots.length, 2);
+  t.is(editor.selectedTransformRoots[0], nodeE);
+  t.is(editor.selectedTransformRoots[1], nodeD);
+  t.is(sceneGraphChangedHandler.callCount, 3);
+  t.is(selectionChangedHandler.callCount, 3);
+
+  editor.history.undo();
+  editor.history.undo();
+
+  t.is(nodeA.children.length, 1);
+  t.is(nodeA.children[0], nodeC);
+  t.is(nodeB.children.length, 2);
+  t.is(nodeB.children[0], nodeD);
+  t.is(nodeB.children[1], nodeE);
+  t.is(editor.selectedTransformRoots.length, 1);
+  t.is(editor.selectedTransformRoots[0], nodeE);
+  t.is(sceneGraphChangedHandler.callCount, 4);
+  t.is(selectionChangedHandler.callCount, 4);
+});

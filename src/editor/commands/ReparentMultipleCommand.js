@@ -19,6 +19,7 @@ export default class ReparentMultipleCommand extends Command {
         }
       }
     });
+    this.oldSelection = editor.selected.slice(0);
   }
 
   execute() {
@@ -26,7 +27,14 @@ export default class ReparentMultipleCommand extends Command {
   }
 
   undo() {
-    // There is no command for this function so we don't need to pass useHistory = false
-    this.editor.reparentMultipleWithParents(this.objects, this.oldParents, this.oldBefores);
+    for (let i = 0; i < this.objects.length; i++) {
+      this.editor.reparent(this.objects[i], this.oldParents[i], this.oldBefores[i], false, false, false, false);
+    }
+
+    this.editor.setSelection(this.oldSelection, false, true, false);
+
+    this.editor.updateTransformRoots();
+
+    this.editor.emit("sceneGraphChanged");
   }
 }
