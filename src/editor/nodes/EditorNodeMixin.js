@@ -232,6 +232,10 @@ export default function EditorNodeMixin(Object3DClass) {
       return { __gltfIndexForUUID: nodeUUID };
     }
 
+    getObjectByUUID(uuid) {
+      return this.getObjectByProperty("uuid", uuid);
+    }
+
     computeStaticMode() {
       return computeStaticMode(this);
     }

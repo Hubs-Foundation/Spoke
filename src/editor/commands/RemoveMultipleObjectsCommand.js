@@ -18,6 +18,8 @@ export default class RemoveMultipleObjectsCommand extends Command {
         }
       }
     });
+    this.oldNodes = editor.nodes.slice(0);
+    this.oldSelection = editor.selected.slice(0);
   }
 
   execute() {
@@ -25,6 +27,7 @@ export default class RemoveMultipleObjectsCommand extends Command {
   }
 
   undo() {
-    this.editor._addMultipleObjectsWithParentsAndBefores(this.objects, this.parents, this.befores);
+    this.editor._addMultipleObjectsWithParentsAndBefores(this.objects, this.parents, this.befores, this.oldNodes);
+    this.editor.setSelection(this.oldSelection, false);
   }
 }

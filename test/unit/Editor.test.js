@@ -3,6 +3,469 @@ import sinon from "sinon";
 import Editor from "../../src/editor/Editor2";
 import MockNode from "../helpers/MockNode";
 
+test("select", t => {
+  const editor = new Editor();
+
+  const selectionChangedHandler = sinon.spy();
+  editor.addListener("selectionChanged", selectionChangedHandler);
+
+  const onSelectASpy = sinon.spy();
+  const onDeselectASpy = sinon.spy();
+  const onSelectBSpy = sinon.spy();
+  const onDeselectBSpy = sinon.spy();
+
+  const nodeA = new MockNode(editor, { onSelect: onSelectASpy, onDeselect: onDeselectASpy });
+  const nodeB = new MockNode(editor, { onSelect: onSelectBSpy, onDeselect: onDeselectBSpy });
+
+  editor.addObject(nodeA);
+  editor.addObject(nodeB);
+  editor.deselectAll();
+
+  selectionChangedHandler.resetHistory();
+  onSelectASpy.resetHistory();
+  onSelectBSpy.resetHistory();
+  onDeselectASpy.resetHistory();
+  onDeselectBSpy.resetHistory();
+
+  t.is(editor.selected.length, 0);
+  t.is(editor.selectedTransformRoots.length, 0);
+
+  editor.select(nodeA);
+  t.is(editor.selected.length, 1);
+  t.is(editor.selected[0], nodeA);
+  t.is(onSelectASpy.callCount, 1);
+  t.is(selectionChangedHandler.callCount, 1);
+  t.is(editor.selectedTransformRoots.length, 1);
+  t.is(editor.selectedTransformRoots[0], nodeA);
+
+  editor.select(nodeB);
+  t.is(editor.selected.length, 2);
+  t.is(editor.selected[0], nodeA);
+  t.is(editor.selected[1], nodeB);
+  t.is(onSelectBSpy.callCount, 1);
+  t.is(selectionChangedHandler.callCount, 2);
+  t.is(editor.selectedTransformRoots.length, 2);
+  t.is(editor.selectedTransformRoots[0], nodeA);
+  t.is(editor.selectedTransformRoots[1], nodeB);
+
+  editor.history.undo();
+  t.is(editor.selected.length, 1);
+  t.is(editor.selected[0], nodeA);
+  t.is(onDeselectBSpy.callCount, 1);
+  t.is(selectionChangedHandler.callCount, 3);
+  t.is(editor.selectedTransformRoots.length, 1);
+  t.is(editor.selectedTransformRoots[0], nodeA);
+
+  editor.history.undo();
+  t.is(editor.selected.length, 0);
+  t.is(onDeselectASpy.callCount, 1);
+  t.is(selectionChangedHandler.callCount, 4);
+  t.is(editor.selectedTransformRoots.length, 0);
+});
+
+test("selectMultiple", t => {
+  const editor = new Editor();
+
+  const selectionChangedHandler = sinon.spy();
+  editor.addListener("selectionChanged", selectionChangedHandler);
+
+  const onSelectASpy = sinon.spy();
+  const onDeselectASpy = sinon.spy();
+  const onSelectBSpy = sinon.spy();
+  const onDeselectBSpy = sinon.spy();
+  const onSelectCSpy = sinon.spy();
+  const onDeselectCSpy = sinon.spy();
+
+  const nodeA = new MockNode(editor, { onSelect: onSelectASpy, onDeselect: onDeselectASpy });
+  const nodeB = new MockNode(editor, { onSelect: onSelectBSpy, onDeselect: onDeselectBSpy });
+  const nodeC = new MockNode(editor, { onSelect: onSelectCSpy, onDeselect: onDeselectCSpy });
+
+  editor.addObject(nodeA);
+  editor.addObject(nodeB);
+  editor.addObject(nodeC, nodeB);
+
+  // nodeC currently selected
+
+  selectionChangedHandler.resetHistory();
+  onSelectASpy.resetHistory();
+  onSelectBSpy.resetHistory();
+  onSelectCSpy.resetHistory();
+  onDeselectASpy.resetHistory();
+  onDeselectBSpy.resetHistory();
+  onDeselectCSpy.resetHistory();
+
+  t.is(editor.selected.length, 1);
+  t.is(editor.selected[0], nodeC);
+  t.is(editor.selectedTransformRoots.length, 1);
+  t.is(editor.selectedTransformRoots[0], nodeC);
+
+  editor.selectMultiple([nodeA, nodeB]); // Add A and B to selection
+  t.is(onDeselectCSpy.callCount, 0);
+  t.is(onSelectASpy.callCount, 1);
+  t.is(onSelectBSpy.callCount, 1);
+  t.is(selectionChangedHandler.callCount, 1);
+  t.is(editor.selected.length, 3);
+  t.is(editor.selected[0], nodeC);
+  t.is(editor.selected[1], nodeA);
+  t.is(editor.selected[2], nodeB);
+  t.is(editor.selectedTransformRoots.length, 2);
+  t.is(editor.selectedTransformRoots[0], nodeA);
+  t.is(editor.selectedTransformRoots[1], nodeB);
+
+  editor.history.undo(); // Undo A and B selection
+  t.is(onSelectCSpy.callCount, 0);
+  t.is(onDeselectASpy.callCount, 1);
+  t.is(onDeselectBSpy.callCount, 1);
+  t.is(selectionChangedHandler.callCount, 2);
+  t.is(editor.selected.length, 1);
+  t.is(editor.selected[0], nodeC);
+  t.is(editor.selectedTransformRoots.length, 1);
+  t.is(editor.selectedTransformRoots[0], nodeC);
+});
+
+test("selectAll", t => {
+  const editor = new Editor();
+
+  const selectionChangedHandler = sinon.spy();
+  editor.addListener("selectionChanged", selectionChangedHandler);
+
+  const onSelectSceneSpy = sinon.spy(editor.scene, "onSelect");
+  const onDeselectSceneSpy = sinon.spy(editor.scene, "onDeselect");
+  const onSelectASpy = sinon.spy();
+  const onDeselectASpy = sinon.spy();
+  const onSelectBSpy = sinon.spy();
+  const onDeselectBSpy = sinon.spy();
+  const onSelectCSpy = sinon.spy();
+  const onDeselectCSpy = sinon.spy();
+
+  const nodeA = new MockNode(editor, { onSelect: onSelectASpy, onDeselect: onDeselectASpy });
+  const nodeB = new MockNode(editor, { onSelect: onSelectBSpy, onDeselect: onDeselectBSpy });
+  const nodeC = new MockNode(editor, { onSelect: onSelectCSpy, onDeselect: onDeselectCSpy });
+
+  editor.addObject(nodeA);
+  editor.addObject(nodeB);
+  editor.addObject(nodeC, nodeB);
+
+  // nodeC currently selected
+
+  selectionChangedHandler.resetHistory();
+  onSelectSceneSpy.resetHistory();
+  onSelectASpy.resetHistory();
+  onSelectBSpy.resetHistory();
+  onSelectCSpy.resetHistory();
+  onDeselectSceneSpy.resetHistory();
+  onDeselectASpy.resetHistory();
+  onDeselectBSpy.resetHistory();
+  onDeselectCSpy.resetHistory();
+
+  t.is(editor.selected.length, 1);
+  t.is(editor.selected[0], nodeC);
+  t.is(editor.selectedTransformRoots.length, 1);
+  t.is(editor.selectedTransformRoots[0], nodeC);
+
+  editor.selectAll(); // Select all nodes in the scene graph
+  t.is(editor.selected.length, 4);
+  t.is(editor.selected[0], nodeC);
+  t.is(editor.selected[1], editor.scene);
+  t.is(editor.selected[2], nodeA);
+  t.is(editor.selected[3], nodeB);
+  t.is(onSelectSceneSpy.callCount, 1);
+  t.is(onSelectASpy.callCount, 1);
+  t.is(onSelectBSpy.callCount, 1);
+  t.is(onSelectCSpy.callCount, 0);
+  t.is(selectionChangedHandler.callCount, 1);
+  t.is(editor.selectedTransformRoots.length, 2);
+  t.is(editor.selectedTransformRoots[0], nodeA);
+  t.is(editor.selectedTransformRoots[1], nodeB);
+
+  editor.history.undo(); // Undo select all
+  t.is(editor.selected.length, 1);
+  t.is(editor.selected[0], nodeC);
+  t.is(onDeselectSceneSpy.callCount, 1);
+  t.is(onDeselectASpy.callCount, 1);
+  t.is(onDeselectBSpy.callCount, 1);
+  t.is(onDeselectCSpy.callCount, 0);
+  t.is(selectionChangedHandler.callCount, 2);
+  t.is(editor.selectedTransformRoots.length, 1);
+  t.is(editor.selectedTransformRoots[0], nodeC);
+});
+
+test("deselect", t => {
+  const editor = new Editor();
+
+  const selectionChangedHandler = sinon.spy();
+  editor.addListener("selectionChanged", selectionChangedHandler);
+
+  const onSelectASpy = sinon.spy();
+  const onDeselectASpy = sinon.spy();
+
+  const nodeA = new MockNode(editor, { onSelect: onSelectASpy, onDeselect: onDeselectASpy });
+  const nodeB = new MockNode(editor);
+  const nodeC = new MockNode(editor);
+
+  editor.addObject(nodeA);
+  editor.addObject(nodeB);
+  editor.addObject(nodeC, nodeB);
+  editor.select(nodeA);
+
+  // nodeA and nodeC currently selected
+
+  selectionChangedHandler.resetHistory();
+  onSelectASpy.resetHistory();
+  onDeselectASpy.resetHistory();
+
+  t.is(editor.selected.length, 2);
+  t.is(editor.selected[0], nodeC);
+  t.is(editor.selected[1], nodeA);
+  t.is(editor.selectedTransformRoots.length, 2);
+  t.is(editor.selectedTransformRoots[0], nodeA);
+  t.is(editor.selectedTransformRoots[1], nodeC);
+
+  editor.deselect(nodeA);
+  t.is(onDeselectASpy.callCount, 1);
+  t.is(editor.selected.length, 1);
+  t.is(editor.selected[0], nodeC);
+  t.is(selectionChangedHandler.callCount, 1);
+  t.is(editor.selectedTransformRoots.length, 1);
+  t.is(editor.selectedTransformRoots[0], nodeC);
+
+  editor.history.undo();
+  t.is(onSelectASpy.callCount, 1);
+  t.is(editor.selected.length, 2);
+  t.is(editor.selected[0], nodeC);
+  t.is(editor.selected[1], nodeA);
+  t.is(selectionChangedHandler.callCount, 2);
+  t.is(editor.selectedTransformRoots.length, 2);
+  t.is(editor.selectedTransformRoots[0], nodeA);
+  t.is(editor.selectedTransformRoots[1], nodeC);
+});
+
+test("deselectMultiple", t => {
+  const editor = new Editor();
+
+  const selectionChangedHandler = sinon.spy();
+  editor.addListener("selectionChanged", selectionChangedHandler);
+
+  const onSelectASpy = sinon.spy();
+  const onDeselectASpy = sinon.spy();
+  const onSelectBSpy = sinon.spy();
+  const onDeselectBSpy = sinon.spy();
+  const onSelectCSpy = sinon.spy();
+  const onDeselectCSpy = sinon.spy();
+
+  const nodeA = new MockNode(editor, { onSelect: onSelectASpy, onDeselect: onDeselectASpy });
+  const nodeB = new MockNode(editor, { onSelect: onSelectBSpy, onDeselect: onDeselectBSpy });
+  const nodeC = new MockNode(editor, { onSelect: onSelectCSpy, onDeselect: onDeselectCSpy });
+
+  editor.addObject(nodeA);
+  editor.addObject(nodeB);
+  editor.addObject(nodeC, nodeB);
+  editor.selectMultiple([nodeA, nodeB]);
+
+  // nodeA, nodeB, and nodeC currently selected
+
+  selectionChangedHandler.resetHistory();
+  onSelectASpy.resetHistory();
+  onSelectBSpy.resetHistory();
+  onSelectCSpy.resetHistory();
+  onDeselectASpy.resetHistory();
+  onDeselectBSpy.resetHistory();
+  onDeselectCSpy.resetHistory();
+
+  t.is(editor.selected.length, 3);
+  t.is(editor.selected[0], nodeC);
+  t.is(editor.selected[1], nodeA);
+  t.is(editor.selected[2], nodeB);
+  t.is(editor.selectedTransformRoots.length, 2);
+  t.is(editor.selectedTransformRoots[0], nodeA);
+  t.is(editor.selectedTransformRoots[1], nodeB);
+
+  editor.deselectMultiple([nodeA, nodeC]);
+  t.is(editor.selected.length, 1);
+  t.is(editor.selected[0], nodeB);
+  t.is(onDeselectASpy.callCount, 1);
+  t.is(onDeselectCSpy.callCount, 1);
+  t.is(selectionChangedHandler.callCount, 1);
+  t.is(editor.selectedTransformRoots.length, 1);
+  t.is(editor.selectedTransformRoots[0], nodeB);
+
+  editor.history.undo();
+  t.is(onSelectASpy.callCount, 1);
+  t.is(onSelectCSpy.callCount, 1);
+  t.is(editor.selected.length, 3);
+  t.is(editor.selected[0], nodeC);
+  t.is(editor.selected[1], nodeA);
+  t.is(editor.selected[2], nodeB);
+  t.is(selectionChangedHandler.callCount, 2);
+  t.is(editor.selectedTransformRoots.length, 2);
+  t.is(editor.selectedTransformRoots[0], nodeA);
+  t.is(editor.selectedTransformRoots[1], nodeB);
+});
+
+test("deselectAll", t => {
+  const editor = new Editor();
+
+  const selectionChangedHandler = sinon.spy();
+  editor.addListener("selectionChanged", selectionChangedHandler);
+
+  const onSelectSceneSpy = sinon.spy(editor.scene, "onSelect");
+  const onDeselectSceneSpy = sinon.spy(editor.scene, "onDeselect");
+  const onSelectASpy = sinon.spy();
+  const onDeselectASpy = sinon.spy();
+  const onSelectBSpy = sinon.spy();
+  const onDeselectBSpy = sinon.spy();
+  const onSelectCSpy = sinon.spy();
+  const onDeselectCSpy = sinon.spy();
+
+  const nodeA = new MockNode(editor, { onSelect: onSelectASpy, onDeselect: onDeselectASpy });
+  const nodeB = new MockNode(editor, { onSelect: onSelectBSpy, onDeselect: onDeselectBSpy });
+  const nodeC = new MockNode(editor, { onSelect: onSelectCSpy, onDeselect: onDeselectCSpy });
+
+  editor.addObject(nodeA);
+  editor.addObject(nodeB);
+  editor.addObject(nodeC, nodeB);
+
+  // nodeC currently selected
+
+  selectionChangedHandler.resetHistory();
+  onSelectSceneSpy.resetHistory();
+  onSelectASpy.resetHistory();
+  onSelectBSpy.resetHistory();
+  onSelectCSpy.resetHistory();
+  onDeselectSceneSpy.resetHistory();
+  onDeselectASpy.resetHistory();
+  onDeselectBSpy.resetHistory();
+  onDeselectCSpy.resetHistory();
+
+  editor.selectAll(); // Select all nodes in the scene graph
+  t.is(editor.selected.length, 4);
+  t.is(editor.selected[0], nodeC);
+  t.is(editor.selected[1], editor.scene);
+  t.is(editor.selected[2], nodeA);
+  t.is(editor.selected[3], nodeB);
+  t.is(onSelectSceneSpy.callCount, 1);
+  t.is(onSelectASpy.callCount, 1);
+  t.is(onSelectBSpy.callCount, 1);
+  t.is(onSelectCSpy.callCount, 0);
+  t.is(selectionChangedHandler.callCount, 1);
+  t.is(editor.selectedTransformRoots.length, 2);
+  t.is(editor.selectedTransformRoots[0], nodeA);
+  t.is(editor.selectedTransformRoots[1], nodeB);
+
+  editor.history.undo(); // Undo select all
+  t.is(editor.selected.length, 1);
+  t.is(editor.selected[0], nodeC);
+  t.is(onDeselectSceneSpy.callCount, 1);
+  t.is(onDeselectASpy.callCount, 1);
+  t.is(onDeselectBSpy.callCount, 1);
+  t.is(onDeselectCSpy.callCount, 0);
+  t.is(selectionChangedHandler.callCount, 2);
+  t.is(editor.selectedTransformRoots.length, 1);
+  t.is(editor.selectedTransformRoots[0], nodeC);
+});
+
+test("toggleSelection", t => {
+  const editor = new Editor();
+
+  const selectionChangedHandler = sinon.spy();
+  editor.addListener("selectionChanged", selectionChangedHandler);
+
+  const onSelectASpy = sinon.spy();
+  const onDeselectASpy = sinon.spy();
+  const nodeA = new MockNode(editor, { onSelect: onSelectASpy, onDeselect: onDeselectASpy });
+
+  editor.addObject(nodeA);
+
+  selectionChangedHandler.resetHistory();
+  onSelectASpy.resetHistory();
+  onDeselectASpy.resetHistory();
+
+  t.is(editor.selected.length, 1);
+  t.is(editor.selected[0], nodeA);
+
+  editor.toggleSelection(nodeA);
+
+  t.is(editor.selected.length, 0);
+  t.is(selectionChangedHandler.callCount, 1);
+  t.is(onDeselectASpy.callCount, 1);
+
+  editor.toggleSelection(nodeA);
+
+  t.is(editor.selected.length, 1);
+  t.is(editor.selected[0], nodeA);
+  t.is(selectionChangedHandler.callCount, 2);
+  t.is(onSelectASpy.callCount, 1);
+
+  editor.history.undo();
+
+  t.is(editor.selected.length, 0);
+  t.is(selectionChangedHandler.callCount, 3);
+  t.is(onDeselectASpy.callCount, 2);
+
+  editor.history.undo();
+
+  t.is(editor.selected.length, 1);
+  t.is(editor.selected[0], nodeA);
+  t.is(selectionChangedHandler.callCount, 4);
+  t.is(onSelectASpy.callCount, 2);
+});
+
+test("setSelection", t => {
+  const editor = new Editor();
+
+  const selectionChangedHandler = sinon.spy();
+  editor.addListener("selectionChanged", selectionChangedHandler);
+  const onSelectASpy = sinon.spy();
+  const onDeselectASpy = sinon.spy();
+  const onSelectBSpy = sinon.spy();
+  const onDeselectBSpy = sinon.spy();
+  const onSelectCSpy = sinon.spy();
+  const onDeselectCSpy = sinon.spy();
+
+  const nodeA = new MockNode(editor, { onSelect: onSelectASpy, onDeselect: onDeselectASpy });
+  const nodeB = new MockNode(editor, { onSelect: onSelectBSpy, onDeselect: onDeselectBSpy });
+  const nodeC = new MockNode(editor, { onSelect: onSelectCSpy, onDeselect: onDeselectCSpy });
+
+  editor.addObject(nodeA);
+  editor.addObject(nodeB);
+  editor.addObject(nodeC, nodeB);
+
+  // nodeC currently selected
+
+  selectionChangedHandler.resetHistory();
+  onSelectASpy.resetHistory();
+  onSelectBSpy.resetHistory();
+  onSelectCSpy.resetHistory();
+  onDeselectASpy.resetHistory();
+  onDeselectBSpy.resetHistory();
+  onDeselectCSpy.resetHistory();
+
+  t.is(editor.selected.length, 1);
+  t.is(editor.selected[0], nodeC);
+
+  editor.setSelection([nodeA, nodeB]);
+  t.is(editor.selected.length, 2);
+  t.is(editor.selected[0], nodeA);
+  t.is(editor.selected[1], nodeB);
+  t.is(onSelectASpy.callCount, 1);
+  t.is(onSelectBSpy.callCount, 1);
+  t.is(onDeselectCSpy.callCount, 1);
+  t.is(selectionChangedHandler.callCount, 1);
+  t.is(editor.selectedTransformRoots.length, 2);
+  t.is(editor.selectedTransformRoots[0], nodeA);
+  t.is(editor.selectedTransformRoots[1], nodeB);
+
+  editor.history.undo();
+  t.is(editor.selected.length, 1);
+  t.is(editor.selected[0], nodeC);
+  t.is(onSelectCSpy.callCount, 1);
+  t.is(onDeselectASpy.callCount, 1);
+  t.is(onDeselectBSpy.callCount, 1);
+  t.is(selectionChangedHandler.callCount, 2);
+  t.is(editor.selectedTransformRoots.length, 1);
+  t.is(editor.selectedTransformRoots[0], nodeC);
+});
+
 test("addObject", t => {
   const editor = new Editor();
 
@@ -465,6 +928,7 @@ test("removeMultipleObjects", t => {
     onSelect: nodeAOnSelectSpy,
     onDeselect: nodeAOnDeselectSpy
   });
+  nodeA.name = "NodeA";
 
   const nodeBOnAddSpy = sinon.spy();
   const nodeBOnRemoveSpy = sinon.spy();
@@ -477,8 +941,38 @@ test("removeMultipleObjects", t => {
     onSelect: nodeBOnSelectSpy,
     onDeselect: nodeBOnDeselectSpy
   });
+  nodeB.name = "NodeB";
+
+  const nodeCOnAddSpy = sinon.spy();
+  const nodeCOnRemoveSpy = sinon.spy();
+  const nodeCOnSelectSpy = sinon.spy();
+  const nodeCOnDeselectSpy = sinon.spy();
+
+  const nodeC = new MockNode(editor, {
+    onAdd: nodeCOnAddSpy,
+    onRemove: nodeCOnRemoveSpy,
+    onSelect: nodeCOnSelectSpy,
+    onDeselect: nodeCOnDeselectSpy
+  });
+  nodeC.name = "NodeC";
+
+  const nodeDOnAddSpy = sinon.spy();
+  const nodeDOnRemoveSpy = sinon.spy();
+  const nodeDOnSelectSpy = sinon.spy();
+  const nodeDOnDeselectSpy = sinon.spy();
+
+  const nodeD = new MockNode(editor, {
+    onAdd: nodeDOnAddSpy,
+    onRemove: nodeDOnRemoveSpy,
+    onSelect: nodeDOnSelectSpy,
+    onDeselect: nodeDOnDeselectSpy
+  });
+  nodeD.name = "NodeD";
 
   editor.addMultipleObjects([nodeA, nodeB]);
+  editor.addObject(nodeC);
+  editor.addObject(nodeD, nodeC);
+  editor.setSelection([nodeA, nodeB]);
 
   sceneGraphChangedHandler.resetHistory();
   selectionChangedHandler.resetHistory();
@@ -490,10 +984,20 @@ test("removeMultipleObjects", t => {
   nodeBOnRemoveSpy.resetHistory();
   nodeBOnSelectSpy.resetHistory();
   nodeBOnDeselectSpy.resetHistory();
+  nodeCOnAddSpy.resetHistory();
+  nodeCOnRemoveSpy.resetHistory();
+  nodeCOnSelectSpy.resetHistory();
+  nodeCOnDeselectSpy.resetHistory();
+  nodeDOnAddSpy.resetHistory();
+  nodeDOnRemoveSpy.resetHistory();
+  nodeDOnSelectSpy.resetHistory();
+  nodeDOnDeselectSpy.resetHistory();
 
-  t.is(editor.nodes.length, 3);
+  t.is(editor.nodes.length, 5);
   t.is(editor.nodes[1], nodeA);
   t.is(editor.nodes[2], nodeB);
+  t.is(editor.nodes[3], nodeC);
+  t.is(editor.nodes[4], nodeD);
   t.is(editor.selected.length, 2);
   t.is(editor.selected[0], nodeA);
   t.is(editor.selected[1], nodeB);
@@ -501,9 +1005,9 @@ test("removeMultipleObjects", t => {
   t.is(editor.selectedTransformRoots[0], nodeA);
   t.is(editor.selectedTransformRoots[1], nodeB);
 
-  editor.removeMultipleObjects([nodeA, nodeB]);
+  editor.removeMultipleObjects([nodeA, nodeB]); // Remove sibling nodes: nodeA and nodeB
 
-  t.is(editor.nodes.length, 1);
+  t.is(editor.nodes.length, 3);
   t.is(editor.selected.length, 0);
   t.is(editor.selectedTransformRoots.length, 0);
   t.is(nodeAOnDeselectSpy.callCount, 1);
@@ -514,9 +1018,12 @@ test("removeMultipleObjects", t => {
   t.is(sceneGraphChangedHandler.callCount, 1);
 
   editor.history.undo();
-  t.is(editor.nodes.length, 3);
+
+  t.is(editor.nodes.length, 5);
   t.is(editor.nodes[1], nodeA);
   t.is(editor.nodes[2], nodeB);
+  t.is(editor.nodes[3], nodeC);
+  t.is(editor.nodes[4], nodeD);
   t.is(editor.selected.length, 2);
   t.is(editor.selected[0], nodeA);
   t.is(editor.selected[1], nodeB);
@@ -529,6 +1036,42 @@ test("removeMultipleObjects", t => {
   t.is(nodeBOnAddSpy.callCount, 1);
   t.is(selectionChangedHandler.callCount, 2);
   t.is(sceneGraphChangedHandler.callCount, 2);
+
+  editor.removeMultipleObjects([nodeC, nodeD]); // Remove parent nodeC and child nodeD (should filter out nodeD)
+
+  t.is(editor.nodes.length, 3);
+  t.is(editor.nodes[1], nodeA);
+  t.is(editor.nodes[2], nodeB);
+  t.is(editor.selected.length, 2);
+  t.is(editor.selected[0], nodeA);
+  t.is(editor.selected[1], nodeB);
+  t.is(editor.selectedTransformRoots.length, 2);
+  t.is(editor.selectedTransformRoots[0], nodeA);
+  t.is(editor.selectedTransformRoots[1], nodeB);
+  t.is(nodeCOnRemoveSpy.callCount, 1);
+  t.is(nodeDOnRemoveSpy.callCount, 1);
+  t.is(selectionChangedHandler.callCount, 2);
+  t.is(sceneGraphChangedHandler.callCount, 3);
+
+  t.is(nodeDOnAddSpy.callCount, 0);
+
+  editor.history.undo();
+
+  t.is(editor.nodes.length, 5);
+  t.is(editor.nodes[1], nodeA);
+  t.is(editor.nodes[2], nodeB);
+  t.is(editor.nodes[3], nodeC);
+  t.is(editor.nodes[4], nodeD);
+  t.is(editor.selected.length, 2);
+  t.is(editor.selected[0], nodeA);
+  t.is(editor.selected[1], nodeB);
+  t.is(editor.selectedTransformRoots.length, 2);
+  t.is(editor.selectedTransformRoots[0], nodeA);
+  t.is(editor.selectedTransformRoots[1], nodeB);
+  t.is(nodeCOnAddSpy.callCount, 1);
+  t.is(nodeDOnAddSpy.callCount, 1);
+  t.is(selectionChangedHandler.callCount, 2);
+  t.is(sceneGraphChangedHandler.callCount, 4);
 });
 
 test("removeSelectedObjects", t => {
@@ -616,419 +1159,423 @@ test("removeSelectedObjects", t => {
   t.is(sceneGraphChangedHandler.callCount, 2);
 });
 
-test("select", t => {
+test("duplicate", t => {
   const editor = new Editor();
 
+  const sceneGraphChangedHandler = sinon.spy();
   const selectionChangedHandler = sinon.spy();
+  editor.addListener("sceneGraphChanged", sceneGraphChangedHandler);
   editor.addListener("selectionChanged", selectionChangedHandler);
 
-  const onSelectASpy = sinon.spy();
-  const onDeselectASpy = sinon.spy();
-  const onSelectBSpy = sinon.spy();
-  const onDeselectBSpy = sinon.spy();
+  const nodeAOnSelectSpy = sinon.spy();
+  const nodeAOnDeselectSpy = sinon.spy();
 
-  const nodeA = new MockNode(editor, { onSelect: onSelectASpy, onDeselect: onDeselectASpy });
-  const nodeB = new MockNode(editor, { onSelect: onSelectBSpy, onDeselect: onDeselectBSpy });
+  const nodeA = new MockNode(editor, {
+    onSelect: nodeAOnSelectSpy,
+    onDeselect: nodeAOnDeselectSpy
+  });
+  nodeA.name = "NodeA";
+
+  const nodeBOnSelectSpy = sinon.spy();
+  const nodeBOnDeselectSpy = sinon.spy();
+
+  const nodeB = new MockNode(editor, {
+    onSelect: nodeBOnSelectSpy,
+    onDeselect: nodeBOnDeselectSpy
+  });
+  nodeB.name = "NodeB";
+
+  const nodeCOnSelectSpy = sinon.spy();
+  const nodeCOnDeselectSpy = sinon.spy();
+
+  const nodeC = new MockNode(editor, {
+    onSelect: nodeCOnSelectSpy,
+    onDeselect: nodeCOnDeselectSpy
+  });
+  nodeC.name = "NodeC";
 
   editor.addObject(nodeA);
-  editor.addObject(nodeB);
-  editor.deselectAll();
+  editor.addMultipleObjects([nodeB, nodeC], nodeA);
 
+  sceneGraphChangedHandler.resetHistory();
   selectionChangedHandler.resetHistory();
-  onSelectASpy.resetHistory();
-  onSelectBSpy.resetHistory();
-  onDeselectASpy.resetHistory();
-  onDeselectBSpy.resetHistory();
 
-  t.is(editor.selected.length, 0);
-  t.is(editor.selectedTransformRoots.length, 0);
+  nodeAOnSelectSpy.resetHistory();
+  nodeAOnDeselectSpy.resetHistory();
 
-  editor.select(nodeA);
-  t.is(editor.selected.length, 1);
-  t.is(editor.selected[0], nodeA);
-  t.is(onSelectASpy.callCount, 1);
-  t.is(selectionChangedHandler.callCount, 1);
-  t.is(editor.selectedTransformRoots.length, 1);
-  t.is(editor.selectedTransformRoots[0], nodeA);
+  nodeBOnSelectSpy.resetHistory();
+  nodeBOnDeselectSpy.resetHistory();
 
-  editor.select(nodeB);
+  nodeCOnSelectSpy.resetHistory();
+  nodeCOnDeselectSpy.resetHistory();
+
+  t.is(editor.nodes.length, 4);
+  t.is(editor.nodes[1], nodeA);
+  t.is(editor.nodes[2], nodeB);
+  t.is(editor.nodes[3], nodeC);
   t.is(editor.selected.length, 2);
-  t.is(editor.selected[0], nodeA);
-  t.is(editor.selected[1], nodeB);
-  t.is(onSelectBSpy.callCount, 1);
-  t.is(selectionChangedHandler.callCount, 2);
-  t.is(editor.selectedTransformRoots.length, 2);
-  t.is(editor.selectedTransformRoots[0], nodeA);
-  t.is(editor.selectedTransformRoots[1], nodeB);
-
-  editor.history.undo();
-  t.is(editor.selected.length, 1);
-  t.is(editor.selected[0], nodeA);
-  t.is(onDeselectBSpy.callCount, 1);
-  t.is(selectionChangedHandler.callCount, 3);
-  t.is(editor.selectedTransformRoots.length, 1);
-  t.is(editor.selectedTransformRoots[0], nodeA);
-
-  editor.history.undo();
-  t.is(editor.selected.length, 0);
-  t.is(onDeselectASpy.callCount, 1);
-  t.is(selectionChangedHandler.callCount, 4);
-  t.is(editor.selectedTransformRoots.length, 0);
-});
-
-test("selectMultiple", t => {
-  const editor = new Editor();
-
-  const selectionChangedHandler = sinon.spy();
-  editor.addListener("selectionChanged", selectionChangedHandler);
-
-  const onSelectASpy = sinon.spy();
-  const onDeselectASpy = sinon.spy();
-  const onSelectBSpy = sinon.spy();
-  const onDeselectBSpy = sinon.spy();
-  const onSelectCSpy = sinon.spy();
-  const onDeselectCSpy = sinon.spy();
-
-  const nodeA = new MockNode(editor, { onSelect: onSelectASpy, onDeselect: onDeselectASpy });
-  const nodeB = new MockNode(editor, { onSelect: onSelectBSpy, onDeselect: onDeselectBSpy });
-  const nodeC = new MockNode(editor, { onSelect: onSelectCSpy, onDeselect: onDeselectCSpy });
-
-  editor.addObject(nodeA);
-  editor.addObject(nodeB);
-  editor.addObject(nodeC, nodeB);
-
-  // nodeC currently selected
-
-  selectionChangedHandler.resetHistory();
-  onSelectASpy.resetHistory();
-  onSelectBSpy.resetHistory();
-  onSelectCSpy.resetHistory();
-  onDeselectASpy.resetHistory();
-  onDeselectBSpy.resetHistory();
-  onDeselectCSpy.resetHistory();
-
-  t.is(editor.selected.length, 1);
-  t.is(editor.selected[0], nodeC);
-  t.is(editor.selectedTransformRoots.length, 1);
-  t.is(editor.selectedTransformRoots[0], nodeC);
-
-  editor.selectMultiple([nodeA, nodeB]); // Add A and B to selection
-  t.is(onDeselectCSpy.callCount, 0);
-  t.is(onSelectASpy.callCount, 1);
-  t.is(onSelectBSpy.callCount, 1);
-  t.is(selectionChangedHandler.callCount, 1);
-  t.is(editor.selected.length, 3);
-  t.is(editor.selected[0], nodeC);
-  t.is(editor.selected[1], nodeA);
-  t.is(editor.selected[2], nodeB);
-  t.is(editor.selectedTransformRoots.length, 2);
-  t.is(editor.selectedTransformRoots[0], nodeA);
-  t.is(editor.selectedTransformRoots[1], nodeB);
-
-  editor.history.undo(); // Undo A and B selection
-  t.is(onSelectCSpy.callCount, 0);
-  t.is(onDeselectASpy.callCount, 1);
-  t.is(onDeselectBSpy.callCount, 1);
-  t.is(selectionChangedHandler.callCount, 2);
-  t.is(editor.selected.length, 1);
-  t.is(editor.selected[0], nodeC);
-  t.is(editor.selectedTransformRoots.length, 1);
-  t.is(editor.selectedTransformRoots[0], nodeC);
-});
-
-test("selectAll", t => {
-  const editor = new Editor();
-
-  const selectionChangedHandler = sinon.spy();
-  editor.addListener("selectionChanged", selectionChangedHandler);
-
-  const onSelectSceneSpy = sinon.spy(editor.scene, "onSelect");
-  const onDeselectSceneSpy = sinon.spy(editor.scene, "onDeselect");
-  const onSelectASpy = sinon.spy();
-  const onDeselectASpy = sinon.spy();
-  const onSelectBSpy = sinon.spy();
-  const onDeselectBSpy = sinon.spy();
-  const onSelectCSpy = sinon.spy();
-  const onDeselectCSpy = sinon.spy();
-
-  const nodeA = new MockNode(editor, { onSelect: onSelectASpy, onDeselect: onDeselectASpy });
-  const nodeB = new MockNode(editor, { onSelect: onSelectBSpy, onDeselect: onDeselectBSpy });
-  const nodeC = new MockNode(editor, { onSelect: onSelectCSpy, onDeselect: onDeselectCSpy });
-
-  editor.addObject(nodeA);
-  editor.addObject(nodeB);
-  editor.addObject(nodeC, nodeB);
-
-  // nodeC currently selected
-
-  selectionChangedHandler.resetHistory();
-  onSelectSceneSpy.resetHistory();
-  onSelectASpy.resetHistory();
-  onSelectBSpy.resetHistory();
-  onSelectCSpy.resetHistory();
-  onDeselectSceneSpy.resetHistory();
-  onDeselectASpy.resetHistory();
-  onDeselectBSpy.resetHistory();
-  onDeselectCSpy.resetHistory();
-
-  t.is(editor.selected.length, 1);
-  t.is(editor.selected[0], nodeC);
-  t.is(editor.selectedTransformRoots.length, 1);
-  t.is(editor.selectedTransformRoots[0], nodeC);
-
-  editor.selectAll(); // Select all nodes in the scene graph
-  t.is(editor.selected.length, 4);
-  t.is(editor.selected[0], nodeC);
-  t.is(editor.selected[1], editor.scene);
-  t.is(editor.selected[2], nodeA);
-  t.is(editor.selected[3], nodeB);
-  t.is(onSelectSceneSpy.callCount, 1);
-  t.is(onSelectASpy.callCount, 1);
-  t.is(onSelectBSpy.callCount, 1);
-  t.is(onSelectCSpy.callCount, 0);
-  t.is(selectionChangedHandler.callCount, 1);
-  t.is(editor.selectedTransformRoots.length, 2);
-  t.is(editor.selectedTransformRoots[0], nodeA);
-  t.is(editor.selectedTransformRoots[1], nodeB);
-
-  editor.history.undo(); // Undo select all
-  t.is(editor.selected.length, 1);
-  t.is(editor.selected[0], nodeC);
-  t.is(onDeselectSceneSpy.callCount, 1);
-  t.is(onDeselectASpy.callCount, 1);
-  t.is(onDeselectBSpy.callCount, 1);
-  t.is(onDeselectCSpy.callCount, 0);
-  t.is(selectionChangedHandler.callCount, 2);
-  t.is(editor.selectedTransformRoots.length, 1);
-  t.is(editor.selectedTransformRoots[0], nodeC);
-});
-
-test("deselect", t => {
-  const editor = new Editor();
-
-  const selectionChangedHandler = sinon.spy();
-  editor.addListener("selectionChanged", selectionChangedHandler);
-
-  const onSelectASpy = sinon.spy();
-  const onDeselectASpy = sinon.spy();
-
-  const nodeA = new MockNode(editor, { onSelect: onSelectASpy, onDeselect: onDeselectASpy });
-  const nodeB = new MockNode(editor);
-  const nodeC = new MockNode(editor);
-
-  editor.addObject(nodeA);
-  editor.addObject(nodeB);
-  editor.addObject(nodeC, nodeB);
-  editor.select(nodeA);
-
-  // nodeA and nodeC currently selected
-
-  selectionChangedHandler.resetHistory();
-  onSelectASpy.resetHistory();
-  onDeselectASpy.resetHistory();
-
-  t.is(editor.selected.length, 2);
-  t.is(editor.selected[0], nodeC);
-  t.is(editor.selected[1], nodeA);
-  t.is(editor.selectedTransformRoots.length, 2);
-  t.is(editor.selectedTransformRoots[0], nodeA);
-  t.is(editor.selectedTransformRoots[1], nodeC);
-
-  editor.deselect(nodeA);
-  t.is(onDeselectASpy.callCount, 1);
-  t.is(editor.selected.length, 1);
-  t.is(editor.selected[0], nodeC);
-  t.is(selectionChangedHandler.callCount, 1);
-  t.is(editor.selectedTransformRoots.length, 1);
-  t.is(editor.selectedTransformRoots[0], nodeC);
-
-  editor.history.undo();
-  t.is(onSelectASpy.callCount, 1);
-  t.is(editor.selected.length, 2);
-  t.is(editor.selected[0], nodeC);
-  t.is(editor.selected[1], nodeA);
-  t.is(selectionChangedHandler.callCount, 2);
-  t.is(editor.selectedTransformRoots.length, 2);
-  t.is(editor.selectedTransformRoots[0], nodeA);
-  t.is(editor.selectedTransformRoots[1], nodeC);
-});
-
-test("deselectMultiple", t => {
-  const editor = new Editor();
-
-  const selectionChangedHandler = sinon.spy();
-  editor.addListener("selectionChanged", selectionChangedHandler);
-
-  const onSelectASpy = sinon.spy();
-  const onDeselectASpy = sinon.spy();
-  const onSelectBSpy = sinon.spy();
-  const onDeselectBSpy = sinon.spy();
-  const onSelectCSpy = sinon.spy();
-  const onDeselectCSpy = sinon.spy();
-
-  const nodeA = new MockNode(editor, { onSelect: onSelectASpy, onDeselect: onDeselectASpy });
-  const nodeB = new MockNode(editor, { onSelect: onSelectBSpy, onDeselect: onDeselectBSpy });
-  const nodeC = new MockNode(editor, { onSelect: onSelectCSpy, onDeselect: onDeselectCSpy });
-
-  editor.addObject(nodeA);
-  editor.addObject(nodeB);
-  editor.addObject(nodeC, nodeB);
-  editor.selectMultiple([nodeA, nodeB]);
-
-  // nodeA, nodeB, and nodeC currently selected
-
-  selectionChangedHandler.resetHistory();
-  onSelectASpy.resetHistory();
-  onSelectBSpy.resetHistory();
-  onSelectCSpy.resetHistory();
-  onDeselectASpy.resetHistory();
-  onDeselectBSpy.resetHistory();
-  onDeselectCSpy.resetHistory();
-
-  t.is(editor.selected.length, 3);
-  t.is(editor.selected[0], nodeC);
-  t.is(editor.selected[1], nodeA);
-  t.is(editor.selected[2], nodeB);
-  t.is(editor.selectedTransformRoots.length, 2);
-  t.is(editor.selectedTransformRoots[0], nodeA);
-  t.is(editor.selectedTransformRoots[1], nodeB);
-
-  editor.deselectMultiple([nodeA, nodeC]);
-  t.is(onDeselectASpy.callCount, 1);
-  t.is(onDeselectCSpy.callCount, 1);
-  t.is(editor.selected.length, 1);
   t.is(editor.selected[0], nodeB);
+  t.is(editor.selected[1], nodeC);
+
+  editor.duplicate(nodeA); // Duplicate nodeA and add to scene
+
+  t.is(editor.nodes.length, 7);
+  t.is(editor.scene.children.length, 2);
+  t.is(editor.selected.length, 1);
+  t.is(editor.scene.children[0], nodeA);
+  t.is(editor.scene.children[1], editor.selected[0]);
+  t.is(nodeBOnDeselectSpy.callCount, 1);
+  t.is(nodeCOnDeselectSpy.callCount, 1);
+  t.is(sceneGraphChangedHandler.callCount, 1);
   t.is(selectionChangedHandler.callCount, 1);
-  t.is(editor.selectedTransformRoots.length, 1);
-  t.is(editor.selectedTransformRoots[0], nodeB);
 
   editor.history.undo();
-  t.is(onSelectASpy.callCount, 1);
-  t.is(onSelectCSpy.callCount, 1);
-  t.is(editor.selected.length, 3);
-  t.is(editor.selected[0], nodeC);
-  t.is(editor.selected[1], nodeA);
-  t.is(editor.selected[2], nodeB);
+
+  t.is(editor.nodes.length, 4);
+  t.is(editor.nodes[1], nodeA);
+  t.is(editor.nodes[2], nodeB);
+  t.is(editor.nodes[3], nodeC);
+  t.is(editor.selected.length, 2);
+  t.is(editor.selected[0], nodeB);
+  t.is(editor.selected[1], nodeC);
+  t.is(nodeBOnSelectSpy.callCount, 1);
+  t.is(nodeCOnSelectSpy.callCount, 1);
+  t.is(sceneGraphChangedHandler.callCount, 2);
   t.is(selectionChangedHandler.callCount, 2);
-  t.is(editor.selectedTransformRoots.length, 2);
-  t.is(editor.selectedTransformRoots[0], nodeA);
-  t.is(editor.selectedTransformRoots[1], nodeB);
+
+  editor.duplicate(nodeB, nodeA); // Duplicate nodeB and add to nodeA
+
+  t.is(editor.nodes.length, 5);
+  t.is(editor.selected.length, 1);
+  t.is(nodeA.children.length, 3);
+  t.is(nodeA.children[0], nodeB);
+  t.is(nodeA.children[1], nodeC);
+  t.is(nodeBOnDeselectSpy.callCount, 2);
+  t.is(nodeCOnDeselectSpy.callCount, 2);
+  t.is(sceneGraphChangedHandler.callCount, 3);
+  t.is(selectionChangedHandler.callCount, 3);
+
+  editor.history.undo();
+
+  t.is(editor.nodes.length, 4);
+  t.is(editor.nodes[1], nodeA);
+  t.is(editor.nodes[2], nodeB);
+  t.is(editor.nodes[3], nodeC);
+  t.is(editor.selected.length, 2);
+  t.is(editor.selected[0], nodeB);
+  t.is(editor.selected[1], nodeC);
+  t.is(nodeBOnSelectSpy.callCount, 2);
+  t.is(nodeCOnSelectSpy.callCount, 2);
+  t.is(sceneGraphChangedHandler.callCount, 4);
+  t.is(selectionChangedHandler.callCount, 4);
+
+  editor.duplicate(nodeB, nodeA, nodeC); // Duplicate nodeB and add to nodeA before nodeC
+
+  t.is(editor.nodes.length, 5);
+  t.is(editor.selected.length, 1);
+  t.is(nodeA.children.length, 3);
+  t.is(nodeA.children[0], nodeB);
+  t.is(nodeA.children[2], nodeC);
+  t.is(nodeBOnDeselectSpy.callCount, 3);
+  t.is(nodeCOnDeselectSpy.callCount, 3);
+  t.is(sceneGraphChangedHandler.callCount, 5);
+  t.is(selectionChangedHandler.callCount, 5);
+
+  editor.history.undo();
+
+  t.is(editor.nodes.length, 4);
+  t.is(editor.nodes[1], nodeA);
+  t.is(editor.nodes[2], nodeB);
+  t.is(editor.nodes[3], nodeC);
+  t.is(editor.selected.length, 2);
+  t.is(editor.selected[0], nodeB);
+  t.is(editor.selected[1], nodeC);
+  t.is(nodeBOnSelectSpy.callCount, 3);
+  t.is(nodeCOnSelectSpy.callCount, 3);
+  t.is(sceneGraphChangedHandler.callCount, 6);
+  t.is(selectionChangedHandler.callCount, 6);
 });
 
-test("deselectAll", t => {
+test("duplicateMultiple", t => {
   const editor = new Editor();
 
+  const sceneGraphChangedHandler = sinon.spy();
   const selectionChangedHandler = sinon.spy();
+  editor.addListener("sceneGraphChanged", sceneGraphChangedHandler);
   editor.addListener("selectionChanged", selectionChangedHandler);
 
-  const onSelectSceneSpy = sinon.spy(editor.scene, "onSelect");
-  const onDeselectSceneSpy = sinon.spy(editor.scene, "onDeselect");
-  const onSelectASpy = sinon.spy();
-  const onDeselectASpy = sinon.spy();
-  const onSelectBSpy = sinon.spy();
-  const onDeselectBSpy = sinon.spy();
-  const onSelectCSpy = sinon.spy();
-  const onDeselectCSpy = sinon.spy();
+  const nodeAOnSelectSpy = sinon.spy();
+  const nodeAOnDeselectSpy = sinon.spy();
 
-  const nodeA = new MockNode(editor, { onSelect: onSelectASpy, onDeselect: onDeselectASpy });
-  const nodeB = new MockNode(editor, { onSelect: onSelectBSpy, onDeselect: onDeselectBSpy });
-  const nodeC = new MockNode(editor, { onSelect: onSelectCSpy, onDeselect: onDeselectCSpy });
+  const nodeA = new MockNode(editor, {
+    onSelect: nodeAOnSelectSpy,
+    onDeselect: nodeAOnDeselectSpy
+  });
+  nodeA.name = "NodeA";
+
+  const nodeBOnSelectSpy = sinon.spy();
+  const nodeBOnDeselectSpy = sinon.spy();
+
+  const nodeB = new MockNode(editor, {
+    onSelect: nodeBOnSelectSpy,
+    onDeselect: nodeBOnDeselectSpy
+  });
+  nodeB.name = "NodeB";
+
+  const nodeCOnSelectSpy = sinon.spy();
+  const nodeCOnDeselectSpy = sinon.spy();
+
+  const nodeC = new MockNode(editor, {
+    onSelect: nodeCOnSelectSpy,
+    onDeselect: nodeCOnDeselectSpy
+  });
+  nodeC.name = "NodeC";
+
+  const nodeDOnSelectSpy = sinon.spy();
+  const nodeDOnDeselectSpy = sinon.spy();
+
+  const nodeD = new MockNode(editor, {
+    onSelect: nodeDOnSelectSpy,
+    onDeselect: nodeDOnDeselectSpy
+  });
+  nodeD.name = "NodeD";
 
   editor.addObject(nodeA);
-  editor.addObject(nodeB);
-  editor.addObject(nodeC, nodeB);
+  editor.addMultipleObjects([nodeB, nodeC], nodeA);
+  editor.addObject(nodeD);
 
-  // nodeC currently selected
-
+  sceneGraphChangedHandler.resetHistory();
   selectionChangedHandler.resetHistory();
-  onSelectSceneSpy.resetHistory();
-  onSelectASpy.resetHistory();
-  onSelectBSpy.resetHistory();
-  onSelectCSpy.resetHistory();
-  onDeselectSceneSpy.resetHistory();
-  onDeselectASpy.resetHistory();
-  onDeselectBSpy.resetHistory();
-  onDeselectCSpy.resetHistory();
 
-  editor.selectAll(); // Select all nodes in the scene graph
-  t.is(editor.selected.length, 4);
-  t.is(editor.selected[0], nodeC);
-  t.is(editor.selected[1], editor.scene);
-  t.is(editor.selected[2], nodeA);
-  t.is(editor.selected[3], nodeB);
-  t.is(onSelectSceneSpy.callCount, 1);
-  t.is(onSelectASpy.callCount, 1);
-  t.is(onSelectBSpy.callCount, 1);
-  t.is(onSelectCSpy.callCount, 0);
+  nodeAOnSelectSpy.resetHistory();
+  nodeAOnDeselectSpy.resetHistory();
+
+  nodeBOnSelectSpy.resetHistory();
+  nodeBOnDeselectSpy.resetHistory();
+
+  nodeCOnSelectSpy.resetHistory();
+  nodeCOnDeselectSpy.resetHistory();
+
+  nodeDOnSelectSpy.resetHistory();
+  nodeDOnDeselectSpy.resetHistory();
+
+  t.is(editor.nodes.length, 5);
+  t.is(editor.nodes[1], nodeA);
+  t.is(editor.nodes[2], nodeB);
+  t.is(editor.nodes[3], nodeC);
+  t.is(editor.nodes[4], nodeD);
+  t.is(editor.selected.length, 1);
+  t.is(editor.selected[0], nodeD);
+  t.is(nodeDOnSelectSpy.callCount, 0);
+  t.is(nodeDOnDeselectSpy.callCount, 0);
+  t.is(sceneGraphChangedHandler.callCount, 0);
+  t.is(selectionChangedHandler.callCount, 0);
+
+  editor.duplicateMultiple([nodeA, nodeD]); // Duplicate nodeA and nodeD and add to scene
+
+  t.is(editor.selected.length, 2);
+  t.is(editor.nodes.length, 9);
+  t.is(editor.nodes[5], editor.selected[0]);
+  t.is(editor.nodes[8], editor.selected[1]);
+  t.is(editor.scene.children.length, 4);
+  t.is(editor.scene.children[0], nodeA);
+  t.is(editor.scene.children[1], nodeD);
+  t.is(editor.scene.children[2], editor.selected[0]);
+  t.is(editor.scene.children[3], editor.selected[1]);
+  t.is(nodeDOnDeselectSpy.callCount, 1);
+  t.is(sceneGraphChangedHandler.callCount, 1);
   t.is(selectionChangedHandler.callCount, 1);
-  t.is(editor.selectedTransformRoots.length, 2);
-  t.is(editor.selectedTransformRoots[0], nodeA);
-  t.is(editor.selectedTransformRoots[1], nodeB);
 
-  editor.history.undo(); // Undo select all
+  editor.history.undo();
+
+  t.is(editor.nodes.length, 5);
+  t.is(editor.nodes[1], nodeA);
+  t.is(editor.nodes[2], nodeB);
+  t.is(editor.nodes[3], nodeC);
+  t.is(editor.nodes[4], nodeD);
   t.is(editor.selected.length, 1);
-  t.is(editor.selected[0], nodeC);
-  t.is(onDeselectSceneSpy.callCount, 1);
-  t.is(onDeselectASpy.callCount, 1);
-  t.is(onDeselectBSpy.callCount, 1);
-  t.is(onDeselectCSpy.callCount, 0);
+  t.is(editor.selected[0], nodeD);
+  t.is(nodeDOnSelectSpy.callCount, 1);
+  t.is(sceneGraphChangedHandler.callCount, 2);
   t.is(selectionChangedHandler.callCount, 2);
-  t.is(editor.selectedTransformRoots.length, 1);
-  t.is(editor.selectedTransformRoots[0], nodeC);
+
+  editor.duplicateMultiple([nodeA, nodeB]); // Duplicate nodeA and nodeB and add to scene (B is a child of A, only A should be duplicated)
+
+  t.is(editor.nodes.length, 8);
+  t.is(editor.selected.length, 1);
+  t.is(editor.nodes[5], editor.selected[0]); // Because nodeB was a child of nodeA, only nodeA was duplicated and only nodeA was selected
+  t.is(editor.nodes[5].children.length, 2);
+  t.is(nodeDOnDeselectSpy.callCount, 2);
+  t.is(sceneGraphChangedHandler.callCount, 3);
+  t.is(selectionChangedHandler.callCount, 3);
+
+  editor.history.undo();
+
+  t.is(editor.nodes.length, 5);
+  t.is(editor.nodes[1], nodeA);
+  t.is(editor.nodes[2], nodeB);
+  t.is(editor.nodes[3], nodeC);
+  t.is(editor.nodes[4], nodeD);
+  t.is(editor.selected.length, 1);
+  t.is(editor.selected[0], nodeD);
+  t.is(nodeDOnSelectSpy.callCount, 2);
+  t.is(sceneGraphChangedHandler.callCount, 4);
+  t.is(selectionChangedHandler.callCount, 4);
+
+  editor.duplicateMultiple([nodeA, nodeD], nodeD); // Duplicate nodeA and nodeD and add to nodeD
+
+  t.is(editor.nodes.length, 9);
+  t.is(editor.selected.length, 2);
+  t.is(nodeD.children.length, 2);
+  t.is(editor.nodes[5], editor.selected[0]);
+  t.is(editor.nodes[5].children.length, 2);
+  t.is(editor.nodes[8], editor.selected[1]);
+  t.is(nodeDOnDeselectSpy.callCount, 3);
+  t.is(sceneGraphChangedHandler.callCount, 5);
+  t.is(selectionChangedHandler.callCount, 5);
+
+  editor.history.undo();
+
+  t.is(editor.nodes.length, 5);
+  t.is(editor.nodes[1], nodeA);
+  t.is(editor.nodes[2], nodeB);
+  t.is(editor.nodes[3], nodeC);
+  t.is(editor.nodes[4], nodeD);
+  t.is(editor.selected.length, 1);
+  t.is(editor.selected[0], nodeD);
+  t.is(nodeDOnSelectSpy.callCount, 3);
+  t.is(sceneGraphChangedHandler.callCount, 6);
+  t.is(selectionChangedHandler.callCount, 6);
+
+  editor.duplicateMultiple([nodeA, nodeD], nodeA, nodeC); // Duplicate nodeA and nodeD and add to nodeA before nodeC
+
+  t.is(editor.nodes.length, 9);
+  t.is(editor.selected.length, 2);
+  t.is(nodeA.children.length, 4);
+  t.is(nodeA.children[0], nodeB);
+  t.is(nodeA.children[1], editor.selected[0]);
+  t.is(nodeA.children[2], editor.selected[1]);
+  t.is(nodeA.children[3], nodeC);
+  t.is(nodeDOnDeselectSpy.callCount, 4);
+  t.is(sceneGraphChangedHandler.callCount, 7);
+  t.is(selectionChangedHandler.callCount, 7);
+
+  editor.history.undo();
+
+  t.is(editor.nodes.length, 5);
+  t.is(editor.nodes[1], nodeA);
+  t.is(editor.nodes[2], nodeB);
+  t.is(editor.nodes[3], nodeC);
+  t.is(editor.nodes[4], nodeD);
+  t.is(editor.selected.length, 1);
+  t.is(editor.selected[0], nodeD);
+  t.is(sceneGraphChangedHandler.callCount, 8);
+  t.is(selectionChangedHandler.callCount, 8);
 });
 
-test("setSelection", t => {
+test("duplicateSelected", t => {
   const editor = new Editor();
 
+  const sceneGraphChangedHandler = sinon.spy();
   const selectionChangedHandler = sinon.spy();
+  editor.addListener("sceneGraphChanged", sceneGraphChangedHandler);
   editor.addListener("selectionChanged", selectionChangedHandler);
-  const onSelectASpy = sinon.spy();
-  const onDeselectASpy = sinon.spy();
-  const onSelectBSpy = sinon.spy();
-  const onDeselectBSpy = sinon.spy();
-  const onSelectCSpy = sinon.spy();
-  const onDeselectCSpy = sinon.spy();
 
-  const nodeA = new MockNode(editor, { onSelect: onSelectASpy, onDeselect: onDeselectASpy });
-  const nodeB = new MockNode(editor, { onSelect: onSelectBSpy, onDeselect: onDeselectBSpy });
-  const nodeC = new MockNode(editor, { onSelect: onSelectCSpy, onDeselect: onDeselectCSpy });
+  const nodeAOnSelectSpy = sinon.spy();
+  const nodeAOnDeselectSpy = sinon.spy();
+
+  const nodeA = new MockNode(editor, {
+    onSelect: nodeAOnSelectSpy,
+    onDeselect: nodeAOnDeselectSpy
+  });
+  nodeA.name = "NodeA";
+
+  const nodeBOnSelectSpy = sinon.spy();
+  const nodeBOnDeselectSpy = sinon.spy();
+
+  const nodeB = new MockNode(editor, {
+    onSelect: nodeBOnSelectSpy,
+    onDeselect: nodeBOnDeselectSpy
+  });
+  nodeB.name = "NodeB";
+
+  const nodeCOnSelectSpy = sinon.spy();
+  const nodeCOnDeselectSpy = sinon.spy();
+
+  const nodeC = new MockNode(editor, {
+    onSelect: nodeCOnSelectSpy,
+    onDeselect: nodeCOnDeselectSpy
+  });
+  nodeC.name = "NodeC";
+
+  const nodeDOnSelectSpy = sinon.spy();
+  const nodeDOnDeselectSpy = sinon.spy();
+
+  const nodeD = new MockNode(editor, {
+    onSelect: nodeDOnSelectSpy,
+    onDeselect: nodeDOnDeselectSpy
+  });
+  nodeD.name = "NodeD";
 
   editor.addObject(nodeA);
-  editor.addObject(nodeB);
-  editor.addObject(nodeC, nodeB);
+  editor.addMultipleObjects([nodeB, nodeC], nodeA);
+  editor.addObject(nodeD);
+  editor.setSelection([nodeA, nodeD]);
 
-  // nodeC currently selected
-
+  sceneGraphChangedHandler.resetHistory();
   selectionChangedHandler.resetHistory();
-  onSelectASpy.resetHistory();
-  onSelectBSpy.resetHistory();
-  onSelectCSpy.resetHistory();
-  onDeselectASpy.resetHistory();
-  onDeselectBSpy.resetHistory();
-  onDeselectCSpy.resetHistory();
 
-  t.is(editor.selected.length, 1);
-  t.is(editor.selected[0], nodeC);
+  nodeAOnSelectSpy.resetHistory();
+  nodeAOnDeselectSpy.resetHistory();
 
-  editor.setSelection([nodeA, nodeB]);
+  nodeBOnSelectSpy.resetHistory();
+  nodeBOnDeselectSpy.resetHistory();
+
+  nodeCOnSelectSpy.resetHistory();
+  nodeCOnDeselectSpy.resetHistory();
+
+  nodeDOnSelectSpy.resetHistory();
+  nodeDOnDeselectSpy.resetHistory();
+
+  t.is(editor.nodes.length, 5);
+  t.is(editor.nodes[1], nodeA);
+  t.is(editor.nodes[2], nodeB);
+  t.is(editor.nodes[3], nodeC);
+  t.is(editor.nodes[4], nodeD);
   t.is(editor.selected.length, 2);
   t.is(editor.selected[0], nodeA);
-  t.is(editor.selected[1], nodeB);
-  t.is(onSelectASpy.callCount, 1);
-  t.is(onSelectBSpy.callCount, 1);
-  t.is(onDeselectCSpy.callCount, 1);
+  t.is(editor.selected[1], nodeD);
+  t.is(nodeDOnSelectSpy.callCount, 0);
+  t.is(nodeDOnDeselectSpy.callCount, 0);
+  t.is(sceneGraphChangedHandler.callCount, 0);
+  t.is(selectionChangedHandler.callCount, 0);
+
+  editor.duplicateSelected(); // Duplicate nodeA and nodeD and add to scene
+
+  t.is(editor.selected.length, 2);
+  t.is(editor.nodes.length, 9);
+  t.is(editor.nodes[5], editor.selected[0]);
+  t.is(editor.nodes[8], editor.selected[1]);
+  t.is(editor.scene.children.length, 4);
+  t.is(editor.scene.children[0], nodeA);
+  t.is(editor.scene.children[1], nodeD);
+  t.is(editor.scene.children[2], editor.selected[0]);
+  t.is(editor.scene.children[3], editor.selected[1]);
+  t.is(nodeDOnDeselectSpy.callCount, 1);
+  t.is(sceneGraphChangedHandler.callCount, 1);
   t.is(selectionChangedHandler.callCount, 1);
-  t.is(editor.selectedTransformRoots.length, 2);
-  t.is(editor.selectedTransformRoots[0], nodeA);
-  t.is(editor.selectedTransformRoots[1], nodeB);
 
   editor.history.undo();
-  t.is(editor.selected.length, 1);
-  t.is(editor.selected[0], nodeC);
-  t.is(onSelectCSpy.callCount, 1);
-  t.is(onDeselectASpy.callCount, 1);
-  t.is(onDeselectBSpy.callCount, 1);
+
+  t.is(editor.nodes.length, 5);
+  t.is(editor.nodes[1], nodeA);
+  t.is(editor.nodes[2], nodeB);
+  t.is(editor.nodes[3], nodeC);
+  t.is(editor.nodes[4], nodeD);
+  t.is(editor.selected.length, 2);
+  t.is(editor.selected[0], nodeA);
+  t.is(editor.selected[1], nodeD);
+  t.is(nodeDOnSelectSpy.callCount, 1);
+  t.is(sceneGraphChangedHandler.callCount, 2);
   t.is(selectionChangedHandler.callCount, 2);
-  t.is(editor.selectedTransformRoots.length, 1);
-  t.is(editor.selectedTransformRoots[0], nodeC);
 });
