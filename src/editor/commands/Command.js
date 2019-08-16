@@ -7,10 +7,13 @@ export default class Command {
   constructor(editor) {
     this.editor = editor;
     this.id = -1;
-    this.updatable = false;
   }
 
   execute() {}
+
+  shouldUpdate(_newCommand) {
+    return false;
+  }
 
   update(_command) {}
 

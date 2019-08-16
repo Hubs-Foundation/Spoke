@@ -9,21 +9,20 @@ export default class History {
     this.redos = [];
     this.lastCmdTime = new Date();
     this.idCounter = 0;
+    this.commandUpdatesEnabled = true; // Used for testing
   }
 
   execute(cmd) {
     const lastCmd = this.undos[this.undos.length - 1];
     const timeDifference = new Date().getTime() - this.lastCmdTime.getTime();
 
-    const isUpdatableCmd =
+    if (
+      this.commandUpdatesEnabled &&
       lastCmd &&
-      lastCmd.updatable &&
-      cmd.updatable &&
-      lastCmd.object === cmd.object &&
       lastCmd.constructor === cmd.constructor &&
-      lastCmd.propertyName === cmd.propertyName;
-
-    if (isUpdatableCmd && timeDifference < 1000) {
+      timeDifference < 1000 &&
+      lastCmd.shouldUpdate(cmd)
+    ) {
       lastCmd.update(cmd);
       cmd = lastCmd;
     } else {

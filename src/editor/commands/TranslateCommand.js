@@ -1,17 +1,17 @@
 import Command from "./Command";
 import { TransformSpace } from "../Editor2";
 
-export default class SetPositionCommand extends Command {
-  constructor(editor, object, position, space) {
+export default class TranslateCommand extends Command {
+  constructor(editor, object, translation, space) {
     super(editor);
     this.object = object;
-    this.position = position.clone();
+    this.translation = translation.clone();
     this.space = space;
     this.oldPosition = object.position.clone();
   }
 
   execute() {
-    this.editor.setPosition(this.object, this.position, this.space, false);
+    this.editor.translate(this.object, this.translation, this.space, false);
   }
 
   shouldUpdate(newCommand) {
@@ -19,7 +19,7 @@ export default class SetPositionCommand extends Command {
   }
 
   update(command) {
-    this.editor.setPosition(this.object, command.position, this.space, false);
+    this.editor.translate(this.object, command.translation, this.space, false);
   }
 
   undo() {

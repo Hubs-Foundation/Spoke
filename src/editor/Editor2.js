@@ -23,15 +23,18 @@ import ReparentCommand from "./commands/ReparentCommand";
 import ReparentMultipleCommand from "./commands/ReparentMultipleCommand";
 import DuplicateCommand from "./commands/DuplicateCommand";
 import DuplicateMultipleCommand from "./commands/DuplicateMultipleCommand";
-import { Matrix4 } from "three";
+import TranslateCommand from "./commands/TranslateCommand";
+import { Matrix4, Vector3 } from "three";
+import SetPositionCommand from "./commands/SetPositionCommand";
 
 const tempMatrix = new Matrix4();
+const tempVector = new Vector3();
 
-// const TransformSpace = {
-//   World: "World",
-//   Local: "Local"
-//   // TODO: Viewport, Cursor?
-// };
+export const TransformSpace = {
+  World: "World",
+  Local: "Local"
+  // TODO: Viewport, Cursor?
+};
 
 let resolveRenderer;
 let rejectRenderer;
@@ -352,6 +355,8 @@ export default class Editor2 extends EventEmitter {
       }
     });
 
+    object.updateMatrixWorld(true);
+
     if (selectObject) {
       this.setSelection([object], false, emitEvent);
     }
@@ -575,6 +580,8 @@ export default class Editor2 extends EventEmitter {
 
     object.parent = newParent;
 
+    object.updateMatrixWorld(true);
+
     if (selectObject) {
       this.setSelection([object], false, emitEvent, false);
     }
@@ -614,7 +621,28 @@ export default class Editor2 extends EventEmitter {
     return this.reparentMultiple(this.selected, newParent, newBefore, useHistory, emitEvent, selectObjects);
   }
 
-  // translate(object, translation, space = TransformSpace.World, useHistory = true, emitEvent = true) {}
+  translate(object, translation, space = TransformSpace.World, useHistory = true, emitEvent = true) {
+    if (useHistory) {
+      return this.history.execute(new TranslateCommand(this, object, translation, space));
+    }
+
+    if (space === TransformSpace.Local) {
+      object.position.add(translation);
+    } else {
+      // TransformSpace.World
+      tempVector.copy(translation);
+      object.worldToLocal(tempVector);
+      object.position.add(tempVector);
+    }
+
+    object.updateMatrixWorld(true);
+
+    object.onChange("position");
+
+    if (emitEvent) {
+      this.emit("propertyChanged", "position", object);
+    }
+  }
 
   // translateMultiple(objects, translation, space = TransformSpace.World, useHistory = true, emitEvent = true) {}
 
@@ -632,7 +660,28 @@ export default class Editor2 extends EventEmitter {
 
   // scaleSelected(scale, space = TransformSpace.World, useHistory = true, emitEvent = true) {}
 
-  // setPosition(object, position, space = TransformSpace.World, useHistory = true, emitEvent = true) {}
+  setPosition(object, position, space = TransformSpace.World, useHistory = true, emitEvent = true) {
+    if (useHistory) {
+      return this.history.execute(new SetPositionCommand(this, object, position, space));
+    }
+
+    if (space === TransformSpace.Local) {
+      object.position.copy(position);
+    } else {
+      // TransformSpace.World
+      tempVector.copy(position);
+      object.worldToLocal(tempVector);
+      object.position.copy(tempVector);
+    }
+
+    object.updateMatrixWorld(true);
+
+    object.onChange("position");
+
+    if (emitEvent) {
+      this.emit("propertyChanged", "position", object);
+    }
+  }
 
   // setPositionMultiple(objects, position, space = TransformSpace.World, useHistory = true, emitEvent = true) {}
 

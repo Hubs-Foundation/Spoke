@@ -19,6 +19,12 @@ export default class MockNode extends EditorNodeMixin(Object3D) {
     }
   }
 
+  onChange(propertyName) {
+    if (this.callbacks.onChange) {
+      this.callbacks.onChange(propertyName);
+    }
+  }
+
   onSelect() {
     if (this.callbacks.onSelect) {
       this.callbacks.onSelect();

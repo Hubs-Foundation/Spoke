@@ -1,7 +1,9 @@
 import test from "ava";
 import sinon from "sinon";
-import Editor from "../../src/editor/Editor2";
+import floatEqual from "float-equal";
+import Editor, { TransformSpace } from "../../src/editor/Editor2";
 import MockNode from "../helpers/MockNode";
+import { Vector3 } from "three";
 
 test("select", t => {
   const editor = new Editor();
@@ -1842,4 +1844,158 @@ test("reparentSelected", t => {
   t.is(editor.selectedTransformRoots[0], nodeE);
   t.is(sceneGraphChangedHandler.callCount, 4);
   t.is(selectionChangedHandler.callCount, 4);
+});
+
+test("translate", t => {
+  const editor = new Editor();
+  editor.history.commandUpdatesEnabled = false;
+
+  const propertyChangedHandler = sinon.spy();
+  editor.addListener("propertyChanged", propertyChangedHandler);
+
+  const onChangeBSpy = sinon.spy();
+
+  const nodeA = new MockNode(editor);
+  nodeA.rotation.set(0, Math.PI, 0);
+  const nodeB = new MockNode(editor, { onChange: onChangeBSpy });
+
+  editor.addObject(nodeA);
+  editor.addObject(nodeB, nodeA);
+
+  const nodeBWorldPosition = new Vector3();
+
+  nodeB.getWorldPosition(nodeBWorldPosition);
+
+  t.true(floatEqual(nodeBWorldPosition.x, 0));
+  t.true(floatEqual(nodeBWorldPosition.y, 0));
+  t.true(floatEqual(nodeBWorldPosition.z, 0));
+
+  editor.translate(nodeB, new Vector3(1, 0, 0));
+
+  nodeB.getWorldPosition(nodeBWorldPosition);
+
+  t.true(floatEqual(nodeBWorldPosition.x, 1));
+  t.true(floatEqual(nodeBWorldPosition.y, 0));
+  t.true(floatEqual(nodeBWorldPosition.z, 0));
+  t.is(propertyChangedHandler.callCount, 1);
+  t.is(propertyChangedHandler.getCall(0).args[0], "position");
+  t.is(propertyChangedHandler.getCall(0).args[1], nodeB);
+  t.is(onChangeBSpy.callCount, 1);
+  t.is(onChangeBSpy.getCall(0).args[0], "position");
+
+  editor.history.undo();
+
+  nodeB.getWorldPosition(nodeBWorldPosition);
+
+  t.true(floatEqual(nodeBWorldPosition.x, 0));
+  t.true(floatEqual(nodeBWorldPosition.y, 0));
+  t.true(floatEqual(nodeBWorldPosition.z, 0));
+  t.is(propertyChangedHandler.callCount, 2);
+  t.is(propertyChangedHandler.getCall(1).args[0], "position");
+  t.is(propertyChangedHandler.getCall(1).args[1], nodeB);
+  t.is(onChangeBSpy.callCount, 2);
+  t.is(onChangeBSpy.getCall(1).args[0], "position");
+
+  editor.translate(nodeB, new Vector3(1, 0, 0), TransformSpace.Local);
+
+  nodeB.getWorldPosition(nodeBWorldPosition);
+
+  t.true(floatEqual(nodeBWorldPosition.x, -1));
+  t.true(floatEqual(nodeBWorldPosition.y, 0));
+  t.true(floatEqual(nodeBWorldPosition.z, 0));
+  t.is(propertyChangedHandler.callCount, 3);
+  t.is(propertyChangedHandler.getCall(2).args[0], "position");
+  t.is(propertyChangedHandler.getCall(2).args[1], nodeB);
+  t.is(onChangeBSpy.callCount, 3);
+  t.is(onChangeBSpy.getCall(2).args[0], "position");
+
+  editor.history.undo();
+
+  nodeB.getWorldPosition(nodeBWorldPosition);
+
+  t.true(floatEqual(nodeBWorldPosition.x, 0));
+  t.true(floatEqual(nodeBWorldPosition.y, 0));
+  t.true(floatEqual(nodeBWorldPosition.z, 0));
+  t.is(propertyChangedHandler.callCount, 4);
+  t.is(propertyChangedHandler.getCall(3).args[0], "position");
+  t.is(propertyChangedHandler.getCall(3).args[1], nodeB);
+  t.is(onChangeBSpy.callCount, 4);
+  t.is(onChangeBSpy.getCall(3).args[0], "position");
+});
+
+test("setPosition", t => {
+  const editor = new Editor();
+  editor.history.commandUpdatesEnabled = false;
+
+  const propertyChangedHandler = sinon.spy();
+  editor.addListener("propertyChanged", propertyChangedHandler);
+
+  const onChangeBSpy = sinon.spy();
+
+  const nodeA = new MockNode(editor);
+  nodeA.rotation.set(0, Math.PI, 0);
+  const nodeB = new MockNode(editor, { onChange: onChangeBSpy });
+
+  editor.addObject(nodeA);
+  editor.addObject(nodeB, nodeA);
+
+  const nodeBWorldPosition = new Vector3();
+
+  nodeB.getWorldPosition(nodeBWorldPosition);
+
+  t.true(floatEqual(nodeBWorldPosition.x, 0));
+  t.true(floatEqual(nodeBWorldPosition.y, 0));
+  t.true(floatEqual(nodeBWorldPosition.z, 0));
+
+  editor.setPosition(nodeB, new Vector3(1, 0, 0));
+
+  nodeB.getWorldPosition(nodeBWorldPosition);
+
+  t.true(floatEqual(nodeBWorldPosition.x, 1));
+  t.true(floatEqual(nodeBWorldPosition.y, 0));
+  t.true(floatEqual(nodeBWorldPosition.z, 0));
+  t.is(propertyChangedHandler.callCount, 1);
+  t.is(propertyChangedHandler.getCall(0).args[0], "position");
+  t.is(propertyChangedHandler.getCall(0).args[1], nodeB);
+  t.is(onChangeBSpy.callCount, 1);
+  t.is(onChangeBSpy.getCall(0).args[0], "position");
+
+  editor.history.undo();
+
+  nodeB.getWorldPosition(nodeBWorldPosition);
+
+  t.true(floatEqual(nodeBWorldPosition.x, 0));
+  t.true(floatEqual(nodeBWorldPosition.y, 0));
+  t.true(floatEqual(nodeBWorldPosition.z, 0));
+  t.is(propertyChangedHandler.callCount, 2);
+  t.is(propertyChangedHandler.getCall(1).args[0], "position");
+  t.is(propertyChangedHandler.getCall(1).args[1], nodeB);
+  t.is(onChangeBSpy.callCount, 2);
+  t.is(onChangeBSpy.getCall(1).args[0], "position");
+
+  editor.setPosition(nodeB, new Vector3(1, 0, 0), TransformSpace.Local);
+
+  nodeB.getWorldPosition(nodeBWorldPosition);
+
+  t.true(floatEqual(nodeBWorldPosition.x, -1));
+  t.true(floatEqual(nodeBWorldPosition.y, 0));
+  t.true(floatEqual(nodeBWorldPosition.z, 0));
+  t.is(propertyChangedHandler.callCount, 3);
+  t.is(propertyChangedHandler.getCall(2).args[0], "position");
+  t.is(propertyChangedHandler.getCall(2).args[1], nodeB);
+  t.is(onChangeBSpy.callCount, 3);
+  t.is(onChangeBSpy.getCall(2).args[0], "position");
+
+  editor.history.undo();
+
+  nodeB.getWorldPosition(nodeBWorldPosition);
+
+  t.true(floatEqual(nodeBWorldPosition.x, 0));
+  t.true(floatEqual(nodeBWorldPosition.y, 0));
+  t.true(floatEqual(nodeBWorldPosition.z, 0));
+  t.is(propertyChangedHandler.callCount, 4);
+  t.is(propertyChangedHandler.getCall(3).args[0], "position");
+  t.is(propertyChangedHandler.getCall(3).args[1], nodeB);
+  t.is(onChangeBSpy.callCount, 4);
+  t.is(onChangeBSpy.getCall(3).args[0], "position");
 });
