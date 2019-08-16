@@ -52,7 +52,6 @@ export default class Video extends Object3D {
     this.add(this._mesh);
     this._projection = "flat";
 
-    this._src = null;
     videoEl.setAttribute("playsinline", "");
     videoEl.setAttribute("webkit-playsinline", "");
     videoEl.crossOrigin = "anonymous";
@@ -113,7 +112,12 @@ export default class Video extends Object3D {
 
     if (oldAudio) {
       audio.gain.gain.value = oldAudio.getVolume();
-      oldAudio.disconnect();
+
+      if (this.audioSource) {
+        oldAudio.disconnect();
+      }
+
+      this.remove(oldAudio);
     }
 
     if (this.audioSource) {
@@ -279,6 +283,10 @@ export default class Video extends Object3D {
   }
 
   set projection(projection) {
+    if (projection === this._projection) {
+      return;
+    }
+
     const material = new MeshBasicMaterial();
 
     let geometry;
@@ -364,31 +372,15 @@ export default class Video extends Object3D {
     super.copy(source, false);
 
     if (recursive) {
-      this.remove(this.audio);
-      this.remove(this._mesh);
-
       for (let i = 0; i < source.children.length; i++) {
         const child = source.children[i];
-        if (child === source.audio) {
-          let audio = null;
-          if (source.audioType === AudioType.Stereo) {
-            audio = new Audio(this.audioListener);
-          } else {
-            audio = new PositionalAudio(this.audioListener);
-          }
-          this.audio = audio;
-          this.add(audio);
-        } else if (child === source._mesh) {
-          this._mesh = child.clone();
-          this.add(this._mesh);
-        } else {
+        if (child !== source.audio && child !== source._mesh) {
           this.add(child.clone());
         }
       }
     }
 
     this.projection = source.projection;
-    this.src = source.src;
     this.controls = source.controls;
     this.autoPlay = source.autoPlay;
     this.loop = source.loop;
@@ -401,6 +393,7 @@ export default class Video extends Object3D {
     this.coneInnerAngle = source.coneInnerAngle;
     this.coneOuterAngle = source.coneOuterAngle;
     this.coneOuterGain = source.coneOuterGain;
+    this.src = source.src;
 
     return this;
   }
