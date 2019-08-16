@@ -24,15 +24,18 @@ import ReparentMultipleCommand from "./commands/ReparentMultipleCommand";
 import DuplicateCommand from "./commands/DuplicateCommand";
 import DuplicateMultipleCommand from "./commands/DuplicateMultipleCommand";
 import TranslateCommand from "./commands/TranslateCommand";
+import TranslateMultipleCommand from "./commands/TranslateMultipleCommand";
 import { Matrix4, Vector3 } from "three";
 import SetPositionCommand from "./commands/SetPositionCommand";
+import SetPositionMultipleCommand from "./commands/SetPositionMultipleCommand";
 
-const tempMatrix = new Matrix4();
-const tempVector = new Vector3();
+const tempMatrix1 = new Matrix4();
+const tempVector1 = new Vector3();
 
 export const TransformSpace = {
   World: "World",
-  Local: "Local"
+  Local: "Local",
+  LocalSelection: "LocalSelection" // The local space of the last selected object
   // TODO: Viewport, Cursor?
 };
 
@@ -556,14 +559,14 @@ export default class Editor2 extends EventEmitter {
 
     if (newParent !== object.parent) {
       // Maintain world position when reparenting.
-      newParent.updateWorldMatrix(true, false);
+      newParent.updateMatrixWorld();
 
-      tempMatrix.getInverse(newParent.matrixWorld);
+      tempMatrix1.getInverse(newParent.matrixWorld);
 
-      object.parent.updateWorldMatrix(true, false);
-      tempMatrix.multiply(object.parent.matrixWorld);
+      object.parent.updateMatrixWorld();
+      tempMatrix1.multiply(object.parent.matrixWorld);
 
-      object.applyMatrix(tempMatrix);
+      object.applyMatrix(tempMatrix1);
 
       object.updateWorldMatrix(false, false);
     }
@@ -629,10 +632,28 @@ export default class Editor2 extends EventEmitter {
     if (space === TransformSpace.Local) {
       object.position.add(translation);
     } else {
-      // TransformSpace.World
-      tempVector.copy(translation);
-      object.worldToLocal(tempVector);
-      object.position.add(tempVector);
+      object.updateMatrixWorld(); // Update parent world matrices
+      tempVector1.setFromMatrixPosition(object.matrixWorld);
+      tempVector1.add(translation);
+
+      let spaceMatrix;
+
+      if (space === TransformSpace.World) {
+        spaceMatrix = tempMatrix1.getInverse(object.parent.matrixWorld);
+      } else if (space === TransformSpace.LocalSelection) {
+        if (this.selected.length > 0) {
+          const lastSelectedObject = this.selected[this.selected.length - 1];
+          lastSelectedObject.updateMatrixWorld();
+          spaceMatrix = tempMatrix1.getInverse(lastSelectedObject.parent.matrixWorld);
+        } else {
+          spaceMatrix = tempMatrix1.identity();
+        }
+      } else {
+        spaceMatrix = space;
+      }
+
+      tempVector1.applyMatrix4(spaceMatrix);
+      object.position.copy(tempVector1);
     }
 
     object.updateMatrixWorld(true);
@@ -640,13 +661,41 @@ export default class Editor2 extends EventEmitter {
     object.onChange("position");
 
     if (emitEvent) {
-      this.emit("propertyChanged", "position", object);
+      this.emit("objectsChanged", [object], "position");
     }
+
+    return object;
   }
 
-  // translateMultiple(objects, translation, space = TransformSpace.World, useHistory = true, emitEvent = true) {}
+  translateMultiple(objects, translation, space = TransformSpace.World, useHistory = true, emitEvent = true) {
+    if (useHistory) {
+      return this.history.execute(new TranslateMultipleCommand(this, objects, translation, space));
+    }
 
-  // translateSelected(translation, space = TransformSpace.World, useHistory = true, emitEvent = true) {}
+    if (space === TransformSpace.LocalSelection) {
+      if (this.selected.length > 0) {
+        const lastSelectedObject = this.selected[this.selected.length - 1];
+        lastSelectedObject.updateMatrixWorld();
+        space = tempMatrix1.getInverse(lastSelectedObject.parent.matrixWorld);
+      } else {
+        space = tempMatrix1.identity();
+      }
+    }
+
+    for (let i = 0; i < objects.length; i++) {
+      this.translate(objects[i], translation, space, false);
+    }
+
+    if (emitEvent) {
+      this.emit("objectsChanged", objects, "position");
+    }
+
+    return objects;
+  }
+
+  translateSelected(translation, space = TransformSpace.World, useHistory = true, emitEvent = true) {
+    return this.translateMultiple(this.selectedTransformRoots, translation, space, useHistory, emitEvent);
+  }
 
   // rotate(object, angle, axis, space = TransformSpace.World, useHistory = true, emitEvent = true) {}
 
@@ -668,10 +717,28 @@ export default class Editor2 extends EventEmitter {
     if (space === TransformSpace.Local) {
       object.position.copy(position);
     } else {
-      // TransformSpace.World
-      tempVector.copy(position);
-      object.worldToLocal(tempVector);
-      object.position.copy(tempVector);
+      object.updateMatrixWorld(); // Update parent world matrices
+
+      tempVector1.copy(position);
+
+      let spaceMatrix;
+
+      if (space === TransformSpace.World) {
+        spaceMatrix = tempMatrix1.getInverse(object.parent.matrixWorld);
+      } else if (space === TransformSpace.LocalSelection) {
+        if (this.selected.length > 0) {
+          const lastSelectedObject = this.selected[this.selected.length - 1];
+          lastSelectedObject.updateMatrixWorld();
+          spaceMatrix = tempMatrix1.getInverse(lastSelectedObject.parent.matrixWorld);
+        } else {
+          spaceMatrix = tempMatrix1.identity();
+        }
+      } else {
+        spaceMatrix = space;
+      }
+
+      tempVector1.applyMatrix4(spaceMatrix);
+      object.position.copy(tempVector1);
     }
 
     object.updateMatrixWorld(true);
@@ -679,13 +746,41 @@ export default class Editor2 extends EventEmitter {
     object.onChange("position");
 
     if (emitEvent) {
-      this.emit("propertyChanged", "position", object);
+      this.emit("objectsChanged", [object], "position");
     }
+
+    return object;
   }
 
-  // setPositionMultiple(objects, position, space = TransformSpace.World, useHistory = true, emitEvent = true) {}
+  setPositionMultiple(objects, position, space = TransformSpace.World, useHistory = true, emitEvent = true) {
+    if (useHistory) {
+      return this.history.execute(new SetPositionMultipleCommand(this, objects, position, space));
+    }
 
-  // setPositionSelected(position, space = TransformSpace.World, useHistory = true, emitEvent = true) {}
+    if (space === TransformSpace.LocalSelection) {
+      if (this.selected.length > 0) {
+        const lastSelectedObject = this.selected[this.selected.length - 1];
+        lastSelectedObject.updateMatrixWorld();
+        space = tempMatrix1.getInverse(lastSelectedObject.parent.matrixWorld);
+      } else {
+        space = tempMatrix1.identity();
+      }
+    }
+
+    for (let i = 0; i < objects.length; i++) {
+      this.setPosition(objects[i], position, space, false);
+    }
+
+    if (emitEvent) {
+      this.emit("objectsChanged", objects, "position");
+    }
+
+    return objects;
+  }
+
+  setPositionSelected(position, space = TransformSpace.World, useHistory = true, emitEvent = true) {
+    return this.setPositionMultiple(this.selectedTransformRoots, position, space, useHistory, emitEvent);
+  }
 
   // setRotation(object, rotation, space = TransformSpace.World, useHistory = true, emitEvent = true) {}
 
