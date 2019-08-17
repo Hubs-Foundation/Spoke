@@ -20,7 +20,7 @@ export default class SetPositionMultipleCommand extends Command {
   }
 
   update(command) {
-    this.editor.setPosition(this.objects, command.position, this.space, false);
+    this.editor.setPositionMultiple(this.objects, command.position, this.space, false);
   }
 
   undo() {

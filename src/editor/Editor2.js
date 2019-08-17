@@ -1,35 +1,52 @@
 import EventEmitter from "eventemitter3";
-import SelectCommand from "./commands/SelectCommand";
-import SelectMultipleCommand from "./commands/SelectMultipleCommand";
-import SelectAllCommand from "./commands/SelectAllCommand";
+import { Matrix4, Vector3, Quaternion } from "three";
+import History from "./History";
+import Renderer from "./renderer/Renderer";
+import SceneNode from "./nodes/SceneNode";
+import GLTFCache from "./caches/GLTFCache";
+import LoadingCube from "./objects/LoadingCube";
+import TextureCache from "./caches/TextureCache";
+import getDetachedObjectsRoots from "./utils/getDetachedObjectsRoots";
+import { loadEnvironmentMap } from "./utils/EnvironmentMap";
+import makeUniqueName from "./utils/makeUniqueName";
+
+import AddMultipleObjectsCommand from "./commands/AddMultipleObjectsCommand";
+import AddObjectCommand from "./commands/AddObjectCommand";
+import DeselectAllCommand from "./commands/DeselectAllCommand";
 import DeselectCommand from "./commands/DeselectCommand";
 import DeselectMultipleCommand from "./commands/DeselectMultipleCommand";
-import DeselectAllCommand from "./commands/DeselectAllCommand";
-import AddObjectCommand from "./commands/AddObjectCommand";
-import AddMultipleObjectsCommand from "./commands/AddMultipleObjectsCommand";
-import SceneNode from "./nodes/SceneNode";
-import SetSelectionCommand from "./commands/SetSelectionCommand";
-import History from "./History";
-import RemoveObjectCommand from "./commands/RemoveObjectCommand";
-import RemoveMultipleObjectsCommand from "./commands/RemoveMultipleObjectsCommand";
-import makeUniqueName from "./utils/makeUniqueName";
-import Renderer from "./renderer/Renderer";
-import LoadingCube from "./objects/LoadingCube";
-import { loadEnvironmentMap } from "./utils/EnvironmentMap";
-import TextureCache from "./caches/TextureCache";
-import GLTFCache from "./caches/GLTFCache";
-import getDetachedObjectsRoots from "./utils/getDetachedObjectsRoots";
-import ReparentCommand from "./commands/ReparentCommand";
-import ReparentMultipleCommand from "./commands/ReparentMultipleCommand";
 import DuplicateCommand from "./commands/DuplicateCommand";
 import DuplicateMultipleCommand from "./commands/DuplicateMultipleCommand";
-import TranslateCommand from "./commands/TranslateCommand";
-import TranslateMultipleCommand from "./commands/TranslateMultipleCommand";
-import { Matrix4, Vector3 } from "three";
+import RemoveMultipleObjectsCommand from "./commands/RemoveMultipleObjectsCommand";
+import RemoveObjectCommand from "./commands/RemoveObjectCommand";
+import ReparentCommand from "./commands/ReparentCommand";
+import ReparentMultipleCommand from "./commands/ReparentMultipleCommand";
+import RotateAroundCommand from "./commands/RotateAroundCommand";
+import RotateAroundMultipleCommand from "./commands/RotateAroundMultipleCommand";
+import RotateOnAxisCommand from "./commands/RotateOnAxisCommand";
+import RotateOnAxisMultipleCommand from "./commands/RotateOnAxisMultipleCommand";
+import ScaleCommand from "./commands/ScaleCommand";
+import ScaleMultipleCommand from "./commands/ScaleMultipleCommand";
+import SelectAllCommand from "./commands/SelectAllCommand";
+import SelectCommand from "./commands/SelectCommand";
+import SelectMultipleCommand from "./commands/SelectMultipleCommand";
 import SetPositionCommand from "./commands/SetPositionCommand";
 import SetPositionMultipleCommand from "./commands/SetPositionMultipleCommand";
+import SetPropertiesCommand from "./commands/SetPropertiesCommand";
+import SetPropertiesMultipleCommand from "./commands/SetPropertiesMultipleCommand";
+import SetPropertyCommand from "./commands/SetPropertyCommand";
+import SetPropertyMultipleCommand from "./commands/SetPropertyMultipleCommand";
+import SetRotationCommand from "./commands/SetRotationCommand";
+import SetRotationMultipleCommand from "./commands/SetRotationMultipleCommand";
+import SetScaleCommand from "./commands/SetScaleCommand";
+import SetScaleMultipleCommand from "./commands/SetScaleMultipleCommand";
+import SetSelectionCommand from "./commands/SetSelectionCommand";
+import TranslateCommand from "./commands/TranslateCommand";
+import TranslateMultipleCommand from "./commands/TranslateMultipleCommand";
 
 const tempMatrix1 = new Matrix4();
+const tempQuaternion1 = new Quaternion();
+const tempQuaternion2 = new Quaternion();
 const tempVector1 = new Vector3();
 
 export const TransformSpace = {
@@ -624,91 +641,6 @@ export default class Editor2 extends EventEmitter {
     return this.reparentMultiple(this.selected, newParent, newBefore, useHistory, emitEvent, selectObjects);
   }
 
-  translate(object, translation, space = TransformSpace.World, useHistory = true, emitEvent = true) {
-    if (useHistory) {
-      return this.history.execute(new TranslateCommand(this, object, translation, space));
-    }
-
-    if (space === TransformSpace.Local) {
-      object.position.add(translation);
-    } else {
-      object.updateMatrixWorld(); // Update parent world matrices
-      tempVector1.setFromMatrixPosition(object.matrixWorld);
-      tempVector1.add(translation);
-
-      let spaceMatrix;
-
-      if (space === TransformSpace.World) {
-        spaceMatrix = tempMatrix1.getInverse(object.parent.matrixWorld);
-      } else if (space === TransformSpace.LocalSelection) {
-        if (this.selected.length > 0) {
-          const lastSelectedObject = this.selected[this.selected.length - 1];
-          lastSelectedObject.updateMatrixWorld();
-          spaceMatrix = tempMatrix1.getInverse(lastSelectedObject.parent.matrixWorld);
-        } else {
-          spaceMatrix = tempMatrix1.identity();
-        }
-      } else {
-        spaceMatrix = space;
-      }
-
-      tempVector1.applyMatrix4(spaceMatrix);
-      object.position.copy(tempVector1);
-    }
-
-    object.updateMatrixWorld(true);
-
-    object.onChange("position");
-
-    if (emitEvent) {
-      this.emit("objectsChanged", [object], "position");
-    }
-
-    return object;
-  }
-
-  translateMultiple(objects, translation, space = TransformSpace.World, useHistory = true, emitEvent = true) {
-    if (useHistory) {
-      return this.history.execute(new TranslateMultipleCommand(this, objects, translation, space));
-    }
-
-    if (space === TransformSpace.LocalSelection) {
-      if (this.selected.length > 0) {
-        const lastSelectedObject = this.selected[this.selected.length - 1];
-        lastSelectedObject.updateMatrixWorld();
-        space = tempMatrix1.getInverse(lastSelectedObject.parent.matrixWorld);
-      } else {
-        space = tempMatrix1.identity();
-      }
-    }
-
-    for (let i = 0; i < objects.length; i++) {
-      this.translate(objects[i], translation, space, false);
-    }
-
-    if (emitEvent) {
-      this.emit("objectsChanged", objects, "position");
-    }
-
-    return objects;
-  }
-
-  translateSelected(translation, space = TransformSpace.World, useHistory = true, emitEvent = true) {
-    return this.translateMultiple(this.selectedTransformRoots, translation, space, useHistory, emitEvent);
-  }
-
-  // rotate(object, angle, axis, space = TransformSpace.World, useHistory = true, emitEvent = true) {}
-
-  // rotateMultiple(objects, angle, axis, space = TransformSpace.World, useHistory = true, emitEvent = true) {}
-
-  // rotateSelected(angle, axis, space = TransformSpace.World, useHistory = true, emitEvent = true) {}
-
-  // scale(object, scale, space = TransformSpace.World, useHistory = true, emitEvent = true) {}
-
-  // scaleMultiple(objects, scale, space = TransformSpace.World, useHistory = true, emitEvent = true) {}
-
-  // scaleSelected(scale, space = TransformSpace.World, useHistory = true, emitEvent = true) {}
-
   setPosition(object, position, space = TransformSpace.World, useHistory = true, emitEvent = true) {
     if (useHistory) {
       return this.history.execute(new SetPositionCommand(this, object, position, space));
@@ -724,12 +656,12 @@ export default class Editor2 extends EventEmitter {
       let spaceMatrix;
 
       if (space === TransformSpace.World) {
-        spaceMatrix = tempMatrix1.getInverse(object.parent.matrixWorld);
+        spaceMatrix = object.parent.matrixWorld;
       } else if (space === TransformSpace.LocalSelection) {
         if (this.selected.length > 0) {
           const lastSelectedObject = this.selected[this.selected.length - 1];
           lastSelectedObject.updateMatrixWorld();
-          spaceMatrix = tempMatrix1.getInverse(lastSelectedObject.parent.matrixWorld);
+          spaceMatrix = lastSelectedObject.parent.matrixWorld;
         } else {
           spaceMatrix = tempMatrix1.identity();
         }
@@ -737,7 +669,8 @@ export default class Editor2 extends EventEmitter {
         spaceMatrix = space;
       }
 
-      tempVector1.applyMatrix4(spaceMatrix);
+      tempMatrix1.getInverse(spaceMatrix);
+      tempVector1.applyMatrix4(tempMatrix1);
       object.position.copy(tempVector1);
     }
 
@@ -761,14 +694,14 @@ export default class Editor2 extends EventEmitter {
       if (this.selected.length > 0) {
         const lastSelectedObject = this.selected[this.selected.length - 1];
         lastSelectedObject.updateMatrixWorld();
-        space = tempMatrix1.getInverse(lastSelectedObject.parent.matrixWorld);
+        space = lastSelectedObject.parent.matrixWorld;
       } else {
         space = tempMatrix1.identity();
       }
     }
 
     for (let i = 0; i < objects.length; i++) {
-      this.setPosition(objects[i], position, space, false);
+      this.setPosition(objects[i], position, space, false, false);
     }
 
     if (emitEvent) {
@@ -782,29 +715,487 @@ export default class Editor2 extends EventEmitter {
     return this.setPositionMultiple(this.selectedTransformRoots, position, space, useHistory, emitEvent);
   }
 
-  // setRotation(object, rotation, space = TransformSpace.World, useHistory = true, emitEvent = true) {}
+  translate(object, translation, space = TransformSpace.World, useHistory = true, emitEvent = true) {
+    if (useHistory) {
+      return this.history.execute(new TranslateCommand(this, object, translation, space));
+    }
 
-  // setRotationMultiple(objects, rotation, space = TransformSpace.World, useHistory = true, emitEvent = true) {}
+    if (space === TransformSpace.Local) {
+      object.position.add(translation);
+    } else {
+      object.updateMatrixWorld(); // Update parent world matrices
+      tempVector1.setFromMatrixPosition(object.matrixWorld);
+      tempVector1.add(translation);
 
-  // setRotationSelected(rotation, space = TransformSpace.World, useHistory = true, emitEvent = true) {}
+      let spaceMatrix;
 
-  // setScale(object, scale, space = TransformSpace.World, useHistory = true, emitEvent = true) {}
+      if (space === TransformSpace.World) {
+        spaceMatrix = object.parent.matrixWorld;
+      } else if (space === TransformSpace.LocalSelection) {
+        if (this.selected.length > 0) {
+          const lastSelectedObject = this.selected[this.selected.length - 1];
+          lastSelectedObject.updateMatrixWorld();
+          spaceMatrix = lastSelectedObject.parent.matrixWorld;
+        } else {
+          spaceMatrix = tempMatrix1.identity();
+        }
+      } else {
+        spaceMatrix = space;
+      }
 
-  // setScaleMultiple(objects, scale, space = TransformSpace.World, useHistory = true, emitEvent = true) {}
+      tempMatrix1.getInverse(spaceMatrix);
+      tempVector1.applyMatrix4(tempMatrix1);
+      object.position.copy(tempVector1);
+    }
 
-  // setScaleSelected(scale, space = TransformSpace.World, useHistory = true, emitEvent = true) {}
+    object.updateMatrixWorld(true);
 
-  // setNodeProperty(object, propertyName, value, oldValue, useHistory = true, emitEvent = true) {}
+    object.onChange("position");
 
-  // setObjectPropertyMultiple(objects, propertyName, value, oldValue, useHistory = true, emitEvent = true) {}
+    if (emitEvent) {
+      this.emit("objectsChanged", [object], "position");
+    }
 
-  // setObjectPropertySelected(propertyName, value, oldValue, useHistory = true, emitEvent = true) {}
+    return object;
+  }
 
-  // setObjectProperties(object, properties, oldValue, useHistory = true, emitEvent = true) {}
+  translateMultiple(objects, translation, space = TransformSpace.World, useHistory = true, emitEvent = true) {
+    if (useHistory) {
+      return this.history.execute(new TranslateMultipleCommand(this, objects, translation, space));
+    }
 
-  // setObjectPropertiesMultiple(objects, properties, oldValues, useHistory = true, emitEvent = true) {}
+    if (space === TransformSpace.LocalSelection) {
+      if (this.selected.length > 0) {
+        const lastSelectedObject = this.selected[this.selected.length - 1];
+        lastSelectedObject.updateMatrixWorld();
+        space = lastSelectedObject.parent.matrixWorld;
+      } else {
+        space = tempMatrix1.identity();
+      }
+    }
 
-  // setObjectPropertiesSelected(properties, oldValues, useHistory = true, emitEvent = true) {}
+    for (let i = 0; i < objects.length; i++) {
+      this.translate(objects[i], translation, space, false, false);
+    }
+
+    if (emitEvent) {
+      this.emit("objectsChanged", objects, "position");
+    }
+
+    return objects;
+  }
+
+  translateSelected(translation, space = TransformSpace.World, useHistory = true, emitEvent = true) {
+    return this.translateMultiple(this.selectedTransformRoots, translation, space, useHistory, emitEvent);
+  }
+
+  setRotation(object, rotation, space = TransformSpace.World, useHistory = true, emitEvent = true) {
+    if (useHistory) {
+      return this.history.execute(new SetRotationCommand(this, object, rotation, space));
+    }
+
+    if (space === TransformSpace.Local) {
+      object.rotation.copy(rotation);
+    } else {
+      object.updateMatrixWorld(); // Update parent world matrices
+
+      let spaceMatrix;
+
+      if (space === TransformSpace.World) {
+        spaceMatrix = object.parent.matrixWorld;
+      } else if (space === TransformSpace.LocalSelection) {
+        if (this.selected.length > 0) {
+          const lastSelectedObject = this.selected[this.selected.length - 1];
+          lastSelectedObject.updateMatrixWorld();
+          spaceMatrix = lastSelectedObject.parent.matrixWorld;
+        } else {
+          spaceMatrix = tempMatrix1.identity();
+        }
+      } else {
+        spaceMatrix = space;
+      }
+
+      const newWorldQuaternion = tempQuaternion1.setFromEuler(rotation);
+      const inverseParentWorldQuaternion = tempQuaternion2.setFromRotationMatrix(spaceMatrix).inverse();
+      const newLocalQuaternion = inverseParentWorldQuaternion.multiply(newWorldQuaternion);
+      object.quaternion.copy(newLocalQuaternion);
+    }
+
+    object.updateMatrixWorld(true);
+
+    object.onChange("rotation");
+
+    if (emitEvent) {
+      this.emit("objectsChanged", [object], "rotation");
+    }
+
+    return object;
+  }
+
+  setRotationMultiple(objects, rotation, space = TransformSpace.World, useHistory = true, emitEvent = true) {
+    if (useHistory) {
+      return this.history.execute(new SetRotationMultipleCommand(this, objects, rotation, space));
+    }
+
+    if (space === TransformSpace.LocalSelection) {
+      if (this.selected.length > 0) {
+        const lastSelectedObject = this.selected[this.selected.length - 1];
+        lastSelectedObject.updateMatrixWorld();
+        space = lastSelectedObject.parent.matrixWorld;
+      } else {
+        space = tempMatrix1.identity();
+      }
+    }
+
+    for (let i = 0; i < objects.length; i++) {
+      this.setRotation(objects[i], rotation, space, false, false);
+    }
+
+    if (emitEvent) {
+      this.emit("objectsChanged", objects, "rotation");
+    }
+
+    return objects;
+  }
+
+  setRotationSelected(rotation, space = TransformSpace.World, useHistory = true, emitEvent = true) {
+    return this.setRotationMultiple(this.selectedTransformRoots, rotation, space, useHistory, emitEvent);
+  }
+
+  rotateOnAxis(object, axis, angle, space = TransformSpace.World, useHistory = true, emitEvent = true) {
+    if (useHistory) {
+      return this.history.execute(new RotateOnAxisCommand(this, object, axis, angle, space));
+    }
+
+    if (space === TransformSpace.Local) {
+      object.rotateOnAxis(axis, angle);
+    } else if (space === TransformSpace.World) {
+      object.rotateOnWorldAxis(axis, angle);
+    } else {
+      object.updateMatrixWorld(); // Update parent world matrices
+
+      let spaceMatrix;
+
+      if (space === TransformSpace.LocalSelection) {
+        if (this.selected.length > 0) {
+          const lastSelectedObject = this.selected[this.selected.length - 1];
+          lastSelectedObject.updateMatrixWorld();
+          space = lastSelectedObject.parent.matrixWorld;
+        } else {
+          space = tempMatrix1.identity();
+        }
+      } else {
+        spaceMatrix = space;
+      }
+
+      tempMatrix1.getInverse(spaceMatrix);
+      tempVector1.copy(axis).applyMatrix4(tempMatrix1);
+
+      object.rotateOnAxis(tempVector1, angle);
+    }
+
+    object.updateMatrixWorld(true);
+
+    object.onChange("position");
+
+    if (emitEvent) {
+      this.emit("objectsChanged", [object], "position");
+    }
+
+    return object;
+  }
+
+  rotateOnAxisMultiple(objects, axis, angle, space = TransformSpace.World, useHistory = true, emitEvent = true) {
+    if (useHistory) {
+      return this.history.execute(new RotateOnAxisMultipleCommand(this, objects, axis, angle, space));
+    }
+
+    if (space === TransformSpace.LocalSelection) {
+      if (this.selected.length > 0) {
+        const lastSelectedObject = this.selected[this.selected.length - 1];
+        lastSelectedObject.updateMatrixWorld();
+        space = lastSelectedObject.parent.matrixWorld;
+      } else {
+        space = tempMatrix1.identity();
+      }
+    }
+
+    for (let i = 0; i < objects.length; i++) {
+      this.rotateOnAxis(objects[i], axis, angle, space, false, false);
+    }
+
+    if (emitEvent) {
+      this.emit("objectsChanged", objects, "rotation");
+    }
+
+    return objects;
+  }
+
+  rotateOnAxisSelected(axis, angle, space = TransformSpace.World, useHistory = true, emitEvent = true) {
+    return this.rotateOnAxisMultiple(this.selectedTransformRoots, axis, angle, space, useHistory, emitEvent);
+  }
+
+  rotateAround(object, pivot, axis, angle, useHistory = true, emitEvent = true) {
+    if (useHistory) {
+      return this.history.execute(new RotateAroundCommand(this, object, pivot, axis, angle));
+    }
+
+    // TODO
+
+    if (emitEvent) {
+      this.emit("objectsChanged", [object], "rotation");
+    }
+
+    return object;
+  }
+
+  rotateAroundMultiple(objects, pivot, axis, angle, useHistory = true, emitEvent = true) {
+    if (useHistory) {
+      return this.history.execute(new RotateAroundMultipleCommand(this, objects, pivot, axis, angle));
+    }
+
+    for (let i = 0; i < objects.length; i++) {
+      this.rotateAround(objects[i], pivot, axis, angle, false, false);
+    }
+
+    if (emitEvent) {
+      this.emit("objectsChanged", objects, "rotation");
+    }
+
+    return objects;
+  }
+
+  rotateAroundSelected(objects, pivot, axis, angle, useHistory = true, emitEvent = true) {
+    return this.rotateAroundMultiple(this.selectedTransformRoots, pivot, axis, angle, useHistory, emitEvent);
+  }
+
+  scale(object, scale, space = TransformSpace.World, useHistory = true, emitEvent = true) {
+    if (useHistory) {
+      return this.history.execute(new ScaleCommand(this, object, scale, space));
+    }
+
+    if (space === TransformSpace.Local) {
+      object.scale.add(scale);
+    } else {
+      object.updateMatrixWorld(); // Update parent world matrices
+      tempVector1.setFromMatrixScale(object.matrixWorld);
+      tempVector1.add(scale);
+
+      let spaceMatrix;
+
+      if (space === TransformSpace.World) {
+        spaceMatrix = object.parent.matrixWorld;
+      } else if (space === TransformSpace.LocalSelection) {
+        if (this.selected.length > 0) {
+          const lastSelectedObject = this.selected[this.selected.length - 1];
+          lastSelectedObject.updateMatrixWorld();
+          spaceMatrix = lastSelectedObject.parent.matrixWorld;
+        } else {
+          spaceMatrix = tempMatrix1.identity();
+        }
+      } else {
+        spaceMatrix = space;
+      }
+
+      tempMatrix1.getInverse(spaceMatrix);
+      tempVector1.applyMatrix4(tempMatrix1);
+      object.position.copy(tempVector1);
+    }
+
+    object.updateMatrixWorld(true);
+
+    object.onChange("position");
+
+    if (emitEvent) {
+      this.emit("objectsChanged", [object], "position");
+    }
+
+    return object;
+  }
+
+  scaleMultiple(objects, scale, space = TransformSpace.World, useHistory = true, emitEvent = true) {
+    if (useHistory) {
+      return this.history.execute(new ScaleMultipleCommand(this, objects, scale, space));
+    }
+
+    if (space === TransformSpace.LocalSelection) {
+      if (this.selected.length > 0) {
+        const lastSelectedObject = this.selected[this.selected.length - 1];
+        lastSelectedObject.updateMatrixWorld();
+        space = lastSelectedObject.parent.matrixWorld;
+      } else {
+        space = tempMatrix1.identity();
+      }
+    }
+
+    for (let i = 0; i < objects.length; i++) {
+      this.scale(objects[i], scale, space, false, false);
+    }
+
+    if (emitEvent) {
+      this.emit("objectsChanged", objects, "scale");
+    }
+
+    return objects;
+  }
+
+  scaleSelected(scale, space = TransformSpace.World, useHistory = true, emitEvent = true) {
+    return this.scaleMultiple(this.selectedTransformRoots, scale, space, useHistory, emitEvent);
+  }
+
+  setScale(object, scale, space = TransformSpace.World, useHistory = true, emitEvent = true) {
+    if (useHistory) {
+      return this.history.execute(new SetScaleCommand(this, object, scale, space));
+    }
+
+    if (space === TransformSpace.Local) {
+      object.scale.copy(scale);
+    } else {
+      object.updateMatrixWorld(); // Update parent world matrices
+
+      tempVector1.copy(scale);
+
+      let spaceMatrix;
+
+      if (space === TransformSpace.World) {
+        spaceMatrix = object.parent.matrixWorld;
+      } else if (space === TransformSpace.LocalSelection) {
+        if (this.selected.length > 0) {
+          const lastSelectedObject = this.selected[this.selected.length - 1];
+          lastSelectedObject.updateMatrixWorld();
+          spaceMatrix = lastSelectedObject.parent.matrixWorld;
+        } else {
+          spaceMatrix = tempMatrix1.identity();
+        }
+      } else {
+        spaceMatrix = space;
+      }
+
+      tempMatrix1.getInverse(spaceMatrix);
+      tempVector1.applyMatrix4(tempMatrix1);
+      object.scale.copy(tempVector1);
+    }
+
+    object.updateMatrixWorld(true);
+
+    object.onChange("scale");
+
+    if (emitEvent) {
+      this.emit("objectsChanged", [object], "scale");
+    }
+
+    return object;
+  }
+
+  setScaleMultiple(objects, scale, space = TransformSpace.World, useHistory = true, emitEvent = true) {
+    if (useHistory) {
+      return this.history.execute(new SetScaleMultipleCommand(this, objects, scale, space));
+    }
+
+    if (space === TransformSpace.LocalSelection) {
+      if (this.selected.length > 0) {
+        const lastSelectedObject = this.selected[this.selected.length - 1];
+        lastSelectedObject.updateMatrixWorld();
+        space = lastSelectedObject.parent.matrixWorld;
+      } else {
+        space = tempMatrix1.identity();
+      }
+    }
+
+    for (let i = 0; i < objects.length; i++) {
+      this.setScale(objects[i], scale, space, false, false);
+    }
+
+    if (emitEvent) {
+      this.emit("objectsChanged", objects, "scale");
+    }
+
+    return objects;
+  }
+
+  setScaleSelected(scale, space = TransformSpace.World, useHistory = true, emitEvent = true) {
+    return this.setScaleMultiple(this.selectedTransformRoots, scale, space, useHistory, emitEvent);
+  }
+
+  setProperty(object, propertyName, value, useHistory = true, emitEvent = true) {
+    if (useHistory) {
+      return this.history.execute(new SetPropertyCommand(this, object, propertyName, value));
+    }
+
+    if (value && value.copy) {
+      object[propertyName].copy(value);
+    } else {
+      object[propertyName] = value;
+    }
+
+    if (emitEvent) {
+      this.emit("objectsChanged", [object], propertyName);
+    }
+
+    return object;
+  }
+
+  setPropertyMultiple(objects, propertyName, value, useHistory = true, emitEvent = true) {
+    if (useHistory) {
+      return this.history.execute(new SetPropertyMultipleCommand(this, objects, propertyName, value));
+    }
+
+    for (let i = 0; i < objects.length; i++) {
+      this.setProperty(objects[i], propertyName, value, false, false);
+    }
+
+    if (emitEvent) {
+      this.emit("objectsChanged", objects, "rotation");
+    }
+
+    return objects;
+  }
+
+  setPropertySelected(propertyName, value, useHistory = true, emitEvent = true) {
+    return this.setPropertyMultiple(this.selectedTransformRoots, propertyName, value, useHistory, emitEvent);
+  }
+
+  setProperties(object, properties, useHistory = true, emitEvent = true) {
+    if (useHistory) {
+      return this.history.execute(new SetPropertiesCommand(this, object, properties));
+    }
+
+    for (const propertyName in properties) {
+      const value = properties[propertyName];
+
+      if (value && value.copy) {
+        object[propertyName].copy(value);
+      } else {
+        object[propertyName] = value;
+      }
+    }
+
+    if (emitEvent) {
+      this.emit("objectsChanged", [object]);
+    }
+
+    return object;
+  }
+
+  setPropertiesMultiple(objects, properties, useHistory = true, emitEvent = true) {
+    if (useHistory) {
+      return this.history.execute(new SetPropertiesMultipleCommand(this, objects, properties));
+    }
+
+    for (let i = 0; i < objects.length; i++) {
+      this.setProperties(objects[i], properties, false, false);
+    }
+
+    if (emitEvent) {
+      this.emit("objectsChanged", objects);
+    }
+
+    return objects;
+  }
+
+  setPropertiesSelected(properties, useHistory = true, emitEvent = true) {
+    return this.setPropertyMultiple(this.selectedTransformRoots, properties, useHistory, emitEvent);
+  }
 
   getTransformRoots(objects, target = []) {
     // Recursively find the transformable nodes in the tree with the lowest depth

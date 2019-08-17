@@ -3,7 +3,6 @@ import Command from "./Command";
 export default class SetPropertyCommand extends Command {
   constructor(editor, object, propertyName, value) {
     super(editor);
-    this.updatable = true;
 
     this.object = object;
     this.propertyName = propertyName;
@@ -25,6 +24,10 @@ export default class SetPropertyCommand extends Command {
 
   execute() {
     this.editor.setProperty(this.object, this.propertyName, this.newValue, false);
+  }
+
+  shouldUpdate(newCommand) {
+    return this.object === newCommand.object && this.propertyName === newCommand.propertyName;
   }
 
   update(command) {

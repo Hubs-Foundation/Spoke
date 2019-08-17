@@ -1,7 +1,7 @@
 import Command from "./Command";
 import { TransformSpace } from "../Editor2";
 
-export default class SetScaleCommand extends Command {
+export default class ScaleCommand extends Command {
   constructor(editor, object, scale, space) {
     super(editor);
     this.object = object;
@@ -11,7 +11,7 @@ export default class SetScaleCommand extends Command {
   }
 
   execute() {
-    this.editor.setScale(this.object, this.scale, this.space, false);
+    this.editor.scale(this.object, this.scale, this.space, false);
   }
 
   shouldUpdate(newCommand) {
@@ -19,7 +19,7 @@ export default class SetScaleCommand extends Command {
   }
 
   update(command) {
-    this.editor.setScale(this.object, command.scale, this.space, false);
+    this.editor.scale(this.object, command.scale, this.space, false);
   }
 
   undo() {
