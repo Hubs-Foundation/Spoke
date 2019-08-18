@@ -24,10 +24,10 @@ export default class TransformPropertyGroup extends Component {
   }
 
   componentWillUnmount() {
-    this.props.editor.removeEditor("objectsChanged", this.onObjectsChanged);
+    this.props.editor.removeListener("objectsChanged", this.onObjectsChanged);
   }
 
-  onPropertyChanged = (objects, property) => {
+  onObjectsChanged = (objects, property) => {
     if (
       objects[0] === this.props.node &&
       (property === "position" || property === "rotation" || property === "scale")

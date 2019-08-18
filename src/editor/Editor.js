@@ -186,6 +186,8 @@ export default class Editor extends EventEmitter {
   async loadProject(json, onProgress) {
     this.clearCaches();
 
+    this.removeObject(this.scene);
+
     const scene = await SceneNode.loadProject(this, json, onProgress);
 
     this.sceneLoaded = true;
@@ -199,11 +201,13 @@ export default class Editor extends EventEmitter {
     this.scene.add(this.grid);
 
     this.history.clear();
-    this.deselect();
+    this.deselectAll();
 
     this.spokeControls.center.set(0, 0, 0);
     this.spokeControls.onSceneSet(scene);
     scene.background = new Color(0xaaaaaa);
+
+    this.addObject(this.scene);
 
     this.renderer.onSceneSet();
 
@@ -214,6 +218,8 @@ export default class Editor extends EventEmitter {
         node.onRendererChanged();
       }
     });
+
+    this.emit("sceneGraphChanged");
 
     return scene;
   }
@@ -630,7 +636,7 @@ export default class Editor extends EventEmitter {
       return this.history.execute(new DeselectAllCommand(this));
     }
 
-    const objects = this.nodes;
+    const objects = this.selected;
 
     for (let i = 0; i < objects.length; i++) {
       this.deselect(objects[i], false, false, false);
@@ -728,7 +734,7 @@ export default class Editor extends EventEmitter {
       } else {
         parent.add(object);
       }
-    } else {
+    } else if (object !== this.scene) {
       this.scene.add(object);
     }
 
@@ -1564,7 +1570,7 @@ export default class Editor extends EventEmitter {
   getTransformRoots(objects, target = []) {
     // Recursively find the transformable nodes in the tree with the lowest depth
     const traverse = curObject => {
-      if (!curObject.disableTransform && objects.indexOf(curObject) !== -1) {
+      if (objects.indexOf(curObject) !== -1) {
         target.push(curObject);
         return;
       }

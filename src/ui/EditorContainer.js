@@ -273,38 +273,7 @@ export default class EditorContainer extends Component {
 
   onEditorInitialized = () => {
     const editor = this.state.editor;
-    this.loadProject(this.props.project);
-    window.addEventListener("resize", this.onResize);
-    this.onResize();
-    editor.addListener("sceneModified", this.onSceneModified);
-    editor.addListener("saveProject", this.onSaveProject);
-  };
 
-  componentDidUpdate(prevProps) {
-    if (this.props.project !== prevProps.project) {
-      const editor = this.state.editor;
-
-      if (editor.initialized) {
-        this.loadProject(this.props.project);
-      }
-    }
-  }
-
-  componentWillUnmount() {
-    window.removeEventListener("resize", this.onResize);
-
-    const editor = this.state.editor;
-    editor.removeListener("sceneModified", this.onSceneModified);
-    editor.removeListener("saveProject", this.onSaveProject);
-    editor.removeListener("initialized", this.onEditorInitialized);
-    editor.removeListener("error", this.onEditorError);
-  }
-
-  onResize = () => {
-    this.state.editor.onResize();
-  };
-
-  onEditorInitialized = () => {
     const gl = this.state.editor.renderer.renderer.context;
 
     const debugInfo = gl.getExtension("WEBGL_debug_renderer_info");
@@ -321,6 +290,36 @@ export default class EditorContainer extends Component {
       scope.setTag("webgl-vendor", webglVendor);
       scope.setTag("webgl-renderer", webglRenderer);
     });
+
+    this.loadProject(this.props.project).catch(console.error);
+    window.addEventListener("resize", this.onResize);
+    this.onResize();
+    editor.addListener("sceneModified", this.onSceneModified);
+    editor.addListener("saveProject", this.onSaveProject);
+  };
+
+  componentDidUpdate(prevProps) {
+    if (this.props.project !== prevProps.project) {
+      const editor = this.state.editor;
+
+      if (editor.initialized) {
+        this.loadProject(this.props.project).catch(console.error);
+      }
+    }
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener("resize", this.onResize);
+
+    const editor = this.state.editor;
+    editor.removeListener("sceneModified", this.onSceneModified);
+    editor.removeListener("saveProject", this.onSaveProject);
+    editor.removeListener("initialized", this.onEditorInitialized);
+    editor.removeListener("error", this.onEditorError);
+  }
+
+  onResize = () => {
+    this.state.editor.onResize();
   };
 
   /**
@@ -665,7 +664,7 @@ export default class EditorContainer extends Component {
                 className="mosaic-theme"
                 renderTile={this.renderPanel}
                 initialValue={this.state.initialPanels}
-                onChange={this.onPanelChange}
+                onChange={this.onResize}
               />
               <Modal
                 ariaHideApp={false}

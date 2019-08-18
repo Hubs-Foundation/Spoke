@@ -129,7 +129,7 @@ export default class SpokeControls extends EventEmitter {
 
     if (editorSelection !== transformControls.object) {
       if (
-        editorSelection !== null &&
+        editorSelection &&
         editorSelection !== this.editor.scene &&
         editorSelection !== this.camera &&
         !(editorSelection.constructor && editorSelection.constructor.disableTransform)
@@ -172,7 +172,7 @@ export default class SpokeControls extends EventEmitter {
       const result = this.raycastNode(input.get(Spoke.focusPosition));
 
       if (result) {
-        this.focus(result.node);
+        this.focus([result.node]);
       }
     } else if (input.get(Spoke.panning)) {
       const camera = this.camera;
@@ -252,9 +252,9 @@ export default class SpokeControls extends EventEmitter {
     } else if (input.get(Spoke.redo)) {
       this.editor.redo();
     } else if (input.get(Spoke.duplicateSelected)) {
-      this.editor.removeSelectedObjects();
+      this.editor.duplicateSelectedObjects();
     } else if (input.get(Spoke.deleteSelected)) {
-      this.editor.removeObject();
+      this.editor.removeSelectedObjects();
     } else if (input.get(Spoke.saveProject)) {
       // TODO: Move save to Project class
       this.editor.emit("saveProject");

@@ -5,7 +5,7 @@ export default class RemoveObjectCommand extends Command {
     super(editor);
     this.object = object;
     this.parent = object.parent;
-    if (this.parent !== undefined) {
+    if (this.parent) {
       const index = this.parent.children.indexOf(this.object);
 
       if (this.parent.children.length > index + 1) {
