@@ -13,42 +13,42 @@ class PropertiesPanelContainer extends Component {
     super(props);
 
     this.state = {
-      node: null
+      selected: props.editor.selected
     };
   }
 
   componentDidMount() {
-    this.props.editor.signals.objectSelected.add(this.onNodeSelected);
-    this.props.editor.signals.objectChanged.add(this.onNodeChanged);
-    this.props.editor.signals.propertyChanged.add(this.onPropertyChanged);
+    const editor = this.props.editor;
+    editor.addListener("selectionChanged", this.onSelectionChanged);
+    editor.addListener("objectsChanged", this.onObjectsChanged);
   }
 
   componentWillUnmount() {
-    this.props.editor.signals.objectSelected.remove(this.onNodeSelected);
-    this.props.editor.signals.objectChanged.remove(this.onNodeChanged);
-    this.props.editor.signals.propertyChanged.add(this.onPropertyChanged);
+    const editor = this.props.editor;
+    editor.removeListener("selectionChanged", this.onSelectionChanged);
+    editor.removeListener("objectsChanged", this.onObjectsChanged);
   }
 
-  onNodeSelected = node => {
-    this.setState({ node });
+  onSelectionChanged = () => {
+    this.setState({ selected: this.props.editor.selected });
   };
 
-  onNodeChanged = node => {
-    if (this.state.node === node) {
-      this.setState({ node });
-    }
-  };
+  onObjectsChanged = objects => {
+    const selected = this.props.editor.selected;
 
-  onPropertyChanged = (property, node) => {
-    if (this.state.node === node) {
-      this.setState({ node });
+    for (let i = 0; i < objects.length; i++) {
+      if (selected.indexOf(objects[i]) !== -1) {
+        this.setState({ selected: this.props.editor.selected });
+        return;
+      }
     }
   };
 
   render() {
-    const node = this.state.node;
+    const editor = this.props.editor;
+    const selected = this.state.selected;
 
-    if (!node) {
+    if (selected.length === 0) {
       return (
         <div id="properties-panel-container" className={styles.propertiesPanelContainer}>
           <div className={styles.noNodeSelected}>No node selected</div>
@@ -56,7 +56,26 @@ class PropertiesPanelContainer extends Component {
       );
     }
 
-    const editor = this.props.editor;
+    if (selected.length > 1) {
+      //TODO
+      return (
+        <div id="properties-panel-container" className={styles.propertiesPanelContainer}>
+          <div className={styles.noNodeSelected}>Multiple Nodes Selected</div>
+        </div>
+      );
+    }
+
+    // TODO
+    // let NodeEditor = editor.getNodeEditor(selected[0]);
+
+    // const differentNodeTypes = selected.some(selectedNode => editor.getNodeEditor(selectedNode) !== NodeEditor);
+
+    // if (differentNodeTypes) {
+    //   NodeEditor = DefaultNodeEditor;
+    // }
+
+    const node = selected[0];
+
     const NodeEditor = editor.getNodeEditor(node) || DefaultNodeEditor;
 
     return (

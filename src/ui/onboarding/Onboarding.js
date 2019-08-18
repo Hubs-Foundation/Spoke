@@ -41,7 +41,8 @@ class CreateModelPopover extends Component {
       this.setState({ openingLibrary: false });
     });
 
-    this.props.editor.signals.objectAdded.add(this.onObjectAdded);
+    // TODO: Check if object was added
+    this.props.editor.addListener("sceneGraphChanged", this.onObjectAdded);
   }
 
   onObjectAdded = () => {
@@ -49,7 +50,7 @@ class CreateModelPopover extends Component {
   };
 
   componentWillUnmount() {
-    this.props.editor.signals.objectAdded.remove(this.onObjectAdded);
+    this.props.editor.removeListener("sceneGraphChanged", this.onObjectAdded);
   }
 
   render() {

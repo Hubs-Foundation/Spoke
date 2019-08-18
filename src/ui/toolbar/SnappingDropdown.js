@@ -19,18 +19,19 @@ export default class SnappingDropdown extends React.Component {
   }
 
   componentDidMount() {
-    this.props.editor.signals.viewportInitialized.add(this.onViewportInitialized);
+    this.props.editor.addListener("initialized", this.onEditorInitialized);
   }
 
-  onViewportInitialized = viewport => {
+  onEditorInitialized = () => {
+    const editor = this.props.editor;
     this.setState({
-      snapTranslateValue: viewport.spokeControls.translationSnap,
-      snapRotateValue: (viewport.spokeControls.rotationSnap || 0) * RAD2DEG
+      snapTranslateValue: editor.spokeControls.translationSnap,
+      snapRotateValue: (editor.spokeControls.rotationSnap || 0) * RAD2DEG
     });
   };
 
   componentWillUnmount() {
-    this.props.editor.signals.viewportInitialized.remove(this.onViewportInitialized);
+    this.props.editor.removeListener("initialized", this.onEditorInitialized);
   }
 
   handleClickOutside() {
@@ -50,12 +51,12 @@ export default class SnappingDropdown extends React.Component {
     switch (type) {
       case "translate":
         this.setState({ snapTranslateValue: value });
-        this.props.editor.viewport.spokeControls.setTranslationSnapValue(v);
+        this.props.editor.spokeControls.setTranslationSnapValue(v);
         break;
       case "rotate":
         this.setState({ snapRotateValue: v });
         v = v * DEG2RAD;
-        this.props.editor.viewport.spokeControls.setRotationSnapValue(v);
+        this.props.editor.spokeControls.setRotationSnapValue(v);
         break;
       default:
         break;

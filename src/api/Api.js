@@ -310,9 +310,9 @@ export default class Project extends EventEmitter {
 
     if (contentType === "model/gltf+zip") {
       // TODO: Sketchfab object urls should be revoked after they are loaded by the glTF loader.
-      const {
-        getFilesFromSketchfabZip
-      } = await import(/* webpackChunkName: "SketchfabZipLoader", webpackPrefetch: true */ "./SketchfabZipLoader");
+      const { getFilesFromSketchfabZip } = await import(
+        /* webpackChunkName: "SketchfabZipLoader", webpackPrefetch: true */ "./SketchfabZipLoader"
+      );
       const files = await getFilesFromSketchfabZip(accessibleUrl);
       return { canonicalUrl, accessibleUrl: files["scene.gtlf"], contentType, files };
     }

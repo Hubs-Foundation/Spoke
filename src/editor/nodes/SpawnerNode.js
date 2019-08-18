@@ -97,7 +97,7 @@ export default class SpawnerNode extends EditorNodeMixin(Model) {
         this.scaleToFit = false;
       }
 
-      this.editor.signals.objectChanged.dispatch(this);
+      this.editor.emit("objectsChanged", [this]);
 
       if (files) {
         // Revoke any object urls from the SketchfabZipLoader.

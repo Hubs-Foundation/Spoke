@@ -1,5 +1,5 @@
 import Command from "./Command";
-import { TransformSpace } from "../Editor2";
+import { TransformSpace } from "../Editor";
 
 export default class RotateOnAxisCommand extends Command {
   constructor(editor, object, axis, angle, space) {

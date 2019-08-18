@@ -16,15 +16,15 @@ export default class HemisphereLightNodeEditor extends Component {
   static description = "A light which illuminates the scene from directly overhead.";
 
   onChangeSkyColor = skyColor => {
-    this.props.editor.setNodeProperty(this.props.node, "skyColor", skyColor);
+    this.props.editor.setProperty(this.props.node, "skyColor", skyColor);
   };
 
   onChangeGroundColor = groundColor => {
-    this.props.editor.setNodeProperty(this.props.node, "groundColor", groundColor);
+    this.props.editor.setProperty(this.props.node, "groundColor", groundColor);
   };
 
   onChangeIntensity = intensity => {
-    this.props.editor.setNodeProperty(this.props.node, "intensity", intensity);
+    this.props.editor.setProperty(this.props.node, "intensity", intensity);
   };
 
   render() {

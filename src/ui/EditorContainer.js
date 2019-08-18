@@ -100,8 +100,6 @@ export default class EditorContainer extends Component {
   constructor(props) {
     super(props);
 
-    window.addEventListener("resize", this.onWindowResize, false);
-
     let settings = defaultSettings;
     const storedSettings = localStorage.getItem("spoke-settings");
     if (storedSettings) {
@@ -268,51 +266,46 @@ export default class EditorContainer extends Component {
   };
 
   componentDidMount() {
-    this.state.editor.signals.windowResize.dispatch();
-    this.state.editor.signals.sceneModified.add(this.onSceneModified);
-    this.state.editor.signals.editorError.add(this.onEditorError);
-    this.state.editor.signals.saveProject.add(this.onSaveProject);
-    this.state.editor.signals.viewportInitialized.add(this.onViewportInitialized);
-
-    this.state.editorInitPromise
-      .then(() => {
-        this.loadProject(this.props.project);
-      })
-      .catch(e => {
-        console.error(e);
-      });
+    const editor = this.state.editor;
+    editor.addListener("initialized", this.onEditorInitialized);
+    editor.addListener("error", this.onEditorError);
   }
+
+  onEditorInitialized = () => {
+    const editor = this.state.editor;
+    this.loadProject(this.props.project);
+    window.addEventListener("resize", this.onResize);
+    this.onResize();
+    editor.addListener("sceneModified", this.onSceneModified);
+    editor.addListener("saveProject", this.onSaveProject);
+  };
 
   componentDidUpdate(prevProps) {
     if (this.props.project !== prevProps.project) {
-      this.state.editorInitPromise
-        .then(() => {
-          this.loadProject(this.props.project);
-        })
-        .catch(e => {
-          console.error(e);
-        });
+      const editor = this.state.editor;
+
+      if (editor.initialized) {
+        this.loadProject(this.props.project);
+      }
     }
   }
 
   componentWillUnmount() {
-    window.removeEventListener("resize", this.onWindowResize, false);
-    this.state.editor.signals.sceneModified.remove(this.onSceneModified);
-    this.state.editor.signals.editorError.remove(this.onEditorError);
-    this.state.editor.signals.saveProject.remove(this.onSaveProject);
-    this.state.editor.signals.viewportInitialized.remove(this.onViewportInitialized);
+    window.removeEventListener("resize", this.onResize);
+
+    const editor = this.state.editor;
+    editor.removeListener("sceneModified", this.onSceneModified);
+    editor.removeListener("saveProject", this.onSaveProject);
+    editor.removeListener("initialized", this.onEditorInitialized);
+    editor.removeListener("error", this.onEditorError);
   }
 
-  onWindowResize = () => {
-    this.state.editor.signals.windowResize.dispatch();
+  onResize = () => {
+    this.state.editor.onResize();
   };
 
-  onPanelChange = () => {
-    this.state.editor.signals.windowResize.dispatch();
-  };
-
-  onViewportInitialized = viewport => {
-    const gl = viewport.renderer.context;
+  onEditorInitialized = () => {
+    const gl = this.state.editor.renderer.renderer.context;
 
     const debugInfo = gl.getExtension("WEBGL_debug_renderer_info");
 

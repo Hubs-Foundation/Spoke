@@ -27,89 +27,89 @@ export default class ParticleEmitterNodeEditor extends Component {
   static description = "Particle emitter to create particles.";
 
   onChangeColorCurve = colorCurve => {
-    this.props.editor.setNodeProperty(this.props.node, "colorCurve", colorCurve);
+    this.props.editor.setProperty(this.props.node, "colorCurve", colorCurve);
   };
 
   onChangeVelocityCurve = velocityCurve => {
-    this.props.editor.setNodeProperty(this.props.node, "velocityCurve", velocityCurve);
+    this.props.editor.setProperty(this.props.node, "velocityCurve", velocityCurve);
   };
 
   onChangeStartColor = startColor => {
-    this.props.editor.setNodeProperty(this.props.node, "startColor", startColor);
+    this.props.editor.setProperty(this.props.node, "startColor", startColor);
     this.props.node.updateParticles();
   };
 
   onChangeMiddleColor = middleColor => {
-    this.props.editor.setNodeProperty(this.props.node, "middleColor", middleColor);
+    this.props.editor.setProperty(this.props.node, "middleColor", middleColor);
   };
 
   onChangeEndColor = endColor => {
-    this.props.editor.setNodeProperty(this.props.node, "endColor", endColor);
+    this.props.editor.setProperty(this.props.node, "endColor", endColor);
   };
 
   onChangeStartOpacity = startOpacity => {
-    this.props.editor.setNodeProperty(this.props.node, "startOpacity", startOpacity);
+    this.props.editor.setProperty(this.props.node, "startOpacity", startOpacity);
   };
 
   onChangeMiddleOpacity = middleOpacity => {
-    this.props.editor.setNodeProperty(this.props.node, "middleOpacity", middleOpacity);
+    this.props.editor.setProperty(this.props.node, "middleOpacity", middleOpacity);
   };
 
   onChangeEndOpacity = endOpacity => {
-    this.props.editor.setNodeProperty(this.props.node, "endOpacity", endOpacity);
+    this.props.editor.setProperty(this.props.node, "endOpacity", endOpacity);
   };
 
   onChangeSrc = src => {
-    this.props.editor.setNodeProperty(this.props.node, "src", src);
+    this.props.editor.setProperty(this.props.node, "src", src);
   };
 
   onChangeSizeCurve = sizeCurve => {
-    this.props.editor.setNodeProperty(this.props.node, "sizeCurve", sizeCurve);
+    this.props.editor.setProperty(this.props.node, "sizeCurve", sizeCurve);
   };
 
   onChangeStartSize = startSize => {
-    this.props.editor.setNodeProperty(this.props.node, "startSize", startSize);
+    this.props.editor.setProperty(this.props.node, "startSize", startSize);
     this.props.node.updateParticles();
   };
 
   onChangeEndSize = endSize => {
-    this.props.editor.setNodeProperty(this.props.node, "endSize", endSize);
+    this.props.editor.setProperty(this.props.node, "endSize", endSize);
   };
 
   onChangeSizeRandomness = sizeRandomness => {
-    this.props.editor.setNodeProperty(this.props.node, "sizeRandomness", sizeRandomness);
+    this.props.editor.setProperty(this.props.node, "sizeRandomness", sizeRandomness);
     this.props.node.updateParticles();
   };
 
   onChangeStartVelocity = startVelocity => {
-    this.props.editor.setNodeProperty(this.props.node, "startVelocity", startVelocity);
+    this.props.editor.setProperty(this.props.node, "startVelocity", startVelocity);
   };
 
   onChangeEndVelocity = endVelocity => {
-    this.props.editor.setNodeProperty(this.props.node, "endVelocity", endVelocity);
+    this.props.editor.setProperty(this.props.node, "endVelocity", endVelocity);
   };
 
   onChangeAngularVelocity = angularVelocity => {
-    this.props.editor.setNodeProperty(this.props.node, "angularVelocity", angularVelocity);
+    this.props.editor.setProperty(this.props.node, "angularVelocity", angularVelocity);
   };
 
   onChangeParticleCount = particleCount => {
-    this.props.editor.setNodeProperty(this.props.node, "particleCount", particleCount);
+    this.props.editor.setProperty(this.props.node, "particleCount", particleCount);
     this.props.node.updateParticles();
   };
 
   onChangeLifetime = lifetime => {
-    this.props.editor.setNodeProperty(this.props.node, "lifetime", lifetime);
+    this.props.editor.setProperty(this.props.node, "lifetime", lifetime);
     this.props.node.updateParticles();
   };
 
   onChangeAgeRandomness = ageRandomness => {
-    this.props.editor.setNodeProperty(this.props.node, "ageRandomness", ageRandomness);
+    this.props.editor.setProperty(this.props.node, "ageRandomness", ageRandomness);
     this.props.node.updateParticles();
   };
 
   onChangeLifetimeRandomness = lifetimeRandomness => {
-    this.props.editor.setNodeProperty(this.props.node, "lifetimeRandomness", lifetimeRandomness);
+    this.props.editor.setProperty(this.props.node, "lifetimeRandomness", lifetimeRandomness);
     this.props.node.updateParticles();
   };
 

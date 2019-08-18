@@ -15,6 +15,24 @@ function collectNodeMenuProps({ node }) {
   return node;
 }
 
+function buildNodeHierarchy(object, selectedObjects) {
+  const collapsed = object.isCollapsed;
+
+  const node = {
+    object,
+    collapsed,
+    selected: selectedObjects.indexOf(object) !== -1
+  };
+
+  if (object.children.length !== 0) {
+    node.children = object.children
+      .filter(child => child.isNode)
+      .map(child => buildNodeHierarchy(child, selectedObjects));
+  }
+
+  return node;
+}
+
 class HierarchyPanelContainer extends Component {
   static propTypes = {
     path: PropTypes.array,
@@ -27,7 +45,7 @@ class HierarchyPanelContainer extends Component {
     super(props);
 
     this.state = {
-      tree: this.props.editor.getNodeHierarchy(),
+      tree: buildNodeHierarchy(props.editor.scene, props.editor.selected),
       singleClicked: null
     };
 
@@ -36,19 +54,23 @@ class HierarchyPanelContainer extends Component {
 
   componentDidMount() {
     const editor = this.props.editor;
-    editor.signals.sceneSet.add(this.rebuildNodeHierarchy);
-    editor.signals.sceneGraphChanged.add(this.rebuildNodeHierarchy);
-    editor.signals.objectChanged.add(this.rebuildNodeHierarchy);
-    editor.signals.objectSelected.add(this.rebuildNodeHierarchy);
+    editor.addListener("sceneGraphChanged", this.rebuildNodeHierarchy);
+    editor.addListener("selectionChanged", this.rebuildNodeHierarchy);
+    editor.addListener("objectsChanged", this.onObjectsChanged);
   }
 
   componentWillUnmount() {
     const editor = this.props.editor;
-    editor.signals.sceneSet.remove(this.rebuildNodeHierarchy);
-    editor.signals.sceneGraphChanged.remove(this.rebuildNodeHierarchy);
-    editor.signals.objectChanged.remove(this.rebuildNodeHierarchy);
-    editor.signals.objectSelected.remove(this.rebuildNodeHierarchy);
+    editor.removeListener("sceneGraphChanged", this.rebuildNodeHierarchy);
+    editor.removeListener("selectionChanged", this.rebuildNodeHierarchy);
+    editor.removeListener("objectsChanged", this.onObjectsChanged);
   }
+
+  onObjectsChanged = (_objects, property) => {
+    if (property === "name") {
+      this.rebuildNodeHierarchy();
+    }
+  };
 
   onChange = (tree, parent, node) => {
     if (!node) {
@@ -72,7 +94,7 @@ class HierarchyPanelContainer extends Component {
       }
     }
 
-    this.props.editor.moveObject(object, newParent.object, newBefore);
+    this.props.editor.reparent(object, newParent.object, newBefore);
   };
 
   onClickNode = (e, node) => {
@@ -84,11 +106,16 @@ class HierarchyPanelContainer extends Component {
     }
 
     if (this.state.singleClicked === node.object) {
-      this.props.editor.focusById(node.object.id);
+      this.props.editor.spokeControls.focus([node.object]);
       return;
     }
 
-    this.props.editor.selectById(node.object.id);
+    if (e.metaKey || e.ctrlKey) {
+      this.props.editor.toggleSelection(node.object);
+    } else {
+      this.props.editor.setSelection([node.object]);
+    }
+
     this.setState({ singleClicked: node.object });
 
     clearTimeout(this.doubleClickTimeout);
@@ -98,16 +125,17 @@ class HierarchyPanelContainer extends Component {
   };
 
   onDuplicateNode = (e, node) => {
-    this.props.editor.duplicateObject(node.object);
+    this.props.editor.duplicate(node.object);
   };
 
   onDeleteNode = (e, node) => {
-    this.props.editor.deleteObject(node.object);
+    this.props.editor.removeObject(node.object);
   };
 
   rebuildNodeHierarchy = () => {
+    const editor = this.props.editor;
     this.setState({
-      tree: this.props.editor.getNodeHierarchy()
+      tree: buildNodeHierarchy(editor.scene, editor.selected)
     });
   };
 
@@ -120,7 +148,7 @@ class HierarchyPanelContainer extends Component {
     const iconClassName = this.getNodeIconClassName(node.object);
 
     const className = classNames("node", {
-      "is-active": this.props.editor.selected && node.object.id === this.props.editor.selected.id
+      "is-active": node.selected
     });
     const onClick = e => this.onClickNode(e, node);
 

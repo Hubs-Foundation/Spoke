@@ -1,5 +1,5 @@
 import Command from "./Command";
-import { TransformSpace } from "../Editor2";
+import { TransformSpace } from "../Editor";
 import arrayShallowEqual from "../utils/arrayShallowEqual";
 
 export default class RotateOnAxisMultipleCommand extends Command {

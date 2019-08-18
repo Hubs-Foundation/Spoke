@@ -117,7 +117,7 @@ export default class SpokeControls extends EventEmitter {
         if (result) {
           this.editor.select(result.node);
         } else {
-          this.editor.deselect();
+          this.editor.deselectAll();
         }
       }
     }
@@ -125,7 +125,7 @@ export default class SpokeControls extends EventEmitter {
     const selecting = input.get(Spoke.selecting);
 
     // Update Transform Controls selection
-    const editorSelection = this.editor.selected;
+    const editorSelection = this.editor.selected[0];
 
     if (editorSelection !== transformControls.object) {
       if (
@@ -218,27 +218,17 @@ export default class SpokeControls extends EventEmitter {
       switch (transformControls.mode) {
         case "translate":
           if (!transformControls.positionStart.equals(transformObject.position)) {
-            this.editor.setNodeProperty(
-              transformObject,
-              "position",
-              transformObject.position,
-              transformControls.positionStart
-            );
+            this.editor.setPosition(transformObject, transformObject.position);
           }
           break;
         case "rotate":
           if (!transformControls.rotationStart.equals(transformObject.rotation)) {
-            this.editor.setNodeProperty(
-              transformObject,
-              "rotation",
-              transformObject.rotation,
-              transformControls.rotationStart
-            );
+            this.editor.setRotation(transformObject, transformObject.rotation);
           }
           break;
         case "scale":
           if (!transformControls.scaleStart.equals(transformObject.scale)) {
-            this.editor.setNodeProperty(transformObject, "scale", transformObject.scale, transformControls.scaleStart);
+            this.editor.setScale(transformObject, transformObject.scale);
           }
           break;
       }
@@ -262,13 +252,14 @@ export default class SpokeControls extends EventEmitter {
     } else if (input.get(Spoke.redo)) {
       this.editor.redo();
     } else if (input.get(Spoke.duplicateSelected)) {
-      this.editor.duplicateSelectedObject();
+      this.editor.removeSelectedObjects();
     } else if (input.get(Spoke.deleteSelected)) {
-      this.editor.deleteSelectedObject();
+      this.editor.removeObject();
     } else if (input.get(Spoke.saveProject)) {
-      this.editor.signals.saveProject.dispatch();
+      // TODO: Move save to Project class
+      this.editor.emit("saveProject");
     } else if (input.get(Spoke.deselect)) {
-      this.editor.deselect();
+      this.editor.deselectAll();
     }
   }
 
@@ -278,7 +269,7 @@ export default class SpokeControls extends EventEmitter {
     return getIntersectingNode(results, this.scene);
   }
 
-  focus(object) {
+  focus(objects) {
     const box = this.box;
     const center = this.center;
     const delta = this.delta;
@@ -286,18 +277,22 @@ export default class SpokeControls extends EventEmitter {
 
     let distance = 0;
 
-    if (!object) {
+    if (objects.length === 0) {
       center.set(0, 0, 0);
       distance = 10;
     } else {
-      box.setFromObject(object);
+      box.makeEmpty();
+
+      for (const object of objects) {
+        box.expandByObject(object);
+      }
 
       if (box.isEmpty() === false) {
         box.getCenter(center);
         distance = box.getBoundingSphere(this.sphere).radius;
       } else {
         // Focusing on an Group, AmbientLight, etc
-        center.setFromMatrixPosition(object.matrixWorld);
+        center.setFromMatrixPosition(objects[0].matrixWorld);
         distance = 0.1;
       }
     }
@@ -311,13 +306,13 @@ export default class SpokeControls extends EventEmitter {
 
   setTransformControlsMode(mode) {
     this.transformControls.mode = mode;
-    this.editor.signals.transformModeChanged.dispatch(mode);
+    this.emit("transformModeChanged", mode);
   }
 
   toggleSnapMode() {
     this.snapEnabled = !this.snapEnabled;
     this.updateSnapSettings();
-    this.editor.signals.snapToggled.dispatch(this.snapEnabled);
+    this.emit("snapToggled", this.snapEnabled);
   }
 
   updateSnapSettings() {
@@ -338,6 +333,6 @@ export default class SpokeControls extends EventEmitter {
   toggleRotationSpace() {
     this.currentSpace = this.currentSpace === "world" ? "local" : "world";
     this.transformControls.space = this.currentSpace;
-    this.editor.signals.spaceChanged.dispatch(this.currentSpace);
+    this.emit("spaceChanged", this.currentSpace);
   }
 }

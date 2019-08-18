@@ -13,11 +13,11 @@ class ElementsLibrary extends Component {
   };
 
   componentDidMount() {
-    this.props.editor.signals.sceneGraphChanged.add(this.onSceneGraphChanged);
+    this.props.editor.addListener("sceneGraphChanged", this.onSceneGraphChanged);
   }
 
   componentWillUnmount() {
-    this.props.editor.signals.sceneGraphChanged.remove(this.onSceneGraphChanged);
+    this.props.editor.removeListener("sceneGraphChanged", this.onSceneGraphChanged);
   }
 
   onSceneGraphChanged = () => {

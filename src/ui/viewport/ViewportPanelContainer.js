@@ -23,24 +23,37 @@ class ViewportPanelContainer extends Component {
   }
 
   componentDidMount() {
-    this.props.editor.initializeViewport(this.canvasRef.current);
-    this.props.editor.signals.objectSelected.add(this.onObjectSelected);
-    this.props.editor.viewport.spokeControls.addListener("mode-changed", this.onFlyModeChanged);
+    const editor = this.props.editor;
+    editor.addListener("initialized", this.onEditorInitialized);
+    editor.initializeRenderer(this.canvasRef.current);
   }
 
   componentWillUnmount() {
-    this.props.editor.viewport.spokeControls.removeListener("mode-changed", this.onFlyModeChanged);
-    this.props.editor.signals.objectSelected.remove(this.onObjectSelected);
-    this.props.editor.viewport.dispose();
+    const editor = this.props.editor;
+
+    editor.removeListener("selectionChanged", this.onSelectionChanged);
+
+    if (editor.spokeControls) {
+      editor.spokeControls.removeListener("mode-changed", this.onFlyModeChanged);
+    }
+
+    if (editor.renderer) {
+      editor.renderer.dispose();
+    }
   }
 
-  onFlyModeChanged = () => {
-    const flyModeEnabled = this.props.editor.viewport.spokeControls.flyControls.enabled;
-    this.setState({ flyModeEnabled });
+  onEditorInitialized = () => {
+    const editor = this.props.editor;
+    editor.addListener("selectionChanged", this.onSelectionChanged);
+    editor.spokeControls.addListener("mode-changed", this.onFlyModeChanged);
   };
 
-  onObjectSelected = () => {
-    this.setState({ objectSelected: !!this.props.editor.selected });
+  onFlyModeChanged = () => {
+    this.setState({ flyModeEnabled: this.props.editor.flyControls.enabled });
+  };
+
+  onSelectionChanged = () => {
+    this.setState({ objectSelected: this.props.editor.selected.length > 0 });
   };
 
   render() {

@@ -21,35 +21,35 @@ export default class SkyboxNodeEditor extends Component {
     "Creates a visualization of an open sky and atmosphere around your scene. Also used as the environment map for your scene.";
 
   onChangeTurbidity = turbidity => {
-    this.props.editor.setNodeProperty(this.props.node, "turbidity", turbidity);
+    this.props.editor.setProperty(this.props.node, "turbidity", turbidity);
   };
 
   onChangeRayleigh = rayleigh => {
-    this.props.editor.setNodeProperty(this.props.node, "rayleigh", rayleigh);
+    this.props.editor.setProperty(this.props.node, "rayleigh", rayleigh);
   };
 
   onChangeLuminance = luminance => {
-    this.props.editor.setNodeProperty(this.props.node, "luminance", luminance);
+    this.props.editor.setProperty(this.props.node, "luminance", luminance);
   };
 
   onChangeMieCoefficient = mieCoefficient => {
-    this.props.editor.setNodeProperty(this.props.node, "mieCoefficient", mieCoefficient);
+    this.props.editor.setProperty(this.props.node, "mieCoefficient", mieCoefficient);
   };
 
   onChangeMieDirectionalG = mieDirectionalG => {
-    this.props.editor.setNodeProperty(this.props.node, "mieDirectionalG", mieDirectionalG);
+    this.props.editor.setProperty(this.props.node, "mieDirectionalG", mieDirectionalG);
   };
 
   onChangeInclination = inclination => {
-    this.props.editor.setNodeProperty(this.props.node, "inclination", inclination);
+    this.props.editor.setProperty(this.props.node, "inclination", inclination);
   };
 
   onChangeAzimuth = azimuth => {
-    this.props.editor.setNodeProperty(this.props.node, "azimuth", azimuth);
+    this.props.editor.setProperty(this.props.node, "azimuth", azimuth);
   };
 
   onChangeDistance = distance => {
-    this.props.editor.setNodeProperty(this.props.node, "distance", distance);
+    this.props.editor.setProperty(this.props.node, "distance", distance);
   };
 
   render() {

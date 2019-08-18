@@ -17,15 +17,15 @@ export default class PointLightNodeEditor extends Component {
   static description = "A light which emits in all directions from a single point.";
 
   onChangeColor = color => {
-    this.props.editor.setNodeProperty(this.props.node, "color", color);
+    this.props.editor.setProperty(this.props.node, "color", color);
   };
 
   onChangeIntensity = intensity => {
-    this.props.editor.setNodeProperty(this.props.node, "intensity", intensity);
+    this.props.editor.setProperty(this.props.node, "intensity", intensity);
   };
 
   onChangeRange = range => {
-    this.props.editor.setNodeProperty(this.props.node, "range", range);
+    this.props.editor.setProperty(this.props.node, "range", range);
   };
 
   render() {

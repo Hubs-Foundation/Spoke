@@ -177,7 +177,7 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
 
     this.setNavMesh(navMesh);
 
-    if (this.editor.selected === this) {
+    if (this.editor.selected.indexOf(this) !== -1) {
       navMesh.visible = true;
     }
 
@@ -233,7 +233,7 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
       this.heightfieldMesh.layers.set(1);
       heightfieldMesh.position.set(heightfield.offset.x, 0, heightfield.offset.z);
 
-      if (this.editor.selected !== this) {
+      if (this.editor.selected.indexOf(this) !== -1) {
         this.heightfieldMesh.visible = false;
       }
     } else {
@@ -244,7 +244,7 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
         this.remove(this.heightfieldMesh);
       }
 
-      if (this.editor.selected === this) {
+      if (this.editor.selected.indexOf(this) !== -1) {
         trimesh.visible = true;
       }
     }

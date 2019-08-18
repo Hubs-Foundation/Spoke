@@ -74,16 +74,25 @@ export default class ToolBar extends Component {
 
   componentDidMount() {
     const editor = this.props.editor;
-    editor.signals.transformModeChanged.add(this._updateToolBarStatus);
-    editor.signals.spaceChanged.add(this._updateSpaceToggle);
-    editor.signals.snapToggled.add(this._updateSnapToggle);
+    editor.addListener("initialized", this.onEditorInitialized);
   }
+
+  onEditorInitialized = () => {
+    const editor = this.props.editor;
+    editor.spokeControls.addListener("transformModeChanged", this._updateToolBarStatus);
+    editor.spokeControls.addListener("spaceChanged", this._updateSpaceToggle);
+    editor.spokeControls.addListener("snapToggled", this._updateSnapToggle);
+  };
 
   componentWillUnmount() {
     const editor = this.props.editor;
-    editor.signals.transformModeChanged.remove(this._updateToolBarStatus);
-    editor.signals.spaceChanged.remove(this._updateSpaceToggle);
-    editor.signals.snapToggled.remove(this._updateSnapToggle);
+    editor.removeListener("initialized", this.onEditorInitialized);
+
+    if (editor.spokeControls) {
+      editor.spokeControls.removeListener("transformModeChanged", this._updateToolBarStatus);
+      editor.spokeControls.removeListener("spaceChanged", this._updateSpaceToggle);
+      editor.spokeControls.removeListener("snapToggled", this._updateSnapToggle);
+    }
   }
 
   _updateSnapToggle = () => {
@@ -125,28 +134,28 @@ export default class ToolBar extends Component {
   };
 
   onSelectionSelected = () => {
-    this.props.editor.deselect();
+    this.props.editor.deselectAll();
     this._updateToolBarStatus("select");
   };
 
   onMoveSelected = () => {
-    this.props.editor.viewport.spokeControls.setTransformControlsMode("translate");
+    this.props.editor.spokeControls.setTransformControlsMode("translate");
   };
 
   onRotateSelected = () => {
-    this.props.editor.viewport.spokeControls.setTransformControlsMode("rotate");
+    this.props.editor.spokeControls.setTransformControlsMode("rotate");
   };
 
   onScaleSelected = () => {
-    this.props.editor.viewport.spokeControls.setTransformControlsMode("scale");
+    this.props.editor.spokeControls.setTransformControlsMode("scale");
   };
 
   onRotationSpaceChanged = () => {
-    this.props.editor.viewport.spokeControls.toggleRotationSpace();
+    this.props.editor.spokeControls.toggleRotationSpace();
   };
 
   onSnappingChanged = () => {
-    this.props.editor.viewport.spokeControls.toggleSnapMode();
+    this.props.editor.spokeControls.toggleSnapMode();
   };
 
   renderToolButtons = buttons => {

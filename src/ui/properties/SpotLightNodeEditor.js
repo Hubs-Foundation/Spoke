@@ -21,23 +21,23 @@ export default class SpotLightNodeEditor extends Component {
   static description = "A light which emits along a direction, illuminating objects within a cone.";
 
   onChangeColor = color => {
-    this.props.editor.setNodeProperty(this.props.node, "color", color);
+    this.props.editor.setProperty(this.props.node, "color", color);
   };
 
   onChangeIntensity = intensity => {
-    this.props.editor.setNodeProperty(this.props.node, "intensity", intensity);
+    this.props.editor.setProperty(this.props.node, "intensity", intensity);
   };
 
   onChangeInnerConeAngle = innerConeAngle => {
-    this.props.editor.setNodeProperty(this.props.node, "innerConeAngle", innerConeAngle);
+    this.props.editor.setProperty(this.props.node, "innerConeAngle", innerConeAngle);
   };
 
   onChangeOuterConeAngle = outerConeAngle => {
-    this.props.editor.setNodeProperty(this.props.node, "outerConeAngle", outerConeAngle);
+    this.props.editor.setProperty(this.props.node, "outerConeAngle", outerConeAngle);
   };
 
   onChangeRange = range => {
-    this.props.editor.setNodeProperty(this.props.node, "range", range);
+    this.props.editor.setProperty(this.props.node, "range", range);
   };
 
   render() {

@@ -19,7 +19,7 @@ export default class SpawnerNodeEditor extends Component {
       this.props.node.scaleToFit = scaleToFit;
     }
 
-    this.props.editor.setNodeProperty(this.props.node, "src", src);
+    this.props.editor.setProperty(this.props.node, "src", src);
   };
 
   render() {
