@@ -200,14 +200,15 @@ export default class Editor extends EventEmitter {
 
     this.scene.add(this.grid);
 
-    this.history.clear();
-    this.deselectAll();
-
     this.spokeControls.center.set(0, 0, 0);
     this.spokeControls.onSceneSet(scene);
     scene.background = new Color(0xaaaaaa);
 
     this.addObject(this.scene);
+
+    this.deselectAll();
+
+    this.history.clear();
 
     this.renderer.onSceneSet();
 
