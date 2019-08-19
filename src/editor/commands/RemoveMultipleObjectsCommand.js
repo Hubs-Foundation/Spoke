@@ -1,4 +1,5 @@
 import Command from "./Command";
+import { serializeObject3DArray } from "../utils/debug";
 
 export default class RemoveMultipleObjectsCommand extends Command {
   constructor(editor, objects) {
@@ -29,5 +30,9 @@ export default class RemoveMultipleObjectsCommand extends Command {
   undo() {
     this.editor._addMultipleObjectsWithParentsAndBefores(this.objects, this.parents, this.befores, this.oldNodes);
     this.editor.setSelection(this.oldSelection, false);
+  }
+
+  toString() {
+    return `RemoveMultipleObjectsCommand id: ${this.id} objects: ${serializeObject3DArray(this.objects)}`;
   }
 }

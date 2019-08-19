@@ -1,6 +1,7 @@
 import Command from "./Command";
 import { TransformSpace } from "../Editor";
 import arrayShallowEqual from "../utils/arrayShallowEqual";
+import { serializeVector3, serializeObject3DArray } from "../utils/debug";
 
 export default class ScaleMultipleCommand extends Command {
   constructor(editor, objects, scale, space) {
@@ -29,5 +30,11 @@ export default class ScaleMultipleCommand extends Command {
     }
 
     this.editor.emit("objectsChanged", this.objects, "scale");
+  }
+
+  toString() {
+    return `ScaleMultipleCommand id: ${this.id} objects: ${serializeObject3DArray(
+      this.objects
+    )} scale: ${serializeVector3(this.scale)} space: ${this.space}`;
   }
 }

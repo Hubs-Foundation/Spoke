@@ -13,4 +13,8 @@ export default class SelectAllCommand extends Command {
   undo() {
     this.editor.setSelection(this.oldSelection, false);
   }
+
+  toString() {
+    return `SelectAllCommand id: ${this.id}`;
+  }
 }

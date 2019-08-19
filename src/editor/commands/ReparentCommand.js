@@ -1,4 +1,5 @@
 import Command from "./Command";
+import { serializeObject3D } from "../utils/debug";
 
 export default class ReparentCommand extends Command {
   constructor(editor, object, newParent, newBefore) {
@@ -28,5 +29,11 @@ export default class ReparentCommand extends Command {
   undo() {
     this.editor.reparent(this.object, this.oldParent, this.oldBefore, false, true, false);
     this.editor.setSelection(this.oldSelection, false);
+  }
+
+  toString() {
+    return `${this.constructor.name} id: ${this.id} object: ${serializeObject3D(
+      this.object
+    )} newParent: ${serializeObject3D(this.newParent)} newBefore: ${serializeObject3D(this.newBefore)}`;
   }
 }

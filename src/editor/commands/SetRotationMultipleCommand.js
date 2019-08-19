@@ -1,6 +1,7 @@
 import Command from "./Command";
 import { TransformSpace } from "../Editor";
 import arrayShallowEqual from "../utils/arrayShallowEqual";
+import { serializeObject3DArray, serializeEuler } from "../utils/debug";
 
 export default class SetRotationMultipleCommand extends Command {
   constructor(editor, objects, rotation, space) {
@@ -29,5 +30,11 @@ export default class SetRotationMultipleCommand extends Command {
     }
 
     this.editor.emit("objectsChanged", this.objects, "rotation");
+  }
+
+  toString() {
+    return `SetRotationMultipleCommand id: ${this.id} objects: ${serializeObject3DArray(
+      this.objects
+    )} rotation: ${serializeEuler(this.rotation)} space: ${this.space}`;
   }
 }

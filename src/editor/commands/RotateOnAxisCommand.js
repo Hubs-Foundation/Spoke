@@ -1,5 +1,6 @@
 import Command from "./Command";
 import { TransformSpace } from "../Editor";
+import { serializeObject3D, serializeVector3 } from "../utils/debug";
 
 export default class RotateOnAxisCommand extends Command {
   constructor(editor, object, axis, angle, space) {
@@ -25,5 +26,11 @@ export default class RotateOnAxisCommand extends Command {
 
   undo() {
     this.editor.setRotation(this.object, this.oldRotation, TransformSpace.Local, false);
+  }
+
+  toString() {
+    return `RotateOnAxisCommand id: ${this.id} object: ${serializeObject3D(this.object)} axis: ${serializeVector3(
+      this.axis
+    )} angle: ${this.angle} space: ${this.space}`;
   }
 }

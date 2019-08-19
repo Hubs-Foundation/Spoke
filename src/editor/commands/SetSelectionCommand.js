@@ -1,4 +1,5 @@
 import Command from "./Command";
+import { serializeObject3DArray } from "../utils/debug";
 
 export default class SetSelectionCommand extends Command {
   constructor(editor, objects) {
@@ -13,5 +14,9 @@ export default class SetSelectionCommand extends Command {
 
   undo() {
     this.editor.setSelection(this.oldSelection, false);
+  }
+
+  toString() {
+    return `SetSelectionCommand id: ${this.id} objects: ${serializeObject3DArray(this.objects)}`;
   }
 }

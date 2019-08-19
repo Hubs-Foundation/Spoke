@@ -18,4 +18,8 @@ export default class Command {
   update(_command) {}
 
   undo() {}
+
+  toString() {
+    return `${this.constructor.name} id: ${this.id}`;
+  }
 }

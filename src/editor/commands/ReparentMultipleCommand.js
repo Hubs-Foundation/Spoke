@@ -1,4 +1,5 @@
 import Command from "./Command";
+import { serializeObject3DArray, serializeObject3D } from "../utils/debug";
 
 export default class ReparentMultipleCommand extends Command {
   constructor(editor, objects, newParent, newBefore) {
@@ -36,5 +37,11 @@ export default class ReparentMultipleCommand extends Command {
     this.editor.updateTransformRoots();
 
     this.editor.emit("sceneGraphChanged");
+  }
+
+  toString() {
+    return `${this.constructor.name} id: ${this.id} objects: ${serializeObject3DArray(
+      this.objects
+    )} newParent: ${serializeObject3D(this.newParent)} newBefore: ${serializeObject3D(this.newBefore)}`;
   }
 }

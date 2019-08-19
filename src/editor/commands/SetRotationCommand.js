@@ -1,5 +1,6 @@
 import Command from "./Command";
 import { TransformSpace } from "../Editor";
+import { serializeObject3D, serializeEuler } from "../utils/debug";
 
 export default class SetRotationCommand extends Command {
   constructor(editor, object, rotation, space) {
@@ -24,5 +25,11 @@ export default class SetRotationCommand extends Command {
 
   undo() {
     this.editor.setRotation(this.object, this.oldRotation, TransformSpace.Local, false);
+  }
+
+  toString() {
+    return `SetRotationCommand id: ${this.id} object: ${serializeObject3D(this.object)} rotation: ${serializeEuler(
+      this.rotation
+    )} space: ${this.space}`;
   }
 }

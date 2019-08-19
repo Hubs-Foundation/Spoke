@@ -1,4 +1,5 @@
 import Command from "./Command";
+import { serializeObject3DArray, serializeObject3D } from "../utils/debug";
 
 export default class DuplicateMultipleCommand extends Command {
   constructor(editor, objects, parent, before) {
@@ -17,5 +18,11 @@ export default class DuplicateMultipleCommand extends Command {
   undo() {
     this.editor.removeMultipleObjects(this.duplicatedObjects, false, true, false);
     this.editor.setSelection(this.oldSelection, false);
+  }
+
+  toString() {
+    return `DuplicateMultipleCommand id: ${this.id} objects: ${serializeObject3DArray(
+      this.objects
+    )} parent: ${serializeObject3D(this.parent)} before: ${serializeObject3D(this.before)}`;
   }
 }

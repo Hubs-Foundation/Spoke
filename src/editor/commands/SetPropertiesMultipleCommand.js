@@ -1,4 +1,5 @@
 import Command from "./Command";
+import { serializeProperties, serializeObject3DArray } from "../utils/debug";
 
 export default class SetPropertiesMultipleCommand extends Command {
   constructor(editor, objects, properties) {
@@ -46,5 +47,11 @@ export default class SetPropertiesMultipleCommand extends Command {
     }
 
     this.emit("objectsChanged", this.objects);
+  }
+
+  toString() {
+    return `SetPropertiesMultipleCommand id: ${this.id} objects: ${serializeObject3DArray(
+      this.objects
+    )} properties: ${serializeProperties(this.newProperties)}`;
   }
 }

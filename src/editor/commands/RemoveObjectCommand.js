@@ -1,4 +1,5 @@
 import Command from "./Command";
+import { serializeObject3D } from "../utils/debug";
 
 export default class RemoveObjectCommand extends Command {
   constructor(editor, object) {
@@ -22,5 +23,9 @@ export default class RemoveObjectCommand extends Command {
   undo() {
     this.editor.addObject(this.object, this.parent, this.before, false, true, false);
     this.editor.setSelection(this.oldSelection, false);
+  }
+
+  toString() {
+    return `${this.constructor.name} id: ${this.id} object: ${serializeObject3D(this.object)}`;
   }
 }

@@ -1,5 +1,6 @@
 import Command from "./Command";
 import arrayShallowEqual from "../utils/arrayShallowEqual";
+import { serializeObject3DArray, serializeProperty } from "../utils/debug";
 
 export default class SetPropertyMultipleCommand extends Command {
   constructor(editor, objects, propertyName, value) {
@@ -46,5 +47,11 @@ export default class SetPropertyMultipleCommand extends Command {
     }
 
     this.emit("objectsChanged", this.objects, this.propertyName);
+  }
+
+  toString() {
+    return `SetPropertyMultipleCommand id: ${this.id} objects: ${serializeObject3DArray(this.objects)} propertyName: ${
+      this.propertyName
+    } newValue: ${serializeProperty(this.newValue)}`;
   }
 }

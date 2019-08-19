@@ -10,6 +10,7 @@ export default class History {
     this.lastCmdTime = new Date();
     this.idCounter = 0;
     this.commandUpdatesEnabled = true; // Used for testing
+    this.debug = false;
   }
 
   execute(cmd) {
@@ -25,11 +26,19 @@ export default class History {
     ) {
       lastCmd.update(cmd);
       cmd = lastCmd;
+
+      if (this.debug) {
+        console.log(`update: ${cmd}`);
+      }
     } else {
       // the command is not updatable and is added as a new part of the history
       this.undos.push(cmd);
       cmd.id = ++this.idCounter;
       cmd.execute();
+
+      if (this.debug) {
+        console.log(`execute: ${cmd}`);
+      }
     }
 
     this.lastCmdTime = new Date();
@@ -49,6 +58,10 @@ export default class History {
     if (cmd !== undefined) {
       cmd.undo();
       this.redos.push(cmd);
+
+      if (this.debug) {
+        console.log(`undo: ${cmd}`);
+      }
     }
 
     return cmd;
@@ -64,9 +77,17 @@ export default class History {
     if (cmd !== undefined) {
       cmd.execute();
       this.undos.push(cmd);
+
+      if (this.debug) {
+        console.log(`redo: ${cmd}`);
+      }
     }
 
     return cmd;
+  }
+
+  getDebugLog() {
+    return this.undos.map(cmd => cmd.toString()).join("\n");
   }
 
   clear() {

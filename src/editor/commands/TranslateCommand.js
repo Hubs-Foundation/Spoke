@@ -1,5 +1,6 @@
 import Command from "./Command";
 import { TransformSpace } from "../Editor";
+import { serializeObject3D, serializeVector3 } from "../utils/debug";
 
 export default class TranslateCommand extends Command {
   constructor(editor, object, translation, space) {
@@ -24,5 +25,11 @@ export default class TranslateCommand extends Command {
 
   undo() {
     this.editor.setPosition(this.object, this.oldPosition, TransformSpace.Local, false);
+  }
+
+  toString() {
+    return `TranslateCommand id: ${this.id} object: ${serializeObject3D(this.object)} translation: ${serializeVector3(
+      this.translation
+    )} space: ${this.space}`;
   }
 }

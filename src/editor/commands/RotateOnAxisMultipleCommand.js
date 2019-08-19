@@ -1,6 +1,7 @@
 import Command from "./Command";
 import { TransformSpace } from "../Editor";
 import arrayShallowEqual from "../utils/arrayShallowEqual";
+import { serializeObject3DArray, serializeVector3 } from "../utils/debug";
 
 export default class RotateOnAxisMultipleCommand extends Command {
   constructor(editor, objects, axis, angle, space) {
@@ -34,5 +35,11 @@ export default class RotateOnAxisMultipleCommand extends Command {
     }
 
     this.editor.emit("objectsChanged", this.objects, "rotation");
+  }
+
+  toString() {
+    return `RotateOnAxisMultipleCommand id: ${this.id} objects: ${serializeObject3DArray(
+      this.objects
+    )} axis: ${serializeVector3(this.axis)} angle: ${this.angle} space: ${this.space}`;
   }
 }

@@ -1,4 +1,5 @@
 import Command from "./Command";
+import { serializeObject3D } from "../utils/debug";
 
 export default class SelectCommand extends Command {
   constructor(editor, object) {
@@ -13,5 +14,9 @@ export default class SelectCommand extends Command {
 
   undo() {
     this.editor.setSelection(this.oldSelection, false);
+  }
+
+  toString() {
+    return `SelectCommand id: ${this.id} object: ${serializeObject3D(this.object)}`;
   }
 }

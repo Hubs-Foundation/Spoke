@@ -1,4 +1,5 @@
 import Command from "./Command";
+import { serializeObject3D, serializeProperties } from "../utils/debug";
 
 export default class SetPropertiesCommand extends Command {
   constructor(editor, object, properties) {
@@ -33,5 +34,11 @@ export default class SetPropertiesCommand extends Command {
 
   undo() {
     this.editor.setProperties(this.object, this.oldProperties, false);
+  }
+
+  toString() {
+    return `SetPropertiesCommand id: ${this.id} object: ${serializeObject3D(
+      this.object
+    )} properties: ${serializeProperties(this.newProperties)}`;
   }
 }

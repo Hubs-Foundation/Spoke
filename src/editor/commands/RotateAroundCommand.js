@@ -1,5 +1,6 @@
 import Command from "./Command";
 import { TransformSpace } from "../Editor";
+import { serializeObject3D, serializeVector3 } from "../utils/debug";
 
 export default class RotateAroundCommand extends Command {
   constructor(editor, object, pivot, axis, angle) {
@@ -27,5 +28,11 @@ export default class RotateAroundCommand extends Command {
 
   undo() {
     this.editor.setRotation(this.object, this.oldRotation, TransformSpace.Local, false);
+  }
+
+  toString() {
+    return `RotateAroundCommand id: ${this.id} object: ${serializeObject3D(this.object)} pivot: ${serializeVector3(
+      this.pivot
+    )} axis: ${serializeVector3(this.axis)} angle: ${this.angle} space: ${this.space}`;
   }
 }

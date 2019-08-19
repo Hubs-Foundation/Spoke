@@ -17,4 +17,8 @@ export default class MultiCmdsCommand extends Command {
       this.cmdArray[i].undo();
     }
   }
+
+  toString() {
+    return `MultiCmdsCommand id: ${this.id} commands:\n  ${this.cmdArray.map(cmd => cmd.toString()).join("\n  ")}`;
+  }
 }

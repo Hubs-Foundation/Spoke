@@ -1,6 +1,7 @@
 import Command from "./Command";
 import { TransformSpace } from "../Editor";
 import arrayShallowEqual from "../utils/arrayShallowEqual";
+import { serializeVector3, serializeObject3DArray } from "../utils/debug";
 
 export default class TranslateMultipleCommand extends Command {
   constructor(editor, objects, translation, space) {
@@ -29,5 +30,11 @@ export default class TranslateMultipleCommand extends Command {
     }
 
     this.editor.emit("objectsChanged", this.objects, "position");
+  }
+
+  toString() {
+    return `TranslateMultipleCommand id: ${this.id} objects: ${serializeObject3DArray(
+      this.objects
+    )} translation: ${serializeVector3(this.translation)} space: ${this.space}`;
   }
 }

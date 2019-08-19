@@ -13,4 +13,8 @@ export default class DeselectAllCommand extends Command {
   undo() {
     this.editor.setSelection(this.oldSelection, false);
   }
+
+  toString() {
+    return `DeselectAllCommand id: ${this.id}`;
+  }
 }
