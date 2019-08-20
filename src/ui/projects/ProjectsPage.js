@@ -179,17 +179,8 @@ class ProjectsPage extends Component {
               </WelcomeContainer>
             </ProjectsSection>
           ) : (
-            <LatestUpdate />
-          )}
-          <ProjectsSection>
-            <ProjectsContainer>
-              <ProjectsHeader>
-                <h1>Templates</h1>
-                <PrimaryLink to="/projects/templates">View More</PrimaryLink>
-              </ProjectsHeader>
-              <ProjectGrid projects={topTemplates} />
-            </ProjectsContainer>
-          </ProjectsSection>
+              <LatestUpdate />
+            )}
           <ProjectsSection>
             <ProjectsContainer>
               <ProjectsHeader>
@@ -200,6 +191,15 @@ class ProjectsPage extends Component {
               </ProjectsHeader>
               {error && <ErrorMessage>{error.message || "There was an unknown error."}</ErrorMessage>}
               {content}
+            </ProjectsContainer>
+          </ProjectsSection>
+          <ProjectsSection>
+            <ProjectsContainer>
+              <ProjectsHeader>
+                <h1>Templates</h1>
+                <PrimaryLink to="/projects/templates">View More</PrimaryLink>
+              </ProjectsHeader>
+              <ProjectGrid projects={topTemplates} />
             </ProjectsContainer>
           </ProjectsSection>
           <ProjectContextMenu />
