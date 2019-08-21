@@ -34,7 +34,7 @@ class ViewportPanelContainer extends Component {
     editor.removeListener("selectionChanged", this.onSelectionChanged);
 
     if (editor.spokeControls) {
-      editor.spokeControls.removeListener("mode-changed", this.onFlyModeChanged);
+      editor.spokeControls.removeListener("flyModeChanged", this.onFlyModeChanged);
     }
 
     if (editor.renderer) {
@@ -45,7 +45,7 @@ class ViewportPanelContainer extends Component {
   onEditorInitialized = () => {
     const editor = this.props.editor;
     editor.addListener("selectionChanged", this.onSelectionChanged);
-    editor.spokeControls.addListener("mode-changed", this.onFlyModeChanged);
+    editor.spokeControls.addListener("flyModeChanged", this.onFlyModeChanged);
   };
 
   onFlyModeChanged = () => {

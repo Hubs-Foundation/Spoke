@@ -67,8 +67,8 @@ export const Spoke = {
   setRotateMode: "setRotateMode",
   setScaleMode: "setScaleMode",
   toggleSnapMode: "toggleSnapMode",
-  invertSnap: "invertSnap",
-  toggleRotationSpace: "toggleRotationSpace",
+  modifier: "modifier",
+  toggleTransformSpace: "toggleTransformSpace",
   deleteSelected: "deleteSelected",
   undo: "undo",
   redo: "redo",
@@ -145,7 +145,7 @@ export const SpokeMapping = {
   },
   keyboard: {
     pressed: {
-      mod: Spoke.invertSnap
+      mod: Spoke.modifier
     },
     hotkeys: {
       f: Spoke.focusSelection,
@@ -153,7 +153,7 @@ export const SpokeMapping = {
       e: Spoke.setRotateMode,
       r: Spoke.setScaleMode,
       x: Spoke.toggleSnapMode,
-      z: Spoke.toggleRotationSpace,
+      z: Spoke.toggleTransformSpace,
       backspace: Spoke.deleteSelected,
       del: Spoke.deleteSelected,
       "mod+z": Spoke.undo,

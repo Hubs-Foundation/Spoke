@@ -17,7 +17,7 @@ export default class TranslateMultipleCommand extends Command {
   }
 
   shouldUpdate(newCommand) {
-    return this.space === newCommand.space && arrayShallowEqual(this.objects === newCommand.objects);
+    return this.space === newCommand.space && arrayShallowEqual(this.objects, newCommand.objects);
   }
 
   update(command) {

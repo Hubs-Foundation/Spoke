@@ -13,8 +13,7 @@ export default class ToolToggle extends Component {
       icons: {
         checked: this.getIcons(props.icons.checked),
         unchecked: this.getIcons(props.icons.unchecked)
-      },
-      title: props.text[!props.isChecked ? 1 : 0]
+      }
     };
   }
 
@@ -25,18 +24,6 @@ export default class ToolToggle extends Component {
 
   onChange = () => {
     this.props.action();
-  };
-
-  renderContent = () => {
-    const children = this.props.children;
-    if (!this.props.children) {
-      return (
-        <div className={styles.toggleText}>
-          <span>{this.props.text[!this.props.isChecked ? 0 : 1]}</span>
-        </div>
-      );
-    }
-    return React.cloneElement(children, { editor: this.props.editor });
   };
 
   render() {
@@ -52,9 +39,15 @@ export default class ToolToggle extends Component {
           checked={this.props.isChecked}
           onChange={this.onChange}
           icons={this.state.icons}
-          className={this.state.isSwitch ? styles.toggleSwitch : styles.toggleOnOff}
+          className={this.props.isSwitch ? styles.toggleSwitch : styles.toggleOnOff}
         />
-        {this.renderContent()}
+        {this.props.children ? (
+          this.props.children
+        ) : (
+          <div className={styles.toggleText}>
+            <span>{this.props.text[!this.props.isChecked ? 0 : 1]}</span>
+          </div>
+        )}
       </div>
     );
   }
@@ -70,6 +63,5 @@ ToolToggle.propTypes = {
     checked: PropTypes.string,
     unchecked: PropTypes.string
   }),
-  editor: PropTypes.object,
   tooltip: PropTypes.string
 };

@@ -20,6 +20,7 @@ import SceneNode from "./nodes/SceneNode";
 import FloorPlanNode from "./nodes/FloorPlanNode";
 
 import LoadingCube from "./objects/LoadingCube";
+import TransformGizmo from "./objects/TransformGizmo";
 import SpokeInfiniteGridHelper from "./helpers/SpokeInfiniteGridHelper";
 
 import GLTFCache from "./caches/GLTFCache";
@@ -148,7 +149,7 @@ export default class Editor extends EventEmitter {
   }
 
   async init() {
-    const tasks = [rendererPromise, loadEnvironmentMap(), LoadingCube.load()];
+    const tasks = [rendererPromise, loadEnvironmentMap(), LoadingCube.load(), TransformGizmo.load()];
 
     for (const NodeConstructor of this.nodeTypes) {
       tasks.push(NodeConstructor.load());
@@ -1370,7 +1371,7 @@ export default class Editor extends EventEmitter {
 
       tempMatrix1.getInverse(spaceMatrix);
       tempVector1.applyMatrix4(tempMatrix1);
-      object.position.copy(tempVector1);
+      object.scale.copy(tempVector1);
     }
 
     object.updateMatrixWorld(true);
