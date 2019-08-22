@@ -1,6 +1,18 @@
 import EventEmitter from "eventemitter3";
 import { Spoke, SpokeMapping } from "./input-mappings";
-import { Matrix3, Vector2, Vector3, Spherical, Box3, Raycaster, Sphere, Ray, Plane, PlaneHelper } from "three";
+import {
+  Matrix3,
+  Vector2,
+  Vector3,
+  Spherical,
+  Box3,
+  Raycaster,
+  Sphere,
+  Ray,
+  Plane,
+  PlaneHelper,
+  Quaternion
+} from "three";
 import getIntersectingNode from "../utils/getIntersectingNode";
 import { TransformSpace } from "../Editor";
 import TransformGizmo from "../objects/TransformGizmo";
@@ -79,7 +91,7 @@ export default class SpokeControls extends EventEmitter {
     this.transformMode = TransformMode.Translate;
     this.transformSpace = TransformSpace.World;
     this.transformPivot = TransformPivot.Selection;
-    this.transformAxis = TransformAxis.XYZ;
+    this.transformAxis = null;
 
     this.snapMode = SnapMode.Disabled;
     this.translationSnap = 1;
@@ -89,13 +101,12 @@ export default class SpokeControls extends EventEmitter {
     this.selectStartPosition = new Vector2();
     this.selectEndPosition = new Vector2();
 
-    this.dragStartWorldPosition = new Vector3();
+    this.inverseGizmoQuaternion = new Quaternion();
+    this.dragOffset = new Vector3();
     this.transformRay = new Ray();
     this.transformPlane = new Plane();
     this.planeIntersection = new Vector3();
-    this.gizmoWorldPosition = new Vector3();
     this.planeNormal = new Vector3();
-    this.cursorDeltaVector = new Vector2();
     this.translationVector = new Vector3();
     this.rotationAxis = new Vector3();
     this.pivotVector = new Vector3();
@@ -103,11 +114,13 @@ export default class SpokeControls extends EventEmitter {
 
     this.dragging = false;
     this.selectionChanged = true;
+    this.transformPropertyChanged = true;
     this.transformModeChanged = true;
     this.transformPivotChanged = true;
     this.transformSpaceChanged = true;
 
     this.editor.addListener("selectionChanged", this.onSelectionChanged);
+    this.editor.addListener("objectsChanged", this.onObjectsChanged);
   }
 
   onSceneSet = scene => {
@@ -118,6 +131,12 @@ export default class SpokeControls extends EventEmitter {
 
   onSelectionChanged = () => {
     this.selectionChanged = true;
+  };
+
+  onObjectsChanged = (_objects, property) => {
+    if (property === "position" || property === "rotation" || property === "scale") {
+      this.transformPropertyChanged = true;
+    }
   };
 
   enable() {
@@ -167,6 +186,54 @@ export default class SpokeControls extends EventEmitter {
       this.transformGizmo.setTransformMode(this.transformMode);
     }
 
+    if (selected.length > 0 && this.transformMode !== TransformMode.Disabled) {
+      const lastSelectedObject = selected[selected.length - 1];
+
+      if (
+        this.selectionChanged ||
+        this.transformModeChanged ||
+        this.transformPivotChanged ||
+        this.transformPropertyChanged
+      ) {
+        const selectedTransformRoots = this.editor.selectedTransformRoots;
+
+        if (this.transformPivot === TransformPivot.Center) {
+          this.selectionBoundingBox.makeEmpty();
+
+          for (let i = 0; i < selectedTransformRoots.length; i++) {
+            this.selectionBoundingBox.expandByObject(selectedTransformRoots[i]);
+          }
+
+          this.selectionBoundingBox.getCenter(this.transformGizmo.position);
+        } else {
+          lastSelectedObject.getWorldPosition(this.transformGizmo.position);
+        }
+      }
+
+      if (
+        this.selectionChanged ||
+        this.transformModeChanged ||
+        this.transformSpaceChanged ||
+        this.transformPropertyChanged
+      ) {
+        if (this.transformSpace === TransformSpace.LocalSelection) {
+          lastSelectedObject.getWorldQuaternion(this.transformGizmo.quaternion);
+        } else {
+          this.transformGizmo.rotation.set(0, 0, 0);
+        }
+
+        this.inverseGizmoQuaternion.copy(this.transformGizmo.quaternion).inverse();
+      }
+      this.transformGizmo.visible = true;
+    } else {
+      this.transformGizmo.visible = false;
+    }
+
+    this.selectionChanged = false;
+    this.transformModeChanged = false;
+    this.transformPivotChanged = false;
+    this.transformSpaceChanged = false;
+
     if (selectStart) {
       const selectStartPosition = input.get(Spoke.selectStartPosition);
       this.selectStartPosition.copy(selectStartPosition);
@@ -177,6 +244,13 @@ export default class SpokeControls extends EventEmitter {
         this.transformAxis = this.transformGizmo.selectAxisWithRaycaster(this.raycaster);
 
         if (this.transformAxis) {
+          const axisInfo = this.transformGizmo.selectedAxis.axisInfo;
+          this.planeNormal
+            .copy(axisInfo.planeNormal)
+            .applyQuaternion(this.transformGizmo.quaternion)
+            .normalize();
+          this.transformPlane.setFromNormalAndCoplanarPoint(this.planeNormal, this.transformGizmo.position);
+
           if (this.transformMode === TransformMode.Rotate) {
             switch (this.transformAxis) {
               case TransformAxis.X:
@@ -203,63 +277,38 @@ export default class SpokeControls extends EventEmitter {
     const selectEnd = input.get(Spoke.selectEnd) === 1;
 
     if (this.dragging) {
-      // Cursor position is in normalized screen space coordinates
+      // Set up the transformRay
       const cursorPosition = input.get(Spoke.cursorPosition);
-
-      // Set up the ray such that it points from the camera origin through the cursor position
       this.transformRay.origin.setFromMatrixPosition(this.camera.matrixWorld);
       this.transformRay.direction
         .set(cursorPosition.x, cursorPosition.y, 0.5)
         .unproject(this.camera)
         .sub(this.transformRay.origin);
-
-      const axisInfo = this.transformGizmo.selectedAxis.axisInfo;
-
-      // Get the normal vector for the current axis
-      this.planeNormal.copy(axisInfo.planeNormal);
-      // Transform the plane normal into world space
-      this.transformGizmo.localToWorld(this.planeNormal);
-      // Orient the plane such that it faces the planeNormal direction and has the transformGizmo's world position on it's face.
-      this.transformPlane.setFromNormalAndCoplanarPoint(this.planeNormal, this.transformGizmo.position);
-      // Find the intersection of the transformRay and the transformPlane and store that world position in the planeIntersection vector
       this.transformRay.intersectPlane(this.transformPlane, this.planeIntersection);
 
       if (selectStart) {
-        // On the first frame that the user is dragging an object, store the planeIntersection point (where the user clicked on the transform gizmo)
-        this.dragStartWorldPosition.copy(this.planeIntersection);
+        this.dragOffset.subVectors(this.transformGizmo.position, this.planeIntersection);
       }
 
       if (this.transformMode === TransformMode.Translate) {
-        // Here's where things get hairy
-
-        // The translation vector should be the planeIntersection - dragStartWorldPosition which gives us the change in position on the plane.
-        this.translationVector.copy(this.planeIntersection).sub(this.dragStartWorldPosition);
-
-        // Get the unit vector for the current axis constraint
         const constraint = TransformAxisConstraints[this.transformAxis];
 
-        // Zero out the non-constrained components of the translationVector using the constraint vector
-        this.translationVector.multiply(constraint);
+        this.translationVector
+          .addVectors(this.planeIntersection, this.dragOffset)
+          .sub(this.transformGizmo.position)
+          .applyQuaternion(this.inverseGizmoQuaternion)
+          .multiply(constraint);
 
-        // translateSelected applies the translationVector to the objects in the transformSpace
-        // The possible transformSpace values are World or LocalSelection, where LocalSelection is in the space of the last selected object.
-        this.editor.translateSelected(this.translationVector, this.transformGizmo.matrixWorld);
-
-        // transformGizmo is parented to the scene so it's position is in world space.
-        // Whenever the selection, transformPivot, or transformSpace changes the transformGizmo's position and rotation are updated according to the following settings:
-        // When transformPivot is set to Center, the transformGizmo will be placed in the center of the bounding box of the selected objects.
-        // When transformPivot is set to Selection, the transformGizmo will be placed at the origin of the last selected object.
-        // When transformSpace is set to World, the transformGizmo will have no rotation.
-        // When transformSpace is set to LocalSelection, the transformGizmo will have the world rotation of the last selected object.
-
-        // Once we've translated the selected objects we'd also like to translate the transformGizmo itself.
-
-        // If the transformSpace is set to LocalSelection, the translationVector will transformed with the last selected object's world rotation (the current transform gizmo rotation)
-        if (this.transformSpace === TransformSpace.LocalSelection) {
-          this.translationVector.applyQuaternion(this.transformGizmo.quaternion);
+        if (this.snapMode === SnapMode.Grid) {
+          this.translationVector
+            .divideScalar(this.translationSnap)
+            .round()
+            .multiplyScalar(this.translationSnap);
         }
 
-        // Then we can translate the transformGizmo using the translationVector
+        this.translationVector.applyQuaternion(this.transformGizmo.quaternion);
+
+        this.editor.translateSelected(this.translationVector, this.transformSpace);
         this.transformGizmo.position.add(this.translationVector);
       } else if (this.transformMode === TransformMode.Rotate) {
         const rotationAngle = this.transformGizmo.getRotation(this.transformRay, this.rotationAxis, this.pivotVector);
@@ -291,38 +340,7 @@ export default class SpokeControls extends EventEmitter {
       this.dragging = false;
     }
 
-    if (selected.length > 0 && this.transformMode !== TransformMode.Disabled) {
-      const lastSelectedObject = selected[selected.length - 1];
-
-      if (this.selectionChanged || this.transformModeChanged || this.transformPivotChanged) {
-        const selectedTransformRoots = this.editor.selectedTransformRoots;
-
-        if (this.transformPivot === TransformPivot.Center) {
-          this.selectionBoundingBox.makeEmpty();
-
-          for (let i = 0; i < selectedTransformRoots.length; i++) {
-            this.selectionBoundingBox.expandByObject(selectedTransformRoots[i]);
-          }
-
-          this.selectionBoundingBox.getCenter(this.transformGizmo.position);
-        } else {
-          lastSelectedObject.getWorldPosition(this.transformGizmo.position);
-        }
-      }
-
-      if (this.selectionChanged || this.transformModeChanged || this.transformSpaceChanged) {
-        if (this.transformSpace === TransformSpace.LocalSelection) {
-          lastSelectedObject.getWorldQuaternion(this.transformGizmo.quaternion);
-        } else {
-          this.transformGizmo.rotation.set(0, 0, 0);
-        }
-      }
-    }
-
-    this.selectionChanged = false;
-    this.transformModeChanged = false;
-    this.transformPivotChanged = false;
-    this.transformSpaceChanged = false;
+    this.transformPropertyChanged = false;
 
     const selecting = input.get(Spoke.selecting);
 
