@@ -76,6 +76,10 @@ import TranslateCommand from "./commands/TranslateCommand";
 import TranslateMultipleCommand from "./commands/TranslateMultipleCommand";
 
 const tempMatrix1 = new Matrix4();
+const tempMatrix2 = new Matrix4();
+const tempMatrix3 = new Matrix4();
+const tempMatrix4 = new Matrix4();
+const tempMatrix5 = new Matrix4();
 const tempQuaternion1 = new Quaternion();
 const tempQuaternion2 = new Quaternion();
 const tempVector1 = new Vector3();
@@ -1312,10 +1316,27 @@ export default class Editor extends EventEmitter {
       return this.history.execute(new RotateAroundCommand(this, object, pivot, axis, angle));
     }
 
-    // TODO
+    object.updateMatrixWorld();
+
+    const matrixWorld = tempMatrix1.copy(object.matrixWorld);
+    const inverseParentMatrixWorld = tempMatrix2.getInverse(object.parent.matrixWorld);
+
+    const pivotToOriginMatrix = tempMatrix3.makeTranslation(-pivot.x, -pivot.y, -pivot.z);
+    const originToPivotMatrix = tempMatrix4.makeTranslation(pivot.x, pivot.y, pivot.z);
+
+    const rotationMatrix = tempMatrix5.makeRotationAxis(axis, angle);
+
+    matrixWorld
+      .premultiply(pivotToOriginMatrix)
+      .premultiply(rotationMatrix)
+      .premultiply(originToPivotMatrix)
+      .premultiply(inverseParentMatrixWorld)
+      .decompose(object.position, object.quaternion, object.scale);
+
+    object.updateMatrixWorld();
 
     if (emitEvent) {
-      this.emit("objectsChanged", [object], "rotation");
+      this.emit("objectsChanged", [object], "matrix");
     }
 
     return object;
@@ -1331,13 +1352,13 @@ export default class Editor extends EventEmitter {
     }
 
     if (emitEvent) {
-      this.emit("objectsChanged", objects, "rotation");
+      this.emit("objectsChanged", objects, "matrix");
     }
 
     return objects;
   }
 
-  rotateAroundSelected(objects, pivot, axis, angle, useHistory = true, emitEvent = true) {
+  rotateAroundSelected(pivot, axis, angle, useHistory = true, emitEvent = true) {
     return this.rotateAroundMultiple(this.selectedTransformRoots, pivot, axis, angle, useHistory, emitEvent);
   }
 

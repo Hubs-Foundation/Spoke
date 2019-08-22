@@ -9,6 +9,7 @@ export default class RotateAroundCommand extends Command {
     this.pivot = pivot.clone();
     this.axis = axis.clone();
     this.angle = angle;
+    this.oldPosition = object.position.clone();
     this.oldRotation = object.rotation.clone();
   }
 
@@ -27,7 +28,10 @@ export default class RotateAroundCommand extends Command {
   }
 
   undo() {
-    this.editor.setRotation(this.object, this.oldRotation, TransformSpace.Local, false);
+    // TODO: Add editor.setMatrix command
+    this.editor.setPosition(this.object, this.oldPosition, TransformSpace.Local, false, false);
+    this.editor.setRotation(this.object, this.oldRotation, TransformSpace.Local, false, false);
+    this.editor.emit("objectsChanged", this.objects, "matrix");
   }
 
   toString() {

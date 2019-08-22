@@ -83,7 +83,7 @@ export default class TransformGizmo extends Object3D {
     const rotateXAxisDisk = this.rotateXAxis.getObjectByName("RotateXAxisDisk");
     const rotateXAxisStart = this.rotateXAxis.getObjectByName("RotateXAxisStart");
     const rotateXAxisEnd = this.rotateXAxis.getObjectByName("RotateXAxisEnd");
-    this.rotateXAxis.axisInfo = {
+    rotateXAxisDisk.axisInfo = {
       axis: TransformAxis.X,
       planeNormal: new Vector3(1, 0, 0),
       rotationTarget: rotateXAxisDisk,
@@ -95,7 +95,7 @@ export default class TransformGizmo extends Object3D {
     const rotateYAxisDisk = this.rotateYAxis.getObjectByName("RotateYAxisDisk");
     const rotateYAxisStart = this.rotateYAxis.getObjectByName("RotateYAxisStart");
     const rotateYAxisEnd = this.rotateYAxis.getObjectByName("RotateYAxisEnd");
-    this.rotateYAxis.axisInfo = {
+    rotateYAxisDisk.axisInfo = {
       axis: TransformAxis.Y,
       planeNormal: new Vector3(0, 1, 0),
       rotationTarget: rotateYAxisDisk,
@@ -107,7 +107,7 @@ export default class TransformGizmo extends Object3D {
     const rotateZAxisDisk = this.rotateZAxis.getObjectByName("RotateZAxisDisk");
     const rotateZAxisStart = this.rotateZAxis.getObjectByName("RotateZAxisStart");
     const rotateZAxisEnd = this.rotateZAxis.getObjectByName("RotateZAxisEnd");
-    this.rotateZAxis.axisInfo = {
+    rotateZAxisDisk.axisInfo = {
       axis: TransformAxis.Z,
       planeNormal: new Vector3(0, 0, 1),
       rotationTarget: rotateZAxisDisk,
@@ -212,6 +212,7 @@ export default class TransformGizmo extends Object3D {
 
     this.raycasterResults.length = 0;
     raycaster.intersectObject(this.activeControls, true, this.raycasterResults);
+    console.log(this.raycasterResults);
     const axisResult = this.raycasterResults.find(result => result.object.axisInfo !== undefined);
 
     if (!axisResult) {

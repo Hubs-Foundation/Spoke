@@ -11,7 +11,8 @@ import {
   Ray,
   Plane,
   PlaneHelper,
-  Quaternion
+  Quaternion,
+  Math as _Math
 } from "three";
 import getIntersectingNode from "../utils/getIntersectingNode";
 import { TransformSpace } from "../Editor";
@@ -108,8 +109,11 @@ export default class SpokeControls extends EventEmitter {
     this.planeIntersection = new Vector3();
     this.planeNormal = new Vector3();
     this.translationVector = new Vector3();
-    this.rotationAxis = new Vector3();
-    this.pivotVector = new Vector3();
+    this.initRotationDragVector = new Vector3();
+    this.prevRotationAngle = 0;
+    this.curRotationDragVector = new Vector3();
+    this.normalizedInitRotationDragVector = new Vector3();
+    this.normalizedCurRotationDragVector = new Vector3();
     this.scaleVector = new Vector3();
 
     this.dragging = false;
@@ -126,7 +130,7 @@ export default class SpokeControls extends EventEmitter {
   onSceneSet = scene => {
     this.scene = scene;
     this.scene.add(this.transformGizmo);
-    this.scene.add(new PlaneHelper(this.transformPlane, 1, 0xffff00));
+    this.scene.add(new PlaneHelper(this.transformPlane, 1000, 0xffff00));
   };
 
   onSelectionChanged = () => {
@@ -134,7 +138,7 @@ export default class SpokeControls extends EventEmitter {
   };
 
   onObjectsChanged = (_objects, property) => {
-    if (property === "position" || property === "rotation" || property === "scale") {
+    if (property === "position" || property === "rotation" || property === "scale" || property === "matrix") {
       this.transformPropertyChanged = true;
     }
   };
@@ -250,25 +254,6 @@ export default class SpokeControls extends EventEmitter {
             .applyQuaternion(this.transformGizmo.quaternion)
             .normalize();
           this.transformPlane.setFromNormalAndCoplanarPoint(this.planeNormal, this.transformGizmo.position);
-
-          if (this.transformMode === TransformMode.Rotate) {
-            switch (this.transformAxis) {
-              case TransformAxis.X:
-                this.rotationAxis.set(1, 0, 0);
-                break;
-              case TransformAxis.Y:
-                this.rotationAxis.set(0, 1, 0);
-                break;
-              case TransformAxis.Z:
-                this.rotationAxis.set(0, 0, 1);
-                break;
-              default:
-                console.warn("Cannot rotate along multiple axes at the same time.");
-                this.rotationAxis.set(1, 0, 0);
-                break;
-            }
-          }
-
           this.dragging = true;
         }
       }
@@ -290,12 +275,13 @@ export default class SpokeControls extends EventEmitter {
         this.dragOffset.subVectors(this.transformGizmo.position, this.planeIntersection);
       }
 
-      if (this.transformMode === TransformMode.Translate) {
-        const constraint = TransformAxisConstraints[this.transformAxis];
+      this.planeIntersection.add(this.dragOffset);
 
+      const constraint = TransformAxisConstraints[this.transformAxis];
+
+      if (this.transformMode === TransformMode.Translate) {
         this.translationVector
-          .addVectors(this.planeIntersection, this.dragOffset)
-          .sub(this.transformGizmo.position)
+          .subVectors(this.planeIntersection, this.transformGizmo.position)
           .applyQuaternion(this.inverseGizmoQuaternion)
           .multiply(constraint);
 
@@ -311,8 +297,36 @@ export default class SpokeControls extends EventEmitter {
         this.editor.translateSelected(this.translationVector, this.transformSpace);
         this.transformGizmo.position.add(this.translationVector);
       } else if (this.transformMode === TransformMode.Rotate) {
-        const rotationAngle = this.transformGizmo.getRotation(this.transformRay, this.rotationAxis, this.pivotVector);
-        this.editor.rotateAroundSelected(this.rotationAxis, this.pivotVector, rotationAngle, selectEnd);
+        if (selectStart) {
+          this.initRotationDragVector
+            .subVectors(this.planeIntersection, this.dragOffset)
+            .sub(this.transformGizmo.position);
+          this.prevRotationAngle = 0;
+        }
+
+        this.curRotationDragVector
+          .subVectors(this.planeIntersection, this.dragOffset)
+          .sub(this.transformGizmo.position);
+        this.normalizedInitRotationDragVector.copy(this.initRotationDragVector).normalize();
+        this.normalizedCurRotationDragVector.copy(this.curRotationDragVector).normalize();
+
+        let rotationAngle = this.curRotationDragVector.angleTo(this.initRotationDragVector);
+
+        rotationAngle *=
+          this.normalizedInitRotationDragVector.cross(this.normalizedCurRotationDragVector).dot(this.planeNormal) > 0
+            ? 1
+            : -1;
+
+        if (this.snapMode === SnapMode.Grid) {
+          const rotationSnapAngle = _Math.DEG2RAD * this.rotationSnap;
+          rotationAngle = Math.round(rotationAngle / rotationSnapAngle) * rotationSnapAngle;
+        }
+
+        const relativeRotationAngle = rotationAngle - this.prevRotationAngle;
+
+        this.prevRotationAngle = rotationAngle;
+
+        this.editor.rotateAroundSelected(this.transformGizmo.position, this.planeNormal, relativeRotationAngle);
       } else if (this.transformMode === TransformMode.Scale) {
         this.transformGizmo.getScale(this.transformRay, this.scaleVector);
         this.editor.scaleSelected(this.scaleVector, this.transformSpace, selectEnd);

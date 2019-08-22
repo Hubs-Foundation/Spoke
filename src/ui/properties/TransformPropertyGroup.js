@@ -30,7 +30,7 @@ export default class TransformPropertyGroup extends Component {
   onObjectsChanged = (objects, property) => {
     if (
       objects[0] === this.props.node &&
-      (property === "position" || property === "rotation" || property === "scale")
+      (property === "position" || property === "rotation" || property === "scale" || property === "matrix")
     ) {
       this.forceUpdate();
     }

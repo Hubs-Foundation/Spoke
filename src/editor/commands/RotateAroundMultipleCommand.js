@@ -11,6 +11,7 @@ export default class RotateAroundMultipleCommand extends Command {
     this.axis = axis.clone();
     this.angle = angle;
     this.oldRotations = objects.map(o => o.rotation.clone());
+    this.oldPositions = objects.map(o => o.position.clone());
   }
 
   execute() {
@@ -34,7 +35,11 @@ export default class RotateAroundMultipleCommand extends Command {
       this.editor.setRotation(this.objects[i], this.oldRotations[i], TransformSpace.Local, false, false);
     }
 
-    this.editor.emit("objectsChanged", this.objects, "rotation");
+    for (let i = 0; i < this.objects.length; i++) {
+      this.editor.setPosition(this.objects[i], this.oldPositions[i], TransformSpace.Local, false, false);
+    }
+
+    this.editor.emit("objectsChanged", this.objects, "matrix");
   }
 
   toString() {
