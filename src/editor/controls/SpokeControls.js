@@ -493,6 +493,9 @@ export default class SpokeControls extends EventEmitter {
     } else if (input.get(Spoke.deselect)) {
       this.editor.deselectAll();
     }
+
+    const eyeDistance = this.transformGizmo.position.distanceTo(this.camera.position);
+    this.transformGizmo.scale.set(1, 1, 1).multiplyScalar(eyeDistance / 7);
   }
 
   raycastNode(coords) {
