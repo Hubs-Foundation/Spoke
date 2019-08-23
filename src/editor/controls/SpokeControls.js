@@ -184,7 +184,7 @@ export default class SpokeControls extends EventEmitter {
       this.emit("flyModeChanged");
     }
 
-    const modifier = input.get(Spoke.modifier);
+    const shift = input.get(Spoke.shift);
 
     const selectStart = input.get(Spoke.selectStart);
 
@@ -331,6 +331,21 @@ export default class SpokeControls extends EventEmitter {
         this.prevRotationAngle = rotationAngle;
 
         this.editor.rotateAroundSelected(this.transformGizmo.position, this.planeNormal, relativeRotationAngle);
+
+        const selectedAxisInfo = this.transformGizmo.selectedAxis.axisInfo;
+
+        if (selectStart) {
+          selectedAxisInfo.startMarker.visible = true;
+          selectedAxisInfo.endMarker.visible = true;
+        }
+
+        selectedAxisInfo.rotationTarget.rotateOnAxis(this.planeNormal, relativeRotationAngle);
+
+        if (selectEnd) {
+          selectedAxisInfo.startMarker.visible = false;
+          selectedAxisInfo.endMarker.visible = false;
+          selectedAxisInfo.rotationTarget.rotation.set(0, 0, 0);
+        }
       } else if (this.transformMode === TransformMode.Scale) {
         this.dragVector
           .copy(this.planeIntersection)
@@ -369,12 +384,12 @@ export default class SpokeControls extends EventEmitter {
         const result = this.raycastNode(selectEndPosition);
 
         if (result) {
-          if (modifier) {
+          if (shift) {
             this.editor.toggleSelection(result.node);
           } else {
             this.editor.setSelection([result.node]);
           }
-        } else if (!modifier) {
+        } else if (!shift) {
           this.editor.deselectAll();
         }
       }

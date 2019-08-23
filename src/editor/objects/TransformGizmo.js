@@ -255,16 +255,6 @@ export default class TransformGizmo extends Object3D {
     }
   }
 
-  setRotation(rotation) {
-    if (this.selectedAxis) {
-      const rotationTarget = this.selectedAxis.axisInfo.rotationTarget;
-
-      if (rotationTarget) {
-        rotationTarget.copy(rotation);
-      }
-    }
-  }
-
   clone() {
     // You can only have one instance of TransformControls so return a dummy object when cloning.
     return new Object3D().copy(this);

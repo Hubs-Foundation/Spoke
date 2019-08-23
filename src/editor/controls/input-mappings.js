@@ -68,6 +68,7 @@ export const Spoke = {
   setScaleMode: "setScaleMode",
   toggleSnapMode: "toggleSnapMode",
   modifier: "modifier",
+  shift: "shift",
   toggleTransformSpace: "toggleTransformSpace",
   deleteSelected: "deleteSelected",
   undo: "undo",
@@ -145,7 +146,8 @@ export const SpokeMapping = {
   },
   keyboard: {
     pressed: {
-      mod: Spoke.modifier
+      mod: Spoke.modifier,
+      shift: Spoke.shift
     },
     hotkeys: {
       f: Spoke.focusSelection,
