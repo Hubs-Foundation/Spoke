@@ -121,43 +121,43 @@ export default class TransformGizmo extends Object3D {
     this.scaleXAxis.axisInfo = {
       axis: TransformAxis.X,
       planeNormal: new Vector3(0, 1, 0),
-      selectionColorTarget: this.scaleXAxis
+      selectionColorTarget: this.scaleXAxis.material
     };
     this.scaleYAxis = this.scaleControls.getObjectByName("ScaleYAxis");
     this.scaleYAxis.axisInfo = {
       axis: TransformAxis.Y,
       planeNormal: new Vector3(0, 0, 1),
-      selectionColorTarget: this.scaleYAxis
+      selectionColorTarget: this.scaleYAxis.material
     };
     this.scaleZAxis = this.scaleControls.getObjectByName("ScaleZAxis");
     this.scaleZAxis.axisInfo = {
       axis: TransformAxis.Z,
       planeNormal: new Vector3(0, 1, 0),
-      selectionColorTarget: this.scaleZAxis
+      selectionColorTarget: this.scaleZAxis.material
     };
     this.scaleXYPlane = this.scaleControls.getObjectByName("ScaleXYPlane");
     this.scaleXYPlane.axisInfo = {
       axis: TransformAxis.XY,
       planeNormal: new Vector3(0, 0, 1),
-      selectionColorTarget: this.scaleXYPlane
+      selectionColorTarget: this.scaleXYPlane.material
     };
     this.scaleYZPlane = this.scaleControls.getObjectByName("ScaleYZPlane");
     this.scaleYZPlane.axisInfo = {
       axis: TransformAxis.YZ,
       planeNormal: new Vector3(1, 0, 0),
-      selectionColorTarget: this.scaleYZPlane
+      selectionColorTarget: this.scaleYZPlane.material
     };
     this.scaleXZPlane = this.scaleControls.getObjectByName("ScaleXZPlane");
     this.scaleXZPlane.axisInfo = {
       axis: TransformAxis.XZ,
       planeNormal: new Vector3(0, 1, 0),
-      selectionColorTarget: this.scaleXZPlane
+      selectionColorTarget: this.scaleXZPlane.material
     };
     this.scaleUniformHandle = this.scaleControls.getObjectByName("ScaleUniformHandle");
     this.scaleUniformHandle.axisInfo = {
       axis: TransformAxis.XYZ,
-      planeNormal: new Vector3(0, 0, 0),
-      selectionColorTarget: this.scaleXYZPlane
+      planeNormal: new Vector3(0, 1, 0),
+      selectionColorTarget: this.scaleUniformHandle.material
     };
 
     rotateXAxisStart.visible = false;
@@ -212,7 +212,7 @@ export default class TransformGizmo extends Object3D {
 
     this.raycasterResults.length = 0;
     raycaster.intersectObject(this.activeControls, true, this.raycasterResults);
-    console.log(this.raycasterResults);
+
     const axisResult = this.raycasterResults.find(result => result.object.axisInfo !== undefined);
 
     if (!axisResult) {

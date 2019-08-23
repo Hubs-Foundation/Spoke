@@ -10,7 +10,6 @@ import {
   Sphere,
   Ray,
   Plane,
-  PlaneHelper,
   Quaternion,
   Math as _Math
 } from "three";
@@ -114,6 +113,12 @@ export default class SpokeControls extends EventEmitter {
     this.curRotationDragVector = new Vector3();
     this.normalizedInitRotationDragVector = new Vector3();
     this.normalizedCurRotationDragVector = new Vector3();
+
+    this.initDragVector = new Vector3();
+    this.dragVector = new Vector3();
+    this.deltaDragVector = new Vector3();
+    this.prevScale = new Vector3();
+    this.curScale = new Vector3();
     this.scaleVector = new Vector3();
 
     this.dragging = false;
@@ -130,7 +135,6 @@ export default class SpokeControls extends EventEmitter {
   onSceneSet = scene => {
     this.scene = scene;
     this.scene.add(this.transformGizmo);
-    this.scene.add(new PlaneHelper(this.transformPlane, 1000, 0xffff00));
   };
 
   onSelectionChanged = () => {
@@ -328,7 +332,32 @@ export default class SpokeControls extends EventEmitter {
 
         this.editor.rotateAroundSelected(this.transformGizmo.position, this.planeNormal, relativeRotationAngle);
       } else if (this.transformMode === TransformMode.Scale) {
-        this.transformGizmo.getScale(this.transformRay, this.scaleVector);
+        this.dragVector
+          .copy(this.planeIntersection)
+          .applyQuaternion(this.inverseGizmoQuaternion)
+          .multiply(constraint);
+
+        if (selectStart) {
+          this.initDragVector.copy(this.dragVector);
+          this.prevScale.set(1, 1, 1);
+        }
+
+        const dragVectorLength = this.deltaDragVector.subVectors(this.dragVector, this.initDragVector).length();
+
+        this.curScale.set(
+          constraint.x === 0 ? 1 : dragVectorLength,
+          constraint.y === 0 ? 1 : dragVectorLength,
+          constraint.z === 0 ? 1 : dragVectorLength
+        );
+
+        this.curScale.set(
+          this.curScale.x === 0 ? 0.000001 : this.curScale.x,
+          this.curScale.y === 0 ? 0.000001 : this.curScale.y,
+          this.curScale.z === 0 ? 0.000001 : this.curScale.z
+        );
+
+        this.scaleVector.copy(this.curScale).divide(this.prevScale);
+        this.prevScale.copy(this.curScale);
         this.editor.scaleSelected(this.scaleVector, this.transformSpace, selectEnd);
       }
     }

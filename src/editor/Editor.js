@@ -1368,11 +1368,11 @@ export default class Editor extends EventEmitter {
     }
 
     if (space === TransformSpace.Local) {
-      object.scale.add(scale);
+      object.scale.multiply(scale);
     } else {
       object.updateMatrixWorld(); // Update parent world matrices
       tempVector1.setFromMatrixScale(object.matrixWorld);
-      tempVector1.add(scale);
+      tempVector1.multiply(scale);
 
       let spaceMatrix;
 
