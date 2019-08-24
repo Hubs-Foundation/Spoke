@@ -185,7 +185,7 @@ class ProjectsPage extends Component {
             <ProjectsContainer>
               <ProjectsHeader>
                 <h1>Projects</h1>
-                <Button medium to="/projects/new">
+                <Button medium to="/projects/templates">
                   New Project
                 </Button>
               </ProjectsHeader>
