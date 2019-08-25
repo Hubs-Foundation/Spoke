@@ -528,8 +528,6 @@ export default class InputManager {
   };
 
   onMouseMove = event => {
-    event.stopPropagation();
-
     const mouseMapping = this.mapping.mouse;
 
     if (!mouseMapping) return;

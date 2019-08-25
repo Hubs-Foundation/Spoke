@@ -260,9 +260,6 @@ module.exports = env => {
         GITHUB_REPO: "spoke",
         GITHUB_PUBLIC_TOKEN: "de8cbfb4cc0281c7b731c891df431016c29b0ace"
       }),
-      new webpack.IgnorePlugin({
-        resourceRegExp: /^@blueprintjs\/core/
-      }),
       new MiniCssExtractPlugin({
         filename: "assets/styles/[name]-[contenthash].css",
         chunkFilename: "assets/styles/[name]-[contenthash].css"

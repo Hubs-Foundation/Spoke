@@ -7,6 +7,7 @@ import { withEditor } from "../contexts/EditorContext";
 import { ContextMenu, MenuItem, ContextMenuTrigger, connectMenu } from "react-contextmenu";
 import "../styles/vendor/react-contextmenu/index.scss";
 import { cmdOrCtrlString } from "../utils";
+import Panel from "../layout/Panel";
 
 function collectNodeMenuProps({ node }) {
   return node;
@@ -522,27 +523,32 @@ class HierarchyPanelContainer extends Component {
 
   render() {
     const sceneRootNode = this.state.sceneRootNode;
+
+    // id used in onboarding
+
     return (
-      <PanelContainer ref={this.panelContainerRef}>
-        <TreeContainer>
-          <TreeNodeList>
-            {sceneRootNode && (
-              <TreeNode
-                node={sceneRootNode}
-                renamingNodeId={this.state.renamingNodeId}
-                renamingNodeValue={this.state.renamingNodeValue}
-                onChangeName={this.onChangeName}
-                onRenameSubmit={this.onRenameSubmit}
-                onClick={this.onClick}
-                onContextMenu={this.onContextMenu}
-                onToggle={this.onToggle}
-                onKeyDown={this.onKeyDown}
-              />
-            )}
-          </TreeNodeList>
-        </TreeContainer>
-        <this.NodeContextMenu />
-      </PanelContainer>
+      <Panel id="hierarchy-panel" title="Hierarchy" icon="fa-project-diagram">
+        <PanelContainer ref={this.panelContainerRef}>
+          <TreeContainer>
+            <TreeNodeList>
+              {sceneRootNode && (
+                <TreeNode
+                  node={sceneRootNode}
+                  renamingNodeId={this.state.renamingNodeId}
+                  renamingNodeValue={this.state.renamingNodeValue}
+                  onChangeName={this.onChangeName}
+                  onRenameSubmit={this.onRenameSubmit}
+                  onClick={this.onClick}
+                  onContextMenu={this.onContextMenu}
+                  onToggle={this.onToggle}
+                  onKeyDown={this.onKeyDown}
+                />
+              )}
+            </TreeNodeList>
+          </TreeContainer>
+          <this.NodeContextMenu />
+        </PanelContainer>
+      </Panel>
     );
   }
 }

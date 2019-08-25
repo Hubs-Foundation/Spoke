@@ -1,24 +1,6 @@
 @import "../styles/common";
 @import "../styles/theme";
-@import "../styles/icons";
 @import "../inputs/InputGroup";
-
-:global {
-  .propertiesPanel {
-    .mosaic-window-title:before {
-      @extend .fas;
-      content: fa-content($fa-var-sliders-h);
-      padding-right: 8px;
-    }
-  }
-}
-
-:local(.propertiesPanelContainer) {
-  @include no-select;
-  width: 100%;
-  overflow-x: hidden;
-  overflow-y: auto;
-}
 
 :local(.nodeEditor) {
   display: flex;

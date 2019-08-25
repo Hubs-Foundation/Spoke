@@ -146,13 +146,7 @@ class SaveProjectPopover extends Component {
 
   render() {
     return (
-      <OnboardingPopover
-        target=".viewportPanel .mosaic-window-title"
-        {...this.props}
-        position="bottom"
-        disablePrev
-        disableNext
-      >
+      <OnboardingPopover target="#viewport-panel .toolbar" {...this.props} position="bottom" disablePrev disableNext>
         Press {cmdOrCtrlString} + S to save your project.
         <Well>
           <HotkeyDescription action="Save Project">
@@ -218,7 +212,7 @@ const steps = [
   {
     render(props) {
       return (
-        <HideModelsPopover target=".viewportPanel .mosaic-window-title" {...props} position="bottom">
+        <HideModelsPopover target="#viewport-panel .toolbar" {...props} position="bottom">
           <p>You can orbit around the scene by holding the left mouse button and dragging.</p>
           <p>You can also fly around the scene by holding the right mouse button and using the WASD keys.</p>
           <Well>
@@ -237,7 +231,7 @@ const steps = [
   {
     render(props) {
       return (
-        <OnboardingPopover target=".hierarchyPanel" {...props} position="left">
+        <OnboardingPopover target="#hierarchy-panel" {...props} position="left">
           Objects you add to the scene show up in the hierarchy panel. Double click the object you added to focus it.
           You can also press the F key to focus the selected object.
           <Well>
@@ -333,7 +327,7 @@ const steps = [
   {
     render(props) {
       return (
-        <OnboardingPopover target=".viewportPanel .mosaic-window-title" {...props} position="bottom">
+        <OnboardingPopover target="#viewport-panel .toolbar" {...props} position="bottom">
           Go ahead and try translating, rotating, and scaling the object you added to the scene. When you&#39;re ready
           to continue, click next.
           <Well>
@@ -357,7 +351,7 @@ const steps = [
   {
     render(props) {
       return (
-        <OnboardingPopover target=".propertiesPanel" {...props} position="left">
+        <OnboardingPopover target="#properties-panel" {...props} position="left">
           Great job! Additional object properties can be set in the properties panel. This includes things like shadows,
           light color, and more. Go ahead and turn on shadows for your model by clicking the cast shadows checkbox.
         </OnboardingPopover>

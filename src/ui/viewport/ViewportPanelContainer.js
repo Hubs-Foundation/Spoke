@@ -1,9 +1,15 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
-import Viewport from "./Viewport";
 import { withEditor } from "../contexts/EditorContext";
+import styled from "styled-components";
 import styles from "./ViewportPanelContainer.scss";
 import LibraryContainer from "../library/LibraryContainer";
+import Panel from "../layout/Panel";
+
+const Viewport = styled.canvas`
+  width: 100%;
+  height: 100%;
+`;
 
 class ViewportPanelContainer extends Component {
   static propTypes = {
@@ -56,10 +62,12 @@ class ViewportPanelContainer extends Component {
     this.setState({ objectSelected: this.props.editor.selected.length > 0 });
   };
 
+  // id used in onboarding
+
   render() {
     return (
-      <div id="viewport-panel-container" className={styles.viewportPanelContainer}>
-        <Viewport ref={this.canvasRef} />
+      <Panel id="viewport-panel" title="Viewport" icon="fa-window-maximize">
+        <Viewport ref={this.canvasRef} tabIndex="-1" />
         <div className={styles.libraryToolbarContainer}>
           <LibraryContainer />
         </div>
@@ -68,7 +76,7 @@ class ViewportPanelContainer extends Component {
             ? "[W][A][S][D] Move Camera | [Shift] Fly faster"
             : `[LMB] Orbit / Select | [MMB] Pan | [RMB] Fly ${this.state.objectSelected ? "| [F] Focus" : ""}`}
         </div>
-      </div>
+      </Panel>
     );
   }
 }

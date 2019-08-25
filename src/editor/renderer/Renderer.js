@@ -38,7 +38,7 @@ export default class Renderer {
       renderer.physicallyCorrectLights = true;
       renderer.shadowMap.enabled = true;
       renderer.shadowMap.type = PCFSoftShadowMap;
-      renderer.setSize(width, height);
+      renderer.setSize(width, height, false);
       return renderer;
     }
 
@@ -91,7 +91,7 @@ export default class Renderer {
     camera.aspect = canvas.parentElement.offsetWidth / canvas.parentElement.offsetHeight;
     camera.updateProjectionMatrix();
 
-    this.renderer.setSize(canvas.parentElement.offsetWidth, canvas.parentElement.offsetHeight);
+    this.renderer.setSize(canvas.offsetWidth, canvas.offsetHeight, false);
     this.effectComposer.setSize(canvas.parentElement.offsetWidth, canvas.parentElement.offsetHeight);
   };
 
