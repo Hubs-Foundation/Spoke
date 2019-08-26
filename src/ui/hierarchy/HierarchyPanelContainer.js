@@ -1,13 +1,13 @@
-import React, { Component, createRef } from "react";
+import React, { useContext, useState, useEffect, useCallback } from "react";
 import styled from "styled-components";
 import PropTypes from "prop-types";
 import DefaultNodeEditor from "../properties/DefaultNodeEditor";
 import classnames from "classnames";
-import { withEditor } from "../contexts/EditorContext";
-import { ContextMenu, MenuItem, ContextMenuTrigger, connectMenu } from "react-contextmenu";
+import { ContextMenu, MenuItem, ContextMenuTrigger } from "react-contextmenu";
 import "../styles/vendor/react-contextmenu/index.scss";
 import { cmdOrCtrlString } from "../utils";
 import Panel from "../layout/Panel";
+import { EditorContext } from "../contexts/EditorContext";
 
 function collectNodeMenuProps({ node }) {
   return node;
@@ -120,11 +120,11 @@ const TreeNodeIcon = styled.div`
 
 const TreeNodeLabel = styled.div``;
 
-const TreeNodeDropTargetContainer = styled.div`
+const TreeNodeDropTarget = styled.div`
   height: 4px;
 `;
 
-const TreeNodeRenameInput = styled.input.attrs(() => ({ type: "text" }))`
+const TreeNodeRenameInput = styled.input`
   position: absolute;
   top: -3px;
   background-color: ${props => props.theme.inputBackground};
@@ -138,419 +138,412 @@ const TreeNodeRenameInputContainer = styled.div`
   height: 15px;
 `;
 
-class TreeNodeDropTarget extends Component {
-  render() {
-    return <TreeNodeDropTargetContainer />;
-  }
-}
+function TreeNode(props) {
+  const { node, ...rest } = props;
 
-class TreeNode extends Component {
-  static propTypes = {
-    node: PropTypes.object,
-    renamingNodeId: PropTypes.number,
-    renamingNodeValue: PropTypes.string,
-    onRenameSubmit: PropTypes.func,
-    onChangeName: PropTypes.func,
-    onClick: PropTypes.func,
-    onToggle: PropTypes.func,
-    onContextMenu: PropTypes.func,
-    onKeyDown: PropTypes.func
-  };
+  const onToggle = useCallback(
+    e => {
+      e.stopPropagation();
 
-  onClick = e => {
-    if (this.props.onClick) {
-      this.props.onClick(e, this.props.node);
-    }
-  };
+      if (props.onToggle) {
+        props.onToggle(e, node);
+      }
+    },
+    [props.onToggle, node]
+  );
 
-  onContextMenu = e => {
-    if (this.props.onContextMenu) {
-      this.props.onContextMenu(e, this.props.node);
-    }
-  };
+  const onKeyDown = useCallback(
+    e => {
+      e.stopPropagation();
 
-  onToggle = e => {
-    e.stopPropagation();
+      if (props.onKeyDown) {
+        props.onKeyDown(e, node);
+      }
+    },
+    [props.onKeyDown, node]
+  );
 
-    if (this.props.onToggle) {
-      this.props.onToggle(e, this.props.node);
-    }
-  };
+  const onKeyDownNameInput = useCallback(
+    e => {
+      if (e.key === "Escape") {
+        props.onRenameSubmit(node, null);
+      } else if (e.key === "Enter") {
+        props.onRenameSubmit(node, e.target.value);
+      }
+    },
+    [props.onRenameSubmit, node]
+  );
 
-  onKeyDown = e => {
-    e.stopPropagation();
+  const renaming = props.renamingNode && props.renamingNode.id === node.id;
+  const collapsed = props.collapsedNodes[node.id] === true;
 
-    if (this.props.onKeyDown) {
-      this.props.onKeyDown(e, this.props.node);
-    }
-  };
+  return (
+    <TreeDepthContainer>
+      <ContextMenuTrigger holdToDisplay={-1} id="hierarchy-node-menu" node={node} collect={collectNodeMenuProps}>
+        <TreeNodeContainer
+          id={getNodeElId(node)}
+          node={node}
+          onClick={e => props.onClick(e, node)}
+          tabIndex="0"
+          onKeyDown={onKeyDown}
+          root={node.depth === 0}
+          selected={node.selected}
+          active={node.active}
+        >
+          <TreeNodeDropTarget />
+          <TreeNodeContent depth={node.depth}>
+            {node.leaf ? (
+              <TreeNodeLeafSpacer />
+            ) : (
+              <TreeNodeToggle
+                collapsed={collapsed}
+                className={classnames("fas", {
+                  "fa-caret-right": collapsed,
+                  "fa-caret-down": !collapsed
+                })}
+                onClick={onToggle}
+              />
+            )}
 
-  onChangeNameInput = e => {
-    this.props.onChangeName(this.props.node, e.target.value);
-  };
-
-  onKeyDownNameInput = e => {
-    if (e.key === "Escape") {
-      this.props.onRenameSubmit(this.props.node, null);
-    } else if (e.key === "Enter") {
-      this.props.onRenameSubmit(this.props.node, e.target.value);
-    }
-  };
-
-  onBlurNameInput = e => {
-    this.props.onRenameSubmit(this.props.node, e.target.value);
-  };
-
-  render() {
-    const { node, ...rest } = this.props;
-
-    const renaming = this.props.renamingNodeId === node.id;
-
-    return (
-      <TreeDepthContainer>
-        <ContextMenuTrigger holdToDisplay={-1} id="hierarchy-node-menu" node={node} collect={collectNodeMenuProps}>
-          <TreeNodeContainer
-            id={getNodeElId(node)}
-            node={node}
-            onClick={this.onClick}
-            tabIndex="0"
-            onKeyDown={this.onKeyDown}
-            root={node.depth === 0}
-            selected={node.selected}
-            active={node.active}
-          >
-            <TreeNodeDropTarget />
-            <TreeNodeContent depth={node.depth}>
-              {node.leaf ? (
-                <TreeNodeLeafSpacer />
+            <TreeNodeSelectTarget>
+              <TreeNodeIcon className={classnames("fas", node.iconClassName)} />
+              {renaming ? (
+                <TreeNodeRenameInputContainer>
+                  <TreeNodeRenameInput
+                    type="text"
+                    onChange={e => props.onChangeName(node, e.target.value)}
+                    onKeyDown={onKeyDownNameInput}
+                    onBlur={e => props.onRenameSubmit(node, e.target.value)}
+                    value={props.renamingNode.name}
+                    autoFocus
+                  />
+                </TreeNodeRenameInputContainer>
               ) : (
-                <TreeNodeToggle
-                  collapsed={node.collapsed}
-                  className={classnames("fas", {
-                    "fa-caret-right": node.collapsed,
-                    "fa-caret-down": !node.collapsed
-                  })}
-                  onClick={this.onToggle}
-                />
+                <TreeNodeLabel>{node.label}</TreeNodeLabel>
               )}
+            </TreeNodeSelectTarget>
+          </TreeNodeContent>
 
-              <TreeNodeSelectTarget>
-                <TreeNodeIcon className={classnames("fas", node.iconClassName)} />
-                {renaming ? (
-                  <TreeNodeRenameInputContainer>
-                    <TreeNodeRenameInput
-                      onChange={this.onChangeNameInput}
-                      onKeyDown={this.onKeyDownNameInput}
-                      onBlur={this.onBlurNameInput}
-                      value={this.props.renamingNodeValue}
-                      autoFocus
-                    />
-                  </TreeNodeRenameInputContainer>
-                ) : (
-                  <TreeNodeLabel>{node.label}</TreeNodeLabel>
-                )}
-              </TreeNodeSelectTarget>
-            </TreeNodeContent>
-
-            <TreeNodeDropTarget />
-          </TreeNodeContainer>
-        </ContextMenuTrigger>
-        {node.children && node.children.length > 0 && !node.collapsed && (
-          <TreeNodeList>
-            {node.children.map(child => (
-              <TreeNode key={child.id} node={child} {...rest} />
-            ))}
-          </TreeNodeList>
-        )}
-      </TreeDepthContainer>
-    );
-  }
+          <TreeNodeDropTarget />
+        </TreeNodeContainer>
+      </ContextMenuTrigger>
+      {node.children && node.children.length > 0 && !collapsed && (
+        <TreeNodeList>
+          {node.children.map(child => (
+            <TreeNode key={child.id} node={child} {...rest} />
+          ))}
+        </TreeNodeList>
+      )}
+    </TreeDepthContainer>
+  );
 }
 
-class HierarchyPanelContainer extends Component {
-  static propTypes = {
-    editor: PropTypes.object.isRequired
+TreeNode.propTypes = {
+  node: PropTypes.object.isRequired,
+  collapsedNodes: PropTypes.object.isRequired,
+  renamingNode: PropTypes.object,
+  onRenameSubmit: PropTypes.func.isRequired,
+  onChangeName: PropTypes.func.isRequired,
+  onClick: PropTypes.func.isRequired,
+  onToggle: PropTypes.func.isRequired,
+  onKeyDown: PropTypes.func.isRequired
+};
+
+function buildNodeHierarchy(editor, object = null, parent = null, index = 0, last = true, depth = 0) {
+  object = object || editor.scene;
+
+  const NodeEditor = editor.getNodeEditor(object) || DefaultNodeEditor;
+  const iconClassName = NodeEditor.iconClassName || DefaultNodeEditor.iconClassName;
+
+  const node = {
+    id: object.id,
+    object,
+    iconClassName,
+    label: object.name,
+    selected: editor.selected.indexOf(object) !== -1,
+    active: editor.selected.length > 0 && object === editor.selected[editor.selected.length - 1],
+    index,
+    last,
+    depth,
+    parent
   };
 
-  state = {
-    sceneRootNode: null,
-    renamingNodeId: null,
-    renamingNodeValue: "",
-    collapsedNodes: new Set()
-  };
-
-  panelContainerRef = createRef();
-
-  componentDidMount() {
-    this.props.editor.addListener("sceneGraphChanged", this.onSceneGraphChanged);
-    this.props.editor.addListener("selectionChanged", this.onSelectionChanged);
+  if (object.children.length !== 0) {
+    node.children = object.children
+      .filter(child => child.isNode)
+      .map((child, index) =>
+        buildNodeHierarchy(editor, child, node, index, index === object.children.length - 1, depth + 1)
+      );
   }
 
-  componentWillUnmount() {
-    this.props.editor.removeListener("sceneGraphChanged", this.onSceneGraphChanged);
-    this.props.editor.removeListener("selectionChanged", this.onSelectionChanged);
-  }
+  node.leaf = !(node.children && node.children.length > 0);
 
-  onSceneGraphChanged = () => {
-    this._updateNodeHierarchy();
-  };
+  return node;
+}
 
-  onSelectionChanged = () => {
-    this._updateNodeHierarchy();
-  };
+export default function HierarchyPanel() {
+  const editor = useContext(EditorContext);
 
-  onClick = (e, node) => {
-    if (e.shiftKey) {
-      this.props.editor.toggleSelection(node.object);
-    } else {
-      this.props.editor.setSelection([node.object]);
-    }
-  };
+  const [sceneRootNode, setSceneRootNode] = useState(null);
+  const [renamingNode, setRenamingNode] = useState(null);
 
-  onToggle = (e, node) => {
-    if (this.state.collapsedNodes.has(node.id)) {
-      this.state.collapsedNodes.delete(node.id);
-    } else {
-      this.state.collapsedNodes.add(node.id);
-    }
+  const updateNodeHierarchy = useCallback(() => {
+    setSceneRootNode(buildNodeHierarchy(editor));
+  }, [editor]);
 
-    this._updateNodeHierarchy();
-  };
+  const [collapsedNodes, setCollapsedNodes] = useState({});
 
-  onKeyDown = (e, node) => {
-    if (!node) {
-      node = this.state.sceneRootNode;
-    }
+  const expandNode = useCallback(
+    node => {
+      delete collapsedNodes[node.id];
+      setCollapsedNodes({ ...collapsedNodes });
+    },
+    [collapsedNodes]
+  );
 
-    if (e.key === "ArrowDown") {
-      let nextNode;
+  const collapseNode = useCallback(
+    node => {
+      setCollapsedNodes({ ...collapsedNodes, [node.id]: true });
+    },
+    [collapsedNodes]
+  );
 
-      if (node.last) {
-        if (node.children.length === 0) {
-          nextNode = null;
-        } else {
-          nextNode = node.children[0];
-        }
-      } else {
-        if (node.parent) {
-          nextNode = node.parent.children[node.index + 1];
-        } else {
-          nextNode = null;
-        }
-      }
+  const expandChildren = useCallback(
+    node => {
+      traverse(node, child => {
+        collapsedNodes[child.id] = true;
+      });
+      setCollapsedNodes({ ...collapsedNodes });
+    },
+    [collapsedNodes]
+  );
 
-      if (nextNode) {
-        if (e.shiftKey) {
-          this.props.editor.select(nextNode.object);
-        }
+  const collapseChildren = useCallback(
+    node => {
+      traverse(node, child => {
+        delete collapsedNodes[child.id];
+      });
+      setCollapsedNodes({ ...collapsedNodes });
+    },
+    [collapsedNodes]
+  );
 
-        const nextNodeEl = document.getElementById(getNodeElId(nextNode));
+  const onExpandAllNodes = useCallback(() => {
+    setCollapsedNodes({});
+  });
 
-        if (nextNodeEl) {
-          nextNodeEl.focus();
-        }
-      }
-    } else if (e.key === "ArrowUp") {
-      let nextNode;
-
-      if (node.index === 0) {
-        if (node.parent) {
-          nextNode = node.parent;
-        } else {
-          nextNode = null;
-        }
-      } else {
-        if (node.parent) {
-          nextNode = node.parent.children[node.index - 1];
-        } else {
-          nextNode = null;
-        }
-      }
-
-      if (nextNode) {
-        if (e.shiftKey) {
-          this.props.editor.select(nextNode.object);
-        }
-
-        const nextNodeEl = document.getElementById(getNodeElId(nextNode));
-
-        if (nextNodeEl) {
-          nextNodeEl.focus();
-        }
-      }
-    } else if (e.key === "ArrowLeft") {
-      if (e.shiftKey) {
-        this.collapseChildren(node.object);
-      } else {
-        if (node.children.length > 0) {
-          this.state.collapsedNodes.add(node.id);
-          this._updateNodeHierarchy();
-        }
-      }
-    } else if (e.key === "ArrowRight") {
-      if (e.shiftKey) {
-        this.expandChildren(node.object);
-      } else {
-        if (node.children.length > 0) {
-          this.state.collapsedNodes.delete(node.id);
-          this._updateNodeHierarchy();
-        }
-      }
-    } else if (e.key === "Enter") {
-      if (e.shiftKey) {
-        this.props.editor.toggleSelection(node.object);
-      } else {
-        this.props.editor.setSelection([node.object]);
-      }
-    }
-  };
-
-  onDeleteNode = (e, node) => {
-    if (node.selected) {
-      this.props.editor.removeSelectedObjects();
-    } else {
-      this.props.editor.removeObject(node.object);
-    }
-  };
-
-  onDuplicateNode = (e, node) => {
-    if (node.selected) {
-      this.props.editor.duplicateSelected();
-    } else {
-      this.props.editor.duplicate(node.object);
-    }
-  };
-
-  expandChildren(node) {
-    traverse(node, child => {
-      this.state.collapsedNodes.delete(child.id);
+  const onCollapseAllNodes = useCallback(() => {
+    const newCollapsedNodes = {};
+    traverse(sceneRootNode, child => {
+      newCollapsedNodes[child.id] = true;
     });
-    this._updateNodeHierarchy();
-  }
+    setCollapsedNodes(newCollapsedNodes);
+  });
 
-  collapseChildren(node) {
-    traverse(node, child => {
-      this.state.collapsedNodes.add(child.id);
-    });
-    this._updateNodeHierarchy();
-  }
+  const onObjectChanged = useCallback(
+    (objects, propertyName) => {
+      if (propertyName === "name" || !propertyName) {
+        updateNodeHierarchy();
+      }
+    },
+    [updateNodeHierarchy]
+  );
 
-  onRenameNode = (e, node) => {
-    this.setState({ renamingNodeId: node.id, renamingNodeValue: node.object.name });
-  };
+  useEffect(() => {
+    editor.addListener("sceneGraphChanged", updateNodeHierarchy);
+    editor.addListener("selectionChanged", updateNodeHierarchy);
+    editor.addListener("objectsChanged", onObjectChanged);
 
-  onChangeName = (node, value) => {
-    this.setState({ renamingNodeValue: value });
-  };
-
-  onRenameSubmit = (node, value) => {
-    if (value !== null) {
-      this.props.editor.setProperty(node.object, "name", value);
-    }
-
-    this._updateNodeHierarchy();
-  };
-
-  onExpandAll = () => {
-    this.state.collapsedNodes.clear();
-    this._updateNodeHierarchy();
-  };
-
-  onCollapseAll = () => {
-    traverse(this.state.sceneRootNode, child => {
-      this.state.collapsedNodes.add(child.id);
-    });
-    this._updateNodeHierarchy();
-  };
-
-  _buildNodeHierarchy = (object, state, parent = null, index = 0, last = true, depth = 0) => {
-    const editor = this.props.editor;
-    const NodeEditor = editor.getNodeEditor(object) || DefaultNodeEditor;
-    const iconClassName = NodeEditor.iconClassName || DefaultNodeEditor.iconClassName;
-
-    const node = {
-      id: object.id,
-      object,
-      iconClassName,
-      label: object.name,
-      collapsed: state.collapsedNodes.has(object.id),
-      selected: editor.selected.indexOf(object) !== -1,
-      active: editor.selected.length > 0 && object === editor.selected[editor.selected.length - 1],
-      index,
-      last,
-      depth,
-      parent
+    return () => {
+      editor.removeListener("sceneGraphChanged", updateNodeHierarchy);
+      editor.removeListener("selectionChanged", updateNodeHierarchy);
+      editor.removeListener("objectsChanged", onObjectChanged);
     };
+  }, [editor, updateNodeHierarchy]);
 
-    if (object.children.length !== 0) {
-      node.children = object.children
-        .filter(child => child.isNode)
-        .map((child, index) =>
-          this._buildNodeHierarchy(child, state, node, index, index === object.children.length - 1, depth + 1)
-        );
-    }
+  const onClick = useCallback(
+    (e, node) => {
+      if (e.shiftKey) {
+        editor.toggleSelection(node.object);
+      } else {
+        editor.setSelection([node.object]);
+      }
+    },
+    [editor]
+  );
 
-    node.leaf = !(node.children && node.children.length > 0);
+  const onToggle = useCallback(
+    (_e, node) => {
+      if (collapsedNodes[node.id]) {
+        expandNode(node);
+      } else {
+        collapseNode(node);
+      }
+    },
+    [collapsedNodes]
+  );
 
-    return node;
-  };
+  const onKeyDown = useCallback(
+    (e, node) => {
+      if (!node) {
+        node = sceneRootNode;
+      }
 
-  _updateNodeHierarchy() {
-    this.setState({
-      sceneRootNode: this._buildNodeHierarchy(this.props.editor.scene, this.state),
-      collapsedNodes: this.state.collapsedNodes,
-      renamingNodeId: null,
-      renamingNodeValue: ""
-    });
-  }
+      if (e.key === "ArrowDown") {
+        let nextNode;
 
-  renderNodeContextMenu = () => {
-    return (
-      <ContextMenu id="hierarchy-node-menu">
-        <MenuItem onClick={this.onRenameNode}>Rename</MenuItem>
-        <MenuItem onClick={this.onDuplicateNode}>
-          Duplicate
-          <div>{cmdOrCtrlString + "+ D"}</div>
-        </MenuItem>
-        <MenuItem onClick={this.onDeleteNode}>Delete</MenuItem>
-        <MenuItem onClick={this.onExpandAll}>Expand All</MenuItem>
-        <MenuItem onClick={this.onCollapseAll}>Collapse All</MenuItem>
-      </ContextMenu>
-    );
-  };
+        if (node.last) {
+          if (node.children.length === 0) {
+            nextNode = null;
+          } else {
+            nextNode = node.children[0];
+          }
+        } else {
+          if (node.parent) {
+            nextNode = node.parent.children[node.index + 1];
+          } else {
+            nextNode = null;
+          }
+        }
 
-  NodeContextMenu = connectMenu("hierarchy-node-menu")(this.renderNodeContextMenu);
+        if (nextNode) {
+          if (e.shiftKey) {
+            editor.select(nextNode.object);
+          }
 
-  render() {
-    const sceneRootNode = this.state.sceneRootNode;
+          const nextNodeEl = document.getElementById(getNodeElId(nextNode));
 
-    // id used in onboarding
+          if (nextNodeEl) {
+            nextNodeEl.focus();
+          }
+        }
+      } else if (e.key === "ArrowUp") {
+        let nextNode;
 
-    return (
-      <Panel id="hierarchy-panel" title="Hierarchy" icon="fa-project-diagram">
-        <PanelContainer ref={this.panelContainerRef}>
-          <TreeContainer>
-            <TreeNodeList>
-              {sceneRootNode && (
-                <TreeNode
-                  node={sceneRootNode}
-                  renamingNodeId={this.state.renamingNodeId}
-                  renamingNodeValue={this.state.renamingNodeValue}
-                  onChangeName={this.onChangeName}
-                  onRenameSubmit={this.onRenameSubmit}
-                  onClick={this.onClick}
-                  onContextMenu={this.onContextMenu}
-                  onToggle={this.onToggle}
-                  onKeyDown={this.onKeyDown}
-                />
-              )}
-            </TreeNodeList>
-          </TreeContainer>
-          <this.NodeContextMenu />
-        </PanelContainer>
-      </Panel>
-    );
-  }
+        if (node.index === 0) {
+          if (node.parent) {
+            nextNode = node.parent;
+          } else {
+            nextNode = null;
+          }
+        } else {
+          if (node.parent) {
+            nextNode = node.parent.children[node.index - 1];
+          } else {
+            nextNode = null;
+          }
+        }
+
+        if (nextNode) {
+          if (e.shiftKey) {
+            editor.select(nextNode.object);
+          }
+
+          const nextNodeEl = document.getElementById(getNodeElId(nextNode));
+
+          if (nextNodeEl) {
+            nextNodeEl.focus();
+          }
+        }
+      } else if (e.key === "ArrowLeft") {
+        if (e.shiftKey) {
+          collapseChildren(node.object);
+        } else if (node.children.length > 0) {
+          collapseNode(node);
+        }
+      } else if (e.key === "ArrowRight") {
+        if (e.shiftKey) {
+          expandChildren(node.object);
+        } else if (node.children.length > 0) {
+          expandNode(node);
+        }
+      } else if (e.key === "Enter") {
+        if (e.shiftKey) {
+          editor.toggleSelection(node.object);
+        } else {
+          editor.setSelection([node.object]);
+        }
+      }
+    },
+    [editor, sceneRootNode, expandNode, collapseNode, expandChildren, collapseChildren]
+  );
+
+  const onDeleteNode = useCallback(
+    (e, node) => {
+      if (node.selected) {
+        editor.removeSelectedObjects();
+      } else {
+        editor.removeObject(node.object);
+      }
+    },
+    [editor]
+  );
+
+  const onDuplicateNode = useCallback(
+    (e, node) => {
+      if (node.selected) {
+        editor.duplicateSelected();
+      } else {
+        editor.duplicate(node.object);
+      }
+    },
+    [editor]
+  );
+
+  const onRenameNode = useCallback(
+    (e, node) => {
+      setRenamingNode({ id: node.id, name: node.object.name });
+    },
+    [setRenamingNode]
+  );
+
+  const onChangeName = useCallback(
+    (node, name) => {
+      setRenamingNode({ id: node.id, name });
+    },
+    [setRenamingNode]
+  );
+
+  const onRenameSubmit = useCallback(
+    (node, name) => {
+      if (name !== null) {
+        editor.setProperty(node.object, "name", name);
+      }
+      setRenamingNode(null);
+    },
+    [editor]
+  );
+
+  return (
+    <Panel id="hierarchy-panel" title="Hierarchy" icon="fa-project-diagram">
+      <PanelContainer>
+        <TreeContainer>
+          <TreeNodeList>
+            {sceneRootNode && (
+              <TreeNode
+                node={sceneRootNode}
+                renamingNode={renamingNode}
+                collapsedNodes={collapsedNodes}
+                onChangeName={onChangeName}
+                onRenameSubmit={onRenameSubmit}
+                onClick={onClick}
+                onToggle={onToggle}
+                onKeyDown={onKeyDown}
+              />
+            )}
+          </TreeNodeList>
+        </TreeContainer>
+        <ContextMenu id="hierarchy-node-menu">
+          <MenuItem onClick={onRenameNode}>Rename</MenuItem>
+          <MenuItem onClick={onDuplicateNode}>
+            Duplicate
+            <div>{cmdOrCtrlString + "+ D"}</div>
+          </MenuItem>
+          <MenuItem onClick={onDeleteNode}>Delete</MenuItem>
+          <MenuItem onClick={onExpandAllNodes}>Expand All</MenuItem>
+          <MenuItem onClick={onCollapseAllNodes}>Collapse All</MenuItem>
+        </ContextMenu>
+      </PanelContainer>
+    </Panel>
+  );
 }
-
-export default withEditor(HierarchyPanelContainer);

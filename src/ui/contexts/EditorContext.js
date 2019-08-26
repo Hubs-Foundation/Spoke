@@ -1,6 +1,6 @@
 import React from "react";
 
-const EditorContext = React.createContext(null);
+export const EditorContext = React.createContext(null);
 
 export const EditorContextProvider = EditorContext.Provider;
 
