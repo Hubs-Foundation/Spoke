@@ -4,23 +4,30 @@ import { serializeObject3DArray, serializeObject3D } from "../utils/debug";
 export default class ReparentMultipleCommand extends Command {
   constructor(editor, objects, newParent, newBefore) {
     super(editor);
-    this.objects = objects.slice(0);
+    this.objects = [];
     this.newParent = newParent;
-    this.oldParents = objects.map(o => o.parent);
     this.newBefore = newBefore;
-    this.oldBefores = objects.map(o => {
-      if (o.parent) {
-        const siblings = o.parent.children;
-        const index = siblings.indexOf(o);
+    this.oldParents = [];
+    this.oldBefores = [];
+    this.oldSelection = editor.selected.slice(0);
 
-        if (index + 1 < siblings.length) {
-          return siblings[index + 1];
-        } else {
-          return undefined;
+    // Sort objects, parents, and befores with a depth first search so that undo adds nodes in the correct order
+    editor.scene.traverse(object => {
+      if (objects.indexOf(object) !== -1) {
+        this.objects.push(object);
+        this.oldParents.push(object.parent);
+        if (object.parent) {
+          const siblings = object.parent.children;
+          const index = siblings.indexOf(object);
+
+          if (index + 1 < siblings.length) {
+            this.oldBefores.push(siblings[index + 1]);
+          } else {
+            this.oldBefores.push(undefined);
+          }
         }
       }
     });
-    this.oldSelection = editor.selected.slice(0);
   }
 
   execute() {

@@ -43,7 +43,6 @@ import PlayModeControls from "./controls/PlayModeControls";
 
 import AddMultipleObjectsCommand from "./commands/AddMultipleObjectsCommand";
 import AddObjectCommand from "./commands/AddObjectCommand";
-import DeselectAllCommand from "./commands/DeselectAllCommand";
 import DeselectCommand from "./commands/DeselectCommand";
 import DeselectMultipleCommand from "./commands/DeselectMultipleCommand";
 import DuplicateCommand from "./commands/DuplicateCommand";
@@ -58,7 +57,6 @@ import RotateOnAxisCommand from "./commands/RotateOnAxisCommand";
 import RotateOnAxisMultipleCommand from "./commands/RotateOnAxisMultipleCommand";
 import ScaleCommand from "./commands/ScaleCommand";
 import ScaleMultipleCommand from "./commands/ScaleMultipleCommand";
-import SelectAllCommand from "./commands/SelectAllCommand";
 import SelectCommand from "./commands/SelectCommand";
 import SelectMultipleCommand from "./commands/SelectMultipleCommand";
 import SetPositionCommand from "./commands/SetPositionCommand";
@@ -547,29 +545,7 @@ export default class Editor extends EventEmitter {
   }
 
   selectAll(useHistory = true, emitEvent = true, updateTransformRoots = true) {
-    if (this.selected.length === this.nodes.length) {
-      return this.selected;
-    }
-
-    if (useHistory) {
-      return this.history.execute(new SelectAllCommand(this));
-    }
-
-    const objects = this.nodes;
-
-    for (let i = 0; i < objects.length; i++) {
-      this.select(objects[i], false, false, false);
-    }
-
-    if (emitEvent) {
-      this.emit("selectionChanged");
-    }
-
-    if (updateTransformRoots) {
-      this.updateTransformRoots();
-    }
-
-    return this.selected;
+    return this.setSelection(this.nodes, useHistory, emitEvent, updateTransformRoots);
   }
 
   deselect(object, useHistory = true, emitEvent = true, updateTransformRoots = true) {
@@ -634,29 +610,7 @@ export default class Editor extends EventEmitter {
   }
 
   deselectAll(useHistory = true, emitEvent = true, updateTransformRoots = true) {
-    if (this.selected.length === 0) {
-      return this.selected;
-    }
-
-    if (useHistory) {
-      return this.history.execute(new DeselectAllCommand(this));
-    }
-
-    const objects = this.selected;
-
-    for (let i = 0; i < objects.length; i++) {
-      this.deselect(objects[i], false, false, false);
-    }
-
-    if (emitEvent) {
-      this.emit("selectionChanged");
-    }
-
-    if (updateTransformRoots) {
-      this.updateTransformRoots();
-    }
-
-    return this.selected;
+    return this.setSelection([], useHistory, emitEvent, updateTransformRoots);
   }
 
   toggleSelection(object, useHistory = true, emitEvent = true, updateTransformRoots = true) {
