@@ -8,6 +8,10 @@ import "../styles/vendor/react-contextmenu/index.scss";
 import { cmdOrCtrlString } from "../utils";
 import Panel from "../layout/Panel";
 import { EditorContext } from "../contexts/EditorContext";
+import { useDrag, useDrop } from "react-dnd";
+import { getEmptyImage } from "react-dnd-html5-backend";
+import { ItemTypes } from "../dnd";
+import traverseEarlyOut from "../../editor/utils/traverseEarlyOut";
 
 function collectNodeMenuProps({ node }) {
   return node;
@@ -115,13 +119,28 @@ const TreeNodeLeafSpacer = styled.div`
 `;
 
 const TreeNodeIcon = styled.div`
-  margin-right: 6px;
+  margin-right: 4px;
 `;
 
-const TreeNodeLabel = styled.div``;
+const TreeNodeLabel = styled.div`
+  background-color: ${props => (props.isOver ? (props.canDrop ? props.theme.yellow : props.theme.red) : "transparent")};
+  color: ${props => (props.isOver ? props.theme.text : "inherit")};
+  border-radius: 4px;
+  padding: 0 2px;
+`;
+
+function borderStyle({ isOver, canDrop, theme, position }) {
+  if (isOver) {
+    return `border-${position === "before" ? "top" : "bottom"}: 2px solid ${canDrop ? theme.yellow : theme.red}`;
+  } else {
+    return "";
+  }
+}
 
 const TreeNodeDropTarget = styled.div`
   height: 4px;
+  box-sizing: content-box;
+  ${borderStyle};
 `;
 
 const TreeNodeRenameInput = styled.input`
@@ -138,8 +157,14 @@ const TreeNodeRenameInputContainer = styled.div`
   height: 15px;
 `;
 
+function isAncestor(object, otherObject) {
+  return !traverseEarlyOut(object, child => child !== otherObject);
+}
+
 function TreeNode(props) {
   const { node, ...rest } = props;
+
+  const editor = useContext(EditorContext);
 
   const onToggle = useCallback(
     e => {
@@ -177,10 +202,91 @@ function TreeNode(props) {
   const renaming = props.renamingNode && props.renamingNode.id === node.id;
   const collapsed = props.collapsedNodes[node.id] === true;
 
+  const [_dragProps, drag, preview] = useDrag({
+    item: { type: ItemTypes.Node },
+    begin() {
+      editor.select(node.object);
+      const multiple = editor.selected.length > 1;
+      return { type: ItemTypes.Node, multiple, value: multiple ? editor.selected : editor.selected[0] };
+    },
+    canDrag() {
+      return props.node.depth > 0;
+    },
+    collect: monitor => ({
+      isDragging: !!monitor.isDragging()
+    })
+  });
+
+  useEffect(() => {
+    preview(getEmptyImage(), { captureDraggingState: true });
+  }, []);
+
+  const [{ canDropBefore, isOverBefore }, beforeDropTarget] = useDrop({
+    accept: ItemTypes.Node,
+    drop(item) {
+      if (item.multiple) {
+        editor.reparentMultiple(item.value, node.object.parent, node.object);
+      } else {
+        editor.reparent(item.value, node.object.parent, node.object);
+      }
+    },
+    canDrop(item) {
+      return !(item.multiple
+        ? item.value.some(otherObject => isAncestor(node.object, otherObject))
+        : isAncestor(node.object, item.value));
+    },
+    collect: monitor => ({
+      canDropBefore: monitor.canDrop(),
+      isOverBefore: monitor.isOver()
+    })
+  });
+
+  const [{ canDropAfter, isOverAfter }, afterDropTarget] = useDrop({
+    accept: ItemTypes.Node,
+    drop(item) {
+      const next = !node.last && node.parent.children[node.index + 1];
+      if (item.multiple) {
+        editor.reparentMultiple(item.value, node.object.parent, next);
+      } else {
+        editor.reparent(item.value, node.object.parent, next);
+      }
+    },
+    canDrop(item) {
+      return !(item.multiple
+        ? item.value.some(otherObject => isAncestor(node.object, otherObject))
+        : isAncestor(node.object, item.value));
+    },
+    collect: monitor => ({
+      canDropAfter: monitor.canDrop(),
+      isOverAfter: monitor.isOver()
+    })
+  });
+
+  const [{ canDropOn, isOverOn }, onDropTarget] = useDrop({
+    accept: ItemTypes.Node,
+    drop(item) {
+      if (item.multiple) {
+        editor.reparentMultiple(item.value, node.object);
+      } else {
+        editor.reparent(item.value, node.object);
+      }
+    },
+    canDrop(item) {
+      return !(item.multiple
+        ? item.value.some(otherObject => isAncestor(node.object, otherObject))
+        : isAncestor(node.object, item.value));
+    },
+    collect: monitor => ({
+      canDropOn: monitor.canDrop(),
+      isOverOn: monitor.isOver()
+    })
+  });
+
   return (
     <TreeDepthContainer>
       <ContextMenuTrigger holdToDisplay={-1} id="hierarchy-node-menu" node={node} collect={collectNodeMenuProps}>
         <TreeNodeContainer
+          ref={drag}
           id={getNodeElId(node)}
           node={node}
           onClick={e => props.onClick(e, node)}
@@ -190,8 +296,14 @@ function TreeNode(props) {
           selected={node.selected}
           active={node.active}
         >
-          <TreeNodeDropTarget />
-          <TreeNodeContent depth={node.depth}>
+          <TreeNodeDropTarget
+            ref={beforeDropTarget}
+            depth={node.depth}
+            position="before"
+            canDrop={canDropBefore}
+            isOver={isOverBefore}
+          />
+          <TreeNodeContent depth={node.depth} ref={onDropTarget}>
             {node.leaf ? (
               <TreeNodeLeafSpacer />
             ) : (
@@ -219,12 +331,20 @@ function TreeNode(props) {
                   />
                 </TreeNodeRenameInputContainer>
               ) : (
-                <TreeNodeLabel>{node.label}</TreeNodeLabel>
+                <TreeNodeLabel canDrop={canDropOn} isOver={isOverOn}>
+                  {node.label}
+                </TreeNodeLabel>
               )}
             </TreeNodeSelectTarget>
           </TreeNodeContent>
 
-          <TreeNodeDropTarget />
+          <TreeNodeDropTarget
+            depth={node.depth}
+            ref={afterDropTarget}
+            position="after"
+            canDrop={canDropAfter}
+            isOver={isOverAfter}
+          />
         </TreeNodeContainer>
       </ContextMenuTrigger>
       {node.children && node.children.length > 0 && !collapsed && (

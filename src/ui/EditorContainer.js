@@ -4,6 +4,8 @@ import Modal from "react-modal";
 import { Helmet } from "react-helmet";
 import * as Sentry from "@sentry/browser";
 import styled from "styled-components";
+import { DndProvider } from "react-dnd";
+import HTML5Backend from "react-dnd-html5-backend";
 
 import ToolBar from "./toolbar/ToolBar";
 
@@ -26,6 +28,7 @@ import SupportDialog from "./dialogs/SupportDialog";
 import { cmdOrCtrlString } from "./utils";
 import BrowserPrompt from "./router/BrowserPrompt";
 import { Resizeable } from "./layout/Resizeable";
+import DragLayer from "./dnd/DragLayer";
 
 const StyledEditorContainer = styled.div`
   display: flex;
@@ -556,43 +559,46 @@ export default class EditorContainer extends Component {
         <SettingsContextProvider value={settingsContext}>
           <EditorContextProvider value={editor}>
             <DialogContextProvider value={this.dialogContext}>
-              <ToolBar
-                menu={toolbarMenu}
-                editor={editor}
-                onPublish={this.onPublishProject}
-                isPublishedScene={isPublishedScene}
-                onOpenScene={this.onOpenScene}
-              />
-              <WorkspaceContainer>
-                <Resizeable axis="x" initialSizes={[0.7, 0.3]} onChange={this.onResize}>
-                  <ViewportPanelContainer />
-                  <Resizeable axis="y" initialSizes={[0.5, 0.5]}>
-                    <HierarchyPanelContainer />
-                    <PropertiesPanelContainer />
+              <DndProvider backend={HTML5Backend}>
+                <DragLayer />
+                <ToolBar
+                  menu={toolbarMenu}
+                  editor={editor}
+                  onPublish={this.onPublishProject}
+                  isPublishedScene={isPublishedScene}
+                  onOpenScene={this.onOpenScene}
+                />
+                <WorkspaceContainer>
+                  <Resizeable axis="x" initialSizes={[0.7, 0.3]} onChange={this.onResize}>
+                    <ViewportPanelContainer />
+                    <Resizeable axis="y" initialSizes={[0.5, 0.5]}>
+                      <HierarchyPanelContainer />
+                      <PropertiesPanelContainer />
+                    </Resizeable>
                   </Resizeable>
-                </Resizeable>
-              </WorkspaceContainer>
-              <Modal
-                ariaHideApp={false}
-                isOpen={!!DialogComponent}
-                onRequestClose={this.hideDialog}
-                shouldCloseOnOverlayClick={false}
-                className="Modal"
-                overlayClassName="Overlay"
-              >
-                {DialogComponent && (
-                  <DialogComponent onConfirm={this.hideDialog} onCancel={this.hideDialog} {...dialogProps} />
-                )}
-              </Modal>
-              <Helmet>
-                <title>{`${modified}${editor.scene.name} | Spoke by Mozilla`}</title>
-                <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
-              </Helmet>
-              <BrowserPrompt
-                message={`${editor.scene.name} has unsaved changes, are you sure you wish to navigate away from the page?`}
-                when={editor.sceneModified && !creatingProject}
-              />
-              {tutorialEnabled && <Onboarding onFinish={this.onFinishTutorial} />}
+                </WorkspaceContainer>
+                <Modal
+                  ariaHideApp={false}
+                  isOpen={!!DialogComponent}
+                  onRequestClose={this.hideDialog}
+                  shouldCloseOnOverlayClick={false}
+                  className="Modal"
+                  overlayClassName="Overlay"
+                >
+                  {DialogComponent && (
+                    <DialogComponent onConfirm={this.hideDialog} onCancel={this.hideDialog} {...dialogProps} />
+                  )}
+                </Modal>
+                <Helmet>
+                  <title>{`${modified}${editor.scene.name} | Spoke by Mozilla`}</title>
+                  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+                </Helmet>
+                <BrowserPrompt
+                  message={`${editor.scene.name} has unsaved changes, are you sure you wish to navigate away from the page?`}
+                  when={editor.sceneModified && !creatingProject}
+                />
+                {tutorialEnabled && <Onboarding onFinish={this.onFinishTutorial} />}
+              </DndProvider>
             </DialogContextProvider>
           </EditorContextProvider>
         </SettingsContextProvider>
