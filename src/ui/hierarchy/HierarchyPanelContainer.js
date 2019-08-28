@@ -210,7 +210,7 @@ function TreeNode(props) {
       return { type: ItemTypes.Node, multiple, value: multiple ? editor.selected : editor.selected[0] };
     },
     canDrag() {
-      return props.node.depth > 0;
+      return !editor.selected.some(object => !object.parent);
     },
     collect: monitor => ({
       isDragging: !!monitor.isDragging()
