@@ -123,15 +123,15 @@ const TreeNodeIcon = styled.div`
 `;
 
 const TreeNodeLabel = styled.div`
-  background-color: ${props => (props.isOver ? (props.canDrop ? props.theme.yellow : props.theme.red) : "transparent")};
-  color: ${props => (props.isOver ? props.theme.text : "inherit")};
+  background-color: ${props => (props.isOver && props.canDrop ? "rgba(255, 255, 255, 0.3)" : "transparent")};
+  color: ${props => (props.isOver && props.canDrop ? props.theme.text : "inherit")};
   border-radius: 4px;
   padding: 0 2px;
 `;
 
-function borderStyle({ isOver, canDrop, theme, position }) {
-  if (isOver) {
-    return `border-${position === "before" ? "top" : "bottom"}: 2px solid ${canDrop ? theme.yellow : theme.red}`;
+function borderStyle({ isOver, canDrop, position }) {
+  if (isOver && canDrop) {
+    return `border-${position === "before" ? "top" : "bottom"}: 2px solid rgba(255, 255, 255, 0.3)`;
   } else {
     return "";
   }

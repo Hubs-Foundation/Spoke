@@ -19,7 +19,7 @@ const DragPreviewContainer = styled.div.attrs(props => ({
   }
 }))`
   background-color: ${props => props.theme.blue};
-  opacity: 0.6;
+  opacity: 0.3;
   color: ${props => props.theme.text};
   padding: 4px;
   border-radius: 4px;
