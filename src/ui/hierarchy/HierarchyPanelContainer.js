@@ -25,12 +25,14 @@ const PanelContainer = styled.div`
   display: flex;
   flex-direction: column;
   color: ${props => props.theme.text2};
-  overflow: auto;
+  flex: 1;
 `;
 
 const TreeContainer = styled.div`
   display: flex;
   flex-direction: column;
+  flex: 1;
+  overflow: auto;
 `;
 
 const TreeNodeList = styled.ul``;
@@ -141,6 +143,7 @@ const TreeNodeDropTarget = styled.div`
   height: 4px;
   box-sizing: content-box;
   ${borderStyle};
+  margin-left: ${props => (props.depth > 0 ? props.depth * 8 + 20 : 0)}px;
 `;
 
 const TreeNodeRenameInput = styled.input`
@@ -230,9 +233,12 @@ function TreeNode(props) {
       }
     },
     canDrop(item) {
-      return !(item.multiple
-        ? item.value.some(otherObject => isAncestor(otherObject, node.object))
-        : isAncestor(item.value, node.object));
+      return (
+        node.object.parent &&
+        !(item.multiple
+          ? item.value.some(otherObject => isAncestor(otherObject, node.object))
+          : isAncestor(item.value, node.object))
+      );
     },
     collect: monitor => ({
       canDropBefore: monitor.canDrop(),
@@ -251,9 +257,14 @@ function TreeNode(props) {
       }
     },
     canDrop(item) {
-      return !(item.multiple
-        ? item.value.some(otherObject => isAncestor(otherObject, node.object))
-        : isAncestor(item.value, node.object));
+      const isExpanded = node.children && node.children.length > 0 && !props.collapsedNodes[node.id];
+      return (
+        node.object.parent &&
+        !isExpanded &&
+        !(item.multiple
+          ? item.value.some(otherObject => isAncestor(otherObject, node.object))
+          : isAncestor(item.value, node.object))
+      );
     },
     collect: monitor => ({
       canDropAfter: monitor.canDrop(),
@@ -639,10 +650,34 @@ export default function HierarchyPanel() {
     [editor]
   );
 
+  const [_dropProps, treeContainerDropTarget] = useDrop({
+    accept: ItemTypes.Node,
+    drop(item, monitor) {
+      if (monitor.didDrop()) {
+        return;
+      }
+
+      if (item.multiple) {
+        editor.reparentMultiple(item.value, sceneRootNode.object);
+      } else {
+        editor.reparent(item.value, sceneRootNode.object);
+      }
+    },
+    canDrop(item) {
+      return !(item.multiple
+        ? item.value.some(otherObject => isAncestor(otherObject, sceneRootNode.object))
+        : isAncestor(item.value, sceneRootNode.object));
+    },
+    collect: monitor => ({
+      canDrop: monitor.canDrop(),
+      isOver: monitor.isOver({ shallow: true })
+    })
+  });
+
   return (
     <Panel id="hierarchy-panel" title="Hierarchy" icon="fa-project-diagram">
       <PanelContainer>
-        <TreeContainer>
+        <TreeContainer ref={treeContainerDropTarget}>
           <TreeNodeList>
             {sceneRootNode && (
               <TreeNode
