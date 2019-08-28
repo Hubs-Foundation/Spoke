@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect, useCallback } from "react";
+import React, { useContext, useState, useEffect, useCallback, useMemo } from "react";
 import styled from "styled-components";
 import PropTypes from "prop-types";
 import DefaultNodeEditor from "../properties/DefaultNodeEditor";
@@ -401,6 +401,22 @@ function buildNodeHierarchy(editor, object = null, parent = null, index = 0, las
   return node;
 }
 
+function getVisibleTreeNodes(node, collapsedNodes, acc = []) {
+  if (!node) {
+    return acc;
+  }
+
+  acc.push(node);
+
+  if (!collapsedNodes[node.id] && node.children) {
+    for (const child of node.children) {
+      getVisibleTreeNodes(child, collapsedNodes, acc);
+    }
+  }
+
+  return acc;
+}
+
 export default function HierarchyPanel() {
   const editor = useContext(EditorContext);
 
@@ -412,6 +428,11 @@ export default function HierarchyPanel() {
   }, [editor]);
 
   const [collapsedNodes, setCollapsedNodes] = useState({});
+
+  const visibleNodes = useMemo(() => getVisibleTreeNodes(sceneRootNode, collapsedNodes), [
+    collapsedNodes,
+    sceneRootNode
+  ]);
 
   const expandNode = useCallback(
     node => {
@@ -510,21 +531,8 @@ export default function HierarchyPanel() {
       }
 
       if (e.key === "ArrowDown") {
-        let nextNode;
-
-        if (node.last) {
-          if (node.children.length === 0) {
-            nextNode = null;
-          } else {
-            nextNode = node.children[0];
-          }
-        } else {
-          if (node.parent) {
-            nextNode = node.parent.children[node.index + 1];
-          } else {
-            nextNode = null;
-          }
-        }
+        const visibleNodeIndex = visibleNodes.indexOf(node);
+        const nextNode = visibleNodeIndex !== -1 && visibleNodes[visibleNodeIndex + 1];
 
         if (nextNode) {
           if (e.shiftKey) {
@@ -538,40 +546,27 @@ export default function HierarchyPanel() {
           }
         }
       } else if (e.key === "ArrowUp") {
-        let nextNode;
+        const visibleNodeIndex = visibleNodes.indexOf(node);
+        const prevNode = visibleNodeIndex !== -1 && visibleNodes[visibleNodeIndex - 1];
 
-        if (node.index === 0) {
-          if (node.parent) {
-            nextNode = node.parent;
-          } else {
-            nextNode = null;
-          }
-        } else {
-          if (node.parent) {
-            nextNode = node.parent.children[node.index - 1];
-          } else {
-            nextNode = null;
-          }
-        }
-
-        if (nextNode) {
+        if (prevNode) {
           if (e.shiftKey) {
-            editor.select(nextNode.object);
+            editor.select(prevNode.object);
           }
 
-          const nextNodeEl = document.getElementById(getNodeElId(nextNode));
+          const prevNodeEl = document.getElementById(getNodeElId(prevNode));
 
-          if (nextNodeEl) {
-            nextNodeEl.focus();
+          if (prevNodeEl) {
+            prevNodeEl.focus();
           }
         }
-      } else if (e.key === "ArrowLeft") {
+      } else if (e.key === "ArrowLeft" && node.children && node.children.length > 0) {
         if (e.shiftKey) {
           collapseChildren(node.object);
-        } else if (node.children.length > 0) {
+        } else {
           collapseNode(node);
         }
-      } else if (e.key === "ArrowRight") {
+      } else if (e.key === "ArrowRight" && node.children && node.children.length > 0) {
         if (e.shiftKey) {
           expandChildren(node.object);
         } else if (node.children.length > 0) {
@@ -585,7 +580,7 @@ export default function HierarchyPanel() {
         }
       }
     },
-    [editor, sceneRootNode, expandNode, collapseNode, expandChildren, collapseChildren]
+    [editor, sceneRootNode, visibleNodes, expandNode, collapseNode, expandChildren, collapseChildren]
   );
 
   const onDeleteNode = useCallback(
