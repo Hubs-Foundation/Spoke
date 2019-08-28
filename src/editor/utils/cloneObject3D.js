@@ -27,7 +27,7 @@ function cloneKeyframeTrack(sourceKeyframeTrack, cloneUUIDLookup) {
     const clonedUUID = cloneUUIDLookup.get(uuid);
 
     if (clonedUUID === undefined) {
-      console.warn(`Could not find KeyframeTrack target with uuid: "${uuid}"`);
+      throw new Error(`Error cloning model. Could not find KeyframeTrack target with uuid: "${uuid}"`);
     }
 
     path += clonedUUID;
