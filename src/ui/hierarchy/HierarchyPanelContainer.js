@@ -232,8 +232,8 @@ function TreeNode(props) {
     },
     canDrop(item) {
       return !(item.multiple
-        ? item.value.some(otherObject => isAncestor(node.object, otherObject))
-        : isAncestor(node.object, item.value));
+        ? item.value.some(otherObject => isAncestor(otherObject, node.object))
+        : isAncestor(item.value, node.object));
     },
     collect: monitor => ({
       canDropBefore: monitor.canDrop(),
@@ -246,15 +246,15 @@ function TreeNode(props) {
     drop(item) {
       const next = !node.last && node.parent.children[node.index + 1];
       if (item.multiple) {
-        editor.reparentMultiple(item.value, node.object.parent, next);
+        editor.reparentMultiple(item.value, node.object.parent, next && next.object);
       } else {
-        editor.reparent(item.value, node.object.parent, next);
+        editor.reparent(item.value, node.object.parent, next && next.object);
       }
     },
     canDrop(item) {
       return !(item.multiple
-        ? item.value.some(otherObject => isAncestor(node.object, otherObject))
-        : isAncestor(node.object, item.value));
+        ? item.value.some(otherObject => isAncestor(otherObject, node.object))
+        : isAncestor(item.value, node.object));
     },
     collect: monitor => ({
       canDropAfter: monitor.canDrop(),
@@ -273,8 +273,8 @@ function TreeNode(props) {
     },
     canDrop(item) {
       return !(item.multiple
-        ? item.value.some(otherObject => isAncestor(node.object, otherObject))
-        : isAncestor(node.object, item.value));
+        ? item.value.some(otherObject => isAncestor(otherObject, node.object))
+        : isAncestor(item.value, node.object));
     },
     collect: monitor => ({
       canDropOn: monitor.canDrop(),
