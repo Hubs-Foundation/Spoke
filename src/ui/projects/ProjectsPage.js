@@ -193,15 +193,6 @@ class ProjectsPage extends Component {
               {content}
             </ProjectsContainer>
           </ProjectsSection>
-          <ProjectsSection>
-            <ProjectsContainer>
-              <ProjectsHeader>
-                <h1>Templates</h1>
-                <PrimaryLink to="/projects/templates">View More</PrimaryLink>
-              </ProjectsHeader>
-              <ProjectGrid projects={topTemplates} />
-            </ProjectsContainer>
-          </ProjectsSection>
           <ProjectContextMenu />
         </main>
         <Footer />
