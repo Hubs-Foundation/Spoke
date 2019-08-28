@@ -205,7 +205,6 @@ function TreeNode(props) {
   const [_dragProps, drag, preview] = useDrag({
     item: { type: ItemTypes.Node },
     begin() {
-      editor.select(node.object);
       const multiple = editor.selected.length > 1;
       return { type: ItemTypes.Node, multiple, value: multiple ? editor.selected : editor.selected[0] };
     },
@@ -289,6 +288,7 @@ function TreeNode(props) {
           ref={drag}
           id={getNodeElId(node)}
           node={node}
+          onMouseDown={e => props.onMouseDown(e, node)}
           onClick={e => props.onClick(e, node)}
           tabIndex="0"
           onKeyDown={onKeyDown}
@@ -364,6 +364,7 @@ TreeNode.propTypes = {
   renamingNode: PropTypes.object,
   onRenameSubmit: PropTypes.func.isRequired,
   onChangeName: PropTypes.func.isRequired,
+  onMouseDown: PropTypes.func.isRequired,
   onClick: PropTypes.func.isRequired,
   onToggle: PropTypes.func.isRequired,
   onKeyDown: PropTypes.func.isRequired
@@ -502,11 +503,20 @@ export default function HierarchyPanel() {
     };
   }, [editor, updateNodeHierarchy]);
 
-  const onClick = useCallback(
+  const onMouseDown = useCallback(
     (e, node) => {
       if (e.shiftKey) {
         editor.toggleSelection(node.object);
-      } else {
+      } else if (!node.selected) {
+        editor.setSelection([node.object]);
+      }
+    },
+    [editor]
+  );
+
+  const onClick = useCallback(
+    (e, node) => {
+      if (!e.shiftKey) {
         editor.setSelection([node.object]);
       }
     },
@@ -641,6 +651,7 @@ export default function HierarchyPanel() {
                 collapsedNodes={collapsedNodes}
                 onChangeName={onChangeName}
                 onRenameSubmit={onRenameSubmit}
+                onMouseDown={onMouseDown}
                 onClick={onClick}
                 onToggle={onToggle}
                 onKeyDown={onKeyDown}
