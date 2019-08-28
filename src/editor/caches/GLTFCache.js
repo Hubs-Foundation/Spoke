@@ -1,8 +1,20 @@
-import { Texture, RGBAFormat, RGBFormat } from "three";
+import { Texture, RGBAFormat, RGBFormat, PropertyBinding } from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import Cache from "./Cache";
 import cloneObject3D from "../utils/cloneObject3D";
 import eventToMessage from "../utils/eventToMessage";
+
+function animationClipBelongsToScene(scene, clip) {
+  return clip.tracks.every(track => {
+    const { nodeName: uuid } = PropertyBinding.parseTrackName(track.name);
+    const result = scene.getObjectByProperty("uuid", uuid) !== undefined;
+    return result;
+  });
+}
+
+function getSceneAnimations(scene, animations) {
+  return animations.filter(clip => animationClipBelongsToScene(scene, clip));
+}
 
 export default class GLTFCache extends Cache {
   constructor(textureCache) {
@@ -23,7 +35,7 @@ export default class GLTFCache extends Cache {
         if (!gltf.scene.name) {
           gltf.scene.name = "Scene";
         }
-        gltf.scene.animations = gltf.animations;
+        gltf.scene.animations = getSceneAnimations(gltf.scene, gltf.animations);
         return gltf;
       });
 
