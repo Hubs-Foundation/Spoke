@@ -9,6 +9,7 @@ export const PanelContainer = styled.div`
   flex-direction: column;
   border-radius: 4px;
   background-color: ${props => props.theme.panel};
+  overflow: hidden;
 `;
 
 export const PanelToolbar = styled.div`
@@ -17,6 +18,7 @@ export const PanelToolbar = styled.div`
   height: 24px;
   align-items: center;
   user-select: none;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.2);
 `;
 
 export const PanelIcon = styled.div`
