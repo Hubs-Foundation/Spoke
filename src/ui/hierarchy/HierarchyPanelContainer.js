@@ -26,13 +26,13 @@ const PanelContainer = styled.div`
   flex-direction: column;
   color: ${props => props.theme.text2};
   flex: 1;
+  overflow: auto;
 `;
 
 const TreeContainer = styled.div`
   display: flex;
   flex-direction: column;
   flex: 1;
-  overflow: auto;
 `;
 
 const TreeNodeList = styled.ul``;
@@ -552,6 +552,8 @@ export default function HierarchyPanel() {
       }
 
       if (e.key === "ArrowDown") {
+        e.preventDefault();
+
         const visibleNodeIndex = visibleNodes.indexOf(node);
         const nextNode = visibleNodeIndex !== -1 && visibleNodes[visibleNodeIndex + 1];
 
@@ -567,6 +569,8 @@ export default function HierarchyPanel() {
           }
         }
       } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+
         const visibleNodeIndex = visibleNodes.indexOf(node);
         const prevNode = visibleNodeIndex !== -1 && visibleNodes[visibleNodeIndex - 1];
 
