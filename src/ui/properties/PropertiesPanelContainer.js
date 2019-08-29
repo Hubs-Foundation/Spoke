@@ -4,6 +4,14 @@ import styles from "./PropertiesPanelContainer.scss";
 import { withEditor } from "../contexts/EditorContext";
 import DefaultNodeEditor from "./DefaultNodeEditor";
 import Panel from "../layout/Panel";
+import styled from "styled-components";
+
+const PropertiesPanelContent = styled.div`
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow-y: auto;
+`;
 
 class PropertiesPanelContainer extends Component {
   static propTypes = {
@@ -77,7 +85,7 @@ class PropertiesPanelContainer extends Component {
 
     return (
       <Panel id="properties-panel" title="Properties" icon="fa-sliders-h">
-        {content}
+        <PropertiesPanelContent>{content}</PropertiesPanelContent>
       </Panel>
     );
   }
