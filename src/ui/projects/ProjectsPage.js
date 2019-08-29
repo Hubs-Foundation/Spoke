@@ -179,22 +179,13 @@ class ProjectsPage extends Component {
               </WelcomeContainer>
             </ProjectsSection>
           ) : (
-            <LatestUpdate />
-          )}
-          <ProjectsSection>
-            <ProjectsContainer>
-              <ProjectsHeader>
-                <h1>Templates</h1>
-                <PrimaryLink to="/projects/templates">View More</PrimaryLink>
-              </ProjectsHeader>
-              <ProjectGrid projects={topTemplates} />
-            </ProjectsContainer>
-          </ProjectsSection>
+              <LatestUpdate />
+            )}
           <ProjectsSection>
             <ProjectsContainer>
               <ProjectsHeader>
                 <h1>Projects</h1>
-                <Button medium to="/projects/new">
+                <Button medium to="/projects/templates">
                   New Project
                 </Button>
               </ProjectsHeader>
