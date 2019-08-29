@@ -43,17 +43,20 @@ class ProjectPage extends Component {
   componentDidUpdate(prevProps) {
     const { projectId } = this.props.match.params;
     const queryParams = new URLSearchParams(location.search);
+
+    let templateUrl = null;
+
+    if (projectId === "new") {
+      templateUrl = queryParams.get("template") || defaultTemplateUrl;
+    } else if (projectId === "tutorial") {
+      templateUrl = tutorialTemplateUrl;
+    }
+
     const { projectId: prevProjectId } = prevProps.match.params;
 
-    if (projectId !== prevProjectId) {
-      if (projectId === "new") {
-        if (queryParams.has("template")) {
-          this.loadProjectTemplate(queryParams.get("template"));
-        } else {
-          this.loadProjectTemplate(defaultTemplateUrl);
-        }
-      } else if (projectId === "tutorial") {
-        this.loadProjectTemplate(tutorialTemplateUrl);
+    if (projectId !== prevProjectId || this.state.templateUrl !== templateUrl) {
+      if (projectId === "new" || projectId === "tutorial") {
+        this.loadProjectTemplate(templateUrl);
       } else if (prevProjectId !== "tutorial" && prevProjectId !== "new") {
         this.loadProject(projectId);
       }
@@ -61,10 +64,12 @@ class ProjectPage extends Component {
   }
 
   loadProjectTemplate(templateUrl) {
+    this.setState({ loading: true, project: null, templateUrl });
+
     this.props.api
       .fetch(templateUrl)
       .then(response => response.json())
-      .then(project => this.setState({ loading: false, project }))
+      .then(project => this.setState({ loading: false, project, templateUrl }))
       .catch(err => {
         Sentry.captureException(err);
         console.error(err.response);
@@ -73,12 +78,12 @@ class ProjectPage extends Component {
   }
 
   loadProject(projectId) {
-    this.setState({ loading: true });
+    this.setState({ loading: true, project: null, templateUrl: null });
 
     this.props.api
       .getProject(projectId)
       .then(({ project }) => {
-        this.setState({ loading: false, project });
+        this.setState({ loading: false, project, templateUrl: null });
       })
       .catch(err => {
         if (err.response && err.response.status === 401) {
