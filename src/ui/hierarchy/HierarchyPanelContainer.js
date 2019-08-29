@@ -650,7 +650,7 @@ export default function HierarchyPanel() {
     [editor]
   );
 
-  const [_dropProps, treeContainerDropTarget] = useDrop({
+  const [{ isOver, canDrop }, treeContainerDropTarget] = useDrop({
     accept: ItemTypes.Node,
     drop(item, monitor) {
       if (monitor.didDrop()) {
@@ -677,7 +677,7 @@ export default function HierarchyPanel() {
   return (
     <Panel id="hierarchy-panel" title="Hierarchy" icon="fa-project-diagram">
       <PanelContainer>
-        <TreeContainer ref={treeContainerDropTarget}>
+        <TreeContainer ref={treeContainerDropTarget} isOver={isOver} canDrop={canDrop}>
           <TreeNodeList>
             {sceneRootNode && (
               <TreeNode
