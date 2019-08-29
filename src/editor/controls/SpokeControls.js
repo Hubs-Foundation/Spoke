@@ -337,14 +337,31 @@ export default class SpokeControls extends EventEmitter {
         if (selectStart) {
           selectedAxisInfo.startMarker.visible = true;
           selectedAxisInfo.endMarker.visible = true;
+
+          if (this.transformSpace !== TransformSpace.World) {
+            const startMarkerLocal = selectedAxisInfo.startMarkerLocal;
+            startMarkerLocal.position.copy(this.transformGizmo.position);
+            startMarkerLocal.quaternion.copy(this.transformGizmo.quaternion);
+            startMarkerLocal.scale.copy(this.transformGizmo.scale);
+            this.scene.add(startMarkerLocal);
+          }
         }
 
-        selectedAxisInfo.rotationTarget.rotateOnAxis(this.planeNormal, relativeRotationAngle);
+        if (this.transformSpace === TransformSpace.World) {
+          selectedAxisInfo.rotationTarget.rotateOnAxis(selectedAxisInfo.planeNormal, relativeRotationAngle);
+        } else {
+          this.transformGizmo.rotateOnAxis(selectedAxisInfo.planeNormal, relativeRotationAngle);
+        }
 
         if (selectEnd) {
           selectedAxisInfo.startMarker.visible = false;
           selectedAxisInfo.endMarker.visible = false;
           selectedAxisInfo.rotationTarget.rotation.set(0, 0, 0);
+
+          if (this.transformSpace !== TransformSpace.World) {
+            const startMarkerLocal = selectedAxisInfo.startMarkerLocal;
+            this.scene.remove(startMarkerLocal);
+          }
         }
       } else if (this.transformMode === TransformMode.Scale) {
         this.dragVector
@@ -495,7 +512,7 @@ export default class SpokeControls extends EventEmitter {
     }
 
     const eyeDistance = this.transformGizmo.position.distanceTo(this.camera.position);
-    this.transformGizmo.scale.set(1, 1, 1).multiplyScalar(eyeDistance / 7);
+    this.transformGizmo.scale.set(1, 1, 1).multiplyScalar(eyeDistance / 5);
   }
 
   raycastNode(coords) {

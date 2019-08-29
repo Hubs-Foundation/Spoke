@@ -37,6 +37,6 @@ export default class RotateAroundCommand extends Command {
   toString() {
     return `RotateAroundCommand id: ${this.id} object: ${serializeObject3D(this.object)} pivot: ${serializeVector3(
       this.pivot
-    )} axis: ${serializeVector3(this.axis)} angle: ${this.angle} space: ${this.space}`;
+    )} axis: ${serializeVector3(this.axis)} angle: ${this.angle}`;
   }
 }

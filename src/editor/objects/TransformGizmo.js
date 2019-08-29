@@ -83,11 +83,13 @@ export default class TransformGizmo extends Object3D {
     const rotateXAxisDisk = this.rotateXAxis.getObjectByName("RotateXAxisDisk");
     const rotateXAxisStart = this.rotateXAxis.getObjectByName("RotateXAxisStart");
     const rotateXAxisEnd = this.rotateXAxis.getObjectByName("RotateXAxisEnd");
+    const localRotateXAxisStart = rotateXAxisStart.clone();
     rotateXAxisDisk.axisInfo = {
       axis: TransformAxis.X,
       planeNormal: new Vector3(1, 0, 0),
       rotationTarget: rotateXAxisDisk,
       startMarker: rotateXAxisStart,
+      startMarkerLocal: localRotateXAxisStart,
       endMarker: rotateXAxisEnd,
       selectionColorTarget: rotateXAxisDisk.material
     };
@@ -95,11 +97,13 @@ export default class TransformGizmo extends Object3D {
     const rotateYAxisDisk = this.rotateYAxis.getObjectByName("RotateYAxisDisk");
     const rotateYAxisStart = this.rotateYAxis.getObjectByName("RotateYAxisStart");
     const rotateYAxisEnd = this.rotateYAxis.getObjectByName("RotateYAxisEnd");
+    const localRotateYAxisStart = rotateYAxisStart.clone();
     rotateYAxisDisk.axisInfo = {
       axis: TransformAxis.Y,
       planeNormal: new Vector3(0, 1, 0),
       rotationTarget: rotateYAxisDisk,
       startMarker: rotateYAxisStart,
+      startMarkerLocal: localRotateYAxisStart,
       endMarker: rotateYAxisEnd,
       selectionColorTarget: rotateYAxisDisk.material
     };
@@ -107,11 +111,13 @@ export default class TransformGizmo extends Object3D {
     const rotateZAxisDisk = this.rotateZAxis.getObjectByName("RotateZAxisDisk");
     const rotateZAxisStart = this.rotateZAxis.getObjectByName("RotateZAxisStart");
     const rotateZAxisEnd = this.rotateZAxis.getObjectByName("RotateZAxisEnd");
+    const localRotateZAxisStart = rotateZAxisStart.clone();
     rotateZAxisDisk.axisInfo = {
       axis: TransformAxis.Z,
       planeNormal: new Vector3(0, 0, 1),
       rotationTarget: rotateZAxisDisk,
       startMarker: rotateZAxisStart,
+      startMarkerLocal: localRotateZAxisStart,
       endMarker: rotateZAxisEnd,
       selectionColorTarget: rotateZAxisDisk.material
     };
