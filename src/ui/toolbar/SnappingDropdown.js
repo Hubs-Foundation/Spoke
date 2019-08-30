@@ -57,6 +57,17 @@ export default class SnappingDropdown extends React.Component {
                 unit="°"
               />
             </li>
+            <li className={styles.listItem}>
+              <NumericInputGroup
+                className={styles.snappingInput}
+                name="Scale"
+                smallStep={1}
+                mediumStep={15}
+                largeStep={45}
+                value={this.props.scaleSnap}
+                onChange={this.props.onChangeScaleSnap}
+              />
+            </li>
           </ul>
         )}
       </div>
@@ -67,6 +78,8 @@ export default class SnappingDropdown extends React.Component {
 SnappingDropdown.propTypes = {
   translationSnap: PropTypes.number,
   rotationSnap: PropTypes.number,
+  scaleSnap: PropTypes.number,
   onChangeTranslationSnap: PropTypes.func,
-  onChangeRotationSnap: PropTypes.func
+  onChangeRotationSnap: PropTypes.func,
+  onChangeScaleSnap: PropTypes.func
 };

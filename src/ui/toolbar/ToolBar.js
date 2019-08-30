@@ -127,6 +127,10 @@ export default class ToolBar extends Component {
     this.props.editor.spokeControls.setTranslationSnap(translationSnap);
   };
 
+  onChangeScaleSnap = scaleSnap => {
+    this.props.editor.spokeControls.setScaleSnap(scaleSnap);
+  };
+
   onChangeRotationSnap = rotationSnap => {
     this.props.editor.spokeControls.setRotationSnap(rotationSnap);
   };
@@ -144,7 +148,8 @@ export default class ToolBar extends Component {
       transformPivot,
       snapMode,
       translationSnap,
-      rotationSnap
+      rotationSnap,
+      scaleSnap
     } = this.props.editor.spokeControls;
 
     return (
@@ -212,8 +217,10 @@ export default class ToolBar extends Component {
             <SnappingDropdown
               translationSnap={translationSnap}
               rotationSnap={rotationSnap}
+              scaleSnap={scaleSnap}
               onChangeTranslationSnap={this.onChangeTranslationSnap}
               onChangeRotationSnap={this.onChangeRotationSnap}
+              onChangeScaleSnap={this.onChangeScaleSnap}
             />
           </ToolToggle>
         </div>

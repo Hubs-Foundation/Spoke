@@ -96,6 +96,7 @@ export default class SpokeControls extends EventEmitter {
     this.snapMode = SnapMode.Disabled;
     this.translationSnap = 1;
     this.rotationSnap = 90;
+    this.scaleSnap = 0.1;
 
     this.selectionBoundingBox = new Box3();
     this.selectStartPosition = new Vector2();
@@ -387,6 +388,13 @@ export default class SpokeControls extends EventEmitter {
           constraint.z === 0 ? 1 : dragVectorLength
         );
 
+        if (this.snapMode === SnapMode.Grid) {
+          this.curScale
+            .divideScalar(this.scaleSnap)
+            .round()
+            .multiplyScalar(this.scaleSnap);
+        }
+
         this.curScale.set(
           this.curScale.x === 0 ? 0.000001 : this.curScale.x,
           this.curScale.y === 0 ? 0.000001 : this.curScale.y,
@@ -603,6 +611,11 @@ export default class SpokeControls extends EventEmitter {
 
   setTranslationSnap(value) {
     this.translationSnap = value;
+    this.emit("snapSettingsChanged");
+  }
+
+  setScaleSnap(value) {
+    this.scaleSnap = value;
     this.emit("snapSettingsChanged");
   }
 
