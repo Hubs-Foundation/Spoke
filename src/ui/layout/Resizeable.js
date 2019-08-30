@@ -49,11 +49,11 @@ const VerticalResizer = styled.div`
   }
 `;
 
-const ResizeContainer = styled.div.attrs({
-  style: ({ size }) => ({
-    flex: size === undefined ? 1 : size
-  })
-})`
+const ResizeContainer = styled.div.attrs(props => ({
+  style: {
+    flex: props.size === undefined ? 1 : props.size
+  }
+}))`
   display: flex;
   overflow: hidden;
 `;
