@@ -1515,7 +1515,7 @@ export default class Editor extends EventEmitter {
   getTransformRoots(objects, target = []) {
     // Recursively find the transformable nodes in the tree with the lowest depth
     const traverse = curObject => {
-      if (objects.indexOf(curObject) !== -1) {
+      if (objects.indexOf(curObject) !== -1 && curObject !== this.scene && !curObject.disableTransform) {
         target.push(curObject);
         return;
       }

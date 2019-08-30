@@ -190,12 +190,13 @@ export default class SpokeControls extends EventEmitter {
     const selectStart = input.get(Spoke.selectStart);
 
     const selected = this.editor.selected;
+    const selectedTransformRoots = this.editor.selectedTransformRoots;
 
     if (this.transformModeChanged) {
       this.transformGizmo.setTransformMode(this.transformMode);
     }
 
-    if (selected.length > 0 && this.transformMode !== TransformMode.Disabled) {
+    if (selectedTransformRoots.length > 0 && this.transformMode !== TransformMode.Disabled) {
       const lastSelectedObject = selected[selected.length - 1];
 
       if (
@@ -204,8 +205,6 @@ export default class SpokeControls extends EventEmitter {
         this.transformPivotChanged ||
         this.transformPropertyChanged
       ) {
-        const selectedTransformRoots = this.editor.selectedTransformRoots;
-
         if (this.transformPivot === TransformPivot.Center) {
           this.selectionBoundingBox.makeEmpty();
 
