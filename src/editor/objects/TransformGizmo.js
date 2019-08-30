@@ -213,6 +213,15 @@ export default class TransformGizmo extends Object3D {
     }
   }
 
+  setLocalScaleHandlesVisible(visible) {
+    this.scaleXAxis.visible = visible;
+    this.scaleYAxis.visible = visible;
+    this.scaleZAxis.visible = visible;
+    this.scaleXYPlane.visible = visible;
+    this.scaleYZPlane.visible = visible;
+    this.scaleXZPlane.visible = visible;
+  }
+
   selectAxisWithRaycaster(raycaster) {
     this.deselectAxis();
 

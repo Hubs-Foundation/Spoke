@@ -1321,40 +1321,18 @@ export default class Editor extends EventEmitter {
       return this.history.execute(new ScaleCommand(this, object, scale, space));
     }
 
-    if (space === TransformSpace.Local) {
-      object.scale.multiply(scale);
-    } else {
-      object.updateMatrixWorld(); // Update parent world matrices
-      tempVector1.setFromMatrixScale(object.matrixWorld);
-      tempVector1.multiply(scale);
-
-      let spaceMatrix;
-
-      if (space === TransformSpace.World) {
-        spaceMatrix = object.parent.matrixWorld;
-      } else if (space === TransformSpace.LocalSelection) {
-        if (this.selected.length > 0) {
-          const lastSelectedObject = this.selected[this.selected.length - 1];
-          lastSelectedObject.updateMatrixWorld();
-          spaceMatrix = lastSelectedObject.parent.matrixWorld;
-        } else {
-          spaceMatrix = tempMatrix1.identity();
-        }
-      } else {
-        spaceMatrix = space;
-      }
-
-      tempMatrix1.getInverse(spaceMatrix);
-      tempVector1.applyMatrix4(tempMatrix1);
-      object.scale.copy(tempVector1);
+    if (space === TransformSpace.World && (scale.x !== scale.y || scale.x !== scale.z || scale.y !== scale.z)) {
+      console.warn("Scaling an object in world space with a non-uniform scale is not supported");
     }
+
+    object.scale.multiply(scale);
 
     object.updateMatrixWorld(true);
 
-    object.onChange("position");
+    object.onChange("scale");
 
     if (emitEvent) {
-      this.emit("objectsChanged", [object], "position");
+      this.emit("objectsChanged", [object], "scale");
     }
 
     return object;
@@ -1363,16 +1341,6 @@ export default class Editor extends EventEmitter {
   scaleMultiple(objects, scale, space = TransformSpace.World, useHistory = true, emitEvent = true) {
     if (useHistory) {
       return this.history.execute(new ScaleMultipleCommand(this, objects, scale, space));
-    }
-
-    if (space === TransformSpace.LocalSelection) {
-      if (this.selected.length > 0) {
-        const lastSelectedObject = this.selected[this.selected.length - 1];
-        lastSelectedObject.updateMatrixWorld();
-        space = lastSelectedObject.parent.matrixWorld;
-      } else {
-        space = tempMatrix1.identity();
-      }
     }
 
     for (let i = 0; i < objects.length; i++) {

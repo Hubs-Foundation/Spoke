@@ -232,6 +232,11 @@ export default class SpokeControls extends EventEmitter {
 
         this.inverseGizmoQuaternion.copy(this.transformGizmo.quaternion).inverse();
       }
+
+      if ((this.transformModeChanged || this.transformSpaceChanged) && this.transformMode === TransformMode.Scale) {
+        this.transformGizmo.setLocalScaleHandlesVisible(this.transformSpace !== TransformSpace.World);
+      }
+
       this.transformGizmo.visible = true;
     } else {
       this.transformGizmo.visible = false;
