@@ -192,6 +192,8 @@ export default class SpokeControls extends EventEmitter {
     const selected = this.editor.selected;
     const selectedTransformRoots = this.editor.selectedTransformRoots;
 
+    const modifier = input.get(Spoke.modifier);
+
     if (this.transformModeChanged) {
       this.transformGizmo.setTransformMode(this.transformMode);
     }
@@ -294,7 +296,7 @@ export default class SpokeControls extends EventEmitter {
           .applyQuaternion(this.inverseGizmoQuaternion)
           .multiply(constraint);
 
-        if (this.snapMode === SnapMode.Grid) {
+        if (this.shouldSnap(modifier)) {
           this.translationVector
             .divideScalar(this.translationSnap)
             .round()
@@ -326,7 +328,7 @@ export default class SpokeControls extends EventEmitter {
             ? 1
             : -1;
 
-        if (this.snapMode === SnapMode.Grid) {
+        if (this.shouldSnap(modifier)) {
           const rotationSnapAngle = _Math.DEG2RAD * this.rotationSnap;
           rotationAngle = Math.round(rotationAngle / rotationSnapAngle) * rotationSnapAngle;
         }
@@ -387,7 +389,7 @@ export default class SpokeControls extends EventEmitter {
           constraint.z === 0 ? 1 : dragVectorLength
         );
 
-        if (this.snapMode === SnapMode.Grid) {
+        if (this.shouldSnap(modifier)) {
           this.curScale
             .divideScalar(this.scaleSnap)
             .round()
@@ -606,6 +608,10 @@ export default class SpokeControls extends EventEmitter {
 
   toggleSnapMode() {
     this.setSnapMode(this.snapMode === SnapMode.Disabled ? SnapMode.Grid : SnapMode.Disabled);
+  }
+
+  shouldSnap(invertSnap = false) {
+    return (this.snapMode === SnapMode.Grid) === !invertSnap;
   }
 
   setTranslationSnap(value) {
