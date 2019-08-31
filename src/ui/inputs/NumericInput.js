@@ -58,7 +58,7 @@ export default class NumericInput extends Component {
       tempValue: roundedValue.toLocaleString("fullwide", {
         useGrouping: false,
         minimumFractionDigits: 0,
-        maximumFractionDigits: Math.abs(Math.log10(precision))
+        maximumFractionDigits: Math.abs(Math.log10(precision)) + 1
       }),
       focused: true
     });
@@ -94,7 +94,7 @@ export default class NumericInput extends Component {
         tempValue: convertFrom(value).toLocaleString("fullwide", {
           useGrouping: false,
           minimumFractionDigits: 0,
-          maximumFractionDigits: Math.abs(Math.log10(precision))
+          maximumFractionDigits: Math.abs(Math.log10(precision)) + 1
         }),
         focused: true
       },
