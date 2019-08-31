@@ -185,9 +185,11 @@ export default class SpokeControls extends EventEmitter {
       this.emit("flyModeChanged");
     }
 
+    const flying = input.get(Spoke.flying);
+
     const shift = input.get(Spoke.shift);
 
-    const selectStart = input.get(Spoke.selectStart);
+    const selectStart = input.get(Spoke.selectStart) && !flying;
 
     const selected = this.editor.selected;
     const selectedTransformRoots = this.editor.selectedTransformRoots;
@@ -431,6 +433,11 @@ export default class SpokeControls extends EventEmitter {
 
     this.transformPropertyChanged = false;
 
+    if (flying) {
+      this.updateTransformGizmoScale();
+      return;
+    }
+
     const selecting = input.get(Spoke.selecting);
 
     const orbiting = selecting && !this.dragging;
@@ -525,8 +532,7 @@ export default class SpokeControls extends EventEmitter {
       this.editor.deselectAll();
     }
 
-    const eyeDistance = this.transformGizmo.position.distanceTo(this.camera.position);
-    this.transformGizmo.scale.set(1, 1, 1).multiplyScalar(eyeDistance / 5);
+    this.updateTransformGizmoScale();
   }
 
   raycastNode(coords) {
@@ -569,6 +575,11 @@ export default class SpokeControls extends EventEmitter {
     delta.multiplyScalar(Math.min(distance, this.maxFocusDistance) * 4);
 
     camera.position.copy(center).add(delta);
+  }
+
+  updateTransformGizmoScale() {
+    const eyeDistance = this.transformGizmo.position.distanceTo(this.camera.position);
+    this.transformGizmo.scale.set(1, 1, 1).multiplyScalar(eyeDistance / 5);
   }
 
   setTransformMode(mode) {
