@@ -71,7 +71,7 @@ export default class LightShadowProperties extends Component {
           mediumStep={0.00001}
           smallStep={0.0001}
           largeStep={0.001}
-          precision={0.000001}
+          displayPrecision={0.000001}
           value={node.shadowBias}
           onChange={this.onChangeShadowBias}
         />
@@ -80,7 +80,7 @@ export default class LightShadowProperties extends Component {
           mediumStep={0.01}
           smallStep={0.1}
           largeStep={1}
-          precision={0.0001}
+          displayPrecision={0.0001}
           value={node.shadowRadius}
           onChange={this.onChangeShadowRadius}
         />

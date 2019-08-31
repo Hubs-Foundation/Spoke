@@ -83,7 +83,7 @@ class FloorPlanNodeEditor extends Component {
             mediumStep={0.01}
             largeStep={0.1}
             min={0.1}
-            precision={0.0001}
+            displayPrecision={0.0001}
             onChange={this.onChangeCellSize}
           />
         )}

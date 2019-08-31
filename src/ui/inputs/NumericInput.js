@@ -10,12 +10,13 @@ function toPrecisionString(value, precision) {
     const minimumFractionDigits = Math.min(numDigits, 2);
     const maximumFractionDigits = Math.max(minimumFractionDigits, numDigits);
 
-    return value.toLocaleString(undefined, {
+    return value.toLocaleString("fullwide", {
       minimumFractionDigits,
-      maximumFractionDigits
+      maximumFractionDigits,
+      useGrouping: false
     });
   } else {
-    return value.toString();
+    return value.toLocaleString("fullwide", { useGrouping: false });
   }
 }
 
@@ -53,7 +54,14 @@ export default class NumericInput extends Component {
       onChange(finalValue);
     }
 
-    this.setState({ tempValue: roundedValue.toString(), focused: true });
+    this.setState({
+      tempValue: roundedValue.toLocaleString("fullwide", {
+        useGrouping: false,
+        minimumFractionDigits: 0,
+        maximumFractionDigits: Math.abs(Math.log10(precision))
+      }),
+      focused: true
+    });
   };
 
   handleKeyDown = event => {
@@ -80,10 +88,20 @@ export default class NumericInput extends Component {
   };
 
   handleFocus = () => {
-    const { value, convertFrom } = this.props;
-    this.setState({ tempValue: convertFrom(value).toString(), focused: true }, () => {
-      this.inputEl.current.select();
-    });
+    const { value, convertFrom, precision } = this.props;
+    this.setState(
+      {
+        tempValue: convertFrom(value).toLocaleString("fullwide", {
+          useGrouping: false,
+          minimumFractionDigits: 0,
+          maximumFractionDigits: Math.abs(Math.log10(precision))
+        }),
+        focused: true
+      },
+      () => {
+        this.inputEl.current.select();
+      }
+    );
   };
 
   handleBlur = () => {
@@ -107,7 +125,7 @@ export default class NumericInput extends Component {
       largeStep,
       min,
       max,
-      precision,
+      displayPrecision,
       value,
       convertTo,
       convertFrom,
@@ -122,7 +140,7 @@ export default class NumericInput extends Component {
           {...rest}
           className={classNames(styles.numericInput, className)}
           ref={this.inputEl}
-          value={this.state.focused ? this.state.tempValue : toPrecisionString(convertFrom(value), precision)}
+          value={this.state.focused ? this.state.tempValue : toPrecisionString(convertFrom(value), displayPrecision)}
           onKeyUp={this.handleKeyPress}
           onKeyDown={this.handleKeyDown}
           onChange={this.handleChange}
@@ -148,7 +166,8 @@ NumericInput.propTypes = {
   onCommit: PropTypes.func,
   convertTo: PropTypes.func.isRequired,
   convertFrom: PropTypes.func.isRequired,
-  precision: PropTypes.number
+  precision: PropTypes.number.isRequired,
+  displayPrecision: PropTypes.number.isRequired
 };
 
 NumericInput.defaultProps = {
@@ -157,6 +176,8 @@ NumericInput.defaultProps = {
   largeStep: 0.25,
   min: -Infinity,
   max: Infinity,
+  displayPrecision: 0.001,
+  precision: Number.EPSILON,
   convertTo: value => value,
   convertFrom: value => value
 };

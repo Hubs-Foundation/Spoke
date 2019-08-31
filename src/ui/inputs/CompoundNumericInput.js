@@ -19,8 +19,7 @@ CompoundNumericInput.defaultProps = {
   onChange: () => {},
   min: 0,
   max: 1,
-  step: 0.01,
-  precision: 0.01
+  step: 0.01
 };
 
 CompoundNumericInput.propTypes = {

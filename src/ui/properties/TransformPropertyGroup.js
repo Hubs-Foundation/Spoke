@@ -41,15 +41,15 @@ export default class TransformPropertyGroup extends Component {
   };
 
   onChangePosition = value => {
-    this.props.editor.setProperty(this.props.node, "position", value);
+    this.props.editor.setPosition(this.props.node, value);
   };
 
   onChangeRotation = value => {
-    this.props.editor.setProperty(this.props.node, "rotation", value);
+    this.props.editor.setRotation(this.props.node, value);
   };
 
   onChangeScale = value => {
-    this.props.editor.setProperty(this.props.node, "scale", value);
+    this.props.editor.setScale(this.props.node, value);
   };
 
   render() {

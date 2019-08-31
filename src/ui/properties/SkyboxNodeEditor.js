@@ -85,7 +85,6 @@ export default class SkyboxNodeEditor extends Component {
             min={0.001}
             max={1.189}
             step={0.001}
-            precision={0.001}
             value={node.luminance}
             onChange={this.onChangeLuminance}
           />
@@ -95,7 +94,6 @@ export default class SkyboxNodeEditor extends Component {
             min={0}
             max={0.1}
             step={0.001}
-            precision={0.001}
             value={node.mieCoefficient}
             onChange={this.onChangeMieCoefficient}
           />
@@ -105,7 +103,6 @@ export default class SkyboxNodeEditor extends Component {
             min={0}
             max={1}
             step={0.001}
-            precision={0.001}
             value={node.mieDirectionalG}
             onChange={this.onChangeMieDirectionalG}
           />

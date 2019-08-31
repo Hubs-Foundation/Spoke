@@ -395,9 +395,9 @@ export default class SpokeControls extends EventEmitter {
         }
 
         this.curScale.set(
-          this.curScale.x === 0 ? 0.000001 : this.curScale.x,
-          this.curScale.y === 0 ? 0.000001 : this.curScale.y,
-          this.curScale.z === 0 ? 0.000001 : this.curScale.z
+          this.curScale.x === 0 ? Number.EPSILON : this.curScale.x,
+          this.curScale.y === 0 ? Number.EPSILON : this.curScale.y,
+          this.curScale.z === 0 ? Number.EPSILON : this.curScale.z
         );
 
         this.scaleVector.copy(this.curScale).divide(this.prevScale);

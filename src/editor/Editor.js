@@ -971,7 +971,7 @@ export default class Editor extends EventEmitter {
     return this.reparentMultiple(this.selected, newParent, newBefore, useHistory, emitEvent, selectObjects);
   }
 
-  setPosition(object, position, space = TransformSpace.World, useHistory = true, emitEvent = true) {
+  setPosition(object, position, space = TransformSpace.Local, useHistory = true, emitEvent = true) {
     if (useHistory) {
       return this.history.execute(new SetPositionCommand(this, object, position, space));
     }
@@ -1015,7 +1015,7 @@ export default class Editor extends EventEmitter {
     return object;
   }
 
-  setPositionMultiple(objects, position, space = TransformSpace.World, useHistory = true, emitEvent = true) {
+  setPositionMultiple(objects, position, space = TransformSpace.Local, useHistory = true, emitEvent = true) {
     if (useHistory) {
       return this.history.execute(new SetPositionMultipleCommand(this, objects, position, space));
     }
@@ -1041,11 +1041,11 @@ export default class Editor extends EventEmitter {
     return objects;
   }
 
-  setPositionSelected(position, space = TransformSpace.World, useHistory = true, emitEvent = true) {
+  setPositionSelected(position, space = TransformSpace.Local, useHistory = true, emitEvent = true) {
     return this.setPositionMultiple(this.selectedTransformRoots, position, space, useHistory, emitEvent);
   }
 
-  translate(object, translation, space = TransformSpace.World, useHistory = true, emitEvent = true) {
+  translate(object, translation, space = TransformSpace.Local, useHistory = true, emitEvent = true) {
     if (useHistory) {
       return this.history.execute(new TranslateCommand(this, object, translation, space));
     }
@@ -1089,7 +1089,7 @@ export default class Editor extends EventEmitter {
     return object;
   }
 
-  translateMultiple(objects, translation, space = TransformSpace.World, useHistory = true, emitEvent = true) {
+  translateMultiple(objects, translation, space = TransformSpace.Local, useHistory = true, emitEvent = true) {
     if (useHistory) {
       return this.history.execute(new TranslateMultipleCommand(this, objects, translation, space));
     }
@@ -1115,11 +1115,11 @@ export default class Editor extends EventEmitter {
     return objects;
   }
 
-  translateSelected(translation, space = TransformSpace.World, useHistory = true, emitEvent = true) {
+  translateSelected(translation, space = TransformSpace.Local, useHistory = true, emitEvent = true) {
     return this.translateMultiple(this.selectedTransformRoots, translation, space, useHistory, emitEvent);
   }
 
-  setRotation(object, rotation, space = TransformSpace.World, useHistory = true, emitEvent = true) {
+  setRotation(object, rotation, space = TransformSpace.Local, useHistory = true, emitEvent = true) {
     if (useHistory) {
       return this.history.execute(new SetRotationCommand(this, object, rotation, space));
     }
@@ -1162,7 +1162,7 @@ export default class Editor extends EventEmitter {
     return object;
   }
 
-  setRotationMultiple(objects, rotation, space = TransformSpace.World, useHistory = true, emitEvent = true) {
+  setRotationMultiple(objects, rotation, space = TransformSpace.Local, useHistory = true, emitEvent = true) {
     if (useHistory) {
       return this.history.execute(new SetRotationMultipleCommand(this, objects, rotation, space));
     }
@@ -1188,11 +1188,11 @@ export default class Editor extends EventEmitter {
     return objects;
   }
 
-  setRotationSelected(rotation, space = TransformSpace.World, useHistory = true, emitEvent = true) {
+  setRotationSelected(rotation, space = TransformSpace.Local, useHistory = true, emitEvent = true) {
     return this.setRotationMultiple(this.selectedTransformRoots, rotation, space, useHistory, emitEvent);
   }
 
-  rotateOnAxis(object, axis, angle, space = TransformSpace.World, useHistory = true, emitEvent = true) {
+  rotateOnAxis(object, axis, angle, space = TransformSpace.Local, useHistory = true, emitEvent = true) {
     if (useHistory) {
       return this.history.execute(new RotateOnAxisCommand(this, object, axis, angle, space));
     }
@@ -1235,7 +1235,7 @@ export default class Editor extends EventEmitter {
     return object;
   }
 
-  rotateOnAxisMultiple(objects, axis, angle, space = TransformSpace.World, useHistory = true, emitEvent = true) {
+  rotateOnAxisMultiple(objects, axis, angle, space = TransformSpace.Local, useHistory = true, emitEvent = true) {
     if (useHistory) {
       return this.history.execute(new RotateOnAxisMultipleCommand(this, objects, axis, angle, space));
     }
@@ -1261,7 +1261,7 @@ export default class Editor extends EventEmitter {
     return objects;
   }
 
-  rotateOnAxisSelected(axis, angle, space = TransformSpace.World, useHistory = true, emitEvent = true) {
+  rotateOnAxisSelected(axis, angle, space = TransformSpace.Local, useHistory = true, emitEvent = true) {
     return this.rotateOnAxisMultiple(this.selectedTransformRoots, axis, angle, space, useHistory, emitEvent);
   }
 
@@ -1316,7 +1316,7 @@ export default class Editor extends EventEmitter {
     return this.rotateAroundMultiple(this.selectedTransformRoots, pivot, axis, angle, useHistory, emitEvent);
   }
 
-  scale(object, scale, space = TransformSpace.World, useHistory = true, emitEvent = true) {
+  scale(object, scale, space = TransformSpace.Local, useHistory = true, emitEvent = true) {
     if (useHistory) {
       return this.history.execute(new ScaleCommand(this, object, scale, space));
     }
@@ -1338,7 +1338,7 @@ export default class Editor extends EventEmitter {
     return object;
   }
 
-  scaleMultiple(objects, scale, space = TransformSpace.World, useHistory = true, emitEvent = true) {
+  scaleMultiple(objects, scale, space = TransformSpace.Local, useHistory = true, emitEvent = true) {
     if (useHistory) {
       return this.history.execute(new ScaleMultipleCommand(this, objects, scale, space));
     }
@@ -1354,17 +1354,23 @@ export default class Editor extends EventEmitter {
     return objects;
   }
 
-  scaleSelected(scale, space = TransformSpace.World, useHistory = true, emitEvent = true) {
+  scaleSelected(scale, space = TransformSpace.Local, useHistory = true, emitEvent = true) {
     return this.scaleMultiple(this.selectedTransformRoots, scale, space, useHistory, emitEvent);
   }
 
-  setScale(object, scale, space = TransformSpace.World, useHistory = true, emitEvent = true) {
+  setScale(object, scale, space = TransformSpace.Local, useHistory = true, emitEvent = true) {
     if (useHistory) {
       return this.history.execute(new SetScaleCommand(this, object, scale, space));
     }
 
     if (space === TransformSpace.Local) {
-      object.scale.copy(scale);
+      tempVector1.set(
+        scale.x === 0 ? Number.EPSILON : scale.x,
+        scale.y === 0 ? Number.EPSILON : scale.y,
+        scale.z === 0 ? Number.EPSILON : scale.z
+      );
+
+      object.scale.copy(tempVector1);
     } else {
       object.updateMatrixWorld(); // Update parent world matrices
 
@@ -1388,6 +1394,13 @@ export default class Editor extends EventEmitter {
 
       tempMatrix1.getInverse(spaceMatrix);
       tempVector1.applyMatrix4(tempMatrix1);
+
+      tempVector1.set(
+        tempVector1.x === 0 ? Number.EPSILON : tempVector1.x,
+        tempVector1.y === 0 ? Number.EPSILON : tempVector1.y,
+        tempVector1.z === 0 ? Number.EPSILON : tempVector1.z
+      );
+
       object.scale.copy(tempVector1);
     }
 
@@ -1402,7 +1415,7 @@ export default class Editor extends EventEmitter {
     return object;
   }
 
-  setScaleMultiple(objects, scale, space = TransformSpace.World, useHistory = true, emitEvent = true) {
+  setScaleMultiple(objects, scale, space = TransformSpace.Local, useHistory = true, emitEvent = true) {
     if (useHistory) {
       return this.history.execute(new SetScaleMultipleCommand(this, objects, scale, space));
     }
@@ -1428,7 +1441,7 @@ export default class Editor extends EventEmitter {
     return objects;
   }
 
-  setScaleSelected(scale, space = TransformSpace.World, useHistory = true, emitEvent = true) {
+  setScaleSelected(scale, space = TransformSpace.Local, useHistory = true, emitEvent = true) {
     return this.setScaleMultiple(this.selectedTransformRoots, scale, space, useHistory, emitEvent);
   }
 

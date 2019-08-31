@@ -217,7 +217,6 @@ export default class ParticleEmitterNodeEditor extends Component {
             min={0}
             max={1}
             step={0.01}
-            precision={0.01}
             value={this.props.node.startOpacity}
             onChange={this.onChangeStartOpacity}
           />
@@ -232,7 +231,6 @@ export default class ParticleEmitterNodeEditor extends Component {
             min={0}
             max={1}
             step={0.01}
-            precision={0.01}
             value={this.props.node.middleOpacity}
             onChange={this.onChangeMiddleOpacity}
           />
@@ -247,7 +245,6 @@ export default class ParticleEmitterNodeEditor extends Component {
             min={0}
             max={1}
             step={0.01}
-            precision={0.01}
             value={this.props.node.endOpacity}
             onChange={this.onChangeEndOpacity}
           />
