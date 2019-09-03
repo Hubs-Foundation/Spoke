@@ -46,7 +46,7 @@ export default class SetPropertyMultipleCommand extends Command {
       this.editor.setProperty(this.objects[i], this.propertyName, this.oldValues[i], false, false);
     }
 
-    this.emit("objectsChanged", this.objects, this.propertyName);
+    this.editor.emit("objectsChanged", this.objects, this.propertyName);
   }
 
   toString() {

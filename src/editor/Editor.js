@@ -1457,6 +1457,8 @@ export default class Editor extends EventEmitter {
       object[propertyName] = value;
     }
 
+    object.onChange(propertyName);
+
     if (emitEvent) {
       this.emit("objectsChanged", [object], propertyName);
     }
@@ -1474,14 +1476,14 @@ export default class Editor extends EventEmitter {
     }
 
     if (emitEvent) {
-      this.emit("objectsChanged", objects, "rotation");
+      this.emit("objectsChanged", objects, propertyName);
     }
 
     return objects;
   }
 
   setPropertySelected(propertyName, value, useHistory = true, emitEvent = true) {
-    return this.setPropertyMultiple(this.selectedTransformRoots, propertyName, value, useHistory, emitEvent);
+    return this.setPropertyMultiple(this.selected, propertyName, value, useHistory, emitEvent);
   }
 
   setProperties(object, properties, useHistory = true, emitEvent = true) {
@@ -1498,6 +1500,8 @@ export default class Editor extends EventEmitter {
         object[propertyName] = value;
       }
     }
+
+    object.onChange();
 
     if (emitEvent) {
       this.emit("objectsChanged", [object]);
@@ -1523,7 +1527,7 @@ export default class Editor extends EventEmitter {
   }
 
   setPropertiesSelected(properties, useHistory = true, emitEvent = true) {
-    return this.setPropertyMultiple(this.selectedTransformRoots, properties, useHistory, emitEvent);
+    return this.setPropertyMultiple(this.selected, properties, useHistory, emitEvent);
   }
 
   getTransformRoots(objects, target = []) {

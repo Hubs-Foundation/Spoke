@@ -1,10 +1,36 @@
 import test from "ava";
 import sinon from "sinon";
-import floatEqual from "float-equal";
 import Editor, { TransformSpace } from "../../src/editor/Editor";
 import MockNode from "../helpers/MockNode";
-import { Vector3 } from "three";
+import { Vector3, Euler, Quaternion } from "three";
 import arrayShallowEqual from "../../src/editor/utils/arrayShallowEqual";
+
+function floatEqual(a, b, epsilon = Number.EPSILON) {
+  if (a === b) {
+    return true;
+  }
+
+  const diff = Math.abs(a - b);
+
+  if (diff < epsilon) {
+    return true;
+  }
+
+  return diff <= epsilon * Math.min(Math.abs(a), Math.abs(b));
+}
+
+function eulerEqual(a, b, epsilon = 2.22e-12) {
+  return floatEqual(a.x, b.x, epsilon) && floatEqual(a.y, b.y, epsilon) && floatEqual(a.z, b.z, epsilon);
+}
+
+function quaternionEqual(a, b, epsilon = Number.EPSILON) {
+  return (
+    floatEqual(a.x, b.x, epsilon) &&
+    floatEqual(a.y, b.y, epsilon) &&
+    floatEqual(a.z, b.z, epsilon) &&
+    floatEqual(a.w, b.w, epsilon)
+  );
+}
 
 test("select", t => {
   const editor = new Editor();
@@ -2379,4 +2405,635 @@ test("translateSelected", t => {
   t.true(floatEqual(nodeWorldPosition.x, 0));
   t.true(floatEqual(nodeWorldPosition.y, 0));
   t.true(floatEqual(nodeWorldPosition.z, 0));
+});
+
+test("setRotation", t => {
+  const editor = new Editor();
+  editor.history.commandUpdatesEnabled = false;
+
+  const objectsChangedHandler = sinon.spy();
+  editor.addListener("objectsChanged", objectsChangedHandler);
+
+  const onChangeBSpy = sinon.spy();
+
+  const nodeA = new MockNode(editor);
+  nodeA.rotation.set(0, Math.PI, 0);
+  const nodeB = new MockNode(editor, { onChange: onChangeBSpy });
+
+  editor.addObject(nodeA);
+  editor.addObject(nodeB, nodeA);
+
+  t.truthy(eulerEqual(nodeA.rotation, new Euler(0, Math.PI, 0)));
+  const nodeBWorldQuaternion = new Quaternion();
+  nodeB.getWorldQuaternion(nodeBWorldQuaternion);
+  t.truthy(quaternionEqual(nodeBWorldQuaternion, new Quaternion(0, 1, 0, 0)));
+
+  editor.setRotation(nodeB, new Euler(Math.PI / 2, 0, 0), TransformSpace.World);
+
+  t.truthy(eulerEqual(nodeB.rotation, new Euler(Math.PI / 2, 0, Math.PI)));
+  nodeB.getWorldQuaternion(nodeBWorldQuaternion);
+  t.truthy(quaternionEqual(nodeBWorldQuaternion, new Quaternion(0.7071067811865476, 0, 0, 0.7071067811865476)));
+  t.is(objectsChangedHandler.callCount, 1);
+  t.true(arrayShallowEqual(objectsChangedHandler.getCall(0).args[0], [nodeB]));
+  t.is(objectsChangedHandler.getCall(0).args[1], "rotation");
+  t.is(onChangeBSpy.callCount, 1);
+  t.is(onChangeBSpy.getCall(0).args[0], "rotation");
+
+  editor.history.undo();
+
+  t.truthy(eulerEqual(nodeB.rotation, new Euler(0, 0, 0)));
+  nodeB.getWorldQuaternion(nodeBWorldQuaternion);
+  t.truthy(quaternionEqual(nodeBWorldQuaternion, new Quaternion(0, 1, 0, 0)));
+  t.is(objectsChangedHandler.callCount, 2);
+  t.true(arrayShallowEqual(objectsChangedHandler.getCall(1).args[0], [nodeB]));
+  t.is(objectsChangedHandler.getCall(1).args[1], "rotation");
+  t.is(onChangeBSpy.callCount, 2);
+  t.is(onChangeBSpy.getCall(1).args[0], "rotation");
+
+  editor.setRotation(nodeB, new Euler(Math.PI / 2, 0, 0), TransformSpace.Local);
+
+  t.truthy(eulerEqual(nodeB.rotation, new Euler(Math.PI / 2, 0, 0)));
+  nodeB.getWorldQuaternion(nodeBWorldQuaternion);
+  t.truthy(quaternionEqual(nodeBWorldQuaternion, new Quaternion(0, 0.7071067811865476, -0.7071067811865476, 0)));
+  t.is(objectsChangedHandler.callCount, 3);
+  t.true(arrayShallowEqual(objectsChangedHandler.getCall(2).args[0], [nodeB]));
+  t.is(objectsChangedHandler.getCall(2).args[1], "rotation");
+  t.is(onChangeBSpy.callCount, 3);
+  t.is(onChangeBSpy.getCall(2).args[0], "rotation");
+
+  editor.history.undo();
+
+  t.truthy(eulerEqual(nodeB.rotation, new Euler(0, 0, 0)));
+  nodeB.getWorldQuaternion(nodeBWorldQuaternion);
+  t.truthy(quaternionEqual(nodeBWorldQuaternion, new Quaternion(0, 1, 0, 0)));
+  t.is(objectsChangedHandler.callCount, 4);
+  t.true(arrayShallowEqual(objectsChangedHandler.getCall(3).args[0], [nodeB]));
+  t.is(objectsChangedHandler.getCall(3).args[1], "rotation");
+  t.is(onChangeBSpy.callCount, 4);
+  t.is(onChangeBSpy.getCall(3).args[0], "rotation");
+});
+
+test("setRotationMultiple", t => {
+  const editor = new Editor();
+  editor.history.commandUpdatesEnabled = false;
+
+  const objectsChangedHandler = sinon.spy();
+  editor.addListener("objectsChanged", objectsChangedHandler);
+
+  const onChangeBSpy = sinon.spy();
+  const onChangeCSpy = sinon.spy();
+
+  const nodeA = new MockNode(editor);
+  nodeA.rotation.set(0, Math.PI, 0);
+  const nodeB = new MockNode(editor, { onChange: onChangeBSpy });
+  const nodeC = new MockNode(editor, { onChange: onChangeCSpy });
+
+  editor.addObject(nodeA);
+  editor.addObject(nodeB, nodeA);
+  editor.addObject(nodeC, nodeA);
+
+  t.truthy(eulerEqual(nodeA.rotation, new Euler(0, Math.PI, 0)));
+  const nodeBWorldQuaternion = new Quaternion();
+  nodeB.getWorldQuaternion(nodeBWorldQuaternion);
+  t.truthy(quaternionEqual(nodeBWorldQuaternion, new Quaternion(0, 1, 0, 0)));
+  const nodeCWorldQuaternion = new Quaternion();
+  nodeC.getWorldQuaternion(nodeCWorldQuaternion);
+  t.truthy(quaternionEqual(nodeCWorldQuaternion, new Quaternion(0, 1, 0, 0)));
+
+  editor.setRotationMultiple([nodeB, nodeC], new Euler(Math.PI / 2, 0, 0), TransformSpace.World);
+
+  t.truthy(eulerEqual(nodeB.rotation, new Euler(Math.PI / 2, 0, Math.PI)));
+  nodeB.getWorldQuaternion(nodeBWorldQuaternion);
+  t.truthy(quaternionEqual(nodeBWorldQuaternion, new Quaternion(0.7071067811865476, 0, 0, 0.7071067811865476)));
+  t.truthy(eulerEqual(nodeC.rotation, new Euler(Math.PI / 2, 0, Math.PI)));
+  nodeC.getWorldQuaternion(nodeCWorldQuaternion);
+  t.truthy(quaternionEqual(nodeCWorldQuaternion, new Quaternion(0.7071067811865476, 0, 0, 0.7071067811865476)));
+  t.is(objectsChangedHandler.callCount, 1);
+  t.true(arrayShallowEqual(objectsChangedHandler.getCall(0).args[0], [nodeB, nodeC]));
+  t.is(objectsChangedHandler.getCall(0).args[1], "rotation");
+  t.is(onChangeBSpy.callCount, 1);
+  t.is(onChangeBSpy.getCall(0).args[0], "rotation");
+  t.is(onChangeCSpy.callCount, 1);
+  t.is(onChangeCSpy.getCall(0).args[0], "rotation");
+
+  editor.history.undo();
+
+  t.truthy(eulerEqual(nodeB.rotation, new Euler(0, 0, 0)));
+  nodeB.getWorldQuaternion(nodeBWorldQuaternion);
+  t.truthy(quaternionEqual(nodeBWorldQuaternion, new Quaternion(0, 1, 0, 0)));
+  t.truthy(eulerEqual(nodeC.rotation, new Euler(0, 0, 0)));
+  nodeC.getWorldQuaternion(nodeCWorldQuaternion);
+  t.truthy(quaternionEqual(nodeCWorldQuaternion, new Quaternion(0, 1, 0, 0)));
+  t.is(objectsChangedHandler.callCount, 2);
+  t.true(arrayShallowEqual(objectsChangedHandler.getCall(1).args[0], [nodeB, nodeC]));
+  t.is(objectsChangedHandler.getCall(1).args[1], "rotation");
+  t.is(onChangeBSpy.callCount, 2);
+  t.is(onChangeBSpy.getCall(1).args[0], "rotation");
+  t.is(onChangeCSpy.callCount, 2);
+  t.is(onChangeCSpy.getCall(1).args[0], "rotation");
+
+  editor.setRotationMultiple([nodeB, nodeC], new Euler(Math.PI / 2, 0, 0), TransformSpace.Local);
+
+  t.truthy(eulerEqual(nodeB.rotation, new Euler(Math.PI / 2, 0, 0)));
+  nodeB.getWorldQuaternion(nodeBWorldQuaternion);
+  t.truthy(quaternionEqual(nodeBWorldQuaternion, new Quaternion(0, 0.7071067811865476, -0.7071067811865476, 0)));
+  t.truthy(eulerEqual(nodeC.rotation, new Euler(Math.PI / 2, 0, 0)));
+  nodeC.getWorldQuaternion(nodeCWorldQuaternion);
+  t.truthy(quaternionEqual(nodeCWorldQuaternion, new Quaternion(0, 0.7071067811865476, -0.7071067811865476, 0)));
+  t.is(objectsChangedHandler.callCount, 3);
+  t.true(arrayShallowEqual(objectsChangedHandler.getCall(2).args[0], [nodeB, nodeC]));
+  t.is(objectsChangedHandler.getCall(2).args[1], "rotation");
+  t.is(onChangeBSpy.callCount, 3);
+  t.is(onChangeBSpy.getCall(2).args[0], "rotation");
+  t.is(onChangeCSpy.callCount, 3);
+  t.is(onChangeCSpy.getCall(2).args[0], "rotation");
+
+  editor.history.undo();
+
+  t.truthy(eulerEqual(nodeB.rotation, new Euler(0, 0, 0)));
+  nodeB.getWorldQuaternion(nodeBWorldQuaternion);
+  t.truthy(quaternionEqual(nodeBWorldQuaternion, new Quaternion(0, 1, 0, 0)));
+  t.truthy(eulerEqual(nodeC.rotation, new Euler(0, 0, 0)));
+  nodeC.getWorldQuaternion(nodeCWorldQuaternion);
+  t.truthy(quaternionEqual(nodeCWorldQuaternion, new Quaternion(0, 1, 0, 0)));
+  t.is(objectsChangedHandler.callCount, 4);
+  t.true(arrayShallowEqual(objectsChangedHandler.getCall(3).args[0], [nodeB, nodeC]));
+  t.is(objectsChangedHandler.getCall(3).args[1], "rotation");
+  t.is(onChangeBSpy.callCount, 4);
+  t.is(onChangeBSpy.getCall(3).args[0], "rotation");
+  t.is(onChangeCSpy.callCount, 4);
+  t.is(onChangeCSpy.getCall(3).args[0], "rotation");
+});
+
+test("setRotationSelected", t => {
+  const editor = new Editor();
+  editor.history.commandUpdatesEnabled = false;
+
+  const objectsChangedHandler = sinon.spy();
+  editor.addListener("objectsChanged", objectsChangedHandler);
+
+  const onChangeBSpy = sinon.spy();
+  const onChangeCSpy = sinon.spy();
+
+  const nodeA = new MockNode(editor);
+  nodeA.rotation.set(0, Math.PI, 0);
+  const nodeB = new MockNode(editor, { onChange: onChangeBSpy });
+  const nodeC = new MockNode(editor, { onChange: onChangeCSpy });
+
+  editor.addObject(nodeA);
+  editor.addObject(nodeB, nodeA);
+  editor.addObject(nodeC, nodeA);
+
+  t.truthy(eulerEqual(nodeA.rotation, new Euler(0, Math.PI, 0)));
+  const nodeBWorldQuaternion = new Quaternion();
+  nodeB.getWorldQuaternion(nodeBWorldQuaternion);
+  t.truthy(quaternionEqual(nodeBWorldQuaternion, new Quaternion(0, 1, 0, 0)));
+  const nodeCWorldQuaternion = new Quaternion();
+  nodeC.getWorldQuaternion(nodeCWorldQuaternion);
+  t.truthy(quaternionEqual(nodeCWorldQuaternion, new Quaternion(0, 1, 0, 0)));
+
+  editor.setSelection([nodeB, nodeC]);
+  editor.setRotationSelected(new Euler(Math.PI / 2, 0, 0), TransformSpace.World);
+
+  t.truthy(eulerEqual(nodeB.rotation, new Euler(Math.PI / 2, 0, Math.PI)));
+  nodeB.getWorldQuaternion(nodeBWorldQuaternion);
+  t.truthy(quaternionEqual(nodeBWorldQuaternion, new Quaternion(0.7071067811865476, 0, 0, 0.7071067811865476)));
+  t.truthy(eulerEqual(nodeC.rotation, new Euler(Math.PI / 2, 0, Math.PI)));
+  nodeC.getWorldQuaternion(nodeCWorldQuaternion);
+  t.truthy(quaternionEqual(nodeCWorldQuaternion, new Quaternion(0.7071067811865476, 0, 0, 0.7071067811865476)));
+  t.is(objectsChangedHandler.callCount, 1);
+  t.true(arrayShallowEqual(objectsChangedHandler.getCall(0).args[0], [nodeB, nodeC]));
+  t.is(objectsChangedHandler.getCall(0).args[1], "rotation");
+  t.is(onChangeBSpy.callCount, 1);
+  t.is(onChangeBSpy.getCall(0).args[0], "rotation");
+  t.is(onChangeCSpy.callCount, 1);
+  t.is(onChangeCSpy.getCall(0).args[0], "rotation");
+
+  editor.history.undo();
+  editor.history.undo();
+
+  t.truthy(eulerEqual(nodeB.rotation, new Euler(0, 0, 0)));
+  nodeB.getWorldQuaternion(nodeBWorldQuaternion);
+  t.truthy(quaternionEqual(nodeBWorldQuaternion, new Quaternion(0, 1, 0, 0)));
+  t.truthy(eulerEqual(nodeC.rotation, new Euler(0, 0, 0)));
+  nodeC.getWorldQuaternion(nodeCWorldQuaternion);
+  t.truthy(quaternionEqual(nodeCWorldQuaternion, new Quaternion(0, 1, 0, 0)));
+  t.is(objectsChangedHandler.callCount, 2);
+  t.true(arrayShallowEqual(objectsChangedHandler.getCall(1).args[0], [nodeB, nodeC]));
+  t.is(objectsChangedHandler.getCall(1).args[1], "rotation");
+  t.is(onChangeBSpy.callCount, 2);
+  t.is(onChangeBSpy.getCall(1).args[0], "rotation");
+  t.is(onChangeCSpy.callCount, 2);
+  t.is(onChangeCSpy.getCall(1).args[0], "rotation");
+
+  editor.setSelection([nodeB, nodeC]);
+  editor.setRotationSelected(new Euler(Math.PI / 2, 0, 0), TransformSpace.Local);
+
+  t.truthy(eulerEqual(nodeB.rotation, new Euler(Math.PI / 2, 0, 0)));
+  nodeB.getWorldQuaternion(nodeBWorldQuaternion);
+  t.truthy(quaternionEqual(nodeBWorldQuaternion, new Quaternion(0, 0.7071067811865476, -0.7071067811865476, 0)));
+  t.truthy(eulerEqual(nodeC.rotation, new Euler(Math.PI / 2, 0, 0)));
+  nodeC.getWorldQuaternion(nodeCWorldQuaternion);
+  t.truthy(quaternionEqual(nodeCWorldQuaternion, new Quaternion(0, 0.7071067811865476, -0.7071067811865476, 0)));
+  t.is(objectsChangedHandler.callCount, 3);
+  t.true(arrayShallowEqual(objectsChangedHandler.getCall(2).args[0], [nodeB, nodeC]));
+  t.is(objectsChangedHandler.getCall(2).args[1], "rotation");
+  t.is(onChangeBSpy.callCount, 3);
+  t.is(onChangeBSpy.getCall(2).args[0], "rotation");
+  t.is(onChangeCSpy.callCount, 3);
+  t.is(onChangeCSpy.getCall(2).args[0], "rotation");
+
+  editor.history.undo();
+  editor.history.undo();
+
+  t.truthy(eulerEqual(nodeB.rotation, new Euler(0, 0, 0)));
+  nodeB.getWorldQuaternion(nodeBWorldQuaternion);
+  t.truthy(quaternionEqual(nodeBWorldQuaternion, new Quaternion(0, 1, 0, 0)));
+  t.truthy(eulerEqual(nodeC.rotation, new Euler(0, 0, 0)));
+  nodeC.getWorldQuaternion(nodeCWorldQuaternion);
+  t.truthy(quaternionEqual(nodeCWorldQuaternion, new Quaternion(0, 1, 0, 0)));
+  t.is(objectsChangedHandler.callCount, 4);
+  t.true(arrayShallowEqual(objectsChangedHandler.getCall(3).args[0], [nodeB, nodeC]));
+  t.is(objectsChangedHandler.getCall(3).args[1], "rotation");
+  t.is(onChangeBSpy.callCount, 4);
+  t.is(onChangeBSpy.getCall(3).args[0], "rotation");
+  t.is(onChangeCSpy.callCount, 4);
+  t.is(onChangeCSpy.getCall(3).args[0], "rotation");
+});
+
+// TODO: Write tests for the remaining transform methods
+// - rotateOnAxis
+// - rotateOnAxisMultiple
+// - rotateOnAxisSelected
+// - rotateAround
+// - rotateAroundMultiple
+// - rotateAroundSelected
+// - scale
+// - scaleMultiple
+// - scaleSelected
+// - setScale
+// - setScaleMultiple
+// - setScaleSelected
+
+test("setProperty", t => {
+  const editor = new Editor();
+  editor.history.commandUpdatesEnabled = false;
+
+  const objectsChangedHandler = sinon.spy();
+  editor.addListener("objectsChanged", objectsChangedHandler);
+
+  const onChangeBSpy = sinon.spy();
+
+  const nodeA = new MockNode(editor);
+  const nodeB = new MockNode(editor, { onChange: onChangeBSpy });
+
+  editor.addObject(nodeA);
+  editor.addObject(nodeB, nodeA);
+
+  nodeB.stringProperty = "before";
+  nodeB.vector3Property = new Vector3();
+
+  editor.setProperty(nodeB, "stringProperty", "after");
+
+  t.is(nodeB.stringProperty, "after");
+  t.is(objectsChangedHandler.callCount, 1);
+  t.true(arrayShallowEqual(objectsChangedHandler.getCall(0).args[0], [nodeB]));
+  t.is(objectsChangedHandler.getCall(0).args[1], "stringProperty");
+  t.is(onChangeBSpy.callCount, 1);
+  t.is(onChangeBSpy.getCall(0).args[0], "stringProperty");
+
+  editor.history.undo();
+
+  t.is(nodeB.stringProperty, "before");
+  t.is(objectsChangedHandler.callCount, 2);
+  t.true(arrayShallowEqual(objectsChangedHandler.getCall(1).args[0], [nodeB]));
+  t.is(objectsChangedHandler.getCall(1).args[1], "stringProperty");
+  t.is(onChangeBSpy.callCount, 2);
+  t.is(onChangeBSpy.getCall(1).args[0], "stringProperty");
+
+  const targetVector = new Vector3(1, 2, 3);
+
+  editor.setProperty(nodeB, "vector3Property", targetVector);
+
+  t.truthy(targetVector.equals(new Vector3(1, 2, 3)));
+  t.truthy(nodeB.vector3Property.equals(new Vector3(1, 2, 3)));
+  t.not(nodeB.vector3Property, targetVector);
+  t.is(objectsChangedHandler.callCount, 3);
+  t.true(arrayShallowEqual(objectsChangedHandler.getCall(0).args[0], [nodeB]));
+  t.is(objectsChangedHandler.getCall(2).args[1], "vector3Property");
+  t.is(onChangeBSpy.callCount, 3);
+  t.is(onChangeBSpy.getCall(2).args[0], "vector3Property");
+
+  editor.history.undo();
+
+  t.truthy(targetVector.equals(new Vector3(1, 2, 3)));
+  t.truthy(nodeB.vector3Property.equals(new Vector3(0, 0, 0)));
+  t.not(nodeB.vector3Property, targetVector);
+  t.is(objectsChangedHandler.callCount, 4);
+  t.true(arrayShallowEqual(objectsChangedHandler.getCall(0).args[0], [nodeB]));
+  t.is(objectsChangedHandler.getCall(3).args[1], "vector3Property");
+  t.is(onChangeBSpy.callCount, 4);
+  t.is(onChangeBSpy.getCall(3).args[0], "vector3Property");
+});
+
+test("setPropertyMultiple", t => {
+  const editor = new Editor();
+  editor.history.commandUpdatesEnabled = false;
+
+  const objectsChangedHandler = sinon.spy();
+  editor.addListener("objectsChanged", objectsChangedHandler);
+
+  const onChangeASpy = sinon.spy();
+  const onChangeBSpy = sinon.spy();
+
+  const nodeA = new MockNode(editor, { onChange: onChangeASpy });
+  const nodeB = new MockNode(editor, { onChange: onChangeBSpy });
+
+  editor.addObject(nodeA);
+  editor.addObject(nodeB, nodeA);
+
+  nodeA.stringProperty = "beforeA";
+  nodeA.vector3Property = new Vector3(1, 1, 1);
+
+  nodeB.stringProperty = "beforeB";
+  nodeB.vector3Property = new Vector3();
+
+  editor.setPropertyMultiple([nodeA, nodeB], "stringProperty", "after");
+
+  t.is(nodeA.stringProperty, "after");
+  t.is(nodeB.stringProperty, "after");
+  t.is(objectsChangedHandler.callCount, 1);
+  t.true(arrayShallowEqual(objectsChangedHandler.getCall(0).args[0], [nodeA, nodeB]));
+  t.is(objectsChangedHandler.getCall(0).args[1], "stringProperty");
+  t.is(onChangeASpy.callCount, 1);
+  t.is(onChangeASpy.getCall(0).args[0], "stringProperty");
+  t.is(onChangeBSpy.callCount, 1);
+  t.is(onChangeBSpy.getCall(0).args[0], "stringProperty");
+
+  editor.history.undo();
+
+  t.is(nodeA.stringProperty, "beforeA");
+  t.is(nodeB.stringProperty, "beforeB");
+  t.is(objectsChangedHandler.callCount, 2);
+  t.true(arrayShallowEqual(objectsChangedHandler.getCall(1).args[0], [nodeA, nodeB]));
+  t.is(objectsChangedHandler.getCall(1).args[1], "stringProperty");
+  t.is(onChangeASpy.callCount, 2);
+  t.is(onChangeASpy.getCall(1).args[0], "stringProperty");
+  t.is(onChangeBSpy.callCount, 2);
+  t.is(onChangeBSpy.getCall(1).args[0], "stringProperty");
+
+  const targetVector = new Vector3(1, 2, 3);
+
+  editor.setPropertyMultiple([nodeA, nodeB], "vector3Property", targetVector);
+
+  t.truthy(targetVector.equals(new Vector3(1, 2, 3)));
+  t.truthy(nodeA.vector3Property.equals(new Vector3(1, 2, 3)));
+  t.truthy(nodeB.vector3Property.equals(new Vector3(1, 2, 3)));
+  t.not(nodeB.vector3Property, targetVector);
+  t.is(objectsChangedHandler.callCount, 3);
+  t.true(arrayShallowEqual(objectsChangedHandler.getCall(0).args[0], [nodeA, nodeB]));
+  t.is(objectsChangedHandler.getCall(2).args[1], "vector3Property");
+  t.is(onChangeASpy.callCount, 3);
+  t.is(onChangeASpy.getCall(2).args[0], "vector3Property");
+  t.is(onChangeBSpy.callCount, 3);
+  t.is(onChangeBSpy.getCall(2).args[0], "vector3Property");
+
+  editor.history.undo();
+
+  t.truthy(targetVector.equals(new Vector3(1, 2, 3)));
+  t.truthy(nodeA.vector3Property.equals(new Vector3(1, 1, 1)));
+  t.truthy(nodeB.vector3Property.equals(new Vector3(0, 0, 0)));
+  t.not(nodeB.vector3Property, targetVector);
+  t.is(objectsChangedHandler.callCount, 4);
+  t.true(arrayShallowEqual(objectsChangedHandler.getCall(0).args[0], [nodeA, nodeB]));
+  t.is(objectsChangedHandler.getCall(3).args[1], "vector3Property");
+  t.is(onChangeASpy.callCount, 4);
+  t.is(onChangeASpy.getCall(3).args[0], "vector3Property");
+  t.is(onChangeBSpy.callCount, 4);
+  t.is(onChangeBSpy.getCall(3).args[0], "vector3Property");
+});
+
+test("setPropertySelected", t => {
+  const editor = new Editor();
+  editor.history.commandUpdatesEnabled = false;
+
+  const objectsChangedHandler = sinon.spy();
+  editor.addListener("objectsChanged", objectsChangedHandler);
+
+  const onChangeASpy = sinon.spy();
+  const onChangeBSpy = sinon.spy();
+
+  const nodeA = new MockNode(editor, { onChange: onChangeASpy });
+  const nodeB = new MockNode(editor, { onChange: onChangeBSpy });
+
+  editor.addObject(nodeA);
+  editor.addObject(nodeB, nodeA);
+
+  nodeA.stringProperty = "beforeA";
+  nodeA.vector3Property = new Vector3(1, 1, 1);
+
+  nodeB.stringProperty = "beforeB";
+  nodeB.vector3Property = new Vector3();
+
+  editor.setSelection([nodeA, nodeB]);
+  editor.setPropertySelected("stringProperty", "after");
+
+  t.is(nodeA.stringProperty, "after");
+  t.is(nodeB.stringProperty, "after");
+  t.is(objectsChangedHandler.callCount, 1);
+  t.true(arrayShallowEqual(objectsChangedHandler.getCall(0).args[0], [nodeA, nodeB]));
+  t.is(objectsChangedHandler.getCall(0).args[1], "stringProperty");
+  t.is(onChangeASpy.callCount, 1);
+  t.is(onChangeASpy.getCall(0).args[0], "stringProperty");
+  t.is(onChangeBSpy.callCount, 1);
+  t.is(onChangeBSpy.getCall(0).args[0], "stringProperty");
+
+  editor.history.undo();
+  editor.history.undo();
+
+  t.is(nodeA.stringProperty, "beforeA");
+  t.is(nodeB.stringProperty, "beforeB");
+  t.is(objectsChangedHandler.callCount, 2);
+  t.true(arrayShallowEqual(objectsChangedHandler.getCall(1).args[0], [nodeA, nodeB]));
+  t.is(objectsChangedHandler.getCall(1).args[1], "stringProperty");
+  t.is(onChangeASpy.callCount, 2);
+  t.is(onChangeASpy.getCall(1).args[0], "stringProperty");
+  t.is(onChangeBSpy.callCount, 2);
+  t.is(onChangeBSpy.getCall(1).args[0], "stringProperty");
+
+  const targetVector = new Vector3(1, 2, 3);
+
+  editor.setSelection([nodeA, nodeB]);
+  editor.setPropertySelected("vector3Property", targetVector);
+
+  t.truthy(targetVector.equals(new Vector3(1, 2, 3)));
+  t.truthy(nodeA.vector3Property.equals(new Vector3(1, 2, 3)));
+  t.truthy(nodeB.vector3Property.equals(new Vector3(1, 2, 3)));
+  t.not(nodeB.vector3Property, targetVector);
+  t.is(objectsChangedHandler.callCount, 3);
+  t.true(arrayShallowEqual(objectsChangedHandler.getCall(0).args[0], [nodeA, nodeB]));
+  t.is(objectsChangedHandler.getCall(2).args[1], "vector3Property");
+  t.is(onChangeASpy.callCount, 3);
+  t.is(onChangeASpy.getCall(2).args[0], "vector3Property");
+  t.is(onChangeBSpy.callCount, 3);
+  t.is(onChangeBSpy.getCall(2).args[0], "vector3Property");
+
+  editor.history.undo();
+  editor.history.undo();
+
+  t.truthy(targetVector.equals(new Vector3(1, 2, 3)));
+  t.truthy(nodeA.vector3Property.equals(new Vector3(1, 1, 1)));
+  t.truthy(nodeB.vector3Property.equals(new Vector3(0, 0, 0)));
+  t.not(nodeB.vector3Property, targetVector);
+  t.is(objectsChangedHandler.callCount, 4);
+  t.true(arrayShallowEqual(objectsChangedHandler.getCall(0).args[0], [nodeA, nodeB]));
+  t.is(objectsChangedHandler.getCall(3).args[1], "vector3Property");
+  t.is(onChangeASpy.callCount, 4);
+  t.is(onChangeASpy.getCall(3).args[0], "vector3Property");
+  t.is(onChangeBSpy.callCount, 4);
+  t.is(onChangeBSpy.getCall(3).args[0], "vector3Property");
+});
+
+test("setProperties", t => {
+  const editor = new Editor();
+  editor.history.commandUpdatesEnabled = false;
+
+  const objectsChangedHandler = sinon.spy();
+  editor.addListener("objectsChanged", objectsChangedHandler);
+
+  const onChangeBSpy = sinon.spy();
+
+  const nodeA = new MockNode(editor);
+  const nodeB = new MockNode(editor, { onChange: onChangeBSpy });
+
+  editor.addObject(nodeA);
+  editor.addObject(nodeB, nodeA);
+
+  nodeB.stringProperty = "before";
+  nodeB.vector3Property = new Vector3();
+
+  const targetVector = new Vector3(1, 2, 3);
+
+  editor.setProperties(nodeB, { stringProperty: "after", vector3Property: targetVector });
+
+  t.is(nodeB.stringProperty, "after");
+  t.truthy(targetVector.equals(new Vector3(1, 2, 3)));
+  t.truthy(nodeB.vector3Property.equals(new Vector3(1, 2, 3)));
+  t.is(objectsChangedHandler.callCount, 1);
+  t.true(arrayShallowEqual(objectsChangedHandler.getCall(0).args[0], [nodeB]));
+  t.is(objectsChangedHandler.getCall(0).args[1], undefined);
+  t.is(onChangeBSpy.callCount, 1);
+  t.is(onChangeBSpy.getCall(0).args[0], undefined);
+
+  editor.history.undo();
+
+  t.is(nodeB.stringProperty, "before");
+  t.truthy(targetVector.equals(new Vector3(1, 2, 3)));
+  t.truthy(nodeB.vector3Property.equals(new Vector3(0, 0, 0)));
+  t.not(nodeB.vector3Property, targetVector);
+  t.is(objectsChangedHandler.callCount, 2);
+  t.true(arrayShallowEqual(objectsChangedHandler.getCall(1).args[0], [nodeB]));
+  t.is(objectsChangedHandler.getCall(1).args[1], undefined);
+  t.is(onChangeBSpy.callCount, 2);
+  t.is(onChangeBSpy.getCall(1).args[0], undefined);
+});
+
+test("setPropertiesMultiple", t => {
+  const editor = new Editor();
+  editor.history.commandUpdatesEnabled = false;
+
+  const objectsChangedHandler = sinon.spy();
+  editor.addListener("objectsChanged", objectsChangedHandler);
+
+  const onChangeASpy = sinon.spy();
+  const onChangeBSpy = sinon.spy();
+
+  const nodeA = new MockNode(editor, { onChange: onChangeASpy });
+  const nodeB = new MockNode(editor, { onChange: onChangeBSpy });
+
+  editor.addObject(nodeA);
+  editor.addObject(nodeB, nodeA);
+
+  nodeA.stringProperty = "beforeA";
+  nodeA.vector3Property = new Vector3(1, 1, 1);
+  nodeB.stringProperty = "beforeB";
+  nodeB.vector3Property = new Vector3();
+
+  const targetVector = new Vector3(1, 2, 3);
+
+  editor.setPropertiesMultiple([nodeA, nodeB], { stringProperty: "after", vector3Property: targetVector });
+
+  t.is(nodeA.stringProperty, "after");
+  t.truthy(nodeA.vector3Property.equals(new Vector3(1, 2, 3)));
+  t.is(nodeB.stringProperty, "after");
+  t.truthy(nodeB.vector3Property.equals(new Vector3(1, 2, 3)));
+  t.truthy(targetVector.equals(new Vector3(1, 2, 3)));
+  t.is(objectsChangedHandler.callCount, 1);
+  t.true(arrayShallowEqual(objectsChangedHandler.getCall(0).args[0], [nodeA, nodeB]));
+  t.is(objectsChangedHandler.getCall(0).args[1], undefined);
+  t.is(onChangeASpy.callCount, 1);
+  t.is(onChangeASpy.getCall(0).args[0], undefined);
+  t.is(onChangeBSpy.callCount, 1);
+  t.is(onChangeBSpy.getCall(0).args[0], undefined);
+
+  editor.history.undo();
+
+  t.is(nodeA.stringProperty, "beforeA");
+  t.truthy(nodeA.vector3Property.equals(new Vector3(1, 1, 1)));
+  t.not(nodeA.vector3Property, targetVector);
+  t.is(nodeB.stringProperty, "beforeB");
+  t.truthy(nodeB.vector3Property.equals(new Vector3(0, 0, 0)));
+  t.not(nodeB.vector3Property, targetVector);
+  t.truthy(targetVector.equals(new Vector3(1, 2, 3)));
+  t.is(objectsChangedHandler.callCount, 2);
+  t.true(arrayShallowEqual(objectsChangedHandler.getCall(1).args[0], [nodeA, nodeB]));
+  t.is(objectsChangedHandler.getCall(1).args[1], undefined);
+  t.is(onChangeASpy.callCount, 2);
+  t.is(onChangeASpy.getCall(1).args[0], undefined);
+  t.is(onChangeBSpy.callCount, 2);
+  t.is(onChangeBSpy.getCall(1).args[0], undefined);
+});
+
+test("setPropertiesSelected", t => {
+  const editor = new Editor();
+  editor.history.commandUpdatesEnabled = false;
+
+  const objectsChangedHandler = sinon.spy();
+  editor.addListener("objectsChanged", objectsChangedHandler);
+
+  const onChangeBSpy = sinon.spy();
+
+  const nodeA = new MockNode(editor);
+  const nodeB = new MockNode(editor, { onChange: onChangeBSpy });
+
+  editor.addObject(nodeA);
+  editor.addObject(nodeB, nodeA);
+
+  nodeB.stringProperty = "before";
+  nodeB.vector3Property = new Vector3();
+
+  const targetVector = new Vector3(1, 2, 3);
+
+  editor.setProperties(nodeB, { stringProperty: "after", vector3Property: targetVector });
+
+  t.is(nodeB.stringProperty, "after");
+  t.truthy(targetVector.equals(new Vector3(1, 2, 3)));
+  t.truthy(nodeB.vector3Property.equals(new Vector3(1, 2, 3)));
+  t.is(objectsChangedHandler.callCount, 1);
+  t.true(arrayShallowEqual(objectsChangedHandler.getCall(0).args[0], [nodeB]));
+  t.is(objectsChangedHandler.getCall(0).args[1], undefined);
+  t.is(onChangeBSpy.callCount, 1);
+  t.is(onChangeBSpy.getCall(0).args[0], undefined);
+
+  editor.history.undo();
+
+  t.is(nodeB.stringProperty, "before");
+  t.truthy(targetVector.equals(new Vector3(1, 2, 3)));
+  t.truthy(nodeB.vector3Property.equals(new Vector3(0, 0, 0)));
+  t.not(nodeB.vector3Property, targetVector);
+  t.is(objectsChangedHandler.callCount, 2);
+  t.true(arrayShallowEqual(objectsChangedHandler.getCall(1).args[0], [nodeB]));
+  t.is(objectsChangedHandler.getCall(1).args[1], undefined);
+  t.is(onChangeBSpy.callCount, 2);
+  t.is(onChangeBSpy.getCall(1).args[0], undefined);
 });
