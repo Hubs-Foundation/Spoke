@@ -195,18 +195,18 @@ export default class ToolBar extends Component {
           />
           <ToolToggle
             text={["Selection", "Center"]}
-            tooltip="[C] Toggle Transform Pivot"
+            tooltip="[X] Toggle Transform Pivot"
             action={this.onToggleTransformPivot}
             icons={{
-              checked: "fa-cube",
-              unchecked: "fa-globe"
+              checked: "fa-bullseye",
+              unchecked: "fa-object-group"
             }}
             isSwitch
             isChecked={transformPivot === TransformPivot.Center}
           />
           <ToolToggle
             text={["Snapping", "Grid"]}
-            tooltip="[X] Toggle Snap Mode"
+            tooltip="[C] Toggle Snap Mode"
             action={this.onToggleSnapMode}
             icons={{
               checked: "fa-magnet",

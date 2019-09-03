@@ -515,6 +515,8 @@ export default class SpokeControls extends EventEmitter {
       this.setTransformMode(TransformMode.Scale);
     } else if (input.get(Spoke.toggleSnapMode)) {
       this.toggleSnapMode();
+    } else if (input.get(Spoke.toggleTransformPivot)) {
+      this.toggleTransformPivot();
     } else if (input.get(Spoke.toggleTransformSpace)) {
       this.toggleTransformSpace();
     } else if (input.get(Spoke.undo)) {
