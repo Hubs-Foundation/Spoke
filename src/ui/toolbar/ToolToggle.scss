@@ -79,3 +79,7 @@
     box-shadow: none;
   }
 }
+
+:local(.toggleText) {
+  user-select: none;
+}
