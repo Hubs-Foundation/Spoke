@@ -54,6 +54,8 @@ export const TransformAxisConstraints = {
   XYZ: new Vector3(1, 1, 1)
 };
 
+const viewDirection = new Vector3();
+
 export default class SpokeControls extends EventEmitter {
   constructor(camera, editor, inputManager, flyControls) {
     super();
@@ -383,12 +385,26 @@ export default class SpokeControls extends EventEmitter {
           this.prevScale.set(1, 1, 1);
         }
 
-        const dragVectorLength = this.deltaDragVector.subVectors(this.dragVector, this.initDragVector).length();
+        this.deltaDragVector.subVectors(this.dragVector, this.initDragVector);
+        this.deltaDragVector.multiply(constraint);
+
+        let scaleFactor;
+
+        if (this.transformAxis === TransformAxis.XYZ) {
+          scaleFactor =
+            1 +
+            this.camera
+              .getWorldDirection(viewDirection)
+              .applyQuaternion(this.transformGizmo.quaternion)
+              .dot(this.deltaDragVector);
+        } else {
+          scaleFactor = 1 + constraint.dot(this.deltaDragVector);
+        }
 
         this.curScale.set(
-          constraint.x === 0 ? 1 : dragVectorLength,
-          constraint.y === 0 ? 1 : dragVectorLength,
-          constraint.z === 0 ? 1 : dragVectorLength
+          constraint.x === 0 ? 1 : scaleFactor,
+          constraint.y === 0 ? 1 : scaleFactor,
+          constraint.z === 0 ? 1 : scaleFactor
         );
 
         if (this.shouldSnap(modifier)) {
@@ -399,9 +415,9 @@ export default class SpokeControls extends EventEmitter {
         }
 
         this.curScale.set(
-          this.curScale.x === 0 ? Number.EPSILON : this.curScale.x,
-          this.curScale.y === 0 ? Number.EPSILON : this.curScale.y,
-          this.curScale.z === 0 ? Number.EPSILON : this.curScale.z
+          this.curScale.x <= 0 ? Number.EPSILON : this.curScale.x,
+          this.curScale.y <= 0 ? Number.EPSILON : this.curScale.y,
+          this.curScale.z <= 0 ? Number.EPSILON : this.curScale.z
         );
 
         this.scaleVector.copy(this.curScale).divide(this.prevScale);

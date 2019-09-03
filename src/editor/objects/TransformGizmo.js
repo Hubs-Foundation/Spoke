@@ -126,7 +126,7 @@ export default class TransformGizmo extends Object3D {
     this.scaleXAxis = this.scaleControls.getObjectByName("ScaleXAxis");
     this.scaleXAxis.axisInfo = {
       axis: TransformAxis.X,
-      planeNormal: new Vector3(0, 1, 0),
+      planeNormal: new Vector3(0, 0, 1),
       selectionColorTarget: this.scaleXAxis.material
     };
     this.scaleYAxis = this.scaleControls.getObjectByName("ScaleYAxis");
