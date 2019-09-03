@@ -1,7 +1,7 @@
 import test from "ava";
 import sinon from "sinon";
 import floatEqual from "float-equal";
-import Editor, { TransformSpace } from "../../src/editor/Editor2";
+import Editor, { TransformSpace } from "../../src/editor/Editor";
 import MockNode from "../helpers/MockNode";
 import { Vector3 } from "three";
 import arrayShallowEqual from "../../src/editor/utils/arrayShallowEqual";
@@ -168,10 +168,10 @@ test("selectAll", t => {
 
   editor.selectAll(); // Select all nodes in the scene graph
   t.is(editor.selected.length, 4);
-  t.is(editor.selected[0], nodeC);
-  t.is(editor.selected[1], editor.scene);
-  t.is(editor.selected[2], nodeA);
-  t.is(editor.selected[3], nodeB);
+  t.is(editor.selected[0], editor.scene);
+  t.is(editor.selected[1], nodeA);
+  t.is(editor.selected[2], nodeB);
+  t.is(editor.selected[3], nodeC);
   t.is(onSelectSceneSpy.callCount, 1);
   t.is(onSelectASpy.callCount, 1);
   t.is(onSelectBSpy.callCount, 1);
@@ -342,10 +342,10 @@ test("deselectAll", t => {
 
   editor.selectAll(); // Select all nodes in the scene graph
   t.is(editor.selected.length, 4);
-  t.is(editor.selected[0], nodeC);
-  t.is(editor.selected[1], editor.scene);
-  t.is(editor.selected[2], nodeA);
-  t.is(editor.selected[3], nodeB);
+  t.is(editor.selected[0], editor.scene);
+  t.is(editor.selected[1], nodeA);
+  t.is(editor.selected[2], nodeB);
+  t.is(editor.selected[3], nodeC);
   t.is(onSelectSceneSpy.callCount, 1);
   t.is(onSelectASpy.callCount, 1);
   t.is(onSelectBSpy.callCount, 1);
@@ -1700,16 +1700,16 @@ test("reparentMultiple", t => {
   t.is(sceneGraphChangedHandler.callCount, 0);
   t.is(selectionChangedHandler.callCount, 0);
 
-  editor.reparentMultiple([nodeE, nodeD], nodeA); // Move nodeE and nodeD to nodeA as the last children, in the order provided
+  editor.reparentMultiple([nodeE, nodeD], nodeA); // Move nodeE and nodeD to nodeA as the last children, in tree traversal order
 
   t.is(nodeA.children.length, 3);
   t.is(nodeA.children[0], nodeC);
-  t.is(nodeA.children[1], nodeE);
-  t.is(nodeA.children[2], nodeD);
+  t.is(nodeA.children[1], nodeD);
+  t.is(nodeA.children[2], nodeE);
   t.is(nodeB.children.length, 0);
   t.is(editor.selectedTransformRoots.length, 2);
-  t.is(editor.selectedTransformRoots[0], nodeE);
-  t.is(editor.selectedTransformRoots[1], nodeD);
+  t.is(editor.selectedTransformRoots[0], nodeD);
+  t.is(editor.selectedTransformRoots[1], nodeE);
   t.is(sceneGraphChangedHandler.callCount, 1);
   t.is(selectionChangedHandler.callCount, 1);
 
@@ -1725,16 +1725,16 @@ test("reparentMultiple", t => {
   t.is(sceneGraphChangedHandler.callCount, 2);
   t.is(selectionChangedHandler.callCount, 2);
 
-  editor.reparentMultiple([nodeE, nodeD], nodeA, nodeC); // Move nodeE and nodeD to nodeA before nodeC, in the order provided
+  editor.reparentMultiple([nodeE, nodeD], nodeA, nodeC); // Move nodeE and nodeD to nodeA before nodeC, in tree traversal order
 
   t.is(nodeA.children.length, 3);
-  t.is(nodeA.children[0], nodeE);
-  t.is(nodeA.children[1], nodeD);
+  t.is(nodeA.children[0], nodeD);
+  t.is(nodeA.children[1], nodeE);
   t.is(nodeA.children[2], nodeC);
   t.is(nodeB.children.length, 0);
   t.is(editor.selectedTransformRoots.length, 2);
-  t.is(editor.selectedTransformRoots[0], nodeE);
-  t.is(editor.selectedTransformRoots[1], nodeD);
+  t.is(editor.selectedTransformRoots[0], nodeD);
+  t.is(editor.selectedTransformRoots[1], nodeE);
   t.is(sceneGraphChangedHandler.callCount, 3);
   t.is(selectionChangedHandler.callCount, 3);
 
@@ -1790,21 +1790,21 @@ test("reparentSelected", t => {
   t.is(selectionChangedHandler.callCount, 0);
 
   editor.setSelection([nodeE, nodeD]);
-  editor.reparentSelected(nodeA); // Move nodeE and nodeD to nodeA as the last children, in the order the objects were selected
+  editor.reparentSelected(nodeA); // Move nodeE and nodeD to nodeA as the last children, in tree traversal order
 
   t.is(nodeA.children.length, 3);
   t.is(nodeA.children[0], nodeC);
-  t.is(nodeA.children[1], nodeE);
-  t.is(nodeA.children[2], nodeD);
+  t.is(nodeA.children[1], nodeD);
+  t.is(nodeA.children[2], nodeE);
   t.is(nodeB.children.length, 0);
   t.is(editor.selected.length, 2);
-  t.is(editor.selected[0], nodeE);
-  t.is(editor.selected[1], nodeD);
+  t.is(editor.selected[0], nodeD);
+  t.is(editor.selected[1], nodeE);
   t.is(editor.selectedTransformRoots.length, 2);
-  t.is(editor.selectedTransformRoots[0], nodeE);
-  t.is(editor.selectedTransformRoots[1], nodeD);
+  t.is(editor.selectedTransformRoots[0], nodeD);
+  t.is(editor.selectedTransformRoots[1], nodeE);
   t.is(sceneGraphChangedHandler.callCount, 1);
-  t.is(selectionChangedHandler.callCount, 1);
+  t.is(selectionChangedHandler.callCount, 2);
 
   editor.history.undo();
   editor.history.undo();
@@ -1817,21 +1817,21 @@ test("reparentSelected", t => {
   t.is(editor.selectedTransformRoots.length, 1);
   t.is(editor.selectedTransformRoots[0], nodeE);
   t.is(sceneGraphChangedHandler.callCount, 2);
-  t.is(selectionChangedHandler.callCount, 2);
+  t.is(selectionChangedHandler.callCount, 4);
 
   editor.setSelection([nodeE, nodeD]);
-  editor.reparentSelected(nodeA, nodeC); // Move nodeE and nodeD to nodeA before nodeC, in the order the objects were selected
+  editor.reparentSelected(nodeA, nodeC); // Move nodeE and nodeD to nodeA before nodeC, in tree traversal order
 
   t.is(nodeA.children.length, 3);
-  t.is(nodeA.children[0], nodeE);
-  t.is(nodeA.children[1], nodeD);
+  t.is(nodeA.children[0], nodeD);
+  t.is(nodeA.children[1], nodeE);
   t.is(nodeA.children[2], nodeC);
   t.is(nodeB.children.length, 0);
   t.is(editor.selectedTransformRoots.length, 2);
-  t.is(editor.selectedTransformRoots[0], nodeE);
-  t.is(editor.selectedTransformRoots[1], nodeD);
+  t.is(editor.selectedTransformRoots[0], nodeD);
+  t.is(editor.selectedTransformRoots[1], nodeE);
   t.is(sceneGraphChangedHandler.callCount, 3);
-  t.is(selectionChangedHandler.callCount, 3);
+  t.is(selectionChangedHandler.callCount, 6);
 
   editor.history.undo();
   editor.history.undo();
@@ -1844,7 +1844,7 @@ test("reparentSelected", t => {
   t.is(editor.selectedTransformRoots.length, 1);
   t.is(editor.selectedTransformRoots[0], nodeE);
   t.is(sceneGraphChangedHandler.callCount, 4);
-  t.is(selectionChangedHandler.callCount, 4);
+  t.is(selectionChangedHandler.callCount, 8);
 });
 
 test("setPosition", t => {
@@ -1871,7 +1871,7 @@ test("setPosition", t => {
   t.true(floatEqual(nodeBWorldPosition.y, 0));
   t.true(floatEqual(nodeBWorldPosition.z, 0));
 
-  editor.setPosition(nodeB, new Vector3(1, 0, 0));
+  editor.setPosition(nodeB, new Vector3(1, 0, 0), TransformSpace.World);
 
   nodeB.getWorldPosition(nodeBWorldPosition);
 
@@ -1960,7 +1960,7 @@ test("setPositionMultiple", t => {
   t.true(floatEqual(nodeWorldPosition.y, 0));
   t.true(floatEqual(nodeWorldPosition.z, 0));
 
-  editor.setPositionMultiple([nodeA, nodeD], new Vector3(1, 0, 0));
+  editor.setPositionMultiple([nodeA, nodeD], new Vector3(1, 0, 0), TransformSpace.World);
 
   nodeA.getWorldPosition(nodeWorldPosition);
 
@@ -2054,7 +2054,7 @@ test("setPositionSelected", t => {
   t.true(floatEqual(nodeWorldPosition.z, 0));
 
   editor.setSelection([nodeA, nodeD]);
-  editor.setPositionSelected(new Vector3(1, 0, 0));
+  editor.setPositionSelected(new Vector3(1, 0, 0), TransformSpace.World);
 
   nodeA.getWorldPosition(nodeWorldPosition);
 
@@ -2138,7 +2138,7 @@ test("translate", t => {
   t.true(floatEqual(nodeBWorldPosition.y, 0));
   t.true(floatEqual(nodeBWorldPosition.z, 0));
 
-  editor.translate(nodeB, new Vector3(1, 0, 0));
+  editor.translate(nodeB, new Vector3(1, 0, 0), TransformSpace.World);
 
   nodeB.getWorldPosition(nodeBWorldPosition);
 
@@ -2227,7 +2227,7 @@ test("translateMultiple", t => {
   t.true(floatEqual(nodeWorldPosition.y, 0));
   t.true(floatEqual(nodeWorldPosition.z, 0));
 
-  editor.translateMultiple([nodeA, nodeD], new Vector3(1, 0, 0));
+  editor.translateMultiple([nodeA, nodeD], new Vector3(1, 0, 0), TransformSpace.World);
 
   nodeA.getWorldPosition(nodeWorldPosition);
 
@@ -2321,7 +2321,7 @@ test("translateSelected", t => {
   t.true(floatEqual(nodeWorldPosition.z, 0));
 
   editor.setSelection([nodeA, nodeD]);
-  editor.translateSelected(new Vector3(1, 0, 0));
+  editor.translateSelected(new Vector3(1, 0, 0), TransformSpace.World);
 
   nodeA.getWorldPosition(nodeWorldPosition);
 

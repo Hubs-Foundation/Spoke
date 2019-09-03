@@ -121,7 +121,7 @@ export default class Editor extends EventEmitter {
 
     this.scene = new SceneNode(this);
     this.sceneModified = false;
-    this.sceneLoaded = false;
+    this.projectLoaded = false;
 
     this.camera = new PerspectiveCamera(80, window.innerWidth / window.innerHeight, 0.2, 8000);
     this.audioListener = new AudioListener();
@@ -223,6 +223,7 @@ export default class Editor extends EventEmitter {
       }
     });
 
+    this.emit("projectLoaded");
     this.emit("sceneGraphChanged");
 
     return scene;
