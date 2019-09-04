@@ -6,16 +6,23 @@ export default class GroupMultipleCommand extends Command {
   constructor(editor, objects, groupParent, groupBefore) {
     super(editor);
     this.objects = [];
+    this.undoObjects = [];
     this.groupParent = groupParent;
     this.groupBefore = groupBefore;
     this.oldParents = [];
     this.oldBefores = [];
     this.oldSelection = editor.selected.slice(0);
 
+    editor.scene.traverse(object => {
+      if (objects.indexOf(object) !== -1) {
+        this.objects.push(object);
+      }
+    });
+
     // Sort objects, parents, and befores with a reverse depth first search so that undo adds nodes in the correct order
     reverseDepthFirstTraverse(editor.scene, object => {
       if (objects.indexOf(object) !== -1) {
-        this.objects.push(object);
+        this.undoObjects.push(object);
         this.oldParents.push(object.parent);
         if (object.parent) {
           const siblings = object.parent.children;
@@ -39,7 +46,7 @@ export default class GroupMultipleCommand extends Command {
 
   undo() {
     for (let i = 0; i < this.objects.length; i++) {
-      this.editor.reparent(this.objects[i], this.oldParents[i], this.oldBefores[i], false, false, false, false);
+      this.editor.reparent(this.undoObjects[i], this.oldParents[i], this.oldBefores[i], false, false, false, false);
     }
 
     this.editor.removeObject(this.groupNode, false, false, false);
