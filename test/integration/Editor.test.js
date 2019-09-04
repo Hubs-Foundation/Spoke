@@ -2,7 +2,7 @@ import test from "ava";
 import withPage from "../helpers/withPage";
 import getFixtureUrl from "../helpers/getFixtureUrl";
 
-async function waitForSceneLoaded(page) {
+async function waitForProjectLoaded(page) {
   await page.waitFor("#editor-container", { timeout: 10000 });
 
   const windowHandle = await page.evaluateHandle("window");
@@ -10,8 +10,8 @@ async function waitForSceneLoaded(page) {
   return await page.evaluateHandle(async window => {
     const editor = window.editor;
 
-    if (!editor.sceneLoaded) {
-      await new Promise(resolve => editor.signals.sceneSet.add(resolve));
+    if (!editor.projectLoaded) {
+      await new Promise(resolve => editor.once("projectLoaded", resolve));
     }
 
     return editor.scene;
@@ -24,7 +24,7 @@ async function getSerializedScene(page, sceneHandle) {
 }
 
 test("Editor should load new scene", withPage("/projects/new"), async (t, page) => {
-  const sceneHandle = await waitForSceneLoaded(page);
+  const sceneHandle = await waitForProjectLoaded(page);
   const serializedScene = await getSerializedScene(page, sceneHandle);
   t.snapshot(serializedScene);
 });
@@ -32,7 +32,7 @@ test("Editor should load new scene", withPage("/projects/new"), async (t, page) 
 const v1TestSceneUrl = getFixtureUrl("V1TestScene.spoke");
 
 test("Editor should load V1TestScene", withPage(`/projects/new?template=${v1TestSceneUrl}`), async (t, page) => {
-  const sceneHandle = await waitForSceneLoaded(page);
+  const sceneHandle = await waitForProjectLoaded(page);
   const serializedScene = await getSerializedScene(page, sceneHandle);
 
   const entities = Object.values(serializedScene.entities);
@@ -234,7 +234,7 @@ test("Editor should load V1TestScene", withPage(`/projects/new?template=${v1Test
 const v3TestSceneUrl = getFixtureUrl("V3TestScene.spoke");
 
 test("Editor should load V3TestScene", withPage(`/projects/new?template=${v3TestSceneUrl}`), async (t, page) => {
-  const sceneHandle = await waitForSceneLoaded(page);
+  const sceneHandle = await waitForProjectLoaded(page);
   const serializedScene = await getSerializedScene(page, sceneHandle);
   t.snapshot(serializedScene);
 });

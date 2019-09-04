@@ -1,55 +1,35 @@
 import Command from "./Command";
-
-/**
- * @author dforrer / https://github.com/dforrer
- * Developed as part of a project at University of Applied Sciences and Arts Northwestern Switzerland (www.fhnw.ch)
- */
-
-/**
- * @param object THREE.Object3D
- * @param newScale THREE.Vector3
- * @param optionalOldScale THREE.Vector3
- * @constructor
- */
+import { TransformSpace } from "../Editor";
+import { serializeVector3, serializeObject3D } from "../utils/debug";
 
 export default class SetScaleCommand extends Command {
-  constructor(object, newScale, optionalOldScale) {
-    super();
-
-    this.type = "SetScaleCommand";
-    this.name = "Set Scale";
-    this.updatable = true;
-
+  constructor(editor, object, scale, space) {
+    super(editor);
     this.object = object;
-
-    if (object !== undefined && newScale !== undefined) {
-      this.oldScale = object.scale.clone();
-      this.newScale = newScale.clone();
-    }
-
-    if (optionalOldScale !== undefined) {
-      this.oldScale = optionalOldScale.clone();
-    }
+    this.scale = scale.clone();
+    this.space = space;
+    this.oldScale = object.scale.clone();
   }
 
   execute() {
-    this.object.scale.copy(this.newScale);
-    this.object.updateMatrixWorld(true);
-    this.editor.signals.objectChanged.dispatch(this.object);
-    this.editor.signals.propertyChanged.dispatch("scale", this.object);
+    this.editor.setScale(this.object, this.scale, this.space, false);
   }
 
-  undo() {
-    this.object.scale.copy(this.oldScale);
-    this.object.updateMatrixWorld(true);
-    this.editor.signals.objectChanged.dispatch(this.object);
-    this.editor.signals.propertyChanged.dispatch("scale", this.object);
+  shouldUpdate(newCommand) {
+    return this.object === newCommand.object && this.space === newCommand.space;
   }
 
   update(command) {
-    this.newScale.copy(command.newScale);
-    this.object.scale.copy(this.newScale);
-    this.object.updateMatrixWorld(true);
-    this.editor.signals.propertyChanged.dispatch("scale", this.object);
+    this.editor.setScale(this.object, command.scale, this.space, false);
+  }
+
+  undo() {
+    this.editor.setScale(this.object, this.oldScale, TransformSpace.Local, false);
+  }
+
+  toString() {
+    return `SetScaleCommand id: ${this.id} object: ${serializeObject3D(this.object)} scale: ${serializeVector3(
+      this.scale
+    )} space: ${this.space}`;
   }
 }

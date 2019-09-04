@@ -26,7 +26,7 @@ class FloorPlanNodeEditor extends Component {
 
   constructor(props) {
     super(props);
-    const createPropSetter = propName => value => this.props.editor.setNodeProperty(this.props.node, propName, value);
+    const createPropSetter = propName => value => this.props.editor.setProperty(this.props.node, propName, value);
     this.onChangeAutoCellSize = createPropSetter("autoCellSize");
     this.onChangeCellSize = createPropSetter("cellSize");
     this.onChangeCellHeight = createPropSetter("cellHeight");
@@ -83,7 +83,7 @@ class FloorPlanNodeEditor extends Component {
             mediumStep={0.01}
             largeStep={0.1}
             min={0.1}
-            precision={0.0001}
+            displayPrecision={0.0001}
             onChange={this.onChangeCellSize}
           />
         )}

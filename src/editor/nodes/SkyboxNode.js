@@ -68,7 +68,7 @@ export default class SkyboxNode extends EditorNodeMixin(Sky) {
   }
 
   updateEnvironmentMap() {
-    const renderer = this.editor.viewport.renderer;
+    const renderer = this.editor.renderer.renderer;
     this.skyScene.add(this.sky);
     this.cubeCamera.update(renderer, this.skyScene);
     this.add(this.sky);

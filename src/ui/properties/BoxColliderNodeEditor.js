@@ -16,7 +16,7 @@ export default class BoxColliderNodeEditor extends Component {
     "An invisible box that objects will bounce off of or rest on top of.\nWithout colliders, objects will fall through floors and go through walls.";
 
   onChangeWalkable = walkable => {
-    this.props.editor.setNodeProperty(this.props.node, "walkable", walkable);
+    this.props.editor.setProperty(this.props.node, "walkable", walkable);
   };
 
   render() {

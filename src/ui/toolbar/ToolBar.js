@@ -10,6 +10,8 @@ import ToolToggle from "./ToolToggle";
 import styles from "./ToolBar.scss";
 import SnappingDropdown from "./SnappingDropdown";
 import SpokeIcon from "../../assets/spoke-icon.png";
+import { TransformMode, SnapMode, TransformPivot } from "../../editor/controls/SpokeControls";
+import { TransformSpace } from "../../editor/Editor";
 
 export default class ToolBar extends Component {
   static propTypes = {
@@ -21,87 +23,41 @@ export default class ToolBar extends Component {
 
   constructor(props) {
     super(props);
+
     this.state = {
-      toolButtons: [
-        {
-          id: "translate",
-          tooltip: "[W] Translate",
-          type: "fa-arrows-alt",
-          onClick: () => this.onMoveSelected()
-        },
-        {
-          id: "rotate",
-          tooltip: "[E] Rotate",
-          type: "fa-sync-alt",
-          onClick: () => this.onRotateSelected()
-        },
-        {
-          id: "scale",
-          tooltip: "[R] Scale",
-          type: "fa-arrows-alt-v",
-          onClick: () => this.onScaleSelected()
-        }
-      ],
-      spaceToggle: {
-        tooltip: "[Z] Toggle Rotation Mode",
-        type: "toggle",
-        text: ["Global", "Local"],
-        isSwitch: true,
-        isChecked: false,
-        icons: {
-          checked: "fa-cube",
-          unchecked: "fa-globe"
-        },
-        action: () => this.onRotationSpaceChanged()
-      },
-      snapToggle: {
-        tooltip: "[X] Toggle Snap Mode",
-        type: "toggle",
-        text: ["Snapping", "Snapping"],
-        children: <SnappingDropdown />,
-        isSwitch: false,
-        isChecked: false,
-        icons: {
-          checked: "fa-magnet",
-          unchecked: "fa-magnet"
-        },
-        action: () => this.onSnappingChanged()
-      },
-      toolButtonSelected: "translate",
+      editorInitialized: false,
       menuOpen: false
     };
   }
 
   componentDidMount() {
     const editor = this.props.editor;
-    editor.signals.transformModeChanged.add(this._updateToolBarStatus);
-    editor.signals.spaceChanged.add(this._updateSpaceToggle);
-    editor.signals.snapToggled.add(this._updateSnapToggle);
+    editor.addListener("initialized", this.onEditorInitialized);
   }
+
+  onEditorInitialized = () => {
+    const editor = this.props.editor;
+    editor.spokeControls.addListener("transformModeChanged", this.onSpokeControlsChanged);
+    editor.spokeControls.addListener("transformSpaceChanged", this.onSpokeControlsChanged);
+    editor.spokeControls.addListener("transformPivotChanged", this.onSpokeControlsChanged);
+    editor.spokeControls.addListener("snapSettingsChanged", this.onSpokeControlsChanged);
+    this.setState({ editorInitialized: true });
+  };
 
   componentWillUnmount() {
     const editor = this.props.editor;
-    editor.signals.transformModeChanged.remove(this._updateToolBarStatus);
-    editor.signals.spaceChanged.remove(this._updateSpaceToggle);
-    editor.signals.snapToggled.remove(this._updateSnapToggle);
+    editor.removeListener("initialized", this.onEditorInitialized);
+
+    if (editor.spokeControls) {
+      editor.spokeControls.removeListener("transformModeChanged", this.onSpokeControlsChanged);
+      editor.spokeControls.removeListener("transformSpaceChanged", this.onSpokeControlsChanged);
+      editor.spokeControls.removeListener("transformPivotChanged", this.onSpokeControlsChanged);
+      editor.spokeControls.removeListener("snapSettingsChanged", this.onSpokeControlsChanged);
+    }
   }
 
-  _updateSnapToggle = () => {
-    const current = this.state.snapToggle;
-    current.isChecked = !current.isChecked;
-    this.setState({ current });
-  };
-
-  _updateSpaceToggle = () => {
-    const current = this.state.spaceToggle;
-    current.isChecked = !current.isChecked;
-    this.setState({ current });
-  };
-
-  _updateToolBarStatus = id => {
-    this.setState({
-      toolButtonSelected: id
-    });
+  onSpokeControlsChanged = () => {
+    this.forceUpdate();
   };
 
   onMenuSelected = e => {
@@ -124,38 +80,6 @@ export default class ToolBar extends Component {
     this.setState({ menuOpen: false });
   };
 
-  onSelectionSelected = () => {
-    this.props.editor.deselect();
-    this._updateToolBarStatus("select");
-  };
-
-  onMoveSelected = () => {
-    this.props.editor.viewport.spokeControls.setTransformControlsMode("translate");
-  };
-
-  onRotateSelected = () => {
-    this.props.editor.viewport.spokeControls.setTransformControlsMode("rotate");
-  };
-
-  onScaleSelected = () => {
-    this.props.editor.viewport.spokeControls.setTransformControlsMode("scale");
-  };
-
-  onRotationSpaceChanged = () => {
-    this.props.editor.viewport.spokeControls.toggleRotationSpace();
-  };
-
-  onSnappingChanged = () => {
-    this.props.editor.viewport.spokeControls.toggleSnapMode();
-  };
-
-  renderToolButtons = buttons => {
-    return buttons.map(({ onClick, type, tooltip, id }) => {
-      const selected = id === this.state.toolButtonSelected;
-      return <ToolButton tooltip={tooltip} toolType={type} key={type} onClick={onClick} selected={selected} />;
-    });
-  };
-
   renderMenu = menu => {
     if (!menu.items || menu.items.length === 0) {
       return (
@@ -175,8 +99,58 @@ export default class ToolBar extends Component {
     }
   };
 
+  onSelectTranslate = () => {
+    this.props.editor.spokeControls.setTransformMode(TransformMode.Translate);
+  };
+
+  onSelectRotate = () => {
+    this.props.editor.spokeControls.setTransformMode(TransformMode.Rotate);
+  };
+
+  onSelectScale = () => {
+    this.props.editor.spokeControls.setTransformMode(TransformMode.Scale);
+  };
+
+  onToggleTransformSpace = () => {
+    this.props.editor.spokeControls.toggleTransformSpace();
+  };
+
+  onToggleTransformPivot = () => {
+    this.props.editor.spokeControls.toggleTransformPivot();
+  };
+
+  onToggleSnapMode = () => {
+    this.props.editor.spokeControls.toggleSnapMode();
+  };
+
+  onChangeTranslationSnap = translationSnap => {
+    this.props.editor.spokeControls.setTranslationSnap(translationSnap);
+  };
+
+  onChangeScaleSnap = scaleSnap => {
+    this.props.editor.spokeControls.setScaleSnap(scaleSnap);
+  };
+
+  onChangeRotationSnap = rotationSnap => {
+    this.props.editor.spokeControls.setRotationSnap(rotationSnap);
+  };
+
   render() {
-    const { toolButtons, spaceToggle, snapToggle, menuOpen } = this.state;
+    const { editorInitialized, menuOpen } = this.state;
+
+    if (!editorInitialized) {
+      return <div className={styles.toolbar} />;
+    }
+
+    const {
+      transformMode,
+      transformSpace,
+      transformPivot,
+      snapMode,
+      translationSnap,
+      rotationSnap,
+      scaleSnap
+    } = this.props.editor.spokeControls;
 
     return (
       <div className={styles.toolbar}>
@@ -187,33 +161,67 @@ export default class ToolBar extends Component {
           </Link>
         </div>
         <div className={styles.toolbtns}>
-          <ToolButton toolType="fa-bars" onClick={this.onMenuSelected} selected={menuOpen} id="menu" />
-          {this.renderToolButtons(toolButtons)}
+          <ToolButton iconClass="fa-bars" onClick={this.onMenuSelected} selected={menuOpen} id="menu" />
+          <ToolButton
+            tooltip="[W] Translate"
+            iconClass="fa-arrows-alt"
+            onClick={this.onSelectTranslate}
+            selected={transformMode === TransformMode.Translate}
+          />
+          <ToolButton
+            tooltip="[E] Rotate"
+            iconClass="fa-sync-alt"
+            onClick={this.onSelectRotate}
+            selected={transformMode === TransformMode.Rotate}
+          />
+          <ToolButton
+            tooltip="[R] Scale"
+            iconClass="fa-arrows-alt-v"
+            onClick={this.onSelectScale}
+            selected={transformMode === TransformMode.Scale}
+          />
         </div>
         <div className={styles.tooltoggles}>
           <ToolToggle
-            text={spaceToggle.text}
-            key={spaceToggle.name}
-            tooltip={spaceToggle.tooltip}
-            action={spaceToggle.action}
-            icons={spaceToggle.icons}
-            isSwitch={spaceToggle.isSwitch}
-            isChecked={spaceToggle.isChecked}
-            editor={this.props.editor}
-          >
-            {spaceToggle.children}
-          </ToolToggle>
+            text={["Global", "Local"]}
+            tooltip="[Z] Toggle Transform Space"
+            action={this.onToggleTransformSpace}
+            icons={{
+              checked: "fa-cube",
+              unchecked: "fa-globe"
+            }}
+            isSwitch
+            isChecked={transformSpace === TransformSpace.LocalSelection}
+          />
           <ToolToggle
-            text={snapToggle.text}
-            tooltip={snapToggle.tooltip}
-            key={snapToggle.name}
-            action={snapToggle.action}
-            icons={snapToggle.icons}
-            isSwitch={snapToggle.isSwitch}
-            isChecked={snapToggle.isChecked}
-            editor={this.props.editor}
+            text={["Selection", "Center"]}
+            tooltip="[X] Toggle Transform Pivot"
+            action={this.onToggleTransformPivot}
+            icons={{
+              checked: "fa-bullseye",
+              unchecked: "fa-object-group"
+            }}
+            isSwitch
+            isChecked={transformPivot === TransformPivot.Center}
+          />
+          <ToolToggle
+            text={["Snapping", "Grid"]}
+            tooltip="[C] Toggle Snap Mode"
+            action={this.onToggleSnapMode}
+            icons={{
+              checked: "fa-magnet",
+              unchecked: "fa-magnet"
+            }}
+            isChecked={snapMode === SnapMode.Grid}
           >
-            {snapToggle.children}
+            <SnappingDropdown
+              translationSnap={translationSnap}
+              rotationSnap={rotationSnap}
+              scaleSnap={scaleSnap}
+              onChangeTranslationSnap={this.onChangeTranslationSnap}
+              onChangeRotationSnap={this.onChangeRotationSnap}
+              onChangeScaleSnap={this.onChangeScaleSnap}
+            />
           </ToolToggle>
         </div>
         <div className={styles.spacer} />

@@ -1,40 +1,31 @@
 import Command from "./Command";
-
-/**
- * @author dforrer / https://github.com/dforrer
- * Developed as part of a project at University of Applied Sciences and Arts Northwestern Switzerland (www.fhnw.ch)
- */
-
-/**
- * @param object THREE.Object3D
- * @constructor
- */
+import { serializeObject3D } from "../utils/debug";
 
 export default class RemoveObjectCommand extends Command {
-  constructor(object) {
-    super();
-
-    this.type = "RemoveObjectCommand";
-    this.name = "Remove Object";
-
+  constructor(editor, object) {
+    super(editor);
     this.object = object;
-    this.parent = object !== undefined ? object.parent : undefined;
-    if (this.parent !== undefined) {
-      this.index = this.parent.children.indexOf(this.object);
+    this.parent = object.parent;
+    if (this.parent) {
+      const index = this.parent.children.indexOf(this.object);
+
+      if (this.parent.children.length > index + 1) {
+        this.before = this.parent.children[index + 1];
+      }
     }
+    this.oldSelection = editor.selected.slice(0);
   }
 
   execute() {
-    this.editor.removeObject(this.object);
-    this.editor.signals.objectRemoved.dispatch(this.object);
-    this.editor.signals.sceneGraphChanged.dispatch();
-    this.editor.deselect();
+    this.editor.removeObject(this.object, false);
   }
 
   undo() {
-    this.editor._addObject(this.object, this.parent, this.index);
-    this.editor.signals.objectAdded.dispatch(this.object);
-    this.editor.signals.sceneGraphChanged.dispatch();
-    this.editor.select(this.object);
+    this.editor.addObject(this.object, this.parent, this.before, false, true, false);
+    this.editor.setSelection(this.oldSelection, false);
+  }
+
+  toString() {
+    return `${this.constructor.name} id: ${this.id} object: ${serializeObject3D(this.object)}`;
   }
 }

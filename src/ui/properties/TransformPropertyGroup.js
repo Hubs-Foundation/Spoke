@@ -20,35 +20,36 @@ export default class TransformPropertyGroup extends Component {
   }
 
   componentDidMount() {
-    this.props.editor.signals.propertyChanged.add(this.onPropertyChanged);
-    this.props.editor.signals.objectChanged.add(this.onObjectChanged);
+    this.props.editor.addListener("objectsChanged", this.onObjectsChanged);
   }
 
   componentWillUnmount() {
-    this.props.editor.signals.propertyChanged.remove(this.onPropertyChanged);
-    this.props.editor.signals.objectChanged.remove(this.onObjectChanged);
+    this.props.editor.removeListener("objectsChanged", this.onObjectsChanged);
   }
 
-  onPropertyChanged = (property, object) => {
-    if (object === this.props.node && (property === "position" || property === "rotation" || property === "scale")) {
+  onObjectsChanged = (objects, property) => {
+    if (
+      objects[0] === this.props.node &&
+      (property === "position" ||
+        property === "rotation" ||
+        property === "scale" ||
+        property === "matrix" ||
+        property == null)
+    ) {
       this.forceUpdate();
     }
   };
 
-  onObjectChanged = () => {
-    this.forceUpdate();
-  };
-
   onChangePosition = value => {
-    this.props.editor.setNodeProperty(this.props.node, "position", value);
+    this.props.editor.setPosition(this.props.node, value);
   };
 
   onChangeRotation = value => {
-    this.props.editor.setNodeProperty(this.props.node, "rotation", value);
+    this.props.editor.setRotation(this.props.node, value);
   };
 
   onChangeScale = value => {
-    this.props.editor.setNodeProperty(this.props.node, "scale", value);
+    this.props.editor.setScale(this.props.node, value);
   };
 
   render() {

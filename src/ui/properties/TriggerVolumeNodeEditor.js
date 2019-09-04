@@ -42,7 +42,7 @@ export default class TriggerVolumeNodeEditor extends Component {
   }
 
   onChangeTarget = target => {
-    this.props.editor.setNodeProperties(this.props.node, {
+    this.props.editor.setProperties(this.props.node, {
       target,
       enterComponent: null,
       enterProperty: null,
@@ -55,7 +55,7 @@ export default class TriggerVolumeNodeEditor extends Component {
 
   onChangeEnterComponent = value => {
     const { node, editor } = this.props;
-    editor.setNodeProperties(node, {
+    editor.setProperties(node, {
       enterComponent: value,
       enterProperty: null,
       enterValue: null
@@ -64,7 +64,7 @@ export default class TriggerVolumeNodeEditor extends Component {
 
   onChangeEnterProperty = (value, option) => {
     const { node, editor } = this.props;
-    editor.setNodeProperties(node, {
+    editor.setProperties(node, {
       enterProperty: value,
       enterValue: option.default !== undefined ? option.default : null
     });
@@ -72,12 +72,12 @@ export default class TriggerVolumeNodeEditor extends Component {
 
   onChangeEnterValue = value => {
     const { node, editor } = this.props;
-    editor.setNodeProperty(node, "enterValue", value);
+    editor.setProperty(node, "enterValue", value);
   };
 
   onChangeLeaveComponent = value => {
     const { node, editor } = this.props;
-    editor.setNodeProperties(node, {
+    editor.setProperties(node, {
       leaveComponent: value,
       leaveProperty: null,
       leaveValue: null
@@ -86,7 +86,7 @@ export default class TriggerVolumeNodeEditor extends Component {
 
   onChangeLeaveProperty = (value, option) => {
     const { node, editor } = this.props;
-    editor.setNodeProperties(node, {
+    editor.setProperties(node, {
       leaveProperty: value,
       leaveValue: option.default !== undefined ? option.default : null
     });
@@ -94,7 +94,7 @@ export default class TriggerVolumeNodeEditor extends Component {
 
   onChangeLeaveValue = value => {
     const { node, editor } = this.props;
-    editor.setNodeProperty(node, "leaveValue", value);
+    editor.setProperty(node, "leaveValue", value);
   };
 
   componentDidMount() {

@@ -16,11 +16,11 @@ export default class AmbientLightNodeEditor extends Component {
   static description = "A light which illuminates all objects in your scene.";
 
   onChangeColor = color => {
-    this.props.editor.setNodeProperty(this.props.node, "color", color);
+    this.props.editor.setProperty(this.props.node, "color", color);
   };
 
   onChangeIntensity = intensity => {
-    this.props.editor.setNodeProperty(this.props.node, "intensity", intensity);
+    this.props.editor.setProperty(this.props.node, "intensity", intensity);
   };
 
   render() {

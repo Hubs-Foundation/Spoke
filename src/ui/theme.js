@@ -9,6 +9,7 @@ export default {
   selected: "#006EFF",
   selectedText: "#fff",
   hover: "#4B5562",
+  hover2: "#636F80",
   text: "#FFFFFF",
   text2: "#9FA4B5",
   dropdown: "#000000",
@@ -29,5 +30,6 @@ export default {
   header: "#1b1b1b",
   white: "#fff",
   shadow15: "0px 4px 4px  rgba(0, 0, 0, 0.15)",
-  shadow30: "0px 4px 4px  rgba(0, 0, 0, 0.3)"
+  shadow30: "0px 4px 4px  rgba(0, 0, 0, 0.3)",
+  borderStyle: "1px solid #5D646C"
 };

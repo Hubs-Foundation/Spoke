@@ -36,19 +36,19 @@ export default class LightShadowProperties extends Component {
   };
 
   onChangeShadowMapResolution = shadowMapResolution => {
-    this.props.editor.setNodeProperty(this.props.node, "shadowMapResolution", shadowMapResolution);
+    this.props.editor.setProperty(this.props.node, "shadowMapResolution", shadowMapResolution);
   };
 
   onChangeCastShadow = castShadow => {
-    this.props.editor.setNodeProperty(this.props.node, "castShadow", castShadow);
+    this.props.editor.setProperty(this.props.node, "castShadow", castShadow);
   };
 
   onChangeShadowBias = shadowBias => {
-    this.props.editor.setNodeProperty(this.props.node, "shadowBias", shadowBias);
+    this.props.editor.setProperty(this.props.node, "shadowBias", shadowBias);
   };
 
   onChangeShadowRadius = shadowRadius => {
-    this.props.editor.setNodeProperty(this.props.node, "shadowRadius", shadowRadius);
+    this.props.editor.setProperty(this.props.node, "shadowRadius", shadowRadius);
   };
 
   render() {
@@ -71,7 +71,7 @@ export default class LightShadowProperties extends Component {
           mediumStep={0.00001}
           smallStep={0.0001}
           largeStep={0.001}
-          precision={0.000001}
+          displayPrecision={0.000001}
           value={node.shadowBias}
           onChange={this.onChangeShadowBias}
         />
@@ -80,7 +80,7 @@ export default class LightShadowProperties extends Component {
           mediumStep={0.01}
           smallStep={0.1}
           largeStep={1}
-          precision={0.0001}
+          displayPrecision={0.0001}
           value={node.shadowRadius}
           onChange={this.onChangeShadowRadius}
         />

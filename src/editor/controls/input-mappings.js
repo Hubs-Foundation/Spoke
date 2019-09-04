@@ -67,12 +67,15 @@ export const Spoke = {
   setRotateMode: "setRotateMode",
   setScaleMode: "setScaleMode",
   toggleSnapMode: "toggleSnapMode",
-  invertSnap: "invertSnap",
-  toggleRotationSpace: "toggleRotationSpace",
+  toggleTransformPivot: "toggleTransformPivot",
+  modifier: "modifier",
+  shift: "shift",
+  toggleTransformSpace: "toggleTransformSpace",
   deleteSelected: "deleteSelected",
   undo: "undo",
   redo: "redo",
   duplicateSelected: "duplicateSelected",
+  groupSelected: "groupSelected",
   saveProject: "saveProject",
   deselect: "deselect"
 };
@@ -145,20 +148,23 @@ export const SpokeMapping = {
   },
   keyboard: {
     pressed: {
-      mod: Spoke.invertSnap
+      mod: Spoke.modifier,
+      shift: Spoke.shift
     },
     hotkeys: {
       f: Spoke.focusSelection,
       w: Spoke.setTranslateMode,
       e: Spoke.setRotateMode,
       r: Spoke.setScaleMode,
-      x: Spoke.toggleSnapMode,
-      z: Spoke.toggleRotationSpace,
+      z: Spoke.toggleTransformSpace,
+      x: Spoke.toggleTransformPivot,
+      c: Spoke.toggleSnapMode,
       backspace: Spoke.deleteSelected,
       del: Spoke.deleteSelected,
       "mod+z": Spoke.undo,
       "mod+shift+z": Spoke.redo,
       "mod+d": Spoke.duplicateSelected,
+      "mod+g": Spoke.groupSelected,
       esc: Spoke.deselect
     },
     globalHotkeys: {

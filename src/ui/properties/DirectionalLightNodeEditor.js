@@ -17,11 +17,11 @@ export default class DirectionalLightNodeEditor extends Component {
   static description = "A light which illuminates the entire scene, but emits along a single direction.";
 
   onChangeColor = color => {
-    this.props.editor.setNodeProperty(this.props.node, "color", color);
+    this.props.editor.setProperty(this.props.node, "color", color);
   };
 
   onChangeIntensity = intensity => {
-    this.props.editor.setNodeProperty(this.props.node, "intensity", intensity);
+    this.props.editor.setProperty(this.props.node, "intensity", intensity);
   };
 
   render() {

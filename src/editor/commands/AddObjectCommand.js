@@ -1,39 +1,27 @@
 import Command from "./Command";
-
-/**
- * @author dforrer / https://github.com/dforrer
- * Developed as part of a project at University of Applied Sciences and Arts Northwestern Switzerland (www.fhnw.ch)
- */
-
-/**
- * @param object THREE.Object3D
- * @constructor
- */
+import { serializeObject3D } from "../utils/debug";
 
 export default class AddObjectCommand extends Command {
-  constructor(object, parent) {
-    super();
-    this.type = "AddObjectCommand";
-
+  constructor(editor, object, parent, before) {
+    super(editor);
     this.object = object;
     this.parent = parent;
-
-    if (object !== undefined) {
-      this.name = "Add Object: " + object.name;
-    }
+    this.before = before;
+    this.oldSelection = editor.selected.slice(0);
   }
 
   execute() {
-    this.editor._addObject(this.object, this.parent);
-    this.editor.signals.objectAdded.dispatch(this.object);
-    this.editor.signals.sceneGraphChanged.dispatch();
-    this.editor.select(this.object);
+    this.editor.addObject(this.object, this.parent, this.before, false);
   }
 
   undo() {
-    this.editor.removeObject(this.object);
-    this.editor.signals.objectRemoved.dispatch(this.object);
-    this.editor.signals.sceneGraphChanged.dispatch();
-    this.editor.deselect();
+    this.editor.removeObject(this.object, false, true, false);
+    this.editor.setSelection(this.oldSelection, false);
+  }
+
+  toString() {
+    return `AddObjectCommand id: ${this.id} object: ${serializeObject3D(this.object)} parent: ${serializeObject3D(
+      this.parent
+    )} before: ${serializeObject3D(this.before)}`;
   }
 }

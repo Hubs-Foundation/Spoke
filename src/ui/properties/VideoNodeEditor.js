@@ -27,7 +27,7 @@ export default class VideoNodeEditor extends Component {
 
   constructor(props) {
     super(props);
-    const createPropSetter = propName => value => this.props.editor.setNodeProperty(this.props.node, propName, value);
+    const createPropSetter = propName => value => this.props.editor.setProperty(this.props.node, propName, value);
     this.onChangeSrc = createPropSetter("src");
     this.onChangeProjection = createPropSetter("projection");
     this.onChangeControls = createPropSetter("controls");
@@ -88,7 +88,6 @@ export default class VideoNodeEditor extends Component {
                   smallStep={0.001}
                   mediumStep={0.01}
                   largeStep={0.1}
-                  precision={0.001}
                   value={node.rolloffFactor}
                   onChange={this.onChangeRolloffFactor}
                 />
@@ -100,7 +99,6 @@ export default class VideoNodeEditor extends Component {
                 smallStep={0.1}
                 mediumStep={1}
                 largeStep={10}
-                precision={0.001}
                 value={node.rolloffFactor}
                 onChange={this.onChangeRolloffFactor}
               />
@@ -152,7 +150,6 @@ export default class VideoNodeEditor extends Component {
                 min={0}
                 max={1}
                 step={0.01}
-                precision={0.01}
                 value={node.coneOuterGain}
                 onChange={this.onChangeConeOuterGain}
               />

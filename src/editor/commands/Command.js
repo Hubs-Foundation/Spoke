@@ -4,13 +4,22 @@
  */
 
 export default class Command {
-  constructor() {
+  constructor(editor) {
+    this.editor = editor;
     this.id = -1;
-    this.inMemory = false;
-    this.updatable = false;
-    this.type = "";
-    this.name = "";
+  }
 
-    this.editor = Command.editor;
+  execute() {}
+
+  shouldUpdate(_newCommand) {
+    return false;
+  }
+
+  update(_command) {}
+
+  undo() {}
+
+  toString() {
+    return `${this.constructor.name} id: ${this.id}`;
   }
 }

@@ -1,55 +1,35 @@
 import Command from "./Command";
-
-/**
- * @author dforrer / https://github.com/dforrer
- * Developed as part of a project at University of Applied Sciences and Arts Northwestern Switzerland (www.fhnw.ch)
- */
-
-/**
- * @param object THREE.Object3D
- * @param newRotation THREE.Euler
- * @param optionalOldRotation THREE.Euler
- * @constructor
- */
+import { TransformSpace } from "../Editor";
+import { serializeObject3D, serializeEuler } from "../utils/debug";
 
 export default class SetRotationCommand extends Command {
-  constructor(object, newRotation, optionalOldRotation) {
-    super();
-
-    this.type = "SetRotationCommand";
-    this.name = "Set Rotation";
-    this.updatable = true;
-
+  constructor(editor, object, rotation, space) {
+    super(editor);
     this.object = object;
-
-    if (object !== undefined && newRotation !== undefined) {
-      this.oldRotation = object.rotation.clone();
-      this.newRotation = newRotation.clone();
-    }
-
-    if (optionalOldRotation !== undefined) {
-      this.oldRotation = optionalOldRotation.clone();
-    }
+    this.rotation = rotation.clone();
+    this.space = space;
+    this.oldRotation = object.rotation.clone();
   }
 
   execute() {
-    this.object.rotation.copy(this.newRotation);
-    this.object.updateMatrixWorld(true);
-    this.editor.signals.objectChanged.dispatch(this.object);
-    this.editor.signals.propertyChanged.dispatch("rotation", this.object);
+    this.editor.setRotation(this.object, this.rotation, this.space, false);
   }
 
-  undo() {
-    this.object.rotation.copy(this.oldRotation);
-    this.object.updateMatrixWorld(true);
-    this.editor.signals.objectChanged.dispatch(this.object);
-    this.editor.signals.propertyChanged.dispatch("rotation", this.object);
+  shouldUpdate(newCommand) {
+    return this.object === newCommand.object && this.space === newCommand.space;
   }
 
   update(command) {
-    this.newRotation.copy(command.newRotation);
-    this.object.rotation.copy(this.newRotation);
-    this.object.updateMatrixWorld(true);
-    this.editor.signals.propertyChanged.dispatch("rotation", this.object);
+    this.editor.setRotation(this.object, command.rotation, this.space, false);
+  }
+
+  undo() {
+    this.editor.setRotation(this.object, this.oldRotation, TransformSpace.Local, false);
+  }
+
+  toString() {
+    return `SetRotationCommand id: ${this.id} object: ${serializeObject3D(this.object)} rotation: ${serializeEuler(
+      this.rotation
+    )} space: ${this.space}`;
   }
 }

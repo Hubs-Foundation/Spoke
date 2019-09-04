@@ -3,7 +3,6 @@ import {
   PCFSoftShadowMap,
   Vector2,
   Color,
-  Clock,
   Scene,
   AmbientLight,
   DirectionalLight,
@@ -13,26 +12,19 @@ import {
 } from "three";
 import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer";
 import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass";
-import SpokeInfiniteGridHelper from "./helpers/SpokeInfiniteGridHelper";
-import resizeShadowCameraFrustum from "./utils/resizeShadowCameraFrustum";
-import OutlinePass from "./renderer/OutlinePass";
-import { environmentMap } from "./utils/EnvironmentMap";
-import { traverseMaterials } from "./utils/materials";
-import { getCanvasBlob } from "./utils/thumbnails";
-import InputManager from "./controls/InputManager";
-import FlyControls from "./controls/FlyControls";
-import SpokeControls from "./controls/SpokeControls";
-import PlayModeControls from "./controls/PlayModeControls";
+import OutlinePass from "./OutlinePass";
+import { environmentMap } from "../utils/EnvironmentMap";
+import { traverseMaterials } from "../utils/materials";
+import { getCanvasBlob } from "../utils/thumbnails";
 
 /**
  * @author mrdoob / http://mrdoob.com/
  */
 
-export default class Viewport {
+export default class Renderer {
   constructor(editor, canvas) {
     this.editor = editor;
     this.canvas = canvas;
-    const signals = editor.signals;
 
     function makeRenderer(width, height, options = {}) {
       const renderer = new WebGLRenderer({
@@ -46,11 +38,9 @@ export default class Viewport {
       renderer.physicallyCorrectLights = true;
       renderer.shadowMap.enabled = true;
       renderer.shadowMap.type = PCFSoftShadowMap;
-      renderer.setSize(width, height);
+      renderer.setSize(width, height, false);
       return renderer;
     }
-
-    this.selectedObjects = [];
 
     const renderer = makeRenderer(canvas.parentElement.offsetWidth, canvas.parentElement.offsetHeight, { canvas });
     renderer.setPixelRatio(window.devicePixelRatio);
@@ -63,7 +53,7 @@ export default class Viewport {
       new Vector2(canvas.parentElement.offsetWidth, canvas.parentElement.offsetHeight),
       editor.scene,
       editor.camera,
-      this.selectedObjects
+      editor.selectedTransformRoots
     ));
     outlinePass.edgeColor = new Color("#006EFF");
     outlinePass.renderToScreen = true;
@@ -77,58 +67,12 @@ export default class Viewport {
     const camera = editor.camera;
     this.camera = camera;
 
-    const grid = (this.grid = new SpokeInfiniteGridHelper());
-    editor.scene.add(grid);
+    this.onResize();
+    this.update();
+  }
 
-    this.inputManager = new InputManager(canvas);
-    this.flyControls = new FlyControls(camera, this.inputManager);
-    this.spokeControls = new SpokeControls(camera, editor, this.inputManager, this.flyControls);
-    this.playModeControls = new PlayModeControls(this.inputManager, this.spokeControls, this.flyControls);
-    this.spokeControls.enable();
-
-    this.skipRender = false;
-
-    this.clock = new Clock();
-
-    const render = () => {
-      if (!this.skipRender) {
-        const delta = this.clock.getDelta();
-        const time = this.clock.getElapsedTime();
-        editor.scene.updateMatrixWorld();
-        this.inputManager.update(delta, time);
-
-        editor.scene.traverse(node => {
-          if (node.isDirectionalLight) {
-            resizeShadowCameraFrustum(node, editor.scene);
-          }
-
-          if (node.isNode) {
-            node.onUpdate(delta, time);
-          }
-        });
-        this.flyControls.update(delta);
-        this.spokeControls.update(delta);
-
-        if (editor.selected) {
-          this.selectedObjects[0] = editor.selected;
-        } else if (this.selectedObjects.length === 1) {
-          this.selectedObjects.pop();
-        }
-
-        effectComposer.render();
-        this.inputManager.reset();
-      }
-
-      this.rafId = requestAnimationFrame(render);
-    };
-
-    this.rafId = requestAnimationFrame(render);
-
-    // signals
-    signals.sceneSet.add(this.onSceneSet);
-    signals.windowResize.add(this.onWindowResized);
-
-    this.onWindowResized();
+  update() {
+    this.effectComposer.render();
   }
 
   onSceneSet = () => {
@@ -139,22 +83,16 @@ export default class Viewport {
     this.renderPass.camera = this.editor.camera;
     this.outlinePass.renderScene = this.editor.scene;
     this.outlinePass.renderCamera = this.editor.camera;
-    this.spokeControls.center.set(0, 0, 0);
-    this.editor.scene.add(this.grid);
-    this.spokeControls.onSceneSet(this.editor.scene);
-    this.editor.scene.background = new Color(0xaaaaaa);
   };
 
-  onWindowResized = () => {
+  onResize = () => {
     const camera = this.camera;
     const canvas = this.canvas;
-
-    this.inputManager.onResize();
 
     camera.aspect = canvas.parentElement.offsetWidth / canvas.parentElement.offsetHeight;
     camera.updateProjectionMatrix();
 
-    this.renderer.setSize(canvas.parentElement.offsetWidth, canvas.parentElement.offsetHeight);
+    this.renderer.setSize(canvas.offsetWidth, canvas.offsetHeight, false);
     this.effectComposer.setSize(canvas.parentElement.offsetWidth, canvas.parentElement.offsetHeight);
   };
 
@@ -164,7 +102,7 @@ export default class Viewport {
     const originalRenderer = this.renderer;
     this.renderer = screenshotRenderer;
 
-    this.skipRender = true;
+    this.editor.disableUpdate = true;
     const prevAspect = camera.aspect;
     camera.aspect = width / height;
     camera.updateProjectionMatrix();
@@ -192,7 +130,7 @@ export default class Viewport {
 
     camera.aspect = prevAspect;
     camera.updateProjectionMatrix();
-    this.skipRender = false;
+    this.editor.disableUpdate = false;
 
     this.renderer = originalRenderer;
 
@@ -257,10 +195,5 @@ export default class Viewport {
     return blob;
   };
 
-  dispose() {
-    const signals = this.editor.signals;
-    signals.sceneSet.remove(this.onSceneSet);
-    signals.windowResize.remove(this.onWindowResized);
-    cancelAnimationFrame(this.rafId);
-  }
+  dispose() {}
 }

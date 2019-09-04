@@ -1,11 +1,11 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
-import { MosaicWindow, Mosaic } from "react-mosaic-component";
 import Modal from "react-modal";
 import { Helmet } from "react-helmet";
 import * as Sentry from "@sentry/browser";
-import "react-mosaic-component/react-mosaic-component.css";
-import styled, { createGlobalStyle } from "styled-components";
+import styled from "styled-components";
+import { DndProvider } from "react-dnd";
+import HTML5Backend from "react-dnd-html5-backend";
 
 import ToolBar from "./toolbar/ToolBar";
 
@@ -27,58 +27,8 @@ import Onboarding from "./onboarding/Onboarding";
 import SupportDialog from "./dialogs/SupportDialog";
 import { cmdOrCtrlString } from "./utils";
 import BrowserPrompt from "./router/BrowserPrompt";
-
-const MosaicStyles = createGlobalStyle`
-  .mosaic.mosaic-theme {
-    flex: 1;
-
-    .mosaic-window {
-      border-radius: 4px;
-    }
-
-    .mosaic-window-toolbar {
-      background-color: ${props => props.theme.panel};
-      height: 24px;
-      box-shadow: none;
-    }
-
-    .mosaic-window-title {
-      user-select: none;
-      padding-left: 8px;
-      font-size: 12px;
-      line-height: 24px;
-    }
-
-    .mosaic-window-body {
-      background-color: ${props => props.theme.panel};
-      display: flex;
-    }
-
-    .mosaic-window-controls {
-      align-items: center;
-      padding-right: 0px;
-
-      .mosaic-default-control {
-        &.pt-button {
-          background-color: rgba(255, 255, 255, 0.5);
-          width: 12px;
-          height: 12px;
-          border-radius: 12px;
-          border: none;
-          padding: 0;
-
-          &:hover {
-            background-color: ${props => props.theme.red};
-          }
-        }
-
-        &.pt-icon-cross:before {
-          content: none;
-        }
-      }
-    }
-  }
-`;
+import { Resizeable } from "./layout/Resizeable";
+import DragLayer from "./dnd/DragLayer";
 
 const StyledEditorContainer = styled.div`
   display: flex;
@@ -87,6 +37,13 @@ const StyledEditorContainer = styled.div`
   height: 100vh;
   width: 100vw;
   position: fixed;
+`;
+
+const WorkspaceContainer = styled.div`
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  margin: 6px;
 `;
 
 export default class EditorContainer extends Component {
@@ -99,8 +56,6 @@ export default class EditorContainer extends Component {
 
   constructor(props) {
     super(props);
-
-    window.addEventListener("resize", this.onWindowResize, false);
 
     let settings = defaultSettings;
     const storedSettings = localStorage.getItem("spoke-settings");
@@ -120,46 +75,6 @@ export default class EditorContainer extends Component {
       settingsContext: {
         settings,
         updateSetting: this.updateSetting
-      },
-      registeredPanels: {
-        hierarchy: {
-          component: HierarchyPanelContainer,
-          windowProps: {
-            className: "hierarchyPanel",
-            title: "Hierarchy",
-            toolbarControls: [],
-            draggable: false
-          }
-        },
-        viewport: {
-          component: ViewportPanelContainer,
-          windowProps: {
-            className: "viewportPanel",
-            title: "Viewport",
-            toolbarControls: [],
-            draggable: false
-          }
-        },
-        properties: {
-          component: PropertiesPanelContainer,
-          windowProps: {
-            className: "propertiesPanel",
-            title: "Properties",
-            toolbarControls: [],
-            draggable: false
-          }
-        }
-      },
-      initialPanels: {
-        direction: "row",
-        first: "viewport",
-        second: {
-          direction: "column",
-          first: "hierarchy",
-          second: "properties",
-          splitPercentage: 50
-        },
-        splitPercentage: 75
       },
       DialogComponent: null,
       dialogProps: {}
@@ -268,51 +183,15 @@ export default class EditorContainer extends Component {
   };
 
   componentDidMount() {
-    this.state.editor.signals.windowResize.dispatch();
-    this.state.editor.signals.sceneModified.add(this.onSceneModified);
-    this.state.editor.signals.editorError.add(this.onEditorError);
-    this.state.editor.signals.saveProject.add(this.onSaveProject);
-    this.state.editor.signals.viewportInitialized.add(this.onViewportInitialized);
-
-    this.state.editorInitPromise
-      .then(() => {
-        this.loadProject(this.props.project);
-      })
-      .catch(e => {
-        console.error(e);
-      });
+    const editor = this.state.editor;
+    editor.addListener("initialized", this.onEditorInitialized);
+    editor.addListener("error", this.onEditorError);
   }
 
-  componentDidUpdate(prevProps) {
-    if (this.props.project !== prevProps.project) {
-      this.state.editorInitPromise
-        .then(() => {
-          this.loadProject(this.props.project);
-        })
-        .catch(e => {
-          console.error(e);
-        });
-    }
-  }
+  onEditorInitialized = () => {
+    const editor = this.state.editor;
 
-  componentWillUnmount() {
-    window.removeEventListener("resize", this.onWindowResize, false);
-    this.state.editor.signals.sceneModified.remove(this.onSceneModified);
-    this.state.editor.signals.editorError.remove(this.onEditorError);
-    this.state.editor.signals.saveProject.remove(this.onSaveProject);
-    this.state.editor.signals.viewportInitialized.remove(this.onViewportInitialized);
-  }
-
-  onWindowResize = () => {
-    this.state.editor.signals.windowResize.dispatch();
-  };
-
-  onPanelChange = () => {
-    this.state.editor.signals.windowResize.dispatch();
-  };
-
-  onViewportInitialized = viewport => {
-    const gl = viewport.renderer.context;
+    const gl = this.state.editor.renderer.renderer.context;
 
     const debugInfo = gl.getExtension("WEBGL_debug_renderer_info");
 
@@ -328,6 +207,36 @@ export default class EditorContainer extends Component {
       scope.setTag("webgl-vendor", webglVendor);
       scope.setTag("webgl-renderer", webglRenderer);
     });
+
+    this.loadProject(this.props.project).catch(console.error);
+    window.addEventListener("resize", this.onResize);
+    this.onResize();
+    editor.addListener("sceneModified", this.onSceneModified);
+    editor.addListener("saveProject", this.onSaveProject);
+  };
+
+  componentDidUpdate(prevProps) {
+    if (this.props.project !== prevProps.project) {
+      const editor = this.state.editor;
+
+      if (editor.initialized) {
+        this.loadProject(this.props.project).catch(console.error);
+      }
+    }
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener("resize", this.onResize);
+
+    const editor = this.state.editor;
+    editor.removeListener("sceneModified", this.onSceneModified);
+    editor.removeListener("saveProject", this.onSaveProject);
+    editor.removeListener("initialized", this.onEditorInitialized);
+    editor.removeListener("error", this.onEditorError);
+  }
+
+  onResize = () => {
+    this.state.editor.onResize();
   };
 
   /**
@@ -362,6 +271,8 @@ export default class EditorContainer extends Component {
       this.hideDialog();
       return;
     }
+
+    console.error(error);
 
     this.showDialog(ErrorDialog, {
       title: error.title || "Error",
@@ -638,16 +549,6 @@ export default class EditorContainer extends Component {
     this.setState({ tutorialEnabled: false });
   };
 
-  renderPanel = (panelId, path) => {
-    const panel = this.state.registeredPanels[panelId];
-
-    return (
-      <MosaicWindow path={path} {...panel.windowProps}>
-        <panel.component {...panel.props} />
-      </MosaicWindow>
-    );
-  };
-
   render() {
     const { DialogComponent, dialogProps, settingsContext, editor, creatingProject, tutorialEnabled } = this.state;
     const toolbarMenu = this.generateToolbarMenu();
@@ -657,44 +558,49 @@ export default class EditorContainer extends Component {
 
     return (
       <StyledEditorContainer id="editor-container">
-        <MosaicStyles />
         <SettingsContextProvider value={settingsContext}>
           <EditorContextProvider value={editor}>
             <DialogContextProvider value={this.dialogContext}>
-              <ToolBar
-                menu={toolbarMenu}
-                editor={editor}
-                onPublish={this.onPublishProject}
-                isPublishedScene={isPublishedScene}
-                onOpenScene={this.onOpenScene}
-              />
-              <Mosaic
-                className="mosaic-theme"
-                renderTile={this.renderPanel}
-                initialValue={this.state.initialPanels}
-                onChange={this.onPanelChange}
-              />
-              <Modal
-                ariaHideApp={false}
-                isOpen={!!DialogComponent}
-                onRequestClose={this.hideDialog}
-                shouldCloseOnOverlayClick={false}
-                className="Modal"
-                overlayClassName="Overlay"
-              >
-                {DialogComponent && (
-                  <DialogComponent onConfirm={this.hideDialog} onCancel={this.hideDialog} {...dialogProps} />
-                )}
-              </Modal>
-              <Helmet>
-                <title>{`${modified}${editor.scene.name} | Spoke by Mozilla`}</title>
-                <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
-              </Helmet>
-              <BrowserPrompt
-                message={`${editor.scene.name} has unsaved changes, are you sure you wish to navigate away from the page?`}
-                when={editor.sceneModified && !creatingProject}
-              />
-              {tutorialEnabled && <Onboarding onFinish={this.onFinishTutorial} />}
+              <DndProvider backend={HTML5Backend}>
+                <DragLayer />
+                <ToolBar
+                  menu={toolbarMenu}
+                  editor={editor}
+                  onPublish={this.onPublishProject}
+                  isPublishedScene={isPublishedScene}
+                  onOpenScene={this.onOpenScene}
+                />
+                <WorkspaceContainer>
+                  <Resizeable axis="x" initialSizes={[0.7, 0.3]} onChange={this.onResize}>
+                    <ViewportPanelContainer />
+                    <Resizeable axis="y" initialSizes={[0.5, 0.5]}>
+                      <HierarchyPanelContainer />
+                      <PropertiesPanelContainer />
+                    </Resizeable>
+                  </Resizeable>
+                </WorkspaceContainer>
+                <Modal
+                  ariaHideApp={false}
+                  isOpen={!!DialogComponent}
+                  onRequestClose={this.hideDialog}
+                  shouldCloseOnOverlayClick={false}
+                  className="Modal"
+                  overlayClassName="Overlay"
+                >
+                  {DialogComponent && (
+                    <DialogComponent onConfirm={this.hideDialog} onCancel={this.hideDialog} {...dialogProps} />
+                  )}
+                </Modal>
+                <Helmet>
+                  <title>{`${modified}${editor.scene.name} | Spoke by Mozilla`}</title>
+                  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+                </Helmet>
+                <BrowserPrompt
+                  message={`${editor.scene.name} has unsaved changes, are you sure you wish to navigate away from the page?`}
+                  when={editor.sceneModified && !creatingProject}
+                />
+                {tutorialEnabled && <Onboarding onFinish={this.onFinishTutorial} />}
+              </DndProvider>
             </DialogContextProvider>
           </EditorContextProvider>
         </SettingsContextProvider>

@@ -21,27 +21,27 @@ export default class ModelNodeEditor extends Component {
       this.props.node.scaleToFit = scaleToFit;
     }
 
-    this.props.editor.setNodeProperty(this.props.node, "src", src);
+    this.props.editor.setProperty(this.props.node, "src", src);
   };
 
   onChangeAnimation = activeClipIndex => {
-    this.props.editor.setNodeProperty(this.props.node, "activeClipIndex", activeClipIndex);
+    this.props.editor.setProperty(this.props.node, "activeClipIndex", activeClipIndex);
   };
 
   onChangeCollidable = collidable => {
-    this.props.editor.setNodeProperty(this.props.node, "collidable", collidable);
+    this.props.editor.setProperty(this.props.node, "collidable", collidable);
   };
 
   onChangeWalkable = walkable => {
-    this.props.editor.setNodeProperty(this.props.node, "walkable", walkable);
+    this.props.editor.setProperty(this.props.node, "walkable", walkable);
   };
 
   onChangeCastShadow = castShadow => {
-    this.props.editor.setNodeProperty(this.props.node, "castShadow", castShadow);
+    this.props.editor.setProperty(this.props.node, "castShadow", castShadow);
   };
 
   onChangeReceiveShadow = receiveShadow => {
-    this.props.editor.setNodeProperty(this.props.node, "receiveShadow", receiveShadow);
+    this.props.editor.setProperty(this.props.node, "receiveShadow", receiveShadow);
   };
 
   render() {

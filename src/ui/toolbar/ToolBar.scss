@@ -6,6 +6,7 @@
   flex-direction: row;
   height: 40px;
   background-color: $toolbar;
+  @include no-select;
 
   :local(.logo) {
     position: absolute;
@@ -53,6 +54,7 @@
     flex-direction: row;
     background-color: $toolbar2;
     align-items: center;
+    padding-right: 16px;
   }
 
   :local(.spacer) {

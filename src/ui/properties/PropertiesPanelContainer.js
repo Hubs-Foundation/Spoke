@@ -3,6 +3,15 @@ import PropTypes from "prop-types";
 import styles from "./PropertiesPanelContainer.scss";
 import { withEditor } from "../contexts/EditorContext";
 import DefaultNodeEditor from "./DefaultNodeEditor";
+import Panel from "../layout/Panel";
+import styled from "styled-components";
+
+const PropertiesPanelContent = styled.div`
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow-y: auto;
+`;
 
 class PropertiesPanelContainer extends Component {
   static propTypes = {
@@ -13,56 +22,71 @@ class PropertiesPanelContainer extends Component {
     super(props);
 
     this.state = {
-      node: null
+      selected: props.editor.selected
     };
   }
 
   componentDidMount() {
-    this.props.editor.signals.objectSelected.add(this.onNodeSelected);
-    this.props.editor.signals.objectChanged.add(this.onNodeChanged);
-    this.props.editor.signals.propertyChanged.add(this.onPropertyChanged);
+    const editor = this.props.editor;
+    editor.addListener("selectionChanged", this.onSelectionChanged);
+    editor.addListener("objectsChanged", this.onObjectsChanged);
   }
 
   componentWillUnmount() {
-    this.props.editor.signals.objectSelected.remove(this.onNodeSelected);
-    this.props.editor.signals.objectChanged.remove(this.onNodeChanged);
-    this.props.editor.signals.propertyChanged.add(this.onPropertyChanged);
+    const editor = this.props.editor;
+    editor.removeListener("selectionChanged", this.onSelectionChanged);
+    editor.removeListener("objectsChanged", this.onObjectsChanged);
   }
 
-  onNodeSelected = node => {
-    this.setState({ node });
+  onSelectionChanged = () => {
+    this.setState({ selected: this.props.editor.selected });
   };
 
-  onNodeChanged = node => {
-    if (this.state.node === node) {
-      this.setState({ node });
-    }
-  };
+  onObjectsChanged = objects => {
+    const selected = this.props.editor.selected;
 
-  onPropertyChanged = (property, node) => {
-    if (this.state.node === node) {
-      this.setState({ node });
+    for (let i = 0; i < objects.length; i++) {
+      if (selected.indexOf(objects[i]) !== -1) {
+        this.setState({ selected: this.props.editor.selected });
+        return;
+      }
     }
   };
 
   render() {
-    const node = this.state.node;
+    const editor = this.props.editor;
+    const selected = this.state.selected;
 
-    if (!node) {
-      return (
-        <div id="properties-panel-container" className={styles.propertiesPanelContainer}>
-          <div className={styles.noNodeSelected}>No node selected</div>
-        </div>
-      );
+    let content;
+
+    if (selected.length === 0) {
+      content = <div className={styles.noNodeSelected}>No node selected</div>;
+    } else if (selected.length > 1) {
+      //TODO
+      content = <div className={styles.noNodeSelected}>Multiple Nodes Selected</div>;
+    } else {
+      // TODO
+      // let NodeEditor = editor.getNodeEditor(selected[0]);
+
+      // const differentNodeTypes = selected.some(selectedNode => editor.getNodeEditor(selectedNode) !== NodeEditor);
+
+      // if (differentNodeTypes) {
+      //   NodeEditor = DefaultNodeEditor;
+      // }
+
+      const node = selected[0];
+
+      const NodeEditor = editor.getNodeEditor(node) || DefaultNodeEditor;
+
+      content = <NodeEditor node={node} editor={editor} />;
     }
 
-    const editor = this.props.editor;
-    const NodeEditor = editor.getNodeEditor(node) || DefaultNodeEditor;
+    // id used in onboarding
 
     return (
-      <div id="properties-panel-container" className={styles.propertiesPanelContainer}>
-        <NodeEditor node={node} editor={editor} />
-      </div>
+      <Panel id="properties-panel" title="Properties" icon="fa-sliders-h">
+        <PropertiesPanelContent>{content}</PropertiesPanelContent>
+      </Panel>
     );
   }
 }

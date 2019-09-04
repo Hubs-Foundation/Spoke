@@ -29,6 +29,5 @@ RadianNumericInputGroup.defaultProps = {
   smallStep: 1,
   mediumStep: 5,
   largeStep: 15,
-  unit: "°",
-  precision: 0.01
+  unit: "°"
 };

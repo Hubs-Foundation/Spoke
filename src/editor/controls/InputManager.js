@@ -1,4 +1,5 @@
 import Mousetrap from "mousetrap";
+import isInputSelected from "../utils/isInputSelected";
 
 const _globalCallbacks = {};
 const _originalStopCallback = Mousetrap.prototype.stopCallback;
@@ -84,12 +85,6 @@ function initializeValue(source, initialState, state, resetKeys, value, reset, r
       }
     }
   }
-}
-
-function isInputSelected() {
-  const el = document.activeElement;
-  const nodeName = el.nodeName;
-  return el.isContentEditable || nodeName === "INPUT" || nodeName === "SELECT" || nodeName === "TEXTAREA";
 }
 
 function normalizeWheel(value) {
@@ -528,8 +523,6 @@ export default class InputManager {
   };
 
   onMouseMove = event => {
-    event.stopPropagation();
-
     const mouseMapping = this.mapping.mouse;
 
     if (!mouseMapping) return;

@@ -1,7 +1,6 @@
 import React, { Component, createRef } from "react";
 import PropTypes from "prop-types";
-import classNames from "classnames";
-import styles from "./NumericInput.scss";
+import styled from "styled-components";
 import { getStepSize, clamp, toPrecision } from "../utils";
 
 function toPrecisionString(value, precision) {
@@ -10,14 +9,59 @@ function toPrecisionString(value, precision) {
     const minimumFractionDigits = Math.min(numDigits, 2);
     const maximumFractionDigits = Math.max(minimumFractionDigits, numDigits);
 
-    return value.toLocaleString(undefined, {
+    return value.toLocaleString("fullwide", {
       minimumFractionDigits,
-      maximumFractionDigits
+      maximumFractionDigits,
+      useGrouping: false
     });
   } else {
-    return value.toString();
+    return value.toLocaleString("fullwide", { useGrouping: false });
   }
 }
+
+const NumericInputContainer = styled.div`
+  position: relative;
+  display: flex;
+  flex: 1;
+  max-width: 100px;
+`;
+
+const StyledNumericInput = styled.input`
+  display: flex;
+  width: 100%;
+  color: ${props => props.theme.text};
+  background-color: ${props => props.theme.inputBackground};
+  border-radius: 4px;
+  border: 1px solid ${props => props.theme.border};
+  padding-left: 6px;
+  font-size: 12px;
+  height: 24px;
+  box-sizing: border-box;
+  outline: none;
+  padding-right: ${props => (props.unit ? props.unit.length * 6 + 10 + "px" : 0)};
+
+  &:hover {
+    border-color: ${props => props.theme.blueHover};
+  }
+
+  &:focus {
+    border-color: ${props => props.theme.blue};
+  }
+`;
+
+const NumericInputUnit = styled.div`
+  position: absolute;
+  color: ${props => props.theme.text2};
+  right: 1px;
+  top: 1px;
+  bottom: 1px;
+  background-color: ${props => props.theme.inputBackground};
+  padding: 0 4px;
+  border-top-right-radius: 4px;
+  border-bottom-right-radius: 4px;
+  line-height: 20px;
+  height: 22px;
+`;
 
 export default class NumericInput extends Component {
   constructor(props) {
@@ -53,7 +97,14 @@ export default class NumericInput extends Component {
       onChange(finalValue);
     }
 
-    this.setState({ tempValue: roundedValue.toString(), focused: true });
+    this.setState({
+      tempValue: roundedValue.toLocaleString("fullwide", {
+        useGrouping: false,
+        minimumFractionDigits: 0,
+        maximumFractionDigits: Math.abs(Math.log10(precision)) + 1
+      }),
+      focused: true
+    });
   };
 
   handleKeyDown = event => {
@@ -80,10 +131,20 @@ export default class NumericInput extends Component {
   };
 
   handleFocus = () => {
-    const { value, convertFrom } = this.props;
-    this.setState({ tempValue: convertFrom(value).toString(), focused: true }, () => {
-      this.inputEl.current.select();
-    });
+    const { value, convertFrom, precision } = this.props;
+    this.setState(
+      {
+        tempValue: convertFrom(value).toLocaleString("fullwide", {
+          useGrouping: false,
+          minimumFractionDigits: 0,
+          maximumFractionDigits: Math.abs(Math.log10(precision)) + 1
+        }),
+        focused: true
+      },
+      () => {
+        this.inputEl.current.select();
+      }
+    );
   };
 
   handleBlur = () => {
@@ -107,7 +168,7 @@ export default class NumericInput extends Component {
       largeStep,
       min,
       max,
-      precision,
+      displayPrecision,
       value,
       convertTo,
       convertFrom,
@@ -117,20 +178,20 @@ export default class NumericInput extends Component {
     } = this.props;
 
     return (
-      <div className={styles.container}>
-        <input
+      <NumericInputContainer>
+        <StyledNumericInput
           {...rest}
-          className={classNames(styles.numericInput, className)}
+          unit={unit}
           ref={this.inputEl}
-          value={this.state.focused ? this.state.tempValue : toPrecisionString(convertFrom(value), precision)}
+          value={this.state.focused ? this.state.tempValue : toPrecisionString(convertFrom(value), displayPrecision)}
           onKeyUp={this.handleKeyPress}
           onKeyDown={this.handleKeyDown}
           onChange={this.handleChange}
           onFocus={this.handleFocus}
           onBlur={this.handleBlur}
         />
-        {unit && <div className={styles.unit}>{unit}</div>}
-      </div>
+        {unit && <NumericInputUnit>{unit}</NumericInputUnit>}
+      </NumericInputContainer>
     );
   }
 }
@@ -148,7 +209,8 @@ NumericInput.propTypes = {
   onCommit: PropTypes.func,
   convertTo: PropTypes.func.isRequired,
   convertFrom: PropTypes.func.isRequired,
-  precision: PropTypes.number
+  precision: PropTypes.number.isRequired,
+  displayPrecision: PropTypes.number.isRequired
 };
 
 NumericInput.defaultProps = {
@@ -157,6 +219,8 @@ NumericInput.defaultProps = {
   largeStep: 0.25,
   min: -Infinity,
   max: Infinity,
+  displayPrecision: 0.001,
+  precision: Number.EPSILON,
   convertTo: value => value,
   convertFrom: value => value
 };

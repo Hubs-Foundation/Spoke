@@ -22,8 +22,7 @@ export default class EulerInput extends Component {
     onChange: () => {},
     smallStep: 0.1,
     mediumStep: 1,
-    largeStep: 5,
-    precision: 0.01
+    largeStep: 5
   };
 
   onChange = (x, y, z) => {

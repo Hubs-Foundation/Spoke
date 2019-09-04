@@ -34,14 +34,14 @@ export default class NameInputGroup extends Component {
     this.setState({ focused: false });
 
     if (this.props.node.name !== this.state.name) {
-      this.props.editor.setNodeProperty(this.props.node, "name", this.state.name);
+      this.props.editor.setProperty(this.props.node, "name", this.state.name);
     }
   };
 
   onKeyUpName = e => {
     if (e.key === "Enter") {
       e.preventDefault();
-      this.props.editor.setNodeProperty(this.props.node, "name", this.state.name);
+      this.props.editor.setProperty(this.props.node, "name", this.state.name);
     }
   };
 

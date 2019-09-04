@@ -23,7 +23,7 @@ export default class NodeEditor extends Component {
   };
 
   onChangeVisible = value => {
-    this.props.editor.setNodeProperty(this.props.node, "visible", value);
+    this.props.editor.setProperty(this.props.node, "visible", value);
   };
 
   render() {

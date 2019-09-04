@@ -160,7 +160,7 @@ export default class ModelNode extends EditorNodeMixin(Model) {
 
       this.updateStaticModes();
 
-      this.editor.signals.objectChanged.dispatch(this);
+      this.editor.emit("objectsChanged", [this]);
 
       if (files) {
         // Revoke any object urls from the SketchfabZipLoader.

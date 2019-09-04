@@ -4,33 +4,12 @@ import classNames from "classnames";
 import styles from "./SnappingDropdown.scss";
 import NumericInputGroup from "../inputs/NumericInputGroup";
 
-const RAD2DEG = 180 / Math.PI;
-const DEG2RAD = Math.PI / 180;
-
 export default class SnappingDropdown extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      listOpen: false,
-      headerTitle: "Snapping",
-      snapTranslateValue: 0,
-      snapRotateValue: 0
+      listOpen: false
     };
-  }
-
-  componentDidMount() {
-    this.props.editor.signals.viewportInitialized.add(this.onViewportInitialized);
-  }
-
-  onViewportInitialized = viewport => {
-    this.setState({
-      snapTranslateValue: viewport.spokeControls.translationSnap,
-      snapRotateValue: (viewport.spokeControls.rotationSnap || 0) * RAD2DEG
-    });
-  };
-
-  componentWillUnmount() {
-    this.props.editor.signals.viewportInitialized.remove(this.onViewportInitialized);
   }
 
   handleClickOutside() {
@@ -45,29 +24,11 @@ export default class SnappingDropdown extends React.Component {
     }));
   }
 
-  setSnapValue(type, value) {
-    let v = value;
-    switch (type) {
-      case "translate":
-        this.setState({ snapTranslateValue: value });
-        this.props.editor.viewport.spokeControls.setTranslationSnapValue(v);
-        break;
-      case "rotate":
-        this.setState({ snapRotateValue: v });
-        v = v * DEG2RAD;
-        this.props.editor.viewport.spokeControls.setRotationSnapValue(v);
-        break;
-      default:
-        break;
-    }
-  }
-
   render() {
-    const { snapTranslateValue, snapRotateValue } = this.state;
     return (
       <div className={classNames(styles.wrapper)}>
         <div className={styles.header} onClick={() => this.toggleList()}>
-          <div className={styles.headerTitle}>{this.state.headerTitle}</div>
+          <div className={styles.headerTitle}>Snapping</div>
           {this.state.listOpen ? <i className="fa fa-angle-up fa-12px" /> : <i className="fa fa-angle-down fa-12px" />}
         </div>
         {this.state.listOpen && (
@@ -79,8 +40,8 @@ export default class SnappingDropdown extends React.Component {
                 smallStep={0.01}
                 mediumStep={0.1}
                 largeStep={1}
-                value={snapTranslateValue}
-                onChange={value => this.setSnapValue("translate", value)}
+                value={this.props.translationSnap}
+                onChange={this.props.onChangeTranslationSnap}
                 unit="m"
               />
             </li>
@@ -91,9 +52,20 @@ export default class SnappingDropdown extends React.Component {
                 smallStep={1}
                 mediumStep={15}
                 largeStep={45}
-                value={snapRotateValue}
-                onChange={value => this.setSnapValue("rotate", value)}
+                value={this.props.rotationSnap}
+                onChange={this.props.onChangeRotationSnap}
                 unit="°"
+              />
+            </li>
+            <li className={styles.listItem}>
+              <NumericInputGroup
+                className={styles.snappingInput}
+                name="Scale"
+                smallStep={1}
+                mediumStep={15}
+                largeStep={45}
+                value={this.props.scaleSnap}
+                onChange={this.props.onChangeScaleSnap}
               />
             </li>
           </ul>
@@ -104,5 +76,10 @@ export default class SnappingDropdown extends React.Component {
 }
 
 SnappingDropdown.propTypes = {
-  editor: PropTypes.object
+  translationSnap: PropTypes.number,
+  rotationSnap: PropTypes.number,
+  scaleSnap: PropTypes.number,
+  onChangeTranslationSnap: PropTypes.func,
+  onChangeRotationSnap: PropTypes.func,
+  onChangeScaleSnap: PropTypes.func
 };
