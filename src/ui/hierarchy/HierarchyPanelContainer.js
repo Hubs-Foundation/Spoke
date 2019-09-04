@@ -630,6 +630,17 @@ export default function HierarchyPanel() {
     [editor]
   );
 
+  const onGroupNodes = useCallback(
+    (e, node) => {
+      if (node.selected) {
+        editor.groupSelected();
+      } else {
+        editor.groupMultiple([node.object]);
+      }
+    },
+    [editor]
+  );
+
   const onRenameNode = useCallback(
     (e, node) => {
       setRenamingNode({ id: node.id, name: node.object.name });
@@ -703,6 +714,10 @@ export default function HierarchyPanel() {
           <MenuItem onClick={onDuplicateNode}>
             Duplicate
             <div>{cmdOrCtrlString + "+ D"}</div>
+          </MenuItem>
+          <MenuItem onClick={onGroupNodes}>
+            Group
+            <div>{cmdOrCtrlString + "+ G"}</div>
           </MenuItem>
           <MenuItem onClick={onDeleteNode}>Delete</MenuItem>
           <MenuItem onClick={onExpandAllNodes}>Expand All</MenuItem>

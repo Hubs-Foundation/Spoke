@@ -75,6 +75,7 @@ export const Spoke = {
   undo: "undo",
   redo: "redo",
   duplicateSelected: "duplicateSelected",
+  groupSelected: "groupSelected",
   saveProject: "saveProject",
   deselect: "deselect"
 };
@@ -163,6 +164,7 @@ export const SpokeMapping = {
       "mod+z": Spoke.undo,
       "mod+shift+z": Spoke.redo,
       "mod+d": Spoke.duplicateSelected,
+      "mod+g": Spoke.groupSelected,
       esc: Spoke.deselect
     },
     globalHotkeys: {

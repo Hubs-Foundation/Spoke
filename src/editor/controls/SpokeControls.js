@@ -541,6 +541,8 @@ export default class SpokeControls extends EventEmitter {
       this.editor.redo();
     } else if (input.get(Spoke.duplicateSelected)) {
       this.editor.duplicateSelected();
+    } else if (input.get(Spoke.groupSelected)) {
+      this.editor.groupSelected();
     } else if (input.get(Spoke.deleteSelected)) {
       this.editor.removeSelectedObjects();
     } else if (input.get(Spoke.saveProject)) {

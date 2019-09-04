@@ -2,17 +2,17 @@ import Command from "./Command";
 import { serializeObject3DArray, serializeObject3D } from "../utils/debug";
 import reverseDepthFirstTraverse from "../utils/reverseDepthFirstTraverse";
 
-export default class ReparentMultipleCommand extends Command {
-  constructor(editor, objects, newParent, newBefore) {
+export default class GroupMultipleCommand extends Command {
+  constructor(editor, objects, groupParent, groupBefore) {
     super(editor);
     this.objects = [];
-    this.newParent = newParent;
-    this.newBefore = newBefore;
+    this.groupParent = groupParent;
+    this.groupBefore = groupBefore;
     this.oldParents = [];
     this.oldBefores = [];
     this.oldSelection = editor.selected.slice(0);
 
-    // Sort objects, parents, and befores with a depth first search so that undo adds nodes in the correct order
+    // Sort objects, parents, and befores with a reverse depth first search so that undo adds nodes in the correct order
     reverseDepthFirstTraverse(editor.scene, object => {
       if (objects.indexOf(object) !== -1) {
         this.objects.push(object);
@@ -29,10 +29,12 @@ export default class ReparentMultipleCommand extends Command {
         }
       }
     });
+
+    this.groupNode = null;
   }
 
   execute() {
-    this.editor.reparentMultiple(this.objects, this.newParent, this.newBefore, false);
+    this.groupNode = this.editor.groupMultiple(this.objects, this.groupParent, this.groupBefore, false);
   }
 
   undo() {
@@ -40,16 +42,18 @@ export default class ReparentMultipleCommand extends Command {
       this.editor.reparent(this.objects[i], this.oldParents[i], this.oldBefores[i], false, false, false, false);
     }
 
-    this.editor.setSelection(this.oldSelection, false, true, false);
+    this.editor.removeObject(this.groupNode, false, false, false);
 
     this.editor.updateTransformRoots();
 
     this.editor.emit("sceneGraphChanged");
+
+    this.editor.setSelection(this.oldSelection, false, true, false);
   }
 
   toString() {
-    return `${this.constructor.name} id: ${this.id} objects: ${serializeObject3DArray(
+    return `GroupMultipleObjectsCommand id: ${this.id} objects: ${serializeObject3DArray(
       this.objects
-    )} newParent: ${serializeObject3D(this.newParent)} newBefore: ${serializeObject3D(this.newBefore)}`;
+    )} groupParent: ${serializeObject3D(this.groupParent)} groupBefore: ${serializeObject3D(this.groupBefore)}`;
   }
 }

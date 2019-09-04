@@ -72,6 +72,8 @@ import SetScaleMultipleCommand from "./commands/SetScaleMultipleCommand";
 import SetSelectionCommand from "./commands/SetSelectionCommand";
 import TranslateCommand from "./commands/TranslateCommand";
 import TranslateMultipleCommand from "./commands/TranslateMultipleCommand";
+import GroupMultipleCommand from "./commands/GroupMultipleCommand";
+import GroupNode from "./nodes/GroupNode";
 
 const tempMatrix1 = new Matrix4();
 const tempMatrix2 = new Matrix4();
@@ -970,6 +972,41 @@ export default class Editor extends EventEmitter {
 
   reparentSelected(newParent, newBefore, useHistory = true, emitEvent = true, selectObjects = true) {
     return this.reparentMultiple(this.selected, newParent, newBefore, useHistory, emitEvent, selectObjects);
+  }
+
+  groupMultiple(objects, groupParent, groupBefore, useHistory = true, emitEvent = true, selectObject = true) {
+    if (useHistory) {
+      return this.history.execute(new GroupMultipleCommand(this, objects, groupParent, groupBefore));
+    }
+
+    const groupNode = this.addObject(new GroupNode(this), groupParent, groupBefore, false, false, false);
+
+    for (let i = 0; i < objects.length; i++) {
+      this.reparent(objects[i], groupNode, undefined, false, false, false);
+    }
+
+    this.updateTransformRoots();
+
+    if (emitEvent) {
+      this.emit("sceneGraphChanged");
+    }
+
+    if (selectObject) {
+      this.setSelection([groupNode], false, true, false);
+    }
+
+    return groupNode;
+  }
+
+  groupSelected(groupParent, groupBefore, useHistory = true, emitEvent = true, selectObject = true) {
+    return this.groupMultiple(
+      this.selectedTransformRoots,
+      groupParent,
+      groupBefore,
+      useHistory,
+      emitEvent,
+      selectObject
+    );
   }
 
   setPosition(object, position, space = TransformSpace.Local, useHistory = true, emitEvent = true) {
