@@ -180,6 +180,7 @@ export default class TransformGizmo extends Object3D {
 
     this.model.traverse(obj => {
       if (obj.isMesh) {
+        obj.layers.set(1);
         obj.material.depthTest = false;
         obj.material.depthWrite = false;
         obj.renderOrder = 100;
