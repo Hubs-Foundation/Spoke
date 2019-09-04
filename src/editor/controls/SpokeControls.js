@@ -84,7 +84,7 @@ export default class SpokeControls extends EventEmitter {
     this.maxFocusDistance = 1000;
     this.raycaster = new Raycaster();
     this.raycasterResults = [];
-    this.scene = null;
+    this.scene = editor.scene;
     this.box = new Box3();
     this.sphere = new Sphere();
 

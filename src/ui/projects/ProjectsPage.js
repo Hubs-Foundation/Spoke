@@ -5,7 +5,6 @@ import NavBar from "../navigation/NavBar";
 import ProjectGrid from "./ProjectGrid";
 import Footer from "../navigation/Footer";
 import Button from "../inputs/Button";
-import PrimaryLink from "../inputs/PrimaryLink";
 import Loading from "../Loading";
 import LatestUpdate from "../whats-new/LatestUpdate";
 import { connectMenu, ContextMenu, MenuItem } from "react-contextmenu";
@@ -150,7 +149,7 @@ class ProjectsPage extends Component {
         </LoadingContainer>
       );
     } else {
-      content = <ProjectGrid projects={projects} newProjectUrl="/projects/new" contextMenuId={contextMenuId} />;
+      content = <ProjectGrid projects={projects} newProjectUrl="/projects/templates" contextMenuId={contextMenuId} />;
     }
 
     const ProjectContextMenu = this.ProjectContextMenu;
@@ -184,17 +183,8 @@ class ProjectsPage extends Component {
           <ProjectsSection>
             <ProjectsContainer>
               <ProjectsHeader>
-                <h1>Templates</h1>
-                <PrimaryLink to="/projects/templates">View More</PrimaryLink>
-              </ProjectsHeader>
-              <ProjectGrid projects={topTemplates} />
-            </ProjectsContainer>
-          </ProjectsSection>
-          <ProjectsSection>
-            <ProjectsContainer>
-              <ProjectsHeader>
                 <h1>Projects</h1>
-                <Button medium to="/projects/new">
+                <Button medium to="/projects/templates">
                   New Project
                 </Button>
               </ProjectsHeader>

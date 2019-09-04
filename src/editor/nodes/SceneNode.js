@@ -158,12 +158,13 @@ export default class SceneNode extends EditorNodeMixin(Scene) {
 
     const dependencies = [];
     let dependencyCount = 0;
+    let error = false;
 
     function loadAsync(promise) {
       dependencies.push(
         promise.then(res => {
           dependencyCount++;
-          if (onProgress) {
+          if (onProgress && !error) {
             onProgress(dependencyCount, dependencies.length);
           }
           return res;
@@ -215,7 +216,12 @@ export default class SceneNode extends EditorNodeMixin(Scene) {
       node.onChange();
     }
 
-    await Promise.all(dependencies);
+    try {
+      await Promise.all(dependencies);
+    } catch (err) {
+      error = true;
+      throw err;
+    }
 
     return scene;
   }

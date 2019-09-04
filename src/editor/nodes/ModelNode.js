@@ -149,6 +149,17 @@ export default class ModelNode extends EditorNodeMixin(Model) {
         this.scaleToFit = false;
       }
 
+      if (this.model) {
+        this.model.traverse(object => {
+          if (object.material && object.material.isMeshStandardMaterial) {
+            object.material.envMap = this.editor.scene.environmentMap;
+            object.material.needsUpdate = true;
+          }
+        });
+      }
+
+      this.updateStaticModes();
+
       this.editor.emit("objectsChanged", [this]);
 
       if (files) {
@@ -167,15 +178,6 @@ export default class ModelNode extends EditorNodeMixin(Model) {
       return this;
     }
 
-    this.updateStaticModes();
-
-    this.model.traverse(object => {
-      if (object.material && object.material.isMeshStandardMaterial) {
-        object.material.envMap = this.editor.scene.environmentMap;
-        object.material.needsUpdate = true;
-      }
-    });
-
     return this;
   }
 
@@ -191,7 +193,9 @@ export default class ModelNode extends EditorNodeMixin(Model) {
           const animatedNode = this.model.getObjectByProperty("uuid", uuid);
 
           if (!animatedNode) {
-            throw new Error(`Model.updateStaticModes: Couldn't find object with uuid: "${uuid}"`);
+            throw new Error(
+              `Model.updateStaticModes: model with url "${this._canonicalUrl}" has an invalid animation "${animation.name}"`
+            );
           }
 
           setStaticMode(animatedNode, StaticModes.Dynamic);

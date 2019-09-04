@@ -17,7 +17,9 @@ export default class Portal extends Component {
   }
 
   componentWillUnmount() {
-    document.body.removeChild(this.el);
+    if (this.el) {
+      document.body.removeChild(this.el);
+    }
   }
 
   render() {
