@@ -5,6 +5,7 @@ import MockNode from "../helpers/MockNode";
 import { Vector3, Euler, Quaternion } from "three";
 import arrayShallowEqual from "../../src/editor/utils/arrayShallowEqual";
 
+// Modified from: https://github.com/sindresorhus/float-equal
 function floatEqual(a, b, epsilon = Number.EPSILON) {
   if (a === b) {
     return true;
