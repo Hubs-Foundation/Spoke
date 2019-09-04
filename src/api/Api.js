@@ -282,6 +282,7 @@ export default class Project extends EventEmitter {
 
   async getContentType(url) {
     const result = await this.resolveUrl(url);
+    console.log(result);
     const canonicalUrl = result.origin;
     const accessibleUrl = proxiedUrlFor(canonicalUrl);
 

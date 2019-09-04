@@ -272,6 +272,8 @@ export default class EditorContainer extends Component {
       return;
     }
 
+    console.error(error);
+
     this.showDialog(ErrorDialog, {
       title: error.title || "Error",
       message: error.message || "There was an unknown error.",

@@ -1,3 +1,5 @@
+import traverseEarlyOut from "../utils/traverseEarlyOut";
+
 const namePattern = new RegExp("(.*) \\d+$");
 
 function getNameWithoutIndex(name) {
@@ -9,32 +11,44 @@ function getNameWithoutIndex(name) {
   return cacheName;
 }
 
-function isDuplicateName(scene, name, withoutIndex) {
-  let foundDuplicate = false;
-  scene.traverse(object => {
-    if (foundDuplicate) return;
-    if (!object.isNode) return;
+function isDuplicateName(scene, additionalNames, name, withoutIndex) {
+  const result = traverseEarlyOut(scene, object => {
+    if (!object.isNode) return true;
+
+    let objectName = object.name;
+
     if (withoutIndex) {
-      foundDuplicate = getNameWithoutIndex(object.name) === name;
-    } else {
-      foundDuplicate = object.name === name;
+      objectName = getNameWithoutIndex(object.name);
     }
+
+    const foundDuplicate = objectName === name || additionalNames.has(objectName);
+
+    return !foundDuplicate;
   });
-  return foundDuplicate;
+
+  return !result;
 }
 
 export default function makeUniqueName(scene, object) {
-  const nameWithoutIndex = getNameWithoutIndex(object.name);
+  const objectNames = new Map();
 
-  if (isDuplicateName(scene, nameWithoutIndex, true)) {
-    let counter = 1;
-    let curName = nameWithoutIndex + " " + counter;
+  object.traverse(child => {
+    if (child.isNode) {
+      const nameWithoutIndex = getNameWithoutIndex(object.name);
 
-    while (isDuplicateName(scene, curName)) {
-      counter++;
-      curName = nameWithoutIndex + " " + counter;
+      if (isDuplicateName(scene, objectNames, nameWithoutIndex, true)) {
+        let counter = 1;
+        let curName = nameWithoutIndex + " " + counter;
+
+        while (isDuplicateName(scene, objectNames, curName)) {
+          counter++;
+          curName = nameWithoutIndex + " " + counter;
+        }
+
+        object.name = curName;
+      }
+
+      objectNames.set(object.name);
     }
-
-    object.name = curName;
-  }
+  });
 }

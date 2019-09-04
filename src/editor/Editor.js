@@ -35,6 +35,7 @@ import isEmptyObject from "./utils/isEmptyObject";
 import getIntersectingNode from "./utils/getIntersectingNode";
 import { generateImageFileThumbnail, generateVideoFileThumbnail } from "./utils/thumbnails";
 import resizeShadowCameraFrustum from "./utils/resizeShadowCameraFrustum";
+import isInputSelected from "./utils/isInputSelected";
 
 import InputManager from "./controls/InputManager";
 import FlyControls from "./controls/FlyControls";
@@ -73,7 +74,12 @@ import SetSelectionCommand from "./commands/SetSelectionCommand";
 import TranslateCommand from "./commands/TranslateCommand";
 import TranslateMultipleCommand from "./commands/TranslateMultipleCommand";
 import GroupMultipleCommand from "./commands/GroupMultipleCommand";
+
 import GroupNode from "./nodes/GroupNode";
+import ModelNode from "./nodes/ModelNode";
+import VideoNode from "./nodes/VideoNode";
+import ImageNode from "./nodes/ImageNode";
+import LinkNode from "./nodes/LinkNode";
 
 const tempMatrix1 = new Matrix4();
 const tempMatrix2 = new Matrix4();
@@ -166,6 +172,9 @@ export default class Editor extends EventEmitter {
     this.spokeControls = new SpokeControls(this.camera, this, this.inputManager, this.flyControls);
     this.playModeControls = new PlayModeControls(this.inputManager, this.spokeControls, this.flyControls);
     this.spokeControls.enable();
+
+    window.addEventListener("copy", this.onCopy);
+    window.addEventListener("paste", this.onPaste);
 
     this.rafId = requestAnimationFrame(this.update);
 
@@ -676,7 +685,7 @@ export default class Editor extends EventEmitter {
     return this.selected;
   }
 
-  addObject(object, parent, before, useHistory = true, emitEvent = true, selectObject = true) {
+  addObject(object, parent, before, useHistory = true, emitEvent = true, selectObject = true, useUniqueName = false) {
     // TODO: Add makeUniqueName option
     if (useHistory) {
       return this.history.execute(new AddObjectCommand(this, object, parent, before));
@@ -703,6 +712,10 @@ export default class Editor extends EventEmitter {
 
     object.traverse(child => {
       if (child.isNode) {
+        if (useUniqueName) {
+          makeUniqueName(this.scene, child);
+        }
+
         child.onAdd();
         this.nodes.push(child);
       }
@@ -721,7 +734,15 @@ export default class Editor extends EventEmitter {
     return object;
   }
 
-  addMultipleObjects(objects, parent, before, useHistory = true, emitEvent = true, selectObjects = true) {
+  addMultipleObjects(
+    objects,
+    parent,
+    before,
+    useHistory = true,
+    emitEvent = true,
+    selectObjects = true,
+    useUniqueName = false
+  ) {
     if (useHistory) {
       return this.history.execute(new AddMultipleObjectsCommand(this, objects, parent, before));
     }
@@ -729,7 +750,7 @@ export default class Editor extends EventEmitter {
     const rootObjects = getDetachedObjectsRoots(objects);
 
     for (let i = 0; i < rootObjects.length; i++) {
-      this.addObject(rootObjects[i], parent, before, false, false, false);
+      this.addObject(rootObjects[i], parent, before, false, false, false, useUniqueName);
     }
 
     if (selectObjects) {
@@ -867,15 +888,7 @@ export default class Editor extends EventEmitter {
     const validNodes = objects.filter(object => object.constructor.canAddNode(this));
     const duplicatedRoots = getDetachedObjectsRoots(validNodes).map(object => object.clone());
 
-    for (let i = 0; i < duplicatedRoots.length; i++) {
-      duplicatedRoots[i].traverse(o => {
-        if (o.isNode) {
-          makeUniqueName(this.scene, o);
-        }
-      });
-    }
-
-    this.addMultipleObjects(duplicatedRoots, parent, before, false, false, false);
+    this.addMultipleObjects(duplicatedRoots, parent, before, false, false, false, true);
 
     if (selectObjects) {
       this.setSelection(duplicatedRoots, false, true, false);
@@ -1594,5 +1607,86 @@ export default class Editor extends EventEmitter {
   updateTransformRoots() {
     this.selectedTransformRoots.length = 0;
     this.getTransformRoots(this.selected, this.selectedTransformRoots);
+  }
+
+  onCopy = event => {
+    if (isInputSelected()) {
+      return;
+    }
+
+    event.preventDefault();
+
+    if (this.selected.length > 0) {
+      event.clipboardData.setData(
+        "application/vnd.spoke.nodes",
+        JSON.stringify({ nodeUUIDs: this.selected.map(node => node.uuid) })
+      );
+    }
+  };
+
+  onPaste = event => {
+    if (isInputSelected()) {
+      return;
+    }
+
+    event.preventDefault();
+
+    let data;
+
+    if ((data = event.clipboardData.getData("application/vnd.spoke.nodes")) !== "") {
+      const { nodeUUIDs } = JSON.parse(data);
+
+      if (!Array.isArray(nodeUUIDs)) {
+        return;
+      }
+
+      const nodes = nodeUUIDs.map(uuid => this.scene.getObjectByUUID(uuid)).filter(uuid => uuid !== undefined);
+
+      this.duplicateMultiple(nodes);
+    } else if ((data = event.clipboardData.getData("text")) !== "") {
+      try {
+        const url = new URL(data);
+        this.addMedia(url.href).catch(error => this.emit("error", error));
+      } catch (e) {
+        console.warn("Clipboard contents did not contain a valid url");
+      }
+    }
+  };
+
+  async addMedia(url) {
+    let contentType = "";
+
+    try {
+      contentType = await this.api.getContentType(url);
+    } catch (error) {
+      console.warn(`Couldn't fetch content type for url ${url}. Using LinkNode instead.`);
+    }
+
+    let node;
+
+    if (contentType.startsWith("model/gltf")) {
+      node = new ModelNode(this);
+      this.getSpawnPosition(node.position);
+      this.addObject(node);
+      node.scaleToFit = true;
+      await node.load(url);
+    } else if (contentType.startsWith("video/")) {
+      node = new VideoNode(this);
+      this.getSpawnPosition(node.position);
+      this.addObject(node);
+      await node.load(url);
+    } else if (contentType.startsWith("image/")) {
+      node = new ImageNode(this);
+      this.getSpawnPosition(node.position);
+      this.addObject(node);
+      await node.load(url);
+    } else {
+      node = new LinkNode(this);
+      this.getSpawnPosition(node.position);
+      this.addObject(node);
+      node.href = url;
+    }
+
+    return node;
   }
 }

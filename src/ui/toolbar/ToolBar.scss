@@ -6,6 +6,7 @@
   flex-direction: row;
   height: 40px;
   background-color: $toolbar;
+  @include no-select;
 
   :local(.logo) {
     position: absolute;
