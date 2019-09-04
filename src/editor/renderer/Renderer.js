@@ -68,6 +68,7 @@ export default class Renderer {
     this.camera = camera;
 
     this.onResize();
+    this.update();
   }
 
   update() {
