@@ -398,7 +398,7 @@ export default class Project extends EventEmitter {
     };
   }
 
-  async createProject(editor, showDialog, hideDialog) {
+  async createProject(scene, thumbnailBlob, showDialog, hideDialog) {
     this.emit("project-saving");
 
     // Ensure the user is authenticated before continuing.
@@ -410,13 +410,12 @@ export default class Project extends EventEmitter {
       });
     }
 
-    const { blob: thumbnailBlob } = await editor.takeScreenshot(512, 320);
     const {
       file_id: thumbnail_file_id,
       meta: { access_token: thumbnail_file_token }
     } = await this.upload(thumbnailBlob);
 
-    const serializedScene = editor.scene.serialize();
+    const serializedScene = scene.serialize();
     const projectBlob = new Blob([JSON.stringify(serializedScene)], { type: "application/json" });
     const {
       file_id: project_file_id,
@@ -432,7 +431,7 @@ export default class Project extends EventEmitter {
 
     const body = JSON.stringify({
       project: {
-        name: editor.scene.name,
+        name: scene.name,
         thumbnail_file_id,
         thumbnail_file_token,
         project_file_id,
@@ -449,7 +448,7 @@ export default class Project extends EventEmitter {
         showDialog(LoginDialog, {
           onSuccess: async () => {
             try {
-              await this.createProject(editor, showDialog, hideDialog);
+              await this.createProject(scene, thumbnailBlob, showDialog, hideDialog);
               resolve();
             } catch (e) {
               reject(e);

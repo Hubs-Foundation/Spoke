@@ -22,6 +22,7 @@ import { createEditor } from "../config";
 import ErrorDialog from "./dialogs/ErrorDialog";
 import ProgressDialog from "./dialogs/ProgressDialog";
 import ConfirmDialog from "./dialogs/ConfirmDialog";
+import SaveNewProjectDialog from "./dialogs/SaveNewProjectDialog";
 
 import Onboarding from "./onboarding/Onboarding";
 import SupportDialog from "./dialogs/SupportDialog";
@@ -354,12 +355,28 @@ export default class EditorContainer extends Component {
   }
 
   async createProject() {
-    const { projectId } = await this.props.api.createProject(this.state.editor, this.showDialog, this.hideDialog);
-    this.state.editor.projectId = projectId;
-    this.setState({ creatingProject: true }, () => {
-      this.props.history.replace(`/projects/${projectId}`);
-      this.setState({ creatingProject: false });
+    const editor = this.state.editor;
+
+    const { blob } = await editor.takeScreenshot(512, 320);
+
+    const result = await new Promise(resolve => {
+      this.showDialog(SaveNewProjectDialog, {
+        thumbnailUrl: URL.createObjectURL(blob),
+        initialName: editor.scene.name,
+        onConfirm: resolve,
+        onCancel: resolve
+      });
     });
+
+    if (result) {
+      editor.setProperty(editor.scene, "name", result.name, false);
+      const { projectId } = await this.props.api.createProject(editor.scene, blob, this.showDialog, this.hideDialog);
+      editor.projectId = projectId;
+      this.setState({ creatingProject: true }, () => {
+        this.props.history.replace(`/projects/${projectId}`);
+        this.setState({ creatingProject: false });
+      });
+    }
   }
 
   onNewProject = async () => {
@@ -382,6 +399,9 @@ export default class EditorContainer extends Component {
         this.hideDialog();
       }
     });
+
+    // Wait for 5ms so that the ProgressDialog shows up.
+    await new Promise(resolve => setTimeout(resolve, 5));
 
     try {
       const editor = this.state.editor;
