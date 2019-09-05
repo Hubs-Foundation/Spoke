@@ -28,7 +28,7 @@ export default class PhysicalSpotLight extends SpotLight {
   }
 
   set innerConeAngle(value) {
-    this.penumbra = 1.0 - value / this.angle;
+    this.penumbra = 1.0 - Math.max(value, Number.EPSILON) / this.angle;
   }
 
   get outerConeAngle() {
@@ -37,7 +37,7 @@ export default class PhysicalSpotLight extends SpotLight {
 
   set outerConeAngle(value) {
     this.angle = value;
-    this.penumbra = 1.0 - this.innerConeAngle / value;
+    this.penumbra = 1.0 - Math.max(this.innerConeAngle, Number.EPSILON) / value;
   }
 
   get shadowBias() {
