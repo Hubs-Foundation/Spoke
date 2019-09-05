@@ -516,10 +516,12 @@ export default function HierarchyPanel() {
 
   const onMouseDown = useCallback(
     (e, node) => {
-      if (e.shiftKey) {
-        editor.toggleSelection(node.object);
-      } else if (!node.selected) {
-        editor.setSelection([node.object]);
+      if (e.detail === 1) {
+        if (e.shiftKey) {
+          editor.toggleSelection(node.object);
+        } else if (!node.selected) {
+          editor.setSelection([node.object]);
+        }
       }
     },
     [editor]
@@ -527,7 +529,9 @@ export default function HierarchyPanel() {
 
   const onClick = useCallback(
     (e, node) => {
-      if (!e.shiftKey) {
+      if (e.detail === 2) {
+        editor.spokeControls.focus([node.object]);
+      } else if (!e.shiftKey) {
         editor.setSelection([node.object]);
       }
     },
