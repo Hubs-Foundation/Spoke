@@ -248,7 +248,6 @@ module.exports = env => {
         BUILD_VERSION: "dev",
         NODE_ENV: "development",
         RETICULUM_SERVER: undefined,
-        FARSPARK_SERVER: undefined,
         THUMBNAIL_SERVER: undefined,
         HUBS_SERVER: undefined,
         CORS_PROXY_SERVER: null,
