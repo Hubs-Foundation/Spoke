@@ -398,7 +398,7 @@ export default class Project extends EventEmitter {
     };
   }
 
-  async createProject(scene, thumbnailBlob, showDialog, hideDialog) {
+  async createProject(scene, thumbnailBlob, signal, showDialog, hideDialog) {
     this.emit("project-saving");
 
     // Ensure the user is authenticated before continuing.
@@ -410,17 +410,29 @@ export default class Project extends EventEmitter {
       });
     }
 
+    if (signal.aborted) {
+      throw new Error("Save project aborted");
+    }
+
     const {
       file_id: thumbnail_file_id,
       meta: { access_token: thumbnail_file_token }
-    } = await this.upload(thumbnailBlob);
+    } = await this.upload(thumbnailBlob, undefined, signal);
+
+    if (signal.aborted) {
+      throw new Error("Save project aborted");
+    }
 
     const serializedScene = scene.serialize();
     const projectBlob = new Blob([JSON.stringify(serializedScene)], { type: "application/json" });
     const {
       file_id: project_file_id,
       meta: { access_token: project_file_token }
-    } = await this.upload(projectBlob);
+    } = await this.upload(projectBlob, undefined, signal);
+
+    if (signal.aborted) {
+      throw new Error("Save project aborted");
+    }
 
     const token = this.getToken();
 
@@ -441,14 +453,18 @@ export default class Project extends EventEmitter {
 
     const projectEndpoint = `https://${RETICULUM_SERVER}/api/v1/projects`;
 
-    const resp = await this.fetch(projectEndpoint, { method: "POST", headers, body });
+    const resp = await this.fetch(projectEndpoint, { method: "POST", headers, body, signal });
+
+    if (signal.aborted) {
+      throw new Error("Save project aborted");
+    }
 
     if (resp.status === 401) {
       return await new Promise((resolve, reject) => {
         showDialog(LoginDialog, {
           onSuccess: async () => {
             try {
-              await this.createProject(scene, thumbnailBlob, showDialog, hideDialog);
+              await this.createProject(scene, thumbnailBlob, signal, showDialog, hideDialog);
               resolve();
             } catch (e) {
               reject(e);
