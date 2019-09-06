@@ -11,11 +11,13 @@ export default function SaveNewProjectDialog({ thumbnailUrl, initialName, onConf
     setName(value);
   });
 
-  const onConfirmCallback = useCallback(() => {
+  const onConfirmCallback = useCallback(e => {
+    e.preventDefault();
     onConfirm({ name });
   });
 
-  const onCancelCallback = useCallback(() => {
+  const onCancelCallback = useCallback(e => {
+    e.preventDefault();
     onCancel();
   });
 
