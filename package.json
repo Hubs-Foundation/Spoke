@@ -85,7 +85,7 @@
     "recast-wasm": "^0.1.1",
     "signals": "^1.0.0",
     "styled-components": "^4.3.2",
-    "three": "https://github.com/MozillaReality/three.js.git#0f9b0024725f0dd917caa54c2934a4ba1fc12c4f",
+    "three": "https://github.com/MozillaReality/three.js.git#73f0b496b97e6665b348fc9b6bdc404f6a7f39d2",
     "three-mesh-bvh": "^0.1.2",
     "url-toolkit": "^2.1.6",
     "uuid": "^3.3.2"

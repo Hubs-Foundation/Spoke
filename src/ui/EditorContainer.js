@@ -191,7 +191,7 @@ export default class EditorContainer extends Component {
   onEditorInitialized = () => {
     const editor = this.state.editor;
 
-    const gl = this.state.editor.renderer.renderer.context;
+    const gl = this.state.editor.renderer.renderer.getContext();
 
     const debugInfo = gl.getExtension("WEBGL_debug_renderer_info");
 
