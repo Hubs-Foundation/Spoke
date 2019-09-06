@@ -369,8 +369,26 @@ export default class EditorContainer extends Component {
     });
 
     if (result) {
+      const abortController = new AbortController();
+
+      this.showDialog(ProgressDialog, {
+        title: "Saving Project",
+        message: "Saving project...",
+        cancelable: true,
+        onCancel: () => {
+          abortController.abort();
+          this.hideDialog();
+        }
+      });
+
       editor.setProperty(editor.scene, "name", result.name, false);
-      const { projectId } = await this.props.api.createProject(editor.scene, blob, this.showDialog, this.hideDialog);
+      const { projectId } = await this.props.api.createProject(
+        editor.scene,
+        blob,
+        abortController.signal,
+        this.showDialog,
+        this.hideDialog
+      );
       editor.projectId = projectId;
       this.setState({ creatingProject: true }, () => {
         this.props.history.replace(`/projects/${projectId}`);
