@@ -4,7 +4,7 @@ import NodeEditor from "./NodeEditor";
 import InputGroup from "../inputs/InputGroup";
 import BooleanInput from "../inputs/BooleanInput";
 import NumericInputGroup from "../inputs/NumericInputGroup";
-import Button from "../inputs/Button";
+import { Button } from "../inputs/Button";
 import ProgressDialog from "../dialogs/ProgressDialog";
 import ErrorDialog from "../dialogs/ErrorDialog";
 import { withDialog } from "../contexts/DialogContext";

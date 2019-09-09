@@ -1,7 +1,24 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
-import styles from "./AuthEmailSentMessage.scss";
 import ProgressBar from "../ui/inputs/ProgressBar";
+import styled from "styled-components";
+
+const StyledAuthEmailSentMessage = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+  max-width: 400px;
+  align-self: center;
+
+  & > * {
+    margin-bottom: 20px;
+  }
+
+  h2 {
+    font-size: 20px;
+  }
+`;
 
 export default class AuthEmailSentMessage extends Component {
   static propTypes = {
@@ -17,7 +34,7 @@ export default class AuthEmailSentMessage extends Component {
 
   render() {
     return (
-      <div className={styles.authEmailSentMessage}>
+      <StyledAuthEmailSentMessage>
         <h2>Email sent!</h2>
         <p>Waiting for you to click on the link sent to {this.props.email}</p>
         <strong>Don&#39;t close this browser tab or you may lose your work!</strong>
@@ -27,7 +44,7 @@ export default class AuthEmailSentMessage extends Component {
             Cancel
           </a>
         </div>
-      </div>
+      </StyledAuthEmailSentMessage>
     );
   }
 }

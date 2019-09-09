@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import PropTypes from "prop-types";
 import styles from "./LibraryInput.scss";
 import StringInput from "./StringInput";
-import Button from "./Button";
+import { Button } from "./Button";
 import { withDialog } from "../contexts/DialogContext";
 import { withApi } from "../contexts/ApiContext";
 import { withEditor } from "../contexts/EditorContext";

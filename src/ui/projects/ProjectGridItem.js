@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
 import styled from "styled-components";
 import { showMenu } from "react-contextmenu";
-import MenuButton from "../inputs/MenuButton";
+import { MenuButton } from "../inputs/Button";
 import StylableContextMenuTrigger from "./StylableContextMenuTrigger";
 
 function collectMenuProps({ project }) {

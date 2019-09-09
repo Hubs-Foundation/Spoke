@@ -2,9 +2,23 @@ import React, { Component } from "react";
 import { Redirect } from "react-router-dom";
 import PropTypes from "prop-types";
 import { withApi } from "../contexts/ApiContext";
-import styles from "./LoginPage.scss";
 import NavBar from "../navigation/NavBar";
 import Footer from "../navigation/Footer";
+import styled from "styled-components";
+
+const LoginSection = styled.section`
+  padding: 100px 0;
+`;
+
+const LoginContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  padding: 60px;
+  margin: 0 auto;
+  max-width: 480px;
+  background: ${props => props.theme.panel};
+  border-radius: 8px;
+`;
 
 class LoginPage extends Component {
   static propTypes = {
@@ -33,11 +47,11 @@ class LoginPage extends Component {
       <>
         <NavBar />
         <main>
-          <section className={styles.loginSection}>
-            <div className={styles.loginContainer}>
+          <LoginSection>
+            <LoginContainer>
               <AuthContainer {...this.props} onSuccess={this.onSuccess} />
-            </div>
-          </section>
+            </LoginContainer>
+          </LoginSection>
         </main>
         <Footer />
       </>

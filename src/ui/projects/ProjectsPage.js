@@ -4,7 +4,8 @@ import { withApi } from "../contexts/ApiContext";
 import NavBar from "../navigation/NavBar";
 import ProjectGrid from "./ProjectGrid";
 import Footer from "../navigation/Footer";
-import Button from "../inputs/Button";
+import { MediumButton } from "../inputs/Button";
+import { Link } from "react-router-dom";
 import Loading from "../Loading";
 import LatestUpdate from "../whats-new/LatestUpdate";
 import { connectMenu, ContextMenu, MenuItem } from "react-contextmenu";
@@ -172,9 +173,9 @@ class ProjectsPage extends Component {
                   If you&#39;re new here we recommend going through the tutorial. Otherwise, jump right in and create a
                   project from scratch or one of our templates.
                 </h2>
-                <Button medium to="/projects/tutorial">
+                <MediumButton as={Link} to="/projects/tutorial">
                   Start Tutorial
-                </Button>
+                </MediumButton>
               </WelcomeContainer>
             </ProjectsSection>
           ) : (
@@ -184,9 +185,9 @@ class ProjectsPage extends Component {
             <ProjectsContainer>
               <ProjectsHeader>
                 <h1>Projects</h1>
-                <Button medium to="/projects/templates">
+                <MediumButton as={Link} to="/projects/templates">
                   New Project
-                </Button>
+                </MediumButton>
               </ProjectsHeader>
               {error && <ErrorMessage>{error.message || "There was an unknown error."}</ErrorMessage>}
               {content}

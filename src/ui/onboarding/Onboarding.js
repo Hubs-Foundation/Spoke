@@ -19,9 +19,10 @@ import scaleImage from "../../assets/onboarding/scale.png";
 import snappingVideo from "../../assets/onboarding/snapping.mp4";
 import snappingImage from "../../assets/onboarding/snapping.png";
 import { withApi } from "../contexts/ApiContext";
-import Button from "../inputs/Button";
+import { Button } from "../inputs/Button";
 import Well from "../layout/Well";
 import { cmdOrCtrlString } from "../utils";
+import { Link } from "react-router-dom";
 
 /* eslint-disable react/prop-types */
 
@@ -391,7 +392,9 @@ const steps = [
             Great job! You&#39;ve touched all the basics of Spoke and published a scene to Hubs! To get started on your
             own scene check out your projects page. Or click finish to continue working on this scene.
           </p>
-          <Button to="/projects">My Projects</Button>
+          <Button as={Link} to="/projects">
+            My Projects
+          </Button>
         </OnboardingDialog>
       );
     }

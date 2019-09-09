@@ -842,7 +842,7 @@
   resolved "https://registry.yarnpkg.com/@emotion/hash/-/hash-0.6.6.tgz#62266c5f0eac6941fece302abad69f2ee7e25e44"
   integrity sha512-ojhgxzUHZ7am3D2jHkMzPpsBAiB005GF5YU4ea+8DNPybMk01JJUM9V9YRlF/GE95tcOm8DxQvWA2jq19bGalQ==
 
-"@emotion/is-prop-valid@^0.8.1":
+"@emotion/is-prop-valid@^0.8.1", "@emotion/is-prop-valid@^0.8.2":
   version "0.8.2"
   resolved "https://registry.yarnpkg.com/@emotion/is-prop-valid/-/is-prop-valid-0.8.2.tgz#b9692080da79041683021fcc32f96b40c54c59dc"
   integrity sha512-ZQIMAA2kLUWiUeMZNJDTeCwYRx1l8SQL0kHktze4COT22occKpDML1GDUXP5/sxhOMrZO8vZw773ni4H5Snrsg==
@@ -10497,6 +10497,14 @@ styled-components@^4.3.2:
     stylis "^3.5.0"
     stylis-rule-sheet "^0.0.10"
     supports-color "^5.5.0"
+
+styled-icons@^8.4.1:
+  version "8.4.1"
+  resolved "https://registry.yarnpkg.com/styled-icons/-/styled-icons-8.4.1.tgz#3115a4319f4ab26ab4994e7388cb5b0e74cd5e51"
+  integrity sha512-gF99n5GAgMu9VDqjLjL9uWV/T33br+VringNKPbgnQAHuks377auxAgV9TAZoU+FiEIfv/mT6hNZ7oErPX1U6Q==
+  dependencies:
+    "@emotion/is-prop-valid" "^0.8.2"
+    tslib "^1.9.3"
 
 stylehacks@^4.0.0:
   version "4.0.3"

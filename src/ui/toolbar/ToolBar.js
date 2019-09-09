@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 import ReactTooltip from "react-tooltip";
 
 import ToolButton from "./ToolButton";
-import Button from "../inputs/Button";
+import { Button } from "../inputs/Button";
 import ToolToggle from "./ToolToggle";
 import styles from "./ToolBar.scss";
 import SnappingDropdown from "./SnappingDropdown";

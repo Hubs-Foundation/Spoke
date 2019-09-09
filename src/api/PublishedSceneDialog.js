@@ -1,14 +1,14 @@
 import React from "react";
 import PropTypes from "prop-types";
 import PreviewDialog from "../ui/dialogs/PreviewDialog";
-import Button from "../ui/inputs/Button";
+import { Button } from "../ui/inputs/Button";
 
 export default function PublishedSceneDialog({ onCancel, sceneName, sceneUrl, screenshotUrl, ...props }) {
   return (
     <PreviewDialog imageSrc={screenshotUrl} title="Scene Published" {...props}>
       <h1>{sceneName}</h1>
       <p>Your scene has been published to Hubs.</p>
-      <Button href={sceneUrl} target="_blank">
+      <Button as="a" href={sceneUrl} target="_blank">
         View Your Scene
       </Button>
     </PreviewDialog>
