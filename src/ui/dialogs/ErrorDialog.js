@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import PropTypes from "prop-types";
 import * as Sentry from "@sentry/browser";
 import Dialog from "./Dialog";
-import Button from "../inputs/Button";
+import { Button } from "../inputs/Button";
 
 export default class ErrorDialog extends Component {
   state = { eventId: null };

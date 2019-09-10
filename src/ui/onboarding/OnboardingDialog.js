@@ -1,7 +1,7 @@
 import React from "react";
 import PropTypes from "prop-types";
 import OnboardingOverlay from "./OnboardingOverlay";
-import Button from "../inputs/Button";
+import { Button, SecondaryButton } from "../inputs/Button";
 import defaultBackgroundImage from "../../assets/onboarding/default.png";
 import styled from "styled-components";
 
@@ -124,11 +124,7 @@ export default function OnboardingDialog({
               Skip Tutorial
             </a>
           )}
-          {!disablePrev && curStepIdx > 0 && (
-            <Button secondary onClick={prevStep}>
-              Back
-            </Button>
-          )}
+          {!disablePrev && curStepIdx > 0 && <SecondaryButton onClick={prevStep}>Back</SecondaryButton>}
           {!disableNext && curStepIdx < steps.length - 1 && <Button onClick={nextStep}>Next</Button>}
           {!disableNext && curStepIdx === steps.length - 1 && <Button onClick={nextStep}>Finish</Button>}
         </BottomNav>

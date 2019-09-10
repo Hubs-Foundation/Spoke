@@ -1,10 +1,36 @@
 import React from "react";
 import PropTypes from "prop-types";
-import classNames from "classnames";
-import styles from "./FormField.scss";
+import styled from "styled-components";
 
-export default function FormField({ inline, children }) {
-  return <div className={classNames(styles.formField, { [styles.inline]: inline })}>{children}</div>;
+const BlockFormField = styled.div`
+  margin-bottom: 16px;
+
+  label {
+    display: block;
+    margin-bottom: 8px;
+  }
+`;
+
+const InlineFormField = styled.div`
+  display: flex;
+  justify-content: space-between;
+
+  & > * {
+    margin-left: 30px;
+    align-self: center;
+  }
+
+  & > :first-child {
+    margin-left: 0;
+  }
+`;
+
+export default function FormField({ inline, children, ...rest }) {
+  if (inline) {
+    return <InlineFormField {...rest}>{children}</InlineFormField>;
+  }
+
+  return <BlockFormField {...rest}>{children}</BlockFormField>;
 }
 
 FormField.propTypes = {

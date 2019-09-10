@@ -1,51 +1,108 @@
 import React from "react";
 import PropTypes from "prop-types";
-import classNames from "classnames";
-import Button from "../inputs/Button";
-import styles from "./Dialog.scss";
+import { Button, SecondaryButton } from "../inputs/Button";
+import styled from "styled-components";
 
-export default function Dialog({
-  tag,
-  icon,
-  title,
-  onCancel,
-  cancelLabel,
-  onConfirm,
-  confirmLabel,
-  bottomNav,
-  children
-}) {
-  const DialogElement = tag;
+const DialogContainer = styled.form`
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  border-radius: 4px;
+  background-color: #282c31;
+  max-width: 800px;
+  min-width: 400px;
+  min-height: 150px;
+  max-height: 80vh;
+`;
 
+const DialogHeader = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  padding: 0 8px;
+  font-size: 12px;
+  overflow: hidden;
+  height: 32px;
+  background: black;
+  border-top-left-radius: inherit;
+  border-top-right-radius: inherit;
+
+  > * {
+    display: flex;
+    align-items: center;
+  }
+`;
+
+const DialogContent = styled.div`
+  color: ${props => props.theme.text2};
+  display: flex;
+  flex: 1;
+  flex-direction: row;
+  /* This forces firefox to give the contents a proper height. */
+  overflow: hidden;
+  padding: 8px;
+  min-height: 100px;
+
+  h1 {
+    font-size: 2em;
+    color: ${props => props.theme.text};
+    margin-bottom: 16px;
+  }
+
+  p {
+    margin-bottom: 12px;
+    line-height: 1.5em;
+  }
+`;
+
+const DialogBottomNav = styled.div`
+  display: flex;
+  height: 64px;
+  flex-direction: row;
+  justify-content: flex-end;
+  align-items: center;
+  background-color: black;
+  border-bottom-left-radius: inherit;
+  border-bottom-right-radius: inherit;
+  padding: 8px;
+
+  a {
+    color: ${props => props.theme.text2};
+  }
+
+  button {
+    min-width: 84px;
+  }
+
+  & > * {
+    margin: 0 8px;
+  }
+`;
+
+export default function Dialog({ tag, title, onCancel, cancelLabel, onConfirm, confirmLabel, bottomNav, children }) {
   return (
-    <DialogElement className={styles.dialogContainer} onSubmit={onConfirm}>
-      <div className={styles.header}>
-        {icon && <i className={classNames(styles.icon, "fas", icon)} />}
+    <DialogContainer as={tag} onSubmit={onConfirm}>
+      <DialogHeader>
         <span>{title}</span>
-      </div>
-      <div className={styles.content}>{children}</div>
+      </DialogHeader>
+      <DialogContent>{children}</DialogContent>
       {(onConfirm || onCancel || bottomNav) && (
-        <div className={styles.bottomNav}>
+        <DialogBottomNav>
           {bottomNav}
-          {onCancel && (
-            <Button secondary onClick={onCancel}>
-              {cancelLabel}
-            </Button>
-          )}
+          {onCancel && <SecondaryButton onClick={onCancel}>{cancelLabel}</SecondaryButton>}
           {onConfirm && (
             <Button type="submit" onClick={tag === "form" ? null : onConfirm}>
               {confirmLabel}
             </Button>
           )}
-        </div>
+        </DialogBottomNav>
       )}
-    </DialogElement>
+    </DialogContainer>
   );
 }
 
 Dialog.propTypes = {
   tag: PropTypes.string.isRequired,
-  icon: PropTypes.string,
   title: PropTypes.string.isRequired,
   onCancel: PropTypes.func,
   cancelLabel: PropTypes.string.isRequired,

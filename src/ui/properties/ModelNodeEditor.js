@@ -5,6 +5,7 @@ import SelectInput from "../inputs/SelectInput";
 import InputGroup from "../inputs/InputGroup";
 import BooleanInput from "../inputs/BooleanInput";
 import ModelInput from "../inputs/ModelInput";
+import { Cube } from "styled-icons/fa-solid/Cube";
 
 export default class ModelNodeEditor extends Component {
   static propTypes = {
@@ -12,7 +13,7 @@ export default class ModelNodeEditor extends Component {
     node: PropTypes.object
   };
 
-  static iconClassName = "fa-cube";
+  static iconComponent = Cube;
 
   static description = "A 3D model in your scene, loaded from a GLTF URL or file.";
 

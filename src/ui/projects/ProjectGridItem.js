@@ -2,9 +2,10 @@ import React, { Component } from "react";
 import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
 import styled from "styled-components";
-import { showMenu } from "react-contextmenu";
-import MenuButton from "../inputs/MenuButton";
+import { showMenu } from "../layout/ContextMenu";
+import { MenuButton } from "../inputs/Button";
 import StylableContextMenuTrigger from "./StylableContextMenuTrigger";
+import { EllipsisV } from "styled-icons/fa-solid/EllipsisV";
 
 function collectMenuProps({ project }) {
   return { project };
@@ -45,6 +46,11 @@ const TitleContainer = styled.div`
 
   button {
     margin-left: auto;
+
+    svg {
+      width: 1em;
+      height: 1em;
+    }
   }
 `;
 
@@ -100,7 +106,11 @@ export default class ProjectGridItem extends Component {
         <ThumbnailContainer>{project.thumbnailUrl && <Thumbnail src={project.thumbnailUrl} />}</ThumbnailContainer>
         <TitleContainer>
           <h3>{project.name}</h3>
-          {contextMenuId && <MenuButton onClick={this.onShowMenu} className="fas fa-ellipsis-v" />}
+          {contextMenuId && (
+            <MenuButton onClick={this.onShowMenu}>
+              <EllipsisV />
+            </MenuButton>
+          )}
         </TitleContainer>
       </>
     );

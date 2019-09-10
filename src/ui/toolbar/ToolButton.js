@@ -1,22 +1,40 @@
 import React from "react";
-import classNames from "classnames";
 import PropTypes from "prop-types";
-import styles from "./ToolButton.scss";
+import styled from "styled-components";
 
-export default function ToolButton({ id, iconClass, onClick, selected, tooltip }) {
-  const btnColor = selected ? styles.selected : styles.unselected;
+const StyledToolButton = styled.button`
+  width: 40px;
+  height: 40px;
+  border: none;
+  color: ${props => props.theme.white};
+  cursor: pointer;
+
+  background-color: ${props => (props.selected ? props.theme.blue : props.theme.toolbar)};
+
+  &:hover {
+    background-color: ${props => (props.selected ? props.theme.blueHover : props.theme.panel2)};
+  }
+`;
+
+const Icon = styled.div`
+  width: 14px;
+  height: 14px;
+  font-size: 14px;
+`;
+
+export default function ToolButton({ id, icon, onClick, selected, tooltip }) {
   return (
     <div id={id} data-tip={tooltip} data-for="toolbar" data-delay-show="500" data-place="bottom">
-      <button className={classNames(styles.toolbtn, btnColor)} onClick={onClick}>
-        <i className={classNames("fas", iconClass)} />
-      </button>
+      <StyledToolButton selected={selected} onClick={onClick}>
+        <Icon as={icon} />
+      </StyledToolButton>
     </div>
   );
 }
 
 ToolButton.propTypes = {
   id: PropTypes.string,
-  iconClass: PropTypes.string,
+  icon: PropTypes.object,
   onClick: PropTypes.func,
   selected: PropTypes.bool,
   tooltip: PropTypes.string

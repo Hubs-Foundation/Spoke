@@ -1,12 +1,16 @@
 import React from "react";
 import PropTypes from "prop-types";
-import styles from "./StringInput.scss";
-import classNames from "classnames";
+import styled from "styled-components";
+import Input from "./Input";
 
-const StringInput = React.forwardRef(({ className, onChange, ...rest }, ref) => {
-  const fullClassName = classNames(styles.stringInput, className);
-  return <input {...rest} ref={ref} onChange={e => onChange(e.target.value, e)} className={fullClassName} />;
-});
+const StyledStringInput = styled(Input)`
+  display: flex;
+  width: 100%;
+`;
+
+const StringInput = React.forwardRef(({ onChange, ...rest }, ref) => (
+  <StyledStringInput onChange={e => onChange(e.target.value, e)} {...rest} ref={ref} />
+));
 
 StringInput.displayName = "StringInput";
 

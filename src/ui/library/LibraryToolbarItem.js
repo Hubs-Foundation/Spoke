@@ -17,10 +17,6 @@ const StyledLibraryToolbarItem = styled.div`
   overflow: hidden;
   user-select: none;
 
-  i {
-    margin-right: 8px;
-  }
-
   &:first-child {
     border-top-left-radius: 6px;
     border-left: 1px solid ${props => props.theme.panel2};
@@ -31,13 +27,19 @@ const StyledLibraryToolbarItem = styled.div`
   }
 `;
 
+const Icon = styled.div`
+  width: 14px;
+  height: 14px;
+  margin-right: 8px;
+`;
+
 export default class LibraryToolbarItem extends Component {
   static propTypes = {
     selected: PropTypes.bool,
     item: PropTypes.shape({
       id: PropTypes.string.isRequired,
       label: PropTypes.string.isRequired,
-      iconClassName: PropTypes.string.isRequired
+      iconComponent: PropTypes.object.isRequired
     }).isRequired,
     onClick: PropTypes.func.isRequired
   };
@@ -56,7 +58,7 @@ export default class LibraryToolbarItem extends Component {
         selected={selected}
         onClick={this.onClick}
       >
-        <i className={`fas ${item.iconClassName}`} />
+        <Icon as={item.iconComponent} />
         <span>{item.label}</span>
       </StyledLibraryToolbarItem>
     );

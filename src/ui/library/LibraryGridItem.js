@@ -1,7 +1,10 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
-import { ContextMenuTrigger } from "react-contextmenu";
+import { ContextMenuTrigger } from "../layout/ContextMenu";
 import styled from "styled-components";
+import { Image } from "styled-icons/fa-solid/Image";
+import { Film } from "styled-icons/fa-solid/Film";
+import { Cube } from "styled-icons/fa-solid/Cube";
 
 const StyledLibraryGridItem = styled.div`
   display: flex;
@@ -47,11 +50,6 @@ const IconLibraryItem = styled.div`
   text-align: center;
   overflow: hidden;
 
-  i {
-    font-size: 32px;
-    margin-bottom: 8px;
-  }
-
   div {
     display: block;
     text-overflow: ellipsis;
@@ -60,10 +58,16 @@ const IconLibraryItem = styled.div`
   }
 `;
 
-const typeToClassName = {
-  image: "fa-image",
-  video: "fa-film",
-  model: "fa-cube"
+const Icon = styled.div`
+  width: 32px;
+  height: 32px;
+  margin-bottom: 8px;
+`;
+
+const typeToIconComponent = {
+  image: Image,
+  video: Film,
+  model: Cube
 };
 
 function renderItem(item) {
@@ -81,11 +85,11 @@ function renderItem(item) {
     );
   }
 
-  const className = item.iconClassName || typeToClassName[item.type];
+  const iconComponent = item.iconComponent || typeToIconComponent[item.type];
 
   return (
     <IconLibraryItem>
-      {className && <i className={`fas ${className}`} />}
+      <Icon as={iconComponent} />
       <div>{item.name}</div>
     </IconLibraryItem>
   );

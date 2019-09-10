@@ -6,7 +6,8 @@ import landingVideoWebm from "../../assets/video/SpokePromo.webm";
 import NavBar from "../navigation/NavBar";
 import Footer from "../navigation/Footer";
 import Callout from "./Callout";
-import Button from "../inputs/Button";
+import { Link } from "react-router-dom";
+import { LargeButton } from "../inputs/Button";
 import benches from "../../assets/landing/benches.jpg";
 import editor from "../../assets/landing/environment-editor.jpg";
 import meeting from "../../assets/landing/meeting.jpg";
@@ -109,9 +110,9 @@ export default class LandingPage extends Component {
                     Hubs
                   </a>
                 </h3>
-                <Button large to="/new">
+                <LargeButton as={Link} to="/new">
                   Get Started
-                </Button>
+                </LargeButton>
               </HeroLeft>
               <HeroRight>
                 <video playsInline loop autoPlay muted>

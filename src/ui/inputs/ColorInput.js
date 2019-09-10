@@ -1,87 +1,67 @@
-import React, { Component } from "react";
+import React, { useCallback } from "react";
 import PropTypes from "prop-types";
 import { SketchPicker } from "react-color";
-import { EditableInput } from "react-color/lib/components/common";
-import styles from "./ColorInput.scss";
+import Input from "./Input";
 import { Color } from "three";
+import styled from "styled-components";
+import Popover from "../layout/Popover";
 
-export default class ColorInput extends Component {
-  static propTypes = {
-    value: PropTypes.object.isRequired,
-    onChange: PropTypes.func
-  };
+const ColorInputContainer = styled.div`
+  display: flex;
+  position: relative;
+  width: 100%;
+  max-width: 100px;
+`;
 
-  constructor(props) {
-    super(props);
-    this.state = {
-      targetBlock: null,
-      pickerX: 0,
-      pickerBottom: 0,
-      displayColorPicker: false
-    };
-  }
+const StyledColorInput = styled(Input)`
+  display: flex;
+  flex: 1;
+  align-items: center;
+`;
 
-  componentDidMount = () => {
-    window.addEventListener("resize", this.updateDimensions);
-  };
+const ColorPreview = styled.div`
+  width: 32px;
+  height: auto;
+  border-radius: 2px;
+  padding: 6px;
+  margin-right: 8px;
+`;
 
-  componentWillUnmount = () => {
-    window.removeEventListener("resize", this.updateDimensions);
-  };
+const ColorText = styled.div`
+  padding-top: 2px;
+`;
 
-  updateDimensions = () => {
-    if (!this.state.targetBlock) return;
-    const target = this.state.targetBlock.getBoundingClientRect();
-    this.setState({
-      pickerX: target.left,
-      pickerBottom: window.innerHeight - target.y
-    });
-  };
+const ColorInputPopover = styled.div`
+  box-shadow: ${props => props.theme.shadow30};
+  margin-bottom: 3px;
+`;
 
-  handleClick = e => {
-    const target = e.currentTarget.getBoundingClientRect();
-    this.setState({
-      targetBlock: e.currentTarget,
-      pickerX: target.left,
-      pickerBottom: window.innerHeight - target.y,
-      displayColorPicker: !this.state.displayColorPicker
-    });
-  };
+export default function ColorInput({ value, onChange, ...rest }) {
+  const onChangePicker = useCallback(({ hex }) => {
+    onChange(new Color(hex));
+  });
 
-  handleClose = () => {
-    this.setState({ displayColorPicker: false });
-  };
+  const hexColor = "#" + value.getHexString();
 
-  onChangeText = value => {
-    this.props.onChange(new Color(value));
-  };
-
-  onChangePicker = ({ hex }) => {
-    this.props.onChange(new Color(hex));
-  };
-
-  render() {
-    const { value, onChange, ...rest } = this.props;
-
-    const hexColor = "#" + value.getHexString();
-
-    return (
-      <div className={styles.colorInputContainer}>
-        <div className={styles.block} onClick={this.handleClick}>
-          <div className={styles.color} style={{ background: hexColor }} />
-        </div>
-        <div className={styles.colorInput}>
-          <EditableInput {...rest} value={hexColor} onChange={this.onChangeText} />
-        </div>
-        {this.state.displayColorPicker && (
-          <div style={{ left: this.state.pickerX, bottom: this.state.pickerBottom }} className={styles.popover}>
-            <div className={styles.cover} onClick={this.handleClose} />
-            <div className={styles.colorPicker}>
-              <SketchPicker {...rest} color={hexColor} disableAlpha={true} onChange={this.onChangePicker} />
-            </div>
-          </div>
+  return (
+    <ColorInputContainer>
+      <Popover
+        renderContent={() => (
+          <ColorInputPopover>
+            <SketchPicker {...rest} color={hexColor} disableAlpha={true} onChange={onChangePicker} />
+          </ColorInputPopover>
         )}
-      </div>
-    );
-  }
+      >
+        <StyledColorInput as="div">
+          <ColorPreview style={{ background: hexColor }} />
+          <ColorText>{hexColor.toUpperCase()}</ColorText>
+        </StyledColorInput>
+      </Popover>
+    </ColorInputContainer>
+  );
 }
+
+ColorInput.propTypes = {
+  value: PropTypes.object.isRequired,
+  onChange: PropTypes.func
+};

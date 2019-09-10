@@ -4,6 +4,7 @@ import NodeEditor from "./NodeEditor";
 import InputGroup from "../inputs/InputGroup";
 import ColorInput from "../inputs/ColorInput";
 import NumericInputGroup from "../inputs/NumericInputGroup";
+import { Certificate } from "styled-icons/fa-solid/Certificate";
 
 export default class HemisphereLightNodeEditor extends Component {
   static propTypes = {
@@ -11,7 +12,7 @@ export default class HemisphereLightNodeEditor extends Component {
     node: PropTypes.object
   };
 
-  static iconClassName = "fa-certificate";
+  static iconComponent = Certificate;
 
   static description = "A light which illuminates the scene from directly overhead.";
 

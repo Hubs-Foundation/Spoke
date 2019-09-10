@@ -2,13 +2,31 @@ import React, { Component } from "react";
 import PropTypes from "prop-types";
 import { withEditor } from "../contexts/EditorContext";
 import styled from "styled-components";
-import styles from "./ViewportPanelContainer.scss";
 import LibraryContainer from "../library/LibraryContainer";
 import Panel from "../layout/Panel";
+import { WindowMaximize } from "styled-icons/fa-solid/WindowMaximize";
+
+const LibraryToolbarContainer = styled.div`
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  pointer-events: none;
+`;
 
 const Viewport = styled.canvas`
   width: 100%;
   height: 100%;
+`;
+
+const ControlsText = styled.div`
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  pointer-events: none;
+  color: white;
+  padding: 8px;
+  text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.5);
 `;
 
 class ViewportPanelContainer extends Component {
@@ -66,16 +84,16 @@ class ViewportPanelContainer extends Component {
 
   render() {
     return (
-      <Panel id="viewport-panel" title="Viewport" icon="fa-window-maximize">
+      <Panel id="viewport-panel" title="Viewport" icon={WindowMaximize}>
         <Viewport ref={this.canvasRef} tabIndex="-1" />
-        <div className={styles.libraryToolbarContainer}>
+        <LibraryToolbarContainer>
           <LibraryContainer />
-        </div>
-        <div className={styles.controls}>
+        </LibraryToolbarContainer>
+        <ControlsText>
           {this.state.flyModeEnabled
             ? "[W][A][S][D] Move Camera | [Shift] Fly faster"
             : `[LMB] Orbit / Select | [MMB] Pan | [RMB] Fly ${this.state.objectSelected ? "| [F] Focus" : ""}`}
-        </div>
+        </ControlsText>
       </Panel>
     );
   }

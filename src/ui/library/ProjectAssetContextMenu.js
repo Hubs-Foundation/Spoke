@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
-import { ContextMenu, MenuItem } from "react-contextmenu";
+import { ContextMenu, MenuItem } from "../layout/ContextMenu";
 import { withApi } from "../contexts/ApiContext";
 import { withEditor } from "../contexts/EditorContext";
 

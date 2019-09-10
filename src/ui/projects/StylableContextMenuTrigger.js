@@ -1,6 +1,6 @@
 import React from "react";
 import PropTypes from "prop-types";
-import { ContextMenuTrigger } from "react-contextmenu";
+import { ContextMenuTrigger } from "../layout/ContextMenu";
 
 export default function StylableContextMenuTrigger({ className, attributes, children, ...rest }) {
   return (

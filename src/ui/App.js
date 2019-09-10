@@ -3,7 +3,6 @@ import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
 import PropTypes from "prop-types";
 
 import GlobalStyle from "./GlobalStyle";
-import styles from "./styles/common.scss";
 
 import Loading from "./Loading";
 import Error from "./Error";
@@ -21,6 +20,8 @@ import ProjectsPage from "./projects/ProjectsPage";
 import TemplatesPage from "./projects/TemplatesPage";
 
 import { ThemeProvider } from "styled-components";
+
+import { Column } from "./layout/Flex";
 
 import theme from "./theme";
 
@@ -62,7 +63,7 @@ export default class App extends Component {
           <ThemeProvider theme={theme}>
             <Router basename={process.env.ROUTER_BASE_PATH}>
               <GlobalStyle />
-              <Suspense fallback={<Loading message="Loading..." fullScreen />} className={styles.flexColumn}>
+              <Column as={Suspense} fallback={<Loading message="Loading..." fullScreen />}>
                 <Switch>
                   <Route path="/" exact component={LandingPage} />
                   <Route path="/whats-new" exact component={WhatsNewPage} />
@@ -74,7 +75,7 @@ export default class App extends Component {
                   <Route path="/projects/:projectId" component={ProjectPage} />
                   <Route render={() => <Error message="Page not found." />} />
                 </Switch>
-              </Suspense>
+              </Column>
             </Router>
           </ThemeProvider>
         </AuthContextProvider>

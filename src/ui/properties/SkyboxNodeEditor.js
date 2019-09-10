@@ -5,6 +5,7 @@ import InputGroup from "../inputs/InputGroup";
 import NumericInputGroup from "../inputs/NumericInputGroup";
 import RadianNumericInputGroup from "../inputs/RadianNumericInputGroup";
 import CompoundNumericInput from "../inputs/CompoundNumericInput";
+import { Cloud } from "styled-icons/fa-solid/Cloud";
 
 const hoursToRadians = hours => hours / 24;
 const radiansToHours = rads => rads * 24;
@@ -15,7 +16,7 @@ export default class SkyboxNodeEditor extends Component {
     node: PropTypes.object
   };
 
-  static iconClassName = "fa-cloud";
+  static iconComponent = Cloud;
 
   static description =
     "Creates a visualization of an open sky and atmosphere around your scene. Also used as the environment map for your scene.";

@@ -7,6 +7,7 @@ import NumericInputGroup from "../inputs/NumericInputGroup";
 import RadianNumericInputGroup from "../inputs/RadianNumericInputGroup";
 import { Math as _Math } from "three";
 import LightShadowProperties from "./LightShadowProperties";
+import { Bullseye } from "styled-icons/fa-solid/Bullseye";
 
 const radToDeg = _Math.radToDeg;
 
@@ -16,7 +17,7 @@ export default class SpotLightNodeEditor extends Component {
     node: PropTypes.object
   };
 
-  static iconClassName = "fa-bullseye";
+  static iconComponent = Bullseye;
 
   static description = "A light which emits along a direction, illuminating objects within a cone.";
 

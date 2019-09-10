@@ -8,6 +8,7 @@ import NumericInputGroup from "../inputs/NumericInputGroup";
 import CompoundNumericInput from "../inputs/CompoundNumericInput";
 import { AudioType, DistanceModelType, VideoProjection } from "../../editor/objects/Video";
 import VideoInput from "../inputs/VideoInput";
+import { Video } from "styled-icons/fa-solid/Video";
 
 const videoProjectionOptions = Object.values(VideoProjection).map(v => ({ label: v, value: v }));
 
@@ -21,7 +22,7 @@ export default class VideoNodeEditor extends Component {
     node: PropTypes.object
   };
 
-  static iconClassName = "fa-video";
+  static iconComponent = Video;
 
   static description = "Dynamically loads a video.";
 

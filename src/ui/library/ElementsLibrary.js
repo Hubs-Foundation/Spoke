@@ -53,7 +53,7 @@ class ElementsLibrary extends Component {
         id: nodeType.nodeName,
         name: nodeType.nodeName,
         node: nodeType,
-        iconClassName: nodeEditor.iconClassName
+        iconComponent: nodeEditor.iconComponent
       });
 
       return acc;

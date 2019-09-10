@@ -17,8 +17,6 @@ const HTMLWebpackPlugin = require("html-webpack-plugin");
 const path = require("path");
 const webpack = require("webpack");
 const TerserJSPlugin = require("terser-webpack-plugin");
-const MiniCssExtractPlugin = require("mini-css-extract-plugin");
-const OptimizeCSSAssetsPlugin = require("optimize-css-assets-webpack-plugin");
 const CopyWebpackPlugin = require("copy-webpack-plugin");
 const BundleAnalyzerPlugin = require("webpack-bundle-analyzer").BundleAnalyzerPlugin;
 
@@ -157,25 +155,6 @@ module.exports = env => {
           }
         },
         {
-          test: /\.css$/,
-          use: [process.env.NODE_ENV !== "production" ? "style-loader" : MiniCssExtractPlugin.loader, "css-loader"]
-        },
-        {
-          test: /\.scss$/,
-          include: path.join(__dirname, "src"),
-          use: [
-            process.env.NODE_ENV !== "production" ? "style-loader" : MiniCssExtractPlugin.loader,
-            "css-loader",
-            {
-              loader: "sass-loader",
-              options: {
-                implementation: require("sass"),
-                fiber: require("fibers")
-              }
-            }
-          ]
-        },
-        {
           test: /\.js$/,
           include: path.join(__dirname, "src"),
           use: "babel-loader"
@@ -216,18 +195,7 @@ module.exports = env => {
     },
 
     optimization: {
-      minimizer: [
-        new TerserJSPlugin({ sourceMap: true, parallel: true, cache: path.join(__dirname, ".tersercache") }),
-        new OptimizeCSSAssetsPlugin({
-          cssProcessorOptions: {
-            sourcemap: true,
-            map: {
-              inline: false,
-              annotation: true
-            }
-          }
-        })
-      ]
+      minimizer: [new TerserJSPlugin({ sourceMap: true, parallel: true, cache: path.join(__dirname, ".tersercache") })]
     },
 
     plugins: [
@@ -258,10 +226,6 @@ module.exports = env => {
         GITHUB_ORG: "mozilla",
         GITHUB_REPO: "spoke",
         GITHUB_PUBLIC_TOKEN: "de8cbfb4cc0281c7b731c891df431016c29b0ace"
-      }),
-      new MiniCssExtractPlugin({
-        filename: "assets/styles/[name]-[contenthash].css",
-        chunkFilename: "assets/styles/[name]-[contenthash].css"
       })
     ]
   };

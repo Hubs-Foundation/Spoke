@@ -1,6 +1,5 @@
 import React, { Component } from "react";
 import styled from "styled-components";
-import classnames from "classnames";
 import PropTypes from "prop-types";
 
 export const PanelContainer = styled.div`
@@ -22,7 +21,7 @@ export const PanelToolbar = styled.div`
 `;
 
 export const PanelIcon = styled.div`
-  padding-right: 8px;
+  margin-right: 8px;
 `;
 
 export const PanelTitle = styled.div``;
@@ -37,7 +36,7 @@ export const PanelContent = styled.div`
 
 export default class Panel extends Component {
   static propTypes = {
-    icon: PropTypes.string,
+    icon: PropTypes.object,
     title: PropTypes.string,
     children: PropTypes.node
   };
@@ -50,7 +49,7 @@ export default class Panel extends Component {
     return (
       <PanelContainer {...rest}>
         <PanelToolbar className="toolbar">
-          {icon && <PanelIcon className={classnames("fas", icon)} />}
+          {icon && <PanelIcon as={icon} size={12} />}
           <PanelTitle>{title}</PanelTitle>
         </PanelToolbar>
         <PanelContent>{children}</PanelContent>

@@ -5,6 +5,7 @@ import InputGroup from "../inputs/InputGroup";
 import SelectInput from "../inputs/SelectInput";
 import BooleanInput from "../inputs/BooleanInput";
 import StringInput from "../inputs/StringInput";
+import { Running } from "styled-icons/fa-solid/Running";
 
 const componentOptions = [
   {
@@ -29,7 +30,7 @@ export default class TriggerVolumeNodeEditor extends Component {
     node: PropTypes.object
   };
 
-  static iconClassName = "fa-running";
+  static iconComponent = Running;
 
   static description = "Sets a property on the target object on enter and leave.";
 

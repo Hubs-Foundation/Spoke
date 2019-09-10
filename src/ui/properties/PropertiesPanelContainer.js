@@ -1,16 +1,23 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
-import styles from "./PropertiesPanelContainer.scss";
 import { withEditor } from "../contexts/EditorContext";
 import DefaultNodeEditor from "./DefaultNodeEditor";
 import Panel from "../layout/Panel";
 import styled from "styled-components";
+import { SlidersH } from "styled-icons/fa-solid/SlidersH";
 
 const PropertiesPanelContent = styled.div`
   display: flex;
   flex-direction: column;
   flex: 1;
   overflow-y: auto;
+`;
+
+const NoNodeSelectedMessage = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
 `;
 
 class PropertiesPanelContainer extends Component {
@@ -60,10 +67,10 @@ class PropertiesPanelContainer extends Component {
     let content;
 
     if (selected.length === 0) {
-      content = <div className={styles.noNodeSelected}>No node selected</div>;
+      content = <NoNodeSelectedMessage>No node selected</NoNodeSelectedMessage>;
     } else if (selected.length > 1) {
       //TODO
-      content = <div className={styles.noNodeSelected}>Multiple Nodes Selected</div>;
+      content = <NoNodeSelectedMessage>Multiple Nodes Selected</NoNodeSelectedMessage>;
     } else {
       // TODO
       // let NodeEditor = editor.getNodeEditor(selected[0]);
@@ -84,7 +91,7 @@ class PropertiesPanelContainer extends Component {
     // id used in onboarding
 
     return (
-      <Panel id="properties-panel" title="Properties" icon="fa-sliders-h">
+      <Panel id="properties-panel" title="Properties" icon={SlidersH}>
         <PropertiesPanelContent>{content}</PropertiesPanelContent>
       </Panel>
     );

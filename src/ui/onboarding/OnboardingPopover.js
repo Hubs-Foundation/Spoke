@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
-import Button from "../inputs/Button";
+import { Button, SecondaryButton } from "../inputs/Button";
 import Portal from "../layout/Portal";
 import getPosition from "evergreen-ui/esm/positioner/src/getPosition";
 import styled, { css } from "styled-components";
@@ -276,11 +276,7 @@ export default class OnboardingPopover extends Component {
                   Skip Tutorial
                 </a>
               )}
-              {!disablePrev && curStepIdx > 0 && (
-                <Button secondary onClick={prevStep}>
-                  Back
-                </Button>
-              )}
+              {!disablePrev && curStepIdx > 0 && <SecondaryButton onClick={prevStep}>Back</SecondaryButton>}
               {!disableNext && curStepIdx < steps.length - 1 && <Button onClick={nextStep}>Next</Button>}
               {!disableNext && curStepIdx === steps.length - 1 && <Button onClick={nextStep}>Finish</Button>}
             </PopoverNav>

@@ -2,7 +2,15 @@ import React, { Component } from "react";
 import PropTypes from "prop-types";
 import Dialog from "../ui/dialogs/Dialog";
 import AuthContainer from "./AuthContainer";
-import styles from "./LoginDialog.scss";
+import styled from "styled-components";
+
+const Container = styled.div`
+  display: flex;
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+  padding: 60px;
+`;
 
 export default class LoginDialog extends Component {
   static propTypes = {
@@ -29,9 +37,9 @@ export default class LoginDialog extends Component {
 
     return (
       <Dialog {...props} tag="div" onCancel={this.state.showCancel ? onCancel : null}>
-        <div className={styles.container}>
+        <Container>
           <AuthContainer onSuccess={onSuccess} onChange={this.onChange} />
-        </div>
+        </Container>
       </Dialog>
     );
   }

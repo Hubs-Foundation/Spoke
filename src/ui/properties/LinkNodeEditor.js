@@ -3,6 +3,7 @@ import PropTypes from "prop-types";
 import NodeEditor from "./NodeEditor";
 import InputGroup from "../inputs/InputGroup";
 import StringInput from "../inputs/StringInput";
+import { Link } from "styled-icons/fa-solid/Link";
 
 export default class LinkNodeEditor extends Component {
   static propTypes = {
@@ -10,7 +11,7 @@ export default class LinkNodeEditor extends Component {
     node: PropTypes.object
   };
 
-  static iconClassName = "fa-link";
+  static iconComponent = Link;
 
   static description = "Link to a Hubs room.";
 
