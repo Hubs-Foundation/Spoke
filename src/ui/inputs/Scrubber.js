@@ -12,11 +12,6 @@ class Scrubber extends Component {
     this.state = { isDragging: false, startValue: null, delta: null, mouseX: null, mouseY: null };
   }
 
-  componentDidMount() {
-    window.addEventListener("mousemove", this.handleMouseMove);
-    window.addEventListener("mouseup", this.handleMouseUp);
-  }
-
   componentWillUnmount() {
     window.removeEventListener("mousemove", this.handleMouseMove);
     window.removeEventListener("mouseup", this.handleMouseUp);
@@ -52,6 +47,9 @@ class Scrubber extends Component {
     });
 
     this.scrubberEl.current.requestPointerLock();
+
+    window.addEventListener("mousemove", this.handleMouseMove);
+    window.addEventListener("mouseup", this.handleMouseUp);
   };
 
   handleMouseUp = () => {
@@ -69,6 +67,9 @@ class Scrubber extends Component {
 
       document.exitPointerLock();
     }
+
+    window.removeEventListener("mousemove", this.handleMouseMove);
+    window.removeEventListener("mouseup", this.handleMouseUp);
   };
 
   render() {
