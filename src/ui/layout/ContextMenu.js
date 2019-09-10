@@ -81,7 +81,7 @@ export const ContextMenuStyles = createGlobalStyle`
   }
 
   .react-contextmenu-item.react-contextmenu-submenu {
-  padding: 0;
+    padding: 0;
   }
 
   .react-contextmenu-item.react-contextmenu-submenu > .react-contextmenu-item {
@@ -93,6 +93,7 @@ export const ContextMenuStyles = createGlobalStyle`
     right: 12px;
     top: 8px;
     font-size: 14px;
+    content: "\2BC8";
   }
 `;
 

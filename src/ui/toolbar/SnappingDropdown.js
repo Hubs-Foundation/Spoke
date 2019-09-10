@@ -39,7 +39,7 @@ const List = styled.ul`
   background-color: ${props => props.theme.background};
   border-radius: 4px;
   list-style-type: none;
-  width: 200px;
+  width: 180px;
   position: absolute;
   top: 20px;
   box-shadow: ${props => props.theme.shadow30};

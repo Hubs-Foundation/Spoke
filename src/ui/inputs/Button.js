@@ -76,7 +76,7 @@ export const SecondaryButton = styled(Button)`
 export const MenuButton = styled(Button)`
   background-color: transparent;
   color: ${props => props.theme.text2};
-  padding: 1px 12px;
+  padding: 1px 8px;
 
   &:disabled {
     background-color: transparent;
