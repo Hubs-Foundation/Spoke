@@ -1,5 +1,5 @@
 import React from "react";
-import RCSlider from "rc-slider";
+import RCSlider from "rc-slider/es/Slider";
 import { createGlobalStyle } from "styled-components";
 
 const SliderGlobalStyles = createGlobalStyle`
