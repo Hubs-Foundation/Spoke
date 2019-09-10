@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
 import NodeEditor from "./NodeEditor";
+import { Circle } from "styled-icons/fa-solid/Circle";
 
 export default class DefaultNodeEditor extends Component {
   static propTypes = {
@@ -8,7 +9,7 @@ export default class DefaultNodeEditor extends Component {
     node: PropTypes.object
   };
 
-  static iconClassName = "fa-circle";
+  static iconComponent = Circle;
 
   render() {
     return <NodeEditor {...this.props} />;

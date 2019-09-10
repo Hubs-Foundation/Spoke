@@ -8,8 +8,7 @@ import { MediumButton } from "../inputs/Button";
 import { Link } from "react-router-dom";
 import Loading from "../Loading";
 import LatestUpdate from "../whats-new/LatestUpdate";
-import { connectMenu, ContextMenu, MenuItem } from "react-contextmenu";
-import "../styles/vendor/react-contextmenu/index.scss";
+import { connectMenu, ContextMenu, MenuItem } from "../layout/ContextMenu";
 import templates from "./templates";
 import styled from "styled-components";
 

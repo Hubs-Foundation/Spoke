@@ -2,9 +2,7 @@ import React, { useContext, useState, useEffect, useCallback, useMemo } from "re
 import styled from "styled-components";
 import PropTypes from "prop-types";
 import DefaultNodeEditor from "../properties/DefaultNodeEditor";
-import classnames from "classnames";
-import { ContextMenu, MenuItem, ContextMenuTrigger } from "react-contextmenu";
-import "../styles/vendor/react-contextmenu/index.scss";
+import { ContextMenu, MenuItem, ContextMenuTrigger } from "../layout/ContextMenu";
 import { cmdOrCtrlString } from "../utils";
 import Panel from "../layout/Panel";
 import { EditorContext } from "../contexts/EditorContext";
@@ -12,6 +10,9 @@ import { useDrag, useDrop } from "react-dnd";
 import { getEmptyImage } from "react-dnd-html5-backend";
 import { ItemTypes } from "../dnd";
 import traverseEarlyOut from "../../editor/utils/traverseEarlyOut";
+import { CaretRight } from "styled-icons/fa-solid/CaretRight";
+import { CaretDown } from "styled-icons/fa-solid/CaretDown";
+import { ProjectDiagram } from "styled-icons/fa-solid/ProjectDiagram";
 
 function collectNodeMenuProps({ node }) {
   return node;
@@ -106,8 +107,8 @@ const TreeNodeContent = styled.div`
 `;
 
 const TreeNodeToggle = styled.div`
-  padding: 2px 6px;
-  margin: 0 2px;
+  padding: 2px 4px;
+  margin: 0 4px;
 
   :hover {
     color: ${props => props.theme.text};
@@ -121,7 +122,9 @@ const TreeNodeLeafSpacer = styled.div`
 `;
 
 const TreeNodeIcon = styled.div`
-  margin-right: 4px;
+  width: 12px;
+  height: 12px;
+  margin: 2px 4px;
 `;
 
 const TreeNodeLabel = styled.div`
@@ -318,18 +321,13 @@ function TreeNode(props) {
             {node.leaf ? (
               <TreeNodeLeafSpacer />
             ) : (
-              <TreeNodeToggle
-                collapsed={collapsed}
-                className={classnames("fas", {
-                  "fa-caret-right": collapsed,
-                  "fa-caret-down": !collapsed
-                })}
-                onClick={onToggle}
-              />
+              <TreeNodeToggle collapsed={collapsed} onClick={onToggle}>
+                {collapsed ? <CaretRight size={12} /> : <CaretDown size={12} />}
+              </TreeNodeToggle>
             )}
 
             <TreeNodeSelectTarget>
-              <TreeNodeIcon className={classnames("fas", node.iconClassName)} />
+              <TreeNodeIcon as={node.iconComponent} />
               {renaming ? (
                 <TreeNodeRenameInputContainer>
                   <TreeNodeRenameInput
@@ -385,12 +383,12 @@ function buildNodeHierarchy(editor, object = null, parent = null, index = 0, las
   object = object || editor.scene;
 
   const NodeEditor = editor.getNodeEditor(object) || DefaultNodeEditor;
-  const iconClassName = NodeEditor.iconClassName || DefaultNodeEditor.iconClassName;
+  const iconComponent = NodeEditor.iconComponent || DefaultNodeEditor.iconComponent;
 
   const node = {
     id: object.id,
     object,
-    iconClassName,
+    iconComponent,
     label: object.name,
     selected: editor.selected.indexOf(object) !== -1,
     active: editor.selected.length > 0 && object === editor.selected[editor.selected.length - 1],
@@ -690,7 +688,7 @@ export default function HierarchyPanel() {
   });
 
   return (
-    <Panel id="hierarchy-panel" title="Hierarchy" icon="fa-project-diagram">
+    <Panel id="hierarchy-panel" title="Hierarchy" icon={ProjectDiagram}>
       <PanelContainer>
         <TreeContainer ref={treeContainerDropTarget} isOver={isOver} canDrop={canDrop}>
           <TreeNodeList>

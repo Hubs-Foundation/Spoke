@@ -5,6 +5,7 @@ import InputGroup from "../inputs/InputGroup";
 import ColorInput from "../inputs/ColorInput";
 import NumericInputGroup from "../inputs/NumericInputGroup";
 import LightShadowProperties from "./LightShadowProperties";
+import { Lightbulb } from "styled-icons/fa-solid/Lightbulb";
 
 export default class PointLightNodeEditor extends Component {
   static propTypes = {
@@ -12,7 +13,7 @@ export default class PointLightNodeEditor extends Component {
     node: PropTypes.object
   };
 
-  static iconClassName = "fa-lightbulb";
+  static iconComponent = Lightbulb;
 
   static description = "A light which emits in all directions from a single point.";
 

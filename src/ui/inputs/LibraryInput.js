@@ -1,12 +1,25 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
-import styles from "./LibraryInput.scss";
 import StringInput from "./StringInput";
 import { Button } from "./Button";
 import { withDialog } from "../contexts/DialogContext";
 import { withApi } from "../contexts/ApiContext";
 import { withEditor } from "../contexts/EditorContext";
 import LibraryDialog from "../dialogs/LibraryDialog";
+import styled from "styled-components";
+
+const StyledLibraryInput = styled.div`
+  display: flex;
+  flex: 1;
+
+  & > * {
+    margin-right: 8px;
+  }
+
+  & > *:last-child {
+    margin-right: 0;
+  }
+`;
 
 class LibraryInput extends Component {
   static propTypes = {
@@ -80,10 +93,10 @@ class LibraryInput extends Component {
     const { onChange, value, component, dialogTitle, showDialog, hideDialog, nodeProps, ...rest } = this.props;
 
     return (
-      <div className={styles.libraryInput}>
+      <StyledLibraryInput>
         <StringInput {...rest} value={this.state.value} onChange={this.onChange} onBlur={this.onBlur} />
         <Button onClick={this.onOpenDialog}>Pick</Button>
-      </div>
+      </StyledLibraryInput>
     );
   }
 }

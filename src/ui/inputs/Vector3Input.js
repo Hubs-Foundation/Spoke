@@ -1,9 +1,44 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
-import styles from "./Vector3Input.scss";
 import NumericInput from "./NumericInput";
 import Scrubber from "./Scrubber";
 import { Vector3 } from "three";
+import styled from "styled-components";
+import { Link } from "styled-icons/fa-solid/Link";
+import { Unlink } from "styled-icons/fa-solid/Unlink";
+import Hidden from "../layout/Hidden";
+
+export const Vector3InputContainer = styled.div`
+  display: flex;
+  flex-direction: row;
+  flex: 1 1 auto;
+  width: 70%;
+  justify-content: flex-end;
+`;
+
+export const Vector3Scrubber = styled(Scrubber)`
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  color: ${props => props.theme.text2};
+`;
+
+const UniformButtonContainer = styled.div`
+  display: flex;
+  align-items: center;
+
+  svg {
+    width: 12px;
+  }
+
+  label {
+    color: ${props => props.theme.text2};
+  }
+
+  label:hover {
+    color: ${props => props.theme.blueHover};
+  }
+`;
 
 let uniqueId = 0;
 
@@ -68,26 +103,34 @@ export default class Vector3Input extends Component {
     const checkboxId = "uniform-button-" + this.id;
 
     return (
-      <div className={styles.inputGroup}>
+      <Vector3InputContainer>
         {uniformScaling && (
-          <div className={styles.uniformButton}>
-            <input id={checkboxId} type="checkbox" checked={uniformEnabled} onChange={this.onToggleUniform} />
-            <label title="Uniform Scale" htmlFor={checkboxId} />
-          </div>
+          <UniformButtonContainer>
+            <Hidden
+              as="input"
+              id={checkboxId}
+              type="checkbox"
+              checked={uniformEnabled}
+              onChange={this.onToggleUniform}
+            />
+            <label title="Uniform Scale" htmlFor={checkboxId}>
+              {uniformEnabled ? <Link /> : <Unlink />}
+            </label>
+          </UniformButtonContainer>
         )}
-        <Scrubber {...rest} tag="div" className={styles.label} value={vx} onChange={this.onChangeX}>
+        <Vector3Scrubber {...rest} tag="div" value={vx} onChange={this.onChangeX}>
           X:
-        </Scrubber>
+        </Vector3Scrubber>
         <NumericInput {...rest} value={vx} onChange={this.onChangeX} />
-        <Scrubber {...rest} tag="div" className={styles.label} value={vy} onChange={this.onChangeY}>
+        <Vector3Scrubber {...rest} tag="div" value={vy} onChange={this.onChangeY}>
           Y:
-        </Scrubber>
+        </Vector3Scrubber>
         <NumericInput {...rest} value={vy} onChange={this.onChangeY} />
-        <Scrubber {...rest} tag="div" className={styles.label} value={vz} onChange={this.onChangeZ}>
+        <Vector3Scrubber {...rest} tag="div" value={vz} onChange={this.onChangeZ}>
           Z:
-        </Scrubber>
+        </Vector3Scrubber>
         <NumericInput {...rest} value={vz} onChange={this.onChangeZ} />
-      </div>
+      </Vector3InputContainer>
     );
   }
 }

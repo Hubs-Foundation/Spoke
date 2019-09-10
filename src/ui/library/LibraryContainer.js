@@ -9,6 +9,11 @@ import { withEditor } from "../contexts/EditorContext";
 import { withApi } from "../contexts/ApiContext";
 import PropTypes from "prop-types";
 import styled from "styled-components";
+import { Code } from "styled-icons/fa-solid/Code";
+import { Cube } from "styled-icons/fa-solid/Cube";
+import { Film } from "styled-icons/fa-solid/Film";
+import { Image } from "styled-icons/fa-solid/Image";
+import { Folder } from "styled-icons/fa-solid/Folder";
 
 const StyledLibraryContainer = styled.div`
   position: relative;
@@ -35,31 +40,31 @@ class LibraryContainer extends Component {
       {
         id: "elements",
         label: "Elements",
-        iconClassName: "fa-code",
+        iconComponent: Code,
         component: ElementsLibrary
       },
       {
         id: "models",
         label: "Models",
-        iconClassName: "fa-cube",
+        iconComponent: Cube,
         component: ModelsLibrary
       },
       {
         id: "videos",
         label: "Videos",
-        iconClassName: "fa-film",
+        iconComponent: Film,
         component: VideosLibrary
       },
       {
         id: "images",
         label: "Images",
-        iconClassName: "fa-image",
+        iconComponent: Image,
         component: ImagesLibrary
       },
       {
         id: "assets",
         label: "My Assets",
-        iconClassName: "fa-folder",
+        iconComponent: Folder,
         component: AssetsLibrary
       }
     ]

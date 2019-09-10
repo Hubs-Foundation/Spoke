@@ -1,6 +1,7 @@
 import React, { Component } from "react";
-import styles from "./FileInput.scss";
 import PropTypes from "prop-types";
+import { Button } from "./Button";
+import Hidden from "../layout/Hidden";
 
 let nextId = 0;
 
@@ -30,9 +31,11 @@ export default class FileInput extends Component {
     const { label, onChange, ...rest } = this.props;
 
     return (
-      <div className={styles.uploadFileButton}>
-        <label htmlFor={this.state.id}>{label}</label>
-        <input {...rest} id={this.state.id} type="file" onChange={this.onChange} />
+      <div>
+        <Button as="label" htmlFor={this.state.id}>
+          {label}
+        </Button>
+        <Hidden as="input" {...rest} id={this.state.id} type="file" onChange={this.onChange} />
       </div>
     );
   }

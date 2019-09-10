@@ -1,8 +1,15 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
-import styles from "../properties/PropertiesPanelContainer.scss";
 import InputGroup from "../inputs/InputGroup";
 import StringInput from "../inputs/StringInput";
+import styled from "styled-components";
+
+const StyledNameInputGroup = styled(InputGroup)`
+  label {
+    width: auto !important;
+    padding-right: 8px;
+  }
+`;
 
 export default class NameInputGroup extends Component {
   static propTypes = {
@@ -49,7 +56,7 @@ export default class NameInputGroup extends Component {
     const name = this.state.focused ? this.state.name : this.props.node.name;
 
     return (
-      <InputGroup className={styles.topBarName} name="Name">
+      <StyledNameInputGroup name="Name">
         <StringInput
           value={name}
           onChange={this.onUpdateName}
@@ -57,7 +64,7 @@ export default class NameInputGroup extends Component {
           onBlur={this.onBlurName}
           onKeyUp={this.onKeyUpName}
         />
-      </InputGroup>
+      </StyledNameInputGroup>
     );
   }
 }

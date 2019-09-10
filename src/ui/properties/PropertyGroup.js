@@ -1,44 +1,64 @@
 import React, { Fragment } from "react";
 import PropTypes from "prop-types";
-import classNames from "classnames";
-import styles from "./PropertyGroup.scss";
+import styled from "styled-components";
+
+const StyledPropertyGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding: 12px 0;
+  border-bottom: 1px solid ${props => props.theme.border};
+`;
+
+const PropertyGroupHeader = styled.div`
+  display: flex;
+  flex-direction: row;
+  align-items: left;
+  font-weight: bold;
+  color: ${props => props.theme.text2};
+  padding: 0 8px 8px;
+  :last-child {
+    margin-left: auto;
+  }
+`;
+
+const PropertyGroupDescription = styled.div`
+  background-color: ${props => props.theme.panel};
+  color: ${props => props.theme.text2};
+  white-space: pre-wrap;
+  padding: 0 8px 8px;
+`;
+
+const PropertyGroupContent = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
 
 function PropertyGroup(props) {
-  const { name, description, children, className, useDefault, headerClassName, contentClassName } = props;
+  const { name, description, children, ...rest } = props;
 
   return (
-    <div className={classNames(styles.propertyGroup, className)}>
-      <div
-        className={classNames(
-          { [`${styles.header}`]: useDefault, [`${styles.lightHeader}`]: !useDefault },
-          headerClassName
-        )}
-      >
-        {name}
-      </div>
+    <StyledPropertyGroup {...rest}>
+      <PropertyGroupHeader>{name}</PropertyGroupHeader>
       {description && (
-        <div className={styles.description}>
+        <PropertyGroupDescription>
           {description.split("\\n").map((line, i) => (
             <Fragment key={i}>
               {line}
               <br />
             </Fragment>
           ))}
-        </div>
+        </PropertyGroupDescription>
       )}
-      <div className={classNames(styles.content, contentClassName)}>{children}</div>
-    </div>
+      <PropertyGroupContent>{children}</PropertyGroupContent>
+    </StyledPropertyGroup>
   );
 }
 
 PropertyGroup.propTypes = {
   name: PropTypes.string,
   description: PropTypes.string,
-  className: PropTypes.string,
-  headerClassName: PropTypes.string,
-  contentClassName: PropTypes.string,
-  children: PropTypes.node,
-  useDefault: PropTypes.bool
+  children: PropTypes.node
 };
 
 export default PropertyGroup;

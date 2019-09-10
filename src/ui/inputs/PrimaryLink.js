@@ -1,16 +1,11 @@
-import React from "react";
-import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
-import styles from "./PrimaryLink.scss";
+import styled from "styled-components";
 
-export default function PrimaryLink({ children, ...props }) {
-  return (
-    <Link className={styles.primaryLink} {...props}>
-      {children}
-    </Link>
-  );
-}
+const PrimaryLink = styled(Link)`
+  font-size: 1.2em;
+  color: ${props => props.theme.blue};
+  line-height: 3em;
+  vertical-align: middle;
+`;
 
-PrimaryLink.propTypes = {
-  children: PropTypes.node
-};
+export default PrimaryLink;

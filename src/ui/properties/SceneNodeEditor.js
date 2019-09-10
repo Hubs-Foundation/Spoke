@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
 import NodeEditor from "./NodeEditor";
+import { Globe } from "styled-icons/fa-solid/Globe";
 
 export default class SceneNodeEditor extends Component {
   static propTypes = {
@@ -8,7 +9,7 @@ export default class SceneNodeEditor extends Component {
     node: PropTypes.object
   };
 
-  static iconClassName = "fa-globe";
+  static iconComponent = Globe;
 
   static description = "The root object of the scene.";
 

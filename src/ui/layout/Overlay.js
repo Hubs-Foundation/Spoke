@@ -6,6 +6,7 @@ const Overlay = styled.div`
   right: 0;
   top: 0;
   bottom: 0;
+  pointer-events: ${props => props.pointerEvents || "inherit"};
 `;
 
 export default Overlay;

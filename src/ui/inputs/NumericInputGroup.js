@@ -1,20 +1,19 @@
 import React from "react";
-import classNames from "classnames";
 import PropTypes from "prop-types";
-import inputGroupStyles from "./InputGroup.scss";
+import { InputGroupContainer, InputGroupContent, InputGroupInfo } from "./InputGroup";
 import Scrubber from "./Scrubber";
 import NumericInput from "./NumericInput";
 
 export default function NumericInputGroup({ name, className, disabled, tooltipId, info, ...rest }) {
   const { displayPrecision, ...scrubberProps } = rest;
   return (
-    <div className={classNames(inputGroupStyles.inputGroup, className, disabled && "disabled")}>
+    <InputGroupContainer>
       <Scrubber {...scrubberProps}>{name}:</Scrubber>
-      <div className="content">
+      <InputGroupContent>
         <NumericInput {...rest} />
-        {info && <div className={inputGroupStyles.info} data-for={tooltipId} data-tip={info} />}
-      </div>
-    </div>
+        {info && <InputGroupInfo data-for={tooltipId} data-tip={info} />}
+      </InputGroupContent>
+    </InputGroupContainer>
   );
 }
 

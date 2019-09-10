@@ -1,12 +1,48 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
 import ReactTooltip from "react-tooltip";
-import styles from "./PropertiesPanelContainer.scss";
 import PropertyGroup from "./PropertyGroup";
 import TransformPropertyGroup from "./TransformPropertyGroup";
 import NameInputGroup from "./NameInputGroup";
 import InputGroup from "../inputs/InputGroup";
 import BooleanInput from "../inputs/BooleanInput";
+import styled from "styled-components";
+
+const StyledNodeEditor = styled.div`
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+`;
+
+const PropertiesHeader = styled.div`
+  background-color: ${props => props.theme.panel2};
+  border: none !important;
+  padding-bottom: 0 !important;
+`;
+
+const NameInputGroupContainer = styled.div`
+  display: flex;
+  flex-flow: row wrap;
+  align-items: flex-start;
+  padding: 8px 0;
+`;
+
+const VisibleInputGroup = styled(InputGroup)`
+  display: flex;
+  flex: 0;
+
+  & > label {
+    width: auto !important;
+    padding-right: 8px;
+  }
+`;
+
+const NodeEditorTooltip = styled(ReactTooltip)`
+  max-width: 200px;
+  overflow: hidden;
+  overflow-wrap: break-word;
+  user-select: none;
+`;
 
 export default class NodeEditor extends Component {
   static propTypes = {
@@ -30,23 +66,23 @@ export default class NodeEditor extends Component {
     const { node, description, editor, children } = this.props;
 
     return (
-      <div className={styles.nodeEditor}>
-        <div className={styles.propertiesHeader}>
-          <div className={styles.propertiesPanelTopBar}>
+      <StyledNodeEditor>
+        <PropertiesHeader>
+          <NameInputGroupContainer>
             <NameInputGroup node={node} editor={editor} />
             {node.nodeName !== "Scene" && (
-              <InputGroup name="Visible" className={styles.visibleInputGroup}>
+              <VisibleInputGroup name="Visible">
                 <BooleanInput value={node.visible} onChange={this.onChangeVisible} />
-              </InputGroup>
+              </VisibleInputGroup>
             )}
-          </div>
+          </NameInputGroupContainer>
           {!node.disableTransform && <TransformPropertyGroup node={node} editor={editor} />}
-        </div>
+        </PropertiesHeader>
         <PropertyGroup name={node.nodeName} description={description}>
           {children}
         </PropertyGroup>
-        <ReactTooltip id="node-editor" className={styles.tooltip} />
-      </div>
+        <NodeEditorTooltip id="node-editor" />
+      </StyledNodeEditor>
     );
   }
 }

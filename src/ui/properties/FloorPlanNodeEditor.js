@@ -9,7 +9,14 @@ import ProgressDialog from "../dialogs/ProgressDialog";
 import ErrorDialog from "../dialogs/ErrorDialog";
 import { withDialog } from "../contexts/DialogContext";
 import { withSettings } from "../contexts/SettingsContext";
-import styles from "./FloorPlanNodeEditor.scss";
+import styled from "styled-components";
+import { ShoePrints } from "styled-icons/fa-solid/ShoePrints";
+
+const RegenerateButton = styled(Button)`
+  align-self: center;
+  justify-content: center;
+  width: 200px;
+`;
 
 class FloorPlanNodeEditor extends Component {
   static propTypes = {
@@ -20,7 +27,7 @@ class FloorPlanNodeEditor extends Component {
     node: PropTypes.object
   };
 
-  static iconClassName = "fa-shoe-prints";
+  static iconComponent = ShoePrints;
 
   static description = "Sets the walkable surface area in your scene.";
 
@@ -164,15 +171,13 @@ class FloorPlanNodeEditor extends Component {
             onChange={this.onChangeMaxTriangles}
           />
         )}
-        <Button className={styles.regenerateButton} onClick={this.onRegenerate}>
-          Regenerate
-        </Button>
+        <RegenerateButton onClick={this.onRegenerate}>Regenerate</RegenerateButton>
       </NodeEditor>
     );
   }
 }
 
 const FloorPlanNodeEditorContainer = withDialog(withSettings(FloorPlanNodeEditor));
-FloorPlanNodeEditorContainer.iconClassName = FloorPlanNodeEditor.iconClassName;
+FloorPlanNodeEditorContainer.iconComponent = FloorPlanNodeEditor.iconComponent;
 FloorPlanNodeEditorContainer.description = FloorPlanNodeEditor.description;
 export default FloorPlanNodeEditorContainer;

@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import { Link } from "react-router-dom";
 import PropTypes from "prop-types";
 import styled from "styled-components";
+import { Plus } from "styled-icons/fa-solid/Plus";
 
 const StyledNewProjectGridItem = styled(Link)`
   display: flex;
@@ -18,8 +19,9 @@ const StyledNewProjectGridItem = styled(Link)`
     border-color: ${props => props.theme.selected};
   }
 
-  i {
-    font-size: 3em;
+  svg {
+    width: 3em;
+    height: 3em;
     margin-bottom: 20px;
   }
 `;
@@ -32,7 +34,7 @@ export default class NewProjectGridItem extends Component {
   render() {
     return (
       <StyledNewProjectGridItem to={this.props.newProjectUrl}>
-        <i className="fas fa-plus" />
+        <Plus />
         <h3>New Project</h3>
       </StyledNewProjectGridItem>
     );

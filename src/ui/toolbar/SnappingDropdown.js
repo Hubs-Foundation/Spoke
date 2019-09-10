@@ -1,8 +1,58 @@
 import React from "react";
 import PropTypes from "prop-types";
-import classNames from "classnames";
-import styles from "./SnappingDropdown.scss";
 import NumericInputGroup from "../inputs/NumericInputGroup";
+import styled from "styled-components";
+import { AngleUp } from "styled-icons/fa-solid/AngleUp";
+import { AngleDown } from "styled-icons/fa-solid/AngleDown";
+
+const SnappingDropdownContainer = styled.div`
+  height: 16px;
+  position: relative;
+  z-index: 10;
+`;
+
+const Header = styled.div`
+  display: flex;
+  flex-direction: row;
+  height: 16px;
+  width: 68px;
+  cursor: pointer;
+
+  &:hover {
+    color: ${props => props.theme.blueHover};
+  }
+`;
+
+const HeaderTitle = styled.div`
+  margin: 0px 1px;
+
+  & + svg {
+    text-align: center;
+    width: 12px;
+    height: 12px;
+    margin: 2px 4px;
+  }
+`;
+
+const List = styled.ul`
+  padding: 8px 0px;
+  background-color: ${props => props.theme.background};
+  border-radius: 4px;
+  list-style-type: none;
+  width: 200px;
+  position: absolute;
+  top: 20px;
+  box-shadow: ${props => props.theme.shadow30};
+`;
+
+const ListItem = styled.li`
+  display: flex;
+  margin: 0 4px 8px 4px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+`;
 
 export default class SnappingDropdown extends React.Component {
   constructor(props) {
@@ -26,16 +76,15 @@ export default class SnappingDropdown extends React.Component {
 
   render() {
     return (
-      <div className={classNames(styles.wrapper)}>
-        <div className={styles.header} onClick={() => this.toggleList()}>
-          <div className={styles.headerTitle}>Snapping</div>
-          {this.state.listOpen ? <i className="fa fa-angle-up fa-12px" /> : <i className="fa fa-angle-down fa-12px" />}
-        </div>
+      <SnappingDropdownContainer>
+        <Header onClick={() => this.toggleList()}>
+          <HeaderTitle>Snapping</HeaderTitle>
+          {this.state.listOpen ? <AngleUp size={12} /> : <AngleDown size={12} />}
+        </Header>
         {this.state.listOpen && (
-          <ul className={styles.list}>
-            <li className={styles.listItem}>
+          <List>
+            <ListItem>
               <NumericInputGroup
-                className={styles.snappingInput}
                 name="Move"
                 smallStep={0.01}
                 mediumStep={0.1}
@@ -44,10 +93,9 @@ export default class SnappingDropdown extends React.Component {
                 onChange={this.props.onChangeTranslationSnap}
                 unit="m"
               />
-            </li>
-            <li className={styles.listItem}>
+            </ListItem>
+            <ListItem>
               <NumericInputGroup
-                className={styles.snappingInput}
                 name="Rotate"
                 smallStep={1}
                 mediumStep={15}
@@ -56,10 +104,9 @@ export default class SnappingDropdown extends React.Component {
                 onChange={this.props.onChangeRotationSnap}
                 unit="°"
               />
-            </li>
-            <li className={styles.listItem}>
+            </ListItem>
+            <ListItem>
               <NumericInputGroup
-                className={styles.snappingInput}
                 name="Scale"
                 smallStep={1}
                 mediumStep={15}
@@ -67,10 +114,10 @@ export default class SnappingDropdown extends React.Component {
                 value={this.props.scaleSnap}
                 onChange={this.props.onChangeScaleSnap}
               />
-            </li>
-          </ul>
+            </ListItem>
+          </List>
         )}
-      </div>
+      </SnappingDropdownContainer>
     );
   }
 }

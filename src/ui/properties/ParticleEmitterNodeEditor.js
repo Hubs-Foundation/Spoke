@@ -10,6 +10,7 @@ import Vector3Input from "../inputs/Vector3Input";
 import SelectInput from "../inputs/SelectInput";
 import * as EasingFunctions from "@mozillareality/easing-functions";
 import { camelPad } from "../utils";
+import { SprayCan } from "styled-icons/fa-solid/SprayCan";
 
 const CurveOptions = Object.keys(EasingFunctions).map(name => ({
   label: camelPad(name),
@@ -22,7 +23,7 @@ export default class ParticleEmitterNodeEditor extends Component {
     node: PropTypes.object
   };
 
-  static iconClassName = "fa-spray-can";
+  static iconComponent = SprayCan;
 
   static description = "Particle emitter to create particles.";
 

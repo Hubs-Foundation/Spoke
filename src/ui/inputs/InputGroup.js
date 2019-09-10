@@ -1,17 +1,56 @@
 import React from "react";
 import PropTypes from "prop-types";
-import classNames from "classnames";
-import styles from "./InputGroup.scss";
+import styled from "styled-components";
+import { QuestionCircle } from "styled-icons/fa-regular/QuestionCircle";
 
-export default function InputGroup({ name, children, disabled, className, tooltipId, info }) {
+export const InputGroupContainer = styled.div`
+  display: flex;
+  flex-direction: row;
+  padding: 4px 8px;
+  flex: 1;
+  min-height: 24px;
+
+  ${props =>
+    props.disabled &&
+    `
+    pointer-events: none;
+    opacity: 0.3;
+  `}
+
+  & > label {
+    display: block;
+    width: 25%;
+    color: ${props => props.theme.text2};
+    padding-bottom: 2px;
+    padding-top: 4px;
+  }
+`;
+
+export const InputGroupContent = styled.div`
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+  padding-left: 8px;
+`;
+
+export const InputGroupInfo = styled(QuestionCircle)`
+  width: 20px;
+  display: flex;
+  padding-left: 8px;
+  color: ${props => props.theme.blue};
+  cursor: pointer;
+  align-self: center;
+`;
+
+export default function InputGroup({ name, children, disabled, tooltipId, info, ...rest }) {
   return (
-    <div className={classNames(styles.inputGroup, className, disabled && "disabled")}>
+    <InputGroupContainer disabled={disabled} {...rest}>
       <label>{name}:</label>
-      <div className="content">
+      <InputGroupContent>
         {children}
-        {info && <div className={styles.info} data-for={tooltipId} data-tip={info} />}
-      </div>
-    </div>
+        {info && <InputGroupInfo data-for={tooltipId} data-tip={info} />}
+      </InputGroupContent>
+    </InputGroupContainer>
   );
 }
 

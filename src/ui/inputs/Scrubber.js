@@ -1,9 +1,30 @@
 import React, { Component, createRef } from "react";
-import classNames from "classnames";
 import PropTypes from "prop-types";
 import Portal from "../layout/Portal";
-import styles from "./Scrubber.scss";
 import { getStepSize, clamp, toPrecision } from "../utils";
+import styled from "styled-components";
+import { ArrowsAltH } from "styled-icons/fa-solid/ArrowsAltH";
+import Overlay from "../layout/Overlay";
+
+const ScrubberContainer = styled.div`
+  cursor: ew-resize;
+  user-select: none;
+`;
+
+const Cursor = styled(ArrowsAltH).attrs(({ x, y }) => ({
+  style: {
+    transform: `translate(${x}px,${y}px)`
+  }
+}))`
+  position: absolute;
+  width: 20px;
+
+  path {
+    stroke: white;
+    stroke-width: 20px;
+    fill: black;
+  }
+`;
 
 class Scrubber extends Component {
   constructor(props) {
@@ -73,9 +94,8 @@ class Scrubber extends Component {
 
   render() {
     const {
-      tag: Container,
+      tag,
       children,
-      className,
       smallStep,
       mediumStep,
       largeStep,
@@ -94,21 +114,16 @@ class Scrubber extends Component {
     const { isDragging, mouseX, mouseY } = this.state;
 
     return (
-      <Container
-        {...rest}
-        ref={this.scrubberEl}
-        className={classNames(styles.scrubber, className)}
-        onMouseDown={this.handleMouseDown}
-      >
+      <ScrubberContainer as={tag} ref={this.scrubberEl} onMouseDown={this.handleMouseDown} {...rest}>
         {children}
         {isDragging && (
           <Portal>
-            <div className={styles.cursorContainer}>
-              <div className={styles.cursor} style={{ transform: `translate(${mouseX}px,${mouseY}px)` }} />
-            </div>
+            <Overlay pointerEvents="none">
+              <Cursor x={mouseX} y={mouseY} />
+            </Overlay>
           </Portal>
         )}
-      </Container>
+      </ScrubberContainer>
     );
   }
 }

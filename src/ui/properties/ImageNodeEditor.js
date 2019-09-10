@@ -5,6 +5,7 @@ import InputGroup from "../inputs/InputGroup";
 import SelectInput from "../inputs/SelectInput";
 import { ImageProjection } from "../../editor/objects/Image";
 import ImageInput from "../inputs/ImageInput";
+import { Image } from "styled-icons/fa-solid/Image";
 
 const imageProjectionOptions = Object.values(ImageProjection).map(v => ({ label: v, value: v }));
 
@@ -14,7 +15,7 @@ export default class ImageNodeEditor extends Component {
     node: PropTypes.object
   };
 
-  static iconClassName = "fa-image";
+  static iconComponent = Image;
 
   static description = "Dynamically loads an image.";
 

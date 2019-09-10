@@ -4,6 +4,7 @@ import NodeEditor from "./NodeEditor";
 import InputGroup from "../inputs/InputGroup";
 import ColorInput from "../inputs/ColorInput";
 import NumericInputGroup from "../inputs/NumericInputGroup";
+import { Sun } from "styled-icons/fa-solid/Sun";
 
 export default class AmbientLightNodeEditor extends Component {
   static propTypes = {
@@ -11,7 +12,7 @@ export default class AmbientLightNodeEditor extends Component {
     node: PropTypes.object
   };
 
-  static iconClassName = "fa-sun";
+  static iconComponent = Sun;
 
   static description = "A light which illuminates all objects in your scene.";
 

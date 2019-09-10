@@ -19,13 +19,13 @@ export default class LibraryToolbar extends Component {
     selected: PropTypes.shape({
       id: PropTypes.string.isRequired,
       label: PropTypes.string.isRequired,
-      iconClassName: PropTypes.string.isRequired
+      iconComponent: PropTypes.object.isRequired
     }),
     items: PropTypes.arrayOf(
       PropTypes.shape({
         id: PropTypes.string.isRequired,
         label: PropTypes.string.isRequired,
-        iconClassName: PropTypes.string.isRequired
+        iconComponent: PropTypes.object.isRequired
       })
     ).isRequired,
     onSelect: PropTypes.func.isRequired

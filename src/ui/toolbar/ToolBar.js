@@ -1,17 +1,99 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
-import { showMenu, ContextMenu, MenuItem, SubMenu } from "react-contextmenu";
+import { showMenu, ContextMenu, MenuItem, SubMenu } from "../layout/ContextMenu";
 import { Link } from "react-router-dom";
 import ReactTooltip from "react-tooltip";
-
 import ToolButton from "./ToolButton";
 import { Button } from "../inputs/Button";
 import ToolToggle from "./ToolToggle";
-import styles from "./ToolBar.scss";
 import SnappingDropdown from "./SnappingDropdown";
 import SpokeIcon from "../../assets/spoke-icon.png";
 import { TransformMode, SnapMode, TransformPivot } from "../../editor/controls/SpokeControls";
 import { TransformSpace } from "../../editor/Editor";
+import { ArrowsAlt } from "styled-icons/fa-solid/ArrowsAlt";
+import { SyncAlt } from "styled-icons/fa-solid/SyncAlt";
+import { ArrowsAltV } from "styled-icons/fa-solid/ArrowsAltV";
+import { Cube } from "styled-icons/fa-solid/Cube";
+import { Globe } from "styled-icons/fa-solid/Globe";
+import { Bullseye } from "styled-icons/fa-solid/Bullseye";
+import { ObjectGroup } from "styled-icons/fa-solid/ObjectGroup";
+import { Magnet } from "styled-icons/fa-solid/Magnet";
+import { Bars } from "styled-icons/fa-solid/Bars";
+import styled from "styled-components";
+
+const StyledToolbar = styled.div`
+  display: flex;
+  flex-direction: row;
+  height: 40px;
+  background-color: ${props => props.theme.toolbar};
+  user-select: none;
+`;
+
+const Logo = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  text-align: center;
+  font-family: ${props => props.theme.zilla};
+  text-shadow: 0 0 4px black;
+  font-size: 24px;
+  width: 100%;
+  margin-top: 4px;
+  font-weight: bold;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+
+  a {
+    color: white;
+    text-decoration: none;
+  }
+`;
+
+const LogoLink = styled(Link)`
+  display: flex;
+  pointer-events: all;
+
+  img {
+    width: 32px;
+    height: 32px;
+    margin-right: 5px;
+  }
+`;
+
+const ToolButtons = styled.div`
+  width: auto;
+  height: inherit;
+  display: flex;
+  flex-direction: row;
+`;
+
+const ToolToggles = styled.div`
+  width: auto;
+  height: inherit;
+  display: flex;
+  flex-direction: row;
+  background-color: ${props => props.theme.toolbar2};
+  align-items: center;
+  padding-right: 16px;
+`;
+
+const Spacer = styled.div`
+  flex: 1;
+`;
+
+const ToolTip = styled(ReactTooltip)`
+  max-width: 200px;
+  overflow: hidden;
+  overflow-wrap: break-word;
+  user-select: none;
+`;
+
+const PublishButton = styled(Button)`
+  align-self: center;
+  margin: 1em;
+  padding: 0 2em;
+`;
 
 export default class ToolBar extends Component {
   static propTypes = {
@@ -85,7 +167,7 @@ export default class ToolBar extends Component {
       return (
         <MenuItem key={menu.name} onClick={menu.action}>
           {menu.name}
-          {menu.hotkey && <div className={styles.menuHotkey}>{menu.hotkey}</div>}
+          {menu.hotkey && <div>{menu.hotkey}</div>}
         </MenuItem>
       );
     } else {
@@ -139,7 +221,7 @@ export default class ToolBar extends Component {
     const { editorInitialized, menuOpen } = this.state;
 
     if (!editorInitialized) {
-      return <div className={styles.toolbar} />;
+      return <StyledToolbar />;
     }
 
     const {
@@ -153,42 +235,42 @@ export default class ToolBar extends Component {
     } = this.props.editor.spokeControls;
 
     return (
-      <div className={styles.toolbar}>
-        <div className={styles.logo}>
-          <Link to="/" className={styles.logoContent}>
+      <StyledToolbar>
+        <Logo>
+          <LogoLink to="/">
             <img src={SpokeIcon} />
             <div>spoke</div>
-          </Link>
-        </div>
-        <div className={styles.toolbtns}>
-          <ToolButton iconClass="fa-bars" onClick={this.onMenuSelected} selected={menuOpen} id="menu" />
+          </LogoLink>
+        </Logo>
+        <ToolButtons>
+          <ToolButton icon={Bars} onClick={this.onMenuSelected} selected={menuOpen} id="menu" />
           <ToolButton
             tooltip="[W] Translate"
-            iconClass="fa-arrows-alt"
+            icon={ArrowsAlt}
             onClick={this.onSelectTranslate}
             selected={transformMode === TransformMode.Translate}
           />
           <ToolButton
             tooltip="[E] Rotate"
-            iconClass="fa-sync-alt"
+            icon={SyncAlt}
             onClick={this.onSelectRotate}
             selected={transformMode === TransformMode.Rotate}
           />
           <ToolButton
             tooltip="[R] Scale"
-            iconClass="fa-arrows-alt-v"
+            icon={ArrowsAltV}
             onClick={this.onSelectScale}
             selected={transformMode === TransformMode.Scale}
           />
-        </div>
-        <div className={styles.tooltoggles}>
+        </ToolButtons>
+        <ToolToggles>
           <ToolToggle
             text={["Global", "Local"]}
             tooltip="[Z] Toggle Transform Space"
             action={this.onToggleTransformSpace}
             icons={{
-              checked: "fa-cube",
-              unchecked: "fa-globe"
+              checked: <Cube size={12} />,
+              unchecked: <Globe size={12} />
             }}
             isSwitch
             isChecked={transformSpace === TransformSpace.LocalSelection}
@@ -198,8 +280,8 @@ export default class ToolBar extends Component {
             tooltip="[X] Toggle Transform Pivot"
             action={this.onToggleTransformPivot}
             icons={{
-              checked: "fa-bullseye",
-              unchecked: "fa-object-group"
+              checked: <Bullseye size={12} />,
+              unchecked: <ObjectGroup size={12} />
             }}
             isSwitch
             isChecked={transformPivot === TransformPivot.Center}
@@ -209,8 +291,8 @@ export default class ToolBar extends Component {
             tooltip="[C] Toggle Snap Mode"
             action={this.onToggleSnapMode}
             icons={{
-              checked: "fa-magnet",
-              unchecked: "fa-magnet"
+              checked: <Magnet size={12} />,
+              unchecked: <Magnet size={12} />
             }}
             isChecked={snapMode === SnapMode.Grid}
           >
@@ -223,23 +305,19 @@ export default class ToolBar extends Component {
               onChangeScaleSnap={this.onChangeScaleSnap}
             />
           </ToolToggle>
-        </div>
-        <div className={styles.spacer} />
-        {this.props.editor.sceneUrl && (
-          <Button className={styles.publishButton} onClick={this.props.onOpenScene}>
-            Open in Hubs
-          </Button>
-        )}
-        <Button id="publish-button" className={styles.publishButton} onClick={this.props.onPublish}>
+        </ToolToggles>
+        <Spacer />
+        {this.props.editor.sceneUrl && <PublishButton onClick={this.props.onOpenScene}>Open in Hubs</PublishButton>}
+        <PublishButton id="publish-button" onClick={this.props.onPublish}>
           Publish to Hubs...
-        </Button>
+        </PublishButton>
         <ContextMenu id="menu">
           {this.props.menu.map(menu => {
             return this.renderMenu(menu);
           })}
         </ContextMenu>
-        <ReactTooltip id="toolbar" className={styles.tooltip} />
-      </div>
+        <ToolTip id="toolbar" />
+      </StyledToolbar>
     );
   }
 }
