@@ -1,6 +1,6 @@
 import React, { useCallback } from "react";
 import PropTypes from "prop-types";
-import { SketchPicker } from "react-color";
+import SketchPicker from "react-color/lib/Sketch";
 import Input from "./Input";
 import { Color } from "three";
 import styled from "styled-components";
