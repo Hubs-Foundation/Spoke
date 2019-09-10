@@ -224,6 +224,13 @@ export default function EditorNodeMixin(Object3DClass) {
         replacementObject.userData.gltfExtensions.MOZ_hubs_components = this.userData.gltfExtensions.MOZ_hubs_components;
       }
 
+      for (const child of this.children) {
+        if (child.isNode) {
+          replacementObject.children.push(child);
+          child.parent = replacementObject;
+        }
+      }
+
       this.parent.add(replacementObject);
       this.parent.remove(this);
     }
