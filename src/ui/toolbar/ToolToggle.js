@@ -43,12 +43,12 @@ const ToggleStyle = createGlobalStyle`
     transition: all 0.2s ease;
   }
 
-  .react-toggle:hover:not(.react-toggle--disabled) .react-toggle-track {
-    background-color: #000000;
-  }
-
   .react-toggle--checked .react-toggle-track {
     background-color: #19AB27;
+  }
+
+  .react-toggle:hover:not(.react-toggle--disabled) .react-toggle-track {
+    background-color: #000000;
   }
 
   .react-toggle--checked:hover:not(.react-toggle--disabled) .react-toggle-track {
@@ -103,7 +103,6 @@ const ToggleStyle = createGlobalStyle`
     border-radius: 50%;
     background-color: #FAFAFA;
     box-sizing: border-box;
-    transition: all 0.25s ease;
   }
 
   .react-toggle--checked .react-toggle-thumb {
@@ -130,6 +129,7 @@ const ToggleText = styled.div`
   user-select: none;
 `;
 
+/* stylelint-disable */
 const ToggleSwitch = styled(Toggle)`
   margin: 0px 16px;
 
@@ -161,12 +161,18 @@ const ToggleSwitch = styled(Toggle)`
     box-shadow: none;
   }
 `;
+/* stylelint-enable */
 
+/* stylelint-disable */
 const ToggleOnOff = styled(Toggle)`
   margin: 0px 16px;
 
   &.react-toggle--checked &.react-toggle-track {
     background-color: ${props => props.theme.panel};
+  }
+
+  &.react-toggle--checked .react-toggle-thumb {
+    background-color: ${props => props.theme.blue};
   }
 
   &.react-toggle--checked:hover:not(.react-toggle--disabled) .react-toggle-track {
@@ -175,6 +181,12 @@ const ToggleOnOff = styled(Toggle)`
 
   &.react-toggle-x:hover:not(.react-toggle--disabled) .react-toggle-track {
     color: ${props => props.theme.panel};
+  }
+
+  > .react-toggle-thumb {
+    background-color: ${props => props.theme.border};
+    border: none;
+    box-shadow: none;
   }
 
   > .react-toggle-track {
@@ -192,17 +204,8 @@ const ToggleOnOff = styled(Toggle)`
       color: ${props => props.theme.border};
     }
   }
-
-  &.react-toggle--checked .react-toggle-thumb {
-    background-color: ${props => props.theme.blue};
-  }
-
-  > .react-toggle-thumb {
-    background-color: ${props => props.theme.border};
-    border: none;
-    box-shadow: none;
-  }
 `;
+/* stylelint-enable */
 
 export default class ToolToggle extends Component {
   constructor(props) {
