@@ -11,22 +11,13 @@ export const Button = styled.button.attrs(props => ({
   white-space: nowrap;
   min-height: 24px;
   font-size: 12px;
-  font-family: Lato;
+  font-family: "Lato", sans-serif;
   text-align: center;
   cursor: pointer;
   align-items: center;
   justify-content: center;
   text-decoration: none;
   padding: 1px 6px;
-
-  &:disabled {
-    background: ${props => props.theme.disabled};
-    color: ${props => props.theme.disabledText};
-
-    &:hover {
-      background-color: ${props => props.theme.disabled};
-    }
-  }
 
   &:hover {
     color: ${props => props.theme.text};
@@ -36,6 +27,15 @@ export const Button = styled.button.attrs(props => ({
   &:active {
     color: ${props => props.theme.text};
     background-color: ${props => props.theme.bluePressed};
+  }
+
+  &:disabled {
+    background: ${props => props.theme.disabled};
+    color: ${props => props.theme.disabledText};
+
+    &:hover {
+      background-color: ${props => props.theme.disabled};
+    }
   }
 `;
 
@@ -55,6 +55,14 @@ export const SecondaryButton = styled(Button)`
   background-color: ${props => props.theme.hover};
   color: ${props => props.theme.text};
 
+  &:hover {
+    background-color: ${props => props.theme.text2};
+  }
+
+  &:active {
+    background-color: ${props => props.theme.text2};
+  }
+
   &:disabled {
     background-color: ${props => props.theme.disabled};
     color: ${props => props.theme.disabledText};
@@ -63,20 +71,20 @@ export const SecondaryButton = styled(Button)`
       background-color: transparent;
     }
   }
-
-  &:hover {
-    background-color: ${props => props.theme.text2};
-  }
-
-  &:active {
-    background-color: ${props => props.theme.text2};
-  }
 `;
 
 export const MenuButton = styled(Button)`
   background-color: transparent;
   color: ${props => props.theme.text2};
   padding: 1px 8px;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+
+  &:active {
+    background-color: rgba(255, 255, 255, 0.2);
+  }
 
   &:disabled {
     background-color: transparent;
@@ -85,13 +93,5 @@ export const MenuButton = styled(Button)`
     &:hover {
       background-color: transparent;
     }
-  }
-
-  &:hover {
-    background-color: rgba(255, 255, 255, 0.2);
-  }
-
-  &:active {
-    background-color: rgba(255, 255, 255, 0.2);
   }
 `;

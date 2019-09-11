@@ -52,7 +52,7 @@ export const ContextMenuStyles = createGlobalStyle`
     display: flex;
     flex: 1;
     justify-content: space-between;
-    color: $text;
+    color: ${props => props.theme.text};
   }
 
   .react-contextmenu-item.react-contextmenu-item--active,
@@ -77,23 +77,16 @@ export const ContextMenuStyles = createGlobalStyle`
     height: 1px;
     padding: 0;
   }
-  .react-contextmenu-item--divider:hover {
-  }
 
   .react-contextmenu-item.react-contextmenu-submenu {
     padding: 0;
   }
 
-  .react-contextmenu-item.react-contextmenu-submenu > .react-contextmenu-item {
-  }
-
-  .react-contextmenu-item.react-contextmenu-submenu > .react-contextmenu-item:after {
+  .react-contextmenu-item.react-contextmenu-submenu > .react-contextmenu-item::after {
     display: inline-block;
-    position: absolute;
-    right: 12px;
-    top: 8px;
-    font-size: 14px;
-    content: "\2BC8";
+    font-size: 12px;
+    content: "▸";
+    vertical-align: middle;
   }
 `;
 

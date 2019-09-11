@@ -9,7 +9,7 @@ const StyledCallout = styled.div`
 `;
 
 const ImageContainer = styled.div`
-  padding-bottom: 56.25%; // 16:9
+  padding-bottom: 56.25%; /* 16:9 */
   position: relative;
   border-radius: 6px;
   overflow: hidden;

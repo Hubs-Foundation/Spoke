@@ -64,12 +64,6 @@ const ProgressBarContainer = styled.div`
     overflow: hidden;
   }
 
-  & > span {
-    &:after {
-      display: none;
-    }
-  }
-
   @keyframes move {
     0% {
       background-position: 0 0;
