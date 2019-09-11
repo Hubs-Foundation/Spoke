@@ -56,7 +56,7 @@ export default function Positioner({ children, position, padding, targetRef, ...
     return () => {
       window.removeEventListener("resize", onReposition);
     };
-  }, [position, padding, targetRef]);
+  }, [position, padding, targetRef.current, setTransformProps]);
 
   const childrenWithProps = Children.map(children, child =>
     cloneElement(child, { position: transformProps.finalPosition })
