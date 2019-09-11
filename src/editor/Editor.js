@@ -104,6 +104,8 @@ const rendererPromise = new Promise((resolve, reject) => {
   rejectRenderer = reject;
 });
 
+const removeObjectsRoots = [];
+
 export default class Editor extends EventEmitter {
   constructor(api) {
     super();
@@ -360,7 +362,11 @@ export default class Editor extends EventEmitter {
             for (const propertyName in component) {
               const property = component[propertyName];
 
-              if (property !== null && typeof property === "object" && property.hasOwnProperty("__gltfIndexForUUID")) {
+              if (
+                property !== null &&
+                typeof property === "object" &&
+                Object.prototype.hasOwnProperty.call(property, "__gltfIndexForUUID")
+              ) {
                 component[propertyName] = uuidToIndexMap[property.__gltfIndexForUUID];
               }
             }
@@ -788,11 +794,11 @@ export default class Editor extends EventEmitter {
   }
 
   removeObject(object, useHistory = true, emitEvent = true, deselectObject = true) {
+    if (object.parent === null) return null; // avoid deleting the camera or scene
+
     if (useHistory) {
       return this.history.execute(new RemoveObjectCommand(this, object));
     }
-
-    if (object.parent === null) return null; // avoid deleting the camera or scene
 
     object.traverse(child => {
       if (child.isNode) {
@@ -823,14 +829,14 @@ export default class Editor extends EventEmitter {
   }
 
   removeMultipleObjects(objects, useHistory = true, emitEvent = true, deselectObjects = true) {
+    this.getRootObjects(objects, removeObjectsRoots);
+
     if (useHistory) {
-      return this.history.execute(new RemoveMultipleObjectsCommand(this, objects));
+      return this.history.execute(new RemoveMultipleObjectsCommand(this, removeObjectsRoots));
     }
 
-    const transformRoots = this.getTransformRoots(objects);
-
-    for (let i = 0; i < transformRoots.length; i++) {
-      this.removeObject(transformRoots[i], false, false, false);
+    for (let i = 0; i < removeObjectsRoots.length; i++) {
+      this.removeObject(removeObjectsRoots[i], false, false, false);
     }
 
     if (deselectObjects) {
@@ -841,7 +847,7 @@ export default class Editor extends EventEmitter {
       this.emit("sceneGraphChanged");
     }
 
-    return transformRoots;
+    return removeObjectsRoots;
   }
 
   removeSelectedObjects(useHistory = true, emitEvent = true, deselectObjects = true) {
@@ -1580,10 +1586,16 @@ export default class Editor extends EventEmitter {
     return this.setPropertyMultiple(this.selected, properties, useHistory, emitEvent);
   }
 
-  getTransformRoots(objects, target = []) {
-    // Recursively find the transformable nodes in the tree with the lowest depth
+  getRootObjects(objects, target = [], filterUnremovable = true, filterUntransformable = false) {
+    target.length = 0;
+
+    // Recursively find the nodes in the tree with the lowest depth
     const traverse = curObject => {
-      if (objects.indexOf(curObject) !== -1 && curObject !== this.scene && !curObject.disableTransform) {
+      if (
+        objects.indexOf(curObject) !== -1 &&
+        !(filterUnremovable && !curObject.parent) &&
+        !(filterUntransformable && curObject.disableTransform)
+      ) {
         target.push(curObject);
         return;
       }
@@ -1604,8 +1616,11 @@ export default class Editor extends EventEmitter {
     return target;
   }
 
+  getTransformRoots(objects, target = []) {
+    return this.getRootObjects(objects, target, true, true);
+  }
+
   updateTransformRoots() {
-    this.selectedTransformRoots.length = 0;
     this.getTransformRoots(this.selected, this.selectedTransformRoots);
   }
 
