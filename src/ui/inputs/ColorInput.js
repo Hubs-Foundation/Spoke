@@ -37,9 +37,12 @@ const ColorInputPopover = styled.div`
 `;
 
 export default function ColorInput({ value, onChange, ...rest }) {
-  const onChangePicker = useCallback(({ hex }) => {
-    onChange(new Color(hex));
-  });
+  const onChangePicker = useCallback(
+    ({ hex }) => {
+      onChange(new Color(hex));
+    },
+    [onChange]
+  );
 
   const hexColor = "#" + value.getHexString();
 
