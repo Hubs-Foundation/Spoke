@@ -22,7 +22,11 @@ export default function Popover({ children, padding, position, renderContent, ..
 
   const onPreventClose = useCallback(e => {
     e.stopPropagation();
-  });
+  }, []);
+
+  const getTargetRef = useCallback(() => {
+    return popoverTriggerRef;
+  }, [popoverTriggerRef]);
 
   return (
     <div ref={popoverTriggerRef} onClick={onOpen} {...rest}>
@@ -30,7 +34,7 @@ export default function Popover({ children, padding, position, renderContent, ..
       {isOpen && (
         <Portal>
           <Overlay onClick={onClose} />
-          <Positioner onClick={onPreventClose} targetRef={popoverTriggerRef} padding={padding} position={position}>
+          <Positioner onClick={onPreventClose} getTargetRef={getTargetRef} padding={padding} position={position}>
             {renderContent({ onClose })}
           </Positioner>
         </Portal>
