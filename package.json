@@ -54,6 +54,11 @@
       "eslint"
     ]
   },
+  "storybook-deployer": {
+    "gitUsername": "SpokeBot",
+    "gitEmail": "hubs@mozilla.com",
+    "commitMessage": "Deploy Storybook [skip ci]"
+  },
   "dependencies": {
     "@babel/runtime": "^7.6.0",
     "@mozillareality/easing-functions": "^0.1.1",
