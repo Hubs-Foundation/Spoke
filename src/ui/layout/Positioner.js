@@ -15,7 +15,7 @@ const PositionerContainer = styled.div.attrs(({ transform, transformOrigin, opac
   left: 0;
 `;
 
-export default function Positioner({ children, position, padding, targetRef, ...rest }) {
+export default function Positioner({ children, position, padding, getTargetRef, ...rest }) {
   const positionerContainerRef = useRef();
 
   const [transformProps, setTransformProps] = useState({
@@ -28,7 +28,7 @@ export default function Positioner({ children, position, padding, targetRef, ...
   useEffect(() => {
     const onReposition = () => {
       const positionerContainerRect = positionerContainerRef.current.getBoundingClientRect();
-      const targetRect = targetRef.current.getBoundingClientRect();
+      const targetRect = getTargetRef().current.getBoundingClientRect();
       const viewportHeight = document.documentElement.clientHeight;
       const viewportWidth = document.documentElement.clientWidth;
 
@@ -56,7 +56,7 @@ export default function Positioner({ children, position, padding, targetRef, ...
     return () => {
       window.removeEventListener("resize", onReposition);
     };
-  }, [position, padding, targetRef.current, setTransformProps]);
+  }, [position, padding, getTargetRef, setTransformProps]);
 
   const childrenWithProps = Children.map(children, child =>
     cloneElement(child, { position: transformProps.finalPosition })
@@ -73,7 +73,7 @@ Positioner.propTypes = {
   children: PropTypes.node,
   position: PropTypes.string,
   padding: PropTypes.number,
-  targetRef: PropTypes.shape({ current: PropTypes.object })
+  getTargetRef: PropTypes.func
 };
 
 Positioner.defaultProps = {

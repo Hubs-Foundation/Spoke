@@ -7,19 +7,28 @@ import PreviewDialog from "./PreviewDialog";
 export default function SaveNewProjectDialog({ thumbnailUrl, initialName, onConfirm, onCancel }) {
   const [name, setName] = useState(initialName);
 
-  const onChangeName = useCallback(value => {
-    setName(value);
-  });
+  const onChangeName = useCallback(
+    value => {
+      setName(value);
+    },
+    [setName]
+  );
 
-  const onConfirmCallback = useCallback(e => {
-    e.preventDefault();
-    onConfirm({ name });
-  });
+  const onConfirmCallback = useCallback(
+    e => {
+      e.preventDefault();
+      onConfirm({ name });
+    },
+    [name, onConfirm]
+  );
 
-  const onCancelCallback = useCallback(e => {
-    e.preventDefault();
-    onCancel();
-  });
+  const onCancelCallback = useCallback(
+    e => {
+      e.preventDefault();
+      onCancel();
+    },
+    [onCancel]
+  );
 
   return (
     <PreviewDialog

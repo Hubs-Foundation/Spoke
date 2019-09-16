@@ -49,7 +49,9 @@ class LibrarySearchContainer extends Component {
         label: PropTypes.string.isRequired,
         toolbar: PropTypes.elementType,
         toolbarProps: PropTypes.object,
-        onSearch: PropTypes.func
+        onSearch: PropTypes.func,
+        defaultFilter: PropTypes.string,
+        defaultType: PropTypes.string
       })
     ).isRequired,
     onSelect: PropTypes.func.isRequired,

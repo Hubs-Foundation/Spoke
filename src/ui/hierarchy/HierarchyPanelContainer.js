@@ -169,40 +169,41 @@ function isAncestor(object, otherObject) {
 
 function TreeNode(props) {
   const { node, ...rest } = props;
+  const { onKeyDown, onToggle, onRenameSubmit } = props;
 
   const editor = useContext(EditorContext);
 
-  const onToggle = useCallback(
+  const onClickToggle = useCallback(
     e => {
       e.stopPropagation();
 
-      if (props.onToggle) {
-        props.onToggle(e, node);
+      if (onToggle) {
+        onToggle(e, node);
       }
     },
-    [props.onToggle, node]
+    [onToggle, node]
   );
 
-  const onKeyDown = useCallback(
+  const onNodeKeyDown = useCallback(
     e => {
       e.stopPropagation();
 
-      if (props.onKeyDown) {
-        props.onKeyDown(e, node);
+      if (onKeyDown) {
+        onKeyDown(e, node);
       }
     },
-    [props.onKeyDown, node]
+    [onKeyDown, node]
   );
 
   const onKeyDownNameInput = useCallback(
     e => {
       if (e.key === "Escape") {
-        props.onRenameSubmit(node, null);
+        onRenameSubmit(node, null);
       } else if (e.key === "Enter") {
-        props.onRenameSubmit(node, e.target.value);
+        onRenameSubmit(node, e.target.value);
       }
     },
-    [props.onRenameSubmit, node]
+    [onRenameSubmit, node]
   );
 
   const renaming = props.renamingNode && props.renamingNode.id === node.id;
@@ -224,7 +225,7 @@ function TreeNode(props) {
 
   useEffect(() => {
     preview(getEmptyImage(), { captureDraggingState: true });
-  }, []);
+  }, [preview]);
 
   const [{ canDropBefore, isOverBefore }, beforeDropTarget] = useDrop({
     accept: ItemTypes.Node,
@@ -305,7 +306,7 @@ function TreeNode(props) {
           onMouseDown={e => props.onMouseDown(e, node)}
           onClick={e => props.onClick(e, node)}
           tabIndex="0"
-          onKeyDown={onKeyDown}
+          onKeyDown={onNodeKeyDown}
           root={node.depth === 0}
           selected={node.selected}
           active={node.active}
@@ -321,7 +322,7 @@ function TreeNode(props) {
             {node.leaf ? (
               <TreeNodeLeafSpacer />
             ) : (
-              <TreeNodeToggle collapsed={collapsed} onClick={onToggle}>
+              <TreeNodeToggle collapsed={collapsed} onClick={onClickToggle}>
                 {collapsed ? <CaretRight size={12} /> : <CaretDown size={12} />}
               </TreeNodeToggle>
             )}
@@ -481,7 +482,7 @@ export default function HierarchyPanel() {
 
   const onExpandAllNodes = useCallback(() => {
     setCollapsedNodes({});
-  });
+  }, [setCollapsedNodes]);
 
   const onCollapseAllNodes = useCallback(() => {
     const newCollapsedNodes = {};
@@ -489,7 +490,7 @@ export default function HierarchyPanel() {
       newCollapsedNodes[child.id] = true;
     });
     setCollapsedNodes(newCollapsedNodes);
-  });
+  }, [sceneRootNode, setCollapsedNodes]);
 
   const onObjectChanged = useCallback(
     (objects, propertyName) => {
@@ -510,7 +511,7 @@ export default function HierarchyPanel() {
       editor.removeListener("selectionChanged", updateNodeHierarchy);
       editor.removeListener("objectsChanged", onObjectChanged);
     };
-  }, [editor, updateNodeHierarchy]);
+  }, [editor, updateNodeHierarchy, onObjectChanged]);
 
   const onMouseDown = useCallback(
     (e, node) => {
@@ -544,7 +545,7 @@ export default function HierarchyPanel() {
         collapseNode(node);
       }
     },
-    [collapsedNodes]
+    [collapsedNodes, expandNode, collapseNode]
   );
 
   const onKeyDown = useCallback(

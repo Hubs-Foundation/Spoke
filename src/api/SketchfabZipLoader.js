@@ -1,7 +1,7 @@
 import SketchfabZipWorker from "./SketchfabZipLoader.worker.js";
 
 export async function getFilesFromSketchfabZip(src) {
-  return new Promise(async (resolve, reject) => {
+  return new Promise((resolve, reject) => {
     const worker = new SketchfabZipWorker();
     worker.onmessage = e => {
       const [success, fileMapOrError] = e.data;
