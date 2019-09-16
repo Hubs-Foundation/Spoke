@@ -41,8 +41,8 @@ workflows:
     jobs:
       - build_and_test
       - deploy_ghpages:
-        requires:
-          - build
-        branches:
-          only:
-            - master
+          requires:
+            - build_and_test
+          filters:
+            branches:
+              only: master
