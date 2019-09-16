@@ -68,3 +68,8 @@ ColorInput.propTypes = {
   value: PropTypes.object.isRequired,
   onChange: PropTypes.func
 };
+
+ColorInput.defaultProps = {
+  value: new Color(),
+  onChange: () => {}
+};
