@@ -214,6 +214,7 @@ NumericInput.propTypes = {
 };
 
 NumericInput.defaultProps = {
+  value: 0,
   smallStep: 0.025,
   mediumStep: 0.1,
   largeStep: 0.25,

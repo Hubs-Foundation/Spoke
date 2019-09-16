@@ -31,7 +31,9 @@
     "test-all": "ava",
     "unit-tests": "ava ./test/unit/**/*.test.js",
     "integration-tests": "concurrently --success \"first\" --kill-others \"ava ./test/integration\" \"yarn test-server\"",
-    "update-test-snapshots": "concurrently --success \"first\" --kill-others \"ava -u\" \"yarn test-server\""
+    "update-test-snapshots": "concurrently --success \"first\" --kill-others \"ava -u\" \"yarn test-server\"",
+    "storybook": "start-storybook",
+    "deploy-storybook": "storybook-to-ghpages"
   },
   "ava": {
     "files": [
@@ -101,6 +103,14 @@
     "@babel/preset-env": "^7.6.0",
     "@babel/preset-react": "^7.0.0",
     "@babel/register": "^7.6.0",
+    "@storybook/addon-actions": "^5.2.0",
+    "@storybook/addon-docs": "^5.2.0",
+    "@storybook/addon-knobs": "^5.2.0",
+    "@storybook/addon-storysource": "^5.2.0",
+    "@storybook/react": "^5.2.0",
+    "@storybook/source-loader": "^5.2.0",
+    "@storybook/storybook-deployer": "^2.8.1",
+    "@storybook/theming": "^5.2.0",
     "ava": "2.3.0",
     "babel-eslint": "^10.0.3",
     "babel-loader": "^8.0.0",
