@@ -8,7 +8,13 @@ export default function ConfirmDialog({ message, ...props }) {
 
 ConfirmDialog.propTypes = {
   title: PropTypes.string.isRequired,
-  message: PropTypes.string.isRequired
+  message: PropTypes.string.isRequired,
+  tag: PropTypes.string,
+  onCancel: PropTypes.func,
+  cancelLabel: PropTypes.string.isRequired,
+  onConfirm: PropTypes.func,
+  confirmLabel: PropTypes.string.isRequired,
+  bottomNav: PropTypes.node
 };
 
 ConfirmDialog.defaultProps = {

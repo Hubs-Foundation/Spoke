@@ -6,4 +6,4 @@ export default {
   component: Dialog
 };
 
-export const dialog = () => <Dialog>Hello World</Dialog>;
+export const dialog = () => <Dialog title="Hello Dialog">Hello World</Dialog>;
