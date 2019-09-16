@@ -872,8 +872,6 @@ export default class Project extends EventEmitter {
           hideDialog();
         }
       });
-    } catch (e) {
-      throw e;
     } finally {
       if (screenshotUrl) {
         URL.revokeObjectURL(screenshotUrl);
