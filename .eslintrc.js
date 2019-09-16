@@ -6,7 +6,7 @@ module.exports = {
     node: true,
     mocha: true
   },
-  plugins: ["prettier", "react"],
+  plugins: ["prettier", "react", "react-hooks"],
   rules: {
     "prettier/prettier": "error",
     "prefer-const": "error",
@@ -28,7 +28,9 @@ module.exports = {
       { blankLine: "always", prev: "import", next: "function" },
       { blankLine: "always", prev: "import", next: "class" }
     ],
-    "no-unused-vars": ["error", { varsIgnorePattern: "^_", argsIgnorePattern: "^_", ignoreRestSiblings: true }]
+    "no-unused-vars": ["error", { varsIgnorePattern: "^_", argsIgnorePattern: "^_", ignoreRestSiblings: true }],
+    "react-hooks/rules-of-hooks": "error",
+    "react-hooks/exhaustive-deps": "warn"
   },
   extends: ["prettier", "plugin:react/recommended", "eslint:recommended"]
 };

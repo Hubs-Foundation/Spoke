@@ -113,6 +113,7 @@
     "eslint-config-prettier": "^6.3.0",
     "eslint-plugin-prettier": "^3.1.0",
     "eslint-plugin-react": "^7.12.4",
+    "eslint-plugin-react-hooks": "^2.0.1",
     "esm": "^3.2.25",
     "file-loader": "^4.2.0",
     "get-chrome": "0.0.2",
