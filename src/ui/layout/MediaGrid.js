@@ -1,0 +1,153 @@
+import React from "react";
+import PropTypes from "prop-types";
+import styled from "styled-components";
+import Icon from "../inputs/Icon";
+
+const MediaGridItemContainer = styled.div`
+  position: relative;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  outline: none;
+  overflow: hidden;
+  user-select: none;
+  text-decoration: none;
+  border-radius: ${props => props.borderRadius}px;
+  background-color: ${props => props.theme.panel2};
+  border: 2px solid ${props => (props.selected ? props.theme.selected : "transparent")};
+
+  ::before {
+    content: "";
+    display: inline-block;
+    width: 1px;
+    height: 0;
+    padding-bottom: ${props => (1 / props.aspectRatio) * 100}%;
+  }
+
+  :hover,
+  :focus {
+    color: inherit;
+    border-color: ${props => props.theme.blueHover};
+  }
+
+  :active {
+    border-color: ${props => props.theme.selected};
+  }
+`;
+
+MediaGridItemContainer.propTypes = {
+  aspectRatio: PropTypes.number.isRequired,
+  borderRadius: PropTypes.number.isRequired
+};
+
+MediaGridItemContainer.defaultProps = {
+  aspectRatio: 1,
+  borderRadius: 6
+};
+
+const MediaGridItemContent = styled.div`
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+`;
+
+const MediaGridItemThumbnailImage = styled.div`
+  display: flex;
+  flex: 1;
+  background-size: cover;
+  background-position: 50%;
+  background-repeat: no-repeat;
+`;
+
+const MediaGridItemThumbnailVideo = styled.video`
+  display: flex;
+  flex: 1;
+`;
+
+const MediaGridItemIconContainer = styled.div`
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 8px;
+  text-align: center;
+  overflow: hidden;
+
+  div {
+    display: block;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    width: 100%;
+  }
+`;
+
+export function VideoMediaGridItem({ label, src, ...rest }) {
+  return (
+    <MediaGridItemContainer {...rest}>
+      <MediaGridItemContent>
+        <MediaGridItemThumbnailVideo title={label} autoPlay src={src} />
+      </MediaGridItemContent>
+    </MediaGridItemContainer>
+  );
+}
+
+VideoMediaGridItem.propTypes = {
+  src: PropTypes.string,
+  label: PropTypes.string
+};
+
+export function ImageMediaGridItem({ label, src, ...rest }) {
+  return (
+    <MediaGridItemContainer {...rest}>
+      <MediaGridItemContent>
+        <MediaGridItemThumbnailImage title={label} style={{ backgroundImage: `url(${src})` }} />
+      </MediaGridItemContent>
+    </MediaGridItemContainer>
+  );
+}
+
+ImageMediaGridItem.propTypes = {
+  src: PropTypes.string,
+  label: PropTypes.string
+};
+
+export function IconMediaGridItem({ label, iconComponent, ...rest }) {
+  return (
+    <MediaGridItemContainer {...rest}>
+      <MediaGridItemContent>
+        <MediaGridItemIconContainer>
+          <Icon as={iconComponent} title={label} />
+          {label && <div>{label}</div>}
+        </MediaGridItemIconContainer>
+      </MediaGridItemContent>
+    </MediaGridItemContainer>
+  );
+}
+
+IconMediaGridItem.propTypes = {
+  iconComponent: PropTypes.string,
+  label: PropTypes.string
+};
+
+export const MediaGrid = styled.div`
+  display: grid;
+  grid-gap: ${props => props.gap};
+  width: 100%;
+  grid-template-columns: repeat(auto-fill, minmax(${props => props.minWidth}, 1fr));
+  padding: ${props => props.gap};
+`;
+
+MediaGrid.propTypes = {
+  gap: PropTypes.string.isRequired,
+  minWidth: PropTypes.string.isRequired
+};
+
+MediaGrid.defaultProps = {
+  gap: "20px",
+  minWidth: "100px"
+};

@@ -10,13 +10,29 @@ function getFlex(props) {
   return props.flex;
 }
 
+function cssNumberProp(value) {
+  return typeof value === "number" ? value + "px" : typeof value === "string" ? value : "auto";
+}
+
 export const Column = styled.div`
   display: flex;
   flex-direction: column;
   flex: ${getFlex};
+  height: ${props => cssNumberProp(props.height)};
+  width: ${props => cssNumberProp(props.width)};
 `;
 
 export const Row = styled.div`
   display: flex;
   flex: ${getFlex};
+  height: ${props => cssNumberProp(props.height)};
+  width: ${props => cssNumberProp(props.width)};
+`;
+
+export const VerticalScrollContainer = styled(Column)`
+  overflow-y: auto;
+`;
+
+export const HorizontalScrollContainer = styled(Row)`
+  overflow-x: auto;
 `;
