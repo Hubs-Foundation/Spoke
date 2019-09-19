@@ -16,7 +16,7 @@ export const ListItem = styled.li`
   background-color: ${props => (props.selected ? props.theme.selected : props.theme.panel2)};
 
   :nth-child(odd) {
-    background-color: ${props => props.theme.panel};
+    background-color: ${props => (props.selected ? props.theme.selected : props.theme.panel)};
   }
 
   :hover,
@@ -53,6 +53,5 @@ IconListItem.propTypes = {
 
 export const List = styled.ul`
   height: 100%;
-  background-color: ${props => props.theme.panel2};
   overflow-y: auto;
 `;

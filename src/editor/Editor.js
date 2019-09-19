@@ -81,6 +81,8 @@ import VideoNode from "./nodes/VideoNode";
 import ImageNode from "./nodes/ImageNode";
 import LinkNode from "./nodes/LinkNode";
 
+import { Spoke } from "./controls/input-mappings";
+
 const tempMatrix1 = new Matrix4();
 const tempMatrix2 = new Matrix4();
 const tempMatrix3 = new Matrix4();
@@ -107,9 +109,10 @@ const rendererPromise = new Promise((resolve, reject) => {
 const removeObjectsRoots = [];
 
 export default class Editor extends EventEmitter {
-  constructor(api) {
+  constructor(api, settings = {}) {
     super();
     this.api = api;
+    this.settings = settings;
     this.projectId = null;
 
     this.selected = [];
@@ -125,6 +128,7 @@ export default class Editor extends EventEmitter {
 
     this.nodeTypes = new Set();
     this.nodeEditors = new Map();
+    this.sources = [];
 
     this.textureCache = new TextureCache();
     this.gltfCache = new GLTFCache(this.textureCache);
@@ -158,6 +162,14 @@ export default class Editor extends EventEmitter {
 
   getNodeEditor(node) {
     return this.nodeEditors.get(node.constructor);
+  }
+
+  registerSource(source) {
+    this.sources.push(source);
+  }
+
+  setSource(sourceId) {
+    this.emit("setSource", sourceId);
   }
 
   async init() {
@@ -393,7 +405,16 @@ export default class Editor extends EventEmitter {
   }
 
   getSpawnPosition(target) {
-    this.raycaster.setFromCamera(this.centerScreenSpace, this.camera);
+    return this.getScreenSpaceSpawnPosition(this.centerScreenSpace, target);
+  }
+
+  getCursorSpawnPosition(target) {
+    const cursorPosition = this.inputManager.get(Spoke.cursorPosition);
+    return this.getScreenSpaceSpawnPosition(cursorPosition, target);
+  }
+
+  getScreenSpaceSpawnPosition(screenSpacePosition, target) {
+    this.raycaster.setFromCamera(screenSpacePosition, this.camera);
     const results = this.raycaster.intersectObject(this.scene, true);
     const result = getIntersectingNode(results, this.scene);
 

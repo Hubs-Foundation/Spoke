@@ -4,7 +4,6 @@ import OnboardingContainer from "./OnboardingContainer";
 import OnboardingDialog from "./OnboardingDialog";
 import OnboardingPopover from "./OnboardingPopover";
 import { withEditor } from "../contexts/EditorContext";
-import { selectedClassName } from "../library/LibraryToolbarItem";
 import Icon from "../inputs/Icon";
 import lmbIcon from "../../assets/onboarding/lmb.svg";
 import rmbIcon from "../../assets/onboarding/rmb.svg";
@@ -27,22 +26,9 @@ import { Link } from "react-router-dom";
 /* eslint-disable react/prop-types */
 
 class CreateModelPopover extends Component {
-  state = {
-    openingLibrary: true
-  };
-
   componentDidMount() {
-    const libraryButton = document.getElementById("models-library-btn");
-
-    if (!libraryButton.classList.contains(selectedClassName)) {
-      libraryButton.click();
-    }
-
-    setTimeout(() => {
-      this.setState({ openingLibrary: false });
-    });
-
     // TODO: Check if object was added
+    this.props.editor.setSource("poly");
     this.props.editor.addListener("sceneGraphChanged", this.onObjectAdded);
   }
 
@@ -55,12 +41,8 @@ class CreateModelPopover extends Component {
   }
 
   render() {
-    if (this.state.openingLibrary) {
-      return null;
-    }
-
     return (
-      <OnboardingPopover target="#library-container" {...this.props} disableNext>
+      <OnboardingPopover target="#assets-panel" {...this.props} disableNext>
         Add a model to your scene by clicking on it.
       </OnboardingPopover>
     );
@@ -68,34 +50,6 @@ class CreateModelPopover extends Component {
 }
 
 const WrappedCreateModelPopover = withEditor(CreateModelPopover);
-
-class HideModelsPopover extends Component {
-  state = {
-    hidingLibrary: true
-  };
-
-  componentDidMount() {
-    const libraryButton = document.getElementById("models-library-btn");
-
-    if (libraryButton.classList.contains(selectedClassName)) {
-      libraryButton.click();
-    }
-
-    setTimeout(() => {
-      this.setState({ hidingLibrary: false });
-    });
-  }
-
-  render() {
-    const { children, ...props } = this.props;
-
-    if (this.state.hidingLibrary) {
-      return null;
-    }
-
-    return <OnboardingPopover {...props}>{children}</OnboardingPopover>;
-  }
-}
 
 class SaveProjectDialog extends Component {
   componentDidMount() {
@@ -204,7 +158,7 @@ const steps = [
   {
     render(props) {
       return (
-        <OnboardingPopover target="#library-container" {...props} position="top" disablePrev>
+        <OnboardingPopover target="#assets-panel" {...props} position="top" disablePrev>
           While the model is loading you&#39;ll see the loading indicator.
         </OnboardingPopover>
       );
@@ -213,7 +167,7 @@ const steps = [
   {
     render(props) {
       return (
-        <HideModelsPopover target="#viewport-panel .toolbar" {...props} position="bottom">
+        <OnboardingPopover target="#viewport-panel .toolbar" {...props} position="bottom">
           <p>You can orbit around the scene by holding the left mouse button and dragging.</p>
           <p>You can also fly around the scene by holding the right mouse button and using the WASD keys.</p>
           <Well>
@@ -225,7 +179,7 @@ const steps = [
               <Icon src={wasdIcon} />
             </HotkeyDescription>
           </Well>
-        </HideModelsPopover>
+        </OnboardingPopover>
       );
     }
   },
@@ -318,7 +272,7 @@ const steps = [
           <img src={snappingImage} />
           <Well>
             <HotkeyDescription action="Snapping Mode">
-              <div>X</div>
+              <div>C</div>
             </HotkeyDescription>
           </Well>
         </OnboardingDialog>

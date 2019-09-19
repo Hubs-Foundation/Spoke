@@ -1,0 +1,105 @@
+import React, { useContext, useState, useEffect } from "react";
+import PropTypes from "prop-types";
+import styled from "styled-components";
+import { Column, Row } from "../layout/Flex";
+import { List, ListItem } from "../layout/List";
+import { EditorContext } from "../contexts/EditorContext";
+
+const AssetsPanelContainer = styled(Row)`
+  flex: 1;
+  background-color: ${props => props.theme.panel};
+`;
+
+const AssetsPanelToolbarContainer = styled.div`
+  display: flex;
+  min-height: 32px;
+  background-color: ${props => props.theme.toolbar};
+  align-items: center;
+  padding: 0 8px;
+  justify-content: space-between;
+  border-bottom: 1px solid ${props => props.theme.panel};
+`;
+
+export const AssetPanelToolbarContent = styled(Row)`
+  flex: 1;
+  align-items: flex-end;
+
+  & > * {
+    margin-left: 16px;
+  }
+`;
+
+export function AssetsPanelToolbar({ title, children, ...rest }) {
+  return (
+    <AssetsPanelToolbarContainer {...rest}>
+      <div>{title}</div>
+      <AssetPanelToolbarContent>{children}</AssetPanelToolbarContent>
+    </AssetsPanelToolbarContainer>
+  );
+}
+
+AssetsPanelToolbar.propTypes = {
+  title: PropTypes.string,
+  children: PropTypes.node
+};
+
+const AssetsPanelColumn = styled(Column)`
+  max-width: 200px;
+  border-right: 1px solid ${props => props.theme.border};
+`;
+
+export const AssetPanelContentContainer = styled(Row)`
+  flex: 1;
+  overflow: hidden;
+`;
+
+function getSources(editor) {
+  const isAuthenticated = editor.api.isAuthenticated();
+  return editor.sources.filter(source => !source.requiresAuthentication || isAuthenticated);
+}
+
+export default function AssetsPanel() {
+  const editor = useContext(EditorContext);
+  const [sources, setSources] = useState(getSources(editor));
+  const [selectedSource, setSelectedSource] = useState(sources.length > 0 ? sources[0] : null);
+  const SourceComponent = selectedSource && selectedSource.component;
+
+  useEffect(() => {
+    const onSetSource = sourceId => {
+      setSelectedSource(sources.find(s => s.id === sourceId));
+    };
+
+    const onAuthChanged = () => {
+      const nextSources = getSources(editor);
+      setSources(nextSources);
+
+      if (nextSources.indexOf(selectedSource) === -1) {
+        setSelectedSource(nextSources.length > 0 ? nextSources[0] : null);
+      }
+    };
+
+    editor.addListener("setSource", onSetSource);
+    editor.api.addListener("authentication-changed", onAuthChanged);
+
+    return () => {
+      editor.removeListener("setSource", onSetSource);
+      editor.api.removeListener("authentication-changed", onAuthChanged);
+    };
+  }, [editor, setSelectedSource, sources, setSources, selectedSource]);
+
+  return (
+    <AssetsPanelContainer id="assets-panel">
+      <AssetsPanelColumn flex>
+        <AssetsPanelToolbar title="Assets" />
+        <List>
+          {sources.map(source => (
+            <ListItem key={source.id} onClick={() => setSelectedSource(source)} selected={selectedSource === source}>
+              {source.name}
+            </ListItem>
+          ))}
+        </List>
+      </AssetsPanelColumn>
+      <Column flex>{SourceComponent && <SourceComponent source={selectedSource} editor={editor} />}</Column>
+    </AssetsPanelContainer>
+  );
+}

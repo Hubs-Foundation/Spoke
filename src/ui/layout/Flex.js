@@ -31,6 +31,7 @@ export const Row = styled.div`
 
 export const VerticalScrollContainer = styled(Column)`
   overflow-y: auto;
+  min-height: 0;
 `;
 
 export const HorizontalScrollContainer = styled(Row)`

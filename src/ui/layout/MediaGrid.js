@@ -1,7 +1,6 @@
 import React from "react";
 import PropTypes from "prop-types";
 import styled from "styled-components";
-import Icon from "../inputs/Icon";
 
 const MediaGridItemContainer = styled.div`
   position: relative;
@@ -37,7 +36,8 @@ const MediaGridItemContainer = styled.div`
 
 MediaGridItemContainer.propTypes = {
   aspectRatio: PropTypes.number.isRequired,
-  borderRadius: PropTypes.number.isRequired
+  borderRadius: PropTypes.number.isRequired,
+  selected: PropTypes.bool
 };
 
 MediaGridItemContainer.defaultProps = {
@@ -79,6 +79,7 @@ const MediaGridItemIconContainer = styled.div`
   overflow: hidden;
 
   div {
+    margin-top: 8px;
     display: block;
     text-overflow: ellipsis;
     overflow: hidden;
@@ -116,12 +117,12 @@ ImageMediaGridItem.propTypes = {
   label: PropTypes.string
 };
 
-export function IconMediaGridItem({ label, iconComponent, ...rest }) {
+export function IconMediaGridItem({ label, iconComponent: IconComponent, ...rest }) {
   return (
     <MediaGridItemContainer {...rest}>
       <MediaGridItemContent>
         <MediaGridItemIconContainer>
-          <Icon as={iconComponent} title={label} />
+          <IconComponent size={48} />
           {label && <div>{label}</div>}
         </MediaGridItemIconContainer>
       </MediaGridItemContent>
@@ -130,7 +131,7 @@ export function IconMediaGridItem({ label, iconComponent, ...rest }) {
 }
 
 IconMediaGridItem.propTypes = {
-  iconComponent: PropTypes.string,
+  iconComponent: PropTypes.object,
   label: PropTypes.string
 };
 

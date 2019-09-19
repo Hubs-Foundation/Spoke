@@ -39,8 +39,18 @@ import LinkNodeEditor from "./ui/properties/LinkNodeEditor";
 import ParticleEmitterNode from "./editor/nodes/ParticleEmitterNode";
 import ParticleEmitterNodeEditor from "./ui/properties/ParticleEmitterNodeEditor";
 
-export function createEditor(api) {
-  const editor = new Editor(api);
+import SketchfabSource from "./ui/assets/sources/SketchfabSource";
+import PolySource from "./ui/assets/sources/PolySource";
+import BingImagesSource from "./ui/assets/sources/BingImagesSource";
+import BingVideosSource from "./ui/assets/sources/BingVideosSource";
+import TwitchSource from "./ui/assets/sources/TwitchSource";
+import TenorSource from "./ui/assets/sources/TenorSource";
+import ElementsSource from "./ui/assets/sources/ElementsSource";
+import MyAssetsSource from "./ui/assets/sources/MyAssetsSource";
+
+export function createEditor(api, settings) {
+  const editor = new Editor(api, settings);
+
   editor.registerNode(SceneNode, SceneNodeEditor);
   editor.registerNode(GroupNode, GroupNodeEditor);
   editor.registerNode(ModelNode, ModelNodeEditor);
@@ -60,5 +70,15 @@ export function createEditor(api) {
   editor.registerNode(TriggerVolumeNode, TriggerVolumeNodeEditor);
   editor.registerNode(LinkNode, LinkNodeEditor);
   editor.registerNode(ParticleEmitterNode, ParticleEmitterNodeEditor);
+
+  editor.registerSource(new ElementsSource(editor));
+  editor.registerSource(new MyAssetsSource(editor));
+  editor.registerSource(new SketchfabSource(api));
+  editor.registerSource(new PolySource(api));
+  editor.registerSource(new BingImagesSource(api));
+  editor.registerSource(new BingVideosSource(api));
+  editor.registerSource(new TwitchSource(api));
+  editor.registerSource(new TenorSource(api));
+
   return editor;
 }

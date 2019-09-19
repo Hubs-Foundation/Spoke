@@ -1,19 +1,29 @@
 import styled from "styled-components";
 
+function borderColor(props, defaultColor) {
+  if (props.canDrop) {
+    return props.theme.blue;
+  } else if (props.error) {
+    return props.theme.error;
+  } else {
+    return defaultColor;
+  }
+}
+
 const Input = styled.input`
   background-color: ${props => props.theme.inputBackground};
   border-radius: 4px;
-  border: 1px solid ${props => props.theme.border};
+  border: 1px solid ${props => borderColor(props, props.theme.border)};
   color: ${props => props.theme.text};
   height: 24px;
   padding: 6px 8px;
 
   &:hover {
-    border-color: ${props => props.theme.blueHover};
+    border-color: ${props => borderColor(props, props.theme.blueHover)};
   }
 
   &:focus {
-    border-color: ${props => props.theme.blue};
+    border-color: ${props => borderColor(props, props.theme.blue)};
   }
 
   &:disabled {

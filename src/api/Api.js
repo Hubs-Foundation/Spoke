@@ -5,7 +5,6 @@ import AuthContainer from "./AuthContainer";
 import LoginDialog from "./LoginDialog";
 import PublishDialog from "./PublishDialog";
 import ProgressDialog from "../ui/dialogs/ProgressDialog";
-import Fuse from "fuse.js";
 import jwtDecode from "jwt-decode";
 import { buildAbsoluteURL } from "url-toolkit";
 import PublishedSceneDialog from "./PublishedSceneDialog";
@@ -277,7 +276,6 @@ export default class Project extends EventEmitter {
 
   async getContentType(url) {
     const result = await this.resolveUrl(url);
-    console.log(result);
     const canonicalUrl = result.origin;
     const accessibleUrl = proxiedUrlFor(canonicalUrl);
 
@@ -930,63 +928,8 @@ export default class Project extends EventEmitter {
     });
   }
 
-  async getProjectAssets(projectId, params) {
-    const token = this.getToken();
-    const projectAssetsEndpoint = `https://${RETICULUM_SERVER}/api/v1/projects/${projectId}/assets`;
-    const headers = {
-      "content-type": "application/json",
-      authorization: `Bearer ${token}`
-    };
-    const resp = await this.fetch(projectAssetsEndpoint, { headers });
-    const json = await resp.json();
-
-    // TODO: Filter assets server-side
-    let assets = json.assets;
-
-    if (params.type) {
-      assets = assets.filter(a => a.type === params.type);
-    }
-
-    if (params.query) {
-      const options = {
-        shouldSort: true,
-        threshold: 0.6,
-        location: 0,
-        distance: 100,
-        maxPatternLength: 32,
-        minMatchCharLength: 1,
-        keys: ["name"]
-      };
-      const fuse = new Fuse(assets, options);
-      assets = fuse.search(params.query);
-    }
-
-    assets = assets.map(asset => ({
-      id: asset.asset_id,
-      name: asset.name,
-      url: asset.file_url,
-      type: asset.type,
-      attributions: {},
-      images: {
-        preview: { url: asset.thumbnail_url }
-      }
-    }));
-
-    return { results: assets, nextCursor: 0 };
-  }
-
   uploadAssets(editor, files, onProgress, signal) {
     return this._uploadAssets(`https://${RETICULUM_SERVER}/api/v1/assets`, editor, files, onProgress, signal);
-  }
-
-  uploadProjectAssets(editor, projectId, files, onProgress, signal) {
-    return this._uploadAssets(
-      `https://${RETICULUM_SERVER}/api/v1/projects/${projectId}/assets`,
-      editor,
-      files,
-      onProgress,
-      signal
-    );
   }
 
   async _uploadAssets(endpoint, editor, files, onProgress, signal) {
@@ -1090,25 +1033,6 @@ export default class Project extends EventEmitter {
         preview: { url: asset.thumbnail_url }
       }
     };
-  }
-
-  async addAssetToProject(projectId, assetId) {
-    const token = this.getToken();
-
-    const headers = {
-      "content-type": "application/json",
-      authorization: `Bearer ${token}`
-    };
-
-    const body = JSON.stringify({
-      asset_id: assetId
-    });
-
-    const projectAssetsEndpoint = `https://${RETICULUM_SERVER}/api/v1/projects/${projectId}/assets`;
-
-    const resp = await this.fetch(projectAssetsEndpoint, { method: "POST", headers, body });
-
-    return resp.ok;
   }
 
   async deleteAsset(assetId) {
