@@ -14,6 +14,7 @@ const MediaGridItemContainer = styled.div`
   border-radius: ${props => props.borderRadius}px;
   background-color: ${props => props.theme.panel2};
   border: 2px solid ${props => (props.selected ? props.theme.selected : "transparent")};
+  cursor: pointer;
 
   ::before {
     content: "";

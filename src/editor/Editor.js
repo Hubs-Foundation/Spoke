@@ -74,6 +74,7 @@ import SetSelectionCommand from "./commands/SetSelectionCommand";
 import TranslateCommand from "./commands/TranslateCommand";
 import TranslateMultipleCommand from "./commands/TranslateMultipleCommand";
 import GroupMultipleCommand from "./commands/GroupMultipleCommand";
+import ReparentMultipleWithPositionCommand from "./commands/ReparentMultipleWithPositionCommand";
 
 import GroupNode from "./nodes/GroupNode";
 import ModelNode from "./nodes/ModelNode";
@@ -433,6 +434,12 @@ export default class Editor extends EventEmitter {
         Math.round(target.z / translationSnap) * translationSnap
       );
     }
+  }
+
+  reparentToSceneAtCursorPosition(objects) {
+    const newPosition = new Vector3();
+    this.getCursorSpawnPosition(newPosition);
+    this.history.execute(new ReparentMultipleWithPositionCommand(this, objects, this.scene, undefined, newPosition));
   }
 
   async takeScreenshot(width, height) {

@@ -94,8 +94,18 @@ export default function ViewportPanelContainer() {
   }, [editor, canvasRef, onEditorInitialized, onSelectionChanged, onFlyModeChanged]);
 
   const [{ canDrop, isOver }, dropRef] = useDrop({
-    accept: [ItemTypes.Model, ...AssetTypes],
+    accept: [ItemTypes.Node, ...AssetTypes],
     drop(item) {
+      if (item.type === ItemTypes.Node) {
+        if (item.multiple) {
+          editor.reparentToSceneAtCursorPosition(item.value);
+        } else {
+          editor.reparentToSceneAtCursorPosition([item.value]);
+        }
+
+        return;
+      }
+
       addAssetAtCursorPositionOnDrop(editor, item);
     },
     collect: monitor => ({

@@ -296,7 +296,7 @@ function TreeNode(props) {
   const [{ canDropOn, isOverOn }, onDropTarget] = useDrop({
     accept: [ItemTypes.Node, ...AssetTypes],
     drop(item) {
-      if (addAssetOnDrop(editor, item)) {
+      if (addAssetOnDrop(editor, item, node.object)) {
         return;
       } else {
         if (item.multiple) {
@@ -694,9 +694,13 @@ export default function HierarchyPanel() {
   );
 
   const [{ isOver, canDrop }, treeContainerDropTarget] = useDrop({
-    accept: ItemTypes.Node,
+    accept: [ItemTypes.Node, ...AssetTypes],
     drop(item, monitor) {
       if (monitor.didDrop()) {
+        return;
+      }
+
+      if (addAssetOnDrop(editor, item)) {
         return;
       }
 
@@ -707,6 +711,10 @@ export default function HierarchyPanel() {
       }
     },
     canDrop(item) {
+      if (isAsset(item)) {
+        return true;
+      }
+
       return !(item.multiple
         ? item.value.some(otherObject => isAncestor(otherObject, sceneRootNode.object))
         : isAncestor(item.value, sceneRootNode.object));
