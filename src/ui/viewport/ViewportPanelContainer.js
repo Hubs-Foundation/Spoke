@@ -1,22 +1,44 @@
-import React, { Component } from "react";
-import PropTypes from "prop-types";
-import { withEditor } from "../contexts/EditorContext";
+import React, { useEffect, useRef, useCallback, useContext, useState } from "react";
+import { EditorContext } from "../contexts/EditorContext";
 import styled from "styled-components";
-import LibraryContainer from "../library/LibraryContainer";
 import Panel from "../layout/Panel";
 import { WindowMaximize } from "styled-icons/fa-solid/WindowMaximize";
+import { Resizeable } from "../layout/Resizeable";
+import AssetsPanel from "../assets/AssetsPanel";
+import { useDrop } from "react-dnd";
+import { ItemTypes, AssetTypes, addAssetAtCursorPositionOnDrop } from "../dnd";
 
-const LibraryToolbarContainer = styled.div`
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  pointer-events: none;
-`;
+function borderColor(props, defaultColor) {
+  if (props.canDrop) {
+    return props.theme.blue;
+  } else if (props.error) {
+    return props.theme.error;
+  } else {
+    return defaultColor;
+  }
+}
 
 const Viewport = styled.canvas`
   width: 100%;
   height: 100%;
+  position: relative;
+`;
+
+const ViewportContainer = styled.div`
+  display: flex;
+  flex: 1;
+  position: relative;
+
+  ::after {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    content: "";
+    pointer-events: none;
+    border: 1px solid ${props => borderColor(props, "transparent")};
+  }
 `;
 
 const ControlsText = styled.div`
@@ -29,74 +51,83 @@ const ControlsText = styled.div`
   text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.5);
 `;
 
-class ViewportPanelContainer extends Component {
-  static propTypes = {
-    editor: PropTypes.object,
-    showDialog: PropTypes.func,
-    hideDialog: PropTypes.func
-  };
+const initialPanelSizes = [0.8, 0.2];
 
-  constructor(props) {
-    super(props);
+export default function ViewportPanelContainer() {
+  const editor = useContext(EditorContext);
+  const canvasRef = useRef();
+  const [flyModeEnabled, setFlyModeEnabled] = useState(false);
+  const [objectSelected, setObjectSelected] = useState(false);
 
-    this.canvasRef = React.createRef();
+  const onSelectionChanged = useCallback(() => {
+    setObjectSelected(editor.selected.length > 0);
+  }, [editor]);
 
-    this.state = {
-      flyModeEnabled: false
+  const onFlyModeChanged = useCallback(() => {
+    setFlyModeEnabled(editor.flyControls.enabled);
+  }, [editor, setFlyModeEnabled]);
+
+  const onResize = useCallback(() => {
+    editor.onResize();
+  }, [editor]);
+
+  const onEditorInitialized = useCallback(() => {
+    editor.addListener("selectionChanged", onSelectionChanged);
+    editor.spokeControls.addListener("flyModeChanged", onFlyModeChanged);
+  }, [editor, onSelectionChanged, onFlyModeChanged]);
+
+  useEffect(() => {
+    editor.addListener("initialized", onEditorInitialized);
+    editor.initializeRenderer(canvasRef.current);
+
+    return () => {
+      editor.removeListener("selectionChanged", onSelectionChanged);
+
+      if (editor.spokeControls) {
+        editor.spokeControls.removeListener("flyModeChanged", onFlyModeChanged);
+      }
+
+      if (editor.renderer) {
+        editor.renderer.dispose();
+      }
     };
-  }
+  }, [editor, canvasRef, onEditorInitialized, onSelectionChanged, onFlyModeChanged]);
 
-  componentDidMount() {
-    const editor = this.props.editor;
-    editor.addListener("initialized", this.onEditorInitialized);
-    editor.initializeRenderer(this.canvasRef.current);
-  }
+  const [{ canDrop, isOver }, dropRef] = useDrop({
+    accept: [ItemTypes.Node, ...AssetTypes],
+    drop(item) {
+      if (item.type === ItemTypes.Node) {
+        if (item.multiple) {
+          editor.reparentToSceneAtCursorPosition(item.value);
+        } else {
+          editor.reparentToSceneAtCursorPosition([item.value]);
+        }
 
-  componentWillUnmount() {
-    const editor = this.props.editor;
+        return;
+      }
 
-    editor.removeListener("selectionChanged", this.onSelectionChanged);
-
-    if (editor.spokeControls) {
-      editor.spokeControls.removeListener("flyModeChanged", this.onFlyModeChanged);
-    }
-
-    if (editor.renderer) {
-      editor.renderer.dispose();
-    }
-  }
-
-  onEditorInitialized = () => {
-    const editor = this.props.editor;
-    editor.addListener("selectionChanged", this.onSelectionChanged);
-    editor.spokeControls.addListener("flyModeChanged", this.onFlyModeChanged);
-  };
-
-  onFlyModeChanged = () => {
-    this.setState({ flyModeEnabled: this.props.editor.flyControls.enabled });
-  };
-
-  onSelectionChanged = () => {
-    this.setState({ objectSelected: this.props.editor.selected.length > 0 });
-  };
+      addAssetAtCursorPositionOnDrop(editor, item);
+    },
+    collect: monitor => ({
+      canDrop: monitor.canDrop(),
+      isOver: monitor.isOver()
+    })
+  });
 
   // id used in onboarding
-
-  render() {
-    return (
-      <Panel id="viewport-panel" title="Viewport" icon={WindowMaximize}>
-        <Viewport ref={this.canvasRef} tabIndex="-1" />
-        <LibraryToolbarContainer>
-          <LibraryContainer />
-        </LibraryToolbarContainer>
-        <ControlsText>
-          {this.state.flyModeEnabled
-            ? "[W][A][S][D] Move Camera | [Shift] Fly faster"
-            : `[LMB] Orbit / Select | [MMB] Pan | [RMB] Fly ${this.state.objectSelected ? "| [F] Focus" : ""}`}
-        </ControlsText>
-      </Panel>
-    );
-  }
+  return (
+    <Panel id="viewport-panel" title="Viewport" icon={WindowMaximize}>
+      <Resizeable axis="y" onChange={onResize} min={0.01} initialSizes={initialPanelSizes}>
+        <ViewportContainer error={isOver && !canDrop} canDrop={isOver && canDrop} ref={dropRef}>
+          <Viewport ref={canvasRef} tabIndex="-1" />
+          <ControlsText>
+            {flyModeEnabled
+              ? "[W][A][S][D] Move Camera | [Shift] Fly faster"
+              : `[LMB] Orbit / Select | [MMB] Pan | [RMB] Fly ${objectSelected ? "| [F] Focus" : ""}`}
+          </ControlsText>
+        </ViewportContainer>
+        <AssetsPanel />
+      </Resizeable>
+    </Panel>
+  );
 }
-
-export default withEditor(ViewportPanelContainer);

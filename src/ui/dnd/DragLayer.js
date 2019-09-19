@@ -30,7 +30,7 @@ export default function DragLayer() {
   const { item, itemType, currentOffset, isDragging } = useDragLayer(monitor => ({
     item: monitor.getItem(),
     itemType: monitor.getItemType(),
-    currentOffset: monitor.getSourceClientOffset(),
+    currentOffset: monitor.getClientOffset(),
     isDragging: monitor.isDragging()
   }));
 
@@ -45,6 +45,12 @@ export default function DragLayer() {
       preview = <div>{`${item.value.length} Nodes Selected`}</div>;
     } else {
       preview = <div>{item.value.name}</div>;
+    }
+  } else if (itemType === ItemTypes.Model) {
+    if (item.multiple) {
+      preview = <div>{`${item.value.length} Models Selected`}</div>;
+    } else {
+      preview = <div>{item.value.label}</div>;
     }
   } else {
     preview = <div>{item.type}</div>;

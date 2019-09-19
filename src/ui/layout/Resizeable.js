@@ -62,8 +62,8 @@ export class Resizeable extends Component {
   static propTypes = {
     children: PropTypes.node,
     initialSizes: PropTypes.arrayOf(PropTypes.number),
-    min: PropTypes.number,
-    axis: PropTypes.string,
+    min: PropTypes.number.isRequired,
+    axis: PropTypes.string.isRequired,
     onChange: PropTypes.func
   };
 

@@ -64,7 +64,7 @@ export default class EditorContainer extends Component {
       settings = JSON.parse(storedSettings);
     }
 
-    const editor = createEditor(props.api);
+    const editor = createEditor(props.api, settings);
     window.editor = editor;
     const editorInitPromise = editor.init();
 
@@ -289,6 +289,9 @@ export default class EditorContainer extends Component {
   updateSetting(key, value) {
     const settings = Object.assign(this.state.settingsContext.settings, { [key]: value });
     localStorage.setItem("spoke-settings", JSON.stringify(settings));
+    const editor = this.state.editor;
+    editor.settings = settings;
+    editor.emit("settingsChanged");
     this.setState({
       settingsContext: {
         ...this.state.settingsContext,

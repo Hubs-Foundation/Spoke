@@ -1,6 +1,6 @@
 import React from "react";
 
-const DialogContext = React.createContext({
+export const DialogContext = React.createContext({
   showDialog: () => {},
   hideDialog: () => {}
 });

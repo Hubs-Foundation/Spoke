@@ -1,15 +1,26 @@
-import React, { Component } from "react";
-import LibraryInput from "./LibraryInput";
-import ModelsLibrary from "../library/ModelsLibrary";
+import React from "react";
+import PropTypes from "prop-types";
+import StringInput from "./StringInput";
+import { useDrop } from "react-dnd";
+import { ItemTypes } from "../dnd";
 
-const nodeProps = {
-  scaleToFit: true // When you update the model, always scale it
-};
+export default function ModelInput({ onChange, ...rest }) {
+  const [{ canDrop, isOver }, dropRef] = useDrop({
+    accept: [ItemTypes.Model],
+    drop(item) {
+      onChange(item.value.url, { scaleToFit: item.value.initialProps && item.value.initialProps.scaleToFit });
+    },
+    collect: monitor => ({
+      canDrop: monitor.canDrop(),
+      isOver: monitor.isOver()
+    })
+  });
 
-export default class ModelInput extends Component {
-  render() {
-    return (
-      <LibraryInput {...this.props} nodeProps={nodeProps} dialogTitle="Select a Model..." component={ModelsLibrary} />
-    );
-  }
+  return (
+    <StringInput ref={dropRef} onChange={onChange} error={isOver && !canDrop} canDrop={isOver && canDrop} {...rest} />
+  );
 }
+
+ModelInput.propTypes = {
+  onChange: PropTypes.func.isRequired
+};

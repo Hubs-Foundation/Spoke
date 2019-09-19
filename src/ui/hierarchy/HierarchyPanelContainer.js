@@ -8,7 +8,7 @@ import Panel from "../layout/Panel";
 import { EditorContext } from "../contexts/EditorContext";
 import { useDrag, useDrop } from "react-dnd";
 import { getEmptyImage } from "react-dnd-html5-backend";
-import { ItemTypes } from "../dnd";
+import { ItemTypes, addAssetOnDrop, isAsset, AssetTypes } from "../dnd";
 import traverseEarlyOut from "../../editor/utils/traverseEarlyOut";
 import { CaretRight } from "styled-icons/fa-solid/CaretRight";
 import { CaretDown } from "styled-icons/fa-solid/CaretDown";
@@ -228,15 +228,23 @@ function TreeNode(props) {
   }, [preview]);
 
   const [{ canDropBefore, isOverBefore }, beforeDropTarget] = useDrop({
-    accept: ItemTypes.Node,
+    accept: [ItemTypes.Node, ...AssetTypes],
     drop(item) {
-      if (item.multiple) {
-        editor.reparentMultiple(item.value, node.object.parent, node.object);
+      if (addAssetOnDrop(editor, item, node.object.parent, node.object)) {
+        return;
       } else {
-        editor.reparent(item.value, node.object.parent, node.object);
+        if (item.multiple) {
+          editor.reparentMultiple(item.value, node.object.parent, node.object);
+        } else {
+          editor.reparent(item.value, node.object.parent, node.object);
+        }
       }
     },
     canDrop(item) {
+      if (isAsset(item)) {
+        return true;
+      }
+
       return (
         node.object.parent &&
         !(item.multiple
@@ -251,16 +259,25 @@ function TreeNode(props) {
   });
 
   const [{ canDropAfter, isOverAfter }, afterDropTarget] = useDrop({
-    accept: ItemTypes.Node,
+    accept: [ItemTypes.Node, ...AssetTypes],
     drop(item) {
       const next = !node.last && node.parent.children[node.index + 1];
-      if (item.multiple) {
-        editor.reparentMultiple(item.value, node.object.parent, next && next.object);
+
+      if (addAssetOnDrop(editor, item, node.object.parent, next && next.object)) {
+        return;
       } else {
-        editor.reparent(item.value, node.object.parent, next && next.object);
+        if (item.multiple) {
+          editor.reparentMultiple(item.value, node.object.parent, next && next.object);
+        } else {
+          editor.reparent(item.value, node.object.parent, next && next.object);
+        }
       }
     },
     canDrop(item) {
+      if (isAsset(item)) {
+        return true;
+      }
+
       const isExpanded = node.children && node.children.length > 0 && !props.collapsedNodes[node.id];
       return (
         node.object.parent &&
@@ -277,15 +294,23 @@ function TreeNode(props) {
   });
 
   const [{ canDropOn, isOverOn }, onDropTarget] = useDrop({
-    accept: ItemTypes.Node,
+    accept: [ItemTypes.Node, ...AssetTypes],
     drop(item) {
-      if (item.multiple) {
-        editor.reparentMultiple(item.value, node.object);
+      if (addAssetOnDrop(editor, item, node.object)) {
+        return;
       } else {
-        editor.reparent(item.value, node.object);
+        if (item.multiple) {
+          editor.reparentMultiple(item.value, node.object);
+        } else {
+          editor.reparent(item.value, node.object);
+        }
       }
     },
     canDrop(item) {
+      if (isAsset(item)) {
+        return true;
+      }
+
       return !(item.multiple
         ? item.value.some(otherObject => isAncestor(otherObject, node.object))
         : isAncestor(item.value, node.object));
@@ -669,9 +694,13 @@ export default function HierarchyPanel() {
   );
 
   const [{ isOver, canDrop }, treeContainerDropTarget] = useDrop({
-    accept: ItemTypes.Node,
+    accept: [ItemTypes.Node, ...AssetTypes],
     drop(item, monitor) {
       if (monitor.didDrop()) {
+        return;
+      }
+
+      if (addAssetOnDrop(editor, item)) {
         return;
       }
 
@@ -682,6 +711,10 @@ export default function HierarchyPanel() {
       }
     },
     canDrop(item) {
+      if (isAsset(item)) {
+        return true;
+      }
+
       return !(item.multiple
         ? item.value.some(otherObject => isAncestor(otherObject, sceneRootNode.object))
         : isAncestor(item.value, sceneRootNode.object));
