@@ -426,7 +426,7 @@ export default class Editor extends EventEmitter {
       this.raycaster.ray.at(20, target);
     }
 
-    if (this.spokeControls.snapEnabled) {
+    if (this.spokeControls.shouldSnap()) {
       const translationSnap = this.spokeControls.translationSnap;
 
       target.set(

@@ -20,6 +20,8 @@ export default function MediaSourcePanel({ editor, source, searchPlaceholder, in
         Object.assign(node, initialProps);
       }
 
+      editor.getSpawnPosition(node.position);
+
       editor.addObject(node);
     },
     [editor]
