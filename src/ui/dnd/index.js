@@ -29,7 +29,7 @@ export function addAssetOnDrop(editor, item, parent, before) {
   return false;
 }
 
-export function addAssetAtCursorPositionOnDrop(editor, item) {
+export function addAssetAtCursorPositionOnDrop(editor, item, mousePos) {
   if (isAsset(item)) {
     const { nodeClass, initialProps } = item.value;
     const node = new nodeClass(editor);
@@ -38,7 +38,7 @@ export function addAssetAtCursorPositionOnDrop(editor, item) {
       Object.assign(node, initialProps);
     }
 
-    editor.getCursorSpawnPosition(node.position);
+    editor.getCursorSpawnPosition(mousePos, node.position);
 
     editor.addObject(node);
 

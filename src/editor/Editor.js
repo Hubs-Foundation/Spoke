@@ -82,8 +82,6 @@ import VideoNode from "./nodes/VideoNode";
 import ImageNode from "./nodes/ImageNode";
 import LinkNode from "./nodes/LinkNode";
 
-import { Spoke } from "./controls/input-mappings";
-
 const tempMatrix1 = new Matrix4();
 const tempMatrix2 = new Matrix4();
 const tempMatrix3 = new Matrix4();
@@ -409,9 +407,12 @@ export default class Editor extends EventEmitter {
     return this.getScreenSpaceSpawnPosition(this.centerScreenSpace, target);
   }
 
-  getCursorSpawnPosition(target) {
-    const cursorPosition = this.inputManager.get(Spoke.cursorPosition);
-    return this.getScreenSpaceSpawnPosition(cursorPosition, target);
+  getCursorSpawnPosition(mousePos, target) {
+    const rect = this.renderer.canvas.getBoundingClientRect();
+    const position = new Vector2();
+    position.x = ((mousePos.x - rect.left) / rect.width) * 2 - 1;
+    position.y = ((mousePos.y - rect.top) / rect.height) * -2 + 1;
+    return this.getScreenSpaceSpawnPosition(position, target);
   }
 
   getScreenSpaceSpawnPosition(screenSpacePosition, target) {
@@ -425,7 +426,7 @@ export default class Editor extends EventEmitter {
       this.raycaster.ray.at(20, target);
     }
 
-    if (this.spokeControls.snapEnabled) {
+    if (this.spokeControls.shouldSnap()) {
       const translationSnap = this.spokeControls.translationSnap;
 
       target.set(
@@ -436,9 +437,9 @@ export default class Editor extends EventEmitter {
     }
   }
 
-  reparentToSceneAtCursorPosition(objects) {
+  reparentToSceneAtCursorPosition(objects, mousePos) {
     const newPosition = new Vector3();
-    this.getCursorSpawnPosition(newPosition);
+    this.getCursorSpawnPosition(mousePos, newPosition);
     this.history.execute(new ReparentMultipleWithPositionCommand(this, objects, this.scene, undefined, newPosition));
   }
 
