@@ -67,7 +67,6 @@ export default class Renderer {
     const camera = editor.camera;
     this.camera = camera;
 
-    this.onResize();
     this.update();
   }
 
@@ -92,7 +91,7 @@ export default class Renderer {
     camera.aspect = canvas.parentElement.offsetWidth / canvas.parentElement.offsetHeight;
     camera.updateProjectionMatrix();
 
-    this.renderer.setSize(canvas.offsetWidth, canvas.offsetHeight, false);
+    this.renderer.setSize(canvas.parentElement.offsetWidth, canvas.parentElement.offsetHeight, false);
     this.effectComposer.setSize(canvas.parentElement.offsetWidth, canvas.parentElement.offsetHeight);
   };
 

@@ -188,7 +188,6 @@ export default class InputManager {
     canvas.addEventListener("dblclick", this.onDoubleClick);
     canvas.addEventListener("click", this.onClick);
     canvas.addEventListener("contextmenu", this.onContextMenu);
-    window.addEventListener("resize", this.onResize);
     window.addEventListener("blur", this.onWindowBlur);
   }
 
@@ -675,7 +674,6 @@ export default class InputManager {
     canvas.removeEventListener("dblclick", this.onDoubleClick);
     canvas.removeEventListener("click", this.onClick);
     canvas.removeEventListener("contextmenu", this.onContextMenu);
-    window.removeEventListener("resize", this.onResize);
     window.removeEventListener("blur", this.onWindowBlur);
   }
 }
