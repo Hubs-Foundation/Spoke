@@ -77,8 +77,6 @@ export default class KitPackager {
       );
     });
 
-    console.log(chunks);
-
     zip.file(kitName + ".gltf", JSON.stringify(chunks.json));
 
     if (chunks.buffers.length === 1) {

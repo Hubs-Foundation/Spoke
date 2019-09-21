@@ -40,10 +40,11 @@ export default function PackageKitPage() {
     try {
       const file = files[0];
       const fileUrl = URL.createObjectURL(file);
-      const zipBlob = await kitPackager.package(file.name, fileUrl, setMessage);
+      const kitName = file.name.replace(".glb", "");
+      const zipBlob = await kitPackager.package(kitName, fileUrl, setMessage);
 
       const el = document.createElement("a");
-      const fileName = file.name + ".zip";
+      const fileName = kitName + ".zip";
       el.download = fileName;
       el.href = URL.createObjectURL(zipBlob);
       document.body.appendChild(el);
