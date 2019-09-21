@@ -93,7 +93,7 @@ export default class ModelNode extends EditorNodeMixin(Model) {
       this.attribution = { name, author, url };
     }
 
-    return gltf;
+    return gltf.scene;
   }
 
   // Overrides Model's load method and resolves the src url before loading.

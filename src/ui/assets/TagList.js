@@ -7,7 +7,7 @@ import { useSelectionHandler } from "./useSelection";
 import { Times } from "styled-icons/fa-solid/Times";
 
 function TagListItem({ tag, onClick, ...rest }) {
-  const onClickItem = useCallback(() => onClick(tag), [tag, onClick]);
+  const onClickItem = useCallback(e => onClick(tag, e), [tag, onClick]);
 
   return (
     <ListItem onClick={onClickItem} {...rest}>

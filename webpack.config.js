@@ -135,6 +135,28 @@ module.exports = env => {
           }
         },
         {
+          test: /\.(gltf)(\?.*$|$)/,
+          use: {
+            loader: "gltf-webpack-loader",
+            options: {
+              name: "[name]-[hash].[ext]",
+              outputPath: "assets/models"
+            }
+          }
+        },
+        {
+          test: /\.(bin)$/,
+          use: [
+            {
+              loader: "file-loader",
+              options: {
+                name: "[name]-[hash].[ext]",
+                outputPath: "assets/models"
+              }
+            }
+          ]
+        },
+        {
           test: /\.(mp4|webm)(\?.*$|$)/,
           use: {
             loader: "file-loader",

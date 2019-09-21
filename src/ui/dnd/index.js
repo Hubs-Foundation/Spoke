@@ -3,10 +3,11 @@ export const ItemTypes = {
   Model: "Model",
   Image: "Image",
   Video: "Video",
-  Element: "Element"
+  Element: "Element",
+  KitPiece: "KitPiece"
 };
 
-export const AssetTypes = [ItemTypes.Model, ItemTypes.Image, ItemTypes.Video, ItemTypes.Element];
+export const AssetTypes = [ItemTypes.Model, ItemTypes.Image, ItemTypes.Video, ItemTypes.Element, ItemTypes.KitPiece];
 
 export function isAsset(item) {
   return AssetTypes.indexOf(item.type) !== -1;

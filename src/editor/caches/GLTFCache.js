@@ -3,6 +3,7 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import Cache from "./Cache";
 import cloneObject3D from "../utils/cloneObject3D";
 import eventToMessage from "../utils/eventToMessage";
+import { findKitPiece } from "../kits/kit-piece-utils";
 
 function animationClipBelongsToScene(scene, clip) {
   return clip.tracks.every(track => {
@@ -22,7 +23,7 @@ export default class GLTFCache extends Cache {
     this.textureCache = textureCache;
   }
 
-  get(url) {
+  get(url, options = {}) {
     const absoluteURL = new URL(url, window.location).href;
     if (!this._cache.has(absoluteURL)) {
       const gltfPromise = new Promise((resolve, reject) => {
@@ -42,7 +43,17 @@ export default class GLTFCache extends Cache {
       this._cache.set(absoluteURL, gltfPromise);
     }
     return this._cache.get(absoluteURL).then(gltf => {
-      const clonedScene = cloneObject3D(gltf.scene);
+      let clonedScene;
+
+      if (options.pieceId !== undefined) {
+        const piece = findKitPiece(gltf.scene, options.pieceId);
+        console.log(options.pieceId, piece, gltf.scene);
+        clonedScene = cloneObject3D(piece);
+        clonedScene.animations = clonedScene.animations || [];
+      } else {
+        clonedScene = cloneObject3D(gltf.scene);
+      }
+
       const clonedGLTF = { ...gltf, scene: clonedScene, animations: clonedScene.animations };
       clonedGLTF.scene.traverse(obj => {
         if (!obj.material) return;
@@ -76,6 +87,11 @@ export default class GLTFCache extends Cache {
       });
       return clonedGLTF;
     });
+  }
+
+  async getPiece(url, pieceId) {
+    const gltf = await this.get(url, { pieceId });
+    return gltf.scene;
   }
 
   disposeAndClear() {

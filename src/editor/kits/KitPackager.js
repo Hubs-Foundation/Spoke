@@ -3,14 +3,7 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import JSZip from "jszip";
 import ThumbnailRenderer from "../renderer/ThumbnailRenderer";
 import eventToMessage from "../utils/eventToMessage";
-
-function getKitPieceComponent(object) {
-  return (
-    object.userData.gltfExtensions &&
-    object.userData.gltfExtensions.MOZ_hubs_components &&
-    object.userData.gltfExtensions.MOZ_hubs_components["kit-piece"]
-  );
-}
+import { getKitPieceComponent } from "./kit-piece-utils";
 
 export default class KitPackager {
   constructor() {
