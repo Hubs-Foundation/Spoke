@@ -29,6 +29,10 @@ const ProjectPage = lazy(() =>
   import(/* webpackChunkName: "project-page", webpackPrefetch: true */ "./projects/ProjectPage")
 );
 
+const PackageKitPage = lazy(() =>
+  import(/* webpackChunkName: "package-kit-page", webpackPrefetch: true */ "./assets/PackageKitPage")
+);
+
 export default class App extends Component {
   static propTypes = {
     api: PropTypes.object.isRequired
@@ -73,6 +77,7 @@ export default class App extends Component {
                   <Route path="/projects/templates" exact component={TemplatesPage} />
                   <Route path="/projects" exact component={ProjectsPage} />
                   <Route path="/projects/:projectId" component={ProjectPage} />
+                  <Route path="/kits/package" component={PackageKitPage} />
                   <Route render={() => <Error message="Page not found." />} />
                 </Switch>
               </Column>

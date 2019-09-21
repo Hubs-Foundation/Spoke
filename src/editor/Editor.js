@@ -15,6 +15,7 @@ import { GLTFExporter } from "three/examples/jsm/exporters/GLTFExporter";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import History from "./History";
 import Renderer from "./renderer/Renderer";
+import ThumbnailRenderer from "./renderer/ThumbnailRenderer";
 
 import SceneNode from "./nodes/SceneNode";
 import FloorPlanNode from "./nodes/FloorPlanNode";
@@ -199,6 +200,7 @@ export default class Editor extends EventEmitter {
   initializeRenderer(canvas) {
     try {
       this.renderer = new Renderer(this, canvas);
+      this.thumbnailRenderer = new ThumbnailRenderer();
       resolveRenderer();
     } catch (error) {
       rejectRenderer(error);
@@ -454,7 +456,7 @@ export default class Editor extends EventEmitter {
 
     if (file.name.toLowerCase().endsWith(".glb")) {
       const gltf = await new Promise((resolve, reject) => new GLTFLoader().load(url, resolve, undefined, reject));
-      blob = await this.renderer.generateThumbnail(gltf.scene, width, height);
+      blob = await this.thumbnailRenderer.generateThumbnail(gltf.scene, width, height);
     } else if ([".png", ".jpg", ".jpeg", ".gif", ".webp"].some(ext => file.name.toLowerCase().endsWith(ext))) {
       blob = await generateImageFileThumbnail(file);
     } else if (file.name.toLowerCase().endsWith(".mp4")) {
