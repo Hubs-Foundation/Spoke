@@ -447,10 +447,10 @@ class GLTFExporter {
       this.outputJSON.bufferViews = [];
     }
 
-    return new Promise(function(resolve) {
+    return new Promise(resolve => {
       const reader = new window.FileReader();
       reader.readAsArrayBuffer(blob);
-      reader.onloadend = function() {
+      reader.onloadend = () => {
         const buffer = GLTFExporter.Utils.getPaddedArrayBuffer(reader.result);
 
         const bufferView = {
@@ -557,7 +557,7 @@ class GLTFExporter {
 
     if (!shouldResize && !flipY) {
       fetch(image.src)
-        .then(function(response) {
+        .then(response => {
           return response.blob();
         })
         .then(onDone)
@@ -619,10 +619,10 @@ class GLTFExporter {
 
     if (this.options.mode === "glb") {
       this.pending.push(
-        new Promise(function(resolve, reject) {
-          this.transformImage(image, mimeType, flipY, reject, function(blob) {
+        new Promise((resolve, reject) => {
+          this.transformImage(image, mimeType, flipY, reject, blob => {
             this.processBufferViewImage(blob)
-              .then(function(bufferViewIndex) {
+              .then(bufferViewIndex => {
                 gltfImage.bufferView = bufferViewIndex;
 
                 resolve();
@@ -637,8 +637,8 @@ class GLTFExporter {
       gltfImage.uri = fileName + index + extension;
 
       this.pending.push(
-        new Promise(function(resolve, reject) {
-          this.transformImage(image, mimeType, flipY, reject, function(blob) {
+        new Promise((resolve, reject) => {
+          this.transformImage(image, mimeType, flipY, reject, blob => {
             this.outputImages[index] = blob;
 
             resolve();
@@ -1563,11 +1563,11 @@ class GLTFExporter {
     const GLB_CHUNK_TYPE_BIN = 0x004e4942;
 
     function readBinArrayBuffer(blob) {
-      return new Promise(function(resolve, reject) {
+      return new Promise((resolve, reject) => {
         const reader = new window.FileReader();
 
         reader.readAsArrayBuffer(blob);
-        reader.onloadend = function() {
+        reader.onloadend = () => {
           const binaryChunk = GLTFExporter.Utils.getPaddedArrayBuffer(reader.result);
           resolve(binaryChunk);
         };
@@ -1618,7 +1618,7 @@ class GLTFExporter {
     blobParts.push(jsonChunkPrefix, jsonChunk);
 
     if (chunks.buffers.length !== 0) {
-      const pendingBinChunk = readBinArrayBuffer(chunks.buffers[0]).then(function(binaryChunk) {
+      const pendingBinChunk = readBinArrayBuffer(chunks.buffers[0]).then(binaryChunk => {
         const binaryChunkPrefix = new DataView(new ArrayBuffer(GLB_CHUNK_PREFIX_BYTES));
         binaryChunkPrefix.setUint32(0, binaryChunk.byteLength, true);
         binaryChunkPrefix.setUint32(4, GLB_CHUNK_TYPE_BIN, true);
@@ -1653,7 +1653,7 @@ GLTFExporter.Utils = {
   equalArray(array1, array2) {
     return (
       array1.length === array2.length &&
-      array1.every(function(element, index) {
+      array1.every((element, index) => {
         return element === array2[index];
       })
     );
