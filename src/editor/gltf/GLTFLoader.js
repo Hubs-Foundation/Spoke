@@ -483,7 +483,8 @@ class GLTFLoader {
     const { json } = await this.getDependency("root");
     const sceneIndex = json.scene || 0;
     const scene = await this.getDependency("scene", sceneIndex);
-    scene.animations = await this.loadSceneAnimations(sceneIndex);
+    const sceneAnimations = await this.loadSceneAnimations(sceneIndex);
+    scene.animations = sceneAnimations || [];
     return { scene, json };
   }
 
@@ -773,7 +774,9 @@ class GLTFLoader {
 
     for (let animationIndex = 0; animationIndex < animationDefs.length; animationIndex++) {
       const animationDef = animationDefs[animationIndex];
-      const animationTargetsDecendant = animationDef.channels.some(channel => nodeIds.indexOf(channel.target) !== -1);
+      const animationTargetsDecendant = animationDef.channels.some(
+        channel => nodeIds.indexOf(channel.target.node) !== -1
+      );
 
       if (animationTargetsDecendant) {
         pending.push(this.loadAnimation(animationIndex));
