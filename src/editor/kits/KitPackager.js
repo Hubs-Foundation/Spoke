@@ -1,8 +1,7 @@
-import { GLTFExporter } from "three/examples/jsm/exporters/GLTFExporter";
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
+import { GLTFLoader } from "../gltf/GLTFLoader";
+import { GLTFExporter } from "../gltf/GLTFExporter";
 import JSZip from "jszip";
 import ThumbnailRenderer from "../renderer/ThumbnailRenderer";
-import eventToMessage from "../utils/eventToMessage";
 import { getKitPieceComponent } from "./kit-piece-utils";
 
 export default class KitPackager {
@@ -14,11 +13,13 @@ export default class KitPackager {
   async package(kitName, url, onProgress) {
     onProgress("Loading glb...");
 
-    const gltf = await new Promise((resolve, reject) => new GLTFLoader().load(url, resolve, undefined, reject));
+    const loader = new GLTFLoader(url);
+
+    const { scene } = await loader.loadGLTF();
 
     const pieces = [];
 
-    gltf.scene.traverse(object => {
+    scene.traverse(object => {
       if (getKitPieceComponent(object)) {
         pieces.push(object);
       }
@@ -52,23 +53,13 @@ export default class KitPackager {
       component.thumbnailUrl = "./thumbnails/" + thumbnailFileName;
     }
 
-    const exporter = new GLTFExporter();
-
-    const chunks = await new Promise((resolve, reject) => {
-      exporter.parseChunks(
-        gltf.scene,
-        resolve,
-        e => {
-          reject(new Error(`Error exporting scene. ${eventToMessage(e)}`));
-        },
-        {
-          mode: "gltf",
-          onlyVisible: false,
-          includeCustomExtensions: true,
-          animations: gltf.animations
-        }
-      );
+    const exporter = new GLTFExporter({
+      mode: "gltf",
+      onlyVisible: false,
+      includeCustomExtensions: true
     });
+
+    const chunks = await exporter.exportChunks(scene);
 
     zip.file(kitName + ".gltf", JSON.stringify(chunks.json));
 

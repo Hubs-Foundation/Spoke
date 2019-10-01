@@ -2,13 +2,14 @@ import Command from "./Command";
 import { serializeObject3D, serializeProperty } from "../utils/debug";
 
 export default class SetPropertyCommand extends Command {
-  constructor(editor, object, propertyName, value) {
+  constructor(editor, object, propertyName, value, disableCopy) {
     super(editor);
 
     this.object = object;
     this.propertyName = propertyName;
+    this.disableCopy = disableCopy;
 
-    if (value && value.clone) {
+    if (value && value.clone && !disableCopy) {
       this.newValue = value.clone();
     } else {
       this.newValue = value;
@@ -16,7 +17,7 @@ export default class SetPropertyCommand extends Command {
 
     const oldValue = this.object[propertyName];
 
-    if (oldValue && oldValue.clone) {
+    if (oldValue && oldValue.clone && !disableCopy) {
       this.oldValue = oldValue.clone();
     } else {
       this.oldValue = oldValue;
@@ -24,7 +25,7 @@ export default class SetPropertyCommand extends Command {
   }
 
   execute() {
-    this.editor.setProperty(this.object, this.propertyName, this.newValue, false);
+    this.editor.setProperty(this.object, this.propertyName, this.newValue, false, true, this.disableCopy);
   }
 
   shouldUpdate(newCommand) {
@@ -34,17 +35,17 @@ export default class SetPropertyCommand extends Command {
   update(command) {
     const newValue = command.newValue;
 
-    if (newValue && newValue.clone && newValue.copy) {
+    if (newValue && newValue.clone && newValue.copy && !this.disableCopy) {
       this.newValue = newValue.clone();
     } else {
       this.newValue = newValue;
     }
 
-    this.editor.setProperty(this.object, this.propertyName, this.newValue, false);
+    this.editor.setProperty(this.object, this.propertyName, this.newValue, false, true, this.disableCopy);
   }
 
   undo() {
-    this.editor.setProperty(this.object, this.propertyName, this.oldValue, false);
+    this.editor.setProperty(this.object, this.propertyName, this.oldValue, false, true, this.disableCopy);
   }
 
   toString() {

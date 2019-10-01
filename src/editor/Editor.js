@@ -131,7 +131,7 @@ export default class Editor extends EventEmitter {
     this.sources = [];
 
     this.textureCache = new TextureCache();
-    this.gltfCache = new GLTFCache(this.textureCache);
+    this.gltfCache = new GLTFCache();
 
     this.scene = new SceneNode(this);
     this.sceneModified = false;
@@ -1533,18 +1533,20 @@ export default class Editor extends EventEmitter {
     return this.setScaleMultiple(this.selectedTransformRoots, scale, space, useHistory, emitEvent);
   }
 
-  setProperty(object, propertyName, value, useHistory = true, emitEvent = true) {
+  setProperty(object, propertyName, value, useHistory = true, emitEvent = true, disableCopy = false) {
     if (useHistory) {
-      return this.history.execute(new SetPropertyCommand(this, object, propertyName, value));
+      return this.history.execute(new SetPropertyCommand(this, object, propertyName, value, disableCopy));
     }
 
-    if (value && value.copy) {
+    if (value && value.copy && !disableCopy) {
       object[propertyName].copy(value);
     } else {
       object[propertyName] = value;
     }
 
-    object.onChange(propertyName);
+    if (object.onChange) {
+      object.onChange(propertyName);
+    }
 
     if (emitEvent) {
       this.emit("objectsChanged", [object], propertyName);

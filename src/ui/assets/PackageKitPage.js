@@ -53,6 +53,7 @@ export default function PackageKitPage() {
 
       setMessage(`Downloading ${fileName}`);
     } catch (error) {
+      console.error(error);
       setMessage(error.message);
     } finally {
       setIsGenerating(false);

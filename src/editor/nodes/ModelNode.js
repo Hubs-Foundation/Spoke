@@ -81,19 +81,19 @@ export default class ModelNode extends EditorNodeMixin(Model) {
 
   // Overrides Model's loadGLTF method and uses the Editor's gltf cache.
   async loadGLTF(src) {
-    const gltf = await this.editor.gltfCache.get(src);
+    const { scene, json } = await this.editor.gltfCache.get(src);
 
-    const sketchfabExtras = gltf.asset && gltf.asset.extras;
+    const sketchfabExtras = json.asset && json.asset.extras;
 
     if (sketchfabExtras) {
       const name = sketchfabExtras.title;
       const author = sketchfabExtras.author.replace(/ \(http.+\)/, "");
       const url = sketchfabExtras.source || this._canonicalUrl;
-      gltf.scene.name = name;
+      scene.name = name;
       this.attribution = { name, author, url };
     }
 
-    return gltf.scene;
+    return scene;
   }
 
   // Overrides Model's load method and resolves the src url before loading.
@@ -186,7 +186,7 @@ export default class ModelNode extends EditorNodeMixin(Model) {
 
     setStaticMode(this.model, StaticModes.Static);
 
-    if (this.model.animations.length > 0) {
+    if (this.model.animations && this.model.animations.length > 0) {
       for (const animation of this.model.animations) {
         for (const track of animation.tracks) {
           const { nodeName: uuid } = PropertyBinding.parseTrackName(track.name);

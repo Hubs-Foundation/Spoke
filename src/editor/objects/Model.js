@@ -92,21 +92,23 @@ export default class Model extends Object3D {
       this.errorMesh = mesh;
       this.add(mesh);
       console.warn(`Error loading model node with src: "${src}": "${err.message || "unknown error"}"`);
+      console.error(err);
     }
 
     return this;
   }
 
   getClipOptions() {
-    const clipOptions = this.model
-      ? this.model.animations.map((clip, index) => ({ label: clip.name, value: index }))
-      : [];
+    const clipOptions =
+      this.model && this.model.animations
+        ? this.model.animations.map((clip, index) => ({ label: clip.name, value: index }))
+        : [];
     clipOptions.unshift({ label: "None", value: -1 });
     return clipOptions;
   }
 
   get activeClip() {
-    return (this.model && this.model.animations[this.activeClipIndex]) || null;
+    return (this.model && this.model.animations && this.model.animations[this.activeClipIndex]) || null;
   }
 
   get castShadow() {

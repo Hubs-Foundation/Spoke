@@ -171,6 +171,8 @@ export default class MeshCombinationGroup {
 
     const compareMaterial = MeshCombinationGroup.MaterialComparators[object.material.type];
 
+    console.log(object.name, object.material.type, object.userData.gltfExtensions);
+
     if (
       object.visible !== this.initialObject.visible ||
       object.castShadow !== this.initialObject.castShadow ||

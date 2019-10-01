@@ -2,6 +2,8 @@ import EditorNodeMixin from "./EditorNodeMixin";
 import Model from "../objects/Model";
 import { PropertyBinding } from "three";
 import { setStaticMode, StaticModes } from "../StaticMode";
+import { findKitPiece } from "../kits/kit-piece-utils";
+import cloneObject3D from "../utils/cloneObject3D";
 
 export default class KitPieceNode extends EditorNodeMixin(Model) {
   static legacyComponentName = "kit-piece";
@@ -13,9 +15,20 @@ export default class KitPieceNode extends EditorNodeMixin(Model) {
 
     loadAsync(
       (async () => {
-        const { src, pieceId } = json.components.find(c => c.name === "kit-piece").props;
+        const { src, pieceId, subPieces } = json.components.find(c => c.name === "kit-piece").props;
 
         await node.load(src, pieceId);
+
+        for (const { name, materialName } of subPieces) {
+          const object = node.getObjectByName(name);
+          if (object) {
+            const material = object.materialChoices.find(m => m.name === materialName);
+
+            if (material) {
+              object.material = material;
+            }
+          }
+        }
 
         node.collidable = !!json.components.find(c => c.name === "collidable");
         node.walkable = !!json.components.find(c => c.name === "walkable");
@@ -51,6 +64,7 @@ export default class KitPieceNode extends EditorNodeMixin(Model) {
     this._canonicalUrl = "";
     this.collidable = true;
     this.walkable = true;
+    this.subPieces = [];
   }
 
   get src() {
@@ -61,15 +75,17 @@ export default class KitPieceNode extends EditorNodeMixin(Model) {
     this.load(value, this.pieceId).catch(console.error);
   }
 
-  loadGLTF(src, pieceId) {
-    return this.editor.gltfCache.getPiece(src, pieceId);
+  async loadGLTF(src, pieceId) {
+    const { scene } = await this.editor.gltfCache.get(src, false);
+    const piece = findKitPiece(scene, pieceId);
+    return cloneObject3D(piece);
   }
 
   async load(src, pieceId) {
     const nextSrc = src || "";
-    const nextpieceId = pieceId || null;
+    const nextPieceId = pieceId || null;
 
-    if (nextSrc === this._canonicalUrl && nextpieceId === this.pieceId) {
+    if (nextSrc === this._canonicalUrl && nextPieceId === this.pieceId) {
       return;
     }
 
@@ -87,13 +103,21 @@ export default class KitPieceNode extends EditorNodeMixin(Model) {
       this.errorMesh = null;
     }
 
-    if (this.src)
+    if (this._canonicalUrl && nextPieceId) {
       try {
         const { accessibleUrl, files } = await this.editor.api.resolveMedia(src);
 
-        await super.load(accessibleUrl, pieceId);
+        await super.load(accessibleUrl, nextPieceId);
 
-        this.model.position.set(0, 0, 0);
+        if (this.model) {
+          this.model.position.set(0, 0, 0);
+
+          this.model.traverse(object => {
+            if (object.isKitSubPiece) {
+              this.subPieces.push(object);
+            }
+          });
+        }
 
         this.editor.emit("objectsChanged", [this]);
 
@@ -106,6 +130,7 @@ export default class KitPieceNode extends EditorNodeMixin(Model) {
       } catch (e) {
         console.error(e);
       }
+    }
 
     if (!this.model) {
       return this;
@@ -149,7 +174,11 @@ export default class KitPieceNode extends EditorNodeMixin(Model) {
     const components = {
       "kit-piece": {
         src: this._canonicalUrl,
-        pieceId: this.pieceId
+        pieceId: this.pieceId,
+        subPieces: this.subPieces.map(subPiece => ({
+          name: subPiece.name,
+          materialName: subPiece.material.name
+        }))
       },
       shadow: {
         cast: this.castShadow,
@@ -181,6 +210,39 @@ export default class KitPieceNode extends EditorNodeMixin(Model) {
     this._canonicalUrl = source._canonicalUrl;
     this.collidable = source.collidable;
     this.walkable = source.walkable;
+
+    this.model.traverse(object => {
+      if (object.isKitSubPiece) {
+        this.subPieces.push(object);
+      }
+    });
+
     return this;
+  }
+
+  prepareForExport(ctx) {
+    super.prepareForExport();
+    this.addGLTFComponent("shadow", {
+      cast: this.castShadow,
+      receive: this.receiveShadow
+    });
+
+    // TODO: Support exporting more than one active clip.
+    if (this.activeClip) {
+      const activeClipIndex = ctx.animations.indexOf(this.activeClip);
+
+      if (activeClipIndex === -1) {
+        throw new Error(
+          `Error exporting model "${this.name}" with url "${this._canonicalUrl}". Animation could not be found.`
+        );
+      } else {
+        this.addGLTFComponent("loop-animation", {
+          activeClipIndex: activeClipIndex
+        });
+      }
+    }
+
+    // Clear kit-piece extension data
+    this.model.userData = {};
   }
 }

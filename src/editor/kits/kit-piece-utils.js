@@ -1,11 +1,8 @@
 import findObject from "../utils/findObject";
+import { getComponent } from "../gltf/moz-hubs-components";
 
 export function getKitPieceComponent(object) {
-  return (
-    object.userData.gltfExtensions &&
-    object.userData.gltfExtensions.MOZ_hubs_components &&
-    object.userData.gltfExtensions.MOZ_hubs_components["kit-piece"]
-  );
+  return getComponent(object, "kit-piece");
 }
 
 export function isPiece(object, pieceId) {
