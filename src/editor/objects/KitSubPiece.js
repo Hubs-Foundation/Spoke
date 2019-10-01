@@ -17,7 +17,8 @@ export default class KitSubPiece extends Mesh {
   copy(source, recursive = true) {
     super.copy(source, recursive);
 
-    this.materialChoices = this.materialChoices.slice(0);
+    this.originalMaterial = source.originalMaterial;
+    this.materialChoices = source.materialChoices.slice(0);
 
     return this;
   }
