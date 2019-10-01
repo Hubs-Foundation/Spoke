@@ -1,4 +1,4 @@
-import kitUrl from "../../../assets/kits/KitTesting/KitTesting.gltf";
+import kitUrl from "../../../assets/kits/ArchitectureKit/ArchKitv6.gltf";
 import KitSource from "../KitSource";
 
 export default class ArchitectureKitSource extends KitSource {
