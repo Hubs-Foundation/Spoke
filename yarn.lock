@@ -6395,7 +6395,7 @@ globjoin@^0.1.4:
 
 "gltf-webpack-loader@https://github.com/MozillaReality/gltf-webpack-loader.git#fix/relative-and-output-paths":
   version "1.0.6"
-  resolved "https://github.com/MozillaReality/gltf-webpack-loader.git#729d371666685364bc32e7225ad073c542b20ec6"
+  resolved "https://github.com/MozillaReality/gltf-webpack-loader.git#4e562e511da981c14f25f87a28f825194035cdca"
   dependencies:
     loader-utils "^1.2.3"
     schema-utils "^1.0.0"
