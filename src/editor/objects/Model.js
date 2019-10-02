@@ -1,8 +1,9 @@
 import { Object3D, PlaneBufferGeometry, MeshBasicMaterial, DoubleSide, Mesh } from "three";
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
+import { GLTFLoader } from "../gltf/GLTFLoader";
 import cloneObject3D from "../utils/cloneObject3D";
 import eventToMessage from "../utils/eventToMessage";
 import loadErrorTexture from "../utils/loadErrorTexture";
+import { findKitPiece } from "../kits/kit-piece-utils";
 
 export default class Model extends Object3D {
   constructor() {
@@ -12,6 +13,7 @@ export default class Model extends Object3D {
     this.model = null;
     this.errorMesh = null;
     this._src = null;
+    this._pieceId = null;
     this._castShadow = false;
     this._receiveShadow = false;
     // Use index instead of references to AnimationClips to simplify animation cloning / track name remapping
@@ -23,19 +25,38 @@ export default class Model extends Object3D {
   }
 
   set src(value) {
-    this.load(value).catch(console.error);
+    this.load(value, this.pieceId).catch(console.error);
   }
 
-  loadGLTF(src) {
-    return new Promise((resolve, reject) => {
-      new GLTFLoader().load(src, resolve, null, e => {
-        reject(new Error(`Error loading Model. ${eventToMessage(e)}`));
-      });
-    });
+  get pieceId() {
+    return this._pieceId;
   }
 
-  async load(src) {
+  set pieceId(value) {
+    this.load(this.src, value).catch(console.error);
+  }
+
+  async loadGLTF(src, pieceId) {
+    try {
+      const gltf = await new GLTFLoader(src).loadGLTF();
+
+      let model = gltf.scene;
+
+      if (pieceId != null) {
+        model = findKitPiece(gltf.scene, pieceId);
+      }
+
+      model.animations = model.animations || [];
+
+      return model;
+    } catch (error) {
+      throw new Error(`Error loading Model. ${eventToMessage(error)}`);
+    }
+  }
+
+  async load(src, pieceId) {
     this._src = src;
+    this._pieceId = pieceId;
 
     if (this.errorMesh) {
       this.remove(this.errorMesh);
@@ -48,9 +69,9 @@ export default class Model extends Object3D {
     }
 
     try {
-      const { scene } = await this.loadGLTF(src);
-      this.model = scene;
-      this.add(scene);
+      const model = await this.loadGLTF(src, this._pieceId);
+      this.model = model;
+      this.add(model);
 
       this.castShadow = this._castShadow;
       this.receiveShadow = this._receiveShadow;
@@ -69,21 +90,23 @@ export default class Model extends Object3D {
       this.errorMesh = mesh;
       this.add(mesh);
       console.warn(`Error loading model node with src: "${src}": "${err.message || "unknown error"}"`);
+      console.error(err);
     }
 
     return this;
   }
 
   getClipOptions() {
-    const clipOptions = this.model
-      ? this.model.animations.map((clip, index) => ({ label: clip.name, value: index }))
-      : [];
+    const clipOptions =
+      this.model && this.model.animations
+        ? this.model.animations.map((clip, index) => ({ label: clip.name, value: index }))
+        : [];
     clipOptions.unshift({ label: "None", value: -1 });
     return clipOptions;
   }
 
   get activeClip() {
-    return (this.model && this.model.animations[this.activeClipIndex]) || null;
+    return (this.model && this.model.animations && this.model.animations[this.activeClipIndex]) || null;
   }
 
   get castShadow() {
@@ -159,6 +182,7 @@ export default class Model extends Object3D {
     }
 
     this._src = source._src;
+    this._pieceId = source._pieceId;
     this.activeClipIndex = source.activeClipIndex;
 
     return this;

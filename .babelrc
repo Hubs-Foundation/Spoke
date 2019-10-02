@@ -9,7 +9,9 @@
           "not ie 11",
           "not op_mini all"
         ],
-        "modules": false
+        "modules": false,
+        "useBuiltIns": "usage",
+        "corejs": 3
       }
     ]
   ],

@@ -1,7 +1,6 @@
 import EditorNodeMixin from "./EditorNodeMixin";
 import { Mesh, MeshBasicMaterial, Box3, Vector3, PlaneBufferGeometry, Object3D } from "three";
 import FloorPlan from "../objects/FloorPlan";
-import ModelNode from "./ModelNode";
 import GroundPlaneNode from "./GroundPlaneNode";
 import BoxColliderNode from "./BoxColliderNode";
 import mergeMeshGeometries from "../utils/mergeMeshGeometries";
@@ -107,27 +106,21 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
       walkableMeshes.push(groundPlaneNode.walkableMesh);
     }
 
-    const modelNodes = this.editor.scene.getNodesByType(ModelNode);
+    this.editor.scene.traverse(object => {
+      if (object.isNode && object.model && (object.collidable || object.walkable)) {
+        object.model.traverse(child => {
+          if (child.isMesh) {
+            if (object.collidable) {
+              collidableMeshes.push(child);
+            }
 
-    for (const node of modelNodes) {
-      const model = node.model;
-
-      if (!model || !(node.collidable || node.walkable)) {
-        continue;
+            if (object.walkable) {
+              walkableMeshes.push(child);
+            }
+          }
+        });
       }
-
-      model.traverse(child => {
-        if (child.isMesh) {
-          if (node.collidable) {
-            collidableMeshes.push(child);
-          }
-
-          if (node.walkable) {
-            walkableMeshes.push(child);
-          }
-        }
-      });
-    }
+    });
 
     const boxColliderNodes = this.editor.scene.getNodesByType(BoxColliderNode);
 

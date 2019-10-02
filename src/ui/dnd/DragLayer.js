@@ -52,6 +52,24 @@ export default function DragLayer() {
     } else {
       preview = <div>{item.value.label}</div>;
     }
+  } else if (itemType === ItemTypes.Image) {
+    if (item.multiple) {
+      preview = <div>{`${item.value.length} Images Selected`}</div>;
+    } else {
+      preview = <div>{item.value.label}</div>;
+    }
+  } else if (itemType === ItemTypes.Video) {
+    if (item.multiple) {
+      preview = <div>{`${item.value.length} Videos Selected`}</div>;
+    } else {
+      preview = <div>{item.value.label}</div>;
+    }
+  } else if (itemType === ItemTypes.KitPiece) {
+    if (item.multiple) {
+      preview = <div>{`${item.value.length} Kit Pieces Selected`}</div>;
+    } else {
+      preview = <div>{item.value.label}</div>;
+    }
   } else {
     preview = <div>{item.type}</div>;
   }

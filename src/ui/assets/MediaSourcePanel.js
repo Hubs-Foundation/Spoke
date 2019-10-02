@@ -8,7 +8,7 @@ import AssetGrid from "./AssetGrid";
 import FileInput from "../inputs/FileInput";
 import useUpload from "./useUpload";
 
-export default function MediaSourcePanel({ editor, source, searchPlaceholder, initialSearchParams }) {
+export default function MediaSourcePanel({ editor, source, searchPlaceholder, initialSearchParams, multiselectTags }) {
   const { params, setParams, isLoading, loadMore, hasMore, results } = useAssetSearch(source, initialSearchParams);
 
   const onSelect = useCallback(
@@ -49,7 +49,12 @@ export default function MediaSourcePanel({ editor, source, searchPlaceholder, in
       </AssetsPanelToolbar>
       <AssetPanelContentContainer>
         {source.tags && (
-          <TagList tags={source.tags} selectedTags={params.tags} onChange={tags => setParams({ ...params, tags })} />
+          <TagList
+            multiselect={multiselectTags}
+            tags={source.tags}
+            selectedTags={params.tags}
+            onChange={tags => setParams({ ...params, tags })}
+          />
         )}
         <AssetGrid
           source={source}
@@ -68,7 +73,8 @@ MediaSourcePanel.propTypes = {
   searchPlaceholder: PropTypes.string,
   initialSearchParams: PropTypes.object,
   editor: PropTypes.object,
-  source: PropTypes.object
+  source: PropTypes.object,
+  multiselectTags: PropTypes.bool
 };
 
 MediaSourcePanel.defaultProps = {
@@ -76,5 +82,6 @@ MediaSourcePanel.defaultProps = {
   initialSearchParams: {
     query: "",
     tags: []
-  }
+  },
+  multiselectTags: false
 };
