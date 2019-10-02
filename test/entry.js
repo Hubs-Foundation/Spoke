@@ -38,7 +38,7 @@ function warnSkipAsset(mod) {
   return mod;
 }
 
-[".css", ".scss", ".jpg", ".png", ".glb", ".mp4", ".webm", ".spoke", ".wasm"].forEach(extension => {
+[".css", ".scss", ".jpg", ".png", ".glb", ".gltf", ".mp4", ".webm", ".spoke", ".wasm"].forEach(extension => {
   require.extensions[extension] = warnSkipAsset;
 });
 
