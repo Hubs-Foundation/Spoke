@@ -11,8 +11,8 @@ import {
   Clock,
   Color
 } from "three";
-import { GLTFExporter } from "three/examples/jsm/exporters/GLTFExporter";
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
+import { GLTFExporter } from "./gltf/GLTFExporter";
+import { GLTFLoader } from "./gltf/GLTFLoader";
 import History from "./History";
 import Renderer from "./renderer/Renderer";
 import ThumbnailRenderer from "./renderer/ThumbnailRenderer";
@@ -301,23 +301,20 @@ export default class Editor extends EventEmitter {
     await clonedScene.combineMeshes();
     clonedScene.removeUnusedObjects();
 
-    const exporter = new GLTFExporter();
-    // TODO: export animations
-    const chunks = await new Promise((resolve, reject) => {
-      exporter.parseChunks(
-        clonedScene,
-        resolve,
-        e => {
-          reject(new Error(`Error exporting scene. ${eventToMessage(e)}`));
-        },
-        {
-          mode: "glb",
-          onlyVisible: false,
-          includeCustomExtensions: true,
-          animations
-        }
-      );
+    const exporter = new GLTFExporter({
+      mode: "glb",
+      onlyVisible: false,
+      includeCustomExtensions: true,
+      animations
     });
+
+    let chunks;
+
+    try {
+      chunks = await exporter.exportChunks(clonedScene);
+    } catch (error) {
+      throw new Error(`Error exporting scene. ${eventToMessage(error)}`);
+    }
 
     const json = chunks.json;
 
@@ -398,11 +395,12 @@ export default class Editor extends EventEmitter {
 
     json.asset.generator = `Mozilla Spoke ${process.env.BUILD_VERSION}`;
 
-    return await new Promise((resolve, reject) => {
-      exporter.createGLBBlob(chunks, resolve, e => {
-        reject(new Error(`Error creating glb blob. ${eventToMessage(e)}`));
-      });
-    });
+    try {
+      const glbBlob = await exporter.exportGLBBlob(chunks);
+      return glbBlob;
+    } catch (error) {
+      throw new Error(`Error creating glb blob. ${eventToMessage(error)}`);
+    }
   }
 
   getSpawnPosition(target) {
@@ -455,8 +453,8 @@ export default class Editor extends EventEmitter {
     let blob;
 
     if (file.name.toLowerCase().endsWith(".glb")) {
-      const gltf = await new Promise((resolve, reject) => new GLTFLoader().load(url, resolve, undefined, reject));
-      blob = await this.thumbnailRenderer.generateThumbnail(gltf.scene, width, height);
+      const { scene } = await new GLTFLoader(URL).loadGLTF();
+      blob = await this.thumbnailRenderer.generateThumbnail(scene, width, height);
     } else if ([".png", ".jpg", ".jpeg", ".gif", ".webp"].some(ext => file.name.toLowerCase().endsWith(ext))) {
       blob = await generateImageFileThumbnail(file);
     } else if (file.name.toLowerCase().endsWith(".mp4")) {
@@ -524,6 +522,7 @@ export default class Editor extends EventEmitter {
   onResize = () => {
     this.inputManager.onResize();
     this.renderer.onResize();
+    this.emit("resize");
   };
 
   undo() {

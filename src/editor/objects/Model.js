@@ -1,5 +1,5 @@
 import { Object3D, PlaneBufferGeometry, MeshBasicMaterial, DoubleSide, Mesh } from "three";
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
+import { GLTFLoader } from "../gltf/GLTFLoader";
 import cloneObject3D from "../utils/cloneObject3D";
 import eventToMessage from "../utils/eventToMessage";
 import loadErrorTexture from "../utils/loadErrorTexture";
@@ -38,9 +38,7 @@ export default class Model extends Object3D {
 
   async loadGLTF(src, pieceId) {
     try {
-      const gltf = await new Promise((resolve, reject) => {
-        new GLTFLoader().load(src, resolve, null, reject);
-      });
+      const gltf = await new GLTFLoader(src).loadGLTF();
 
       let model = gltf.scene;
 
@@ -51,8 +49,8 @@ export default class Model extends Object3D {
       model.animations = model.animations || [];
 
       return model;
-    } catch (e) {
-      throw new Error(`Error loading Model. ${eventToMessage(e)}`);
+    } catch (error) {
+      throw new Error(`Error loading Model. ${eventToMessage(error)}`);
     }
   }
 
