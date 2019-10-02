@@ -213,11 +213,13 @@ export default class KitPieceNode extends EditorNodeMixin(Model) {
     this.collidable = source.collidable;
     this.walkable = source.walkable;
 
-    this.model.traverse(object => {
-      if (object.isKitSubPiece) {
-        this.subPieces.push(object);
-      }
-    });
+    if (this.model) {
+      this.model.traverse(object => {
+        if (object.isKitSubPiece) {
+          this.subPieces.push(object);
+        }
+      });
+    }
 
     return this;
   }
