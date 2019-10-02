@@ -8,6 +8,8 @@ import cloneObject3D from "../utils/cloneObject3D";
 export default class KitPieceNode extends EditorNodeMixin(Model) {
   static legacyComponentName = "kit-piece";
 
+  static experimental = true;
+
   static nodeName = "Kit Piece";
 
   static async deserialize(editor, json, loadAsync) {

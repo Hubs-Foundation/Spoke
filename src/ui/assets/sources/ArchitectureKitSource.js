@@ -6,5 +6,6 @@ export default class ArchitectureKitSource extends KitSource {
     super(kitUrl);
     this.id = "architecture-kit";
     this.name = "Architecture Kit";
+    this.experimental = true;
   }
 }
