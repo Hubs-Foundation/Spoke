@@ -65,7 +65,6 @@ export default function SelectInput({ value, options, onChange, placeholder, dis
       } else if (o.value && o.value.equals) {
         return o.value.equals(value);
       } else {
-        console.log(o.value, value);
         return o.value === value;
       }
     }) || null;

@@ -15,8 +15,6 @@ export default class LoadingCube extends Object3D {
     try {
       const gltf = await new GLTFLoader(loadingCubeUrl).loadGLTF();
 
-      console.log(gltf);
-
       cubeGltf = gltf;
 
       return cubeGltf;

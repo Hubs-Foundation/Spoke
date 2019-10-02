@@ -5,7 +5,6 @@ import KitSourcePanel from "./KitSourcePanel";
 import KitPieceNode from "../../editor/nodes/KitPieceNode";
 
 function hasTags(result, tags) {
-  console.log(tags, result);
   for (const { value } of tags) {
     if (result.tags.indexOf(value) === -1) {
       return false;
