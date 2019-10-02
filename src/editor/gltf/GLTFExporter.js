@@ -540,7 +540,8 @@ class GLTFExporter {
       count: count,
       max: minMax.max,
       min: minMax.min,
-      type: types[attribute.itemSize]
+      type: types[attribute.itemSize],
+      normalized: attribute.normalized
     };
 
     if (!this.outputJSON.accessors) {
