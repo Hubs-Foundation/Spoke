@@ -580,7 +580,7 @@ class GLTFLoader {
     const pending = [];
 
     for (let i = 0, il = nodeIds.length; i < il; i++) {
-      pending.push(this.loadNode(nodeIds[i]));
+      pending.push(this.getDependency("node", nodeIds[i]));
     }
 
     const children = await Promise.all(pending);
@@ -719,7 +719,7 @@ class GLTFLoader {
       const pending = [];
 
       for (let i = 0, il = nodeDef.children.length; i < il; i++) {
-        pending.push(this.loadNode(nodeDef.children[i]));
+        pending.push(this.getDependency("node", nodeDef.children[i]));
       }
 
       const children = await Promise.all(pending);
@@ -1538,7 +1538,6 @@ class GLTFLoader {
     // workarounds for mesh and geometry
 
     if (material.aoMap && geometry.attributes.uv2 === undefined && geometry.attributes.uv !== undefined) {
-      console.log("THREE.GLTFLoader: Duplicating UVs to support aoMap.");
       geometry.addAttribute("uv2", new BufferAttribute(geometry.attributes.uv.array, 2));
     }
 
