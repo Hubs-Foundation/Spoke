@@ -139,7 +139,7 @@ export default class SceneNode extends EditorNodeMixin(Scene) {
     return false;
   }
 
-  static async loadProject(editor, json, onProgress) {
+  static async loadProject(editor, json) {
     if (!json.version) {
       json = migrateV1ToV2(json);
     }
@@ -157,19 +157,9 @@ export default class SceneNode extends EditorNodeMixin(Scene) {
     let scene = null;
 
     const dependencies = [];
-    let dependencyCount = 0;
-    let error = false;
 
     function loadAsync(promise) {
-      dependencies.push(
-        promise.then(res => {
-          dependencyCount++;
-          if (onProgress && !error) {
-            onProgress(dependencyCount, dependencies.length);
-          }
-          return res;
-        })
-      );
+      dependencies.push(promise);
     }
 
     const sortedEntities = sortEntities(entities);
@@ -216,12 +206,7 @@ export default class SceneNode extends EditorNodeMixin(Scene) {
       node.onChange();
     }
 
-    try {
-      await Promise.all(dependencies);
-    } catch (err) {
-      error = true;
-      throw err;
-    }
+    await Promise.all(dependencies);
 
     return scene;
   }

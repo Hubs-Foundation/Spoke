@@ -153,6 +153,7 @@ export default class Editor extends EventEmitter {
     this.clock = new Clock();
     this.disableUpdate = false;
     this.initialized = false;
+    this.sceneLoading = false;
   }
 
   registerNode(nodeConstructor, nodeEditor) {
@@ -170,6 +171,12 @@ export default class Editor extends EventEmitter {
 
   setSource(sourceId) {
     this.emit("setSource", sourceId);
+  }
+
+  emit(eventName, ...args) {
+    if (!this.sceneLoading) {
+      super.emit(eventName, ...args);
+    }
   }
 
   async init() {
@@ -212,14 +219,16 @@ export default class Editor extends EventEmitter {
     this.gltfCache.disposeAndClear();
   }
 
-  async loadProject(json, onProgress) {
+  async loadProject(json) {
     this.clearCaches();
 
     this.removeObject(this.scene);
 
-    const scene = await SceneNode.loadProject(this, json, onProgress);
+    this.sceneLoading = true;
 
-    this.sceneLoaded = true;
+    const scene = await SceneNode.loadProject(this, json);
+
+    this.sceneLoading = false;
     this.scene = scene;
     this.sceneUrl = null;
 
