@@ -22,7 +22,7 @@ export default class NameInputGroup extends Component {
 
     this.state = {
       name: this.props.node.name,
-      focused: false
+      focusedNode: null
     };
   }
 
@@ -32,17 +32,19 @@ export default class NameInputGroup extends Component {
 
   onFocus = () => {
     this.setState({
-      focused: true,
+      focusedNode: this.props.node,
       name: this.props.node.name
     });
   };
 
   onBlurName = () => {
-    this.setState({ focused: false });
-
-    if (this.props.node.name !== this.state.name) {
+    // Check that the focused node is current node before setting the property.
+    // This can happen when clicking on another node in the HierarchyPanel
+    if (this.props.node.name !== this.state.name && this.props.node === this.state.focusedNode) {
       this.props.editor.setProperty(this.props.node, "name", this.state.name);
     }
+
+    this.setState({ focusedNode: null });
   };
 
   onKeyUpName = e => {
