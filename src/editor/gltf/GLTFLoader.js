@@ -675,7 +675,7 @@ class GLTFLoader {
     if (nodeDef.skin !== undefined) {
       // build skeleton here as well
 
-      const skin = this.getDependency("skin", nodeDef.skin);
+      const skin = await this.getDependency("skin", nodeDef.skin);
 
       const pendingJoints = [];
 
@@ -923,11 +923,11 @@ class GLTFLoader {
 
         tracks.push(track);
       }
-
-      const name = animationDef.name !== undefined ? animationDef.name : "animation_" + animationIndex;
-
-      return new AnimationClip(name, undefined, tracks);
     }
+
+    const name = animationDef.name !== undefined ? animationDef.name : "animation_" + animationIndex;
+
+    return new AnimationClip(name, undefined, tracks);
   }
 
   /**
