@@ -49,6 +49,10 @@ function treeNodeBackgroundColor({ root, selected, active, theme }) {
   }
 }
 
+function getNodeKey(index, data) {
+  return data.nodes[index].object.id;
+}
+
 function getNodeElId(node) {
   return "hierarchy-node-" + node.id;
 }
@@ -778,7 +782,9 @@ export default function HierarchyPanel() {
                   onClick,
                   onToggle
                 }}
+                itemKey={getNodeKey}
                 outerRef={treeContainerDropTarget}
+                innerElementType="ul"
               >
                 {MemoTreeNode}
               </FixedSizeList>
