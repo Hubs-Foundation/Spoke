@@ -296,6 +296,10 @@ export default class Editor extends EventEmitter {
 
     const exportContext = { animations };
 
+    clonedScene.prepareForExport(exportContext);
+    await clonedScene.combineMeshes();
+    clonedScene.removeUnusedObjects();
+
     // Add a preview camera to the exported GLB if there is a transform in the metadata.
     const previewCamera = this.camera.clone();
     previewCamera.name = "scene-preview-camera";
@@ -305,10 +309,6 @@ export default class Editor extends EventEmitter {
       }
     };
     clonedScene.add(previewCamera);
-
-    clonedScene.prepareForExport(exportContext);
-    await clonedScene.combineMeshes();
-    clonedScene.removeUnusedObjects();
 
     const exporter = new GLTFExporter({
       mode: "glb",
