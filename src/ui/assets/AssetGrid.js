@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useEffect, useContext } from "react";
+import React, { useCallback, useRef, useEffect, useContext, memo } from "react";
 import PropTypes from "prop-types";
 import InfiniteScroll from "react-infinite-scroller";
 import styled from "styled-components";
@@ -124,6 +124,8 @@ AssetGridItem.propTypes = {
 
 let lastId = 0;
 
+const MemoAssetGridItem = memo(AssetGridItem);
+
 export default function AssetGrid({ isLoading, selectedItems, items, onSelect, onLoadMore, hasMore, tooltip, source }) {
   const editor = useContext(EditorContext);
   const uniqueId = useRef(`AssetGrid${lastId}`);
@@ -200,7 +202,7 @@ export default function AssetGrid({ isLoading, selectedItems, items, onSelect, o
         <InfiniteScroll pageStart={0} loadMore={onLoadMore} hasMore={hasMore} threshold={100} useWindow={false}>
           <MediaGrid>
             {unique(items, "id").map(item => (
-              <AssetGridItem
+              <MemoAssetGridItem
                 key={item.id}
                 tooltipId={uniqueId.current}
                 contextMenuId={uniqueId.current}
