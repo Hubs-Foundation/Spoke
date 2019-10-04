@@ -205,7 +205,23 @@ export default class MeshCombinationGroup {
     for (const mesh of this.meshes) {
       // Clone buffer geometry in case it is re-used across meshes with different materials.
       const clonedBufferGeometry = mesh.geometry.clone();
-      clonedBufferGeometry.applyMatrix(mesh.matrixWorld);
+
+      const matrixWorld = mesh.matrixWorld;
+      clonedBufferGeometry.applyMatrix(matrixWorld);
+
+      // TODO: geometry.applyMatrix should handle this
+      const hasNegativeScale = matrixWorld.elements[0] * matrixWorld.elements[5] * matrixWorld.elements[10] < 0;
+
+      const indices = clonedBufferGeometry.index.array;
+
+      if (hasNegativeScale && indices) {
+        for (let i = 0; i < indices.length; i += 3) {
+          const tmp = indices[i + 1];
+          indices[i + 1] = indices[i + 2];
+          indices[i + 2] = tmp;
+        }
+      }
+
       bufferGeometries.push(clonedBufferGeometry);
       mesh.parent.remove(mesh);
     }
