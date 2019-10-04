@@ -55,7 +55,7 @@ export default class NameInputGroup extends Component {
   };
 
   render() {
-    const name = this.state.focused ? this.state.name : this.props.node.name;
+    const name = this.state.focusedNode ? this.state.name : this.props.node.name;
 
     return (
       <StyledNameInputGroup name="Name">
