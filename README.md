@@ -9,12 +9,6 @@
 
 **[https://hubs.mozilla.com/spoke](https://hubs.mozilla.com/spoke)**
 
-<img alt="Create" target="_blank" src="https://user-images.githubusercontent.com/21111451/66261863-7ecf3780-e79a-11e9-842a-3a9970c92a2e.jpg" height="100" width="32%">
-
-<img alt="Discover" target="_blank" src="https://user-images.githubusercontent.com/21111451/66261866-8d1d5380-e79a-11e9-88bd-a1b84efb2c91.jpg" height="100"  width="32%">
-
-<img alt="Share" target="_blank" src="https://user-images.githubusercontent.com/21111451/66261892-12a10380-e79b-11e9-9fae-874d820d13b8.jpg" height="100" width="32%">
-
 ## Features
 
 :telescope: **Discover**: Explore images, videos, and 3D models from around the web, all without opening up a new tab. With media integrations from Sketchfab and Google Poly, you'll be on your way to creating a scene in no time.
