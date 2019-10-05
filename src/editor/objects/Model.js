@@ -161,6 +161,27 @@ export default class Model extends Object3D {
     }
   }
 
+  setShadowsEnabled(enabled) {
+    if (this.model) {
+      this.model.traverse(child => {
+        child.castShadow = enabled ? this._castShadow : false;
+        child.receiveShadow = enabled ? this._receiveShadow : false;
+
+        if (child.material) {
+          const material = child.material;
+
+          if (Array.isArray(material)) {
+            for (let i = 0; i < material.length; i++) {
+              material[i].needsUpdate = true;
+            }
+          } else {
+            material.needsUpdate = true;
+          }
+        }
+      });
+    }
+  }
+
   // TODO: Add play/pause methods for previewing animations.
 
   copy(source, recursive = true) {
