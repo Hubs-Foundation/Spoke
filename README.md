@@ -5,7 +5,6 @@
 [![CircleCI](https://circleci.com/gh/mozilla/Spoke.svg?style=svg)](https://circleci.com/gh/mozilla/Spoke)
 
 
-
   **Easily create custom 3D environments for [Mozilla Hubs](https://hubs.mozilla.com).**
 
 **[https://hubs.mozilla.com/spoke](https://hubs.mozilla.com/spoke)**
@@ -31,7 +30,7 @@
 - `yarn install`
 - `yarn start`
 
-Then open **http://localhost:9090**.
+Then open **https://localhost:9090** (note: HTTPS is required).
 
 When running against a local self-signed cert reticulum server, you'll need to `export NODE_TLS_REJECT_UNAUTHORIZED=0` for publishing to work.
 
