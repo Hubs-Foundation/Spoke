@@ -513,8 +513,10 @@ export default class Editor extends EventEmitter {
       this.scene.updateMatrixWorld();
       this.inputManager.update(delta, time);
 
+      const enableShadows = this.renderer.renderMode.enableShadows;
+
       this.scene.traverse(node => {
-        if (node.isDirectionalLight) {
+        if (enableShadows && node.isDirectionalLight) {
           resizeShadowCameraFrustum(node, this.scene);
         }
 
