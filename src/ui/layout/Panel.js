@@ -38,11 +38,12 @@ export default class Panel extends Component {
   static propTypes = {
     icon: PropTypes.object,
     title: PropTypes.string,
-    children: PropTypes.node
+    children: PropTypes.node,
+    toolbarContent: PropTypes.node
   };
 
   render() {
-    const { icon, title, children, ...rest } = this.props;
+    const { icon, title, children, toolbarContent, ...rest } = this.props;
 
     // .toolbar used for onboarding
 
@@ -51,6 +52,7 @@ export default class Panel extends Component {
         <PanelToolbar className="toolbar">
           {icon && <PanelIcon as={icon} size={12} />}
           <PanelTitle>{title}</PanelTitle>
+          {toolbarContent}
         </PanelToolbar>
         <PanelContent>{children}</PanelContent>
       </PanelContainer>
