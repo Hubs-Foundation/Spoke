@@ -319,8 +319,10 @@ export default class SpokeControls extends EventEmitter {
         constraint = TransformAxisConstraints[this.transformAxis];
       }
 
-      if (selectStart || grabStart) {
+      if (selectStart) {
         this.dragOffset.subVectors(this.transformGizmo.position, this.planeIntersection);
+      } else if (grabStart) {
+        this.dragOffset.set(0, 0, 0);
       }
 
       this.planeIntersection.add(this.dragOffset);
