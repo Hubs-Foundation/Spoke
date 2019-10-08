@@ -9,7 +9,8 @@ import {
   AudioListener,
   Raycaster,
   Clock,
-  Color
+  Color,
+  Scene
 } from "three";
 import { GLTFExporter } from "./gltf/GLTFExporter";
 import { GLTFLoader } from "./gltf/GLTFLoader";
@@ -143,7 +144,10 @@ export default class Editor extends EventEmitter {
     this.camera.layers.enable(1);
     this.camera.name = "Camera";
 
+    this.helperScene = new Scene();
+
     this.grid = new SpokeInfiniteGridHelper();
+    this.helperScene.add(this.grid);
 
     this.nodes = [this.scene];
 
@@ -235,8 +239,6 @@ export default class Editor extends EventEmitter {
     this.camera.position.set(0, 5, 10);
     this.camera.lookAt(new Vector3());
     this.scene.add(this.camera);
-
-    this.scene.add(this.grid);
 
     this.spokeControls.center.set(0, 0, 0);
     this.spokeControls.onSceneSet(scene);
@@ -511,8 +513,10 @@ export default class Editor extends EventEmitter {
       this.scene.updateMatrixWorld();
       this.inputManager.update(delta, time);
 
+      const enableShadows = this.renderer.renderMode.enableShadows;
+
       this.scene.traverse(node => {
-        if (node.isDirectionalLight) {
+        if (enableShadows && node.isDirectionalLight) {
           resizeShadowCameraFrustum(node, this.scene);
         }
 

@@ -57,7 +57,7 @@ const staticStyle = {
   })
 };
 
-export default function SelectInput({ value, options, onChange, placeholder, disabled, error, ...rest }) {
+export default function SelectInput({ value, options, onChange, placeholder, disabled, error, styles, ...rest }) {
   const selectedOption =
     options.find(o => {
       if (o === null) {
@@ -74,7 +74,8 @@ export default function SelectInput({ value, options, onChange, placeholder, dis
     placeholder: (base, { isDisabled }) => ({
       ...base,
       color: isDisabled ? "grey" : error ? "red" : "white"
-    })
+    }),
+    ...styles
   };
 
   return (
@@ -106,6 +107,7 @@ SelectInput.propTypes = {
       label: PropTypes.string
     })
   ),
+  styles: PropTypes.object,
   onChange: PropTypes.func,
   placeholder: PropTypes.string,
   error: PropTypes.bool,

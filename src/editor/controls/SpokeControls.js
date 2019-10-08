@@ -97,6 +97,7 @@ export default class SpokeControls extends EventEmitter {
     this.sphere = new Sphere();
 
     this.transformGizmo = new TransformGizmo();
+    this.editor.helperScene.add(this.transformGizmo);
 
     this.transformMode = TransformMode.Translate;
     this.previousTransfomMode = null;
@@ -146,7 +147,6 @@ export default class SpokeControls extends EventEmitter {
 
   onSceneSet = scene => {
     this.scene = scene;
-    this.scene.add(this.transformGizmo);
   };
 
   onSelectionChanged = () => {
