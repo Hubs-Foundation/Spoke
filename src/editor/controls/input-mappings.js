@@ -63,9 +63,7 @@ export const Spoke = {
   cursorDeltaX: "cursorDeltaX",
   cursorDeltaY: "cursorDeltaY",
   panning: "panning",
-  setTranslateMode: "setTranslateMode",
-  setRotateMode: "setRotateMode",
-  setScaleMode: "setScaleMode",
+  changeTransformMode: "changeTransformMode",
   toggleSnapMode: "toggleSnapMode",
   toggleTransformPivot: "toggleTransformPivot",
   modifier: "modifier",
@@ -77,7 +75,9 @@ export const Spoke = {
   duplicateSelected: "duplicateSelected",
   groupSelected: "groupSelected",
   saveProject: "saveProject",
-  deselect: "deselect"
+  cancel: "cancel",
+  rotateLeft: "rotateLeft",
+  rotateRight: "rotateRight"
 };
 
 export const FlyMapping = {
@@ -87,8 +87,8 @@ export const FlyMapping = {
       a: Fly.moveLeft,
       s: Fly.moveBackward,
       d: Fly.moveRight,
-      q: Fly.moveDown,
-      e: Fly.moveUp,
+      r: Fly.moveDown,
+      t: Fly.moveUp,
       shift: Fly.boost
     }
   },
@@ -153,9 +153,9 @@ export const SpokeMapping = {
     },
     hotkeys: {
       f: Spoke.focusSelection,
-      w: Spoke.setTranslateMode,
-      e: Spoke.setRotateMode,
-      r: Spoke.setScaleMode,
+      q: Spoke.rotateLeft,
+      e: Spoke.rotateRight,
+      tab: Spoke.changeTransformMode,
       z: Spoke.toggleTransformSpace,
       x: Spoke.toggleTransformPivot,
       c: Spoke.toggleSnapMode,
@@ -165,7 +165,7 @@ export const SpokeMapping = {
       "mod+shift+z": Spoke.redo,
       "mod+d": Spoke.duplicateSelected,
       "mod+g": Spoke.groupSelected,
-      esc: Spoke.deselect
+      esc: Spoke.cancel
     },
     globalHotkeys: {
       "mod+s": Spoke.saveProject

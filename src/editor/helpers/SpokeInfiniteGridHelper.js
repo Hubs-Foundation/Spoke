@@ -1,4 +1,4 @@
-import { Mesh, Color, PlaneBufferGeometry, ShaderMaterial, DoubleSide } from "three";
+import { Mesh, Color, PlaneBufferGeometry, ShaderMaterial, DoubleSide, Plane, Vector3 } from "three";
 import { addIsHelperFlag } from "./utils";
 
 /**
@@ -95,5 +95,32 @@ export default class SpokeInfiniteGridHelper extends Mesh {
     this.layers.set(1);
     addIsHelperFlag(this);
     this.frustumCulled = false;
+    this.plane = new Plane(this.up);
+
+    this.intersectionPointWorld = new Vector3();
+
+    this.intersection = {
+      distance: 0,
+      point: this.intersectionPointWorld,
+      object: this
+    };
+  }
+
+  raycast(raycaster, intersects) {
+    const point = new Vector3();
+    const intersection = raycaster.ray.intersectPlane(this.plane, point);
+
+    if (intersection === null) return null;
+
+    this.intersectionPointWorld.copy(point);
+    this.intersectionPointWorld.applyMatrix4(this.matrixWorld);
+
+    const distance = raycaster.ray.origin.distanceTo(this.intersectionPointWorld);
+
+    if (distance < raycaster.near || distance > raycaster.far) return null;
+
+    this.intersection.distance = distance;
+
+    intersects.push(this.intersection);
   }
 }

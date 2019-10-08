@@ -29,10 +29,18 @@ export const TransformPivot = {
 
 export const TransformMode = {
   Disabled: "Disabled",
+  Placement: "Placement",
   Translate: "Translate",
   Rotate: "Rotate",
   Scale: "Scale"
 };
+
+export const TransformModes = [
+  TransformMode.Placement,
+  TransformMode.Translate,
+  TransformMode.Rotate,
+  TransformMode.Scale
+];
 
 export const TransformAxis = {
   X: "X",
@@ -55,6 +63,10 @@ export const TransformAxisConstraints = {
 };
 
 const viewDirection = new Vector3();
+
+function sortDistance(a, b) {
+  return a.distance - b.distance;
+}
 
 export default class SpokeControls extends EventEmitter {
   constructor(camera, editor, inputManager, flyControls) {
@@ -90,10 +102,12 @@ export default class SpokeControls extends EventEmitter {
 
     this.transformGizmo = new TransformGizmo();
 
-    this.transformMode = TransformMode.Translate;
+    this.transformMode = TransformMode.Placement;
     this.transformSpace = TransformSpace.World;
     this.transformPivot = TransformPivot.Selection;
     this.transformAxis = null;
+    this.placementObject = null;
+    this.originalPlacementObjectTransform = null;
 
     this.snapMode = SnapMode.Disabled;
     this.translationSnap = 1;
@@ -202,7 +216,11 @@ export default class SpokeControls extends EventEmitter {
       this.transformGizmo.setTransformMode(this.transformMode);
     }
 
-    if (selectedTransformRoots.length > 0 && this.transformMode !== TransformMode.Disabled) {
+    if (
+      selectedTransformRoots.length > 0 &&
+      this.transformMode !== TransformMode.Disabled &&
+      this.transformMode !== TransformMode.Placement
+    ) {
       const lastSelectedObject = selected[selected.length - 1];
 
       if (
@@ -259,7 +277,7 @@ export default class SpokeControls extends EventEmitter {
 
       this.raycaster.setFromCamera(selectStartPosition, this.camera);
 
-      if (this.transformMode !== TransformMode.Disabled) {
+      if (this.transformGizmo.activeControls) {
         this.transformAxis = this.transformGizmo.selectAxisWithRaycaster(this.raycaster);
 
         if (this.transformAxis) {
@@ -272,6 +290,12 @@ export default class SpokeControls extends EventEmitter {
           this.dragging = true;
         }
       }
+    }
+
+    if (this.transformMode === TransformMode.Placement && this.placementObject) {
+      const cursorPosition = input.get(Spoke.cursorPosition);
+
+      this.getPlacementPosition(cursorPosition, this.placementObject.position);
     }
 
     const selectEnd = input.get(Spoke.selectEnd) === 1;
@@ -429,25 +453,83 @@ export default class SpokeControls extends EventEmitter {
     if (selectEnd) {
       const selectEndPosition = input.get(Spoke.selectEndPosition);
 
-      if (this.selectStartPosition.distanceTo(selectEndPosition) < this.selectSensitivity) {
-        const result = this.raycastNode(selectEndPosition);
+      if (this.transformMode === TransformMode.Placement && this.placementObject) {
+        this.placeObject(!this.originalPlacementObjectTransform || shift);
+      } else {
+        if (this.selectStartPosition.distanceTo(selectEndPosition) < this.selectSensitivity) {
+          const result = this.raycastNode(selectEndPosition);
 
-        if (result) {
-          if (shift) {
-            this.editor.toggleSelection(result.node);
-          } else {
-            this.editor.setSelection([result.node]);
+          if (result) {
+            if (this.transformMode === TransformMode.Placement) {
+              this.setPlacementObject(result.node, true);
+            } else if (shift) {
+              this.editor.toggleSelection(result.node);
+            } else {
+              this.editor.setSelection([result.node]);
+            }
+          } else if (!shift) {
+            this.editor.deselectAll();
           }
-        } else if (!shift) {
-          this.editor.deselectAll();
         }
-      }
 
-      this.transformGizmo.deselectAxis();
-      this.dragging = false;
+        this.transformGizmo.deselectAxis();
+        this.dragging = false;
+      }
     }
 
     this.transformPropertyChanged = false;
+
+    if (input.get(Spoke.rotateLeft)) {
+      if (this.placementObject) {
+        this.editor.rotateOnAxis(this.placementObject, new Vector3(0, 1, 0), this.rotationSnap * _Math.DEG2RAD);
+      }
+    } else if (input.get(Spoke.rotateRight)) {
+      if (this.placementObject) {
+        this.editor.rotateOnAxis(this.placementObject, new Vector3(0, 1, 0), -this.rotationSnap * _Math.DEG2RAD);
+      }
+    } else if (input.get(Spoke.cancel)) {
+      if (this.placementObject) {
+        if (this.originalPlacementObjectTransform) {
+          this.originalPlacementObjectTransform.decompose(
+            this.placementObject.position,
+            this.placementObject.quaternion,
+            this.placementObject.scale
+          );
+        }
+
+        if (this.removeObjectOnCancel) {
+          this.editor.removeObject(this.placementObject);
+        }
+
+        this.placementObject = null;
+        this.originalPlacementObjectTransform = null;
+      } else {
+        this.editor.deselectAll();
+      }
+    } else if (input.get(Spoke.focusSelection)) {
+      this.focus(this.editor.selected);
+    } else if (input.get(Spoke.changeTransformMode)) {
+      this.changeTransformMode(TransformMode.Translate);
+    } else if (input.get(Spoke.toggleSnapMode)) {
+      this.toggleSnapMode();
+    } else if (input.get(Spoke.toggleTransformPivot)) {
+      this.toggleTransformPivot();
+    } else if (input.get(Spoke.toggleTransformSpace)) {
+      this.toggleTransformSpace();
+    } else if (input.get(Spoke.undo)) {
+      this.editor.undo();
+    } else if (input.get(Spoke.redo)) {
+      this.editor.redo();
+    } else if (input.get(Spoke.duplicateSelected)) {
+      this.editor.duplicateSelected();
+    } else if (input.get(Spoke.groupSelected)) {
+      this.editor.groupSelected();
+    } else if (input.get(Spoke.deleteSelected)) {
+      this.editor.removeSelectedObjects();
+    } else if (input.get(Spoke.saveProject)) {
+      // TODO: Move save to Project class
+      this.editor.emit("saveProject");
+    }
 
     if (flying) {
       this.updateTransformGizmoScale();
@@ -521,37 +603,6 @@ export default class SpokeControls extends EventEmitter {
       camera.lookAt(center);
     }
 
-    if (input.get(Spoke.focusSelection)) {
-      this.focus(this.editor.selected);
-    } else if (input.get(Spoke.setTranslateMode)) {
-      this.setTransformMode(TransformMode.Translate);
-    } else if (input.get(Spoke.setRotateMode)) {
-      this.setTransformMode(TransformMode.Rotate);
-    } else if (input.get(Spoke.setScaleMode)) {
-      this.setTransformMode(TransformMode.Scale);
-    } else if (input.get(Spoke.toggleSnapMode)) {
-      this.toggleSnapMode();
-    } else if (input.get(Spoke.toggleTransformPivot)) {
-      this.toggleTransformPivot();
-    } else if (input.get(Spoke.toggleTransformSpace)) {
-      this.toggleTransformSpace();
-    } else if (input.get(Spoke.undo)) {
-      this.editor.undo();
-    } else if (input.get(Spoke.redo)) {
-      this.editor.redo();
-    } else if (input.get(Spoke.duplicateSelected)) {
-      this.editor.duplicateSelected();
-    } else if (input.get(Spoke.groupSelected)) {
-      this.editor.groupSelected();
-    } else if (input.get(Spoke.deleteSelected)) {
-      this.editor.removeSelectedObjects();
-    } else if (input.get(Spoke.saveProject)) {
-      // TODO: Move save to Project class
-      this.editor.emit("saveProject");
-    } else if (input.get(Spoke.deselect)) {
-      this.editor.deselectAll();
-    }
-
     this.updateTransformGizmoScale();
   }
 
@@ -602,7 +653,95 @@ export default class SpokeControls extends EventEmitter {
     this.transformGizmo.scale.set(1, 1, 1).multiplyScalar(eyeDistance / 5);
   }
 
+  _raycastRecursive(object, exclude) {
+    if (object === exclude) {
+      return;
+    }
+
+    this.raycaster.intersectObject(object, false, this.raycasterResults);
+
+    const children = object.children;
+
+    for (let i = 0; i < children.length; i++) {
+      this._raycastRecursive(children[i], exclude);
+    }
+  }
+
+  getPlacementPosition(coords, target) {
+    this.raycaster.setFromCamera(coords, this.camera);
+    this.raycasterResults.length = 0;
+    this._raycastRecursive(this.scene, this.placementObject);
+    this._raycastRecursive(this.editor.grid, this.placementObject);
+    this.raycasterResults.sort(sortDistance);
+    const result = this.raycasterResults[0];
+
+    if (result && result.distance < 100) {
+      target.copy(result.point);
+    } else {
+      this.raycaster.ray.at(10, target);
+    }
+
+    if (this.shouldSnap()) {
+      const translationSnap = this.translationSnap;
+
+      target.set(
+        Math.round(target.x / translationSnap) * translationSnap,
+        Math.round(target.y / translationSnap) * translationSnap,
+        Math.round(target.z / translationSnap) * translationSnap
+      );
+    }
+  }
+
+  setPlacementObject(object, isExistingObject) {
+    if (this.transformMode !== TransformMode.Placement) {
+      this.setTransformMode(TransformMode.Placement);
+    }
+
+    if (this.placementObject) {
+      this.editor.removeObject(this.placementObject);
+    }
+
+    if (!isExistingObject) {
+      this.editor.addObject(object);
+    } else {
+      this.originalPlacementObjectTransform = object.matrix.clone();
+    }
+
+    this.placementObject = object;
+    this.removeObjectOnCancel = !isExistingObject;
+  }
+
+  placeObject(shouldClone) {
+    if (shouldClone) {
+      this.placementObject = this.editor.duplicate(this.placementObject, undefined, undefined, false);
+    } else {
+      this.placementObject = null;
+    }
+    this.removeObjectOnCancel = true;
+    this.originalPlacementObjectTransform = null;
+  }
+
+  changeTransformMode() {
+    let transformModeIndex = TransformModes.indexOf(this.transformMode);
+
+    if (transformModeIndex === -1) {
+      transformModeIndex = 0;
+    } else {
+      transformModeIndex++;
+    }
+
+    transformModeIndex = transformModeIndex % TransformModes.length;
+
+    this.setTransformMode(TransformModes[transformModeIndex]);
+  }
+
   setTransformMode(mode) {
+    if (this.placementObject) {
+      this.editor.removeObject(this.placementObject);
+    }
+
+    this.placementObject = null;
+    this.originalPlacementObjectTransform = null;
     this.transformMode = mode;
     this.transformModeChanged = true;
     this.emit("transformModeChanged", mode);
