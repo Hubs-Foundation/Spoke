@@ -104,6 +104,7 @@ export default class SpokeControls extends EventEmitter {
     this.transformSpace = TransformSpace.World;
     this.transformPivot = TransformPivot.Selection;
     this.transformAxis = null;
+    this.grabHistoryCheckpoint = null;
 
     this.snapMode = SnapMode.Disabled;
     this.translationSnap = 1;
@@ -346,7 +347,12 @@ export default class SpokeControls extends EventEmitter {
 
         this.translationVector.applyQuaternion(this.transformGizmo.quaternion);
 
-        this.editor.translateSelected(this.translationVector, this.transformSpace);
+        const cmd = this.editor.translateSelected(this.translationVector, this.transformSpace);
+
+        if (grabStart && this.transformMode === TransformMode.Grab) {
+          this.grabHistoryCheckpoint = cmd.id;
+        }
+
         this.transformGizmo.position.add(this.translationVector);
       } else if (this.transformMode === TransformMode.Rotate) {
         if (selectStart) {
@@ -459,19 +465,23 @@ export default class SpokeControls extends EventEmitter {
 
         this.scaleVector.copy(this.curScale).divide(this.prevScale);
         this.prevScale.copy(this.curScale);
-        this.editor.scaleSelected(this.scaleVector, this.transformSpace, selectEnd);
+        this.editor.scaleSelected(this.scaleVector, this.transformSpace);
       }
     }
 
     if (selectEnd) {
-      if (this.transformMode === TransformMode.Grab) {
-        if (shift) {
-          this.editor.duplicateSelected();
-        } else {
-          this.setTransformMode(this.previousTransfomMode);
+      if (this.transformMode === TransformMode.Grab || this.transformMode === TransformMode.Placement) {
+        if (this.transformMode === TransformMode.Grab) {
+          if (shift) {
+            this.setTransformMode(TransformMode.Placement, this.previousTransfomMode);
+          } else {
+            this.setTransformMode(this.previousTransfomMode);
+          }
         }
-      } else if (this.transformMode === TransformMode.Placement) {
-        this.editor.duplicateSelected();
+
+        if (this.transformMode === TransformMode.Placement) {
+          this.editor.duplicateSelected();
+        }
       } else {
         const selectEndPosition = input.get(Spoke.selectEndPosition);
 
@@ -510,9 +520,8 @@ export default class SpokeControls extends EventEmitter {
       );
     } else if (input.get(Spoke.cancel)) {
       if (this.transformMode === TransformMode.Grab) {
+        this.editor.revert(this.grabHistoryCheckpoint);
         this.setTransformMode(this.previousTransfomMode);
-        // TODO: Revert to checkpoint saved when grab started
-        this.editor.undo();
       } else if (this.transformMode === TransformMode.Placement) {
         this.setTransformMode(this.previousTransfomMode);
         this.editor.removeSelectedObjects();
@@ -719,8 +728,9 @@ export default class SpokeControls extends EventEmitter {
     this.setTransformMode(TransformModes[transformModeIndex]);
   }
 
-  setTransformMode(mode) {
-    this.previousTransfomMode = this.transformMode;
+  setTransformMode(mode, transformModeOnCancel) {
+    this.previousTransfomMode = transformModeOnCancel || this.transformMode;
+    this.grabHistoryCheckpoint = null;
     this.transformMode = mode;
     this.transformModeChanged = true;
     this.emit("transformModeChanged", mode);

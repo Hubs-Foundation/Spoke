@@ -20,6 +20,7 @@ export default class SetPositionCommand extends Command {
   }
 
   update(command) {
+    this.position = command.position.clone();
     this.editor.setPosition(this.object, command.position, this.space, false);
   }
 

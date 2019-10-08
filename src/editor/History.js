@@ -46,6 +46,29 @@ export default class History {
     // clearing all the redo-commands
 
     this.redos = [];
+
+    return cmd;
+  }
+
+  revert(checkpointId) {
+    let cmd = undefined;
+
+    do {
+      if (this.undos.length > 0) {
+        cmd = this.undos.pop();
+      } else {
+        cmd = undefined;
+      }
+
+      if (cmd !== undefined) {
+        cmd.undo();
+        this.redos.push(cmd);
+
+        if (this.debug) {
+          console.log(`revert: ${cmd}`);
+        }
+      }
+    } while (cmd && checkpointId !== cmd.id);
   }
 
   undo() {
@@ -75,7 +98,7 @@ export default class History {
     }
 
     if (cmd !== undefined) {
-      cmd.execute();
+      cmd.execute(true);
       this.undos.push(cmd);
 
       if (this.debug) {

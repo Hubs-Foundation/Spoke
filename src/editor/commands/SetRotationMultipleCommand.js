@@ -21,6 +21,7 @@ export default class SetRotationMultipleCommand extends Command {
   }
 
   update(command) {
+    this.rotation = command.rotation.clone();
     this.editor.setRotationMultiple(this.objects, command.rotation, this.space, false);
   }
 

@@ -21,6 +21,7 @@ export default class SetScaleMultipleCommand extends Command {
   }
 
   update(command) {
+    this.scale = command.scale.clone();
     this.editor.setScaleMultiple(this.objects, command.scale, this.space, false);
   }
 

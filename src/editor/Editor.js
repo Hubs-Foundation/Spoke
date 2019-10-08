@@ -540,6 +540,10 @@ export default class Editor extends EventEmitter {
     this.emit("resize");
   };
 
+  revert(checkpointId) {
+    this.history.revert(checkpointId);
+  }
+
   undo() {
     this.history.undo();
   }

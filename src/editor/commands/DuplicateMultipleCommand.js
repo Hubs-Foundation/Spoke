@@ -11,8 +11,12 @@ export default class DuplicateMultipleCommand extends Command {
     this.duplicatedObjects = null;
   }
 
-  execute() {
-    this.duplicatedObjects = this.editor.duplicateMultiple(this.objects, this.parent, this.before, false);
+  execute(redo) {
+    if (redo) {
+      this.editor.addMultipleObjects(this.duplicatedObjects, this.parent, this.before, false);
+    } else {
+      this.duplicatedObjects = this.editor.duplicateMultiple(this.objects, this.parent, this.before, false);
+    }
   }
 
   undo() {

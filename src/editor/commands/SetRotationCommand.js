@@ -20,6 +20,7 @@ export default class SetRotationCommand extends Command {
   }
 
   update(command) {
+    this.rotation = command.rotation.clone();
     this.editor.setRotation(this.object, command.rotation, this.space, false);
   }
 

@@ -9,7 +9,7 @@ export default class Command {
     this.id = -1;
   }
 
-  execute() {}
+  execute(_redo) {}
 
   shouldUpdate(_newCommand) {
     return false;

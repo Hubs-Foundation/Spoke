@@ -20,6 +20,7 @@ export default class ScaleCommand extends Command {
   }
 
   update(command) {
+    this.scale.multiply(command.scale);
     this.editor.scale(this.object, command.scale, this.space, false);
   }
 
