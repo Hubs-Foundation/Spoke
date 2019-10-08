@@ -155,6 +155,7 @@ export const SpokeMapping = {
       f: Spoke.focusSelection,
       q: Spoke.rotateLeft,
       e: Spoke.rotateRight,
+      g: Spoke.grab,
       tab: Spoke.changeTransformMode,
       z: Spoke.toggleTransformSpace,
       x: Spoke.toggleTransformPivot,

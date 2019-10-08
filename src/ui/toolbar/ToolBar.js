@@ -20,7 +20,6 @@ import { ObjectGroup } from "styled-icons/fa-solid/ObjectGroup";
 import { Magnet } from "styled-icons/fa-solid/Magnet";
 import { Bars } from "styled-icons/fa-solid/Bars";
 import styled from "styled-components";
-import { HandPaper } from "styled-icons/fa-solid/HandPaper";
 
 const StyledToolbar = styled.div`
   display: flex;
@@ -182,10 +181,6 @@ export default class ToolBar extends Component {
     }
   };
 
-  onSelectPlacement = () => {
-    this.props.editor.spokeControls.setTransformMode(TransformMode.Placement);
-  };
-
   onSelectTranslate = () => {
     this.props.editor.spokeControls.setTransformMode(TransformMode.Translate);
   };
@@ -249,12 +244,6 @@ export default class ToolBar extends Component {
         </Logo>
         <ToolButtons>
           <ToolButton icon={Bars} onClick={this.onMenuSelected} selected={menuOpen} id="menu" />
-          <ToolButton
-            tooltip="Placement"
-            icon={HandPaper}
-            onClick={this.onSelectPlacement}
-            selected={transformMode === TransformMode.Placement}
-          />
           <ToolButton
             tooltip="Translate"
             icon={ArrowsAlt}

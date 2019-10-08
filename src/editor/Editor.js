@@ -40,7 +40,7 @@ import isInputSelected from "./utils/isInputSelected";
 
 import InputManager from "./controls/InputManager";
 import FlyControls from "./controls/FlyControls";
-import SpokeControls from "./controls/SpokeControls";
+import SpokeControls, { TransformMode } from "./controls/SpokeControls";
 import PlayModeControls from "./controls/PlayModeControls";
 
 import AddMultipleObjectsCommand from "./commands/AddMultipleObjectsCommand";
@@ -1746,5 +1746,11 @@ export default class Editor extends EventEmitter {
     }
 
     return node;
+  }
+
+  spawnGrabbedObject(object) {
+    this.spokeControls.setTransformMode(TransformMode.Placement);
+    this.getSpawnPosition(object.position);
+    this.addObject(object);
   }
 }

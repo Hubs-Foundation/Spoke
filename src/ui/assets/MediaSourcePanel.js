@@ -20,7 +20,7 @@ export default function MediaSourcePanel({ editor, source, searchPlaceholder, in
         Object.assign(node, initialProps);
       }
 
-      editor.spokeControls.setPlacementObject(node, false);
+      editor.spawnGrabbedObject(node);
     },
     [editor]
   );
