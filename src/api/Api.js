@@ -13,7 +13,11 @@ import PublishedSceneDialog from "./PublishedSceneDialog";
 // https://github.com/mozilla/hubs/blob/master/src/utils/media-utils.js
 
 const resolveUrlCache = new Map();
-const RETICULUM_SERVER = process.env.RETICULUM_SERVER || document.location.hostname;
+
+// NOTE: We avoid doing truthy comparison for process.env.var since we inject these at runhook time, and
+// otherwise the check may be elided by the compiler.
+const RETICULUM_SERVER =
+  process.env.RETICULUM_SERVER.length !== 0 ? process.env.RETICULUM_SERVER : document.location.hostname;
 
 // thanks to https://developer.mozilla.org/en-US/docs/Web/API/WindowBase64/Base64_encoding_and_decoding
 function b64EncodeUnicode(str) {
@@ -60,11 +64,7 @@ export const proxiedUrlFor = url => {
 };
 
 export const scaledThumbnailUrlFor = (url, width, height) => {
-  if (
-    process.env.RETICULUM_SERVER &&
-    process.env.RETICULUM_SERVER.includes("hubs.local") &&
-    url.includes("hubs.local")
-  ) {
+  if (process.env.RETICULUM_SERVER.includes("hubs.local") && url.includes("hubs.local")) {
     return url;
   }
 
