@@ -25,4 +25,3 @@ with thanks to [Mr.doob](https://github.com/mrdoob) and three.js' many contribut
 Navigation mesh generation via recast.wasm, thanks to [Recast](https://github.com/recastnavigation/recastnavigation) and but0n's [RecastCLI wrapper](https://github.com/but0n/recastCLI.js).
 
 See the [LICENSE](LICENSE) for details.
-
