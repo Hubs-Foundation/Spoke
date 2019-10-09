@@ -6,9 +6,10 @@ export THUMBNAIL_SERVER=$3
 export CORS_PROXY_SERVER=$4
 export NON_CORS_PROXY_DOMAINS=$5
 export SENTRY_DSN=$6
-export TARGET_S3_BUCKET=$7
-export BUILD_NUMBER=$8
-export GIT_COMMIT=$9
+export GA_TRACKING_ID=$7
+export TARGET_S3_BUCKET=$8
+export BUILD_NUMBER=$9
+export GIT_COMMIT=${10}
 export BUILD_VERSION="${BUILD_NUMBER} (${GIT_COMMIT})"
 export SENTRY_LOG_LEVEL=debug
 
@@ -44,6 +45,7 @@ thumbnail_server = $THUMBNAIL_SERVER
 cors_proxy_server = $CORS_PROXY_SERVER
 non_cors_proxy_domains = $NON_CORS_PROXY_DOMAINS
 sentry_dsn = $SENTRY_DSN
+ga_tracking_id = $GA_TRACKING_ID
 
 [deploy]
 type = "s3"
