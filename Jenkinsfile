@@ -41,7 +41,7 @@ pipeline {
           def slackURL = env.SLACK_URL
           def sentryDsn = env.SENTRY_DSN
 
-          def habCommand = "sudo /usr/bin/hab-docker-studio -k mozillareality run /bin/bash scripts/hab-build-and-push.sh \\\"${baseAssetsPath}\\\" \\\"${reticulumServer}\\\" \\\"${thumbnailServer}\\\" \\\"${corsProxyServer}\\\" \\\"${nonCorsProxyDomains}\\\" \\\"${sentryDsn}\\\" \\\"${targetS3Bucket}\\\" \\\"${env.BUILD_NUMBER}\\\" \\\"${env.GIT_COMMIT}\\\""
+          def habCommand = "/bin/bash scripts/hab-build-and-push.sh \\\"${baseAssetsPath}\\\" \\\"${reticulumServer}\\\" \\\"${thumbnailServer}\\\" \\\"${corsProxyServer}\\\" \\\"${nonCorsProxyDomains}\\\" \\\"${sentryDsn}\\\" \\\"${targetS3Bucket}\\\" \\\"${env.BUILD_NUMBER}\\\" \\\"${env.GIT_COMMIT}\\\""
           sh "/usr/bin/script --return -c ${shellString(habCommand)} /dev/null"
 
           def s = $/eval 'ls -rt results/*.hart | head -n 1'/$
