@@ -44,7 +44,6 @@ thumbnail_server = $THUMBNAIL_SERVER
 cors_proxy_server = $CORS_PROXY_SERVER
 non_cors_proxy_domains = $NON_CORS_PROXY_DOMAINS
 sentry_dsn = $SENTRY_DSN
-ga_tracking_id = $GA_TRACKING_ID
 
 [deploy]
 type = "s3"
