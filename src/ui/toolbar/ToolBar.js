@@ -245,19 +245,19 @@ export default class ToolBar extends Component {
         <ToolButtons>
           <ToolButton icon={Bars} onClick={this.onMenuSelected} selected={menuOpen} id="menu" />
           <ToolButton
-            tooltip="Translate"
+            tooltip="[T] Translate"
             icon={ArrowsAlt}
             onClick={this.onSelectTranslate}
             selected={transformMode === TransformMode.Translate}
           />
           <ToolButton
-            tooltip="Rotate"
+            tooltip="[R] Rotate"
             icon={SyncAlt}
             onClick={this.onSelectRotate}
             selected={transformMode === TransformMode.Rotate}
           />
           <ToolButton
-            tooltip="Scale"
+            tooltip="[Y] Scale"
             icon={ArrowsAltV}
             onClick={this.onSelectScale}
             selected={transformMode === TransformMode.Scale}

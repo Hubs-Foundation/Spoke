@@ -206,13 +206,13 @@ const steps = [
           <h1>Translation</h1>
           <p>After selecting an object you can drag the arrows on the transform controls to move an object.</p>
           <p>
-            To move an object you must be in translation mode. Click the translation mode button in the toolbar or the W
+            To move an object you must be in translation mode. Click the translation mode button in the toolbar or the T
             key to switch to translation mode.
           </p>
           <img src={translationImage} />
           <Well>
             <HotkeyDescription action="Translation Mode">
-              <div>W</div>
+              <div>T</div>
             </HotkeyDescription>
           </Well>
         </OnboardingDialog>
@@ -226,13 +226,13 @@ const steps = [
           <h2>Manipulating Objects</h2>
           <h1>Rotation</h1>
           <p>
-            To rotate an object you must be in rotation mode. Click the rotation mode button in the toolbar or the E key
+            To rotate an object you must be in rotation mode. Click the rotation mode button in the toolbar or the R key
             to switch to rotation mode.
           </p>
           <img src={rotationImage} />
           <Well>
             <HotkeyDescription action="Rotation Mode">
-              <div>E</div>
+              <div>R</div>
             </HotkeyDescription>
           </Well>
         </OnboardingDialog>
@@ -246,13 +246,13 @@ const steps = [
           <h2>Manipulating Objects</h2>
           <h1>Scale</h1>
           <p>
-            To scale an object you must be in scale mode. Click the scale mode button in the toolbar or the R key to
+            To scale an object you must be in scale mode. Click the scale mode button in the toolbar or the Y key to
             switch to scale mode.
           </p>
           <img src={scaleImage} />
           <Well>
             <HotkeyDescription action="Scale Mode">
-              <div>R</div>
+              <div>Y</div>
             </HotkeyDescription>
           </Well>
         </OnboardingDialog>
@@ -287,16 +287,16 @@ const steps = [
           to continue, click next.
           <Well>
             <HotkeyDescription action="Translation Mode">
-              <div>W</div>
+              <div>T</div>
             </HotkeyDescription>
             <HotkeyDescription action="Rotation Mode">
-              <div>E</div>
-            </HotkeyDescription>
-            <HotkeyDescription action="Scale Mode">
               <div>R</div>
             </HotkeyDescription>
+            <HotkeyDescription action="Scale Mode">
+              <div>Y</div>
+            </HotkeyDescription>
             <HotkeyDescription action="Snapping Mode">
-              <div>X</div>
+              <div>C</div>
             </HotkeyDescription>
           </Well>
         </OnboardingPopover>

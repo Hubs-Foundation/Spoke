@@ -36,8 +36,6 @@ export const TransformMode = {
   Scale: "Scale"
 };
 
-export const TransformModes = [TransformMode.Translate, TransformMode.Rotate, TransformMode.Scale];
-
 export const TransformAxis = {
   X: "X",
   Y: "Y",
@@ -555,8 +553,12 @@ export default class SpokeControls extends EventEmitter {
       this.editor.deselectAll();
     } else if (input.get(Spoke.focusSelection)) {
       this.focus(this.editor.selected);
-    } else if (input.get(Spoke.changeTransformMode)) {
-      this.changeTransformMode(TransformMode.Translate);
+    } else if (input.get(Spoke.setTranslateMode)) {
+      this.setTransformMode(TransformMode.Translate);
+    } else if (input.get(Spoke.setRotateMode)) {
+      this.setTransformMode(TransformMode.Rotate);
+    } else if (input.get(Spoke.setScaleMode)) {
+      this.setTransformMode(TransformMode.Scale);
     } else if (input.get(Spoke.toggleSnapMode)) {
       this.toggleSnapMode();
     } else if (input.get(Spoke.toggleTransformPivot)) {
@@ -737,20 +739,6 @@ export default class SpokeControls extends EventEmitter {
         Math.round(target.z / translationSnap) * translationSnap
       );
     }
-  }
-
-  changeTransformMode() {
-    let transformModeIndex = TransformModes.indexOf(this.transformMode);
-
-    if (transformModeIndex === -1) {
-      transformModeIndex = 0;
-    } else {
-      transformModeIndex++;
-    }
-
-    transformModeIndex = transformModeIndex % TransformModes.length;
-
-    this.setTransformMode(TransformModes[transformModeIndex]);
   }
 
   setTransformMode(mode, transformModeOnCancel) {
