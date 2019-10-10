@@ -338,22 +338,47 @@ export default class SpokeControls extends EventEmitter {
           .applyQuaternion(this.inverseGizmoQuaternion)
           .multiply(constraint);
 
-        if (this.shouldSnap(modifier)) {
-          this.translationVector
-            .divideScalar(this.translationSnap)
-            .round()
-            .multiplyScalar(this.translationSnap);
-        }
-
         this.translationVector.applyQuaternion(this.transformGizmo.quaternion);
+
+        this.transformGizmo.position.add(this.translationVector);
+
+        if (this.shouldSnap(modifier)) {
+          const transformPosition = this.transformGizmo.position;
+
+          const prevX = transformPosition.x;
+          const prevY = transformPosition.y;
+          const prevZ = transformPosition.z;
+
+          const transformedConstraint = new Vector3().copy(constraint).applyQuaternion(this.transformGizmo.quaternion);
+
+          transformPosition.set(
+            transformedConstraint.x !== 0
+              ? Math.round(transformPosition.x / this.translationSnap) * this.translationSnap
+              : transformPosition.x,
+            transformedConstraint.y !== 0
+              ? Math.round(transformPosition.y / this.translationSnap) * this.translationSnap
+              : transformPosition.y,
+            transformedConstraint.z !== 0
+              ? Math.round(transformPosition.z / this.translationSnap) * this.translationSnap
+              : transformPosition.z
+          );
+
+          const diffX = transformPosition.x - prevX;
+          const diffY = transformPosition.y - prevY;
+          const diffZ = transformPosition.z - prevZ;
+
+          this.translationVector.set(
+            this.translationVector.x + diffX,
+            this.translationVector.y + diffY,
+            this.translationVector.z + diffZ
+          );
+        }
 
         const cmd = this.editor.translateSelected(this.translationVector, this.transformSpace);
 
         if (grabStart && this.transformMode === TransformMode.Grab) {
           this.grabHistoryCheckpoint = cmd.id;
         }
-
-        this.transformGizmo.position.add(this.translationVector);
       } else if (this.transformMode === TransformMode.Rotate) {
         if (selectStart) {
           this.initRotationDragVector
