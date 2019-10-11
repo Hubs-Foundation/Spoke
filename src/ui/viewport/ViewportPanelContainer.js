@@ -8,8 +8,6 @@ import AssetsPanel from "../assets/AssetsPanel";
 import { useDrop } from "react-dnd";
 import { ItemTypes, AssetTypes, addAssetAtCursorPositionOnDrop } from "../dnd";
 import SelectInput from "../inputs/SelectInput";
-import { GridOn } from "styled-icons/material/GridOn";
-import { GridOff } from "styled-icons/material/GridOff";
 
 function borderColor(props, defaultColor) {
   if (props.canDrop) {
@@ -81,24 +79,11 @@ const selectInputStyles = {
   })
 };
 
-const GridToggleButton = styled(GridOn)`
-  margin: 4px 8px;
-
-  :hover {
-    color: ${props => props.theme.blueHover};
-  }
-
-  :active {
-    color: ${props => props.theme.blue};
-  }
-`;
-
 function ViewportToolbar() {
   const editor = useContext(EditorContext);
 
   const renderer = editor.renderer;
   const [renderMode, setRenderMode] = useState(renderer && renderer.renderMode);
-  const [gridVisible, setGridVisible] = useState(editor.grid.visible);
 
   const options = renderer
     ? renderer.renderModes.map(mode => ({
@@ -121,18 +106,8 @@ function ViewportToolbar() {
     [editor, setRenderMode]
   );
 
-  const onToggleGridVisible = useCallback(() => {
-    setGridVisible((editor.grid.visible = !editor.grid.visible));
-  }, [editor, setGridVisible]);
-
   return (
     <ViewportToolbarContainer>
-      <GridToggleButton
-        title="Toggle Grid"
-        as={gridVisible ? GridOn : GridOff}
-        size={16}
-        onClick={onToggleGridVisible}
-      />
       <SelectInput value={renderMode} options={options} onChange={onChangeRenderMode} styles={selectInputStyles} />
     </ViewportToolbarContainer>
   );

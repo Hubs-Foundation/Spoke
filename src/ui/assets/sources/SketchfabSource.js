@@ -1,4 +1,5 @@
 import ModelMediaSource from "../ModelMediaSource";
+import { TransformPivot } from "../../../editor/controls/SpokeControls";
 
 export default class SketchfabSource extends ModelMediaSource {
   constructor(api) {
@@ -29,5 +30,6 @@ export default class SketchfabSource extends ModelMediaSource {
 
     this.searchLegalCopy = "Search by Sketchfab";
     this.privacyPolicyUrl = "https://sketchfab.com/privacy";
+    this.transformPivot = TransformPivot.Bottom;
   }
 }

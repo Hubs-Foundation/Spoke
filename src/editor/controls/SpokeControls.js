@@ -24,7 +24,8 @@ export const SnapMode = {
 
 export const TransformPivot = {
   Selection: "Selection",
-  Center: "Center"
+  Center: "Center",
+  Bottom: "Bottom"
 };
 
 export const TransformMode = {
@@ -233,16 +234,22 @@ export default class SpokeControls extends EventEmitter {
         this.transformPivotChanged ||
         this.transformPropertyChanged
       ) {
-        if (this.transformPivot === TransformPivot.Center) {
+        if (this.transformPivot === TransformPivot.Selection) {
+          lastSelectedObject.getWorldPosition(this.transformGizmo.position);
+        } else {
           this.selectionBoundingBox.makeEmpty();
 
           for (let i = 0; i < selectedTransformRoots.length; i++) {
             this.selectionBoundingBox.expandByObject(selectedTransformRoots[i]);
           }
 
-          this.selectionBoundingBox.getCenter(this.transformGizmo.position);
-        } else {
-          lastSelectedObject.getWorldPosition(this.transformGizmo.position);
+          if (this.transformPivot === TransformPivot.Center) {
+            this.selectionBoundingBox.getCenter(this.transformGizmo.position);
+          } else {
+            this.transformGizmo.position.x = (this.selectionBoundingBox.max.x + this.selectionBoundingBox.min.x) / 2;
+            this.transformGizmo.position.y = this.selectionBoundingBox.min.y;
+            this.transformGizmo.position.z = (this.selectionBoundingBox.max.z + this.selectionBoundingBox.min.z) / 2;
+          }
         }
       }
 
@@ -562,7 +569,7 @@ export default class SpokeControls extends EventEmitter {
     } else if (input.get(Spoke.toggleSnapMode)) {
       this.toggleSnapMode();
     } else if (input.get(Spoke.toggleTransformPivot)) {
-      this.toggleTransformPivot();
+      this.changeTransformPivot();
     } else if (input.get(Spoke.toggleTransformSpace)) {
       this.toggleTransformSpace();
     } else if (input.get(Spoke.undo)) {
@@ -767,10 +774,12 @@ export default class SpokeControls extends EventEmitter {
     this.emit("transformPivotChanged");
   }
 
-  toggleTransformPivot() {
-    this.setTransformPivot(
-      this.transformPivot === TransformPivot.Center ? TransformPivot.Selection : TransformPivot.Center
-    );
+  transformPivotModes = [TransformPivot.Selection, TransformPivot.Center, TransformPivot.Bottom];
+
+  changeTransformPivot() {
+    const curPivotModeIndex = this.transformPivotModes.indexOf(this.transformPivot);
+    const nextPivotModeIndex = (curPivotModeIndex + 1) % this.transformPivotModes.length;
+    this.setTransformPivot(this.transformPivotModes[nextPivotModeIndex]);
   }
 
   setSnapMode(snapMode) {
@@ -788,6 +797,7 @@ export default class SpokeControls extends EventEmitter {
 
   setTranslationSnap(value) {
     this.translationSnap = value;
+    this.editor.grid.setSize(value);
     this.emit("snapSettingsChanged");
   }
 

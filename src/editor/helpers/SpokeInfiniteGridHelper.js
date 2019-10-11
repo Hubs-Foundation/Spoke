@@ -20,6 +20,7 @@ void main() {
       
       gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
 
+      gl_Position.z -= 0.01;
 }
 `;
 
@@ -50,7 +51,6 @@ void main() {
   gl_FragColor.a = mix(0.5 * gl_FragColor.a, gl_FragColor.a, g2);
 
   if ( gl_FragColor.a <= 0.0 ) discard;
-
 }
 `;
 
@@ -104,6 +104,11 @@ export default class SpokeInfiniteGridHelper extends Mesh {
       point: this.intersectionPointWorld,
       object: this
     };
+  }
+
+  setSize(size) {
+    this.material.uniforms.uSize1.value = size;
+    this.material.uniforms.uSize2.value = size * 10;
   }
 
   raycast(raycaster, intersects) {

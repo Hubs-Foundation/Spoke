@@ -1757,8 +1757,22 @@ export default class Editor extends EventEmitter {
   }
 
   spawnGrabbedObject(object) {
+    if (this.spokeControls.transformMode === TransformMode.Placement) {
+      this.removeSelectedObjects();
+    }
+
     this.spokeControls.setTransformMode(TransformMode.Placement);
     this.getSpawnPosition(object.position);
     this.addObject(object);
+  }
+
+  setGridHeight(value) {
+    this.grid.position.y = value;
+    this.emit("gridHeightChanged", value);
+  }
+
+  toggleGridVisible() {
+    this.grid.visible = !this.grid.visible;
+    this.emit("gridVisibilityChanged", this.grid.visible);
   }
 }
