@@ -26,6 +26,7 @@ export default class RotateOnAxisMultipleCommand extends Command {
   }
 
   update(command) {
+    this.angle += command.angle;
     this.editor.rotateOnAxisMultiple(this.objects, this.axis, command.angle, this.space, false);
   }
 

@@ -8,8 +8,7 @@ import AssetsPanel from "../assets/AssetsPanel";
 import { useDrop } from "react-dnd";
 import { ItemTypes, AssetTypes, addAssetAtCursorPositionOnDrop } from "../dnd";
 import SelectInput from "../inputs/SelectInput";
-import { GridOn } from "styled-icons/material/GridOn";
-import { GridOff } from "styled-icons/material/GridOff";
+import { TransformMode } from "../../editor/controls/SpokeControls";
 
 function borderColor(props, defaultColor) {
   if (props.canDrop) {
@@ -81,24 +80,11 @@ const selectInputStyles = {
   })
 };
 
-const GridToggleButton = styled(GridOn)`
-  margin: 4px 8px;
-
-  :hover {
-    color: ${props => props.theme.blueHover};
-  }
-
-  :active {
-    color: ${props => props.theme.blue};
-  }
-`;
-
 function ViewportToolbar() {
   const editor = useContext(EditorContext);
 
   const renderer = editor.renderer;
   const [renderMode, setRenderMode] = useState(renderer && renderer.renderMode);
-  const [gridVisible, setGridVisible] = useState(editor.grid.visible);
 
   const options = renderer
     ? renderer.renderModes.map(mode => ({
@@ -121,18 +107,8 @@ function ViewportToolbar() {
     [editor, setRenderMode]
   );
 
-  const onToggleGridVisible = useCallback(() => {
-    setGridVisible((editor.grid.visible = !editor.grid.visible));
-  }, [editor, setGridVisible]);
-
   return (
     <ViewportToolbarContainer>
-      <GridToggleButton
-        title="Toggle Grid"
-        as={gridVisible ? GridOn : GridOff}
-        size={16}
-        onClick={onToggleGridVisible}
-      />
       <SelectInput value={renderMode} options={options} onChange={onChangeRenderMode} styles={selectInputStyles} />
     </ViewportToolbarContainer>
   );
@@ -143,6 +119,7 @@ export default function ViewportPanelContainer() {
   const canvasRef = useRef();
   const [flyModeEnabled, setFlyModeEnabled] = useState(false);
   const [objectSelected, setObjectSelected] = useState(false);
+  const [transformMode, setTransformMode] = useState(null);
 
   const onSelectionChanged = useCallback(() => {
     setObjectSelected(editor.selected.length > 0);
@@ -152,6 +129,10 @@ export default function ViewportPanelContainer() {
     setFlyModeEnabled(editor.flyControls.enabled);
   }, [editor, setFlyModeEnabled]);
 
+  const onTransformModeChanged = useCallback(mode => {
+    setTransformMode(mode);
+  }, []);
+
   const onResize = useCallback(() => {
     editor.onResize();
   }, [editor]);
@@ -159,7 +140,8 @@ export default function ViewportPanelContainer() {
   const onEditorInitialized = useCallback(() => {
     editor.addListener("selectionChanged", onSelectionChanged);
     editor.spokeControls.addListener("flyModeChanged", onFlyModeChanged);
-  }, [editor, onSelectionChanged, onFlyModeChanged]);
+    editor.spokeControls.addListener("transformModeChanged", onTransformModeChanged);
+  }, [editor, onSelectionChanged, onFlyModeChanged, onTransformModeChanged]);
 
   useEffect(() => {
     editor.addListener("initialized", onEditorInitialized);
@@ -201,17 +183,33 @@ export default function ViewportPanelContainer() {
     })
   });
 
+  let controlsText;
+
+  if (flyModeEnabled) {
+    controlsText = "[W][A][S][D] Move Camera | [Shift] Fly faster";
+  } else {
+    controlsText = "[LMB] Orbit / Select | [MMB] Pan | [RMB] Fly";
+  }
+
+  if (objectSelected) {
+    controlsText += " | [F] Focus | [Q] Rotate Left | [E] Rotate Right";
+  }
+
+  if (transformMode === TransformMode.Placement) {
+    controlsText += " | [ESC / G] Cancel Placement";
+  } else if (transformMode === TransformMode.Grab) {
+    controlsText += " | [Shift + Click] Place Duplicate | [ESC / G] Cancel Grab";
+  } else if (objectSelected) {
+    controlsText += "| [G] Grab | [ESC] Deselect All";
+  }
+
   // id used in onboarding
   return (
     <Panel id="viewport-panel" title="Viewport" icon={WindowMaximize} toolbarContent={<ViewportToolbar />}>
       <Resizeable axis="y" onChange={onResize} min={0.01} initialSizes={initialPanelSizes}>
         <ViewportContainer error={isOver && !canDrop} canDrop={isOver && canDrop} ref={dropRef}>
           <Viewport ref={canvasRef} tabIndex="-1" />
-          <ControlsText>
-            {flyModeEnabled
-              ? "[W][A][S][D] Move Camera | [Shift] Fly faster"
-              : `[LMB] Orbit / Select | [MMB] Pan | [RMB] Fly ${objectSelected ? "| [F] Focus" : ""}`}
-          </ControlsText>
+          <ControlsText>{controlsText}</ControlsText>
         </ViewportContainer>
         <AssetsPanel />
       </Resizeable>

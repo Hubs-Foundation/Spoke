@@ -20,6 +20,7 @@ export default class SetScaleCommand extends Command {
   }
 
   update(command) {
+    this.scale = command.scale.clone();
     this.editor.setScale(this.object, command.scale, this.space, false);
   }
 

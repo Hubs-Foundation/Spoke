@@ -27,6 +27,7 @@ export default class RotateAroundMultipleCommand extends Command {
   }
 
   update(command) {
+    this.angle += command.angle;
     this.editor.rotateAroundMultiple(this.objects, this.pivot, this.axis, command.angle, false);
   }
 

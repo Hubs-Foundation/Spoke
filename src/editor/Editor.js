@@ -41,7 +41,7 @@ import isInputSelected from "./utils/isInputSelected";
 
 import InputManager from "./controls/InputManager";
 import FlyControls from "./controls/FlyControls";
-import SpokeControls from "./controls/SpokeControls";
+import SpokeControls, { TransformMode } from "./controls/SpokeControls";
 import PlayModeControls from "./controls/PlayModeControls";
 
 import AddMultipleObjectsCommand from "./commands/AddMultipleObjectsCommand";
@@ -539,6 +539,10 @@ export default class Editor extends EventEmitter {
     this.renderer.onResize();
     this.emit("resize");
   };
+
+  revert(checkpointId) {
+    this.history.revert(checkpointId);
+  }
 
   undo() {
     this.history.undo();
@@ -1750,5 +1754,33 @@ export default class Editor extends EventEmitter {
     }
 
     return node;
+  }
+
+  spawnGrabbedObject(object) {
+    if (this.spokeControls.transformMode === TransformMode.Placement) {
+      this.removeSelectedObjects();
+    }
+
+    this.spokeControls.setTransformMode(TransformMode.Placement);
+    this.getSpawnPosition(object.position);
+    this.addObject(object);
+  }
+
+  incrementGridHeight() {
+    this.setGridHeight(this.grid.position.y + 1.5);
+  }
+
+  decrementGridHeight() {
+    this.setGridHeight(this.grid.position.y - 1.5);
+  }
+
+  setGridHeight(value) {
+    this.grid.position.y = value;
+    this.emit("gridHeightChanged", value);
+  }
+
+  toggleGridVisible() {
+    this.grid.visible = !this.grid.visible;
+    this.emit("gridVisibilityChanged", this.grid.visible);
   }
 }

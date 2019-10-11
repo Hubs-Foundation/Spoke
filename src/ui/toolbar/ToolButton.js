@@ -8,6 +8,7 @@ const StyledToolButton = styled.button`
   border: none;
   color: ${props => props.theme.white};
   cursor: pointer;
+  position: relative;
 
   background-color: ${props => (props.selected ? props.theme.blue : props.theme.toolbar)};
 

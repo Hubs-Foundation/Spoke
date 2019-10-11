@@ -20,6 +20,7 @@ export default class TranslateCommand extends Command {
   }
 
   update(command) {
+    this.translation.add(command.translation);
     this.editor.translate(this.object, command.translation, this.space, false);
   }
 

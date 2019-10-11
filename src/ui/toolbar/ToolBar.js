@@ -1,25 +1,23 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
 import { showMenu, ContextMenu, MenuItem, SubMenu } from "../layout/ContextMenu";
-import { Link } from "react-router-dom";
 import ReactTooltip from "react-tooltip";
 import ToolButton from "./ToolButton";
 import { Button } from "../inputs/Button";
-import ToolToggle from "./ToolToggle";
-import SnappingDropdown from "./SnappingDropdown";
-import SpokeIcon from "../../assets/spoke-icon.png";
+import SelectInput from "../inputs/SelectInput";
+import NumericStepperInput from "../inputs/NumericStepperInput";
 import { TransformMode, SnapMode, TransformPivot } from "../../editor/controls/SpokeControls";
 import { TransformSpace } from "../../editor/Editor";
 import { ArrowsAlt } from "styled-icons/fa-solid/ArrowsAlt";
 import { SyncAlt } from "styled-icons/fa-solid/SyncAlt";
 import { ArrowsAltV } from "styled-icons/fa-solid/ArrowsAltV";
-import { Cube } from "styled-icons/fa-solid/Cube";
 import { Globe } from "styled-icons/fa-solid/Globe";
 import { Bullseye } from "styled-icons/fa-solid/Bullseye";
-import { ObjectGroup } from "styled-icons/fa-solid/ObjectGroup";
 import { Magnet } from "styled-icons/fa-solid/Magnet";
 import { Bars } from "styled-icons/fa-solid/Bars";
+import { Grid } from "styled-icons/boxicons-regular/Grid";
 import styled from "styled-components";
+import styledTheme from "../theme";
 
 const StyledToolbar = styled.div`
   display: flex;
@@ -27,38 +25,6 @@ const StyledToolbar = styled.div`
   height: 40px;
   background-color: ${props => props.theme.toolbar};
   user-select: none;
-`;
-
-const Logo = styled.div`
-  position: absolute;
-  top: 0;
-  left: 0;
-  text-align: center;
-  font-family: ${props => props.theme.zilla};
-  text-shadow: 0 0 4px black;
-  font-size: 24px;
-  width: 100%;
-  margin-top: 4px;
-  font-weight: bold;
-  display: flex;
-  justify-content: center;
-  pointer-events: none;
-
-  a {
-    color: white;
-    text-decoration: none;
-  }
-`;
-
-const LogoLink = styled(Link)`
-  display: flex;
-  pointer-events: all;
-
-  img {
-    width: 32px;
-    height: 32px;
-    margin-right: 5px;
-  }
 `;
 
 const ToolButtons = styled.div`
@@ -75,7 +41,7 @@ const ToolToggles = styled.div`
   flex-direction: row;
   background-color: ${props => props.theme.toolbar2};
   align-items: center;
-  padding-right: 16px;
+  padding: 0 16px;
 `;
 
 const Spacer = styled.div`
@@ -94,6 +60,141 @@ const PublishButton = styled(Button)`
   margin: 1em;
   padding: 0 2em;
 `;
+
+const snapInputStyles = {
+  container: base => ({
+    ...base,
+    width: "80px"
+  }),
+  control: base => ({
+    ...base,
+    backgroundColor: styledTheme.inputBackground,
+    minHeight: "24px",
+    borderRadius: "0px",
+    borderWidth: "0px",
+    cursor: "pointer",
+    outline: "none",
+    boxShadow: "none"
+  })
+};
+
+const rightSnapInputStyles = {
+  container: base => ({
+    ...base,
+    width: "80px"
+  }),
+  control: base => ({
+    ...base,
+    backgroundColor: styledTheme.inputBackground,
+    minHeight: "24px",
+    borderTopLeftRadius: "0px",
+    borderBottomLeftRadius: "0px",
+    borderWidth: "0px 0px 0px 1px",
+    borderColor: styledTheme.border,
+    cursor: "pointer",
+    outline: "none",
+    boxShadow: "none",
+    ":hover": {
+      borderColor: styledTheme.border
+    }
+  })
+};
+
+const selectInputStyles = {
+  container: base => ({
+    ...base,
+    width: "100px"
+  }),
+  control: base => ({
+    ...base,
+    backgroundColor: styledTheme.inputBackground,
+    minHeight: "24px",
+    borderTopLeftRadius: "0px",
+    borderBottomLeftRadius: "0px",
+    borderWidth: "0px",
+    cursor: "pointer",
+    outline: "none",
+    boxShadow: "none"
+  })
+};
+
+const ToggleButton = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 24px;
+  height: 24px;
+  background-color: ${props => (props.value ? props.theme.blue : props.theme.toolbar)};
+  border-top-left-radius: 4px;
+  border-bottom-left-radius: 4px;
+
+  :hover {
+    background-color: ${props => props.theme.blueHover};
+  }
+
+  :active {
+    background-color: ${props => props.theme.blue};
+  }
+`;
+
+const ToolbarInputGroup = styled.div`
+  display: flex;
+  align-items: center;
+  border: 1px solid ${props => props.theme.border};
+  border-radius: 4px;
+  margin: 0 4px;
+`;
+
+const ToolbarNumericStepperInput = styled(NumericStepperInput)`
+  width: 100px;
+
+  input {
+    border-width: 0;
+  }
+
+  button {
+    border-width: 0px 1px 0px 1px;
+
+    &:first-child {
+      border-radius: 0;
+    }
+
+    &:last-child {
+      border-right-width: 0;
+    }
+  }
+`;
+
+const translationSnapOptions = [
+  { label: "0.1m", value: 0.1 },
+  { label: "0.125m", value: 0.125 },
+  { label: "0.25m", value: 0.25 },
+  { label: "0.5m", value: 0.5 },
+  { label: "1m", value: 1 },
+  { label: "2m", value: 2 },
+  { label: "4m", value: 4 }
+];
+
+const rotationSnapOptions = [
+  { label: "1°", value: 1 },
+  { label: "5°", value: 5 },
+  { label: "10°", value: 10 },
+  { label: "15°", value: 15 },
+  { label: "30°", value: 30 },
+  { label: "45°", value: 45 },
+  { label: "90°", value: 90 }
+];
+
+const transformPivotOptions = [
+  { label: "Selection", value: TransformPivot.Selection },
+  { label: "Center", value: TransformPivot.Center },
+  { label: "Bottom", value: TransformPivot.Bottom }
+];
+
+const transformSpaceOptions = [
+  { label: "Selection", value: TransformSpace.LocalSelection },
+  { label: "World", value: TransformSpace.World }
+];
 
 export default class ToolBar extends Component {
   static propTypes = {
@@ -123,6 +224,8 @@ export default class ToolBar extends Component {
     editor.spokeControls.addListener("transformSpaceChanged", this.onSpokeControlsChanged);
     editor.spokeControls.addListener("transformPivotChanged", this.onSpokeControlsChanged);
     editor.spokeControls.addListener("snapSettingsChanged", this.onSpokeControlsChanged);
+    editor.addListener("gridHeightChanged", this.onSpokeControlsChanged);
+    editor.addListener("gridVisibilityChanged", this.onSpokeControlsChanged);
     this.setState({ editorInitialized: true });
   };
 
@@ -135,6 +238,8 @@ export default class ToolBar extends Component {
       editor.spokeControls.removeListener("transformSpaceChanged", this.onSpokeControlsChanged);
       editor.spokeControls.removeListener("transformPivotChanged", this.onSpokeControlsChanged);
       editor.spokeControls.removeListener("snapSettingsChanged", this.onSpokeControlsChanged);
+      editor.removeListener("gridHeightChanged", this.onSpokeControlsChanged);
+      editor.addListener("gridVisibilityChanged", this.onSpokeControlsChanged);
     }
   }
 
@@ -197,8 +302,12 @@ export default class ToolBar extends Component {
     this.props.editor.spokeControls.toggleTransformSpace();
   };
 
+  onChangeTransformPivot = transformPivot => {
+    this.props.editor.spokeControls.setTransformPivot(transformPivot);
+  };
+
   onToggleTransformPivot = () => {
-    this.props.editor.spokeControls.toggleTransformPivot();
+    this.props.editor.spokeControls.changeTransformPivot();
   };
 
   onToggleSnapMode = () => {
@@ -206,7 +315,8 @@ export default class ToolBar extends Component {
   };
 
   onChangeTranslationSnap = translationSnap => {
-    this.props.editor.spokeControls.setTranslationSnap(translationSnap);
+    this.props.editor.spokeControls.setTranslationSnap(parseFloat(translationSnap));
+    this.props.editor.spokeControls.setSnapMode(SnapMode.Grid);
   };
 
   onChangeScaleSnap = scaleSnap => {
@@ -214,7 +324,16 @@ export default class ToolBar extends Component {
   };
 
   onChangeRotationSnap = rotationSnap => {
-    this.props.editor.spokeControls.setRotationSnap(rotationSnap);
+    this.props.editor.spokeControls.setRotationSnap(parseFloat(rotationSnap));
+    this.props.editor.spokeControls.setSnapMode(SnapMode.Grid);
+  };
+
+  onChangeGridHeight = value => {
+    this.props.editor.setGridHeight(value);
+  };
+
+  onToggleGridVisible = () => {
+    this.props.editor.toggleGridVisible();
   };
 
   render() {
@@ -230,81 +349,125 @@ export default class ToolBar extends Component {
       transformPivot,
       snapMode,
       translationSnap,
-      rotationSnap,
-      scaleSnap
+      rotationSnap
     } = this.props.editor.spokeControls;
 
     return (
       <StyledToolbar>
-        <Logo>
-          <LogoLink to="/">
-            <img src={SpokeIcon} />
-            <div>spoke</div>
-          </LogoLink>
-        </Logo>
         <ToolButtons>
           <ToolButton icon={Bars} onClick={this.onMenuSelected} selected={menuOpen} id="menu" />
           <ToolButton
-            tooltip="[W] Translate"
+            id="translate-button"
+            tooltip="[T] Translate"
             icon={ArrowsAlt}
             onClick={this.onSelectTranslate}
             selected={transformMode === TransformMode.Translate}
           />
           <ToolButton
-            tooltip="[E] Rotate"
+            id="rotate-button"
+            tooltip="[R] Rotate"
             icon={SyncAlt}
             onClick={this.onSelectRotate}
             selected={transformMode === TransformMode.Rotate}
           />
           <ToolButton
-            tooltip="[R] Scale"
+            id="scale-button"
+            tooltip="[Y] Scale"
             icon={ArrowsAltV}
             onClick={this.onSelectScale}
             selected={transformMode === TransformMode.Scale}
           />
         </ToolButtons>
         <ToolToggles>
-          <ToolToggle
-            text={["Global", "Local"]}
-            tooltip="[Z] Toggle Transform Space"
-            action={this.onToggleTransformSpace}
-            icons={{
-              checked: <Cube size={12} />,
-              unchecked: <Globe size={12} />
-            }}
-            isSwitch
-            isChecked={transformSpace === TransformSpace.LocalSelection}
-          />
-          <ToolToggle
-            text={["Selection", "Center"]}
-            tooltip="[X] Toggle Transform Pivot"
-            action={this.onToggleTransformPivot}
-            icons={{
-              checked: <Bullseye size={12} />,
-              unchecked: <ObjectGroup size={12} />
-            }}
-            isSwitch
-            isChecked={transformPivot === TransformPivot.Center}
-          />
-          <ToolToggle
-            text={["Snapping", "Grid"]}
-            tooltip="[C] Toggle Snap Mode"
-            action={this.onToggleSnapMode}
-            icons={{
-              checked: <Magnet size={12} />,
-              unchecked: <Magnet size={12} />
-            }}
-            isChecked={snapMode === SnapMode.Grid}
-          >
-            <SnappingDropdown
-              translationSnap={translationSnap}
-              rotationSnap={rotationSnap}
-              scaleSnap={scaleSnap}
-              onChangeTranslationSnap={this.onChangeTranslationSnap}
-              onChangeRotationSnap={this.onChangeRotationSnap}
-              onChangeScaleSnap={this.onChangeScaleSnap}
+          <ToolbarInputGroup id="transform-space">
+            <ToggleButton
+              onClick={this.onToggleTransformSpace}
+              data-tip="[Z] Toggle Transform Space"
+              data-for="toolbar"
+              data-delay-show="500"
+              data-place="bottom"
+            >
+              <Globe size={12} />
+            </ToggleButton>
+            <SelectInput
+              styles={selectInputStyles}
+              onChange={this.onChangeTransformSpace}
+              options={transformSpaceOptions}
+              value={transformSpace}
             />
-          </ToolToggle>
+          </ToolbarInputGroup>
+          <ToolbarInputGroup id="transform-pivot">
+            <ToggleButton
+              onClick={this.onToggleTransformPivot}
+              data-tip="[X] Toggle Transform Pivot"
+              data-for="toolbar"
+              data-delay-show="500"
+              data-place="bottom"
+            >
+              <Bullseye size={12} />
+            </ToggleButton>
+            <SelectInput
+              styles={selectInputStyles}
+              onChange={this.onChangeTransformPivot}
+              options={transformPivotOptions}
+              value={transformPivot}
+            />
+          </ToolbarInputGroup>
+          <ToolbarInputGroup id="transform-snap">
+            <ToggleButton
+              value={snapMode === SnapMode.Grid}
+              onClick={this.onToggleSnapMode}
+              data-tip="[C] Toggle Snap Mode"
+              data-for="toolbar"
+              data-delay-show="500"
+              data-place="bottom"
+            >
+              <Magnet size={12} />
+            </ToggleButton>
+            <SelectInput
+              styles={snapInputStyles}
+              onChange={this.onChangeTranslationSnap}
+              options={translationSnapOptions}
+              value={translationSnap}
+              placeholder={translationSnap + "m"}
+              formatCreateLabel={value => "Custom: " + value + "m"}
+              isValidNewOption={value => value.trim() !== "" && !isNaN(value)}
+              creatable
+            />
+            <SelectInput
+              styles={rightSnapInputStyles}
+              onChange={this.onChangeRotationSnap}
+              options={rotationSnapOptions}
+              value={rotationSnap}
+              placeholder={rotationSnap + "°"}
+              formatCreateLabel={value => "Custom: " + value + "°"}
+              isValidNewOption={value => value.trim() !== "" && !isNaN(value)}
+              creatable
+            />
+          </ToolbarInputGroup>
+          <ToolbarInputGroup id="transform-grid">
+            <ToggleButton
+              onClick={this.onToggleGridVisible}
+              data-tip="Toggle Grid Visibility"
+              data-for="toolbar"
+              data-delay-show="500"
+              data-place="bottom"
+            >
+              <Grid size={16} />
+            </ToggleButton>
+            <ToolbarNumericStepperInput
+              value={this.props.editor.grid.position.y}
+              onChange={this.onChangeGridHeight}
+              precision={0.01}
+              smallStep={0.25}
+              mediumStep={1.5}
+              largeStep={4.5}
+              unit="m"
+              tooltipId="toolbar"
+              incrementTooltip="[-] Increment Grid Height"
+              decrementTooltip="[=] Decrement Grid Height"
+            />
+          </ToolbarInputGroup>
         </ToolToggles>
         <Spacer />
         {this.props.editor.sceneUrl && <PublishButton onClick={this.props.onOpenScene}>Open in Hubs</PublishButton>}

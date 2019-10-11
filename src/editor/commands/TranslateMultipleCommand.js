@@ -21,6 +21,7 @@ export default class TranslateMultipleCommand extends Command {
   }
 
   update(command) {
+    this.translation.add(command.translation);
     this.editor.translateMultiple(this.objects, command.translation, this.space, false);
   }
 

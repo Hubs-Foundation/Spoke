@@ -21,6 +21,7 @@ export default class ScaleMultipleCommand extends Command {
   }
 
   update(command) {
+    this.scale.multiply(command.scale);
     this.editor.scaleMultiple(this.objects, command.scale, this.space, false);
   }
 

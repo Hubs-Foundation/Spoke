@@ -21,6 +21,7 @@ export default class RotateOnAxisCommand extends Command {
   }
 
   update(command) {
+    this.angle += command.angle;
     this.editor.rotateOnAxis(this.object, this.axis, command.angle, this.space, false);
   }
 

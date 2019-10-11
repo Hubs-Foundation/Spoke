@@ -71,9 +71,15 @@ export default class NumericInput extends Component {
     this.inputEl = createRef();
   }
 
-  handleKeyPress = event => {
-    const { smallStep, mediumStep, largeStep, min, max, precision, convertTo, onChange, onCommit } = this.props;
+  increment() {
+    this.handleStep(1);
+  }
 
+  decrement() {
+    this.handleStep(-1);
+  }
+
+  handleKeyPress = event => {
     let direction = 0;
 
     if (event.key === "ArrowUp") {
@@ -86,7 +92,14 @@ export default class NumericInput extends Component {
 
     event.preventDefault();
 
-    const nextValue = parseFloat(event.target.value) + getStepSize(event, smallStep, mediumStep, largeStep) * direction;
+    this.handleStep(direction);
+  };
+
+  handleStep(direction) {
+    const { smallStep, mediumStep, largeStep, min, max, precision, convertTo, onChange, onCommit } = this.props;
+
+    const nextValue =
+      parseFloat(this.inputEl.current.value) + getStepSize(event, smallStep, mediumStep, largeStep) * direction;
     const clampedValue = clamp(nextValue, min, max);
     const roundedValue = precision ? toPrecision(clampedValue, precision) : nextValue;
     const finalValue = convertTo(roundedValue);
@@ -105,7 +118,7 @@ export default class NumericInput extends Component {
       }),
       focused: true
     });
-  };
+  }
 
   handleKeyDown = event => {
     if (event.key === "ArrowUp" || event.key === "ArrowDown") {

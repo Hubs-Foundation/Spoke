@@ -24,6 +24,7 @@ export default class RotateAroundCommand extends Command {
   }
 
   update(command) {
+    this.angle += command.angle;
     this.editor.rotateAround(this.object, this.pivot, this.axis, command.angle, false);
   }
 

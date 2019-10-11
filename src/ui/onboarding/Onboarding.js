@@ -9,14 +9,6 @@ import lmbIcon from "../../assets/onboarding/lmb.svg";
 import rmbIcon from "../../assets/onboarding/rmb.svg";
 import wasdIcon from "../../assets/onboarding/wasd.svg";
 import HotkeyDescription from "./HotkeyDescription";
-import translationVideo from "../../assets/onboarding/translation.mp4";
-import translationImage from "../../assets/onboarding/translation.png";
-import rotationVideo from "../../assets/onboarding/rotation.mp4";
-import rotationImage from "../../assets/onboarding/rotation.png";
-import scaleVideo from "../../assets/onboarding/scale.mp4";
-import scaleImage from "../../assets/onboarding/scale.png";
-import snappingVideo from "../../assets/onboarding/snapping.mp4";
-import snappingImage from "../../assets/onboarding/snapping.png";
 import { withApi } from "../contexts/ApiContext";
 import { Button } from "../inputs/Button";
 import Well from "../layout/Well";
@@ -153,18 +145,6 @@ const steps = [
     }
   },
   {
-    component: WrappedCreateModelPopover
-  },
-  {
-    render(props) {
-      return (
-        <OnboardingPopover target="#assets-panel" {...props} position="top" disablePrev>
-          While the model is loading you&#39;ll see the loading indicator.
-        </OnboardingPopover>
-      );
-    }
-  },
-  {
     render(props) {
       return (
         <OnboardingPopover target="#viewport-panel .toolbar" {...props} position="bottom">
@@ -177,6 +157,59 @@ const steps = [
             <HotkeyDescription action="Fly">
               <Icon src={rmbIcon} />
               <Icon src={wasdIcon} />
+            </HotkeyDescription>
+            <HotkeyDescription action="Boost">
+              <Icon src={rmbIcon} />
+              <Icon src={wasdIcon} />
+              <div>Shift</div>
+            </HotkeyDescription>
+          </Well>
+        </OnboardingPopover>
+      );
+    }
+  },
+  {
+    component: WrappedCreateModelPopover
+  },
+  {
+    render(props) {
+      return (
+        <OnboardingPopover target="#assets-panel" {...props} position="top" disablePrev>
+          <p>While the model is loading you&#39;ll see the loading indicator.</p>
+          <p>Press Q to rotate the object to the left and E to rotate the object to the right.</p>
+          <p>Click to place the object and press ESC to stop placing objects.</p>
+          <Well>
+            <HotkeyDescription action="Rotate Left">
+              <div>Q</div>
+            </HotkeyDescription>
+            <HotkeyDescription action="Rotate Right">
+              <div>E</div>
+            </HotkeyDescription>
+            <HotkeyDescription action="Cancel Placement">
+              <div>Esc</div>
+            </HotkeyDescription>
+          </Well>
+        </OnboardingPopover>
+      );
+    }
+  },
+  {
+    render(props) {
+      return (
+        <OnboardingPopover target="#assets-panel" {...props} position="top" disablePrev>
+          <p>You can select objects by clicking on them.</p>
+          <p>Hold shift to select multiple objects.</p>
+          <p>Press ESC to deselect all objects.</p>
+          <Well>
+            <HotkeyDescription action="Select">
+              <Icon src={lmbIcon} />
+            </HotkeyDescription>
+            <HotkeyDescription action="Add to Selection">
+              <Icon src={lmbIcon} />
+              <div>Shift</div>
+            </HotkeyDescription>
+            <HotkeyDescription action="Deselect All">
+              <div>ESC</div>
             </HotkeyDescription>
           </Well>
         </OnboardingPopover>
@@ -201,102 +234,15 @@ const steps = [
   {
     render(props) {
       return (
-        <OnboardingDialog videoSrc={translationVideo} {...props}>
-          <h2>Manipulating Objects</h2>
-          <h1>Translation</h1>
-          <p>After selecting an object you can drag the arrows on the transform controls to move an object.</p>
+        <OnboardingPopover target="#translate-button" {...props} position="bottom-left">
           <p>
-            To move an object you must be in translation mode. Click the translation mode button in the toolbar or the W
-            key to switch to translation mode.
+            You can move objects around the scene using the translation gizmo by selecting an object and pressing T to
+            enter translation mode.
           </p>
-          <img src={translationImage} />
+          <p>Drag the arrows of the gizmo to move the object along the X, Y, or Z axis.</p>
           <Well>
             <HotkeyDescription action="Translation Mode">
-              <div>W</div>
-            </HotkeyDescription>
-          </Well>
-        </OnboardingDialog>
-      );
-    }
-  },
-  {
-    render(props) {
-      return (
-        <OnboardingDialog videoSrc={rotationVideo} {...props}>
-          <h2>Manipulating Objects</h2>
-          <h1>Rotation</h1>
-          <p>
-            To rotate an object you must be in rotation mode. Click the rotation mode button in the toolbar or the E key
-            to switch to rotation mode.
-          </p>
-          <img src={rotationImage} />
-          <Well>
-            <HotkeyDescription action="Rotation Mode">
-              <div>E</div>
-            </HotkeyDescription>
-          </Well>
-        </OnboardingDialog>
-      );
-    }
-  },
-  {
-    render(props) {
-      return (
-        <OnboardingDialog videoSrc={scaleVideo} {...props}>
-          <h2>Manipulating Objects</h2>
-          <h1>Scale</h1>
-          <p>
-            To scale an object you must be in scale mode. Click the scale mode button in the toolbar or the R key to
-            switch to scale mode.
-          </p>
-          <img src={scaleImage} />
-          <Well>
-            <HotkeyDescription action="Scale Mode">
-              <div>R</div>
-            </HotkeyDescription>
-          </Well>
-        </OnboardingDialog>
-      );
-    }
-  },
-  {
-    render(props) {
-      return (
-        <OnboardingDialog videoSrc={snappingVideo} {...props}>
-          <h2>Manipulating Objects</h2>
-          <h1>Snapping</h1>
-          <p>
-            Sometimes you may want to move an object with a precise position or rotation. To do this enable the snapping
-            mode.
-          </p>
-          <img src={snappingImage} />
-          <Well>
-            <HotkeyDescription action="Snapping Mode">
-              <div>C</div>
-            </HotkeyDescription>
-          </Well>
-        </OnboardingDialog>
-      );
-    }
-  },
-  {
-    render(props) {
-      return (
-        <OnboardingPopover target="#viewport-panel .toolbar" {...props} position="bottom">
-          Go ahead and try translating, rotating, and scaling the object you added to the scene. When you&#39;re ready
-          to continue, click next.
-          <Well>
-            <HotkeyDescription action="Translation Mode">
-              <div>W</div>
-            </HotkeyDescription>
-            <HotkeyDescription action="Rotation Mode">
-              <div>E</div>
-            </HotkeyDescription>
-            <HotkeyDescription action="Scale Mode">
-              <div>R</div>
-            </HotkeyDescription>
-            <HotkeyDescription action="Snapping Mode">
-              <div>X</div>
+              <div>T</div>
             </HotkeyDescription>
           </Well>
         </OnboardingPopover>
@@ -306,9 +252,122 @@ const steps = [
   {
     render(props) {
       return (
+        <OnboardingPopover target="#rotate-button" {...props} position="bottom-left">
+          <p>
+            You can rotate objects using the rotation gizmo by selecting an object and pressing R to enter rotation
+            mode.
+          </p>
+          <p>Drag the rings of the gizmo to rotate the object along the X, Y, or Z axis.</p>
+          <Well>
+            <HotkeyDescription action="Rotation Mode">
+              <div>R</div>
+            </HotkeyDescription>
+          </Well>
+        </OnboardingPopover>
+      );
+    }
+  },
+  {
+    render(props) {
+      return (
+        <OnboardingPopover target="#scale-button" {...props} position="bottom-left">
+          <p>You can scale objects using the scale gizmo by selecting an object and pressing Y to enter scale mode.</p>
+          <p>Drag the center cube of the gizmo to scale the object up or down.</p>
+          <Well>
+            <HotkeyDescription action="Scale Mode">
+              <div>Y</div>
+            </HotkeyDescription>
+          </Well>
+        </OnboardingPopover>
+      );
+    }
+  },
+  {
+    render(props) {
+      return (
+        <OnboardingPopover target="#translate-button" {...props} position="bottom-left">
+          <p>
+            You can also move objects around using the grab tool. While objects are selected press G to grab the
+            selection. Move your mouse and click to place the onject in the scene.
+          </p>
+          <p>Press Esc or press G again to cancel the current grab operation.</p>
+          <Well>
+            <HotkeyDescription action="Grab Object">
+              <div>G</div>
+            </HotkeyDescription>
+            <HotkeyDescription action="Cancel Grab">
+              <div>Esc / G</div>
+            </HotkeyDescription>
+          </Well>
+        </OnboardingPopover>
+      );
+    }
+  },
+
+  {
+    render(props) {
+      return (
+        <OnboardingPopover target="#transform-pivot" {...props} position="bottom-left">
+          <p>
+            Sometimes placing an object can be tough if the model&apos;s pivot point is set incorrectly. You can change
+            how the pivot is calculated in this dropdown menu. The pivot mode can be changed by pressing X.
+          </p>
+          <Well>
+            <HotkeyDescription action="Change Pivot Mode">
+              <div>X</div>
+            </HotkeyDescription>
+          </Well>
+        </OnboardingPopover>
+      );
+    }
+  },
+
+  {
+    render(props) {
+      return (
+        <OnboardingPopover target="#transform-snap" {...props} position="bottom-left">
+          <p>
+            Sometimes you may want to move an object with a precise position or rotation. To do this toggle the snapping
+            mode by clicking on the magnet icon. You can set the translation and rotation snap settings by using the
+            dropdown menus above.
+          </p>
+          <Well>
+            <HotkeyDescription action="Toggle Snap Mode">
+              <div>C</div>
+            </HotkeyDescription>
+          </Well>
+        </OnboardingPopover>
+      );
+    }
+  },
+
+  {
+    render(props) {
+      return (
+        <OnboardingPopover target="#transform-grid" {...props} position="bottom-left">
+          <p>
+            In placement mode, objects can be placed on top of other objects or the grid. When building vertically, it
+            can be useful to change the grid height.
+          </p>
+          <Well>
+            <HotkeyDescription action="Increase Grid Height">
+              <div>=</div>
+            </HotkeyDescription>
+            <HotkeyDescription action="Decrease Grid Height">
+              <div>-</div>
+            </HotkeyDescription>
+          </Well>
+        </OnboardingPopover>
+      );
+    }
+  },
+
+  {
+    render(props) {
+      return (
         <OnboardingPopover target="#properties-panel" {...props} position="left">
-          Great job! Additional object properties can be set in the properties panel. This includes things like shadows,
-          light color, and more. Go ahead and turn on shadows for your model by clicking the cast shadows checkbox.
+          Additional object properties can be set in the properties panel. This includes things like shadows, light
+          color, and more.
         </OnboardingPopover>
       );
     }

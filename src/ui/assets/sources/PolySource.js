@@ -1,4 +1,5 @@
 import ModelMediaSource from "../ModelMediaSource";
+import { TransformPivot } from "../../../editor/controls/SpokeControls";
 
 export default class PolySource extends ModelMediaSource {
   constructor(api) {
@@ -20,5 +21,6 @@ export default class PolySource extends ModelMediaSource {
 
     this.searchLegalCopy = "Search by Google";
     this.privacyPolicyUrl = "https://policies.google.com/privacy";
+    this.transformPivot = TransformPivot.Bottom;
   }
 }

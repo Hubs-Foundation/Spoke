@@ -49,8 +49,12 @@ class PropertiesPanelContainer extends Component {
     this.setState({ selected: this.props.editor.selected });
   };
 
-  onObjectsChanged = objects => {
+  onObjectsChanged = (objects, property) => {
     const selected = this.props.editor.selected;
+
+    if (property === "position" || property === "rotation" || property === "scale" || property === "matrix") {
+      return;
+    }
 
     for (let i = 0; i < objects.length; i++) {
       if (selected.indexOf(objects[i]) !== -1) {

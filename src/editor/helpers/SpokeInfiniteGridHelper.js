@@ -1,4 +1,4 @@
-import { Mesh, Color, PlaneBufferGeometry, ShaderMaterial, DoubleSide } from "three";
+import { Mesh, Color, PlaneBufferGeometry, ShaderMaterial, DoubleSide, Plane, Vector3 } from "three";
 import { addIsHelperFlag } from "./utils";
 
 /**
@@ -20,6 +20,7 @@ void main() {
       
       gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
 
+      gl_Position.z -= 0.01;
 }
 `;
 
@@ -50,7 +51,6 @@ void main() {
   gl_FragColor.a = mix(0.5 * gl_FragColor.a, gl_FragColor.a, g2);
 
   if ( gl_FragColor.a <= 0.0 ) discard;
-
 }
 `;
 
@@ -95,5 +95,37 @@ export default class SpokeInfiniteGridHelper extends Mesh {
     this.layers.set(1);
     addIsHelperFlag(this);
     this.frustumCulled = false;
+    this.plane = new Plane(this.up);
+
+    this.intersectionPointWorld = new Vector3();
+
+    this.intersection = {
+      distance: 0,
+      point: this.intersectionPointWorld,
+      object: this
+    };
+  }
+
+  setSize(size) {
+    this.material.uniforms.uSize1.value = size;
+    this.material.uniforms.uSize2.value = size * 10;
+  }
+
+  raycast(raycaster, intersects) {
+    const point = new Vector3();
+    const intersection = raycaster.ray.intersectPlane(this.plane, point);
+
+    if (intersection === null) return null;
+
+    this.intersectionPointWorld.copy(point);
+    this.intersectionPointWorld.applyMatrix4(this.matrixWorld);
+
+    const distance = raycaster.ray.origin.distanceTo(this.intersectionPointWorld);
+
+    if (distance < raycaster.near || distance > raycaster.far) return null;
+
+    this.intersection.distance = distance;
+
+    intersects.push(this.intersection);
   }
 }

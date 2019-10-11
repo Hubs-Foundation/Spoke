@@ -210,6 +210,7 @@ export default class TransformGizmo extends Object3D {
         break;
       default:
         this.selectedAxis = undefined;
+        this.activeControls = null;
         break;
     }
   }
@@ -225,6 +226,10 @@ export default class TransformGizmo extends Object3D {
 
   selectAxisWithRaycaster(raycaster) {
     this.deselectAxis();
+
+    if (!this.activeControls) {
+      return undefined;
+    }
 
     this.raycasterResults.length = 0;
     raycaster.intersectObject(this.activeControls, true, this.raycasterResults);

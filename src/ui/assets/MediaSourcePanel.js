@@ -20,9 +20,11 @@ export default function MediaSourcePanel({ editor, source, searchPlaceholder, in
         Object.assign(node, initialProps);
       }
 
-      editor.getSpawnPosition(node.position);
+      if (source.transformPivot) {
+        editor.spokeControls.setTransformPivot(source.transformPivot);
+      }
 
-      editor.addObject(node);
+      editor.spawnGrabbedObject(node);
     },
     [editor]
   );

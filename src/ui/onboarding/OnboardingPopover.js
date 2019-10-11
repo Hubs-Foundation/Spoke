@@ -68,16 +68,16 @@ const PositionStyles = {
     }
   `,
 
-  "bottom-right": css`
+  "bottom-left": css`
     &:after {
       bottom: 100%;
-      left: 10%;
+      left: 0;
       border-bottom-color: #006eff;
-      margin-left: -8px;
+      margin-left: 12px;
     }
   `,
 
-  "bottom-left": css`
+  "bottom-right": css`
     &:after {
       bottom: 100%;
       left: 90%;
@@ -203,8 +203,8 @@ export default class OnboardingPopover extends Component {
     window.addEventListener("resize", this.onResize);
   }
 
-  componentDidUpdate(nextProps) {
-    if (this.props.target !== nextProps.target) {
+  componentDidUpdate(prevProps) {
+    if (this.props.target !== prevProps.target) {
       const targetEl = document.querySelector(this.props.target);
       this.updatePosition(targetEl);
     }

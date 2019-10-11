@@ -21,6 +21,7 @@ export default class SetPositionMultipleCommand extends Command {
   }
 
   update(command) {
+    this.position = command.position.clone();
     this.editor.setPositionMultiple(this.objects, command.position, this.space, false);
   }
 
