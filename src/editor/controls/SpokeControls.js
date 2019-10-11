@@ -100,7 +100,7 @@ export default class SpokeControls extends EventEmitter {
     this.editor.helperScene.add(this.transformGizmo);
 
     this.transformMode = TransformMode.Translate;
-    this.previousTransfomMode = null;
+    this.transformModeOnCancel = TransformMode.Translate;
     this.transformSpace = TransformSpace.World;
     this.transformPivot = TransformPivot.Selection;
     this.transformAxis = null;
@@ -348,8 +348,6 @@ export default class SpokeControls extends EventEmitter {
 
         this.transformGizmo.position.add(this.translationVector);
 
-        console.log(this.shouldSnap(modifier), modifier);
-
         if (this.shouldSnap(modifier)) {
           const transformPosition = this.transformGizmo.position;
 
@@ -506,9 +504,9 @@ export default class SpokeControls extends EventEmitter {
       if (this.transformMode === TransformMode.Grab || this.transformMode === TransformMode.Placement) {
         if (this.transformMode === TransformMode.Grab) {
           if (shift || input.get(Fly.boost)) {
-            this.setTransformMode(TransformMode.Placement, this.previousTransfomMode);
+            this.setTransformMode(TransformMode.Placement);
           } else {
-            this.setTransformMode(this.previousTransfomMode);
+            this.setTransformMode(this.transformModeOnCancel);
           }
         }
 
@@ -755,8 +753,11 @@ export default class SpokeControls extends EventEmitter {
     }
   }
 
-  setTransformMode(mode, transformModeOnCancel) {
-    this.previousTransfomMode = transformModeOnCancel || this.transformMode;
+  setTransformMode(mode) {
+    if (mode !== TransformMode.Placement && mode !== TransformMode.Grab) {
+      this.transformModeOnCancel = mode;
+    }
+
     this.grabHistoryCheckpoint = null;
     this.transformMode = mode;
     this.transformModeChanged = true;
@@ -821,9 +822,9 @@ export default class SpokeControls extends EventEmitter {
   cancel() {
     if (this.transformMode === TransformMode.Grab) {
       this.editor.revert(this.grabHistoryCheckpoint);
-      this.setTransformMode(this.previousTransfomMode);
+      this.setTransformMode(this.transformModeOnCancel);
     } else if (this.transformMode === TransformMode.Placement) {
-      this.setTransformMode(this.previousTransfomMode);
+      this.setTransformMode(this.transformModeOnCancel);
       this.editor.removeSelectedObjects();
     }
 
