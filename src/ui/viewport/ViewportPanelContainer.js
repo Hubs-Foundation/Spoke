@@ -8,6 +8,7 @@ import AssetsPanel from "../assets/AssetsPanel";
 import { useDrop } from "react-dnd";
 import { ItemTypes, AssetTypes, addAssetAtCursorPositionOnDrop } from "../dnd";
 import SelectInput from "../inputs/SelectInput";
+import { TransformMode } from "../../editor/controls/SpokeControls";
 
 function borderColor(props, defaultColor) {
   if (props.canDrop) {
@@ -118,6 +119,7 @@ export default function ViewportPanelContainer() {
   const canvasRef = useRef();
   const [flyModeEnabled, setFlyModeEnabled] = useState(false);
   const [objectSelected, setObjectSelected] = useState(false);
+  const [transformMode, setTransformMode] = useState(null);
 
   const onSelectionChanged = useCallback(() => {
     setObjectSelected(editor.selected.length > 0);
@@ -127,6 +129,10 @@ export default function ViewportPanelContainer() {
     setFlyModeEnabled(editor.flyControls.enabled);
   }, [editor, setFlyModeEnabled]);
 
+  const onTransformModeChanged = useCallback(mode => {
+    setTransformMode(mode);
+  }, []);
+
   const onResize = useCallback(() => {
     editor.onResize();
   }, [editor]);
@@ -134,7 +140,8 @@ export default function ViewportPanelContainer() {
   const onEditorInitialized = useCallback(() => {
     editor.addListener("selectionChanged", onSelectionChanged);
     editor.spokeControls.addListener("flyModeChanged", onFlyModeChanged);
-  }, [editor, onSelectionChanged, onFlyModeChanged]);
+    editor.spokeControls.addListener("transformModeChanged", onTransformModeChanged);
+  }, [editor, onSelectionChanged, onFlyModeChanged, onTransformModeChanged]);
 
   useEffect(() => {
     editor.addListener("initialized", onEditorInitialized);
@@ -176,17 +183,31 @@ export default function ViewportPanelContainer() {
     })
   });
 
+  let controlsText;
+
+  if (flyModeEnabled) {
+    controlsText = "[W][A][S][D] Move Camera | [Shift] Fly faster";
+  } else {
+    controlsText = "[LMB] Orbit / Select | [MMB] Pan | [RMB] Fly";
+  }
+
+  if (objectSelected) {
+    controlsText += " | [F] Focus | [Q] Rotate Left | [E] Rotate Right";
+  }
+
+  if (transformMode === TransformMode.Placement || transformMode === TransformMode.Grab) {
+    controlsText += " | [ESC] Cancel Grab";
+  } else if (objectSelected) {
+    controlsText += "| [G] Grab | [ESC] Deselect All";
+  }
+
   // id used in onboarding
   return (
     <Panel id="viewport-panel" title="Viewport" icon={WindowMaximize} toolbarContent={<ViewportToolbar />}>
       <Resizeable axis="y" onChange={onResize} min={0.01} initialSizes={initialPanelSizes}>
         <ViewportContainer error={isOver && !canDrop} canDrop={isOver && canDrop} ref={dropRef}>
           <Viewport ref={canvasRef} tabIndex="-1" />
-          <ControlsText>
-            {flyModeEnabled
-              ? "[W][A][S][D] Move Camera | [Shift] Fly faster"
-              : `[LMB] Orbit / Select | [MMB] Pan | [RMB] Fly ${objectSelected ? "| [F] Focus" : ""}`}
-          </ControlsText>
+          <ControlsText>{controlsText}</ControlsText>
         </ViewportContainer>
         <AssetsPanel />
       </Resizeable>
