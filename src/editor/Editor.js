@@ -1766,6 +1766,14 @@ export default class Editor extends EventEmitter {
     this.addObject(object);
   }
 
+  incrementGridHeight() {
+    this.setGridHeight(this.grid.position.y + 1.5);
+  }
+
+  decrementGridHeight() {
+    this.setGridHeight(this.grid.position.y - 1.5);
+  }
+
   setGridHeight(value) {
     this.grid.position.y = value;
     this.emit("gridHeightChanged", value);

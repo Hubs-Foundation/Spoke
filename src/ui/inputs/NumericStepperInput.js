@@ -46,7 +46,14 @@ const StepperButton = styled.button`
   }
 `;
 
-export default function NumericStepperInput({ style, className, ...rest }) {
+export default function NumericStepperInput({
+  style,
+  className,
+  tooltipId,
+  decrementTooltip,
+  incrementTooltip,
+  ...rest
+}) {
   const inputRef = useRef();
 
   const onDecrement = useCallback(() => {
@@ -59,11 +66,25 @@ export default function NumericStepperInput({ style, className, ...rest }) {
 
   return (
     <StepperInputContainer style={style} className={className}>
-      <StepperButton left onClick={onDecrement}>
+      <StepperButton
+        left
+        onClick={onDecrement}
+        data-tip={decrementTooltip}
+        data-for={tooltipId}
+        data-delay-show="500"
+        data-place="bottom"
+      >
         <CaretLeft size={16} />
       </StepperButton>
       <NumericInput ref={inputRef} {...rest} />
-      <StepperButton right onClick={onIncrement}>
+      <StepperButton
+        right
+        onClick={onIncrement}
+        data-tip={incrementTooltip}
+        data-for={tooltipId}
+        data-delay-show="500"
+        data-place="bottom"
+      >
         <CaretRight size={16} />
       </StepperButton>
     </StepperInputContainer>
@@ -72,5 +93,8 @@ export default function NumericStepperInput({ style, className, ...rest }) {
 
 NumericStepperInput.propTypes = {
   style: PropTypes.object,
-  className: PropTypes.string
+  className: PropTypes.string,
+  tooltipId: PropTypes.string,
+  decrementTooltip: PropTypes.string,
+  incrementTooltip: PropTypes.string
 };

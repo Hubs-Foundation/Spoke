@@ -79,7 +79,9 @@ export const Spoke = {
   saveProject: "saveProject",
   cancel: "cancel",
   rotateLeft: "rotateLeft",
-  rotateRight: "rotateRight"
+  rotateRight: "rotateRight",
+  incrementGridHeight: "incrementGridHeight",
+  decrementGridHeight: "decrementGridHeight"
 };
 
 export const FlyMapping = {
@@ -154,6 +156,8 @@ export const SpokeMapping = {
       shift: Spoke.shift
     },
     hotkeys: {
+      "=": Spoke.incrementGridHeight,
+      "-": Spoke.decrementGridHeight,
       f: Spoke.focusSelection,
       t: Spoke.setTranslateMode,
       r: Spoke.setRotateMode,

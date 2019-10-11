@@ -575,6 +575,10 @@ export default class SpokeControls extends EventEmitter {
       this.changeTransformPivot();
     } else if (input.get(Spoke.toggleTransformSpace)) {
       this.toggleTransformSpace();
+    } else if (input.get(Spoke.incrementGridHeight)) {
+      this.editor.incrementGridHeight();
+    } else if (input.get(Spoke.decrementGridHeight)) {
+      this.editor.decrementGridHeight();
     } else if (input.get(Spoke.undo)) {
       this.editor.undo();
     } else if (input.get(Spoke.redo)) {

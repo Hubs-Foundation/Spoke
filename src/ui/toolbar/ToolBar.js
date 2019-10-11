@@ -357,18 +357,21 @@ export default class ToolBar extends Component {
         <ToolButtons>
           <ToolButton icon={Bars} onClick={this.onMenuSelected} selected={menuOpen} id="menu" />
           <ToolButton
+            id="translate-button"
             tooltip="[T] Translate"
             icon={ArrowsAlt}
             onClick={this.onSelectTranslate}
             selected={transformMode === TransformMode.Translate}
           />
           <ToolButton
+            id="rotate-button"
             tooltip="[R] Rotate"
             icon={SyncAlt}
             onClick={this.onSelectRotate}
             selected={transformMode === TransformMode.Rotate}
           />
           <ToolButton
+            id="scale-button"
             tooltip="[Y] Scale"
             icon={ArrowsAltV}
             onClick={this.onSelectScale}
@@ -376,7 +379,7 @@ export default class ToolBar extends Component {
           />
         </ToolButtons>
         <ToolToggles>
-          <ToolbarInputGroup>
+          <ToolbarInputGroup id="transform-space">
             <ToggleButton
               onClick={this.onToggleTransformSpace}
               data-tip="[Z] Toggle Transform Space"
@@ -393,7 +396,7 @@ export default class ToolBar extends Component {
               value={transformSpace}
             />
           </ToolbarInputGroup>
-          <ToolbarInputGroup>
+          <ToolbarInputGroup id="transform-pivot">
             <ToggleButton
               onClick={this.onToggleTransformPivot}
               data-tip="[X] Toggle Transform Pivot"
@@ -410,7 +413,7 @@ export default class ToolBar extends Component {
               value={transformPivot}
             />
           </ToolbarInputGroup>
-          <ToolbarInputGroup>
+          <ToolbarInputGroup id="transform-snap">
             <ToggleButton
               value={snapMode === SnapMode.Grid}
               onClick={this.onToggleSnapMode}
@@ -442,7 +445,7 @@ export default class ToolBar extends Component {
               creatable
             />
           </ToolbarInputGroup>
-          <ToolbarInputGroup>
+          <ToolbarInputGroup id="transform-grid">
             <ToggleButton
               onClick={this.onToggleGridVisible}
               data-tip="Toggle Grid Visibility"
@@ -460,6 +463,9 @@ export default class ToolBar extends Component {
               mediumStep={1.5}
               largeStep={4.5}
               unit="m"
+              tooltipId="toolbar"
+              incrementTooltip="[-] Increment Grid Height"
+              decrementTooltip="[=] Decrement Grid Height"
             />
           </ToolbarInputGroup>
         </ToolToggles>
