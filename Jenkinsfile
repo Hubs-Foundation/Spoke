@@ -62,7 +62,7 @@ pipeline {
             "<https://github.com/mozilla/Spoke/commit/$gitSha|$gitSha> ${spokeVersion} " +
             "Spoke: ```${gitSha} ${gitMessage}```\n" +
             "<${smokeURL}?required_version=${spokeVersion}|Smoke Test> - to push:\n" +
-            "`/mr spoke deploy ${spokeVersion} ${targetS3Bucket}`"
+            "`/mr spoke deploy ${spokeVersion} s3://${targetS3Bucket}`"
           )
           def payload = 'payload=' + JsonOutput.toJson([
             text      : text,
