@@ -146,6 +146,8 @@ const ToolbarInputGroup = styled.div`
 `;
 
 const ToolbarNumericStepperInput = styled(NumericStepperInput)`
+  width: 100px;
+
   input {
     border-width: 0;
   }
