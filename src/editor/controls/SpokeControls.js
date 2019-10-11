@@ -1,5 +1,5 @@
 import EventEmitter from "eventemitter3";
-import { Spoke, SpokeMapping } from "./input-mappings";
+import { Spoke, SpokeMapping, Fly } from "./input-mappings";
 import {
   Matrix3,
   Vector2,
@@ -94,6 +94,7 @@ export default class SpokeControls extends EventEmitter {
     this.scene = editor.scene;
     this.box = new Box3();
     this.sphere = new Sphere();
+    this.centerViewportPosition = new Vector2();
 
     this.transformGizmo = new TransformGizmo();
     this.editor.helperScene.add(this.transformGizmo);
@@ -207,10 +208,6 @@ export default class SpokeControls extends EventEmitter {
 
     let grabStart = false;
 
-    if (input.get(Spoke.grab)) {
-      this.setTransformMode(TransformMode.Grab);
-    }
-
     if (this.transformModeChanged) {
       this.transformGizmo.setTransformMode(this.transformMode);
 
@@ -312,7 +309,7 @@ export default class SpokeControls extends EventEmitter {
       let constraint;
 
       if (this.transformMode === TransformMode.Grab || this.transformMode === TransformMode.Placement) {
-        this.getRaycastPosition(cursorPosition, this.planeIntersection);
+        this.getRaycastPosition(flying ? this.centerViewportPosition : cursorPosition, this.planeIntersection);
         constraint = TransformAxisConstraints.XYZ;
       } else {
         this.transformRay.origin.setFromMatrixPosition(this.camera.matrixWorld);
@@ -502,7 +499,7 @@ export default class SpokeControls extends EventEmitter {
     if (selectEnd) {
       if (this.transformMode === TransformMode.Grab || this.transformMode === TransformMode.Placement) {
         if (this.transformMode === TransformMode.Grab) {
-          if (shift) {
+          if (shift || input.get(Fly.boost)) {
             this.setTransformMode(TransformMode.Placement, this.previousTransfomMode);
           } else {
             this.setTransformMode(this.previousTransfomMode);
@@ -548,16 +545,16 @@ export default class SpokeControls extends EventEmitter {
         new Vector3(0, 1, 0),
         -this.rotationSnap * _Math.DEG2RAD
       );
-    } else if (input.get(Spoke.cancel)) {
-      if (this.transformMode === TransformMode.Grab) {
-        this.editor.revert(this.grabHistoryCheckpoint);
-        this.setTransformMode(this.previousTransfomMode);
-      } else if (this.transformMode === TransformMode.Placement) {
-        this.setTransformMode(this.previousTransfomMode);
-        this.editor.removeSelectedObjects();
+    } else if (input.get(Spoke.grab)) {
+      if (this.transformMode === TransformMode.Grab || this.transformMode === TransformMode.Placement) {
+        this.cancel();
       }
 
-      this.editor.deselectAll();
+      if (this.editor.selected.length > 0) {
+        this.setTransformMode(TransformMode.Grab);
+      }
+    } else if (input.get(Spoke.cancel)) {
+      this.cancel();
     } else if (input.get(Spoke.focusSelection)) {
       this.focus(this.editor.selected);
     } else if (input.get(Spoke.setTranslateMode)) {
@@ -809,5 +806,17 @@ export default class SpokeControls extends EventEmitter {
   setRotationSnap(value) {
     this.rotationSnap = value;
     this.emit("snapSettingsChanged");
+  }
+
+  cancel() {
+    if (this.transformMode === TransformMode.Grab) {
+      this.editor.revert(this.grabHistoryCheckpoint);
+      this.setTransformMode(this.previousTransfomMode);
+    } else if (this.transformMode === TransformMode.Placement) {
+      this.setTransformMode(this.previousTransfomMode);
+      this.editor.removeSelectedObjects();
+    }
+
+    this.editor.deselectAll();
   }
 }

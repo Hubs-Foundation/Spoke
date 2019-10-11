@@ -195,8 +195,10 @@ export default function ViewportPanelContainer() {
     controlsText += " | [F] Focus | [Q] Rotate Left | [E] Rotate Right";
   }
 
-  if (transformMode === TransformMode.Placement || transformMode === TransformMode.Grab) {
-    controlsText += " | [ESC] Cancel Grab";
+  if (transformMode === TransformMode.Placement) {
+    controlsText += " | [ESC / G] Cancel Placement";
+  } else if (transformMode === TransformMode.Grab) {
+    controlsText += " | [Shift + Click] Place Duplicate | [ESC / G] Cancel Grab";
   } else if (objectSelected) {
     controlsText += "| [G] Grab | [ESC] Deselect All";
   }
