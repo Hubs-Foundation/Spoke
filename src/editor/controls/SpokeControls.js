@@ -309,7 +309,11 @@ export default class SpokeControls extends EventEmitter {
       let constraint;
 
       if (this.transformMode === TransformMode.Grab || this.transformMode === TransformMode.Placement) {
-        this.getRaycastPosition(flying ? this.centerViewportPosition : cursorPosition, this.planeIntersection);
+        this.getRaycastPosition(
+          flying ? this.centerViewportPosition : cursorPosition,
+          this.planeIntersection,
+          modifier
+        );
         constraint = TransformAxisConstraints.XYZ;
       } else {
         this.transformRay.origin.setFromMatrixPosition(this.camera.matrixWorld);
@@ -343,6 +347,8 @@ export default class SpokeControls extends EventEmitter {
         this.translationVector.applyQuaternion(this.transformGizmo.quaternion);
 
         this.transformGizmo.position.add(this.translationVector);
+
+        console.log(this.shouldSnap(modifier), modifier);
 
         if (this.shouldSnap(modifier)) {
           const transformPosition = this.transformGizmo.position;
@@ -720,7 +726,7 @@ export default class SpokeControls extends EventEmitter {
     }
   }
 
-  getRaycastPosition(coords, target) {
+  getRaycastPosition(coords, target, modifier) {
     this.raycaster.setFromCamera(coords, this.camera);
     this.raycasterResults.length = 0;
     this._raycastRecursive(this.scene, this.editor.selectedTransformRoots);
@@ -734,7 +740,7 @@ export default class SpokeControls extends EventEmitter {
       this.raycaster.ray.at(10, target);
     }
 
-    if (this.shouldSnap()) {
+    if (this.shouldSnap(modifier)) {
       const translationSnap = this.translationSnap;
 
       target.set(
