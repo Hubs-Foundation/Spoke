@@ -21,13 +21,16 @@ export default class KitPieceNode extends EditorNodeMixin(Model) {
 
         await node.load(src, pieceId);
 
-        for (const { name, materialName } of subPieces) {
-          const object = node.getObjectByName(name);
-          if (object) {
-            const material = object.materialChoices.find(m => m.name === materialName);
+        if (node.subPieces) {
+          for (const { name, materialName } of subPieces) {
+            const object = node.subPieces.find(o => o.name === name);
 
-            if (material) {
-              object.material = material;
+            if (object && object.materialChoices) {
+              const material = object.materialChoices.find(m => m.name === materialName);
+
+              if (material) {
+                object.material = material;
+              }
             }
           }
         }
@@ -246,7 +249,9 @@ export default class KitPieceNode extends EditorNodeMixin(Model) {
       }
     }
 
-    // Clear kit-piece extension data
-    this.model.userData = {};
+    if (this.model) {
+      // Clear kit-piece extension data
+      this.model.userData = {};
+    }
   }
 }
