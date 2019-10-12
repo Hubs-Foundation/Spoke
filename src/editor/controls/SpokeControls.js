@@ -11,7 +11,8 @@ import {
   Ray,
   Plane,
   Quaternion,
-  Math as _Math
+  Math as _Math,
+  Layers
 } from "three";
 import getIntersectingNode from "../utils/getIntersectingNode";
 import { TransformSpace } from "../Editor";
@@ -95,6 +96,8 @@ export default class SpokeControls extends EventEmitter {
     this.box = new Box3();
     this.sphere = new Sphere();
     this.centerViewportPosition = new Vector2();
+    this.raycastIgnoreLayers = new Layers();
+    this.raycastIgnoreLayers.set(1);
 
     this.transformGizmo = new TransformGizmo();
     this.editor.helperScene.add(this.transformGizmo);
@@ -714,8 +717,11 @@ export default class SpokeControls extends EventEmitter {
     this.transformGizmo.scale.set(1, 1, 1).multiplyScalar(eyeDistance / 5);
   }
 
-  _raycastRecursive(object, excludeObjects) {
-    if (excludeObjects && excludeObjects.indexOf(object) !== -1) {
+  _raycastRecursive(object, excludeObjects, excludeLayers) {
+    if (
+      (excludeObjects && excludeObjects.indexOf(object) !== -1) ||
+      (excludeLayers && excludeLayers.test(object.layers))
+    ) {
       return;
     }
 
@@ -724,14 +730,14 @@ export default class SpokeControls extends EventEmitter {
     const children = object.children;
 
     for (let i = 0; i < children.length; i++) {
-      this._raycastRecursive(children[i], excludeObjects);
+      this._raycastRecursive(children[i], excludeObjects, excludeLayers);
     }
   }
 
   getRaycastPosition(coords, target, modifier) {
     this.raycaster.setFromCamera(coords, this.camera);
     this.raycasterResults.length = 0;
-    this._raycastRecursive(this.scene, this.editor.selectedTransformRoots);
+    this._raycastRecursive(this.scene, this.editor.selectedTransformRoots, this.raycastIgnoreLayers);
     this._raycastRecursive(this.editor.grid);
     this.raycasterResults.sort(sortDistance);
     const result = this.raycasterResults[0];
