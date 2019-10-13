@@ -8,7 +8,7 @@ export const ListItem = styled.li`
   outline: none;
   overflow: hidden;
   user-select: none;
-  height: 24px;
+  min-height: 24px;
   padding: 0 4px;
   align-items: center;
   color: ${props => props.theme.text};
