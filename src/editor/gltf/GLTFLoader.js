@@ -641,7 +641,7 @@ class GLTFLoader {
         });
       }
     } else if (nodeDef.camera !== undefined) {
-      node = this.getDependency("camera", nodeDef.camera);
+      node = await this.getDependency("camera", nodeDef.camera);
     } else {
       node = new Object3D();
     }
