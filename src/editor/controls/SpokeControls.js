@@ -329,6 +329,12 @@ export default class SpokeControls extends EventEmitter {
         constraint = TransformAxisConstraints[this.transformAxis];
       }
 
+      if (!constraint) {
+        console.warn(
+          `Axis Constraint is undefined. transformAxis was ${this.transformAxis} transformMode was ${this.transformMode} dragging was ${this.dragging}`
+        );
+      }
+
       if (selectStart) {
         this.dragOffset.subVectors(this.transformGizmo.position, this.planeIntersection);
       } else if (grabStart) {
