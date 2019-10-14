@@ -283,7 +283,7 @@ function TreeNode({
   const [{ canDropAfter, isOverAfter }, afterDropTarget] = useDrop({
     accept: [ItemTypes.Node, ...AssetTypes],
     drop(item) {
-      const next = !lastChild && parent.children[childIndex + 1];
+      const next = !lastChild && object.parent.children[childIndex + 1];
       if (addAssetOnDrop(editor, item, object.parent, next)) {
         return;
       } else {
@@ -302,9 +302,9 @@ function TreeNode({
       if (isAsset(item)) {
         return true;
       }
+
       return (
         object.parent &&
-        isCollapsed &&
         !(item.multiple
           ? item.value.some(otherObject => isAncestor(otherObject, object))
           : isAncestor(item.value, object))
@@ -742,7 +742,11 @@ export default function HierarchyPanel() {
         editor.reparent(item.value, editor.scene);
       }
     },
-    canDrop(item) {
+    canDrop(item, monitor) {
+      if (!monitor.isOver({ shallow: true })) {
+        return false;
+      }
+
       if (isAsset(item)) {
         return true;
       }
@@ -750,11 +754,7 @@ export default function HierarchyPanel() {
       return !(item.multiple
         ? item.value.some(otherObject => isAncestor(otherObject, editor.scene))
         : isAncestor(item.value, editor.scene));
-    },
-    collect: monitor => ({
-      canDrop: monitor.canDrop(),
-      isOver: monitor.isOver({ shallow: true })
-    })
+    }
   });
 
   useEffect(() => {
@@ -770,7 +770,7 @@ export default function HierarchyPanel() {
               <FixedSizeList
                 height={height}
                 width={width}
-                itemSize={28}
+                itemSize={32}
                 itemCount={nodes.length}
                 itemData={{
                   renamingNode,
