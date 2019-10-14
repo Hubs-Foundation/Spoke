@@ -184,6 +184,11 @@ export default class EditorContainer extends Component {
   };
 
   componentDidMount() {
+    this.showDialog(ProgressDialog, {
+      title: "Loading Project",
+      message: "Loading project..."
+    });
+
     const editor = this.state.editor;
     editor.addListener("initialized", this.onEditorInitialized);
     editor.addListener("error", this.onEditorError);
