@@ -1,7 +1,8 @@
-// Read configs from global variable if available, otherwise use the process.env injected from build.
+// Read configs from meta tags if available, otherwise use the process.env injected from build.
 const configs = {};
 
 [
+  "HUBS_SERVER",
   "RETICULUM_SERVER",
   "THUMBNAIL_SERVER",
   "CORS_PROXY_SERVER",

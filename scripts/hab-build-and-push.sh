@@ -1,15 +1,16 @@
 #!/bin/bash
 
 export BASE_ASSETS_PATH=$1
-export RETICULUM_SERVER=$2
-export THUMBNAIL_SERVER=$3
-export CORS_PROXY_SERVER=$4
-export NON_CORS_PROXY_DOMAINS=$5
-export SENTRY_DSN=$6
-export GA_TRACKING_ID=$7
-export TARGET_S3_BUCKET=$8
-export BUILD_NUMBER=$9
-export GIT_COMMIT=${10}
+export HUBS_SERVER=$2
+export RETICULUM_SERVER=$3
+export THUMBNAIL_SERVER=$4
+export CORS_PROXY_SERVER=$5
+export NON_CORS_PROXY_DOMAINS=$6
+export SENTRY_DSN=$7
+export GA_TRACKING_ID=$8
+export TARGET_S3_BUCKET=$9
+export BUILD_NUMBER=${10}
+export GIT_COMMIT=${11}
 export BUILD_VERSION="${BUILD_NUMBER} (${GIT_COMMIT})"
 export SENTRY_LOG_LEVEL=debug
 
@@ -40,6 +41,7 @@ hab svc stop $PKG
 cat > build-config.toml << EOTOML
 [general]
 base_assets_path = $BASE_ASSETS_PATH
+hubs_server = $HUBS_SERVER
 reticulum_server = $RETICULUM_SERVER
 thumbnail_server = $THUMBNAIL_SERVER
 cors_proxy_server = $CORS_PROXY_SERVER
