@@ -1785,4 +1785,9 @@ export default class Editor extends EventEmitter {
     this.grid.visible = !this.grid.visible;
     this.emit("gridVisibilityChanged", this.grid.visible);
   }
+
+  dispose() {
+    this.clearCaches();
+    this.renderer.dispose();
+  }
 }

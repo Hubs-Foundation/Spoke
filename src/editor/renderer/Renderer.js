@@ -138,22 +138,15 @@ export default class Renderer {
   }
 
   onSceneSet = () => {
-    console.log("onSceneSet", this.editor.scene.name);
     this.batchManager = new BatchManager(this.editor.scene, this.renderer);
     this.renderMode.onSceneSet();
-
-    // for (const batch of this.batchManager.batches) {
-    //   this.editor.scene.add(batch);
-    // }
-
-    this.batchManager.scene = this.editor.scene;
   };
 
   addBatchedObject(object) {
     if (!this.batchManager) {
       return;
     }
-    console.log("addBatchedObject", this.editor.scene.name);
+
     object.traverse(child => {
       if (child.isMesh) {
         if (this.batchManager.addMesh(child));
