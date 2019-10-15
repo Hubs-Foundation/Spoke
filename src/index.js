@@ -1,4 +1,4 @@
-import configs from "configs";
+import configs from "./configs";
 import ReactDOM from "react-dom";
 import React from "react";
 import * as Sentry from "@sentry/browser";
