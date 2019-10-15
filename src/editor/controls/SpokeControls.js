@@ -98,6 +98,7 @@ export default class SpokeControls extends EventEmitter {
     this.centerViewportPosition = new Vector2();
     this.raycastIgnoreLayers = new Layers();
     this.raycastIgnoreLayers.set(1);
+    this.renderableLayers = new Layers();
 
     this.transformGizmo = new TransformGizmo();
     this.editor.helperScene.add(this.transformGizmo);
@@ -720,7 +721,8 @@ export default class SpokeControls extends EventEmitter {
   _raycastRecursive(object, excludeObjects, excludeLayers) {
     if (
       (excludeObjects && excludeObjects.indexOf(object) !== -1) ||
-      (excludeLayers && excludeLayers.test(object.layers))
+      (excludeLayers && excludeLayers.test(object.layers)) ||
+      this.editor.renderer.batchManager.batches.indexOf(object) !== -1
     ) {
       return;
     }
