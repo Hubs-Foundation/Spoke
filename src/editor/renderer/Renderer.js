@@ -140,9 +140,6 @@ export default class Renderer {
   onSceneSet = () => {
     console.log("onSceneSet", this.editor.scene.name);
     this.batchManager = new BatchManager(this.editor.scene, this.renderer);
-    const renderer = this.renderer;
-    this.screenshotRenderer.dispose();
-    renderer.dispose();
     this.renderMode.onSceneSet();
 
     // for (const batch of this.batchManager.batches) {
@@ -243,5 +240,8 @@ export default class Renderer {
     return { blob, cameraTransform };
   };
 
-  dispose() {}
+  dispose() {
+    this.renderer.dispose();
+    this.screenshotRenderer.dispose();
+  }
 }
