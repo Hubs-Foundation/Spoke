@@ -122,7 +122,15 @@ export default class ModelNode extends EditorNodeMixin(Model) {
     try {
       const { accessibleUrl, files } = await this.editor.api.resolveMedia(src);
 
+      if (this.model) {
+        this.editor.renderer.removeBatchedObject(this.model);
+      }
+
       await super.load(accessibleUrl);
+
+      if (this.model) {
+        this.editor.renderer.addBatchedObject(this.model);
+      }
 
       if (this.scaleToFit) {
         this.scale.set(1, 1, 1);
@@ -180,6 +188,18 @@ export default class ModelNode extends EditorNodeMixin(Model) {
     }
 
     return this;
+  }
+
+  onAdd() {
+    if (this.model) {
+      this.editor.renderer.addBatchedObject(this.model);
+    }
+  }
+
+  onRemove() {
+    if (this.model) {
+      this.editor.renderer.removeBatchedObject(this.model);
+    }
   }
 
   updateStaticModes() {

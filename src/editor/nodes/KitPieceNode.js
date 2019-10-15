@@ -112,7 +112,15 @@ export default class KitPieceNode extends EditorNodeMixin(Model) {
       try {
         const { accessibleUrl, files } = await this.editor.api.resolveMedia(src);
 
+        if (this.model) {
+          this.editor.renderer.removeBatchedObject(this.model);
+        }
+
         await super.load(accessibleUrl, nextPieceId);
+
+        if (this.model) {
+          this.editor.renderer.addBatchedObject(this.model);
+        }
 
         if (this.model) {
           this.model.position.set(0, 0, 0);
@@ -152,6 +160,18 @@ export default class KitPieceNode extends EditorNodeMixin(Model) {
     this.receiveShadow = true;
 
     return this;
+  }
+
+  onAdd() {
+    if (this.model) {
+      this.editor.renderer.addBatchedObject(this.model);
+    }
+  }
+
+  onRemove() {
+    if (this.model) {
+      this.editor.renderer.removeBatchedObject(this.model);
+    }
   }
 
   updateStaticModes() {

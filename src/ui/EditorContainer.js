@@ -239,6 +239,7 @@ export default class EditorContainer extends Component {
     editor.removeListener("saveProject", this.onSaveProject);
     editor.removeListener("initialized", this.onEditorInitialized);
     editor.removeListener("error", this.onEditorError);
+    editor.dispose();
   }
 
   onResize = () => {

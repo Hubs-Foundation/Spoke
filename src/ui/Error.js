@@ -21,7 +21,7 @@ const StyledError = styled.div`
 
 export default class Error extends Component {
   static propTypes = {
-    message: PropTypes.string
+    message: PropTypes.node
   };
 
   render() {
