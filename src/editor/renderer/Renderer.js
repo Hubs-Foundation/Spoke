@@ -92,21 +92,21 @@ class UnlitRenderMode extends RenderMode {
   }
 }
 
+class LitRenderMode extends UnlitRenderMode {
+  constructor(renderer, editor, spokeRenderer) {
+    super(renderer, editor, spokeRenderer);
+    this.name = "Lit";
+    this.enableShadows = false;
+    this.disableBatching = true;
+  }
+}
+
 class ShadowsRenderMode extends UnlitRenderMode {
   constructor(renderer, editor, spokeRenderer) {
     super(renderer, editor, spokeRenderer);
     this.name = "Shadows";
     this.disableBatching = true;
     this.enableShadows = true;
-  }
-}
-
-class NoShadowsRenderMode extends UnlitRenderMode {
-  constructor(renderer, editor, spokeRenderer) {
-    super(renderer, editor, spokeRenderer);
-    this.name = "No Shadows";
-    this.enableShadows = false;
-    this.disableBatching = true;
   }
 }
 
@@ -148,8 +148,8 @@ export default class Renderer {
     this.shadowsRenderMode = new ShadowsRenderMode(renderer, editor, this);
     this.renderModes = [
       this.renderMode,
+      new LitRenderMode(renderer, editor, this),
       this.shadowsRenderMode,
-      new NoShadowsRenderMode(renderer, editor, this),
       new WireframeRenderMode(renderer, editor, this),
       new NormalsRenderMode(renderer, editor, this)
     ];
