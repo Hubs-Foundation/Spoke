@@ -1,3 +1,4 @@
+import configs from "../../configs";
 import EditorNodeMixin from "./EditorNodeMixin";
 import { Mesh, MeshBasicMaterial, Box3, Vector3, PlaneBufferGeometry, Object3D } from "three";
 import FloorPlan from "../objects/FloorPlan";
@@ -161,7 +162,8 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
         agentRadius: this.agentRadius,
         agentMaxClimb: this.agentMaxClimb,
         agentMaxSlope: this.agentMaxSlope,
-        regionMinSize: this.regionMinSize
+        regionMinSize: this.regionMinSize,
+        wasmPath: configs.BASE_ASSETS_PATH || "https://hubs.local:9090"
       },
       signal
     );
