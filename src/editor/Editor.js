@@ -229,10 +229,12 @@ export default class Editor extends EventEmitter {
     this.removeObject(this.scene);
 
     this.sceneLoading = true;
+    this.disableUpdate = true;
 
     const scene = await SceneNode.loadProject(this, json);
 
     this.sceneLoading = false;
+    this.disableUpdate = false;
     this.scene = scene;
     this.sceneUrl = null;
 
@@ -244,13 +246,13 @@ export default class Editor extends EventEmitter {
     this.spokeControls.onSceneSet(scene);
     scene.background = new Color(0xaaaaaa);
 
+    this.renderer.onSceneSet();
+
     this.addObject(this.scene);
 
     this.deselectAll();
 
     this.history.clear();
-
-    this.renderer.onSceneSet();
 
     this.sceneModified = false;
 

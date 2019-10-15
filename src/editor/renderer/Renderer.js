@@ -1,4 +1,5 @@
 import { Vector2, Color, MeshBasicMaterial, MeshNormalMaterial } from "three";
+import { BatchManager } from "@mozillareality/three-batch-manager";
 import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer";
 import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass";
 import OutlinePass from "./OutlinePass";
@@ -100,7 +101,12 @@ export default class Renderer {
     this.editor = editor;
     this.canvas = canvas;
 
-    const renderer = makeRenderer(canvas.parentElement.offsetWidth, canvas.parentElement.offsetHeight, { canvas });
+    const context = canvas.getContext("webgl2", { antialias: true });
+
+    const renderer = makeRenderer(canvas.parentElement.offsetWidth, canvas.parentElement.offsetHeight, {
+      canvas,
+      context
+    });
     renderer.setPixelRatio(window.devicePixelRatio);
     this.renderer = renderer;
 
@@ -118,11 +124,10 @@ export default class Renderer {
 
     const camera = editor.camera;
     this.camera = camera;
-
-    this.update();
   }
 
   update(dt) {
+    this.batchManager.update();
     this.renderMode.render(dt);
   }
 
@@ -133,11 +138,52 @@ export default class Renderer {
   }
 
   onSceneSet = () => {
+    console.log("onSceneSet", this.editor.scene.name);
+    this.batchManager = new BatchManager(this.editor.scene, this.renderer);
     const renderer = this.renderer;
     this.screenshotRenderer.dispose();
     renderer.dispose();
     this.renderMode.onSceneSet();
+
+    // for (const batch of this.batchManager.batches) {
+    //   this.editor.scene.add(batch);
+    // }
+
+    this.batchManager.scene = this.editor.scene;
   };
+
+  addBatchedObject(object) {
+    if (!this.batchManager) {
+      return;
+    }
+    console.log("addBatchedObject", this.editor.scene.name);
+    object.traverse(child => {
+      if (child.isMesh) {
+        if (this.batchManager.addMesh(child));
+      }
+    });
+  }
+
+  removeBatchedObject(object) {
+    if (!this.batchManager) {
+      return;
+    }
+    object.traverse(child => {
+      if (child.isMesh) {
+        if (this.batchManager.removeMesh(child));
+      }
+    });
+  }
+
+  removeObject(rootObject) {
+    if (!this.batchingEnabled) return;
+
+    rootObject.traverse(object => {
+      if (object.isMesh) {
+        this.batchManager.removeMesh(object);
+      }
+    });
+  }
 
   onResize = () => {
     const camera = this.camera;
