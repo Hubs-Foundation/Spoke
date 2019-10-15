@@ -16,7 +16,8 @@ import {
   OrthographicCamera,
   Scene,
   Mesh,
-  PlaneBufferGeometry
+  PlaneBufferGeometry,
+  Layers
 } from "three";
 import { CopyShader } from "three/examples/jsm/shaders/CopyShader";
 import { Pass } from "three/examples/jsm/postprocessing/EffectComposer";
@@ -157,11 +158,12 @@ class OverlayMaterial extends ShaderMaterial {
 }
 
 export default class OutlinePass extends Pass {
-  constructor(resolution, scene, camera, selectedObjects) {
+  constructor(resolution, scene, camera, selectedObjects, spokeRenderer) {
     super();
     this.renderScene = scene;
     this.renderCamera = camera;
     this.selectedObjects = selectedObjects;
+    this.spokeRenderer = spokeRenderer;
     this.selectedRenderables = [];
     this.nonSelectedRenderables = [];
     this.edgeColor = new Color(1, 1, 1);
@@ -220,6 +222,7 @@ export default class OutlinePass extends Pass {
     this.outlineScene.add(this.quad);
 
     this.textureMatrix = new Matrix4();
+    this.renderableLayers = new Layers();
   }
 
   render(renderer, writeBuffer, readBuffer, delta, maskActive) {
@@ -258,11 +261,18 @@ export default class OutlinePass extends Pass {
       this.renderScene.overrideMaterial = this.depthMaterial;
       renderer.setRenderTarget(this.renderTargetDepthBuffer);
       renderer.clear();
+      this.spokeRenderer.batchManager.update();
       renderer.render(this.renderScene, this.renderCamera);
 
       // Restore selected mesh visibility.
       for (const mesh of this.selectedRenderables) {
         mesh.visible = mesh.userData.prevVisible;
+
+        if (!mesh.layers.test(this.renderableLayers)) {
+          mesh.layers.enable(0);
+          mesh.userData.prevDisableRenderLayer = true;
+        }
+
         delete mesh.userData.prevVisible;
       }
 
@@ -294,6 +304,7 @@ export default class OutlinePass extends Pass {
       this.depthMaskMaterial.uniforms["textureMatrix"].value = this.textureMatrix;
       renderer.setRenderTarget(this.renderTargetMaskBuffer);
       renderer.clear();
+      this.spokeRenderer.batchManager.update();
       renderer.render(this.renderScene, this.renderCamera);
       this.renderScene.overrideMaterial = null;
 
@@ -301,6 +312,13 @@ export default class OutlinePass extends Pass {
       for (const mesh of this.nonSelectedRenderables) {
         mesh.visible = mesh.userData.prevVisible;
         delete mesh.userData.prevVisible;
+      }
+
+      for (const mesh of this.selectedRenderables) {
+        if (mesh.userData.prevDisableRenderLayer) {
+          mesh.layers.disable(0);
+          delete mesh.userData.prevDisableRenderLayer;
+        }
       }
 
       this.selectedRenderables = [];

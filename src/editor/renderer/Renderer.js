@@ -23,7 +23,7 @@ class RenderMode {
 }
 
 class ShadowsRenderMode extends RenderMode {
-  constructor(renderer, editor) {
+  constructor(renderer, editor, spokeRenderer) {
     super(renderer, editor);
     this.name = "Shadows";
     this.effectComposer = new EffectComposer(renderer);
@@ -39,7 +39,8 @@ class ShadowsRenderMode extends RenderMode {
       new Vector2(canvasParent.offsetWidth, canvasParent.offsetHeight),
       editor.scene,
       editor.camera,
-      editor.selectedTransformRoots
+      editor.selectedTransformRoots,
+      spokeRenderer
     );
     this.outlinePass.edgeColor = new Color("#006EFF");
     this.outlinePass.renderToScreen = true;
@@ -110,12 +111,12 @@ export default class Renderer {
     renderer.setPixelRatio(window.devicePixelRatio);
     this.renderer = renderer;
 
-    this.renderMode = new ShadowsRenderMode(renderer, editor);
+    this.renderMode = new ShadowsRenderMode(renderer, editor, this);
     this.renderModes = [
       this.renderMode,
-      new NoShadowsRenderMode(renderer, editor),
-      new WireframeRenderMode(renderer, editor),
-      new NormalsRenderMode(renderer, editor)
+      new NoShadowsRenderMode(renderer, editor, this),
+      new WireframeRenderMode(renderer, editor, this),
+      new NormalsRenderMode(renderer, editor, this)
     ];
 
     this.screenshotRenderer = makeRenderer(1920, 1080);
