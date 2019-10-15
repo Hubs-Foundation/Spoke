@@ -192,13 +192,13 @@ export default class Renderer {
         child.setShadowsEnabled(renderMode.enableShadows);
       }
 
+      if (child.isMesh) {
+        this.batchManager.addMesh(child);
+      }
+
       if (renderMode.disableBatching && !child.layers.test(renderMode.enabledBatchedObjectLayers)) {
         child.layers.enable(0);
         child.layers.enable(2);
-      }
-
-      if (child.isMesh) {
-        this.batchManager.addMesh(child);
       }
     });
 
