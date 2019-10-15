@@ -145,9 +145,10 @@ export default class Renderer {
     this.renderer = renderer;
 
     this.renderMode = new UnlitRenderMode(renderer, editor, this);
+    this.shadowsRenderMode = new ShadowsRenderMode(renderer, editor, this);
     this.renderModes = [
       this.renderMode,
-      new ShadowsRenderMode(renderer, editor, this),
+      this.shadowsRenderMode,
       new NoShadowsRenderMode(renderer, editor, this),
       new WireframeRenderMode(renderer, editor, this),
       new NormalsRenderMode(renderer, editor, this)
@@ -252,7 +253,11 @@ export default class Renderer {
       }
     });
 
-    screenshotRenderer.render(this.editor.scene, camera);
+    if (this.renderMode !== this.shadowsRenderMode) {
+      this.shadowsRenderMode.onSceneSet();
+    }
+
+    this.screenshotRenderer.render(this.editor.scene, camera);
 
     camera.layers.enable(1);
 
@@ -266,6 +271,8 @@ export default class Renderer {
     this.editor.disableUpdate = false;
 
     this.renderer = originalRenderer;
+
+    this.renderMode.onSceneSet();
 
     this.editor.scene.traverse(child => {
       if (child.isNode) {
