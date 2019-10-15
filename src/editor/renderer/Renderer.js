@@ -5,6 +5,7 @@ import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass";
 import OutlinePass from "./OutlinePass";
 import { getCanvasBlob } from "../utils/thumbnails";
 import makeRenderer from "./makeRenderer";
+import SpokeBatchRawUniformGroup from "./SpokeBatchRawUniformGroup";
 
 /**
  * @author mrdoob / http://mrdoob.com/
@@ -172,7 +173,9 @@ export default class Renderer {
   }
 
   onSceneSet = () => {
-    this.batchManager = new BatchManager(this.editor.scene, this.renderer);
+    this.batchManager = new BatchManager(this.editor.scene, this.renderer, {
+      ubo: new SpokeBatchRawUniformGroup(512)
+    });
     this.renderMode.onSceneSet();
   };
 
