@@ -5,6 +5,20 @@ const DEFAULT_COLOR = new Color(1, 1, 1);
 const HIDE_MATRIX = new Matrix4().makeScale(0, 0, 0);
 const tempUvTransform = [0, 0, 0, 0];
 
+function getVisibility(object) {
+  let curObj = object;
+
+  while (curObj && !curObj.isNode) {
+    curObj = curObj.parent;
+  }
+
+  if (!curObj) {
+    return false;
+  }
+
+  return curObj.visible;
+}
+
 export default class SpokeBatchRawUniformGroup extends BatchRawUniformGroup {
   meshAtlases = new Map();
 
@@ -25,7 +39,7 @@ export default class SpokeBatchRawUniformGroup extends BatchRawUniformGroup {
         continue;
       }
       // TODO need to account for nested visibility deeper than 1 level
-      this.setInstanceTransform(instanceId, mesh.visible && mesh.parent.visible ? mesh.matrixWorld : HIDE_MATRIX);
+      this.setInstanceTransform(instanceId, getVisibility(mesh) ? mesh.matrixWorld : HIDE_MATRIX);
       this.setInstanceColor(instanceId, mesh.material.color || DEFAULT_COLOR, mesh.material.opacity || 1);
 
       const material = mesh.material;
