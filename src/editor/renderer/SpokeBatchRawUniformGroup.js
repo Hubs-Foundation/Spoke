@@ -35,10 +35,11 @@ export default class SpokeBatchRawUniformGroup extends BatchRawUniformGroup {
   update(_time) {
     for (let instanceId = 0; instanceId < this.meshes.length; instanceId++) {
       const mesh = this.meshes[instanceId];
+
       if (!mesh) {
         continue;
       }
-      // TODO need to account for nested visibility deeper than 1 level
+
       this.setInstanceTransform(instanceId, getVisibility(mesh) ? mesh.matrixWorld : HIDE_MATRIX);
       this.setInstanceColor(instanceId, mesh.material.color || DEFAULT_COLOR, mesh.material.opacity || 1);
 
