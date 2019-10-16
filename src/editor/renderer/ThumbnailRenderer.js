@@ -36,10 +36,6 @@ export default class ThumbnailRenderer {
     const size = box.getSize(new Vector3()).length();
     const center = box.getCenter(new Vector3());
 
-    object.position.x += object.position.x - center.x;
-    object.position.y += object.position.y - center.y;
-    object.position.z += object.position.z - center.z;
-
     camera.near = size / 100;
     camera.far = size * 100;
     camera.aspect = width / height;
