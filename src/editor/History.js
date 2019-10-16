@@ -10,7 +10,7 @@ export default class History {
     this.lastCmdTime = new Date();
     this.idCounter = 0;
     this.commandUpdatesEnabled = true; // Used for testing
-    this.debug = false;
+    this.debug = true;
   }
 
   execute(cmd) {
@@ -52,6 +52,17 @@ export default class History {
 
   revert(checkpointId) {
     let cmd = undefined;
+
+    if (this.undos.length === 0) {
+      return;
+    }
+
+    const lastCmd = this.undos[this.undos.length - 1];
+
+    if (lastCmd && checkpointId > lastCmd.id) {
+      console.warn("Tried to revert back to an undo action with an id greater than the last action");
+      return;
+    }
 
     do {
       if (this.undos.length > 0) {

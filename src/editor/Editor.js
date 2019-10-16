@@ -939,7 +939,7 @@ export default class Editor extends EventEmitter {
 
   duplicateMultiple(objects, parent, before, useHistory = true, emitEvent = true, selectObjects = true) {
     if (useHistory) {
-      return this.history.execute(new DuplicateMultipleCommand(this, objects, parent, before));
+      return this.history.execute(new DuplicateMultipleCommand(this, objects, parent, before, selectObjects));
     }
 
     const validNodes = objects.filter(object => object.constructor.canAddNode(this));

@@ -109,6 +109,7 @@ export default class SpokeControls extends EventEmitter {
     this.transformPivot = TransformPivot.Selection;
     this.transformAxis = null;
     this.grabHistoryCheckpoint = null;
+    this.placementObjects = [];
 
     this.snapMode = SnapMode.Disabled;
     this.translationSnap = 1;
@@ -156,6 +157,15 @@ export default class SpokeControls extends EventEmitter {
 
   onSelectionChanged = () => {
     this.selectionChanged = true;
+
+    if (this.transformMode === TransformMode.Grab) {
+      const checkpoint = this.grabHistoryCheckpoint;
+      this.setTransformMode(this.transformModeOnCancel);
+      this.editor.revert(checkpoint);
+    } else if (this.transformMode === TransformMode.Placement) {
+      this.setTransformMode(this.transformModeOnCancel);
+      this.editor.removeMultipleObjects(this.placementObjects);
+    }
   };
 
   onObjectsChanged = (_objects, property) => {
@@ -521,7 +531,7 @@ export default class SpokeControls extends EventEmitter {
         }
 
         if (this.transformMode === TransformMode.Placement) {
-          this.editor.duplicateSelected();
+          this.editor.duplicateSelected(undefined, undefined, true, true, false);
         }
       } else {
         const selectEndPosition = input.get(Spoke.selectEndPosition);
@@ -772,6 +782,12 @@ export default class SpokeControls extends EventEmitter {
       this.transformModeOnCancel = mode;
     }
 
+    if (mode === TransformMode.Placement) {
+      this.placementObjects = this.editor.selected.slice(0);
+    } else {
+      this.placementObjects = [];
+    }
+
     this.grabHistoryCheckpoint = null;
     this.transformMode = mode;
     this.transformModeChanged = true;
@@ -835,8 +851,9 @@ export default class SpokeControls extends EventEmitter {
 
   cancel() {
     if (this.transformMode === TransformMode.Grab) {
-      this.editor.revert(this.grabHistoryCheckpoint);
+      const checkpoint = this.grabHistoryCheckpoint;
       this.setTransformMode(this.transformModeOnCancel);
+      this.editor.revert(checkpoint);
     } else if (this.transformMode === TransformMode.Placement) {
       this.setTransformMode(this.transformModeOnCancel);
       this.editor.removeSelectedObjects();
