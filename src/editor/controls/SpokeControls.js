@@ -781,6 +781,14 @@ export default class SpokeControls extends EventEmitter {
   }
 
   setTransformMode(mode) {
+    if (
+      (mode === TransformMode.Placement || mode === TransformMode.Grab) &&
+      this.editor.selected.some(node => node.disableTransform) // TODO: this doesn't prevent nesting and then grabbing
+    ) {
+      // Dont allow grabbing / placing objects with transform disabled.
+      return;
+    }
+
     if (mode !== TransformMode.Placement && mode !== TransformMode.Grab) {
       this.transformModeOnCancel = mode;
     }

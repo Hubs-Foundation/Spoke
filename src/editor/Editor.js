@@ -1760,6 +1760,7 @@ export default class Editor extends EventEmitter {
 
     event.preventDefault();
 
+    // TODO: Prevent copying objects with a disabled transform
     if (this.selected.length > 0) {
       event.clipboardData.setData(
         "application/vnd.spoke.nodes",
@@ -1839,10 +1840,15 @@ export default class Editor extends EventEmitter {
       this.removeSelectedObjects();
     }
 
-    this.getSpawnPosition(object.position);
+    if (!object.disableTransform) {
+      this.getSpawnPosition(object.position);
+    }
+
     this.addObject(object);
 
-    this.spokeControls.setTransformMode(TransformMode.Placement);
+    if (!object.disableTransform) {
+      this.spokeControls.setTransformMode(TransformMode.Placement);
+    }
   }
 
   incrementGridHeight() {
