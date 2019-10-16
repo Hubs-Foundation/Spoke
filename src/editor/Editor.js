@@ -559,6 +559,10 @@ export default class Editor extends EventEmitter {
       return this.selected;
     }
 
+    if (emitEvent) {
+      this.emit("beforeSelectionChanged");
+    }
+
     if (useHistory) {
       return this.history.execute(new SelectCommand(this, object));
     }
@@ -594,6 +598,10 @@ export default class Editor extends EventEmitter {
       return this.selected;
     }
 
+    if (emitEvent) {
+      this.emit("beforeSelectionChanged");
+    }
+
     if (useHistory) {
       return this.history.execute(new SelectMultipleCommand(this, objects));
     }
@@ -622,6 +630,10 @@ export default class Editor extends EventEmitter {
 
     if (index === -1) {
       return this.selected;
+    }
+
+    if (emitEvent) {
+      this.emit("beforeSelectionChanged");
     }
 
     if (useHistory) {
@@ -657,6 +669,10 @@ export default class Editor extends EventEmitter {
 
     if (!selectionChanged) {
       return this.selected;
+    }
+
+    if (emitEvent) {
+      this.emit("beforeSelectionChanged");
     }
 
     if (useHistory) {
@@ -707,6 +723,10 @@ export default class Editor extends EventEmitter {
       }
     }
 
+    if (emitEvent) {
+      this.emit("beforeSelectionChanged");
+    }
+
     if (useHistory) {
       return this.history.execute(new SetSelectionCommand(this, objects));
     }
@@ -743,6 +763,10 @@ export default class Editor extends EventEmitter {
   }
 
   addObject(object, parent, before, useHistory = true, emitEvent = true, selectObject = true, useUniqueName = false) {
+    if (emitEvent && selectObject) {
+      this.emit("beforeSelectionChanged");
+    }
+
     // TODO: Add makeUniqueName option
     if (useHistory) {
       return this.history.execute(new AddObjectCommand(this, object, parent, before));
@@ -781,10 +805,14 @@ export default class Editor extends EventEmitter {
     object.updateMatrixWorld(true);
 
     if (selectObject) {
-      this.setSelection([object], false, emitEvent);
+      this.setSelection([object], false, false);
     }
 
     if (emitEvent) {
+      if (selectObject) {
+        this.emit("selectionChanged");
+      }
+
       this.emit("sceneGraphChanged");
     }
 
@@ -800,6 +828,10 @@ export default class Editor extends EventEmitter {
     selectObjects = true,
     useUniqueName = false
   ) {
+    if (selectObjects && emitEvent) {
+      this.emit("beforeSelectionChanged");
+    }
+
     if (useHistory) {
       return this.history.execute(new AddMultipleObjectsCommand(this, objects, parent, before));
     }
@@ -811,10 +843,14 @@ export default class Editor extends EventEmitter {
     }
 
     if (selectObjects) {
-      this.setSelection(objects, false, emitEvent);
+      this.setSelection(objects, false, false);
     }
 
     if (emitEvent) {
+      if (selectObjects) {
+        this.emit("selectionChanged");
+      }
+
       this.emit("sceneGraphChanged");
     }
 
@@ -906,6 +942,10 @@ export default class Editor extends EventEmitter {
   }
 
   duplicate(object, parent, before, useHistory = true, emitEvent = true, selectObject = true) {
+    if (emitEvent && selectObject) {
+      this.emit("beforeSelectionChanged");
+    }
+
     if (useHistory) {
       return this.history.execute(new DuplicateCommand(this, object, parent, before));
     }
@@ -925,12 +965,16 @@ export default class Editor extends EventEmitter {
     this.addObject(clonedObject, parent, before, false, false, false);
 
     if (selectObject) {
-      this.setSelection([clonedObject], false, true, false);
+      this.setSelection([clonedObject], false, false, false);
     }
 
     this.updateTransformRoots();
 
     if (emitEvent) {
+      if (selectObject) {
+        this.emit("selectionChanged");
+      }
+
       this.emit("sceneGraphChanged");
     }
 
@@ -938,8 +982,12 @@ export default class Editor extends EventEmitter {
   }
 
   duplicateMultiple(objects, parent, before, useHistory = true, emitEvent = true, selectObjects = true) {
+    if (emitEvent && selectObjects) {
+      this.emit("beforeSelectionChanged");
+    }
+
     if (useHistory) {
-      return this.history.execute(new DuplicateMultipleCommand(this, objects, parent, before));
+      return this.history.execute(new DuplicateMultipleCommand(this, objects, parent, before, selectObjects));
     }
 
     const validNodes = objects.filter(object => object.constructor.canAddNode(this));
@@ -948,12 +996,16 @@ export default class Editor extends EventEmitter {
     this.addMultipleObjects(duplicatedRoots, parent, before, false, false, false, true);
 
     if (selectObjects) {
-      this.setSelection(duplicatedRoots, false, true, false);
+      this.setSelection(duplicatedRoots, false, false, false);
     }
 
     this.updateTransformRoots();
 
     if (emitEvent) {
+      if (selectObjects) {
+        this.emit("selectionChanged");
+      }
+
       this.emit("sceneGraphChanged");
     }
 
@@ -971,6 +1023,10 @@ export default class Editor extends EventEmitter {
 
     if (!newParent) {
       throw new Error("editor.reparent: newParent is undefined");
+    }
+
+    if (emitEvent && selectObject) {
+      this.emit("beforeSelectionChanged");
     }
 
     if (useHistory) {
@@ -1006,12 +1062,16 @@ export default class Editor extends EventEmitter {
     object.updateMatrixWorld(true);
 
     if (selectObject) {
-      this.setSelection([object], false, emitEvent, false);
+      this.setSelection([object], false, false, false);
     }
 
     this.updateTransformRoots();
 
     if (emitEvent) {
+      if (selectObject) {
+        this.emit("selectionChanged");
+      }
+
       this.emit("sceneGraphChanged");
     }
 
@@ -1019,6 +1079,10 @@ export default class Editor extends EventEmitter {
   }
 
   reparentMultiple(objects, newParent, newBefore, useHistory = true, emitEvent = true, selectObjects = true) {
+    if (emitEvent && selectObjects) {
+      this.emit("beforeSelectionChanged");
+    }
+
     if (useHistory) {
       return this.history.execute(new ReparentMultipleCommand(this, objects, newParent, newBefore));
     }
@@ -1028,12 +1092,16 @@ export default class Editor extends EventEmitter {
     }
 
     if (selectObjects) {
-      this.setSelection(objects, false, emitEvent, false);
+      this.setSelection(objects, false, false, false);
     }
 
     this.updateTransformRoots();
 
     if (emitEvent) {
+      if (selectObjects) {
+        this.emit("selectionChanged");
+      }
+
       this.emit("sceneGraphChanged");
     }
 
@@ -1045,6 +1113,10 @@ export default class Editor extends EventEmitter {
   }
 
   groupMultiple(objects, groupParent, groupBefore, useHistory = true, emitEvent = true, selectObject = true) {
+    if (emitEvent && selectObject) {
+      this.emit("beforeSelectionChanged");
+    }
+
     if (useHistory) {
       return this.history.execute(new GroupMultipleCommand(this, objects, groupParent, groupBefore));
     }
@@ -1055,14 +1127,18 @@ export default class Editor extends EventEmitter {
       this.reparent(objects[i], groupNode, undefined, false, false, false);
     }
 
+    if (selectObject) {
+      this.setSelection([groupNode], false, false, false);
+    }
+
     this.updateTransformRoots();
 
     if (emitEvent) {
-      this.emit("sceneGraphChanged");
-    }
+      if (selectObject) {
+        this.emit("selectionChanged");
+      }
 
-    if (selectObject) {
-      this.setSelection([groupNode], false, true, false);
+      this.emit("sceneGraphChanged");
     }
 
     return groupNode;
@@ -1684,6 +1760,7 @@ export default class Editor extends EventEmitter {
 
     event.preventDefault();
 
+    // TODO: Prevent copying objects with a disabled transform
     if (this.selected.length > 0) {
       event.clipboardData.setData(
         "application/vnd.spoke.nodes",
@@ -1763,9 +1840,15 @@ export default class Editor extends EventEmitter {
       this.removeSelectedObjects();
     }
 
-    this.spokeControls.setTransformMode(TransformMode.Placement);
-    this.getSpawnPosition(object.position);
+    if (!object.disableTransform) {
+      this.getSpawnPosition(object.position);
+    }
+
     this.addObject(object);
+
+    if (!object.disableTransform) {
+      this.spokeControls.setTransformMode(TransformMode.Placement);
+    }
   }
 
   incrementGridHeight() {

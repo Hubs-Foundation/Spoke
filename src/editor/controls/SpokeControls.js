@@ -109,6 +109,7 @@ export default class SpokeControls extends EventEmitter {
     this.transformPivot = TransformPivot.Selection;
     this.transformAxis = null;
     this.grabHistoryCheckpoint = null;
+    this.placementObjects = [];
 
     this.snapMode = SnapMode.Disabled;
     this.translationSnap = 1;
@@ -146,12 +147,24 @@ export default class SpokeControls extends EventEmitter {
     this.transformPivotChanged = true;
     this.transformSpaceChanged = true;
 
+    this.editor.addListener("beforeSelectionChanged", this.onBeforeSelectionChanged);
     this.editor.addListener("selectionChanged", this.onSelectionChanged);
     this.editor.addListener("objectsChanged", this.onObjectsChanged);
   }
 
   onSceneSet = scene => {
     this.scene = scene;
+  };
+
+  onBeforeSelectionChanged = () => {
+    if (this.transformMode === TransformMode.Grab) {
+      const checkpoint = this.grabHistoryCheckpoint;
+      this.setTransformMode(this.transformModeOnCancel);
+      this.editor.revert(checkpoint);
+    } else if (this.transformMode === TransformMode.Placement) {
+      this.setTransformMode(this.transformModeOnCancel);
+      this.editor.removeSelectedObjects();
+    }
   };
 
   onSelectionChanged = () => {
@@ -521,7 +534,7 @@ export default class SpokeControls extends EventEmitter {
         }
 
         if (this.transformMode === TransformMode.Placement) {
-          this.editor.duplicateSelected();
+          this.editor.duplicateSelected(undefined, undefined, true, true, false);
         }
       } else {
         const selectEndPosition = input.get(Spoke.selectEndPosition);
@@ -768,8 +781,22 @@ export default class SpokeControls extends EventEmitter {
   }
 
   setTransformMode(mode) {
+    if (
+      (mode === TransformMode.Placement || mode === TransformMode.Grab) &&
+      this.editor.selected.some(node => node.disableTransform) // TODO: this doesn't prevent nesting and then grabbing
+    ) {
+      // Dont allow grabbing / placing objects with transform disabled.
+      return;
+    }
+
     if (mode !== TransformMode.Placement && mode !== TransformMode.Grab) {
       this.transformModeOnCancel = mode;
+    }
+
+    if (mode === TransformMode.Placement) {
+      this.placementObjects = this.editor.selected.slice(0);
+    } else {
+      this.placementObjects = [];
     }
 
     this.grabHistoryCheckpoint = null;
@@ -835,8 +862,9 @@ export default class SpokeControls extends EventEmitter {
 
   cancel() {
     if (this.transformMode === TransformMode.Grab) {
-      this.editor.revert(this.grabHistoryCheckpoint);
+      const checkpoint = this.grabHistoryCheckpoint;
       this.setTransformMode(this.transformModeOnCancel);
+      this.editor.revert(checkpoint);
     } else if (this.transformMode === TransformMode.Placement) {
       this.setTransformMode(this.transformModeOnCancel);
       this.editor.removeSelectedObjects();

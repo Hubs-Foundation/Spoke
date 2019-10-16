@@ -58,6 +58,7 @@ export default class SpawnerNode extends EditorNodeMixin(Model) {
 
     if (this.model) {
       this.remove(this.model);
+      this.editor.renderer.removeBatchedObject(this.model);
       this.model = null;
     }
 
@@ -71,7 +72,15 @@ export default class SpawnerNode extends EditorNodeMixin(Model) {
     try {
       const { accessibleUrl, files } = await this.editor.api.resolveMedia(src);
 
+      if (this.model) {
+        this.editor.renderer.removeBatchedObject(this.model);
+      }
+
       await super.load(accessibleUrl);
+
+      if (this.model) {
+        this.editor.renderer.addBatchedObject(this.model);
+      }
 
       if (this.scaleToFit) {
         this.scale.set(1, 1, 1);
@@ -124,6 +133,18 @@ export default class SpawnerNode extends EditorNodeMixin(Model) {
     });
 
     return this;
+  }
+
+  onAdd() {
+    if (this.model) {
+      this.editor.renderer.addBatchedObject(this.model);
+    }
+  }
+
+  onRemove() {
+    if (this.model) {
+      this.editor.renderer.removeBatchedObject(this.model);
+    }
   }
 
   serialize() {

@@ -2,20 +2,28 @@ import Command from "./Command";
 import { serializeObject3DArray, serializeObject3D } from "../utils/debug";
 
 export default class DuplicateMultipleCommand extends Command {
-  constructor(editor, objects, parent, before) {
+  constructor(editor, objects, parent, before, selectObjects) {
     super(editor);
     this.objects = objects.slice(0);
     this.parent = parent;
     this.before = before;
+    this.selectObjects = selectObjects;
     this.oldSelection = editor.selected.slice(0);
     this.duplicatedObjects = null;
   }
 
   execute(redo) {
     if (redo) {
-      this.editor.addMultipleObjects(this.duplicatedObjects, this.parent, this.before, false);
+      this.editor.addMultipleObjects(this.duplicatedObjects, this.parent, this.before, false, true, this.selectObjects);
     } else {
-      this.duplicatedObjects = this.editor.duplicateMultiple(this.objects, this.parent, this.before, false);
+      this.duplicatedObjects = this.editor.duplicateMultiple(
+        this.objects,
+        this.parent,
+        this.before,
+        false,
+        true,
+        this.selectObjects
+      );
     }
   }
 

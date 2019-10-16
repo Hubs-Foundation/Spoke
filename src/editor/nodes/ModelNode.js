@@ -108,6 +108,7 @@ export default class ModelNode extends EditorNodeMixin(Model) {
     this.attribution = null;
 
     if (this.model) {
+      this.editor.renderer.removeBatchedObject(this.model);
       this.remove(this.model);
       this.model = null;
     }

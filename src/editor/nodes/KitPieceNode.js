@@ -99,6 +99,7 @@ export default class KitPieceNode extends EditorNodeMixin(Model) {
     this._canonicalUrl = nextSrc;
 
     if (this.model) {
+      this.editor.renderer.removeBatchedObject(this.model);
       this.remove(this.model);
       this.model = null;
     }
