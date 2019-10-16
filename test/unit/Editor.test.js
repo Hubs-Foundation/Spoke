@@ -1675,7 +1675,7 @@ test("reparent", t => {
   t.is(editor.selectedTransformRoots.length, 1);
   t.is(editor.selectedTransformRoots[0], nodeD);
   t.is(sceneGraphChangedHandler.callCount, 3);
-  t.is(selectionChangedHandler.callCount, 2);
+  t.is(selectionChangedHandler.callCount, 3);
 
   editor.history.undo();
 
@@ -1686,7 +1686,7 @@ test("reparent", t => {
   t.is(editor.selectedTransformRoots.length, 1);
   t.is(editor.selectedTransformRoots[0], nodeD);
   t.is(sceneGraphChangedHandler.callCount, 4);
-  t.is(selectionChangedHandler.callCount, 2);
+  t.is(selectionChangedHandler.callCount, 3);
 });
 
 test("reparentMultiple", t => {
