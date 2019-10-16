@@ -10,7 +10,7 @@ export default class History {
     this.lastCmdTime = new Date();
     this.idCounter = 0;
     this.commandUpdatesEnabled = true; // Used for testing
-    this.debug = true;
+    this.debug = false;
   }
 
   execute(cmd) {

@@ -147,6 +147,7 @@ export default class SpokeControls extends EventEmitter {
     this.transformPivotChanged = true;
     this.transformSpaceChanged = true;
 
+    this.editor.addListener("beforeSelectionChanged", this.onBeforeSelectionChanged);
     this.editor.addListener("selectionChanged", this.onSelectionChanged);
     this.editor.addListener("objectsChanged", this.onObjectsChanged);
   }
@@ -155,17 +156,19 @@ export default class SpokeControls extends EventEmitter {
     this.scene = scene;
   };
 
-  onSelectionChanged = () => {
-    this.selectionChanged = true;
-
+  onBeforeSelectionChanged = () => {
     if (this.transformMode === TransformMode.Grab) {
       const checkpoint = this.grabHistoryCheckpoint;
       this.setTransformMode(this.transformModeOnCancel);
       this.editor.revert(checkpoint);
     } else if (this.transformMode === TransformMode.Placement) {
       this.setTransformMode(this.transformModeOnCancel);
-      this.editor.removeMultipleObjects(this.placementObjects);
+      this.editor.removeSelectedObjects();
     }
+  };
+
+  onSelectionChanged = () => {
+    this.selectionChanged = true;
   };
 
   onObjectsChanged = (_objects, property) => {
