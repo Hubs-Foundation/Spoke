@@ -193,7 +193,7 @@ export default class Model extends Object3D {
       if (child === source.model) {
         clonedChild = cloneObject3D(child);
         this.model = clonedChild;
-      } else if (recursive === true && child !== source.errorMesh) {
+      } else if (recursive === true && child !== source.errorMesh && child !== source.loadingCube) {
         clonedChild = child.clone();
       }
 

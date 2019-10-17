@@ -40,6 +40,8 @@ export default class LoadingCube extends Object3D {
   }
 
   copy(source, recursive = true) {
+    this.remove(this.model);
+
     super.copy(source, false);
 
     for (const child of source.children) {
