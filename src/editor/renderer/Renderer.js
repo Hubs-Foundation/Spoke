@@ -144,11 +144,11 @@ export default class Renderer {
     renderer.setPixelRatio(window.devicePixelRatio);
     this.renderer = renderer;
 
-    this.renderMode = new UnlitRenderMode(renderer, editor, this);
+    this.renderMode = new LitRenderMode(renderer, editor, this);
     this.shadowsRenderMode = new ShadowsRenderMode(renderer, editor, this);
     this.renderModes = [
+      new UnlitRenderMode(renderer, editor, this),
       this.renderMode,
-      new LitRenderMode(renderer, editor, this),
       this.shadowsRenderMode,
       new WireframeRenderMode(renderer, editor, this),
       new NormalsRenderMode(renderer, editor, this)
