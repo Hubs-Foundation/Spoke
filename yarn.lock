@@ -1217,10 +1217,10 @@
   resolved "https://registry.yarnpkg.com/@mozillareality/easing-functions/-/easing-functions-0.1.1.tgz#de7994336412b02e7d58e8391d0c230df8b79ad2"
   integrity sha512-rApZ0OOqreMULwHZOy+fB9wRLnikelE8pMbqUmtLBhT6OSKp5dz/7pA/EjnFXJDQBR/EgZUa3vwbFlTZnUgSlw==
 
-"@mozillareality/three-batch-manager@^0.1.4":
-  version "0.1.4"
-  resolved "https://registry.yarnpkg.com/@mozillareality/three-batch-manager/-/three-batch-manager-0.1.4.tgz#301d19c160043d0cc7cfea3efba89cf630cc8dde"
-  integrity sha512-cPcgCF2DG6SL4E0gjIQOsJ7SxcMGbGNWjKS9pXxhLp6GTV63nEUZ0geWBnImEG48BQvyXT6Kbjw2xBiGPxE3tA==
+"@mozillareality/three-batch-manager@0.1.5":
+  version "0.1.5"
+  resolved "https://registry.yarnpkg.com/@mozillareality/three-batch-manager/-/three-batch-manager-0.1.5.tgz#d56d696d63a80d85781a2e414979e015b90e68d9"
+  integrity sha512-CgJikrvkL53g4TjkRQx9WL0e01MIbPLHys2IrdHYEu6QM34g4WQ/kkaoZfGBeGJ95b+MvHi57l8iOBnIlnThYw==
 
 "@mozillareality/three-particle-emitter@^0.1.5":
   version "0.1.5"
