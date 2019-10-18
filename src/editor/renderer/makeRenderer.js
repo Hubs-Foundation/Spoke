@@ -1,8 +1,16 @@
 import { WebGLRenderer, PCFSoftShadowMap } from "three";
 
-export default function makeRenderer(width, height, options = {}) {
+export default function makeRenderer(width, height, { canvas, ...rest } = {}) {
+  if (!canvas) {
+    canvas = document.createElement("canvas");
+  }
+
+  const context = canvas.getContext("webgl2", { antialias: true });
+
   const renderer = new WebGLRenderer({
-    ...options,
+    ...rest,
+    canvas,
+    context,
     antialias: true,
     preserveDrawingBuffer: true
   });

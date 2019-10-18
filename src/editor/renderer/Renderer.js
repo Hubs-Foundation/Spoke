@@ -135,11 +135,8 @@ export default class Renderer {
     this.editor = editor;
     this.canvas = canvas;
 
-    const context = canvas.getContext("webgl2", { antialias: true });
-
     const renderer = makeRenderer(canvas.parentElement.offsetWidth, canvas.parentElement.offsetHeight, {
-      canvas,
-      context
+      canvas
     });
     renderer.setPixelRatio(window.devicePixelRatio);
     this.renderer = renderer;
