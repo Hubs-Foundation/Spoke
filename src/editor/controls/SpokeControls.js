@@ -313,6 +313,8 @@ export default class SpokeControls extends EventEmitter {
             .normalize();
           this.transformPlane.setFromNormalAndCoplanarPoint(this.planeNormal, this.transformGizmo.position);
           this.dragging = true;
+        } else {
+          this.dragging = false;
         }
       }
     }
