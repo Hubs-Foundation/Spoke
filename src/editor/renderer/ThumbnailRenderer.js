@@ -6,7 +6,7 @@ import makeRenderer from "./makeRenderer";
 
 export default class ThumbnailRenderer {
   constructor() {
-    this.renderer = makeRenderer(512, 512, { alpha: true });
+    this.renderer = makeRenderer(512, 512);
   }
 
   generateThumbnail = async (object, width = 256, height = 256) => {
