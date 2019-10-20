@@ -83,8 +83,8 @@ export default class EditorContainer extends Component {
     };
   }
 
-  updateModifiedState = () => {
-    this.setState({ modified: this.state.editor.sceneModified && !this.state.creatingProject });
+  updateModifiedState = then => {
+    this.setState({ modified: this.state.editor.sceneModified && !this.state.creatingProject }, then);
   };
 
   generateToolbarMenu = () => {
@@ -222,7 +222,6 @@ export default class EditorContainer extends Component {
     this.loadProject(this.props.project).catch(console.error);
     window.addEventListener("resize", this.onResize);
     this.onResize();
-    editor.addListener("objectsChanged", this.onObjectsChanged);
     editor.addListener("projectLoaded", this.onProjectLoaded);
     editor.addListener("sceneModified", this.onSceneModified);
     editor.addListener("saveProject", this.onSaveProject);
@@ -241,14 +240,11 @@ export default class EditorContainer extends Component {
   componentWillUnmount() {
     window.removeEventListener("resize", this.onResize);
 
-    this.props.project.removeListener("project-saved", this.onProjectSaved);
-
     const editor = this.state.editor;
     editor.removeListener("sceneModified", this.onSceneModified);
     editor.removeListener("saveProject", this.onSaveProject);
     editor.removeListener("initialized", this.onEditorInitialized);
     editor.removeListener("error", this.onEditorError);
-    editor.removeListener("objectsChanged", this.onObjectsChanged);
     editor.removeListener("projectLoaded", this.onProjectLoaded);
     editor.dispose();
   }
@@ -300,14 +296,10 @@ export default class EditorContainer extends Component {
   };
 
   onSceneModified = () => {
-    this.setState({ toolbarMenu: this.generateToolbarMenu() });
-  };
-
-  onProjectLoaded = () => {
     this.updateModifiedState();
   };
 
-  onObjectsChanged = () => {
+  onProjectLoaded = () => {
     this.updateModifiedState();
   };
 
@@ -411,10 +403,13 @@ export default class EditorContainer extends Component {
         this.showDialog,
         this.hideDialog
       );
+      editor.sceneModified = false;
       editor.projectId = projectId;
-      this.setState({ creatingProject: true }, () => {
-        this.props.history.replace(`/projects/${projectId}`);
-        this.setState({ creatingProject: false });
+      this.updateModifiedState(() => {
+        this.setState({ creatingProject: true }, () => {
+          this.props.history.replace(`/projects/${projectId}`);
+          this.setState({ creatingProject: false });
+        });
       });
     }
   }

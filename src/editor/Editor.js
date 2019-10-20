@@ -205,8 +205,13 @@ export default class Editor extends EventEmitter {
 
     this.initialized = true;
 
-    this.addListener("objectsChanged", () => (this.sceneModified = true));
+    this.addListener("objectsChanged", this.onObjectsChanged);
     this.emit("initialized");
+  }
+
+  onObjectsChanged() {
+    this.sceneModified = true;
+    this.emit("sceneModified");
   }
 
   initializeRenderer(canvas) {
