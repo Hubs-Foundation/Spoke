@@ -385,6 +385,8 @@ export default class EditorContainer extends Component {
       });
 
       editor.setProperty(editor.scene, "name", result.name, false);
+      editor.scene.setMetadata({ name: result.name });
+
       const { projectId } = await this.props.api.createProject(
         editor.scene,
         blob,
