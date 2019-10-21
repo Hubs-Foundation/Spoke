@@ -417,7 +417,7 @@ export default class EditorContainer extends Component {
   }
 
   onNewProject = async () => {
-    this.props.history.push("/projects/new");
+    this.props.history.push("/projects/templates");
   };
 
   onOpenProject = () => {
