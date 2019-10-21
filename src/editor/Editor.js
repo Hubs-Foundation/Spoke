@@ -205,11 +205,12 @@ export default class Editor extends EventEmitter {
 
     this.initialized = true;
 
-    this.addListener("objectsChanged", this.onObjectsChanged);
+    this.addListener("objectsChanged", this.onEmitSceneModified);
+    this.addListener("sceneGraphChanged", this.onEmitSceneModified);
     this.emit("initialized");
   }
 
-  onObjectsChanged() {
+  onEmitSceneModified() {
     this.sceneModified = true;
     this.emit("sceneModified");
   }
