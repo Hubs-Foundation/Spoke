@@ -34,6 +34,7 @@ pipeline {
           def baseAssetsPath = env.BASE_ASSETS_PATH
           def targetS3Bucket = env.TARGET_S3_BUCKET
           def smokeURL = env.SMOKE_URL
+          def hubsServer = env.HUBS_SERVER
           def reticulumServer = env.RETICULUM_SERVER
           def thumbnailServer = env.THUMBNAIL_SERVER
           def corsProxyServer = env.CORS_PROXY_SERVER
@@ -42,7 +43,7 @@ pipeline {
           def sentryDsn = env.SENTRY_DSN
           def gaTrackingId = env.GA_TRACKING_ID
 
-          def habCommand = "/bin/bash scripts/hab-build-and-push.sh \\\"${baseAssetsPath}\\\" \\\"${reticulumServer}\\\" \\\"${thumbnailServer}\\\" \\\"${corsProxyServer}\\\" \\\"${nonCorsProxyDomains}\\\" \\\"${sentryDsn}\\\" \\\"${gaTrackingId}\\\" \\\"${targetS3Bucket}\\\" \\\"${env.BUILD_NUMBER}\\\" \\\"${env.GIT_COMMIT}\\\""
+          def habCommand = "/bin/bash scripts/hab-build-and-push.sh \\\"${baseAssetsPath}\\\" \\\"${hubsServer}\\\" \\\"${reticulumServer}\\\" \\\"${thumbnailServer}\\\" \\\"${corsProxyServer}\\\" \\\"${nonCorsProxyDomains}\\\" \\\"${sentryDsn}\\\" \\\"${gaTrackingId}\\\" \\\"${targetS3Bucket}\\\" \\\"${env.BUILD_NUMBER}\\\" \\\"${env.GIT_COMMIT}\\\""
           sh "/usr/bin/script --return -c ${shellString(habCommand)} /dev/null"
 
           def s = $/eval 'ls -rt results/*.hart | head -n 1'/$

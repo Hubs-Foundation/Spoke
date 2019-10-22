@@ -1,3 +1,4 @@
+import configs from "../configs";
 import EventEmitter from "eventemitter3";
 import { Socket } from "phoenix";
 import uuid from "uuid/v4";
@@ -14,12 +15,7 @@ import PublishedSceneDialog from "./PublishedSceneDialog";
 
 const resolveUrlCache = new Map();
 
-// NOTE: We avoid doing just truthy comparison for process.env.var since we inject these at runhook time, and
-// otherwise the check may be elided by the compiler.
-const RETICULUM_SERVER =
-  process.env.RETICULUM_SERVER && process.env.RETICULUM_SERVER.length !== 0
-    ? process.env.RETICULUM_SERVER
-    : document.location.hostname;
+const RETICULUM_SERVER = configs.RETICULUM_SERVER || document.location.hostname;
 
 // thanks to https://developer.mozilla.org/en-US/docs/Web/API/WindowBase64/Base64_encoding_and_decoding
 function b64EncodeUnicode(str) {
@@ -38,9 +34,9 @@ const farsparkEncodeUrl = url => {
     .replace(/\//g, "_");
 };
 
-const nonCorsProxyDomains = (process.env.NON_CORS_PROXY_DOMAINS || "").split(",");
-if (process.env.CORS_PROXY_SERVER) {
-  nonCorsProxyDomains.push(process.env.CORS_PROXY_SERVER);
+const nonCorsProxyDomains = (configs.NON_CORS_PROXY_DOMAINS || "").split(",");
+if (configs.CORS_PROXY_SERVER) {
+  nonCorsProxyDomains.push(configs.CORS_PROXY_SERVER);
 }
 
 function shouldCorsProxy(url) {
@@ -62,15 +58,15 @@ export const proxiedUrlFor = url => {
     return url;
   }
 
-  return `https://${process.env.CORS_PROXY_SERVER}/${url}`;
+  return `https://${configs.CORS_PROXY_SERVER}/${url}`;
 };
 
 export const scaledThumbnailUrlFor = (url, width, height) => {
-  if (process.env.RETICULUM_SERVER.includes("hubs.local") && url.includes("hubs.local")) {
+  if (configs.RETICULUM_SERVER.includes("hubs.local") && url.includes("hubs.local")) {
     return url;
   }
 
-  return `https://${process.env.THUMBNAIL_SERVER}/thumbnail/${farsparkEncodeUrl(url)}?w=${width}&h=${height}`;
+  return `https://${configs.THUMBNAIL_SERVER}/thumbnail/${farsparkEncodeUrl(url)}?w=${width}&h=${height}`;
 };
 
 const CommonKnownContentTypes = {
@@ -317,8 +313,8 @@ export default class Project extends EventEmitter {
   }
 
   unproxyUrl(baseUrl, url) {
-    if (process.env.CORS_PROXY_SERVER) {
-      const corsProxyPrefix = `https://${process.env.CORS_PROXY_SERVER}/`;
+    if (configs.CORS_PROXY_SERVER) {
+      const corsProxyPrefix = `https://${configs.CORS_PROXY_SERVER}/`;
 
       if (baseUrl.startsWith(corsProxyPrefix)) {
         baseUrl = baseUrl.substring(corsProxyPrefix.length);
@@ -593,10 +589,10 @@ export default class Project extends EventEmitter {
   }
 
   getSceneUrl(sceneId) {
-    if (process.env.HUBS_SERVER === "localhost:8080" || process.env.HUBS_SERVER === "hubs.local:8080") {
-      return `https://${process.env.HUBS_SERVER}/scene.html?scene_id=${sceneId}`;
+    if (configs.HUBS_SERVER === "localhost:8080" || configs.HUBS_SERVER === "hubs.local:8080") {
+      return `https://${configs.HUBS_SERVER}/scene.html?scene_id=${sceneId}`;
     } else {
-      return `https://${process.env.HUBS_SERVER}/scenes/${sceneId}`;
+      return `https://${configs.HUBS_SERVER}/scenes/${sceneId}`;
     }
   }
 

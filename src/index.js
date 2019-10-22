@@ -1,3 +1,4 @@
+import configs from "./configs";
 import ReactDOM from "react-dom";
 import React from "react";
 import * as Sentry from "@sentry/browser";
@@ -5,9 +6,9 @@ import "abortcontroller-polyfill/dist/polyfill-patch-fetch";
 import App from "./ui/App";
 import Api from "./api/Api";
 
-if (process.env.SENTRY_DSN) {
+if (configs.SENTRY_DSN) {
   Sentry.init({
-    dsn: process.env.SENTRY_DSN,
+    dsn: configs.SENTRY_DSN,
     release: process.env.BUILD_VERSION
   });
 }
