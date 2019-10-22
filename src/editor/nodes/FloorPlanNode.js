@@ -1,4 +1,4 @@
-import configs from "../../configs";
+import "../../configs";
 import EditorNodeMixin from "./EditorNodeMixin";
 import { Mesh, MeshBasicMaterial, Box3, Vector3, PlaneBufferGeometry, Object3D } from "three";
 import FloorPlan from "../objects/FloorPlan";
@@ -8,6 +8,7 @@ import mergeMeshGeometries from "../utils/mergeMeshGeometries";
 import RecastClient from "../recast/RecastClient";
 import HeightfieldClient from "../heightfield/HeightfieldClient";
 import SpawnPointNode from "../nodes/SpawnPointNode";
+import recastWasmUrl from "recast-wasm/dist/recast.wasm";
 
 const recastClient = new RecastClient();
 const heightfieldClient = new HeightfieldClient();
@@ -163,7 +164,7 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
         agentMaxClimb: this.agentMaxClimb,
         agentMaxSlope: this.agentMaxSlope,
         regionMinSize: this.regionMinSize,
-        wasmPath: configs.BASE_ASSETS_PATH || "https://hubs.local:9090"
+        wasmPath: recastWasmUrl
       },
       signal
     );

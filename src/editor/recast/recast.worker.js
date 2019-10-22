@@ -1,5 +1,4 @@
 import Recast from "recast-wasm/dist/recast.js";
-import recastWasmUrl from "recast-wasm/dist/recast.wasm";
 
 const defaultParams = {
   cellSize: 0.166,
@@ -27,7 +26,7 @@ self.onmessage = async event => {
       recast = Recast({
         locateFile(path) {
           if (path.endsWith(".wasm")) {
-            return new URL(recastWasmUrl, message.params.wasmPath).href;
+            return new URL(message.params.wasmUrl).href;
           }
         }
       });
