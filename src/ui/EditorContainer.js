@@ -78,9 +78,14 @@ export default class EditorContainer extends Component {
         updateSetting: this.updateSetting
       },
       DialogComponent: null,
-      dialogProps: {}
+      dialogProps: {},
+      modified: false
     };
   }
+
+  updateModifiedState = then => {
+    this.setState({ modified: this.state.editor.sceneModified && !this.state.creatingProject }, then);
+  };
 
   generateToolbarMenu = () => {
     return [
@@ -217,6 +222,7 @@ export default class EditorContainer extends Component {
     this.loadProject(this.props.project).catch(console.error);
     window.addEventListener("resize", this.onResize);
     this.onResize();
+    editor.addListener("projectLoaded", this.onProjectLoaded);
     editor.addListener("sceneModified", this.onSceneModified);
     editor.addListener("saveProject", this.onSaveProject);
   };
@@ -239,6 +245,7 @@ export default class EditorContainer extends Component {
     editor.removeListener("saveProject", this.onSaveProject);
     editor.removeListener("initialized", this.onEditorInitialized);
     editor.removeListener("error", this.onEditorError);
+    editor.removeListener("projectLoaded", this.onProjectLoaded);
     editor.dispose();
   }
 
@@ -289,7 +296,11 @@ export default class EditorContainer extends Component {
   };
 
   onSceneModified = () => {
-    this.setState({ toolbarMenu: this.generateToolbarMenu() });
+    this.updateModifiedState();
+  };
+
+  onProjectLoaded = () => {
+    this.updateModifiedState();
   };
 
   updateSetting(key, value) {
@@ -385,6 +396,8 @@ export default class EditorContainer extends Component {
       });
 
       editor.setProperty(editor.scene, "name", result.name, false);
+      editor.scene.setMetadata({ name: result.name });
+
       const { projectId } = await this.props.api.createProject(
         editor.scene,
         blob,
@@ -392,16 +405,19 @@ export default class EditorContainer extends Component {
         this.showDialog,
         this.hideDialog
       );
+      editor.sceneModified = false;
       editor.projectId = projectId;
-      this.setState({ creatingProject: true }, () => {
-        this.props.history.replace(`/projects/${projectId}`);
-        this.setState({ creatingProject: false });
+      this.updateModifiedState(() => {
+        this.setState({ creatingProject: true }, () => {
+          this.props.history.replace(`/projects/${projectId}`);
+          this.setState({ creatingProject: false });
+        });
       });
     }
   }
 
   onNewProject = async () => {
-    this.props.history.push("/projects/new");
+    this.props.history.push("/projects/templates");
   };
 
   onOpenProject = () => {
@@ -440,6 +456,7 @@ export default class EditorContainer extends Component {
       }
 
       editor.sceneModified = false;
+      this.updateModifiedState();
 
       this.hideDialog();
     } catch (error) {
@@ -591,11 +608,9 @@ export default class EditorContainer extends Component {
   };
 
   render() {
-    const { DialogComponent, dialogProps, settingsContext, editor, creatingProject, tutorialEnabled } = this.state;
+    const { DialogComponent, dialogProps, settingsContext, editor, tutorialEnabled } = this.state;
     const toolbarMenu = this.generateToolbarMenu();
     const isPublishedScene = !!this.getSceneId();
-
-    const modified = editor.sceneModified ? "*" : "";
 
     return (
       <StyledEditorContainer id="editor-container">
@@ -633,13 +648,14 @@ export default class EditorContainer extends Component {
                   )}
                 </Modal>
                 <Helmet>
-                  <title>{`${modified}${editor.scene.name} | Spoke by Mozilla`}</title>
+                  <title>{`${this.state.modified ? "*" : ""}${editor.scene.name} | Spoke by Mozilla`}</title>
                   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
                 </Helmet>
-                <BrowserPrompt
-                  message={`${editor.scene.name} has unsaved changes, are you sure you wish to navigate away from the page?`}
-                  when={editor.sceneModified && !creatingProject}
-                />
+                {this.state.modified && (
+                  <BrowserPrompt
+                    message={`${editor.scene.name} has unsaved changes, are you sure you wish to navigate away from the page?`}
+                  />
+                )}
                 {tutorialEnabled && <Onboarding onFinish={this.onFinishTutorial} />}
               </DndProvider>
             </DialogContextProvider>

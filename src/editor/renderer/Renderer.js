@@ -51,6 +51,8 @@ class UnlitRenderMode extends RenderMode {
     this.disabledBatchedObjectLayers = new Layers();
     this.disabledBatchedObjectLayers.disable(0);
     this.disabledBatchedObjectLayers.enable(2);
+    this.hiddenLayers = new Layers();
+    this.hiddenLayers.set(1);
     this.disableBatching = false;
 
     this.spokeRenderer = spokeRenderer;
@@ -63,10 +65,20 @@ class UnlitRenderMode extends RenderMode {
         object.setShadowsEnabled(this.enableShadows);
       }
 
-      if (this.disableBatching && object.isMesh && !object.layers.test(this.enabledBatchedObjectLayers)) {
+      if (
+        this.disableBatching &&
+        object.isMesh &&
+        !object.layers.test(this.enabledBatchedObjectLayers) &&
+        !object.layers.test(this.hiddenLayers)
+      ) {
         object.layers.enable(0);
         object.layers.enable(2);
-      } else if (!this.disableBatching && object.isMesh && object.layers.test(this.disabledBatchedObjectLayers)) {
+      } else if (
+        !this.disableBatching &&
+        object.isMesh &&
+        object.layers.test(this.disabledBatchedObjectLayers) &&
+        !object.layers.test(this.hiddenLayers)
+      ) {
         object.layers.disable(0);
         object.layers.disable(2);
       }
@@ -135,20 +147,17 @@ export default class Renderer {
     this.editor = editor;
     this.canvas = canvas;
 
-    const context = canvas.getContext("webgl2", { antialias: true });
-
     const renderer = makeRenderer(canvas.parentElement.offsetWidth, canvas.parentElement.offsetHeight, {
-      canvas,
-      context
+      canvas
     });
     renderer.setPixelRatio(window.devicePixelRatio);
     this.renderer = renderer;
 
-    this.renderMode = new UnlitRenderMode(renderer, editor, this);
+    this.renderMode = new LitRenderMode(renderer, editor, this);
     this.shadowsRenderMode = new ShadowsRenderMode(renderer, editor, this);
     this.renderModes = [
+      new UnlitRenderMode(renderer, editor, this),
       this.renderMode,
-      new LitRenderMode(renderer, editor, this),
       this.shadowsRenderMode,
       new WireframeRenderMode(renderer, editor, this),
       new NormalsRenderMode(renderer, editor, this)

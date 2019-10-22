@@ -25,6 +25,9 @@ import trippytunnelTemplateThumbnail from "../../assets/templates/trippy-tunnel.
 import wideopenTemplateUrl from "../../assets/templates/wide-open-space.spoke";
 import wideopenTemplateThumbnail from "../../assets/templates/wide-open-space.jpg";
 
+import openTerrainTemplateUrl from "../../assets/templates/tutorial.spoke";
+import openTerrainTemplateThumbnail from "../../assets/templates/tutorial.jpg";
+
 const templates = [
   {
     id: "mozatrium",
@@ -87,6 +90,13 @@ const templates = [
     name: "Wide Open Space",
     thumbnailUrl: wideopenTemplateThumbnail,
     url: wideopenTemplateUrl
+  },
+
+  {
+    id: "openterrain",
+    name: "Open Terrain",
+    thumbnailUrl: openTerrainTemplateThumbnail,
+    url: openTerrainTemplateUrl
   }
 ];
 

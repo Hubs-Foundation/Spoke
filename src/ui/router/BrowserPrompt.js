@@ -4,7 +4,6 @@ import PropTypes from "prop-types";
 
 export default class BrowserPrompt extends React.Component {
   static propTypes = {
-    when: PropTypes.bool,
     message: PropTypes.oneOfType([PropTypes.func, PropTypes.string]).isRequired
   };
 

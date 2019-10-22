@@ -208,6 +208,11 @@ export default class Editor extends EventEmitter {
     this.emit("initialized");
   }
 
+  onEmitSceneModified() {
+    this.sceneModified = true;
+    this.emit("sceneModified");
+  }
+
   initializeRenderer(canvas) {
     try {
       this.renderer = new Renderer(this, canvas);
@@ -224,6 +229,9 @@ export default class Editor extends EventEmitter {
   }
 
   async loadProject(json) {
+    this.removeListener("objectsChanged", this.onEmitSceneModified);
+    this.removeListener("sceneGraphChanged", this.onEmitSceneModified);
+
     this.clearCaches();
 
     this.removeObject(this.scene);
@@ -264,6 +272,9 @@ export default class Editor extends EventEmitter {
 
     this.emit("projectLoaded");
     this.emit("sceneGraphChanged");
+
+    this.addListener("objectsChanged", this.onEmitSceneModified);
+    this.addListener("sceneGraphChanged", this.onEmitSceneModified);
 
     return scene;
   }
