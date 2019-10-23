@@ -61,8 +61,7 @@ export default class KitSource extends BaseSource {
         }
       }
 
-      // TODO: produce nested tags when they contain a "/"
-      this.tags = Array.from(tagsSet).map(label => ({ label, value: label }));
+      this.tags = Array.from(tagsSet).map(tag => ({ label: tag.split("/").pop(), value: tag }));
     }
 
     const options = {
