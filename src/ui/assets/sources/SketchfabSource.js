@@ -7,7 +7,7 @@ export default class SketchfabSource extends ModelMediaSource {
     this.id = "sketchfab";
     this.name = "Sketchfab";
     this.tags = [
-      { label: "Featured", value: "featured", children: [{ label: "Featured", value: "featured" }] },
+      { label: "Featured", value: "featured" },
       { label: "Animals", value: "animals-pets" },
       { label: "Architecture", value: "architecture" },
       { label: "Art", value: "art-abstract" },

@@ -4,7 +4,6 @@ import styled from "styled-components";
 import { List } from "../layout/List";
 import { Column, Row } from "../layout/Flex";
 import { useSelectionHandler } from "./useSelection";
-import { Times } from "styled-icons/fa-solid/Times";
 import { CaretRight } from "styled-icons/fa-solid/CaretRight";
 import { CaretDown } from "styled-icons/fa-solid/CaretDown";
 
@@ -23,19 +22,6 @@ const TagListHeader = styled(Row)`
   min-height: 24px;
   background-color: ${props => props.theme.panel2};
   border-bottom: 1px solid ${props => props.theme.panel};
-`;
-
-const ClearTagsButton = styled(Times)`
-  width: 16px;
-  height: 16px;
-  color: ${props => props.theme.text2};
-  padding: 2px;
-  border-radius: 3px;
-
-  :hover {
-    color: ${props => props.theme.text};
-    background-color: ${props => props.theme.hover};
-  }
 `;
 
 const TagListContainer = styled(List)`
@@ -61,21 +47,8 @@ const TagContent = styled.div`
   padding-left: ${props => props.depth * 20}px;
 
   color: ${props => props.theme.text};
-`;
 
-export const TreeListItem = styled.li`
-  display: flex;
-  flex-direction: column;
-  outline: none;
-  overflow: hidden;
-  user-select: none;
-  min-height: 24px;
-
-  background-color: ${props => (props.selected ? props.theme.selected : props.theme.panel2)};
-
-  :nth-child(odd) {
-    background-color: ${props => (props.selected ? props.theme.selected : props.theme.panel)};
-  }
+  background-color: ${props => (props.selected ? props.theme.selected : "transparent")};
 
   :hover,
   :focus {
@@ -86,6 +59,21 @@ export const TreeListItem = styled.li`
   :active {
     background-color: ${props => props.theme.bluePressed};
     color: ${props => props.theme.text};
+  }
+`;
+
+export const TreeListItem = styled.li`
+  display: flex;
+  flex-direction: column;
+  outline: none;
+  overflow: hidden;
+  user-select: none;
+  min-height: 24px;
+
+  background-color: ${props => props.theme.panel2};
+
+  :nth-child(odd) {
+    background-color: ${props => props.theme.panel};
   }
 `;
 
@@ -110,12 +98,12 @@ function TagListItem({ tag, depth, onClick, expanded, onToggleExpanded, selected
     [onToggleExpanded, tag]
   );
 
-  const selected = selectedTags.indexOf(tag) !== -1;
+  const selected = selectedTags.indexOf(tag) !== -1 || (selectedTags.length === 0 && tag.value === "All");
   const isExpanded = expanded[tag.value];
 
   return (
     <TreeListItem selected={selected} {...rest}>
-      <TagContent depth={depth} onClick={onClickItem}>
+      <TagContent depth={depth} selected={selected} onClick={onClickItem}>
         {tag.children ? (
           <TagListToggle onClick={onClickToggle}>
             {isExpanded ? <CaretDown size={12} /> : <CaretRight size={12} />}
@@ -173,11 +161,16 @@ export default function TagList({ tags, selectedTags, onChange, multiselect }) {
 
   return (
     <StyledTagList>
-      <TagListHeader>
-        Tags
-        <ClearTagsButton onClick={clearSelection} />
-      </TagListHeader>
+      <TagListHeader>Tags</TagListHeader>
       <TagListContainer>
+        <TagListItem
+          key="All"
+          onClick={clearSelection}
+          onToggleExpanded={onToggleExpanded}
+          expanded={expanded}
+          selectedTags={selectedTags}
+          tag={{ label: "All", value: "All" }}
+        />
         {tags.map(tag => (
           <TagListItem
             key={tag.value}
