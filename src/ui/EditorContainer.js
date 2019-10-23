@@ -84,7 +84,13 @@ export default class EditorContainer extends Component {
   }
 
   updateModifiedState = then => {
-    this.setState({ modified: this.state.editor.sceneModified && !this.state.creatingProject }, then);
+    const nextModified = this.state.editor.sceneModified && !this.state.creatingProject;
+
+    if (nextModified !== this.state.modified) {
+      this.setState({ modified: nextModified }, then);
+    } else if (then) {
+      then();
+    }
   };
 
   generateToolbarMenu = () => {
