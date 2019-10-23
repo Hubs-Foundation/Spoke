@@ -1,4 +1,4 @@
-import kitUrl from "../../../assets/kits/ArchitectureKit/ArchKitv6.gltf";
+import kitUrl from "../../../assets/kits/TestKit/TestKit.gltf";
 import KitSource from "../KitSource";
 import { TransformPivot } from "../../../editor/controls/SpokeControls";
 

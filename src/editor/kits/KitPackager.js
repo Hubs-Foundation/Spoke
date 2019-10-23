@@ -37,10 +37,12 @@ export default class KitPackager {
       const altMaterialsComponent = getComponent(object, "kit-alt-materials");
 
       if (altMaterialsComponent) {
-        altMaterialsComponent.defaultMaterials = altMaterialsComponent.defaultMaterials.map(({ name, material }) => ({
-          name,
-          material: materials[material]
-        }));
+        altMaterialsComponent.defaultMaterials = altMaterialsComponent.defaultMaterials.map(
+          ({ material, ...rest }) => ({
+            ...rest,
+            material: materials[material]
+          })
+        );
 
         altMaterialsComponent.altMaterials = altMaterialsComponent.altMaterials.map(primitiveAltMaterials =>
           primitiveAltMaterials.map(materialIndex => materials[materialIndex])

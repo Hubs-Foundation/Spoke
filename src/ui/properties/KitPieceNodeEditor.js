@@ -29,25 +29,8 @@ export default class KitPieceNodeEditor extends Component {
 
   static description = "";
 
-  componentDidMount() {
-    this.props.editor.addListener("objectsChanged", this.onObjectsChanged);
-  }
-
-  componentWillUnmount() {
-    this.props.editor.removeListener("objectsChanged", this.onObjectsChanged);
-  }
-
-  onObjectsChanged = objects => {
-    for (const object of objects) {
-      if (this.props.node.subPieces.indexOf(object) !== -1) {
-        this.forceUpdate();
-        return;
-      }
-    }
-  };
-
-  onChangeSubPieceMaterial = (subPiece, material) => {
-    this.props.editor.setProperty(subPiece, "material", material, true, true, true);
+  onChangeMaterialSlot = (subPiece, materialSlot, materialId) => {
+    this.props.editor.loadMaterialSlot(this.props.node, subPiece.id, materialSlot.id, materialId);
   };
 
   onChangeAnimation = activeClipIndex => {
@@ -73,23 +56,23 @@ export default class KitPieceNodeEditor extends Component {
   render() {
     const { node } = this.props;
 
-    // TODO update the kit-piece material slots ui
-
     return (
       <NodeEditor {...this.props} description={KitPieceNodeEditor.description}>
         <SubPiecesHeader>Materials:</SubPiecesHeader>
         <SubPiecesContainer>
-          {node.subPieces.map(subPiece => {
-            return (
-              <InputGroup key={subPiece.id} name={subPiece.name}>
-                <SelectInput
-                  options={subPiece.materialChoices.map(material => ({ label: material.name, value: material }))}
-                  value={subPiece.material}
-                  onChange={material => this.onChangeSubPieceMaterial(subPiece, material)}
-                />
-              </InputGroup>
-            );
-          })}
+          {node.subPieces.map(subPiece => (
+            <InputGroup key={"subPiece-" + subPiece.id} name={subPiece.name}>
+              {subPiece.materialSlots.map(materialSlot => (
+                <InputGroup key={"materialSlot-" + materialSlot.id} name={materialSlot.name}>
+                  <SelectInput
+                    options={materialSlot.options.map(o => ({ value: o.id, label: o.name }))}
+                    value={materialSlot.value ? materialSlot.value.id : null}
+                    onChange={(value, option) => this.onChangeMaterialSlot(subPiece, materialSlot, value, option)}
+                  />
+                </InputGroup>
+              ))}
+            </InputGroup>
+          ))}
         </SubPiecesContainer>
         <InputGroup name="Loop Animation">
           <SelectInput options={node.getClipOptions()} value={node.activeClipIndex} onChange={this.onChangeAnimation} />

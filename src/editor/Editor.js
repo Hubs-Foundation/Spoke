@@ -77,6 +77,7 @@ import TranslateCommand from "./commands/TranslateCommand";
 import TranslateMultipleCommand from "./commands/TranslateMultipleCommand";
 import GroupMultipleCommand from "./commands/GroupMultipleCommand";
 import ReparentMultipleWithPositionCommand from "./commands/ReparentMultipleWithPositionCommand";
+import LoadMaterialSlotCommand from "./commands/LoadMaterialSlotCommand";
 
 import GroupNode from "./nodes/GroupNode";
 import ModelNode from "./nodes/ModelNode";
@@ -1724,6 +1725,24 @@ export default class Editor extends EventEmitter {
 
   setPropertiesSelected(properties, useHistory = true, emitEvent = true) {
     return this.setPropertyMultiple(this.selected, properties, useHistory, emitEvent);
+  }
+
+  loadMaterialSlot(object, subPieceId, materialSlotId, materialId, useHistory = true, emitEvent = true) {
+    if (useHistory) {
+      return this.history.execute(new LoadMaterialSlotCommand(this, object, subPieceId, materialSlotId, materialId));
+    }
+
+    object.loadMaterialSlot(subPieceId, materialSlotId, materialId).catch(console.error);
+
+    if (object.onChange) {
+      object.onChange("materialSlot");
+    }
+
+    if (emitEvent) {
+      this.emit("objectsChanged", [object], "materialSlot");
+    }
+
+    return object;
   }
 
   getRootObjects(objects, target = [], filterUnremovable = true, filterUntransformable = false) {
