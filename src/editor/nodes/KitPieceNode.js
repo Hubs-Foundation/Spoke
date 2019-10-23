@@ -93,6 +93,11 @@ export default class KitPieceNode extends EditorNodeMixin(Model) {
 
     if (materialSlot.value && materialSlot.value.id === materialId) {
       materialSlot.object.material = material;
+
+      if (material.isMeshStandardMaterial) {
+        material.envMap = this.editor.scene.environmentMap;
+        material.needsUpdate = true;
+      }
     }
   }
 
