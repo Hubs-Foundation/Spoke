@@ -1,6 +1,7 @@
 import { Box3, Sphere } from "three";
 import Model from "../objects/Model";
 import EditorNodeMixin from "./EditorNodeMixin";
+import cloneObject3D from "../utils/cloneObject3D";
 
 export default class SpawnerNode extends EditorNodeMixin(Model) {
   static legacyComponentName = "spawner";
@@ -42,8 +43,11 @@ export default class SpawnerNode extends EditorNodeMixin(Model) {
 
   // Overrides Model's loadGLTF method and uses the Editor's gltf cache.
   async loadGLTF(src) {
-    const { scene } = await this.editor.gltfCache.get(src);
-    return scene;
+    const loader = this.editor.gltfCache.getLoader(src);
+
+    const { scene } = await loader.getDependency("gltf");
+
+    return cloneObject3D(scene);
   }
 
   // Overrides Model's load method and resolves the src url before loading.

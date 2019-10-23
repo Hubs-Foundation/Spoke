@@ -37,8 +37,6 @@ import {
   Object3D
 } from "three";
 
-import { SpokeNodeExporterExtension } from "./extensions/exporter/SpokeNodeExporterExtension";
-
 //------------------------------------------------------------------------------
 // Constants
 //------------------------------------------------------------------------------
@@ -146,8 +144,6 @@ class GLTFExporter {
 
     this.extensions = [];
     this.hooks = [];
-
-    this.registerExtension(SpokeNodeExporterExtension);
   }
 
   registerExtension(Extension, options = {}) {

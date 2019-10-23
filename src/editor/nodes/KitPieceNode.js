@@ -2,8 +2,8 @@ import EditorNodeMixin from "./EditorNodeMixin";
 import Model from "../objects/Model";
 import { PropertyBinding } from "three";
 import { setStaticMode, StaticModes } from "../StaticMode";
-import { findKitPiece } from "../kits/kit-piece-utils";
 import cloneObject3D from "../utils/cloneObject3D";
+import { isKitPieceNode, getComponent } from "../gltf/moz-hubs-components";
 
 export default class KitPieceNode extends EditorNodeMixin(Model) {
   static legacyComponentName = "kit-piece";
@@ -21,6 +21,7 @@ export default class KitPieceNode extends EditorNodeMixin(Model) {
 
         await node.load(src, pieceId);
 
+        // TODO update the sub-piece deserialization method
         if (node.subPieces) {
           for (const { name, materialName } of subPieces) {
             const object = node.subPieces.find(o => o.name === name);
@@ -81,9 +82,83 @@ export default class KitPieceNode extends EditorNodeMixin(Model) {
   }
 
   async loadGLTF(src, pieceId) {
-    const { scene } = await this.editor.gltfCache.get(src, false);
-    const piece = findKitPiece(scene, pieceId);
-    return cloneObject3D(piece);
+    const loader = this.editor.gltfCache.getLoader(src);
+    const { json } = await loader.getDependency("root");
+
+    if (!Array.isArray(json.nodes)) {
+      throw new Error("glTF file has no nodes.");
+    }
+
+    const nodeIndex = json.nodes.findIndex(nodeDef => isKitPieceNode(nodeDef, pieceId));
+
+    if (nodeIndex === undefined) {
+      throw new Error(`Couldn't find kit piece with id ${pieceId}`);
+    }
+
+    const piece = await loader.getDependency("node", nodeIndex, {
+      cacheKey: `kit-piece:${pieceId}`,
+      loadDefaultMaterial: true
+    });
+
+    const clonedPiece = cloneObject3D(piece);
+
+    // TODO: Traverse the clonedPiece and load default materials for all of the sub-pieces
+    // Store each alt-material index, name, and mesh reference in the materialSlots array
+
+    const subPieces = [];
+
+    clonedPiece.traverse(child => {
+      const kitAltMaterials = getComponent("kit-alt-materials");
+
+      if (kitAltMaterials) {
+        const { defaultMaterials, altMaterials } = kitAltMaterials;
+
+        const options = kitAltMaterials[primitiveIndex].map(materialIndex => ({
+          label: json.materials[materialIndex].name || `Material ${materialIndex}`,
+          value: { primitiveIndex, materialIndex }
+        }));
+
+        subPieces.push(child);
+      }
+    });
+
+    const materialSlots = [];
+    const pendingDefaultMaterials = [];
+
+    const kitAltMaterials = getComponent("kit-alt-materials");
+
+    let primitiveIndex = 0;
+
+    mesh.traverse(child => {
+      if (child.material && primitiveIndex < altMaterials.length) {
+        const options = altMaterials[primitiveIndex].map(materialIndex => ({
+          label: json.materials[materialIndex].name || `Material ${materialIndex}`,
+          value: { primitiveIndex, materialIndex }
+        }));
+
+        const value = options.find(o => o.value.materialIndex === defaultMaterials[primitiveIndex]) || null;
+
+        materialSlots.push({
+          name: child.name,
+          value,
+          options
+        });
+
+        pendingDefaultMaterials.push(
+          this.loader
+            .getDependency("material", defaultMaterials[primitiveIndex])
+            .then(material => (child.material = material))
+        );
+
+        primitiveIndex++;
+      }
+    });
+
+    mesh.userData.subPiece = {
+      materialSlots
+    };
+
+    await Promise.all(pendingDefaultMaterials);
   }
 
   async load(src, pieceId) {
@@ -127,7 +202,7 @@ export default class KitPieceNode extends EditorNodeMixin(Model) {
           this.model.position.set(0, 0, 0);
 
           this.model.traverse(object => {
-            if (object.isKitSubPiece) {
+            if (object.userData.subPiece) {
               this.subPieces.push(object);
             }
           });
@@ -201,6 +276,7 @@ export default class KitPieceNode extends EditorNodeMixin(Model) {
       "kit-piece": {
         src: this._canonicalUrl,
         pieceId: this.pieceId,
+        // TODO update the sub-piece serialization method
         subPieces: this.subPieces.map(subPiece => ({
           name: subPiece.name,
           materialName: subPiece.material.name
@@ -237,6 +313,7 @@ export default class KitPieceNode extends EditorNodeMixin(Model) {
     this.collidable = source.collidable;
     this.walkable = source.walkable;
 
+    // TODO update the sub-piece copy method
     if (this.model) {
       this.model.traverse(object => {
         if (object.isKitSubPiece) {
@@ -273,6 +350,12 @@ export default class KitPieceNode extends EditorNodeMixin(Model) {
     if (this.model) {
       // Clear kit-piece extension data
       this.model.userData = {};
+
+      this.model.traverse(child => {
+        if (child.userData.subPiece) {
+          delete child.userData.subPiece;
+        }
+      });
     }
   }
 }

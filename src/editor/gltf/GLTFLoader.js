@@ -71,7 +71,6 @@ import {
 } from "three";
 
 import { MaterialsUnlitLoaderExtension } from "./extensions/loader/MaterialsUnlitLoaderExtension";
-import { HubsComponentsLoaderExtension } from "./extensions/loader/HubsComponentsLoaderExtension";
 
 /* CONSTANTS */
 
@@ -285,7 +284,6 @@ class GLTFLoader {
     this.extensions = [];
     this.hooks = {};
 
-    this.registerExtension(HubsComponentsLoaderExtension);
     this.registerExtension(MaterialsUnlitLoaderExtension);
   }
 
@@ -479,27 +477,35 @@ class GLTFLoader {
     this.meshUses = meshUses;
   }
 
-  async loadGLTF() {
-    const { json } = await this.getDependency("root");
-    const sceneIndex = json.scene || 0;
-    const scene = await this.getDependency("scene", sceneIndex);
-    const sceneAnimations = await this.loadSceneAnimations(sceneIndex);
-    scene.animations = sceneAnimations || [];
-    return { scene, json };
-  }
-
   /**
    * Requests the specified dependency asynchronously, with caching.
    * @param {string} type
    * @param {number} index
    * @return {Promise<Object3D|Material|Texture|AnimationClip|ArrayBuffer|Object>}
    */
-  getDependency(type, index) {
-    const cacheKey = type + ":" + index;
+  getDependency(type, index, { key, ...options } = {}) {
+    let cacheKey = type;
+
+    if (index !== undefined) {
+      cacheKey += ":" + index;
+    }
+
+    if (key !== undefined) {
+      cacheKey = cacheKey + ":" + key;
+    }
+
     let dependency = this.cache.get(cacheKey);
 
     if (!dependency) {
       switch (type) {
+        case "gltf":
+          dependency = this.loadGLTF();
+          break;
+
+        case "sceneAnimations":
+          dependency = this.loadSceneAnimations(index);
+          break;
+
         case "root":
           dependency = this.loadRoot();
           break;
@@ -509,11 +515,11 @@ class GLTFLoader {
           break;
 
         case "node":
-          dependency = this.loadNode(index);
+          dependency = this.loadNode(index, options);
           break;
 
         case "mesh":
-          dependency = this.loadMesh(index);
+          dependency = this.loadMesh(index, options);
           break;
 
         case "accessor":
@@ -558,6 +564,15 @@ class GLTFLoader {
     return dependency;
   }
 
+  async loadGLTF() {
+    const { json } = await this.getDependency("root");
+    const sceneIndex = json.scene || 0;
+    const scene = await this.getDependency("scene", sceneIndex);
+    const sceneAnimations = await this.getDependency("sceneAnimations", sceneIndex);
+    scene.animations = sceneAnimations || [];
+    return { scene, json };
+  }
+
   /**
    * Specification: https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#scenes
    * @param {number} sceneIndex
@@ -597,7 +612,7 @@ class GLTFLoader {
    * @param {number} nodeIndex
    * @return {Promise<Object3D>}
    */
-  async loadNode(nodeIndex) {
+  async loadNode(nodeIndex, options) {
     const { json } = await this.getDependency("root");
 
     const meshReferences = this.meshReferences;
@@ -611,7 +626,7 @@ class GLTFLoader {
     if (nodeDef.isBone === true) {
       node = new Bone();
     } else if (nodeDef.mesh !== undefined) {
-      const mesh = await this.getDependency("mesh", nodeDef.mesh);
+      const mesh = await this.getDependency("mesh", nodeDef.mesh, options);
 
       if (meshReferences[nodeDef.mesh] > 1) {
         const instanceNum = meshUses[nodeDef.mesh]++;
@@ -680,7 +695,7 @@ class GLTFLoader {
       const pendingJoints = [];
 
       for (let i = 0, il = skin.joints.length; i < il; i++) {
-        pendingJoints.push(this.getDependency("node", skin.joints[i]));
+        pendingJoints.push(this.getDependency("node", skin.joints[i], options));
       }
 
       const jointNodes = await Promise.all(pendingJoints);
@@ -719,7 +734,7 @@ class GLTFLoader {
       const pending = [];
 
       for (let i = 0, il = nodeDef.children.length; i < il; i++) {
-        pending.push(this.getDependency("node", nodeDef.children[i]));
+        pending.push(this.getDependency("node", nodeDef.children[i], options));
       }
 
       const children = await Promise.all(pending);
@@ -997,7 +1012,7 @@ class GLTFLoader {
    * @param {number} meshIndex
    * @return {Promise<Group|Mesh|SkinnedMesh>}
    */
-  async loadMesh(meshIndex) {
+  async loadMesh(meshIndex, options) {
     const { json } = await this.getDependency("root");
 
     const meshDef = json.meshes[meshIndex];
@@ -1006,8 +1021,9 @@ class GLTFLoader {
     const pending = [];
 
     for (let i = 0, il = primitives.length; i < il; i++) {
+      const loadDefaultMaterial = options && options.loadDefaultMaterial;
       const material =
-        primitives[i].material === undefined
+        primitives[i].material === undefined || loadDefaultMaterial
           ? this.createDefaultMaterial()
           : this.getDependency("material", primitives[i].material);
 

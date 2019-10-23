@@ -73,6 +73,8 @@ export default class KitPieceNodeEditor extends Component {
   render() {
     const { node } = this.props;
 
+    // TODO update the kit-piece material slots ui
+
     return (
       <NodeEditor {...this.props} description={KitPieceNodeEditor.description}>
         <SubPiecesHeader>Materials:</SubPiecesHeader>

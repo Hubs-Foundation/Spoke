@@ -3,7 +3,7 @@ import { GLTFLoader } from "../gltf/GLTFLoader";
 import cloneObject3D from "../utils/cloneObject3D";
 import eventToMessage from "../utils/eventToMessage";
 import loadErrorTexture from "../utils/loadErrorTexture";
-import { findKitPiece } from "../kits/kit-piece-utils";
+import { findKitPiece } from "../gltf/moz-hubs-components";
 
 export default class Model extends Object3D {
   constructor() {

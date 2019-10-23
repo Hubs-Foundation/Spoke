@@ -2,7 +2,7 @@ import { GLTFLoader } from "../gltf/GLTFLoader";
 import { GLTFExporter } from "../gltf/GLTFExporter";
 import JSZip from "jszip";
 import ThumbnailRenderer from "../renderer/ThumbnailRenderer";
-import { getKitPieceComponent } from "./kit-piece-utils";
+import { getComponent } from "../gltf/moz-hubs-components";
 
 export default class KitPackager {
   constructor() {
@@ -15,13 +15,36 @@ export default class KitPackager {
 
     const loader = new GLTFLoader(url, undefined, { revokeObjectURLs: false });
 
-    const { scene } = await loader.loadGLTF();
+    const { scene, json } = await loader.loadGLTF();
+
+    const pendingMaterials = [];
+
+    if (json.materials) {
+      for (let i = 0; i < json.materials.length; i++) {
+        pendingMaterials.push(loader.getDependency("material", i));
+      }
+    }
+
+    const materials = await Promise.all(pendingMaterials);
 
     const pieces = [];
 
     scene.traverse(object => {
-      if (getKitPieceComponent(object)) {
+      if (getComponent(object, "kit-piece")) {
         pieces.push(object);
+      }
+
+      const altMaterialsComponent = getComponent(object, "kit-alt-materials");
+
+      if (altMaterialsComponent) {
+        altMaterialsComponent.defaultMaterials = altMaterialsComponent.defaultMaterials.map(({ name, material }) => ({
+          name,
+          material: materials[material]
+        }));
+
+        altMaterialsComponent.altMaterials = altMaterialsComponent.altMaterials.map(primitiveAltMaterials =>
+          primitiveAltMaterials.map(materialIndex => materials[materialIndex])
+        );
       }
     });
 
@@ -36,11 +59,33 @@ export default class KitPackager {
 
     for (let i = 0; i < pieces.length; i++) {
       const piece = pieces[i];
-      const component = getKitPieceComponent(piece);
+
+      const component = getComponent(piece, "kit-piece");
+
       onProgress(`Generating thumbnail for "${component.name}" ${i} out of ${pieces.length}`);
 
       // Wait for 5ms so we don't lock up the UI thread
       await new Promise(resolve => setTimeout(resolve, 5));
+
+      const clonedPiece = piece.clone();
+
+      clonedPiece.traverse(object => {
+        const altMaterialsComponent = getComponent(object, "kit-alt-materials");
+
+        if (!altMaterialsComponent || !altMaterialsComponent.defaultMaterials) {
+          return;
+        }
+
+        let materialSlotIndex = 0;
+        const defaultMaterials = altMaterialsComponent.defaultMaterials;
+
+        object.traverse(child => {
+          if (child.material && materialSlotIndex < defaultMaterials.length) {
+            child.material = defaultMaterials[materialSlotIndex];
+            materialSlotIndex++;
+          }
+        });
+      });
 
       const thumbnailBlob = await thumbnailRenderer.generateThumbnail(
         piece.clone(),
