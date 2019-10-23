@@ -10,6 +10,8 @@ export default class KitPieceNode extends EditorNodeMixin(Model) {
 
   static experimental = true;
 
+  static useMultiplePlacementMode = true;
+
   static nodeName = "Kit Piece";
 
   static async deserialize(editor, json, loadAsync) {

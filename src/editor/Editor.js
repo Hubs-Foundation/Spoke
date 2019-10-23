@@ -1877,7 +1877,7 @@ export default class Editor extends EventEmitter {
     this.addObject(object);
 
     if (!object.disableTransform) {
-      this.spokeControls.setTransformMode(TransformMode.Placement);
+      this.spokeControls.setTransformMode(TransformMode.Placement, object.useMultiplePlacementMode);
     }
   }
 

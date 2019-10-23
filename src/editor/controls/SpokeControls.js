@@ -104,6 +104,7 @@ export default class SpokeControls extends EventEmitter {
     this.editor.helperScene.add(this.transformGizmo);
 
     this.transformMode = TransformMode.Translate;
+    this.multiplePlacement = false;
     this.transformModeOnCancel = TransformMode.Translate;
     this.transformSpace = TransformSpace.World;
     this.transformPivot = TransformPivot.Selection;
@@ -536,7 +537,11 @@ export default class SpokeControls extends EventEmitter {
         }
 
         if (this.transformMode === TransformMode.Placement) {
-          this.editor.duplicateSelected(undefined, undefined, true, true, false);
+          if (shift || input.get(Fly.boost) || this.multiplePlacement) {
+            this.editor.duplicateSelected(undefined, undefined, true, true, false);
+          } else {
+            this.setTransformMode(this.transformModeOnCancel);
+          }
         }
       } else {
         const selectEndPosition = input.get(Spoke.selectEndPosition);
@@ -782,7 +787,8 @@ export default class SpokeControls extends EventEmitter {
     }
   }
 
-  setTransformMode(mode) {
+  setTransformMode(mode, multiplePlacement) {
+    console.log(mode, multiplePlacement);
     if (
       (mode === TransformMode.Placement || mode === TransformMode.Grab) &&
       this.editor.selected.some(node => node.disableTransform) // TODO: this doesn't prevent nesting and then grabbing
@@ -800,6 +806,8 @@ export default class SpokeControls extends EventEmitter {
     } else {
       this.placementObjects = [];
     }
+
+    this.multiplePlacement = multiplePlacement || false;
 
     this.grabHistoryCheckpoint = null;
     this.transformMode = mode;

@@ -16,6 +16,8 @@ export default function EditorNodeMixin(Object3DClass) {
 
     static disableTransform = false;
 
+    static useMultiplePlacementMode = false;
+
     static ignoreRaycast = false;
 
     // Used for props like src that have side effects that we don't want to happen in the constructor
@@ -67,6 +69,7 @@ export default function EditorNodeMixin(Object3DClass) {
       this.isNode = true;
       this.isCollapsed = false;
       this.disableTransform = this.constructor.disableTransform;
+      this.useMultiplePlacementMode = this.constructor.useMultiplePlacementMode;
       this.ignoreRaycast = this.constructor.ignoreRaycast;
 
       this.staticMode = StaticModes.Inherits;
