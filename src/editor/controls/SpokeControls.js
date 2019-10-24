@@ -759,7 +759,7 @@ export default class SpokeControls extends EventEmitter {
     if (
       (excludeObjects && excludeObjects.indexOf(object) !== -1) ||
       (excludeLayers && excludeLayers.test(object.layers)) ||
-      this.editor.renderer.batchManager.batches.indexOf(object) !== -1
+      (this.editor.renderer.batchManager && this.editor.renderer.batchManager.batches.indexOf(object) !== -1)
     ) {
       return;
     }
