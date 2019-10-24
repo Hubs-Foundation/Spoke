@@ -1606,7 +1606,11 @@ class GLTFLoader {
 
     texture.flipY = false;
 
-    if (textureDef.name !== undefined) texture.name = textureDef.name;
+    if (textureDef.name !== undefined) {
+      texture.name = textureDef.name;
+    } else if (source.name !== undefined) {
+      texture.name = source.name;
+    }
 
     // Ignore unknown mime types, like DDS files.
     if (source.mimeType in MIME_TYPE_FORMATS) {

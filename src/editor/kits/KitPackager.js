@@ -4,6 +4,13 @@ import JSZip from "jszip";
 import ThumbnailRenderer from "../renderer/ThumbnailRenderer";
 import { getComponent } from "../gltf/moz-hubs-components";
 
+async function getBlobContentHash(blob) {
+  const imageBuffer = await blob.arrayBuffer();
+  const digest = await crypto.subtle.digest("SHA-1", imageBuffer);
+  const hashArray = Array.from(new Uint8Array(digest));
+  return hashArray.map(b => ("00" + b.toString(16)).slice(-2)).join("");
+}
+
 export default class KitPackager {
   constructor() {
     this.thumbnailWidth = 256;
@@ -110,13 +117,23 @@ export default class KitPackager {
 
     const chunks = await exporter.exportChunks(scene);
 
-    zip.file(kitName + ".gltf", JSON.stringify(chunks.json));
+    const bufferDefs = chunks.json.buffers;
 
     if (chunks.buffers.length === 1) {
-      zip.file("scene.bin", chunks.buffers[0]);
+      const bufferDef = bufferDefs[0];
+      const bufferBlob = chunks.buffers[0];
+      const contentHash = await getBlobContentHash(bufferBlob);
+      const bufferUrl = "buffer-" + contentHash + ".bin";
+      bufferDef.uri = bufferUrl;
+      zip.file(bufferUrl, bufferBlob);
     } else {
       for (let i = 0; chunks.buffers.length; i++) {
-        zip.file(`buffer${i}.bin`, chunks.buffers[i]);
+        const bufferDef = bufferDefs[i];
+        const bufferBlob = chunks.buffers[i];
+        const contentHash = await getBlobContentHash(bufferBlob);
+        const bufferUrl = "buffer" + i + "-" + contentHash + ".bin";
+        bufferDef.uri = bufferUrl;
+        zip.file(bufferUrl, bufferBlob);
       }
     }
 
@@ -124,8 +141,21 @@ export default class KitPackager {
     const imageBlobs = chunks.images;
 
     for (let i = 0; i < imageBlobs.length; i++) {
-      zip.file(imageDefs[i].uri, imageBlobs[i]);
+      const imageDef = imageDefs[i];
+      const imageBlob = imageBlobs[i];
+      const contentHash = await getBlobContentHash(imageBlob);
+      const mimeType = imageDef.mimeType;
+      const fileExtension = mimeType === "image/png" ? ".png" : ".jpg";
+      const imageUrl = imageDef.name + "-" + contentHash + fileExtension;
+      imageDef.uri = imageUrl;
+      zip.file(imageUrl, imageBlob);
     }
+
+    const jsonString = JSON.stringify(chunks.json);
+    const jsonBlob = new Blob([jsonString], { type: "application/json" });
+    const contentHash = await getBlobContentHash(jsonBlob);
+    const gltfUrl = kitName + "-" + contentHash + ".gltf";
+    zip.file(gltfUrl, jsonBlob);
 
     const zipBlob = await zip.generateAsync({ type: "blob" }, ({ percent, currentFile }) => {
       if (currentFile) {
