@@ -32,8 +32,8 @@ class ProjectPage extends Component {
       this.setState({
         error: (
           <p>
-            Your browser does not support WebGL2. Please visit{" "}
-            <a href="http://get.webgl.org/webgl2/">http://get.webgl.org/webgl2/</a> for more info.
+            Your browser does not support WebGL2. Please visit this page in a supported browser such as{" "}
+            <a href="https://firefox.com">Firefox</a> or <a href="https://www.google.com/chrome/">Chrome</a>
           </p>
         )
       });
@@ -53,9 +53,8 @@ class ProjectPage extends Component {
       this.setState({
         error: (
           <p>
-            Error, could not initialize WebGL2. Please visit{" "}
-            <a href="http://get.webgl.org/webgl2/troubleshooting">http://get.webgl.org/webgl2/troubleshooting</a> for
-            more info.
+            Error, could not initialize WebGL2. Please visit this page in a supported browser such as{" "}
+            <a href="https://firefox.com">Firefox</a> or <a href="https://www.google.com/chrome/">Chrome</a>
           </p>
         )
       });
