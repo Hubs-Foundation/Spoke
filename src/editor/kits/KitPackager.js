@@ -29,9 +29,13 @@ export default class KitPackager {
 
     const pieces = [];
 
+    const kitPieceComponents = {};
+
     scene.traverse(object => {
-      if (getComponent(object, "kit-piece")) {
-        pieces.push(object);
+      const kitPieceComponent = getComponent(object, "kit-piece");
+      if (kitPieceComponent) {
+        kitPieceComponents[kitPieceComponent.id] = kitPieceComponent;
+        pieces.push(object.clone());
       }
 
       const altMaterialsComponent = getComponent(object, "kit-alt-materials");
@@ -89,15 +93,13 @@ export default class KitPackager {
         });
       });
 
-      const thumbnailBlob = await thumbnailRenderer.generateThumbnail(
-        piece.clone(),
-        this.thumbnailWidth,
-        this.thumbnailHeight
-      );
-      const thumbnailFileName = component.name + ".jpeg";
+      const thumbnailBlob = await thumbnailRenderer.generateThumbnail(piece, this.thumbnailWidth, this.thumbnailHeight);
+
+      const exportedComponent = kitPieceComponents[component.id];
+      const thumbnailFileName = exportedComponent.name + ".jpeg";
 
       thumbnailsFolder.file(thumbnailFileName, thumbnailBlob);
-      component.thumbnailUrl = "./thumbnails/" + thumbnailFileName;
+      exportedComponent.thumbnailUrl = "./thumbnails/" + thumbnailFileName;
     }
 
     const exporter = new GLTFExporter({
