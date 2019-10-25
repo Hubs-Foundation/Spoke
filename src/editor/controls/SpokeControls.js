@@ -112,8 +112,8 @@ export default class SpokeControls extends EventEmitter {
     this.grabHistoryCheckpoint = null;
     this.placementObjects = [];
 
-    this.snapMode = SnapMode.Disabled;
-    this.translationSnap = 1;
+    this.snapMode = SnapMode.Grid;
+    this.translationSnap = 0.5;
     this.rotationSnap = 90;
     this.scaleSnap = 0.1;
 
