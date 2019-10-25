@@ -77,6 +77,7 @@ import TranslateCommand from "./commands/TranslateCommand";
 import TranslateMultipleCommand from "./commands/TranslateMultipleCommand";
 import GroupMultipleCommand from "./commands/GroupMultipleCommand";
 import ReparentMultipleWithPositionCommand from "./commands/ReparentMultipleWithPositionCommand";
+import LoadMaterialSlotCommand from "./commands/LoadMaterialSlotCommand";
 
 import GroupNode from "./nodes/GroupNode";
 import ModelNode from "./nodes/ModelNode";
@@ -171,6 +172,10 @@ export default class Editor extends EventEmitter {
 
   registerSource(source) {
     this.sources.push(source);
+  }
+
+  getSource(sourceId) {
+    return this.sources.find(source => source.id === sourceId);
   }
 
   setSource(sourceId) {
@@ -1726,6 +1731,24 @@ export default class Editor extends EventEmitter {
     return this.setPropertyMultiple(this.selected, properties, useHistory, emitEvent);
   }
 
+  loadMaterialSlot(object, subPieceId, materialSlotId, materialId, useHistory = true, emitEvent = true) {
+    if (useHistory) {
+      return this.history.execute(new LoadMaterialSlotCommand(this, object, subPieceId, materialSlotId, materialId));
+    }
+
+    object.loadMaterialSlot(subPieceId, materialSlotId, materialId).catch(console.error);
+
+    if (object.onChange) {
+      object.onChange("materialSlot");
+    }
+
+    if (emitEvent) {
+      this.emit("objectsChanged", [object], "materialSlot");
+    }
+
+    return object;
+  }
+
   getRootObjects(objects, target = [], filterUnremovable = true, filterUntransformable = false) {
     target.length = 0;
 
@@ -1858,7 +1881,7 @@ export default class Editor extends EventEmitter {
     this.addObject(object);
 
     if (!object.disableTransform) {
-      this.spokeControls.setTransformMode(TransformMode.Placement);
+      this.spokeControls.setTransformMode(TransformMode.Placement, object.useMultiplePlacementMode);
     }
   }
 

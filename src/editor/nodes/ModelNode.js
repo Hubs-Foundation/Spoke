@@ -2,6 +2,7 @@ import { Box3, Sphere, PropertyBinding } from "three";
 import Model from "../objects/Model";
 import EditorNodeMixin from "./EditorNodeMixin";
 import { setStaticMode, StaticModes } from "../StaticMode";
+import cloneObject3D from "../utils/cloneObject3D";
 
 export default class ModelNode extends EditorNodeMixin(Model) {
   static nodeName = "Model";
@@ -81,7 +82,11 @@ export default class ModelNode extends EditorNodeMixin(Model) {
 
   // Overrides Model's loadGLTF method and uses the Editor's gltf cache.
   async loadGLTF(src) {
-    const { scene, json } = await this.editor.gltfCache.get(src);
+    const loader = this.editor.gltfCache.getLoader(src);
+
+    const { scene, json } = await loader.getDependency("gltf");
+
+    const clonedScene = cloneObject3D(scene);
 
     const sketchfabExtras = json.asset && json.asset.extras;
 
@@ -89,11 +94,11 @@ export default class ModelNode extends EditorNodeMixin(Model) {
       const name = sketchfabExtras.title;
       const author = sketchfabExtras.author.replace(/ \(http.+\)/, "");
       const url = sketchfabExtras.source || this._canonicalUrl;
-      scene.name = name;
+      clonedScene.name = name;
       this.attribution = { name, author, url };
     }
 
-    return scene;
+    return clonedScene;
   }
 
   // Overrides Model's load method and resolves the src url before loading.

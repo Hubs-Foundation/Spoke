@@ -27,40 +27,6 @@ class ProjectPage extends Component {
     const projectId = match.params.projectId;
     const queryParams = new URLSearchParams(location.search);
 
-    // Check for WebGL2 support
-    if (!window.WebGL2RenderingContext) {
-      this.setState({
-        error: (
-          <p>
-            Your browser does not support WebGL2. Please visit{" "}
-            <a href="http://get.webgl.org/webgl2/">http://get.webgl.org/webgl2/</a> for more info.
-          </p>
-        )
-      });
-    }
-
-    const canvas = document.createElement("canvas");
-
-    let gl;
-
-    try {
-      gl = canvas.getContext("webgl2");
-    } catch (err) {
-      gl = null;
-    }
-
-    if (!gl) {
-      this.setState({
-        error: (
-          <p>
-            Error, could not initialize WebGL2. Please visit{" "}
-            <a href="http://get.webgl.org/webgl2/troubleshooting">http://get.webgl.org/webgl2/troubleshooting</a> for
-            more info.
-          </p>
-        )
-      });
-    }
-
     if (projectId === "new") {
       if (queryParams.has("template")) {
         this.loadProjectTemplate(queryParams.get("template"));

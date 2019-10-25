@@ -261,7 +261,11 @@ export default class OutlinePass extends Pass {
       this.renderScene.overrideMaterial = this.depthMaterial;
       renderer.setRenderTarget(this.renderTargetDepthBuffer);
       renderer.clear();
-      this.spokeRenderer.batchManager.update();
+
+      if (this.spokeRenderer.batchManager) {
+        this.spokeRenderer.batchManager.update();
+      }
+
       renderer.render(this.renderScene, this.renderCamera);
 
       // Restore selected mesh visibility.
@@ -304,7 +308,11 @@ export default class OutlinePass extends Pass {
       this.depthMaskMaterial.uniforms["textureMatrix"].value = this.textureMatrix;
       renderer.setRenderTarget(this.renderTargetMaskBuffer);
       renderer.clear();
-      this.spokeRenderer.batchManager.update();
+
+      if (this.spokeRenderer.batchManager) {
+        this.spokeRenderer.batchManager.update();
+      }
+
       renderer.render(this.renderScene, this.renderCamera);
       this.renderScene.overrideMaterial = null;
 

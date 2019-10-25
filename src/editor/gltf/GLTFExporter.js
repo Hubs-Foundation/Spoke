@@ -37,8 +37,6 @@ import {
   Object3D
 } from "three";
 
-import { SpokeNodeExporterExtension } from "./extensions/exporter/SpokeNodeExporterExtension";
-
 //------------------------------------------------------------------------------
 // Constants
 //------------------------------------------------------------------------------
@@ -146,8 +144,6 @@ class GLTFExporter {
 
     this.extensions = [];
     this.hooks = [];
-
-    this.registerExtension(SpokeNodeExporterExtension);
   }
 
   registerExtension(Extension, options = {}) {
@@ -598,13 +594,13 @@ class GLTFExporter {
    * @param  {Boolean} flipY before writing out the image
    * @return {Integer}     Index of the processed texture in the "images" array
    */
-  processImage(image, format, flipY) {
+  processImage(image, format, dataTexture, flipY, name) {
     if (!this.cachedData.images.has(image)) {
       this.cachedData.images.set(image, {});
     }
 
     const cachedImages = this.cachedData.images.get(image);
-    const mimeType = format === RGBAFormat ? "image/png" : "image/jpeg";
+    const mimeType = format === RGBAFormat || dataTexture ? "image/png" : "image/jpeg";
     const key = mimeType + ":flipY/" + flipY.toString();
 
     if (cachedImages[key] !== undefined) {
@@ -616,6 +612,11 @@ class GLTFExporter {
     }
 
     const gltfImage = { mimeType: mimeType };
+
+    if (name) {
+      gltfImage.name = name;
+    }
+
     const index = this.outputJSON.images.length;
 
     if (this.options.mode === "glb") {
@@ -682,7 +683,7 @@ class GLTFExporter {
    * @param  {Texture} map Map to process
    * @return {Integer}     Index of the processed texture in the "textures" array
    */
-  processTexture(map) {
+  processTexture(map, dataTexture) {
     if (this.cachedData.textures.has(map)) {
       return this.cachedData.textures.get(map);
     }
@@ -693,7 +694,7 @@ class GLTFExporter {
 
     const gltfTexture = {
       sampler: this.processSampler(map),
-      source: this.processImage(map.image, map.format, map.flipY)
+      source: this.processImage(map.image, map.format, dataTexture, map.flipY, map.name)
     };
 
     this.outputJSON.textures.push(gltfTexture);
@@ -759,7 +760,7 @@ class GLTFExporter {
     // pbrMetallicRoughness.metallicRoughnessTexture
     if (material.metalnessMap || material.roughnessMap) {
       if (material.metalnessMap === material.roughnessMap) {
-        const metalRoughMapDef = { index: this.processTexture(material.metalnessMap) };
+        const metalRoughMapDef = { index: this.processTexture(material.metalnessMap, true) };
         this.applyTextureTransform(metalRoughMapDef, material.metalnessMap);
         gltfMaterial.pbrMetallicRoughness.metallicRoughnessTexture = metalRoughMapDef;
       } else {
@@ -797,7 +798,7 @@ class GLTFExporter {
 
     // normalTexture
     if (material.normalMap) {
-      const normalMapDef = { index: this.processTexture(material.normalMap) };
+      const normalMapDef = { index: this.processTexture(material.normalMap, true) };
 
       if (material.normalScale.x !== -1) {
         if (material.normalScale.x !== material.normalScale.y) {
@@ -815,7 +816,7 @@ class GLTFExporter {
     // occlusionTexture
     if (material.aoMap) {
       const occlusionMapDef = {
-        index: this.processTexture(material.aoMap),
+        index: this.processTexture(material.aoMap, true),
         texCoord: 1
       };
 
@@ -830,11 +831,12 @@ class GLTFExporter {
 
     // alphaMode
     if (material.transparent || material.alphaTest > 0.0) {
-      gltfMaterial.alphaMode = material.opacity < 1.0 ? "BLEND" : "MASK";
-
       // Write alphaCutoff if it's non-zero and different from the default (0.5).
       if (material.alphaTest > 0.0 && material.alphaTest !== 0.5) {
+        gltfMaterial.alphaMode = "MASK";
         gltfMaterial.alphaCutoff = material.alphaTest;
+      } else {
+        gltfMaterial.alphaMode = "BLEND";
       }
     }
 

@@ -3,7 +3,6 @@ import { GLTFLoader } from "../gltf/GLTFLoader";
 import cloneObject3D from "../utils/cloneObject3D";
 import eventToMessage from "../utils/eventToMessage";
 import loadErrorTexture from "../utils/loadErrorTexture";
-import { findKitPiece } from "../kits/kit-piece-utils";
 
 export default class Model extends Object3D {
   constructor() {
@@ -13,7 +12,6 @@ export default class Model extends Object3D {
     this.model = null;
     this.errorMesh = null;
     this._src = null;
-    this._pieceId = null;
     this._castShadow = false;
     this._receiveShadow = false;
     // Use index instead of references to AnimationClips to simplify animation cloning / track name remapping
@@ -25,26 +23,14 @@ export default class Model extends Object3D {
   }
 
   set src(value) {
-    this.load(value, this.pieceId).catch(console.error);
+    this.load(value).catch(console.error);
   }
 
-  get pieceId() {
-    return this._pieceId;
-  }
-
-  set pieceId(value) {
-    this.load(this.src, value).catch(console.error);
-  }
-
-  async loadGLTF(src, pieceId) {
+  async loadGLTF(src) {
     try {
       const gltf = await new GLTFLoader(src).loadGLTF();
 
-      let model = gltf.scene;
-
-      if (pieceId != null) {
-        model = findKitPiece(gltf.scene, pieceId);
-      }
+      const model = gltf.scene;
 
       model.animations = model.animations || [];
 
@@ -54,9 +40,8 @@ export default class Model extends Object3D {
     }
   }
 
-  async load(src, pieceId) {
+  async load(src, ...args) {
     this._src = src;
-    this._pieceId = pieceId;
 
     if (this.errorMesh) {
       this.remove(this.errorMesh);
@@ -69,7 +54,7 @@ export default class Model extends Object3D {
     }
 
     try {
-      const model = await this.loadGLTF(src, this._pieceId);
+      const model = await this.loadGLTF(src, ...args);
       this.model = model;
       this.add(model);
 
@@ -203,7 +188,6 @@ export default class Model extends Object3D {
     }
 
     this._src = source._src;
-    this._pieceId = source._pieceId;
     this.activeClipIndex = source.activeClipIndex;
 
     return this;

@@ -2,13 +2,15 @@ import EditorNodeMixin from "./EditorNodeMixin";
 import Model from "../objects/Model";
 import { PropertyBinding } from "three";
 import { setStaticMode, StaticModes } from "../StaticMode";
-import { findKitPiece } from "../kits/kit-piece-utils";
 import cloneObject3D from "../utils/cloneObject3D";
+import { isKitPieceNode, getComponent, getGLTFComponent } from "../gltf/moz-hubs-components";
 
 export default class KitPieceNode extends EditorNodeMixin(Model) {
   static legacyComponentName = "kit-piece";
 
   static experimental = true;
+
+  static useMultiplePlacementMode = true;
 
   static nodeName = "Kit Piece";
 
@@ -17,23 +19,9 @@ export default class KitPieceNode extends EditorNodeMixin(Model) {
 
     loadAsync(
       (async () => {
-        const { src, pieceId, subPieces } = json.components.find(c => c.name === "kit-piece").props;
+        const { kitId, pieceId, subPiecesConfig } = json.components.find(c => c.name === "kit-piece").props;
 
-        await node.load(src, pieceId);
-
-        if (node.subPieces) {
-          for (const { name, materialName } of subPieces) {
-            const object = node.subPieces.find(o => o.name === name);
-
-            if (object && object.materialChoices) {
-              const material = object.materialChoices.find(m => m.name === materialName);
-
-              if (material) {
-                object.material = material;
-              }
-            }
-          }
-        }
+        await node.load(kitId || "architecture-kit", pieceId, subPiecesConfig);
 
         node.collidable = !!json.components.find(c => c.name === "collidable");
         node.walkable = !!json.components.find(c => c.name === "walkable");
@@ -69,7 +57,10 @@ export default class KitPieceNode extends EditorNodeMixin(Model) {
     this._canonicalUrl = "";
     this.collidable = true;
     this.walkable = true;
+    this._kitId = null;
+    this._pieceId = null;
     this.subPieces = [];
+    this.materialIds = [];
   }
 
   get src() {
@@ -77,26 +68,191 @@ export default class KitPieceNode extends EditorNodeMixin(Model) {
   }
 
   set src(value) {
+    throw new Error("Cannot set src directly on a KitPieceNode");
+  }
+
+  get kitId() {
+    return this._kitId;
+  }
+
+  set kitId(value) {
     this.load(value, this.pieceId).catch(console.error);
   }
 
-  async loadGLTF(src, pieceId) {
-    const { scene } = await this.editor.gltfCache.get(src, false);
-    const piece = findKitPiece(scene, pieceId);
-    return cloneObject3D(piece);
+  get pieceId() {
+    return this._pieceId;
   }
 
-  async load(src, pieceId) {
-    const nextSrc = src || "";
+  set pieceId(value) {
+    this.load(this.kitId, value).catch(console.error);
+  }
+
+  getMaterialIdForMaterialSlot(subPieceId, materialSlotId) {
+    const subPiece = this.subPieces.find(s => s.id === subPieceId);
+    const materialSlot = subPiece.materialSlots.find(m => m.id === materialSlotId);
+    return materialSlot.value ? materialSlot.value.id : undefined;
+  }
+
+  async loadMaterialSlot(subPieceId, materialSlotId, materialId) {
+    const loader = this.editor.gltfCache.getLoader(this._src);
+    const _materialId = this.materialIds.find(m => m.id === materialId);
+    const subPiece = this.subPieces.find(s => s.id === subPieceId);
+    const materialSlot = subPiece.materialSlots.find(m => m.id === materialSlotId);
+    materialSlot.value = _materialId;
+
+    const material = await loader.getDependency("material", _materialId.index);
+
+    if (materialSlot.value && materialSlot.value.id === materialId) {
+      materialSlot.object.material = material;
+
+      if (material.isMeshStandardMaterial) {
+        material.envMap = this.editor.scene.environmentMap;
+        material.needsUpdate = true;
+      }
+    }
+  }
+
+  async loadGLTF(src, pieceId, subPiecesConfig = {}) {
+    const loader = this.editor.gltfCache.getLoader(src);
+    const { json } = await loader.getDependency("root");
+
+    if (!Array.isArray(json.nodes)) {
+      throw new Error("glTF file has no nodes.");
+    }
+
+    const nodeIndex = json.nodes.findIndex(nodeDef => isKitPieceNode(nodeDef, pieceId));
+
+    if (nodeIndex === undefined) {
+      throw new Error(`Couldn't find kit piece with id ${pieceId}`);
+    }
+
+    const piece = await loader.getDependency("node", nodeIndex, {
+      cacheKey: `kit-piece:${pieceId}`,
+      loadDefaultMaterial: true
+    });
+
+    const clonedPiece = cloneObject3D(piece);
+
+    const materialIds = this.materialIds;
+    const materialDefs = json.materials || [];
+
+    materialIds.length = 0;
+
+    for (let i = 0; i < materialDefs.length; i++) {
+      const materialDef = materialDefs[i];
+      const materialId = getGLTFComponent(materialDef, "material-id");
+
+      if (materialId) {
+        materialIds.push({
+          index: i,
+          ...materialId
+        });
+      }
+    }
+
+    // TODO: Traverse the clonedPiece and load default materials for all of the sub-pieces
+    // Store each alt-material index, name, and mesh reference in the materialSlots array
+
+    this.subPieces.length = 0;
+
+    clonedPiece.traverse(object => {
+      const kitAltMaterials = getComponent(object, "kit-alt-materials");
+
+      if (kitAltMaterials) {
+        const { id, name, defaultMaterials, altMaterials } = kitAltMaterials;
+
+        // subPieceConfig = { [subpieceName]: materialId }
+        const subPieceConfig = subPiecesConfig[id] || {};
+
+        for (const { id, material: materialIndex } of defaultMaterials) {
+          if (!subPieceConfig[id]) {
+            const materialId = materialIds.find(m => m.index === materialIndex);
+            subPieceConfig[id] = materialId ? materialId.id : undefined;
+          }
+        }
+
+        if (defaultMaterials.length !== altMaterials.length) {
+          console.warn(
+            `Kit subPiece ${name} has ${defaultMaterials.length} default materials and ${altMaterials.length} alternate materials. They should be the same.`
+          );
+        }
+
+        const primitives = [];
+
+        object.traverse(o => {
+          if (o.isMesh && primitives.length < defaultMaterials.length) {
+            primitives.push(o);
+          }
+        });
+
+        if (defaultMaterials.length !== primitives.length) {
+          console.warn(
+            `Kit subPiece ${name} has ${defaultMaterials.length} default materials and ${primitives.length} primitives. They should be the same.`
+          );
+        }
+
+        const materialSlots = [];
+
+        for (let i = 0; i < defaultMaterials.length; i++) {
+          const { id, name, material: defaultMaterialIndex } = defaultMaterials[i];
+          const primitive = primitives[i];
+          const options = altMaterials[i].map(materialIndex => {
+            return materialIds.find(m => m.index === materialIndex);
+          });
+          const defaultValue = materialIds.find(m => m.index === defaultMaterialIndex);
+
+          // This could produce a duplicate material option if the default material is already in the list
+          options.push(defaultValue);
+
+          const value = materialIds.find(m => m.id === subPieceConfig[id]) || defaultValue;
+
+          materialSlots.push({
+            id,
+            name,
+            object: primitive,
+            value,
+            options
+          });
+        }
+
+        this.subPieces.push({
+          id,
+          name,
+          object,
+          materialSlots
+        });
+      }
+    });
+
+    const pendingMaterials = [];
+
+    for (const subPiece of this.subPieces) {
+      for (const { object, value } of subPiece.materialSlots) {
+        if (value) {
+          pendingMaterials.push(
+            loader.getDependency("material", value.index).then(material => (object.material = material))
+          );
+        }
+      }
+    }
+
+    await Promise.all(pendingMaterials);
+
+    return clonedPiece;
+  }
+
+  async load(kitId, pieceId, subPiecesConfig) {
+    const nextKitId = kitId || null;
     const nextPieceId = pieceId || null;
 
-    if (nextSrc === this._canonicalUrl && nextPieceId === this.pieceId) {
+    if (nextKitId === this.kitId && nextPieceId === this.pieceId) {
       return;
     }
 
-    // this._src = src;
-    // this._pieceId = pieceId;
-    this._canonicalUrl = nextSrc;
+    this._kitId = kitId;
+    this._pieceId = pieceId;
+
+    const source = this.editor.getSource(kitId);
 
     if (this.model) {
       this.editor.renderer.removeBatchedObject(this.model);
@@ -109,15 +265,17 @@ export default class KitPieceNode extends EditorNodeMixin(Model) {
       this.errorMesh = null;
     }
 
+    this._canonicalUrl = (source && source.kitUrl) || "";
+
     if (this._canonicalUrl && nextPieceId) {
       try {
-        const { accessibleUrl, files } = await this.editor.api.resolveMedia(src);
+        const { accessibleUrl, files } = await this.editor.api.resolveMedia(this._canonicalUrl);
 
         if (this.model) {
           this.editor.renderer.removeBatchedObject(this.model);
         }
 
-        await super.load(accessibleUrl, nextPieceId);
+        await super.load(accessibleUrl, nextPieceId, subPiecesConfig);
 
         if (this.model) {
           this.editor.renderer.addBatchedObject(this.model);
@@ -127,7 +285,7 @@ export default class KitPieceNode extends EditorNodeMixin(Model) {
           this.model.position.set(0, 0, 0);
 
           this.model.traverse(object => {
-            if (object.isKitSubPiece) {
+            if (object.userData.subPiece) {
               this.subPieces.push(object);
             }
           });
@@ -197,14 +355,23 @@ export default class KitPieceNode extends EditorNodeMixin(Model) {
   }
 
   serialize() {
+    const subPiecesConfig = {};
+
+    for (const subPiece of this.subPieces) {
+      const subPieceConfig = {};
+
+      for (const materialSlot of subPiece.materialSlots) {
+        subPieceConfig[materialSlot.id] = materialSlot.value ? materialSlot.value.id : null;
+      }
+
+      subPiecesConfig[subPiece.id] = subPieceConfig;
+    }
+
     const components = {
       "kit-piece": {
-        src: this._canonicalUrl,
+        kitId: this.kitId,
         pieceId: this.pieceId,
-        subPieces: this.subPieces.map(subPiece => ({
-          name: subPiece.name,
-          materialName: subPiece.material.name
-        }))
+        subPiecesConfig
       },
       shadow: {
         cast: this.castShadow,
@@ -234,15 +401,52 @@ export default class KitPieceNode extends EditorNodeMixin(Model) {
 
     this.updateStaticModes();
     this._canonicalUrl = source._canonicalUrl;
+    this._kitId = source._kitId;
+    this._pieceId = source._pieceId;
     this.collidable = source.collidable;
     this.walkable = source.walkable;
 
+    // TODO update the sub-piece copy method
     if (this.model) {
+      const subPieceObjects = {};
+
       this.model.traverse(object => {
-        if (object.isKitSubPiece) {
-          this.subPieces.push(object);
+        const kitAltMaterials = getComponent(object, "kit-alt-materials");
+        if (kitAltMaterials) {
+          subPieceObjects[kitAltMaterials.id] = object;
         }
       });
+
+      for (const subPiece of source.subPieces) {
+        const subPieceObject = subPieceObjects[subPiece.id];
+
+        const primitives = [];
+
+        subPieceObject.traverse(o => {
+          if (o.isMesh && primitives.length < subPiece.materialSlots.length) {
+            primitives.push(o);
+          }
+        });
+
+        const materialSlots = [];
+
+        for (let i = 0; i < primitives.length; i++) {
+          const materialSlot = subPiece.materialSlots[i];
+
+          materialSlots.push({
+            ...materialSlot,
+            object: primitives[i]
+          });
+        }
+
+        this.subPieces.push({
+          ...subPiece,
+          object: subPieceObject,
+          materialSlots
+        });
+      }
+
+      this.materialIds = source.materialIds.slice(0);
     }
 
     return this;
@@ -273,6 +477,12 @@ export default class KitPieceNode extends EditorNodeMixin(Model) {
     if (this.model) {
       // Clear kit-piece extension data
       this.model.userData = {};
+
+      this.model.traverse(child => {
+        if (child.userData.subPiece) {
+          delete child.userData.subPiece;
+        }
+      });
     }
   }
 }

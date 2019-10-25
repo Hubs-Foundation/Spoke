@@ -120,6 +120,11 @@ const GlobalStyle = createGlobalStyle`
     flex: 1;
   }
 
+  html, body, #app {
+    width: 100%;
+    height: 100%;
+  }
+
   body {
     font-family: ${props => props.theme.lato};
     font-size: 12px;

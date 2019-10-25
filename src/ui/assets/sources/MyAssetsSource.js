@@ -25,7 +25,6 @@ export default class MyAssetsSource extends BaseSource {
     this.id = "assets";
     this.name = "My Assets";
     this.tags = [
-      { label: "All", value: "" },
       { label: "Models", value: "model" },
       { label: "Images", value: "image" },
       { label: "Videos", value: "video" }

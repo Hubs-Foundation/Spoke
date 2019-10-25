@@ -84,8 +84,10 @@ class UnlitRenderMode extends RenderMode {
       }
     });
 
-    for (const batch of this.spokeRenderer.batchManager.batches) {
-      batch.visible = !this.disableBatching;
+    if (this.spokeRenderer.batchManager) {
+      for (const batch of this.spokeRenderer.batchManager.batches) {
+        batch.visible = !this.disableBatching;
+      }
     }
 
     this.renderPass.scene = this.editor.scene;
@@ -155,13 +157,19 @@ export default class Renderer {
 
     this.renderMode = new LitRenderMode(renderer, editor, this);
     this.shadowsRenderMode = new ShadowsRenderMode(renderer, editor, this);
-    this.renderModes = [
-      new UnlitRenderMode(renderer, editor, this),
+
+    this.renderModes = [];
+
+    if (this.renderer.capabilities.isWebGL2) {
+      this.renderModes.push(new UnlitRenderMode(renderer, editor, this));
+    }
+
+    this.renderModes.push(
       this.renderMode,
       this.shadowsRenderMode,
       new WireframeRenderMode(renderer, editor, this),
       new NormalsRenderMode(renderer, editor, this)
-    ];
+    );
 
     this.screenshotRenderer = makeRenderer(1920, 1080);
 
@@ -172,7 +180,10 @@ export default class Renderer {
   }
 
   update(dt) {
-    this.batchManager.update();
+    if (this.batchManager) {
+      this.batchManager.update();
+    }
+
     this.renderMode.render(dt);
   }
 
@@ -183,9 +194,11 @@ export default class Renderer {
   }
 
   onSceneSet = () => {
-    this.batchManager = new BatchManager(this.editor.scene, this.renderer, {
-      ubo: new SpokeBatchRawUniformGroup(512)
-    });
+    if (this.renderer.capabilities.isWebGL2) {
+      this.batchManager = new BatchManager(this.editor.scene, this.renderer, {
+        ubo: new SpokeBatchRawUniformGroup(512)
+      });
+    }
     this.renderMode.onSceneSet();
   };
 

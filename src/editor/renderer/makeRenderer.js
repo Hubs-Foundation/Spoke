@@ -5,7 +5,13 @@ export default function makeRenderer(width, height, { canvas, ...rest } = {}) {
     canvas = document.createElement("canvas");
   }
 
-  const context = canvas.getContext("webgl2", { antialias: true });
+  let context;
+
+  try {
+    context = canvas.getContext("webgl2", { antialias: true });
+  } catch (error) {
+    context = canvas.getContext("webgl", { antialias: true });
+  }
 
   const renderer = new WebGLRenderer({
     ...rest,

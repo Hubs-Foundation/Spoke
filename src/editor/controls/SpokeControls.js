@@ -104,6 +104,7 @@ export default class SpokeControls extends EventEmitter {
     this.editor.helperScene.add(this.transformGizmo);
 
     this.transformMode = TransformMode.Translate;
+    this.multiplePlacement = false;
     this.transformModeOnCancel = TransformMode.Translate;
     this.transformSpace = TransformSpace.World;
     this.transformPivot = TransformPivot.Selection;
@@ -111,10 +112,11 @@ export default class SpokeControls extends EventEmitter {
     this.grabHistoryCheckpoint = null;
     this.placementObjects = [];
 
-    this.snapMode = SnapMode.Disabled;
-    this.translationSnap = 1;
+    this.snapMode = SnapMode.Grid;
+    this.translationSnap = 0.5;
     this.rotationSnap = 90;
     this.scaleSnap = 0.1;
+    this.editor.grid.setSize(this.translationSnap);
 
     this.selectionBoundingBox = new Box3();
     this.selectStartPosition = new Vector2();
@@ -146,6 +148,9 @@ export default class SpokeControls extends EventEmitter {
     this.transformModeChanged = true;
     this.transformPivotChanged = true;
     this.transformSpaceChanged = true;
+
+    this.flyStartTime = 0;
+    this.flyModeSensitivity = 0.25;
 
     this.editor.addListener("beforeSelectionChanged", this.onBeforeSelectionChanged);
     this.editor.addListener("selectionChanged", this.onSelectionChanged);
@@ -193,15 +198,7 @@ export default class SpokeControls extends EventEmitter {
     const input = this.inputManager;
 
     if (input.get(Spoke.enableFlyMode)) {
-      this.flyControls.enable();
-      this.initialLookSensitivity = this.flyControls.lookSensitivity;
-      this.initialMoveSpeed = this.flyControls.moveSpeed;
-      this.initialBoostSpeed = this.flyControls.boostSpeed;
-      this.flyControls.lookSensitivity = this.lookSensitivity;
-      this.flyControls.moveSpeed = this.moveSpeed;
-      this.flyControls.boostSpeed = this.boostSpeed;
-      this.distance = this.camera.position.distanceTo(this.center);
-      this.emit("flyModeChanged");
+      this.flyStartTime = performance.now();
     } else if (input.get(Spoke.disableFlyMode)) {
       this.flyControls.disable();
       this.flyControls.lookSensitivity = this.initialLookSensitivity;
@@ -212,9 +209,25 @@ export default class SpokeControls extends EventEmitter {
         this.vector.set(0, 0, -this.distance).applyMatrix3(this.normalMatrix.getNormalMatrix(this.camera.matrix))
       );
       this.emit("flyModeChanged");
+      if (performance.now() - this.flyStartTime < this.flyModeSensitivity * 1000) {
+        this.cancel();
+        return;
+      }
     }
 
-    const flying = input.get(Spoke.flying);
+    if (input.get(Spoke.flying) && !this.flyControls.enabled && performance.now() - this.flyStartTime > 100) {
+      this.flyControls.enable();
+      this.initialLookSensitivity = this.flyControls.lookSensitivity;
+      this.initialMoveSpeed = this.flyControls.moveSpeed;
+      this.initialBoostSpeed = this.flyControls.boostSpeed;
+      this.flyControls.lookSensitivity = this.lookSensitivity;
+      this.flyControls.moveSpeed = this.moveSpeed;
+      this.flyControls.boostSpeed = this.boostSpeed;
+      this.distance = this.camera.position.distanceTo(this.center);
+      this.emit("flyModeChanged");
+    }
+
+    const flying = this.flyControls.enabled;
 
     const shift = input.get(Spoke.shift);
 
@@ -536,7 +549,11 @@ export default class SpokeControls extends EventEmitter {
         }
 
         if (this.transformMode === TransformMode.Placement) {
-          this.editor.duplicateSelected(undefined, undefined, true, true, false);
+          if (shift || input.get(Fly.boost) || this.multiplePlacement) {
+            this.editor.duplicateSelected(undefined, undefined, true, true, false);
+          } else {
+            this.setTransformMode(this.transformModeOnCancel);
+          }
         }
       } else {
         const selectEndPosition = input.get(Spoke.selectEndPosition);
@@ -743,7 +760,7 @@ export default class SpokeControls extends EventEmitter {
     if (
       (excludeObjects && excludeObjects.indexOf(object) !== -1) ||
       (excludeLayers && excludeLayers.test(object.layers)) ||
-      this.editor.renderer.batchManager.batches.indexOf(object) !== -1
+      (this.editor.renderer.batchManager && this.editor.renderer.batchManager.batches.indexOf(object) !== -1)
     ) {
       return;
     }
@@ -782,7 +799,7 @@ export default class SpokeControls extends EventEmitter {
     }
   }
 
-  setTransformMode(mode) {
+  setTransformMode(mode, multiplePlacement) {
     if (
       (mode === TransformMode.Placement || mode === TransformMode.Grab) &&
       this.editor.selected.some(node => node.disableTransform) // TODO: this doesn't prevent nesting and then grabbing
@@ -800,6 +817,8 @@ export default class SpokeControls extends EventEmitter {
     } else {
       this.placementObjects = [];
     }
+
+    this.multiplePlacement = multiplePlacement || false;
 
     this.grabHistoryCheckpoint = null;
     this.transformMode = mode;

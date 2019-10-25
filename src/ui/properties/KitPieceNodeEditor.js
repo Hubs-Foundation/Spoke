@@ -13,11 +13,79 @@ const SubPiecesHeader = styled.div`
 `;
 
 const SubPiecesContainer = styled.div`
-  margin: 8px;
-  padding: 8px;
+  display: flex;
+  flex-direction: column;
+`;
+
+const SubPieceItemContainer = styled.div`
+  display: flex;
+  flex-direction: column;
   background-color: ${props => props.theme.panel2};
   border-radius: 4px;
+  margin: 8px;
 `;
+
+const SubPieceItemTitle = styled.div`
+  display: flex;
+  color: ${props => props.theme.text2};
+  align-items: center;
+  background-color: ${props => props.theme.toolbar};
+  padding: 8px;
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
+`;
+
+const MaterialSlotList = styled.div`
+  display: flex;
+  flex-direction: column;
+  margin-left: 12px;
+  padding: 8px;
+`;
+
+const MaterialSlotItemContainer = styled.div`
+  display: flex;
+  padding: 4px 0;
+`;
+
+const MaterialSlotItemTitle = styled.div`
+  display: flex;
+  color: ${props => props.theme.text2};
+  align-items: center;
+`;
+
+const MaterialSlotContent = styled.div`
+  display: flex;
+  padding: 0 8px;
+  flex: 1;
+`;
+
+function SubPieceItem({ name, children, ...rest }) {
+  return (
+    <SubPieceItemContainer {...rest}>
+      <SubPieceItemTitle>{name}</SubPieceItemTitle>
+      <MaterialSlotList>{children}</MaterialSlotList>
+    </SubPieceItemContainer>
+  );
+}
+
+SubPieceItem.propTypes = {
+  name: PropTypes.string,
+  children: PropTypes.node
+};
+
+function MaterialSlotItem({ name, children, ...rest }) {
+  return (
+    <MaterialSlotItemContainer {...rest}>
+      <MaterialSlotItemTitle>{name} Material</MaterialSlotItemTitle>
+      <MaterialSlotContent>{children}</MaterialSlotContent>
+    </MaterialSlotItemContainer>
+  );
+}
+
+MaterialSlotItem.propTypes = {
+  name: PropTypes.string,
+  children: PropTypes.node
+};
 
 export default class KitPieceNodeEditor extends Component {
   static propTypes = {
@@ -29,25 +97,8 @@ export default class KitPieceNodeEditor extends Component {
 
   static description = "";
 
-  componentDidMount() {
-    this.props.editor.addListener("objectsChanged", this.onObjectsChanged);
-  }
-
-  componentWillUnmount() {
-    this.props.editor.removeListener("objectsChanged", this.onObjectsChanged);
-  }
-
-  onObjectsChanged = objects => {
-    for (const object of objects) {
-      if (this.props.node.subPieces.indexOf(object) !== -1) {
-        this.forceUpdate();
-        return;
-      }
-    }
-  };
-
-  onChangeSubPieceMaterial = (subPiece, material) => {
-    this.props.editor.setProperty(subPiece, "material", material, true, true, true);
+  onChangeMaterialSlot = (subPiece, materialSlot, materialId) => {
+    this.props.editor.loadMaterialSlot(this.props.node, subPiece.id, materialSlot.id, materialId);
   };
 
   onChangeAnimation = activeClipIndex => {
@@ -75,19 +126,21 @@ export default class KitPieceNodeEditor extends Component {
 
     return (
       <NodeEditor {...this.props} description={KitPieceNodeEditor.description}>
-        <SubPiecesHeader>Materials:</SubPiecesHeader>
+        <SubPiecesHeader>Sub Pieces:</SubPiecesHeader>
         <SubPiecesContainer>
-          {node.subPieces.map(subPiece => {
-            return (
-              <InputGroup key={subPiece.id} name={subPiece.name}>
-                <SelectInput
-                  options={subPiece.materialChoices.map(material => ({ label: material.name, value: material }))}
-                  value={subPiece.material}
-                  onChange={material => this.onChangeSubPieceMaterial(subPiece, material)}
-                />
-              </InputGroup>
-            );
-          })}
+          {node.subPieces.map(subPiece => (
+            <SubPieceItem key={"subPiece-" + subPiece.id} name={subPiece.name}>
+              {subPiece.materialSlots.map(materialSlot => (
+                <MaterialSlotItem key={"materialSlot-" + materialSlot.id} name={materialSlot.name}>
+                  <SelectInput
+                    options={materialSlot.options.map(o => ({ value: o.id, label: o.name }))}
+                    value={materialSlot.value ? materialSlot.value.id : null}
+                    onChange={(value, option) => this.onChangeMaterialSlot(subPiece, materialSlot, value, option)}
+                  />
+                </MaterialSlotItem>
+              ))}
+            </SubPieceItem>
+          ))}
         </SubPiecesContainer>
         <InputGroup name="Loop Animation">
           <SelectInput options={node.getClipOptions()} value={node.activeClipIndex} onChange={this.onChangeAnimation} />

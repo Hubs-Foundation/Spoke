@@ -54,14 +54,48 @@ export default class KitSource extends BaseSource {
             nodeClass: KitPieceNode,
             initialProps: {
               name,
-              src: this.kitUrl,
+              kitId: this.id,
               pieceId: id
             }
           });
         }
       }
 
-      this.tags = Array.from(tagsSet).map(label => ({ label, value: label }));
+      const uniqueTags = Array.from(tagsSet);
+
+      const tagTree = [];
+
+      for (const tag of uniqueTags) {
+        const parts = tag.split("/");
+
+        let curPart = parts.shift();
+        let curArray = tagTree;
+
+        while (curPart) {
+          let curNode = curArray.find(n => n.label === curPart);
+
+          if (!curNode) {
+            curNode = {
+              label: curPart,
+              value: tag
+            };
+
+            curArray.push(curNode);
+          }
+
+          curPart = parts.shift();
+
+          if (curPart) {
+            if (!curNode.children) {
+              curNode.children = [];
+            }
+
+            curArray = curNode.children;
+          }
+        }
+      }
+
+      this.tags = tagTree;
     }
 
     const options = {
