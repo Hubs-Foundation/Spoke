@@ -54,7 +54,7 @@ export default class KitSource extends BaseSource {
             nodeClass: KitPieceNode,
             initialProps: {
               name,
-              src: this.kitUrl,
+              kitId: this.id,
               pieceId: id
             }
           });

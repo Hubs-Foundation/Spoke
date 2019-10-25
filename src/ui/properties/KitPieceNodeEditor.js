@@ -44,6 +44,7 @@ const MaterialSlotList = styled.div`
 
 const MaterialSlotItemContainer = styled.div`
   display: flex;
+  padding: 4px 0;
 `;
 
 const MaterialSlotItemTitle = styled.div`

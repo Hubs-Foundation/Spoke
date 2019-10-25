@@ -19,9 +19,9 @@ export default class KitPieceNode extends EditorNodeMixin(Model) {
 
     loadAsync(
       (async () => {
-        const { src, pieceId, subPiecesConfig } = json.components.find(c => c.name === "kit-piece").props;
+        const { kitId, pieceId, subPiecesConfig } = json.components.find(c => c.name === "kit-piece").props;
 
-        await node.load(src, pieceId, subPiecesConfig);
+        await node.load(kitId || "architecture-kit", pieceId, subPiecesConfig);
 
         node.collidable = !!json.components.find(c => c.name === "collidable");
         node.walkable = !!json.components.find(c => c.name === "walkable");
@@ -57,6 +57,7 @@ export default class KitPieceNode extends EditorNodeMixin(Model) {
     this._canonicalUrl = "";
     this.collidable = true;
     this.walkable = true;
+    this._kitId = null;
     this._pieceId = null;
     this.subPieces = [];
     this.materialIds = [];
@@ -67,6 +68,14 @@ export default class KitPieceNode extends EditorNodeMixin(Model) {
   }
 
   set src(value) {
+    throw new Error("Cannot set src directly on a KitPieceNode");
+  }
+
+  get kitId() {
+    return this._kitId;
+  }
+
+  set kitId(value) {
     this.load(value, this.pieceId).catch(console.error);
   }
 
@@ -75,7 +84,7 @@ export default class KitPieceNode extends EditorNodeMixin(Model) {
   }
 
   set pieceId(value) {
-    this.load(this.src, value).catch(console.error);
+    this.load(this.kitId, value).catch(console.error);
   }
 
   getMaterialIdForMaterialSlot(subPieceId, materialSlotId) {
@@ -191,6 +200,10 @@ export default class KitPieceNode extends EditorNodeMixin(Model) {
             return materialIds.find(m => m.index === materialIndex);
           });
           const defaultValue = materialIds.find(m => m.index === defaultMaterialIndex);
+
+          // This could produce a duplicate material option if the default material is already in the list
+          options.push(defaultValue);
+
           const value = materialIds.find(m => m.id === subPieceConfig[id]) || defaultValue;
 
           materialSlots.push({
@@ -228,16 +241,18 @@ export default class KitPieceNode extends EditorNodeMixin(Model) {
     return clonedPiece;
   }
 
-  async load(src, pieceId, subPiecesConfig) {
-    const nextSrc = src || "";
+  async load(kitId, pieceId, subPiecesConfig) {
+    const nextKitId = kitId || null;
     const nextPieceId = pieceId || null;
 
-    if (nextSrc === this._canonicalUrl && nextPieceId === this.pieceId) {
+    if (nextKitId === this.kitId && nextPieceId === this.pieceId) {
       return;
     }
 
+    this._kitId = kitId;
     this._pieceId = pieceId;
-    this._canonicalUrl = nextSrc;
+
+    const source = this.editor.getSource(kitId);
 
     if (this.model) {
       this.editor.renderer.removeBatchedObject(this.model);
@@ -250,9 +265,11 @@ export default class KitPieceNode extends EditorNodeMixin(Model) {
       this.errorMesh = null;
     }
 
+    this._canonicalUrl = (source && source.kitUrl) || "";
+
     if (this._canonicalUrl && nextPieceId) {
       try {
-        const { accessibleUrl, files } = await this.editor.api.resolveMedia(src);
+        const { accessibleUrl, files } = await this.editor.api.resolveMedia(this._canonicalUrl);
 
         if (this.model) {
           this.editor.renderer.removeBatchedObject(this.model);
@@ -352,7 +369,7 @@ export default class KitPieceNode extends EditorNodeMixin(Model) {
 
     const components = {
       "kit-piece": {
-        src: this._canonicalUrl,
+        kitId: this.kitId,
         pieceId: this.pieceId,
         subPiecesConfig
       },
@@ -384,6 +401,7 @@ export default class KitPieceNode extends EditorNodeMixin(Model) {
 
     this.updateStaticModes();
     this._canonicalUrl = source._canonicalUrl;
+    this._kitId = source._kitId;
     this._pieceId = source._pieceId;
     this.collidable = source.collidable;
     this.walkable = source.walkable;

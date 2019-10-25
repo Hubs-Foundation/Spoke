@@ -174,6 +174,10 @@ export default class Editor extends EventEmitter {
     this.sources.push(source);
   }
 
+  getSource(sourceId) {
+    return this.sources.find(source => source.id === sourceId);
+  }
+
   setSource(sourceId) {
     this.emit("setSource", sourceId);
   }
