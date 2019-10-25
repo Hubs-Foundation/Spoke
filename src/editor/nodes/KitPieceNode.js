@@ -122,6 +122,10 @@ export default class KitPieceNode extends EditorNodeMixin(Model) {
 
     const nodeIndex = json.nodes.findIndex(nodeDef => isKitPieceNode(nodeDef, pieceId));
 
+    if (nodeIndex == -1) {
+      throw new Error(`Could not find node definition for piece ${pieceId}`);
+    }
+
     if (nodeIndex === undefined) {
       throw new Error(`Couldn't find kit piece with id ${pieceId}`);
     }
@@ -130,6 +134,10 @@ export default class KitPieceNode extends EditorNodeMixin(Model) {
       cacheKey: `kit-piece:${pieceId}`,
       loadDefaultMaterial: true
     });
+
+    if (!piece) {
+      throw new Error(`Could not load node for piece ${pieceId}`);
+    }
 
     const clonedPiece = cloneObject3D(piece);
 
