@@ -116,6 +116,7 @@ export default class SpokeControls extends EventEmitter {
     this.translationSnap = 0.5;
     this.rotationSnap = 90;
     this.scaleSnap = 0.1;
+    this.editor.grid.setSize(this.translationSnap);
 
     this.selectionBoundingBox = new Box3();
     this.selectStartPosition = new Vector2();
