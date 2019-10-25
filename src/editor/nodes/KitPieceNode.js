@@ -10,6 +10,8 @@ export default class KitPieceNode extends EditorNodeMixin(Model) {
 
   static experimental = true;
 
+  static hideInElementsPanel = true;
+
   static useMultiplePlacementMode = true;
 
   static nodeName = "Kit Piece";
@@ -89,15 +91,31 @@ export default class KitPieceNode extends EditorNodeMixin(Model) {
 
   getMaterialIdForMaterialSlot(subPieceId, materialSlotId) {
     const subPiece = this.subPieces.find(s => s.id === subPieceId);
-    const materialSlot = subPiece.materialSlots.find(m => m.id === materialSlotId);
-    return materialSlot.value ? materialSlot.value.id : undefined;
+    const materialSlot = subPiece && subPiece.materialSlots.find(m => m.id === materialSlotId);
+    return materialSlot && materialSlot.value ? materialSlot.value.id : undefined;
   }
 
   async loadMaterialSlot(subPieceId, materialSlotId, materialId) {
-    const loader = this.editor.gltfCache.getLoader(this._src);
-    const _materialId = this.materialIds.find(m => m.id === materialId);
     const subPiece = this.subPieces.find(s => s.id === subPieceId);
+
+    if (!subPiece) {
+      return;
+    }
+
     const materialSlot = subPiece.materialSlots.find(m => m.id === materialSlotId);
+
+    if (!materialSlot) {
+      return;
+    }
+
+    const _materialId = this.materialIds.find(m => m.id === materialId);
+
+    if (!_materialId) {
+      return;
+    }
+
+    const loader = this.editor.gltfCache.getLoader(this._src);
+
     materialSlot.value = _materialId;
 
     const material = await loader.getDependency("material", _materialId.index);

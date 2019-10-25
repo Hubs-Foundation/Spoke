@@ -78,6 +78,7 @@ import TranslateMultipleCommand from "./commands/TranslateMultipleCommand";
 import GroupMultipleCommand from "./commands/GroupMultipleCommand";
 import ReparentMultipleWithPositionCommand from "./commands/ReparentMultipleWithPositionCommand";
 import LoadMaterialSlotCommand from "./commands/LoadMaterialSlotCommand";
+import LoadMaterialSlotMultipleCommand from "./commands/LoadMaterialSlotMultipleCommand";
 
 import GroupNode from "./nodes/GroupNode";
 import ModelNode from "./nodes/ModelNode";
@@ -1728,7 +1729,7 @@ export default class Editor extends EventEmitter {
   }
 
   setPropertiesSelected(properties, useHistory = true, emitEvent = true) {
-    return this.setPropertyMultiple(this.selected, properties, useHistory, emitEvent);
+    return this.setPropertiesMultiple(this.selected, properties, useHistory, emitEvent);
   }
 
   loadMaterialSlot(object, subPieceId, materialSlotId, materialId, useHistory = true, emitEvent = true) {
@@ -1747,6 +1748,32 @@ export default class Editor extends EventEmitter {
     }
 
     return object;
+  }
+
+  loadMaterialSlotMultiple(objects, subPieceId, materialSlotId, materialId, useHistory = true, emitEvent = true) {
+    if (useHistory) {
+      return this.history.execute(
+        new LoadMaterialSlotMultipleCommand(this, objects, subPieceId, materialSlotId, materialId)
+      );
+    }
+
+    for (const object of objects) {
+      object.loadMaterialSlot(subPieceId, materialSlotId, materialId).catch(console.error);
+
+      if (object.onChange) {
+        object.onChange("materialSlot");
+      }
+    }
+
+    if (emitEvent) {
+      this.emit("objectsChanged", objects, "materialSlot");
+    }
+
+    return objects;
+  }
+
+  loadMaterialSlotSelected(subPieceId, materialSlotId, materialId, useHistory = true, emitEvent = true) {
+    return this.loadMaterialSlotMultiple(this.selected, subPieceId, materialSlotId, materialId, useHistory, emitEvent);
   }
 
   getRootObjects(objects, target = [], filterUnremovable = true, filterUntransformable = false) {

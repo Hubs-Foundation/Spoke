@@ -23,6 +23,8 @@ export default function EditorNodeMixin(Object3DClass) {
     // Used for props like src that have side effects that we don't want to happen in the constructor
     static initialElementProps = {};
 
+    static hideInElementsPanel = false;
+
     static canAddNode(_editor) {
       return true;
     }

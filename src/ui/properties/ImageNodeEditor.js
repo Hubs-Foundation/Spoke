@@ -20,11 +20,11 @@ export default class ImageNodeEditor extends Component {
   static description = "Dynamically loads an image.";
 
   onChangeSrc = src => {
-    this.props.editor.setProperty(this.props.node, "src", src);
+    this.props.editor.setPropertySelected("src", src);
   };
 
   onChangeProjection = value => {
-    this.props.editor.setProperty(this.props.node, "projection", value);
+    this.props.editor.setPropertySelected("projection", value);
   };
 
   render() {
