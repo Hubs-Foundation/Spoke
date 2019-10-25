@@ -209,13 +209,15 @@ export default class SpokeControls extends EventEmitter {
         this.vector.set(0, 0, -this.distance).applyMatrix3(this.normalMatrix.getNormalMatrix(this.camera.matrix))
       );
       this.emit("flyModeChanged");
+
       if (performance.now() - this.flyStartTime < this.flyModeSensitivity * 1000) {
         this.cancel();
-        return;
       }
     }
 
-    if (input.get(Spoke.flying) && !this.flyControls.enabled && performance.now() - this.flyStartTime > 100) {
+    const flying = input.get(Spoke.flying);
+
+    if (flying && !this.flyControls.enabled && performance.now() - this.flyStartTime > 100) {
       this.flyControls.enable();
       this.initialLookSensitivity = this.flyControls.lookSensitivity;
       this.initialMoveSpeed = this.flyControls.moveSpeed;
@@ -226,8 +228,6 @@ export default class SpokeControls extends EventEmitter {
       this.distance = this.camera.position.distanceTo(this.center);
       this.emit("flyModeChanged");
     }
-
-    const flying = this.flyControls.enabled;
 
     const shift = input.get(Spoke.shift);
 
