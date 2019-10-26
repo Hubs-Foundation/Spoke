@@ -21,7 +21,7 @@ export default class LoadMaterialSlotMultipleCommand extends Command {
       this.editor.loadMaterialSlot(object, this.subPieceId, this.materialSlotId, this.prevMaterialIds[i], false, false);
     }
 
-    this.emit("objectsChanged", this.objects, "materialSlot");
+    this.editor.emit("objectsChanged", this.objects, "materialSlot");
   }
 
   toString() {
