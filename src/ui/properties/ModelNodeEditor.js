@@ -10,7 +10,8 @@ import { Cube } from "styled-icons/fa-solid/Cube";
 export default class ModelNodeEditor extends Component {
   static propTypes = {
     editor: PropTypes.object,
-    node: PropTypes.object
+    node: PropTypes.object,
+    multiEdit: PropTypes.bool
   };
 
   static iconComponent = Cube;
@@ -18,32 +19,39 @@ export default class ModelNodeEditor extends Component {
   static description = "A 3D model in your scene, loaded from a GLTF URL or file.";
 
   onChangeSrc = (src, { scaleToFit }) => {
-    if (scaleToFit) {
-      this.props.node.scaleToFit = scaleToFit;
-    }
-
-    this.props.editor.setProperty(this.props.node, "src", src);
+    console.log(src, scaleToFit);
+    this.props.editor.setPropertiesSelected({ scaleToFit: scaleToFit || false, src });
   };
 
   onChangeAnimation = activeClipIndex => {
-    this.props.editor.setProperty(this.props.node, "activeClipIndex", activeClipIndex);
+    this.props.editor.setPropertySelected("activeClipIndex", activeClipIndex);
   };
 
   onChangeCollidable = collidable => {
-    this.props.editor.setProperty(this.props.node, "collidable", collidable);
+    this.props.editor.setPropertySelected("collidable", collidable);
   };
 
   onChangeWalkable = walkable => {
-    this.props.editor.setProperty(this.props.node, "walkable", walkable);
+    this.props.editor.setPropertySelected("walkable", walkable);
   };
 
   onChangeCastShadow = castShadow => {
-    this.props.editor.setProperty(this.props.node, "castShadow", castShadow);
+    this.props.editor.setPropertySelected("castShadow", castShadow);
   };
 
   onChangeReceiveShadow = receiveShadow => {
-    this.props.editor.setProperty(this.props.node, "receiveShadow", receiveShadow);
+    this.props.editor.setPropertySelected("receiveShadow", receiveShadow);
   };
+
+  isAnimationPropertyDisabled() {
+    const { multiEdit, editor, node } = this.props;
+
+    if (multiEdit) {
+      return editor.selected.some(selectedNode => selectedNode.src !== node.src);
+    }
+
+    return false;
+  }
 
   render() {
     const node = this.props.node;
@@ -54,7 +62,12 @@ export default class ModelNodeEditor extends Component {
           <ModelInput value={node.src} onChange={this.onChangeSrc} />
         </InputGroup>
         <InputGroup name="Loop Animation">
-          <SelectInput options={node.getClipOptions()} value={node.activeClipIndex} onChange={this.onChangeAnimation} />
+          <SelectInput
+            disabled={this.isAnimationPropertyDisabled()}
+            options={node.getClipOptions()}
+            value={node.activeClipIndex}
+            onChange={this.onChangeAnimation}
+          />
         </InputGroup>
         <InputGroup name="Collidable">
           <BooleanInput value={node.collidable} onChange={this.onChangeCollidable} />

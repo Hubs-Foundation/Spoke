@@ -33,7 +33,7 @@ export default class ElementsSource extends BaseSource {
         return acc;
       }
 
-      if (nodeType.experimental && !this.enableExperimentalFeatures) {
+      if ((nodeType.experimental && !this.enableExperimentalFeatures) || nodeType.hideInElementsPanel) {
         return acc;
       }
 

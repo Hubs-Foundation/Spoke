@@ -19,7 +19,8 @@ const distanceModelOptions = Object.values(DistanceModelType).map(v => ({ label:
 export default class VideoNodeEditor extends Component {
   static propTypes = {
     editor: PropTypes.object,
-    node: PropTypes.object
+    node: PropTypes.object,
+    multiEdit: PropTypes.bool
   };
 
   static iconComponent = Video;
@@ -28,7 +29,7 @@ export default class VideoNodeEditor extends Component {
 
   constructor(props) {
     super(props);
-    const createPropSetter = propName => value => this.props.editor.setProperty(this.props.node, propName, value);
+    const createPropSetter = propName => value => this.props.editor.setPropertySelected(propName, value);
     this.onChangeSrc = createPropSetter("src");
     this.onChangeProjection = createPropSetter("projection");
     this.onChangeControls = createPropSetter("controls");
@@ -46,7 +47,9 @@ export default class VideoNodeEditor extends Component {
   }
 
   render() {
-    const node = this.props.node;
+    const { node, multiEdit } = this.props;
+
+    // TODO: Make video node audio settings work with multi-edit
 
     return (
       <NodeEditor description={VideoNodeEditor.description} {...this.props}>
@@ -71,7 +74,7 @@ export default class VideoNodeEditor extends Component {
         <InputGroup name="Volume">
           <CompoundNumericInput value={node.volume} onChange={this.onChangeVolume} />
         </InputGroup>
-        {node.audioType === AudioType.PannerNode && (
+        {!multiEdit && node.audioType === AudioType.PannerNode && (
           <Fragment>
             <InputGroup name="Distance Model">
               <SelectInput
@@ -134,6 +137,7 @@ export default class VideoNodeEditor extends Component {
               value={node.coneInnerAngle}
               onChange={this.onChangeConeInnerAngle}
               unit="°"
+              disabled={multiEdit}
             />
             <NumericInputGroup
               name="Cone Outer Angle"
@@ -145,6 +149,7 @@ export default class VideoNodeEditor extends Component {
               value={node.coneOuterAngle}
               onChange={this.onChangeConeOuterAngle}
               unit="°"
+              disabled={multiEdit}
             />
             <InputGroup name="Cone Outer Gain">
               <CompoundNumericInput

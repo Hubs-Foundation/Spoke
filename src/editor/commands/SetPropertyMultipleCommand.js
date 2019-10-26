@@ -38,7 +38,7 @@ export default class SetPropertyMultipleCommand extends Command {
       this.newValue = newValue;
     }
 
-    this.editor.setPropertyMultiple(this.object, this.propertyName, this.newValue, false);
+    this.editor.setPropertyMultiple(this.objects, this.propertyName, this.newValue, false);
   }
 
   undo() {
