@@ -230,7 +230,7 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
       heightfieldMesh.position.set(heightfield.offset.x, 0, heightfield.offset.z);
 
       if (this.editor.selected.indexOf(this) !== -1) {
-        this.heightfieldMesh.visible = false;
+        this.heightfieldMesh.visible = true;
       }
     } else {
       const trimesh = new Mesh(collidableGeometry, new MeshBasicMaterial({ wireframe: true, color: 0xff0000 }));
