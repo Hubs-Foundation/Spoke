@@ -217,7 +217,7 @@ export default function EditorNodeMixin(Object3DClass) {
         }
       }
 
-      this.userData.gltfExtensions.MOZ_hubs_components[name] = props;
+      this.userData.gltfExtensions.MOZ_hubs_components[name] = componentProps;
     }
 
     replaceObject(replacementObject) {
