@@ -92,7 +92,7 @@ export function VideoMediaGridItem({ label, src, ...rest }) {
   return (
     <MediaGridItemContainer {...rest}>
       <MediaGridItemContent>
-        <MediaGridItemThumbnailVideo title={label} autoPlay src={src} />
+        <MediaGridItemThumbnailVideo title={label} autoPlay muted src={src} />
       </MediaGridItemContent>
     </MediaGridItemContainer>
   );
