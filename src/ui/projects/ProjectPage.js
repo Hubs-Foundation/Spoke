@@ -5,7 +5,7 @@ import { withApi } from "../contexts/ApiContext";
 import EditorContainer from "../EditorContainer";
 import Loading from "../Loading";
 import Error from "../Error";
-import defaultTemplateUrl from "../../assets/templates/default.spoke";
+import defaultTemplateUrl from "../../assets/templates/crater.spoke";
 import tutorialTemplateUrl from "../../assets/templates/tutorial.spoke";
 
 class ProjectPage extends Component {

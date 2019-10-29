@@ -25,10 +25,25 @@ import trippytunnelTemplateThumbnail from "../../assets/templates/trippy-tunnel.
 import wideopenTemplateUrl from "../../assets/templates/wide-open-space.spoke";
 import wideopenTemplateThumbnail from "../../assets/templates/wide-open-space.jpg";
 
-import openTerrainTemplateUrl from "../../assets/templates/tutorial.spoke";
-import openTerrainTemplateThumbnail from "../../assets/templates/tutorial.jpg";
+import craterTemplateUrl from "../../assets/templates/crater.spoke";
+import craterTemplateThumbnail from "../../assets/templates/crater.jpg";
+
+import surroundedLakeTemplateUrl from "../../assets/templates/surrounded-lake.spoke";
+import surroundedLakeTemplateThumbnail from "../../assets/templates/surrounded-lake.jpg";
 
 const templates = [
+  {
+    id: "crater",
+    name: "Crater",
+    thumbnailUrl: craterTemplateThumbnail,
+    url: craterTemplateUrl
+  },
+  {
+    id: "surroundedlake",
+    name: "Surrounded Lake",
+    thumbnailUrl: surroundedLakeTemplateThumbnail,
+    url: surroundedLakeTemplateUrl
+  },
   {
     id: "mozatrium",
     name: "Moz Atrium",
@@ -90,13 +105,6 @@ const templates = [
     name: "Wide Open Space",
     thumbnailUrl: wideopenTemplateThumbnail,
     url: wideopenTemplateUrl
-  },
-
-  {
-    id: "openterrain",
-    name: "Open Terrain",
-    thumbnailUrl: openTerrainTemplateThumbnail,
-    url: openTerrainTemplateUrl
   }
 ];
 
