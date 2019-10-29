@@ -3,10 +3,9 @@ import { TransformPivot } from "../../../editor/controls/SpokeControls";
 
 export default class ArchitectureKitSource extends KitSource {
   constructor() {
-    super("https://assets-prod.reticulum.io/kits/architecture/ArchKit-191b8dd9b4234ded40b70a31940fb064bbdd3ecc.gltf");
+    super("https://assets-prod.reticulum.io/kits/architecture/ArchKit-64274f78e194a993850e208cbaa2fe7c5a35a955.gltf");
     this.id = "architecture-kit";
     this.name = "Architecture Kit";
-    this.experimental = true;
     this.transformPivot = TransformPivot.Selection;
   }
 }
