@@ -199,6 +199,7 @@ export default class SpokeControls extends EventEmitter {
 
     if (input.get(Spoke.enableFlyMode)) {
       this.flyStartTime = performance.now();
+      this.distance = this.camera.position.distanceTo(this.center);
     } else if (input.get(Spoke.disableFlyMode)) {
       this.flyControls.disable();
       this.flyControls.lookSensitivity = this.initialLookSensitivity;
@@ -225,7 +226,6 @@ export default class SpokeControls extends EventEmitter {
       this.flyControls.lookSensitivity = this.lookSensitivity;
       this.flyControls.moveSpeed = this.moveSpeed;
       this.flyControls.boostSpeed = this.boostSpeed;
-      this.distance = this.camera.position.distanceTo(this.center);
       this.emit("flyModeChanged");
     }
 
