@@ -149,9 +149,13 @@ export default class Renderer {
     this.editor = editor;
     this.canvas = canvas;
 
-    const renderer = makeRenderer(canvas.parentElement.offsetWidth, canvas.parentElement.offsetHeight, {
-      canvas
-    });
+    const renderer = makeRenderer(
+      canvas.parentElement.parentElement.offsetWidth,
+      canvas.parentElement.parentElement.offsetHeight,
+      {
+        canvas
+      }
+    );
     renderer.setPixelRatio(window.devicePixelRatio);
     this.renderer = renderer;
 
@@ -245,10 +249,12 @@ export default class Renderer {
     const camera = this.camera;
     const canvas = this.canvas;
 
-    camera.aspect = canvas.parentElement.offsetWidth / canvas.parentElement.offsetHeight;
+    const containerEl = canvas.parentElement.parentElement;
+
+    camera.aspect = containerEl.offsetWidth / containerEl.offsetHeight;
     camera.updateProjectionMatrix();
 
-    this.renderer.setSize(canvas.parentElement.offsetWidth, canvas.parentElement.offsetHeight, false);
+    this.renderer.setSize(containerEl.offsetWidth, containerEl.offsetHeight, false);
     this.renderMode.onResize();
   };
 
