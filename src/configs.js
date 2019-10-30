@@ -15,6 +15,7 @@ get(configs, "THUMBNAIL_SERVER", process.env.THUMBNAIL_SERVER);
 get(configs, "CORS_PROXY_SERVER", process.env.CORS_PROXY_SERVER);
 get(configs, "NON_CORS_PROXY_DOMAINS", process.env.NON_CORS_PROXY_DOMAINS);
 get(configs, "SENTRY_DSN", process.env.SENTRY_DSN);
+get(configs, "GA_TRACKING_ID", process.env.GA_TRACKING_ID);
 get(configs, "BASE_ASSETS_PATH", process.env.BASE_ASSETS_PATH);
 
 if (configs.BASE_ASSETS_PATH) {

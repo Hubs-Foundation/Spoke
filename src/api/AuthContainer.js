@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
 import { withApi } from "../ui/contexts/ApiContext";
+import { trackEvent } from "../telemetry";
 
 import AuthEmailSentMessage from "./AuthEmailSentMessage";
 import AuthForm from "./AuthForm";
@@ -37,7 +38,14 @@ class AuthContainer extends Component {
       this.props.onChange(nextState);
     }
 
+    trackEvent("Login Submitted");
+
     this.setState(nextState);
+  };
+
+  onSuccess = (...args) => {
+    trackEvent("Login Successful");
+    this.props.onSuccess(...args);
   };
 
   onError = err => {
@@ -51,6 +59,8 @@ class AuthContainer extends Component {
     if (this.props.onChange) {
       this.props.onChange(nextState);
     }
+
+    trackEvent("Login Error");
 
     this.setState(nextState);
   };
@@ -67,6 +77,8 @@ class AuthContainer extends Component {
     }
 
     this.setState(nextState);
+
+    trackEvent("Login Canceled");
   };
 
   render() {

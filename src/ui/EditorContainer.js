@@ -7,6 +7,8 @@ import styled from "styled-components";
 import { DndProvider } from "react-dnd";
 import HTML5Backend from "react-dnd-html5-backend";
 
+import { trackEvent } from "../telemetry";
+
 import ToolBar from "./toolbar/ToolBar";
 
 import HierarchyPanelContainer from "./hierarchy/HierarchyPanelContainer";
@@ -351,6 +353,7 @@ export default class EditorContainer extends Component {
       }
 
       if (projectId === "tutorial") {
+        trackEvent("Tutorial Start");
         this.setState({ tutorialEnabled: true });
       }
 
@@ -431,6 +434,8 @@ export default class EditorContainer extends Component {
   };
 
   onSaveProject = async () => {
+    trackEvent("Project Save Start");
+
     const abortController = new AbortController();
 
     this.showDialog(ProgressDialog, {
@@ -465,6 +470,8 @@ export default class EditorContainer extends Component {
       this.updateModifiedState();
 
       this.hideDialog();
+
+      trackEvent("Project Save Successful");
     } catch (error) {
       console.error(error);
 
@@ -472,6 +479,8 @@ export default class EditorContainer extends Component {
         title: "Error Saving Project",
         message: error.message || "There was an error when saving the project."
       });
+
+      trackEvent("Project Save Error");
     }
   };
 
@@ -498,6 +507,8 @@ export default class EditorContainer extends Component {
       document.body.appendChild(el);
       el.click();
       document.body.removeChild(el);
+
+      trackEvent("Export Project as glTF");
     } catch (error) {
       if (error.aborted) {
         this.hideDialog();
@@ -549,6 +560,8 @@ export default class EditorContainer extends Component {
       }
     };
     el.click();
+
+    trackEvent("Import Legacy Project");
   };
 
   onExportLegacyProject = async () => {
@@ -569,9 +582,13 @@ export default class EditorContainer extends Component {
     document.body.appendChild(el);
     el.click();
     document.body.removeChild(el);
+
+    trackEvent("Project Exported");
   };
 
   onPublishProject = async () => {
+    trackEvent("Project Publish Started");
+
     try {
       const editor = this.state.editor;
 
@@ -580,9 +597,12 @@ export default class EditorContainer extends Component {
       }
 
       await this.props.api.publishProject(editor.projectId, editor, this.showDialog, this.hideDialog);
+
+      trackEvent("Project Publish Successful");
     } catch (error) {
       if (error.aborted) {
         this.hideDialog();
+        trackEvent("Project Publish Canceled");
         return;
       }
 
@@ -592,6 +612,8 @@ export default class EditorContainer extends Component {
         message: error.message || "There was an unknown error.",
         error
       });
+
+      trackEvent("Project Publish Error");
     }
   };
 
@@ -609,7 +631,13 @@ export default class EditorContainer extends Component {
     }
   };
 
-  onFinishTutorial = () => {
+  onFinishTutorial = nextAction => {
+    trackEvent("Tutorial Finished", nextAction);
+    this.setState({ tutorialEnabled: false });
+  };
+
+  onSkipTutorial = lastCompletedStep => {
+    trackEvent("Tutorial Skipped", lastCompletedStep);
     this.setState({ tutorialEnabled: false });
   };
 
@@ -662,7 +690,7 @@ export default class EditorContainer extends Component {
                     message={`${editor.scene.name} has unsaved changes, are you sure you wish to navigate away from the page?`}
                   />
                 )}
-                {tutorialEnabled && <Onboarding onFinish={this.onFinishTutorial} />}
+                {tutorialEnabled && <Onboarding onFinish={this.onFinishTutorial} onSkip={this.onSkipTutorial} />}
               </DndProvider>
             </DialogContextProvider>
           </EditorContextProvider>

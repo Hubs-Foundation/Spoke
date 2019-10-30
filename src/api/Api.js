@@ -679,7 +679,9 @@ export default class Project extends EventEmitter {
       if (!publishParams) {
         URL.revokeObjectURL(screenshotUrl);
         hideDialog();
-        return;
+        const error = new Error("Publish project aborted");
+        error.aborted = true;
+        throw error;
       }
 
       // Update the scene with the metadata from the publishDialog
