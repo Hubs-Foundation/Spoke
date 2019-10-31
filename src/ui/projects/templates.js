@@ -31,6 +31,9 @@ import craterTemplateThumbnail from "../../assets/templates/crater.jpg";
 import surroundedLakeTemplateUrl from "../../assets/templates/surrounded-lake.spoke";
 import surroundedLakeTemplateThumbnail from "../../assets/templates/surrounded-lake.jpg";
 
+import archKitExampleTemplateUrl from "../../assets/templates/arch-kit-example.spoke";
+import archKitExampleThumbnail from "../../assets/templates/arch-kit-example.jpg";
+
 const templates = [
   {
     id: "crater",
@@ -80,6 +83,27 @@ const templates = [
   },
 
   {
+    id: "trippytunnel",
+    name: "Trippy Tunnel",
+    thumbnailUrl: trippytunnelTemplateThumbnail,
+    url: trippytunnelTemplateUrl
+  },
+
+  {
+    id: "arch-kit-example",
+    name: "Architecture Kit Example",
+    thumbnailUrl: archKitExampleThumbnail,
+    url: archKitExampleTemplateUrl
+  },
+
+  {
+    id: "wideopen",
+    name: "Wide Open Space",
+    thumbnailUrl: wideopenTemplateThumbnail,
+    url: wideopenTemplateUrl
+  },
+
+  {
     id: "cudillero",
     name: "Cudillero Diorama",
     thumbnailUrl: cudilleroTemplateThumbnail,
@@ -91,20 +115,6 @@ const templates = [
     name: "Hunter's Lodge",
     thumbnailUrl: hunterslodgeTemplateThumbnail,
     url: hunterslodgeTemplateUrl
-  },
-
-  {
-    id: "trippytunnel",
-    name: "Trippy Tunnel",
-    thumbnailUrl: trippytunnelTemplateThumbnail,
-    url: trippytunnelTemplateUrl
-  },
-
-  {
-    id: "wideopen",
-    name: "Wide Open Space",
-    thumbnailUrl: wideopenTemplateThumbnail,
-    url: wideopenTemplateUrl
   }
 ];
 
