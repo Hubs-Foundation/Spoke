@@ -36,6 +36,7 @@ function AssetGridItem({ contextMenuId, tooltipId, item, onClick, ...rest }) {
         data-tip={item.id}
         data-for={tooltipId}
         data-effect="solid"
+        label={item.label}
         {...rest}
       />
     );
@@ -47,6 +48,7 @@ function AssetGridItem({ contextMenuId, tooltipId, item, onClick, ...rest }) {
         data-tip={item.id}
         data-for={tooltipId}
         data-effect="solid"
+        label={item.label}
         {...rest}
       />
     );
@@ -64,7 +66,14 @@ function AssetGridItem({ contextMenuId, tooltipId, item, onClick, ...rest }) {
     );
   } else {
     content = (
-      <ImageMediaGridItem onClick={onClickItem} data-tip={item.id} data-for={tooltipId} data-effect="solid" {...rest} />
+      <ImageMediaGridItem
+        onClick={onClickItem}
+        data-tip={item.id}
+        data-for={tooltipId}
+        data-effect="solid"
+        label={item.label}
+        {...rest}
+      />
     );
   }
 
