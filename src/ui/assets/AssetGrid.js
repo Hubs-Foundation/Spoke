@@ -111,7 +111,6 @@ const LoadingItem = styled.div`
 `;
 
 const StyledTooltip = styled(Tooltip)`
-  max-width: 200px;
   overflow: hidden;
   overflow-wrap: break-word;
   user-select: none;

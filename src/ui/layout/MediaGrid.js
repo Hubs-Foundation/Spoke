@@ -105,7 +105,7 @@ export function VideoMediaGridItem({ label, src, ...rest }) {
     <>
       <MediaGridItemContainer {...rest}>
         <MediaGridItemContent>
-          <MediaGridItemThumbnailVideo title={label} autoPlay muted src={src} />
+          <MediaGridItemThumbnailVideo autoPlay muted src={src} />
         </MediaGridItemContent>
       </MediaGridItemContainer>
       <MediaGridItemLabelContainer>
@@ -125,7 +125,7 @@ export function ImageMediaGridItem({ label, src, ...rest }) {
     <>
       <MediaGridItemContainer {...rest}>
         <MediaGridItemContent>
-          <MediaGridItemThumbnailImage title={label} style={{ backgroundImage: `url(${src})` }} />
+          <MediaGridItemThumbnailImage style={{ backgroundImage: `url(${src})` }} />
         </MediaGridItemContent>
       </MediaGridItemContainer>
       <MediaGridItemLabelContainer>

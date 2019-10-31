@@ -168,6 +168,14 @@ const GlobalStyle = createGlobalStyle`
       display: none;
     }
   }
+
+  .__react_component_tooltip.show {
+    opacity: 1;
+  }
+
+  .__react_component_tooltip.type-dark {
+    background-color: rgba(21, 23, 27, 0.9);
+  }
 `;
 
 export default GlobalStyle;
