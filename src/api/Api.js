@@ -376,7 +376,7 @@ export default class Project extends EventEmitter {
         if (entry.images.preview.type === "mp4") {
           entry.images.preview.url = proxiedUrlFor(entry.images.preview.url);
         } else {
-          entry.images.preview.url = scaledThumbnailUrlFor(entry.images.preview.url, 100, 100);
+          entry.images.preview.url = scaledThumbnailUrlFor(entry.images.preview.url, 200, 200);
         }
       }
       return entry;
