@@ -11,6 +11,7 @@ import { useDrag } from "react-dnd";
 import { getEmptyImage } from "react-dnd-html5-backend";
 import AssetTooltip from "./AssetTooltip";
 import { EditorContext } from "../contexts/EditorContext";
+import { OnboardingContext } from "../contexts/OnboardingContext";
 
 function collectMenuProps({ item }) {
   return { item };
@@ -136,6 +137,7 @@ const MemoAssetGridItem = memo(AssetGridItem);
 
 export default function AssetGrid({ isLoading, selectedItems, items, onSelect, onLoadMore, hasMore, tooltip, source }) {
   const editor = useContext(EditorContext);
+  const onboarding = useContext(OnboardingContext);
   const uniqueId = useRef(`AssetGrid${lastId}`);
 
   useEffect(() => {
@@ -225,7 +227,7 @@ export default function AssetGrid({ isLoading, selectedItems, items, onSelect, o
           </MediaGrid>
         </InfiniteScroll>
       </VerticalScrollContainer>
-      <StyledTooltip id={uniqueId.current} getContent={renderTooltip} />
+      {!onboarding.enabled && <StyledTooltip id={uniqueId.current} getContent={renderTooltip} />}
       <ContextMenu id={uniqueId.current}>
         <MenuItem onClick={placeObject}>Place Object</MenuItem>
         <MenuItem onClick={placeObjectAtOrigin}>Place Object at Origin</MenuItem>
