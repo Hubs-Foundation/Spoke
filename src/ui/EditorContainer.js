@@ -24,6 +24,7 @@ import ErrorDialog from "./dialogs/ErrorDialog";
 import ProgressDialog from "./dialogs/ProgressDialog";
 import ConfirmDialog from "./dialogs/ConfirmDialog";
 import SaveNewProjectDialog from "./dialogs/SaveNewProjectDialog";
+import ExportProjectDialog from "./dialogs/ExportProjectDialog";
 
 import Onboarding from "./onboarding/Onboarding";
 import SupportDialog from "./dialogs/SupportDialog";
@@ -31,6 +32,7 @@ import { cmdOrCtrlString } from "./utils";
 import BrowserPrompt from "./router/BrowserPrompt";
 import { Resizeable } from "./layout/Resizeable";
 import DragLayer from "./dnd/DragLayer";
+import Editor from "../editor/Editor";
 
 const StyledEditorContainer = styled.div`
   display: flex;
@@ -479,6 +481,19 @@ export default class EditorContainer extends Component {
   };
 
   onExportProject = async () => {
+    const options = await new Promise(resolve => {
+      this.showDialog(ExportProjectDialog, {
+        defaultOptions: Object.assign({}, Editor.DefaultExportOptions),
+        onConfirm: resolve,
+        onCancel: resolve
+      });
+    });
+
+    if (!options) {
+      this.hideDialog();
+      return;
+    }
+
     const abortController = new AbortController();
 
     this.showDialog(ProgressDialog, {
@@ -491,7 +506,7 @@ export default class EditorContainer extends Component {
     try {
       const editor = this.state.editor;
 
-      const glbBlob = await editor.exportScene(abortController.signal);
+      const glbBlob = await editor.exportScene(abortController.signal, options);
 
       this.hideDialog();
 

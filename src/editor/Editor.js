@@ -285,7 +285,14 @@ export default class Editor extends EventEmitter {
     return scene;
   }
 
-  async exportScene(signal) {
+  static DefaultExportOptions = {
+    combineMeshes: true,
+    removeUnusedObjects: true
+  };
+
+  async exportScene(signal, options = {}) {
+    const { combineMeshes, removeUnusedObjects } = Object.assign({}, Editor.DefaultExportOptions, options);
+
     const scene = this.scene;
 
     const floorPlanNode = scene.findNodeByType(FloorPlanNode);
@@ -318,8 +325,14 @@ export default class Editor extends EventEmitter {
     const exportContext = { animations };
 
     clonedScene.prepareForExport(exportContext);
-    await clonedScene.combineMeshes();
-    clonedScene.removeUnusedObjects();
+
+    if (combineMeshes) {
+      await clonedScene.combineMeshes();
+    }
+
+    if (removeUnusedObjects) {
+      clonedScene.removeUnusedObjects();
+    }
 
     // Add a preview camera to the exported GLB if there is a transform in the metadata.
     const previewCamera = this.camera.clone();
