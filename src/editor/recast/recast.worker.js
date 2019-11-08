@@ -26,7 +26,7 @@ self.onmessage = async event => {
       recast = Recast({
         locateFile(path) {
           if (path.endsWith(".wasm")) {
-            return new URL(message.params.wasmUrl).href;
+            return message.params.wasmUrl;
           }
         }
       });

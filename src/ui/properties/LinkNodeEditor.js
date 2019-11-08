@@ -16,7 +16,7 @@ export default class LinkNodeEditor extends Component {
   static description = "Link to a Hubs room.";
 
   onChangeHref = href => {
-    this.props.editor.setProperty(this.props.node, "href", href);
+    this.props.editor.setPropertySelected("href", href);
   };
 
   render() {

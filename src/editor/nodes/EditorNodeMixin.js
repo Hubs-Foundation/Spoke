@@ -23,6 +23,8 @@ export default function EditorNodeMixin(Object3DClass) {
     // Used for props like src that have side effects that we don't want to happen in the constructor
     static initialElementProps = {};
 
+    static hideInElementsPanel = false;
+
     static canAddNode(_editor) {
       return true;
     }
@@ -215,7 +217,7 @@ export default function EditorNodeMixin(Object3DClass) {
         }
       }
 
-      this.userData.gltfExtensions.MOZ_hubs_components[name] = props;
+      this.userData.gltfExtensions.MOZ_hubs_components[name] = componentProps;
     }
 
     replaceObject(replacementObject) {

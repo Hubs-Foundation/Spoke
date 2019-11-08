@@ -78,6 +78,7 @@ import TranslateMultipleCommand from "./commands/TranslateMultipleCommand";
 import GroupMultipleCommand from "./commands/GroupMultipleCommand";
 import ReparentMultipleWithPositionCommand from "./commands/ReparentMultipleWithPositionCommand";
 import LoadMaterialSlotCommand from "./commands/LoadMaterialSlotCommand";
+import LoadMaterialSlotMultipleCommand from "./commands/LoadMaterialSlotMultipleCommand";
 
 import GroupNode from "./nodes/GroupNode";
 import ModelNode from "./nodes/ModelNode";
@@ -284,7 +285,14 @@ export default class Editor extends EventEmitter {
     return scene;
   }
 
-  async exportScene(signal) {
+  static DefaultExportOptions = {
+    combineMeshes: true,
+    removeUnusedObjects: true
+  };
+
+  async exportScene(signal, options = {}) {
+    const { combineMeshes, removeUnusedObjects } = Object.assign({}, Editor.DefaultExportOptions, options);
+
     const scene = this.scene;
 
     const floorPlanNode = scene.findNodeByType(FloorPlanNode);
@@ -317,8 +325,14 @@ export default class Editor extends EventEmitter {
     const exportContext = { animations };
 
     clonedScene.prepareForExport(exportContext);
-    await clonedScene.combineMeshes();
-    clonedScene.removeUnusedObjects();
+
+    if (combineMeshes) {
+      await clonedScene.combineMeshes();
+    }
+
+    if (removeUnusedObjects) {
+      clonedScene.removeUnusedObjects();
+    }
 
     // Add a preview camera to the exported GLB if there is a transform in the metadata.
     const previewCamera = this.camera.clone();
@@ -1728,7 +1742,7 @@ export default class Editor extends EventEmitter {
   }
 
   setPropertiesSelected(properties, useHistory = true, emitEvent = true) {
-    return this.setPropertyMultiple(this.selected, properties, useHistory, emitEvent);
+    return this.setPropertiesMultiple(this.selected, properties, useHistory, emitEvent);
   }
 
   loadMaterialSlot(object, subPieceId, materialSlotId, materialId, useHistory = true, emitEvent = true) {
@@ -1747,6 +1761,32 @@ export default class Editor extends EventEmitter {
     }
 
     return object;
+  }
+
+  loadMaterialSlotMultiple(objects, subPieceId, materialSlotId, materialId, useHistory = true, emitEvent = true) {
+    if (useHistory) {
+      return this.history.execute(
+        new LoadMaterialSlotMultipleCommand(this, objects, subPieceId, materialSlotId, materialId)
+      );
+    }
+
+    for (const object of objects) {
+      object.loadMaterialSlot(subPieceId, materialSlotId, materialId).catch(console.error);
+
+      if (object.onChange) {
+        object.onChange("materialSlot");
+      }
+    }
+
+    if (emitEvent) {
+      this.emit("objectsChanged", objects, "materialSlot");
+    }
+
+    return objects;
+  }
+
+  loadMaterialSlotSelected(subPieceId, materialSlotId, materialId, useHistory = true, emitEvent = true) {
+    return this.loadMaterialSlotMultiple(this.selected, subPieceId, materialSlotId, materialId, useHistory, emitEvent);
   }
 
   getRootObjects(objects, target = [], filterUnremovable = true, filterUntransformable = false) {

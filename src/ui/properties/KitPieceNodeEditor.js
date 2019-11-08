@@ -90,7 +90,8 @@ MaterialSlotItem.propTypes = {
 export default class KitPieceNodeEditor extends Component {
   static propTypes = {
     editor: PropTypes.object,
-    node: PropTypes.object
+    node: PropTypes.object,
+    multiEdit: PropTypes.bool
   };
 
   static iconComponent = PuzzlePiece;
@@ -98,37 +99,59 @@ export default class KitPieceNodeEditor extends Component {
   static description = "";
 
   onChangeMaterialSlot = (subPiece, materialSlot, materialId) => {
-    this.props.editor.loadMaterialSlot(this.props.node, subPiece.id, materialSlot.id, materialId);
+    this.props.editor.loadMaterialSlotSelected(subPiece.id, materialSlot.id, materialId);
   };
 
   onChangeAnimation = activeClipIndex => {
-    this.props.editor.setProperty(this.props.node, "activeClipIndex", activeClipIndex);
+    this.props.editor.setPropertySelected("activeClipIndex", activeClipIndex);
   };
 
   onChangeCollidable = collidable => {
-    this.props.editor.setProperty(this.props.node, "collidable", collidable);
+    this.props.editor.setPropertySelected("collidable", collidable);
   };
 
   onChangeWalkable = walkable => {
-    this.props.editor.setProperty(this.props.node, "walkable", walkable);
+    this.props.editor.setPropertySelected("walkable", walkable);
   };
 
   onChangeCastShadow = castShadow => {
-    this.props.editor.setProperty(this.props.node, "castShadow", castShadow);
+    this.props.editor.setPropertySelected("castShadow", castShadow);
   };
 
   onChangeReceiveShadow = receiveShadow => {
-    this.props.editor.setProperty(this.props.node, "receiveShadow", receiveShadow);
+    this.props.editor.setPropertySelected("receiveShadow", receiveShadow);
   };
 
+  isAnimationPropertyDisabled() {
+    const { multiEdit, editor, node } = this.props;
+
+    if (multiEdit) {
+      return editor.selected.some(
+        selectedNode => selectedNode.kitId !== node.kitId || selectedNode.pieceId !== node.pieceId
+      );
+    }
+
+    return false;
+  }
+
   render() {
-    const { node } = this.props;
+    const { node, editor } = this.props;
+
+    const uniqueSubPieces = [];
+
+    for (const node of editor.selected) {
+      for (const subPiece of node.subPieces) {
+        if (!uniqueSubPieces.some(p => p.id === subPiece.id)) {
+          uniqueSubPieces.push(subPiece);
+        }
+      }
+    }
 
     return (
       <NodeEditor {...this.props} description={KitPieceNodeEditor.description}>
         <SubPiecesHeader>Sub Pieces:</SubPiecesHeader>
         <SubPiecesContainer>
-          {node.subPieces.map(subPiece => (
+          {uniqueSubPieces.map(subPiece => (
             <SubPieceItem key={"subPiece-" + subPiece.id} name={subPiece.name}>
               {subPiece.materialSlots.map(materialSlot => (
                 <MaterialSlotItem key={"materialSlot-" + materialSlot.id} name={materialSlot.name}>
@@ -143,7 +166,12 @@ export default class KitPieceNodeEditor extends Component {
           ))}
         </SubPiecesContainer>
         <InputGroup name="Loop Animation">
-          <SelectInput options={node.getClipOptions()} value={node.activeClipIndex} onChange={this.onChangeAnimation} />
+          <SelectInput
+            disabled={this.isAnimationPropertyDisabled()}
+            options={node.getClipOptions()}
+            value={node.activeClipIndex}
+            onChange={this.onChangeAnimation}
+          />
         </InputGroup>
         <InputGroup name="Collidable">
           <BooleanInput value={node.collidable} onChange={this.onChangeCollidable} />

@@ -36,19 +36,19 @@ export default class LightShadowProperties extends Component {
   };
 
   onChangeShadowMapResolution = shadowMapResolution => {
-    this.props.editor.setProperty(this.props.node, "shadowMapResolution", shadowMapResolution);
+    this.props.editor.setPropertySelected("shadowMapResolution", shadowMapResolution);
   };
 
   onChangeCastShadow = castShadow => {
-    this.props.editor.setProperty(this.props.node, "castShadow", castShadow);
+    this.props.editor.setPropertySelected("castShadow", castShadow);
   };
 
   onChangeShadowBias = shadowBias => {
-    this.props.editor.setProperty(this.props.node, "shadowBias", shadowBias);
+    this.props.editor.setPropertySelected("shadowBias", shadowBias);
   };
 
   onChangeShadowRadius = shadowRadius => {
-    this.props.editor.setProperty(this.props.node, "shadowRadius", shadowRadius);
+    this.props.editor.setPropertySelected("shadowRadius", shadowRadius);
   };
 
   render() {

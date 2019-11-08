@@ -88,13 +88,30 @@ const MediaGridItemIconContainer = styled.div`
   }
 `;
 
+const MediaGridItemLabelContainer = styled.div`
+  padding-top: 4px;
+  display: flex;
+  justify-content: center;
+`;
+
+const MediaGridItemLabel = styled.div`
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+`;
+
 export function VideoMediaGridItem({ label, src, ...rest }) {
   return (
-    <MediaGridItemContainer {...rest}>
-      <MediaGridItemContent>
-        <MediaGridItemThumbnailVideo title={label} autoPlay src={src} />
-      </MediaGridItemContent>
-    </MediaGridItemContainer>
+    <>
+      <MediaGridItemContainer {...rest}>
+        <MediaGridItemContent>
+          <MediaGridItemThumbnailVideo autoPlay muted src={src} />
+        </MediaGridItemContent>
+      </MediaGridItemContainer>
+      <MediaGridItemLabelContainer>
+        <MediaGridItemLabel>{label}</MediaGridItemLabel>
+      </MediaGridItemLabelContainer>
+    </>
   );
 }
 
@@ -105,11 +122,16 @@ VideoMediaGridItem.propTypes = {
 
 export function ImageMediaGridItem({ label, src, ...rest }) {
   return (
-    <MediaGridItemContainer {...rest}>
-      <MediaGridItemContent>
-        <MediaGridItemThumbnailImage title={label} style={{ backgroundImage: `url(${src})` }} />
-      </MediaGridItemContent>
-    </MediaGridItemContainer>
+    <>
+      <MediaGridItemContainer {...rest}>
+        <MediaGridItemContent>
+          <MediaGridItemThumbnailImage style={{ backgroundImage: `url(${src})` }} />
+        </MediaGridItemContent>
+      </MediaGridItemContainer>
+      <MediaGridItemLabelContainer>
+        <MediaGridItemLabel>{label}</MediaGridItemLabel>
+      </MediaGridItemLabelContainer>
+    </>
   );
 }
 
@@ -120,14 +142,18 @@ ImageMediaGridItem.propTypes = {
 
 export function IconMediaGridItem({ label, iconComponent: IconComponent, ...rest }) {
   return (
-    <MediaGridItemContainer {...rest}>
-      <MediaGridItemContent>
-        <MediaGridItemIconContainer>
-          <IconComponent size={48} />
-          {label && <div>{label}</div>}
-        </MediaGridItemIconContainer>
-      </MediaGridItemContent>
-    </MediaGridItemContainer>
+    <>
+      <MediaGridItemContainer {...rest}>
+        <MediaGridItemContent>
+          <MediaGridItemIconContainer>
+            <IconComponent size={48} />
+          </MediaGridItemIconContainer>
+        </MediaGridItemContent>
+      </MediaGridItemContainer>
+      <MediaGridItemLabelContainer>
+        <MediaGridItemLabel>{label}</MediaGridItemLabel>
+      </MediaGridItemLabelContainer>
+    </>
   );
 }
 

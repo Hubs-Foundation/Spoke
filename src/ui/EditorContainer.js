@@ -16,6 +16,7 @@ import ViewportPanelContainer from "./viewport/ViewportPanelContainer";
 import { defaultSettings, SettingsContextProvider } from "./contexts/SettingsContext";
 import { EditorContextProvider } from "./contexts/EditorContext";
 import { DialogContextProvider } from "./contexts/DialogContext";
+import { OnboardingContextProvider } from "./contexts/OnboardingContext";
 
 import { createEditor } from "../config";
 
@@ -23,6 +24,7 @@ import ErrorDialog from "./dialogs/ErrorDialog";
 import ProgressDialog from "./dialogs/ProgressDialog";
 import ConfirmDialog from "./dialogs/ConfirmDialog";
 import SaveNewProjectDialog from "./dialogs/SaveNewProjectDialog";
+import ExportProjectDialog from "./dialogs/ExportProjectDialog";
 
 import Onboarding from "./onboarding/Onboarding";
 import SupportDialog from "./dialogs/SupportDialog";
@@ -30,6 +32,7 @@ import { cmdOrCtrlString } from "./utils";
 import BrowserPrompt from "./router/BrowserPrompt";
 import { Resizeable } from "./layout/Resizeable";
 import DragLayer from "./dnd/DragLayer";
+import Editor from "../editor/Editor";
 
 const StyledEditorContainer = styled.div`
   display: flex;
@@ -69,13 +72,15 @@ export default class EditorContainer extends Component {
     const editorInitPromise = editor.init();
 
     this.state = {
-      tutorialEnabled: props.projectId === "tutorial",
       editor,
       editorInitPromise,
       creatingProject: false,
       settingsContext: {
         settings,
         updateSetting: this.updateSetting
+      },
+      onboardingContext: {
+        enabled: props.projectId === "tutorial"
       },
       DialogComponent: null,
       dialogProps: {},
@@ -136,7 +141,7 @@ export default class EditorContainer extends Component {
             name: "Tutorial",
             action: () => {
               if (this.props.projectId === "tutorial") {
-                this.setState({ tutorialEnabled: true });
+                this.setState({ onboardingContext: { enabled: true } });
               } else {
                 this.props.history.push("/projects/tutorial");
               }
@@ -351,7 +356,7 @@ export default class EditorContainer extends Component {
       }
 
       if (projectId === "tutorial") {
-        this.setState({ tutorialEnabled: true });
+        this.setState({ onboardingContext: { enabled: true } });
       }
 
       const sceneId = editor.scene.metadata && editor.scene.metadata.sceneId;
@@ -476,6 +481,19 @@ export default class EditorContainer extends Component {
   };
 
   onExportProject = async () => {
+    const options = await new Promise(resolve => {
+      this.showDialog(ExportProjectDialog, {
+        defaultOptions: Object.assign({}, Editor.DefaultExportOptions),
+        onConfirm: resolve,
+        onCancel: resolve
+      });
+    });
+
+    if (!options) {
+      this.hideDialog();
+      return;
+    }
+
     const abortController = new AbortController();
 
     this.showDialog(ProgressDialog, {
@@ -488,7 +506,7 @@ export default class EditorContainer extends Component {
     try {
       const editor = this.state.editor;
 
-      const glbBlob = await editor.exportScene(abortController.signal);
+      const glbBlob = await editor.exportScene(abortController.signal, options);
 
       this.hideDialog();
 
@@ -610,11 +628,11 @@ export default class EditorContainer extends Component {
   };
 
   onFinishTutorial = () => {
-    this.setState({ tutorialEnabled: false });
+    this.setState({ onboardingContext: { enabled: false } });
   };
 
   render() {
-    const { DialogComponent, dialogProps, settingsContext, editor, tutorialEnabled } = this.state;
+    const { DialogComponent, dialogProps, settingsContext, onboardingContext, editor } = this.state;
     const toolbarMenu = this.generateToolbarMenu();
     const isPublishedScene = !!this.getSceneId();
 
@@ -623,47 +641,49 @@ export default class EditorContainer extends Component {
         <SettingsContextProvider value={settingsContext}>
           <EditorContextProvider value={editor}>
             <DialogContextProvider value={this.dialogContext}>
-              <DndProvider backend={HTML5Backend}>
-                <DragLayer />
-                <ToolBar
-                  menu={toolbarMenu}
-                  editor={editor}
-                  onPublish={this.onPublishProject}
-                  isPublishedScene={isPublishedScene}
-                  onOpenScene={this.onOpenScene}
-                />
-                <WorkspaceContainer>
-                  <Resizeable axis="x" initialSizes={[0.7, 0.3]} onChange={this.onResize}>
-                    <ViewportPanelContainer />
-                    <Resizeable axis="y" initialSizes={[0.5, 0.5]}>
-                      <HierarchyPanelContainer />
-                      <PropertiesPanelContainer />
-                    </Resizeable>
-                  </Resizeable>
-                </WorkspaceContainer>
-                <Modal
-                  ariaHideApp={false}
-                  isOpen={!!DialogComponent}
-                  onRequestClose={this.hideDialog}
-                  shouldCloseOnOverlayClick={false}
-                  className="Modal"
-                  overlayClassName="Overlay"
-                >
-                  {DialogComponent && (
-                    <DialogComponent onConfirm={this.hideDialog} onCancel={this.hideDialog} {...dialogProps} />
-                  )}
-                </Modal>
-                <Helmet>
-                  <title>{`${this.state.modified ? "*" : ""}${editor.scene.name} | Spoke by Mozilla`}</title>
-                  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
-                </Helmet>
-                {this.state.modified && (
-                  <BrowserPrompt
-                    message={`${editor.scene.name} has unsaved changes, are you sure you wish to navigate away from the page?`}
+              <OnboardingContextProvider value={onboardingContext}>
+                <DndProvider backend={HTML5Backend}>
+                  <DragLayer />
+                  <ToolBar
+                    menu={toolbarMenu}
+                    editor={editor}
+                    onPublish={this.onPublishProject}
+                    isPublishedScene={isPublishedScene}
+                    onOpenScene={this.onOpenScene}
                   />
-                )}
-                {tutorialEnabled && <Onboarding onFinish={this.onFinishTutorial} />}
-              </DndProvider>
+                  <WorkspaceContainer>
+                    <Resizeable axis="x" initialSizes={[0.7, 0.3]} onChange={this.onResize}>
+                      <ViewportPanelContainer />
+                      <Resizeable axis="y" initialSizes={[0.5, 0.5]}>
+                        <HierarchyPanelContainer />
+                        <PropertiesPanelContainer />
+                      </Resizeable>
+                    </Resizeable>
+                  </WorkspaceContainer>
+                  <Modal
+                    ariaHideApp={false}
+                    isOpen={!!DialogComponent}
+                    onRequestClose={this.hideDialog}
+                    shouldCloseOnOverlayClick={false}
+                    className="Modal"
+                    overlayClassName="Overlay"
+                  >
+                    {DialogComponent && (
+                      <DialogComponent onConfirm={this.hideDialog} onCancel={this.hideDialog} {...dialogProps} />
+                    )}
+                  </Modal>
+                  <Helmet>
+                    <title>{`${this.state.modified ? "*" : ""}${editor.scene.name} | Spoke by Mozilla`}</title>
+                    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+                  </Helmet>
+                  {this.state.modified && (
+                    <BrowserPrompt
+                      message={`${editor.scene.name} has unsaved changes, are you sure you wish to navigate away from the page?`}
+                    />
+                  )}
+                  {onboardingContext.enabled && <Onboarding onFinish={this.onFinishTutorial} />}
+                </DndProvider>
+              </OnboardingContextProvider>
             </DialogContextProvider>
           </EditorContextProvider>
         </SettingsContextProvider>

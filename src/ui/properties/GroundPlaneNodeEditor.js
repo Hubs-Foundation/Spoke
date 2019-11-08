@@ -17,15 +17,15 @@ export default class GroundPlaneNodeEditor extends Component {
   static description = "A flat ground plane that extends into the distance.";
 
   onChangeColor = color => {
-    this.props.editor.setProperty(this.props.node, "color", color);
+    this.props.editor.setPropertySelected("color", color);
   };
 
   onChangeReceiveShadow = receiveShadow => {
-    this.props.editor.setProperty(this.props.node, "receiveShadow", receiveShadow);
+    this.props.editor.setPropertySelected("receiveShadow", receiveShadow);
   };
 
   onChangeWalkable = walkable => {
-    this.props.editor.setProperty(this.props.node, "walkable", walkable);
+    this.props.editor.setPropertySelected("walkable", walkable);
   };
 
   render() {
