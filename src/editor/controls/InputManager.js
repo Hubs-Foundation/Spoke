@@ -1,5 +1,6 @@
 import Mousetrap from "mousetrap";
 import isInputSelected from "../utils/isInputSelected";
+import normalizeWheel from "normalize-wheel";
 
 const _globalCallbacks = {};
 const _originalStopCallback = Mousetrap.prototype.stopCallback;
@@ -85,14 +86,6 @@ function initializeValue(source, initialState, state, resetKeys, value, reset, r
       }
     }
   }
-}
-
-function normalizeWheel(value) {
-  if (value === 0) {
-    return value;
-  }
-
-  return value > 0 ? 1 : -1;
 }
 
 function mergeMappings(mappings) {
@@ -565,9 +558,9 @@ export default class InputManager {
         } else if (key === "deltaX" || key === "deltaY") {
           this.state[wheelMapping[key]] += event[key];
         } else if (key === "normalizedDeltaX") {
-          this.state[wheelMapping[key]] = normalizeWheel(event.deltaX);
+          this.state[wheelMapping[key]] = normalizeWheel(event).spinX;
         } else if (key === "normalizedDeltaY") {
-          this.state[wheelMapping[key]] = normalizeWheel(event.deltaY);
+          this.state[wheelMapping[key]] = normalizeWheel(event).spinY;
         } else {
           this.state[wheelMapping[key]] = event[key];
         }

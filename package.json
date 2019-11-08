@@ -75,6 +75,7 @@
     "jwt-decode": "^2.2.0",
     "markdown-it": "^9.1.0",
     "mousetrap": "^1.6.3",
+    "normalize-wheel": "^1.0.1",
     "phoenix": "^1.4.10",
     "prop-types": "^15.7.2",
     "rc-slider": "^8.7.1",
