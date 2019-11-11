@@ -26,7 +26,7 @@ export default function MediaSourcePanel({ editor, source, searchPlaceholder, in
 
       editor.spawnGrabbedObject(node);
     },
-    [editor]
+    [editor, source.transformPivot]
   );
 
   const onUpload = useUpload(source);
