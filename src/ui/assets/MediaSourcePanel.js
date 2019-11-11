@@ -8,8 +8,19 @@ import AssetGrid from "./AssetGrid";
 import FileInput from "../inputs/FileInput";
 import useUpload from "./useUpload";
 
-export default function MediaSourcePanel({ editor, source, searchPlaceholder, initialSearchParams, multiselectTags }) {
-  const { params, setParams, isLoading, loadMore, hasMore, results } = useAssetSearch(source, initialSearchParams);
+export default function MediaSourcePanel({
+  editor,
+  source,
+  searchPlaceholder,
+  initialSearchParams,
+  multiselectTags,
+  savedState,
+  setSavedState
+}) {
+  const { params, setParams, isLoading, loadMore, hasMore, results } = useAssetSearch(
+    source,
+    savedState.searchParams || initialSearchParams
+  );
 
   const onSelect = useCallback(
     item => {
@@ -26,10 +37,37 @@ export default function MediaSourcePanel({ editor, source, searchPlaceholder, in
 
       editor.spawnGrabbedObject(node);
     },
-    [editor]
+    [editor, source.transformPivot]
   );
 
   const onUpload = useUpload(source);
+
+  const onLoadMore = useCallback(() => {
+    loadMore(params);
+  }, [params, loadMore]);
+
+  const onChangeQuery = useCallback(
+    e => {
+      const nextParams = { ...params, query: e.target.value };
+      setParams(nextParams);
+      setSavedState({ ...savedState, searchParams: nextParams });
+    },
+    [params, setParams, savedState, setSavedState]
+  );
+
+  const onChangeTags = useCallback(
+    tags => {
+      const nextParams = { ...params, tags };
+      setParams(nextParams);
+      setSavedState({ ...savedState, searchParams: nextParams });
+    },
+    [params, setParams, setSavedState, savedState]
+  );
+
+  const onChangeExpandedTags = useCallback(expandedTags => setSavedState({ ...savedState, expandedTags }), [
+    savedState,
+    setSavedState
+  ]);
 
   return (
     <>
@@ -37,7 +75,7 @@ export default function MediaSourcePanel({ editor, source, searchPlaceholder, in
         <AssetSearchInput
           placeholder={searchPlaceholder}
           value={params.query}
-          onChange={e => setParams({ ...params, query: e.target.value })}
+          onChange={onChangeQuery}
           legal={source.searchLegalCopy}
           privacyPolicyUrl={source.privacyPolicyUrl}
         />
@@ -55,13 +93,15 @@ export default function MediaSourcePanel({ editor, source, searchPlaceholder, in
             multiselect={multiselectTags}
             tags={source.tags}
             selectedTags={params.tags}
-            onChange={tags => setParams({ ...params, tags })}
+            onChange={onChangeTags}
+            initialExpandedTags={savedState.expandedTags}
+            onChangeExpandedTags={onChangeExpandedTags}
           />
         )}
         <AssetGrid
           source={source}
           items={results}
-          onLoadMore={loadMore}
+          onLoadMore={onLoadMore}
           hasMore={hasMore}
           onSelect={onSelect}
           isLoading={isLoading}
@@ -76,7 +116,9 @@ MediaSourcePanel.propTypes = {
   initialSearchParams: PropTypes.object,
   editor: PropTypes.object,
   source: PropTypes.object,
-  multiselectTags: PropTypes.bool
+  multiselectTags: PropTypes.bool,
+  savedState: PropTypes.object,
+  setSavedState: PropTypes.func.isRequired
 };
 
 MediaSourcePanel.defaultProps = {

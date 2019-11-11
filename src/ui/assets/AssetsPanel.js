@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect } from "react";
+import React, { useContext, useState, useEffect, useCallback } from "react";
 import PropTypes from "prop-types";
 import styled from "styled-components";
 import { Column, Row } from "../layout/Flex";
@@ -60,6 +60,7 @@ function getSources(editor) {
 
 export default function AssetsPanel() {
   const editor = useContext(EditorContext);
+
   const [sources, setSources] = useState(
     getSources(editor).filter(source => !source.experimental || editor.settings.enableExperimentalFeatures)
   );
@@ -96,6 +97,20 @@ export default function AssetsPanel() {
     };
   }, [editor, setSelectedSource, sources, setSources, selectedSource]);
 
+  const [savedSourceState, setSavedSourceState] = useState({});
+
+  const setSavedState = useCallback(
+    state => {
+      setSavedSourceState({
+        ...savedSourceState,
+        [selectedSource.id]: state
+      });
+    },
+    [selectedSource, setSavedSourceState, savedSourceState]
+  );
+
+  const savedState = savedSourceState[selectedSource.id] || {};
+
   return (
     <AssetsPanelContainer id="assets-panel">
       <AssetsPanelColumn flex>
@@ -108,7 +123,17 @@ export default function AssetsPanel() {
           ))}
         </List>
       </AssetsPanelColumn>
-      <Column flex>{SourceComponent && <SourceComponent source={selectedSource} editor={editor} />}</Column>
+      <Column flex>
+        {SourceComponent && (
+          <SourceComponent
+            key={selectedSource.id}
+            source={selectedSource}
+            editor={editor}
+            savedState={savedState}
+            setSavedState={setSavedState}
+          />
+        )}
+      </Column>
     </AssetsPanelContainer>
   );
 }

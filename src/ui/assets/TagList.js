@@ -1,7 +1,6 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useState, useRef, useContext, useEffect } from "react";
 import PropTypes from "prop-types";
-import styled from "styled-components";
-import { List } from "../layout/List";
+import styled, { ThemeContext } from "styled-components";
 import { Column, Row } from "../layout/Flex";
 import { useSelectionHandler } from "./useSelection";
 import { CaretRight } from "styled-icons/fa-solid/CaretRight";
@@ -10,7 +9,7 @@ import { CaretDown } from "styled-icons/fa-solid/CaretDown";
 const StyledTagList = styled(Column)`
   height: auto;
   min-height: 100%;
-  min-width: 120px;
+  min-width: 150px;
   border-right: 1px solid ${props => props.theme.panel};
 `;
 
@@ -24,8 +23,10 @@ const TagListHeader = styled(Row)`
   border-bottom: 1px solid ${props => props.theme.panel};
 `;
 
-const TagListContainer = styled(List)`
+const TagListContainer = styled.div`
+  height: 100%;
   overflow-y: scroll;
+  overflow-x: auto;
 `;
 
 const TagListToggle = styled.div`
@@ -42,7 +43,7 @@ const TagListToggle = styled.div`
 const TagContent = styled.div`
   display: flex;
   align-items: center;
-  height: 24px;
+  min-height: 24px;
 
   padding-left: ${props => props.depth * 20}px;
 
@@ -69,12 +70,12 @@ export const TreeListItem = styled.li`
   overflow: hidden;
   user-select: none;
   min-height: 24px;
+  white-space: nowrap;
+`;
 
-  background-color: ${props => props.theme.panel2};
-
-  :nth-child(odd) {
-    background-color: ${props => props.theme.panel};
-  }
+const TagChildrenList = styled.ul`
+  width: max-content;
+  min-width: 100%;
 `;
 
 const TreeLeafSpacer = styled.div`
@@ -85,6 +86,11 @@ function TagListItem({ tag, depth, onClick, expanded, onToggleExpanded, selected
   const onClickItem = useCallback(
     e => {
       e.stopPropagation();
+
+      if (tag.disabled) {
+        return;
+      }
+
       onClick(tag, e);
     },
     [onClick, tag]
@@ -114,7 +120,7 @@ function TagListItem({ tag, depth, onClick, expanded, onToggleExpanded, selected
         {tag.label}
       </TagContent>
       {tag.children && isExpanded && (
-        <List>
+        <TagChildrenList>
           {tag.children.map(child => (
             <TagListItem
               key={child.value}
@@ -127,7 +133,7 @@ function TagListItem({ tag, depth, onClick, expanded, onToggleExpanded, selected
               {...rest}
             />
           ))}
-        </List>
+        </TagChildrenList>
       )}
     </TreeListItem>
   );
@@ -146,41 +152,61 @@ TagListItem.defaultProps = {
   depth: 0
 };
 
-export default function TagList({ tags, selectedTags, onChange, multiselect }) {
+export default function TagList({
+  tags,
+  selectedTags,
+  onChange,
+  multiselect,
+  initialExpandedTags,
+  onChangeExpandedTags
+}) {
+  const theme = useContext(ThemeContext);
+  const tagListContainerRef = useRef();
   const [onSelect, clearSelection] = useSelectionHandler(tags, selectedTags, onChange, multiselect);
-  const [expanded, setExpanded] = useState({});
+  const [expanded, setExpanded] = useState(initialExpandedTags || {});
   const onToggleExpanded = useCallback(
     tag => {
-      setExpanded({
+      const nextExpanded = {
         ...expanded,
         [tag.value]: !expanded[tag.value]
-      });
+      };
+
+      setExpanded(nextExpanded);
+      onChangeExpandedTags(nextExpanded);
     },
-    [expanded, setExpanded]
+    [expanded, setExpanded, onChangeExpandedTags]
   );
+
+  useEffect(() => {
+    tagListContainerRef.current.querySelectorAll("li").forEach((el, index) => {
+      el.style.backgroundColor = index % 2 === 0 ? theme.panel : theme.panel2;
+    });
+  }, [tagListContainerRef, theme, expanded, tags]);
 
   return (
     <StyledTagList>
       <TagListHeader>Tags</TagListHeader>
-      <TagListContainer>
-        <TagListItem
-          key="All"
-          onClick={clearSelection}
-          onToggleExpanded={onToggleExpanded}
-          expanded={expanded}
-          selectedTags={selectedTags}
-          tag={{ label: "All", value: "All" }}
-        />
-        {tags.map(tag => (
+      <TagListContainer ref={tagListContainerRef}>
+        <TagChildrenList>
           <TagListItem
-            key={tag.value}
-            onClick={onSelect}
+            key="All"
+            onClick={clearSelection}
             onToggleExpanded={onToggleExpanded}
             expanded={expanded}
             selectedTags={selectedTags}
-            tag={tag}
+            tag={{ label: "All", value: "All" }}
           />
-        ))}
+          {tags.map(tag => (
+            <TagListItem
+              key={tag.value}
+              onClick={onSelect}
+              onToggleExpanded={onToggleExpanded}
+              expanded={expanded}
+              selectedTags={selectedTags}
+              tag={tag}
+            />
+          ))}
+        </TagChildrenList>
       </TagListContainer>
     </StyledTagList>
   );
@@ -190,11 +216,15 @@ TagList.propTypes = {
   selectedTags: PropTypes.arrayOf(PropTypes.object).isRequired,
   tags: PropTypes.arrayOf(PropTypes.object).isRequired,
   onChange: PropTypes.func.isRequired,
-  multiselect: PropTypes.bool
+  multiselect: PropTypes.bool,
+  initialExpandedTags: PropTypes.object,
+  onChangeExpandedTags: PropTypes.func
 };
 
 TagList.defaultProps = {
   tags: [],
   selectedTags: [],
-  onSelect: () => {}
+  onSelect: () => {},
+  initialExpandedTags: {},
+  onChangeExpandedTags: () => {}
 };

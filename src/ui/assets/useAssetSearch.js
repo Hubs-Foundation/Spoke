@@ -24,14 +24,12 @@ function useLoadAsync(callback, initialResults = [], initialCursor = 0) {
   const [isLoading, setIsLoading] = useState(false);
   const [nextCursor, setNextCursor] = useState(initialCursor);
   const [hasMore, setHasMore] = useState(true);
-  const [curParams, setCurParams] = useState({});
 
   const loadAsyncInternal = useCallback(
     (params, cursor = 0) => {
       setIsLoading(true);
       setHasMore(false);
       setError(undefined);
-      setCurParams(params);
 
       if (cursor === 0) {
         setResults([]);
@@ -92,18 +90,20 @@ function useLoadAsync(callback, initialResults = [], initialCursor = 0) {
       setResults,
       setSuggestions,
       setNextCursor,
-      setHasMore,
-      setCurParams
+      setHasMore
     ]
   );
 
   const loadAsync = useCallback(params => loadAsyncInternal(params, 0), [loadAsyncInternal]);
 
-  const loadMore = useCallback(() => {
-    if (!isLoading && hasMore) {
-      loadAsyncInternal(curParams, nextCursor);
-    }
-  }, [isLoading, hasMore, loadAsyncInternal, nextCursor, curParams]);
+  const loadMore = useCallback(
+    params => {
+      if (!isLoading && hasMore) {
+        loadAsyncInternal(params, nextCursor);
+      }
+    },
+    [isLoading, hasMore, loadAsyncInternal, nextCursor]
+  );
 
   return {
     loadAsync,
@@ -116,22 +116,7 @@ function useLoadAsync(callback, initialResults = [], initialCursor = 0) {
   };
 }
 
-const paramsWhitelist = ["query"];
-
-function createParamsForSource(params) {
-  const newParams = {};
-
-  for (const parameterName of paramsWhitelist) {
-    if (parameterName in params) {
-      newParams[parameterName] = params[parameterName];
-    }
-  }
-
-  return newParams;
-}
-
 export function useAssetSearch(source, initialParams = {}, initialResults = [], initialCursor = 0) {
-  const currentSource = useRef(source);
   const [params, setParamsInternal] = useState(initialParams);
 
   const { loadAsync, ...rest } = useLoadAsync(
@@ -161,14 +146,6 @@ export function useAssetSearch(source, initialParams = {}, initialResults = [], 
     },
     [loadAsync, setParamsInternal]
   );
-
-  useEffect(() => {
-    if (source !== currentSource.current) {
-      const nextParams = createParamsForSource(params);
-      loadAsync(nextParams);
-      currentSource.current = source;
-    }
-  }, [source, loadAsync, params, currentSource]);
 
   return {
     params,
