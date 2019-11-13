@@ -44,7 +44,7 @@ AssetsPanelToolbar.propTypes = {
 };
 
 const AssetsPanelColumn = styled(Column)`
-  max-width: 200px;
+  max-width: 175px;
   border-right: 1px solid ${props => props.theme.border};
 `;
 

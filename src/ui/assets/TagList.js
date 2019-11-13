@@ -9,7 +9,7 @@ import { CaretDown } from "styled-icons/fa-solid/CaretDown";
 const StyledTagList = styled(Column)`
   height: auto;
   min-height: 100%;
-  min-width: 150px;
+  min-width: 175px;
   border-right: 1px solid ${props => props.theme.panel};
 `;
 
