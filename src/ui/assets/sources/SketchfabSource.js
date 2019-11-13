@@ -41,7 +41,7 @@ export default class SketchfabSource extends ModelMediaSource {
           {
             disabled: true,
             label: "Medieval Fantasy Contest",
-            value: "medieval-fantasy-context",
+            value: "medieval-fantasy-contest",
             children: [
               {
                 label: "Medieval City Builder - by Eanorien",
@@ -348,6 +348,143 @@ export default class SketchfabSource extends ModelMediaSource {
                 paramsKey: "collection",
                 initialNodeProps: {
                   initialScale: 3,
+                  castShadow: true,
+                  receiveShadow: true
+                },
+                itemProps: {
+                  transformPivot: TransformPivot.Bottom
+                }
+              }
+            ]
+          },
+          {
+            disabled: true,
+            label: "Hubs Clubhouse Contest",
+            value: "hubs-clubhouse-contest",
+            children: [
+              {
+                label: "Mozilla Playground - by Tombolaso",
+                value: "cfdeae6bb4ba480e9ca0c52b6a7965bd",
+                paramsKey: "collection",
+                initialNodeProps: {
+                  initialScale: 1,
+                  castShadow: true,
+                  receiveShadow: true
+                },
+                itemProps: {
+                  transformPivot: TransformPivot.Bottom
+                }
+              },
+              {
+                label: "TeaScroll Clubhouse - by Anaïs Faure",
+                value: "17246743abc641d2b76d22b50c4d7173",
+                paramsKey: "collection",
+                initialNodeProps: {
+                  initialScale: 1,
+                  castShadow: true,
+                  receiveShadow: true
+                },
+                itemProps: {
+                  transformPivot: TransformPivot.Bottom
+                }
+              },
+              {
+                label: "Wizard's Library - by mediochrea",
+                value: "9ed3d50e891d4261a6b31d664869d419",
+                paramsKey: "collection",
+                initialNodeProps: {
+                  initialScale: 0.01,
+                  castShadow: true,
+                  receiveShadow: true
+                },
+                itemProps: {
+                  transformPivot: TransformPivot.Bottom
+                }
+              },
+              {
+                label: "Tree House - by grigoriyarx",
+                value: "6e739d5f763043769828569164d6fad0",
+                paramsKey: "collection",
+                initialNodeProps: {
+                  initialScale: 1,
+                  castShadow: true,
+                  receiveShadow: true
+                },
+                itemProps: {
+                  transformPivot: TransformPivot.Bottom
+                }
+              },
+              {
+                label: "Theatre - by daedaljs",
+                value: "aede4e128b284e9d9672038bdbfd8423",
+                paramsKey: "collection",
+                initialNodeProps: {
+                  initialScale: 1,
+                  castShadow: true,
+                  receiveShadow: true
+                },
+                itemProps: {
+                  transformPivot: TransformPivot.Bottom
+                }
+              },
+              {
+                label: "Round Table Room - by plasmaernst",
+                value: "486d77de949749a998e1be80b7be5bd6",
+                paramsKey: "collection",
+                initialNodeProps: {
+                  initialScale: 0.01,
+                  castShadow: true,
+                  receiveShadow: true
+                },
+                itemProps: {
+                  transformPivot: TransformPivot.Bottom
+                }
+              },
+              {
+                label: "Space Dome - by rudolfs",
+                value: "ce3cdb49e8144b51a8beb3a5b3aa191c",
+                paramsKey: "collection",
+                initialNodeProps: {
+                  initialScale: 0.01,
+                  castShadow: true,
+                  receiveShadow: true
+                },
+                itemProps: {
+                  transformPivot: TransformPivot.Bottom
+                }
+              },
+              {
+                label: "Summer Festival - by proxy_doug",
+                value: "44fc5a8ed00943fd82002c78027bfe3e",
+                paramsKey: "collection",
+                initialNodeProps: {
+                  initialScale: 1,
+                  castShadow: true,
+                  receiveShadow: true
+                },
+                itemProps: {
+                  transformPivot: TransformPivot.Selection
+                }
+              },
+              {
+                label: "Museum - by Thomas Flynn",
+                value: "46c4fd78da6a41f98c3ad8c1a0647aad",
+                paramsKey: "collection",
+                initialNodeProps: {
+                  initialScale: 1,
+                  castShadow: true,
+                  receiveShadow: true
+                },
+                itemProps: {
+                  transformPivot: TransformPivot.Bottom
+                }
+              },
+              {
+                label: "Morning Dew Coffee Shop - by CameronMckenzie",
+                value: "4a4511d656374c79a743c4b17efea961",
+                paramsKey: "collection",
+                initialNodeProps: {
+                  initialScale: 1,
                   castShadow: true,
                   receiveShadow: true
                 },
