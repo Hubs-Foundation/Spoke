@@ -3,7 +3,7 @@ import Model from "../objects/Model";
 import { PropertyBinding } from "three";
 import { setStaticMode, StaticModes } from "../StaticMode";
 import cloneObject3D from "../utils/cloneObject3D";
-import { isKitPieceNode, getComponent, getGLTFComponent } from "../gltf/moz-hubs-components";
+import { isKitPieceNode, getComponent, getGLTFComponent, traverseGltfNode } from "../gltf/moz-hubs-components";
 
 export default class KitPieceNode extends EditorNodeMixin(Model) {
   static legacyComponentName = "kit-piece";
@@ -148,9 +148,18 @@ export default class KitPieceNode extends EditorNodeMixin(Model) {
       throw new Error(`Couldn't find kit piece with id ${pieceId}`);
     }
 
+    // Load the default (white) material if we are using alt materials, otherwise load the material defined in the glTF primitive
+    let loadDefaultMaterial = false;
+
+    traverseGltfNode(json, nodeIndex, nodeDef => {
+      if (getGLTFComponent(nodeDef, "kit-alt-materials")) {
+        loadDefaultMaterial = true;
+      }
+    });
+
     const piece = await loader.getDependency("node", nodeIndex, {
       cacheKey: `kit-piece:${pieceId}`,
-      loadDefaultMaterial: true
+      loadDefaultMaterial
     });
 
     if (!piece) {

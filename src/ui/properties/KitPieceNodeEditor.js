@@ -149,22 +149,26 @@ export default class KitPieceNodeEditor extends Component {
 
     return (
       <NodeEditor {...this.props} description={KitPieceNodeEditor.description}>
-        <SubPiecesHeader>Sub Pieces:</SubPiecesHeader>
-        <SubPiecesContainer>
-          {uniqueSubPieces.map(subPiece => (
-            <SubPieceItem key={"subPiece-" + subPiece.id} name={subPiece.name}>
-              {subPiece.materialSlots.map(materialSlot => (
-                <MaterialSlotItem key={"materialSlot-" + materialSlot.id} name={materialSlot.name}>
-                  <SelectInput
-                    options={materialSlot.options.map(o => ({ value: o.id, label: o.name }))}
-                    value={materialSlot.value ? materialSlot.value.id : null}
-                    onChange={(value, option) => this.onChangeMaterialSlot(subPiece, materialSlot, value, option)}
-                  />
-                </MaterialSlotItem>
+        {uniqueSubPieces.length > 0 && (
+          <>
+            <SubPiecesHeader>Sub Pieces:</SubPiecesHeader>
+            <SubPiecesContainer>
+              {uniqueSubPieces.map(subPiece => (
+                <SubPieceItem key={"subPiece-" + subPiece.id} name={subPiece.name}>
+                  {subPiece.materialSlots.map(materialSlot => (
+                    <MaterialSlotItem key={"materialSlot-" + materialSlot.id} name={materialSlot.name}>
+                      <SelectInput
+                        options={materialSlot.options.map(o => ({ value: o.id, label: o.name }))}
+                        value={materialSlot.value ? materialSlot.value.id : null}
+                        onChange={(value, option) => this.onChangeMaterialSlot(subPiece, materialSlot, value, option)}
+                      />
+                    </MaterialSlotItem>
+                  ))}
+                </SubPieceItem>
               ))}
-            </SubPieceItem>
-          ))}
-        </SubPiecesContainer>
+            </SubPiecesContainer>
+          </>
+        )}
         <InputGroup name="Loop Animation">
           <SelectInput
             disabled={this.isAnimationPropertyDisabled()}
