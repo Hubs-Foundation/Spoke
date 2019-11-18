@@ -52,6 +52,7 @@ import TenorSource from "./ui/assets/sources/TenorSource";
 import ElementsSource from "./ui/assets/sources/ElementsSource";
 import MyAssetsSource from "./ui/assets/sources/MyAssetsSource";
 import ArchitectureKitSource from "./ui/assets/sources/ArchitectureKitSource";
+import RockKitSource from "./ui/assets/sources/RockKitSource";
 
 export function createEditor(api, settings) {
   const editor = new Editor(api, settings);
@@ -81,6 +82,7 @@ export function createEditor(api, settings) {
   editor.registerSource(new ElementsSource(editor));
   editor.registerSource(new MyAssetsSource(editor));
   editor.registerSource(new ArchitectureKitSource());
+  editor.registerSource(new RockKitSource());
   editor.registerSource(new SketchfabSource(api));
   editor.registerSource(new PolySource(api));
   editor.registerSource(new BingImagesSource(api));

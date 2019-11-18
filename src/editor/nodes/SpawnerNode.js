@@ -9,7 +9,7 @@ export default class SpawnerNode extends EditorNodeMixin(Model) {
   static nodeName = "Spawner";
 
   static initialElementProps = {
-    scaleToFit: true,
+    initialScale: 1,
     src: "https://sketchfab.com/models/a4c500d7358a4a199b6a5cd35f416466"
   };
 
@@ -26,7 +26,7 @@ export default class SpawnerNode extends EditorNodeMixin(Model) {
   constructor(editor) {
     super(editor);
     this._canonicalUrl = "";
-    this.scaleToFit = false;
+    this.initialScale = 1;
     this.boundingBox = new Box3();
     this.boundingSphere = new Sphere();
   }
@@ -86,7 +86,7 @@ export default class SpawnerNode extends EditorNodeMixin(Model) {
         this.editor.renderer.addBatchedObject(this.model);
       }
 
-      if (this.scaleToFit) {
+      if (this.initialScale) {
         this.scale.set(1, 1, 1);
 
         if (this.model) {
@@ -108,7 +108,10 @@ export default class SpawnerNode extends EditorNodeMixin(Model) {
         }
 
         // Clear scale to fit property so that the swapped model maintains the same scale.
-        this.scaleToFit = false;
+        this.initialScale = 1;
+      } else {
+        this.scale.multiplyScalar(this.initialScale);
+        this.initialScale = 1;
       }
 
       this.editor.emit("objectsChanged", [this]);
@@ -163,7 +166,7 @@ export default class SpawnerNode extends EditorNodeMixin(Model) {
     super.copy(source, recursive);
 
     if (source.loadingCube) {
-      this.scaleToFit = source.scaleToFit;
+      this.initialScale = source.initialScale;
       this.load(source.src);
     } else {
       this._canonicalUrl = source._canonicalUrl;

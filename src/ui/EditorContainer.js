@@ -117,6 +117,10 @@ export default class EditorContainer extends Component {
             action: this.onSaveProject
           },
           {
+            name: "Save As",
+            action: this.onDuplicateProject
+          },
+          {
             name: "Publish to Hubs...",
             action: this.onPublishProject
           },
@@ -480,6 +484,35 @@ export default class EditorContainer extends Component {
     }
   };
 
+  onDuplicateProject = async () => {
+    const abortController = new AbortController();
+    this.showDialog(ProgressDialog, {
+      title: "Duplicating Project",
+      message: "Duplicating project...",
+      cancelable: true,
+      onCancel: () => {
+        abortController.abort();
+        this.hideDialog();
+      }
+    });
+    await new Promise(resolve => setTimeout(resolve, 5));
+    try {
+      const editor = this.state.editor;
+      await this.createProject();
+      editor.sceneModified = false;
+      this.updateModifiedState();
+
+      this.hideDialog();
+    } catch (error) {
+      console.error(error);
+
+      this.showDialog(ErrorDialog, {
+        title: "Error Saving Project",
+        message: error.message || "There was an error when saving the project."
+      });
+    }
+  };
+
   onExportProject = async () => {
     const options = await new Promise(resolve => {
       this.showDialog(ExportProjectDialog, {
@@ -581,7 +614,7 @@ export default class EditorContainer extends Component {
     const projectString = JSON.stringify(project);
     const projectBlob = new Blob([projectString]);
     const el = document.createElement("a");
-    const fileName = this.state.editor.scene.name.toLowerCase().replace(" ", "-");
+    const fileName = this.state.editor.scene.name.toLowerCase().replace(/\s+/g, "-");
     el.download = fileName + ".spoke";
     el.href = URL.createObjectURL(projectBlob);
     document.body.appendChild(el);
