@@ -39,6 +39,30 @@ export default class SketchfabSource extends ModelMediaSource {
         value: "collections",
         children: [
           {
+            label: "Hubs Scene Props",
+            value: "51b7fd61abd04bc888cc8e7146125741",
+            paramsKey: "collection",
+            initialNodeProps: {
+              initialScale: "fit",
+              castShadow: true,
+              receiveShadow: true
+            },
+            itemProps: {
+              transformPivot: TransformPivot.Bottom
+            }
+          },
+          {
+            label: "Hubs Recommended Props",
+            value: "6cc8879692694161b1208c4626c48aba",
+            paramsKey: "collection",
+            initialNodeProps: {
+              initialScale: "fit"
+            },
+            itemProps: {
+              transformPivot: TransformPivot.Bottom
+            }
+          },
+          {
             disabled: true,
             label: "Medieval Fantasy Contest",
             value: "medieval-fantasy-contest",
@@ -481,6 +505,19 @@ export default class SketchfabSource extends ModelMediaSource {
               //     transformPivot: TransformPivot.Bottom
               //   }
               // },
+              {
+                label: "Space Smugglers Clubhouse - by sawcisson",
+                value: "9edad35200f44fc09c42ddd5fca73c8e",
+                paramsKey: "collection",
+                initialNodeProps: {
+                  initialScale: 1,
+                  castShadow: true,
+                  receiveShadow: true
+                },
+                itemProps: {
+                  transformPivot: TransformPivot.Bottom
+                }
+              },
               {
                 label: "Morning Dew Coffee Shop - by CameronMckenzie",
                 value: "4a4511d656374c79a743c4b17efea961",
