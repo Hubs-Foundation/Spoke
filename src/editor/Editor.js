@@ -1887,7 +1887,7 @@ export default class Editor extends EventEmitter {
       node = new ModelNode(this);
       this.getSpawnPosition(node.position);
       this.addObject(node);
-      node.scaleToFit = true;
+      node.initialScale = "fit";
       await node.load(url);
     } else if (contentType.startsWith("video/")) {
       node = new VideoNode(this);

@@ -614,7 +614,7 @@ export default class EditorContainer extends Component {
     const projectString = JSON.stringify(project);
     const projectBlob = new Blob([projectString]);
     const el = document.createElement("a");
-    const fileName = this.state.editor.scene.name.toLowerCase().replace(" ", "-");
+    const fileName = this.state.editor.scene.name.toLowerCase().replace(/\s+/g, "-");
     el.download = fileName + ".spoke";
     el.href = URL.createObjectURL(projectBlob);
     document.body.appendChild(el);

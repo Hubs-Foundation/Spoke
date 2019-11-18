@@ -363,6 +363,10 @@ export default class Project extends EventEmitter {
       searchParams.set("filter", params.filter);
     }
 
+    if (params.collection) {
+      searchParams.set("collection", params.collection);
+    }
+
     if (cursor) {
       searchParams.set("cursor", cursor);
     }
