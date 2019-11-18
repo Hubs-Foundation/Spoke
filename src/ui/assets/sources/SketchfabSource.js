@@ -375,19 +375,20 @@ export default class SketchfabSource extends ModelMediaSource {
                   transformPivot: TransformPivot.Bottom
                 }
               },
-              {
-                label: "TeaScroll Clubhouse - by Anaïs Faure",
-                value: "17246743abc641d2b76d22b50c4d7173",
-                paramsKey: "collection",
-                initialNodeProps: {
-                  initialScale: 1,
-                  castShadow: true,
-                  receiveShadow: true
-                },
-                itemProps: {
-                  transformPivot: TransformPivot.Bottom
-                }
-              },
+              // TODO: Requires support for glTF Specular Glossiness Material
+              // {
+              //   label: "TeaScroll Clubhouse - by Anaïs Faure",
+              //   value: "17246743abc641d2b76d22b50c4d7173",
+              //   paramsKey: "collection",
+              //   initialNodeProps: {
+              //     initialScale: 1,
+              //     castShadow: true,
+              //     receiveShadow: true
+              //   },
+              //   itemProps: {
+              //     transformPivot: TransformPivot.Bottom
+              //   }
+              // },
               {
                 label: "Wizard's Library - by mediochrea",
                 value: "9ed3d50e891d4261a6b31d664869d419",
@@ -466,19 +467,20 @@ export default class SketchfabSource extends ModelMediaSource {
                   transformPivot: TransformPivot.Selection
                 }
               },
-              {
-                label: "Museum - by Thomas Flynn",
-                value: "46c4fd78da6a41f98c3ad8c1a0647aad",
-                paramsKey: "collection",
-                initialNodeProps: {
-                  initialScale: 1,
-                  castShadow: true,
-                  receiveShadow: true
-                },
-                itemProps: {
-                  transformPivot: TransformPivot.Bottom
-                }
-              },
+              // TODO: Requires support for glTF Specular Glossiness Material
+              // {
+              //   label: "Museum - by Thomas Flynn",
+              //   value: "46c4fd78da6a41f98c3ad8c1a0647aad",
+              //   paramsKey: "collection",
+              //   initialNodeProps: {
+              //     initialScale: 1,
+              //     castShadow: true,
+              //     receiveShadow: true
+              //   },
+              //   itemProps: {
+              //     transformPivot: TransformPivot.Bottom
+              //   }
+              // },
               {
                 label: "Morning Dew Coffee Shop - by CameronMckenzie",
                 value: "4a4511d656374c79a743c4b17efea961",
