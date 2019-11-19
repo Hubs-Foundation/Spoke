@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
+import configs from "../../configs";
 import OnboardingContainer from "./OnboardingContainer";
 import OnboardingDialog from "./OnboardingDialog";
 import OnboardingPopover from "./OnboardingPopover";
@@ -138,8 +139,8 @@ const steps = [
       return (
         <OnboardingDialog {...props}>
           <h2>Introduction</h2>
-          <h1>Welcome to Spoke</h1>
-          <p>In this tutorial we&#39;ll go over how to create and publish a scene with Spoke.</p>
+          <h1>Welcome{configs.isMoz() ? " to Spoke" : ""}</h1>
+          <p>In this tutorial we&#39;ll go over how to create and publish a scene.</p>
         </OnboardingDialog>
       );
     }
@@ -385,8 +386,8 @@ const steps = [
           <h2>Saving and Publishing</h2>
           <h1>Publishing Your Project</h1>
           <p>
-            Once your project is ready, you can publish it to Mozilla Hubs and invite your friends with the click of a
-            button.
+            Once your project is ready, you can publish it{configs.isMoz() && " to Hubs"} and invite your friends with
+            the click of a button.
           </p>
         </OnboardingDialog>
       );
@@ -402,8 +403,9 @@ const steps = [
           <h2>Saving and Publishing</h2>
           <h1>Great Job!</h1>
           <p>
-            Great job! You&#39;ve touched all the basics of Spoke and published a scene to Hubs! To get started on your
-            own scene check out your projects page. Or click finish to continue working on this scene.
+            Great job! You&#39;ve touched all the basics {configs.isMoz() && "of Spoke "}and published a scene{" "}
+            {configs.isMoz() && "to Hubs"}! To get started on your own scene check out your projects page. Or click
+            finish to continue working on this scene.
           </p>
           <Button as={Link} to="/projects">
             My Projects

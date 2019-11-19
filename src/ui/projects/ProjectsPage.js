@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
+import configs from "../../configs";
 import { withApi } from "../contexts/ApiContext";
 import NavBar from "../navigation/NavBar";
 import ProjectGrid from "./ProjectGrid";
@@ -167,7 +168,7 @@ class ProjectsPage extends Component {
           {!isAuthenticated || (projects.length === 0 && !loading) ? (
             <ProjectsSection>
               <WelcomeContainer>
-                <h1>Welcome to Spoke</h1>
+                <h1>Welcome{configs.isMoz() ? " to Spoke" : ""}</h1>
                 <h2>
                   If you&#39;re new here we recommend going through the tutorial. Otherwise, jump right in and create a
                   project from scratch or one of our templates.

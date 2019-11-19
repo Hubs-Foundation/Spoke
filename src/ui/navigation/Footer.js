@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import { Link } from "react-router-dom";
 import mozillaLogo from "../../assets/mozilla-logo.png";
 import styled from "styled-components";
+import configs from "../../configs";
 
 const StyledFooter = styled.footer`
   display: flex;
@@ -70,31 +71,41 @@ export default class Footer extends Component {
                 Source
               </a>
             </NavListItem>
-            <NavListItem mobileOnly>
-              <a href="https://discord.gg/wHmY4nd" rel="noopener noreferrer">
-                Community
-              </a>
-            </NavListItem>
-            <NavListItem mobileOnly>
-              <a href="https://hubs.mozilla.com" rel="noopener noreferrer">
-                Hubs
-              </a>
-            </NavListItem>
-            <NavListItem>
-              <a href="https://github.com/mozilla/hubs/blob/master/TERMS.md" rel="noopener noreferrer">
-                Terms of Use
-              </a>
-            </NavListItem>
-            <NavListItem>
-              <a href="https://github.com/mozilla/hubs/blob/master/PRIVACY.md" rel="noopener noreferrer">
-                Privacy Notice
-              </a>
-            </NavListItem>
-            <NavListItem>
-              <a href="https://mozilla.com" rel="noopener noreferrer">
-                <img alt="Mozilla" src={mozillaLogo} />
-              </a>
-            </NavListItem>
+            {configs.isMoz() && (
+              <NavListItem mobileOnly>
+                <a href="https://discord.gg/wHmY4nd" rel="noopener noreferrer">
+                  Community
+                </a>
+              </NavListItem>
+            )}
+            {configs.isMoz() && (
+              <NavListItem mobileOnly>
+                <a href="https://hubs.mozilla.com" rel="noopener noreferrer">
+                  Hubs
+                </a>
+              </NavListItem>
+            )}
+            {configs.isMoz() && (
+              <NavListItem>
+                <a href="https://github.com/mozilla/hubs/blob/master/TERMS.md" rel="noopener noreferrer">
+                  Terms of Use
+                </a>
+              </NavListItem>
+            )}
+            {configs.isMoz() && (
+              <NavListItem>
+                <a href="https://github.com/mozilla/hubs/blob/master/PRIVACY.md" rel="noopener noreferrer">
+                  Privacy Notice
+                </a>
+              </NavListItem>
+            )}
+            {configs.isMoz() && (
+              <NavListItem>
+                <a href="https://mozilla.com" rel="noopener noreferrer">
+                  <img alt="Mozilla" src={mozillaLogo} />
+                </a>
+              </NavListItem>
+            )}
           </NavList>
         </nav>
       </StyledFooter>

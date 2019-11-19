@@ -1,8 +1,8 @@
 import React, { Component } from "react";
+import configs from "../../configs";
 import { Link } from "react-router-dom";
 import PropTypes from "prop-types";
 import { withAuth } from "../contexts/AuthContext";
-import spokeIcon from "../../assets/spoke-icon.png";
 import styled from "styled-components";
 
 const StyledNavBar = styled.header`
@@ -67,7 +67,7 @@ class NavBar extends Component {
       <StyledNavBar>
         <IconContainer>
           <Link to="/">
-            <img src={spokeIcon} alt="Spoke" />
+            <img src={configs.icon()} alt={configs.name()} />
           </Link>
         </IconContainer>
         <MiddleContainer>
@@ -81,16 +81,20 @@ class NavBar extends Component {
                   Source
                 </a>
               </li>
-              <li>
-                <a href="https://discord.gg/wHmY4nd" rel="noopener noreferrer">
-                  Community
-                </a>
-              </li>
-              <li>
-                <a href="https://hubs.mozilla.com" rel="noopener noreferrer">
-                  Hubs
-                </a>
-              </li>
+              {configs.isMoz() && (
+                <li>
+                  <a href="https://discord.gg/wHmY4nd" rel="noopener noreferrer">
+                    Community
+                  </a>
+                </li>
+              )}
+              {configs.isMoz() && (
+                <li>
+                  <a href="https://hubs.mozilla.com" rel="noopener noreferrer">
+                    Hubs
+                  </a>
+                </li>
+              )}
             </NavList>
           </nav>
         </MiddleContainer>
