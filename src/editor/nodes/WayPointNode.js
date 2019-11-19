@@ -33,6 +33,8 @@ export default class WayPointNode extends EditorNodeMixin(Object3D) {
     this.canBeOccupied = false;
     this.canBeClicked = false;
     this.willDisableMotion = false;
+    this.snapToNavMesh = false;
+    this.willMaintainInitialOrientation = false;
 
     if (wayPointHelperModel) {
       this.helper = wayPointHelperModel.clone();
@@ -52,6 +54,8 @@ export default class WayPointNode extends EditorNodeMixin(Object3D) {
     this.canBeOccupied = source.canBeOccupied;
     this.canBeClicked = source.canBeClicked;
     this.willDisableMotion = source.willDisableMotion;
+    this.snapToNavMesh = source.snapToNavMesh;
+    this.willMaintainInitialOrientation = source.willMaintainInitialOrientation;
     super.copy(source, recursive);
 
     if (recursive) {
@@ -71,7 +75,9 @@ export default class WayPointNode extends EditorNodeMixin(Object3D) {
         canBeSpawnPoint: this.canBeSpawnPoint,
         canBeOccupied: this.canBeOccupied,
         canBeClicked: this.canBeClicked,
-        willDisableMotion: this.willDisableMotion
+        willDisableMotion: this.willDisableMotion,
+        snapToNavMesh: this.snapToNavMesh,
+        willMaintainInitialOrientation: this.willMaintainInitialOrientation
       }
     });
   }
@@ -85,6 +91,8 @@ export default class WayPointNode extends EditorNodeMixin(Object3D) {
     node.canBeOccupied = waypoint.props.canBeOccupied;
     node.canBeClicked = waypoint.props.canBeClicked;
     node.willDisableMotion = waypoint.props.willDisableMotion;
+    node.snapToNavMesh = waypoint.props.snapToNavMesh;
+    node.willMaintainInitialOrientation = waypoint.props.willMaintainInitialOrientation;
     return node;
   }
 
@@ -95,7 +103,9 @@ export default class WayPointNode extends EditorNodeMixin(Object3D) {
       canBeSpawnPoint: this.canBeSpawnPoint,
       canBeOccupied: this.canBeOccupied,
       canBeClicked: this.canBeClicked,
-      willDisableMotion: this.willDisableMotion
+      willDisableMotion: this.willDisableMotion,
+      snapToNavMesh: this.snapToNavMesh,
+      willMaintainInitialOrientation: this.willMaintainInitialOrientation
     });
     this.addGLTFComponent("networked", {
       id: this.uuid
