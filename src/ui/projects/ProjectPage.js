@@ -19,7 +19,8 @@ class ProjectPage extends Component {
   state = {
     loading: true,
     error: null,
-    project: null
+    project: null,
+    tutorial: false
   };
 
   componentDidMount() {
@@ -34,7 +35,7 @@ class ProjectPage extends Component {
         this.loadProjectTemplate(defaultTemplateUrl);
       }
     } else if (projectId === "tutorial") {
-      this.loadProjectTemplate(tutorialTemplateUrl);
+      this.loadProjectTemplate(tutorialTemplateUrl, true);
     } else {
       this.loadProject(projectId);
     }
@@ -56,20 +57,29 @@ class ProjectPage extends Component {
 
     if (projectId !== prevProjectId || this.state.templateUrl !== templateUrl) {
       if (projectId === "new" || projectId === "tutorial") {
-        this.loadProjectTemplate(templateUrl);
+        this.loadProjectTemplate(templateUrl, projectId === "tutorial");
       } else if (prevProjectId !== "tutorial" && prevProjectId !== "new") {
         this.loadProject(projectId);
       }
     }
   }
 
-  loadProjectTemplate(templateUrl) {
-    this.setState({ loading: true, project: null, templateUrl });
+  loadProjectTemplate(templateUrl, tutorial = false) {
+    this.setState({ loading: true, project: null, tutorial, templateUrl });
 
     this.props.api
       .fetch(templateUrl)
       .then(response => response.json())
-      .then(project => this.setState({ loading: false, project, templateUrl }))
+      .then(data => {
+        this.setState({
+          loading: false,
+          project: {
+            data,
+            tutorial
+          },
+          templateUrl
+        });
+      })
       .catch(err => {
         Sentry.captureException(err);
         console.error(err.response);
@@ -78,12 +88,12 @@ class ProjectPage extends Component {
   }
 
   loadProject(projectId) {
-    this.setState({ loading: true, project: null, templateUrl: null });
+    this.setState({ loading: true, project: null, templateUrl: null, tutorial: false });
 
     this.props.api
       .getProject(projectId)
-      .then(({ project }) => {
-        this.setState({ loading: false, project, templateUrl: null });
+      .then(project => {
+        this.setState({ loading: false, project, templateUrl: null, tutorial: false });
       })
       .catch(err => {
         if (err.response && err.response.status === 401) {
@@ -97,8 +107,8 @@ class ProjectPage extends Component {
   }
 
   render() {
-    const { api, match, history } = this.props;
-    const { loading, error, project } = this.state;
+    const { api, history } = this.props;
+    const { loading, error, project, tutorial } = this.state;
 
     if (loading) {
       return <Loading message="Loading project..." fullScreen />;
@@ -108,7 +118,7 @@ class ProjectPage extends Component {
       return <Error className="project-error" message={error} />;
     }
 
-    return <EditorContainer api={api} history={history} projectId={match.params.projectId} project={project} />;
+    return <EditorContainer api={api} history={history} project={project} tutorial={tutorial} />;
   }
 }
 

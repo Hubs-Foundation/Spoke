@@ -53,7 +53,6 @@ const WorkspaceContainer = styled.div`
 export default class EditorContainer extends Component {
   static propTypes = {
     api: PropTypes.object.isRequired,
-    projectId: PropTypes.string,
     project: PropTypes.object,
     history: PropTypes.object.isRequired
   };
@@ -80,7 +79,7 @@ export default class EditorContainer extends Component {
         updateSetting: this.updateSetting
       },
       onboardingContext: {
-        enabled: props.projectId === "tutorial"
+        enabled: props.project.tutorial
       },
       DialogComponent: null,
       dialogProps: {},
@@ -144,7 +143,7 @@ export default class EditorContainer extends Component {
           {
             name: "Tutorial",
             action: () => {
-              if (this.props.projectId === "tutorial") {
+              if (this.props.project.tutorial) {
                 this.setState({ onboardingContext: { enabled: true } });
               } else {
                 this.props.history.push("/projects/tutorial");
@@ -351,24 +350,8 @@ export default class EditorContainer extends Component {
     try {
       await editor.loadProject(project);
 
-      const projectId = this.props.projectId;
-
-      if (projectId === "new" || projectId === "tutorial") {
-        editor.projectId = null;
-      } else {
-        editor.projectId = projectId;
-      }
-
-      if (projectId === "tutorial") {
+      if (project.tutorial) {
         this.setState({ onboardingContext: { enabled: true } });
-      }
-
-      const sceneId = editor.scene.metadata && editor.scene.metadata.sceneId;
-
-      if (sceneId) {
-        editor.sceneUrl = this.props.api.getSceneUrl(sceneId);
-      } else {
-        editor.sceneUrl = null;
       }
 
       this.hideDialog();
@@ -413,18 +396,20 @@ export default class EditorContainer extends Component {
       editor.setProperty(editor.scene, "name", result.name, false);
       editor.scene.setMetadata({ name: result.name });
 
-      const { projectId } = await this.props.api.createProject(
+      const project = await this.props.api.createProject(
         editor.scene,
         blob,
         abortController.signal,
         this.showDialog,
         this.hideDialog
       );
+
       editor.sceneModified = false;
-      editor.projectId = projectId;
+      editor.project = project;
+
       this.updateModifiedState(() => {
         this.setState({ creatingProject: true }, () => {
-          this.props.history.replace(`/projects/${projectId}`);
+          this.props.history.replace(`/projects/${project.id}`);
           this.setState({ creatingProject: false });
         });
       });
@@ -458,14 +443,15 @@ export default class EditorContainer extends Component {
     try {
       const editor = this.state.editor;
 
-      if (editor.projectId) {
-        await this.props.api.saveProject(
-          editor.projectId,
+      if (editor.project.id) {
+        const project = await this.props.api.saveProject(
+          editor.project.id,
           editor,
           abortController.signal,
           this.showDialog,
           this.hideDialog
         );
+        editor.project = project;
       } else {
         await this.createProject();
       }
@@ -594,7 +580,7 @@ export default class EditorContainer extends Component {
             delete json.metadata.sceneId;
           }
 
-          this.loadProject(json);
+          this.loadProject({ data: json });
         };
         fileReader.readAsText(el.files[0]);
       }
@@ -626,11 +612,12 @@ export default class EditorContainer extends Component {
     try {
       const editor = this.state.editor;
 
-      if (!editor.projectId) {
+      if (!editor.project.id) {
         await this.createProject();
       }
 
-      await this.props.api.publishProject(editor.projectId, editor, this.showDialog, this.hideDialog);
+      const project = await this.props.api.publishProject(editor.project.id, editor, this.showDialog, this.hideDialog);
+      editor.project = project;
     } catch (error) {
       if (error.aborted) {
         this.hideDialog();
@@ -646,13 +633,8 @@ export default class EditorContainer extends Component {
     }
   };
 
-  getSceneId() {
-    const scene = this.state.editor.scene;
-    return scene.metadata && scene.metadata.sceneId;
-  }
-
   onOpenScene = () => {
-    const sceneId = this.getSceneId();
+    const sceneId = this.state.editor.project.sceneId;
 
     if (sceneId) {
       const url = this.props.api.getSceneUrl(sceneId);
@@ -667,7 +649,7 @@ export default class EditorContainer extends Component {
   render() {
     const { DialogComponent, dialogProps, settingsContext, onboardingContext, editor } = this.state;
     const toolbarMenu = this.generateToolbarMenu();
-    const isPublishedScene = !!this.getSceneId();
+    const isPublishedScene = !!editor.project && editor.project.sceneId;
 
     return (
       <StyledEditorContainer id="editor-container">

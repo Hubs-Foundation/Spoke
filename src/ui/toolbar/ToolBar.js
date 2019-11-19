@@ -470,7 +470,9 @@ export default class ToolBar extends Component {
           </ToolbarInputGroup>
         </ToolToggles>
         <Spacer />
-        {this.props.editor.sceneUrl && <PublishButton onClick={this.props.onOpenScene}>Open in Hubs</PublishButton>}
+        {this.props.editor.project && this.props.editor.project.sceneId && (
+          <PublishButton onClick={this.props.onOpenScene}>Open in Hubs</PublishButton>
+        )}
         <PublishButton id="publish-button" onClick={this.props.onPublish}>
           Publish to Hubs...
         </PublishButton>

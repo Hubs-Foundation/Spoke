@@ -116,7 +116,7 @@ export default class Editor extends EventEmitter {
     super();
     this.api = api;
     this.settings = settings;
-    this.projectId = null;
+    this.project = null;
 
     this.selected = [];
     this.selectedTransformRoots = [];
@@ -234,7 +234,7 @@ export default class Editor extends EventEmitter {
     this.gltfCache.disposeAndClear();
   }
 
-  async loadProject(json) {
+  async loadProject(project) {
     this.removeListener("objectsChanged", this.onEmitSceneModified);
     this.removeListener("sceneGraphChanged", this.onEmitSceneModified);
 
@@ -245,12 +245,12 @@ export default class Editor extends EventEmitter {
     this.sceneLoading = true;
     this.disableUpdate = true;
 
-    const scene = await SceneNode.loadProject(this, json);
+    const scene = await SceneNode.loadProject(this, project.data);
 
     this.sceneLoading = false;
     this.disableUpdate = false;
     this.scene = scene;
-    this.sceneUrl = null;
+    this.project = project;
 
     this.camera.position.set(0, 5, 10);
     this.camera.lookAt(new Vector3());
