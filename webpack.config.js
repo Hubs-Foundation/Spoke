@@ -250,6 +250,7 @@ module.exports = env => {
         NON_CORS_PROXY_DOMAINS: "",
         ROUTER_BASE_PATH: "",
         SENTRY_DSN: null,
+        IS_MOZ: false,
         GITHUB_ORG: "mozilla",
         GITHUB_REPO: "spoke",
         GITHUB_PUBLIC_TOKEN: "de8cbfb4cc0281c7b731c891df431016c29b0ace"
