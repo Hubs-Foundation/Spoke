@@ -92,15 +92,15 @@ export default class PublishDialog extends Component {
         </FormField>
         <FormField inline>
           <label htmlFor="allowPromotion">
-            Allow Mozilla to{" "}
+            Allow {configs.isMoz() ? "Mozilla to " : ""}
             <a
               href="https://github.com/mozilla/Spoke/blob/master/PROMOTION.md"
               target="_blank"
               rel="noopener noreferrer"
             >
-              promote
+              {configs.isMoz() ? "promote" : "promotion"}
             </a>{" "}
-            my scene
+            {configs.isMoz() ? "" : "of "}my scene
           </label>
           <BooleanInput id="allowPromotion" value={allowPromotion} onChange={this.onChangeAllowPromotion} />
         </FormField>

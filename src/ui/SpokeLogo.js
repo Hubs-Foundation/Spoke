@@ -3,7 +3,7 @@ import configs from "../configs";
 
 export default class SpokeLogo extends Component {
   render() {
-    if (configs.IS_MOZ) {
+    if (configs.isMoz()) {
       return (
         <svg width="150" height="156" viewBox="0 0 150 156" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M76.8293 74.9372L118.934 61.2856L76.8293 31.4424V74.9372Z" fill="#338BFF" />

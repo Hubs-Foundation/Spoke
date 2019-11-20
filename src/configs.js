@@ -21,14 +21,15 @@ get(configs, "SENTRY_DSN", process.env.SENTRY_DSN);
 get(configs, "BASE_ASSETS_PATH", process.env.BASE_ASSETS_PATH);
 get(configs, "IS_MOZ", process.env.IS_MOZ);
 
+console.log(process.env.IS_MOZ);
 if (configs.BASE_ASSETS_PATH) {
   // eslint-disable-next-line no-undef
   __webpack_public_path__ = configs.BASE_ASSETS_PATH;
 }
 
-configs.name = () => (configs.IS_MOZ ? "Spoke" : "Scene Editor");
-configs.longName = () => (configs.IS_MOZ ? "Spoke by Mozilla" : "Scene Editor");
-configs.icon = () => (configs.IS_MOZ ? spokeIcon : editorIcon);
-configs.isMoz = () => !!configs.IS_MOZ;
+configs.isMoz = () => configs.IS_MOZ === "true";
+configs.name = () => (configs.isMoz() ? "Spoke" : "Scene Editor");
+configs.longName = () => (configs.isMoz() ? "Spoke by Mozilla" : "Scene Editor");
+configs.icon = () => (configs.isMoz() ? spokeIcon : editorIcon);
 
 export default configs;
