@@ -16,7 +16,7 @@ const StyledProjectGridItem = styled(Link)`
   flex-direction: column;
   height: 220px;
   border-radius: 6px;
-  background-color: ${props => props.theme.panel2};
+  background-color: ${props => props.theme.toolbar};
   text-decoration: none;
   border: 1px solid transparent;
 
@@ -71,8 +71,6 @@ const Thumbnail = styled.div`
   background-size: cover;
   background-position: 50%;
   background-repeat: no-repeat;
-  border-top-left-radius: inherit;
-  border-top-right-radius: inherit;
   background-image: url(${props => props.src});
 `;
 
