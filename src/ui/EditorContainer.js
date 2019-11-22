@@ -17,6 +17,7 @@ import { defaultSettings, SettingsContextProvider } from "./contexts/SettingsCon
 import { EditorContextProvider } from "./contexts/EditorContext";
 import { DialogContextProvider } from "./contexts/DialogContext";
 import { OnboardingContextProvider } from "./contexts/OnboardingContext";
+import { withApi } from "./contexts/ApiContext";
 
 import { createEditor } from "../config";
 
@@ -34,6 +35,9 @@ import { Resizeable } from "./layout/Resizeable";
 import DragLayer from "./dnd/DragLayer";
 import Editor from "../editor/Editor";
 
+import defaultTemplateUrl from "./../assets/templates/crater.spoke";
+import tutorialTemplateUrl from "./../assets/templates/tutorial.spoke";
+
 const StyledEditorContainer = styled.div`
   display: flex;
   flex: 1;
@@ -50,11 +54,12 @@ const WorkspaceContainer = styled.div`
   margin: 6px;
 `;
 
-export default class EditorContainer extends Component {
+class EditorContainer extends Component {
   static propTypes = {
     api: PropTypes.object.isRequired,
-    project: PropTypes.object,
-    history: PropTypes.object.isRequired
+    history: PropTypes.object.isRequired,
+    match: PropTypes.object.isRequired,
+    location: PropTypes.object.isRequired
   };
 
   constructor(props) {
@@ -68,23 +73,224 @@ export default class EditorContainer extends Component {
 
     const editor = createEditor(props.api, settings);
     window.editor = editor;
-    const editorInitPromise = editor.init();
+    editor.init();
+    editor.addListener("initialized", this.onEditorInitialized);
 
     this.state = {
+      error: null,
+      project: null,
+      parentSceneId: null,
       editor,
-      editorInitPromise,
-      creatingProject: false,
       settingsContext: {
         settings,
         updateSetting: this.updateSetting
       },
       onboardingContext: {
-        enabled: props.project.tutorial
+        enabled: false
       },
       DialogComponent: null,
       dialogProps: {},
       modified: false
     };
+  }
+
+  componentDidMount() {
+    const { match, location } = this.props;
+    const projectId = match.params.projectId;
+    const queryParams = new URLSearchParams(location.search);
+
+    if (projectId === "new") {
+      if (queryParams.has("template")) {
+        this.loadProjectTemplate(queryParams.get("template"));
+      } else if (queryParams.has("sceneId")) {
+        this.loadScene(queryParams.get("sceneId"));
+      } else {
+        this.loadProjectTemplate(defaultTemplateUrl);
+      }
+    } else if (projectId === "tutorial") {
+      this.loadProjectTemplate(tutorialTemplateUrl, true);
+    } else {
+      this.loadProject(projectId);
+    }
+
+    if (projectId === "tutorial") {
+      this.setState({ onboardingContext: { enabled: true } });
+    }
+  }
+
+  componentDidUpdate(prevProps) {
+    const { projectId } = this.props.match.params;
+    const queryParams = new URLSearchParams(location.search);
+
+    let templateUrl = null;
+
+    if (projectId === "new" && !queryParams.has("sceneId")) {
+      templateUrl = queryParams.get("template") || defaultTemplateUrl;
+    } else if (projectId === "tutorial") {
+      templateUrl = tutorialTemplateUrl;
+    }
+
+    const { projectId: prevProjectId } = prevProps.match.params;
+
+    console.log(
+      projectId !== prevProjectId || this.state.templateUrl !== templateUrl,
+      projectId,
+      prevProjectId,
+      this.state.templateUrl,
+      templateUrl
+    );
+
+    if (projectId !== prevProjectId || this.state.templateUrl !== templateUrl) {
+      if (projectId === "new" || projectId === "tutorial") {
+        this.loadProjectTemplate(templateUrl);
+      } else if (prevProjectId !== "tutorial" && prevProjectId !== "new") {
+        this.loadProject(projectId);
+      }
+
+      if (projectId === "tutorial") {
+        this.setState({ onboardingContext: { enabled: true } });
+      }
+    }
+  }
+
+  async loadProjectTemplate(templateUrl) {
+    this.setState({
+      project: null,
+      parentSceneId: null,
+      templateUrl
+    });
+
+    this.showDialog(ProgressDialog, {
+      title: "Loading Project",
+      message: "Loading project..."
+    });
+
+    const editor = this.state.editor;
+
+    try {
+      const templateFile = await this.props.api.fetch(templateUrl).then(response => response.json());
+
+      await editor.init();
+
+      await editor.loadProject(templateFile);
+
+      this.hideDialog();
+    } catch (error) {
+      console.error(error);
+
+      this.showDialog(ErrorDialog, {
+        title: "Error loading project.",
+        message: error.message || "There was an error when loading the project.",
+        error
+      });
+    }
+  }
+
+  async loadScene(sceneId) {
+    this.setState({
+      project: null,
+      parentSceneId: sceneId,
+      templateUrl: null,
+      onboardingContext: { enabled: false }
+    });
+
+    this.showDialog(ProgressDialog, {
+      title: "Loading Project",
+      message: "Loading project..."
+    });
+
+    const editor = this.state.editor;
+
+    try {
+      const scene = await this.props.api.getScene(sceneId);
+      const projectFile = await this.props.api.fetch(scene.scene_project_url).then(response => response.json());
+
+      await editor.init();
+
+      await editor.loadProject(projectFile);
+
+      this.hideDialog();
+    } catch (error) {
+      console.error(error);
+
+      this.showDialog(ErrorDialog, {
+        title: "Error loading project.",
+        message: error.message || "There was an error when loading the project.",
+        error
+      });
+    }
+  }
+
+  async importProject(projectFile) {
+    this.setState({
+      project: null,
+      parentSceneId: null,
+      templateUrl: null,
+      onboardingContext: { enabled: false }
+    });
+
+    this.showDialog(ProgressDialog, {
+      title: "Loading Project",
+      message: "Loading project..."
+    });
+
+    const editor = this.state.editor;
+
+    try {
+      await editor.init();
+
+      await editor.loadProject(projectFile);
+
+      this.hideDialog();
+    } catch (error) {
+      console.error(error);
+
+      this.showDialog(ErrorDialog, {
+        title: "Error loading project.",
+        message: error.message || "There was an error when loading the project.",
+        error
+      });
+    }
+  }
+
+  async loadProject(projectId) {
+    this.setState({
+      project: null,
+      parentSceneId: null,
+      templateUrl: null,
+      onboardingContext: { enabled: false }
+    });
+
+    this.showDialog(ProgressDialog, {
+      title: "Loading Project",
+      message: "Loading project..."
+    });
+
+    const editor = this.state.editor;
+
+    try {
+      const project = await this.props.api.getProject(projectId);
+
+      const projectFile = await this.props.api.fetch(project.project_url).then(response => response.json);
+
+      await editor.init();
+
+      await editor.loadProject(projectFile);
+
+      this.setState({
+        project
+      });
+
+      this.hideDialog();
+    } catch (error) {
+      console.error(error);
+
+      this.showDialog(ErrorDialog, {
+        title: "Error loading project.",
+        message: error.message || "There was an error when loading the project.",
+        error
+      });
+    }
   }
 
   updateModifiedState = then => {
@@ -143,7 +349,9 @@ export default class EditorContainer extends Component {
           {
             name: "Tutorial",
             action: () => {
-              if (this.props.project.tutorial) {
+              const { projectId } = this.props.match.params;
+
+              if (projectId === "tutorial") {
                 this.setState({ onboardingContext: { enabled: true } });
               } else {
                 this.props.history.push("/projects/tutorial");
@@ -202,17 +410,6 @@ export default class EditorContainer extends Component {
     ];
   };
 
-  componentDidMount() {
-    this.showDialog(ProgressDialog, {
-      title: "Loading Project",
-      message: "Loading project..."
-    });
-
-    const editor = this.state.editor;
-    editor.addListener("initialized", this.onEditorInitialized);
-    editor.addListener("error", this.onEditorError);
-  }
-
   onEditorInitialized = () => {
     const editor = this.state.editor;
 
@@ -233,23 +430,12 @@ export default class EditorContainer extends Component {
       scope.setTag("webgl-renderer", webglRenderer);
     });
 
-    this.loadProject(this.props.project).catch(console.error);
     window.addEventListener("resize", this.onResize);
     this.onResize();
     editor.addListener("projectLoaded", this.onProjectLoaded);
     editor.addListener("sceneModified", this.onSceneModified);
     editor.addListener("saveProject", this.onSaveProject);
   };
-
-  componentDidUpdate(prevProps) {
-    if (this.props.project !== prevProps.project) {
-      const editor = this.state.editor;
-
-      if (editor.initialized) {
-        this.loadProject(this.props.project).catch(console.error);
-      }
-    }
-  }
 
   componentWillUnmount() {
     window.removeEventListener("resize", this.onResize);
@@ -339,35 +525,8 @@ export default class EditorContainer extends Component {
    *  Project Actions
    */
 
-  async loadProject(project) {
-    const editor = this.state.editor;
-
-    this.showDialog(ProgressDialog, {
-      title: "Loading Project",
-      message: "Loading project..."
-    });
-
-    try {
-      await editor.loadProject(project);
-
-      if (project.tutorial) {
-        this.setState({ onboardingContext: { enabled: true } });
-      }
-
-      this.hideDialog();
-    } catch (error) {
-      console.error(error);
-
-      this.showDialog(ErrorDialog, {
-        title: "Error loading project.",
-        message: error.message || "There was an error when loading the project.",
-        error
-      });
-    }
-  }
-
   async createProject() {
-    const editor = this.state.editor;
+    const { editor, parentSceneId } = this.state;
 
     const { blob } = await editor.takeScreenshot(512, 320);
 
@@ -398,6 +557,7 @@ export default class EditorContainer extends Component {
 
       const project = await this.props.api.createProject(
         editor.scene,
+        parentSceneId,
         blob,
         abortController.signal,
         this.showDialog,
@@ -405,7 +565,6 @@ export default class EditorContainer extends Component {
       );
 
       editor.sceneModified = false;
-      editor.project = project;
 
       this.updateModifiedState(() => {
         this.setState({ creatingProject: true }, () => {
@@ -441,17 +600,18 @@ export default class EditorContainer extends Component {
     await new Promise(resolve => setTimeout(resolve, 5));
 
     try {
-      const editor = this.state.editor;
+      const { editor, project } = this.state;
 
-      if (editor.project.id) {
-        const project = await this.props.api.saveProject(
-          editor.project.id,
+      if (project) {
+        const newProject = await this.props.api.saveProject(
+          project.project_id,
           editor,
           abortController.signal,
           this.showDialog,
           this.hideDialog
         );
-        editor.project = project;
+
+        this.setState({ project: newProject });
       } else {
         await this.createProject();
       }
@@ -580,7 +740,7 @@ export default class EditorContainer extends Component {
             delete json.metadata.sceneId;
           }
 
-          this.loadProject({ data: json });
+          this.importProject(json);
         };
         fileReader.readAsText(el.files[0]);
       }
@@ -610,14 +770,20 @@ export default class EditorContainer extends Component {
 
   onPublishProject = async () => {
     try {
-      const editor = this.state.editor;
+      const { editor, project } = this.state;
 
-      if (!editor.project.id) {
+      if (!project.project_id) {
         await this.createProject();
       }
 
-      const project = await this.props.api.publishProject(editor.project.id, editor, this.showDialog, this.hideDialog);
-      editor.project = project;
+      const nextProject = await this.props.api.publishProject(
+        project.project_id,
+        editor,
+        this.showDialog,
+        this.hideDialog
+      );
+
+      this.setState({ project: nextProject });
     } catch (error) {
       if (error.aborted) {
         this.hideDialog();
@@ -634,10 +800,10 @@ export default class EditorContainer extends Component {
   };
 
   onOpenScene = () => {
-    const sceneId = this.state.editor.project.sceneId;
+    const scene = this.state.project.scene;
 
-    if (sceneId) {
-      const url = this.props.api.getSceneUrl(sceneId);
+    if (scene) {
+      const url = this.props.api.getSceneUrl(scene.scene_id);
       window.open(url);
     }
   };
@@ -647,9 +813,10 @@ export default class EditorContainer extends Component {
   };
 
   render() {
-    const { DialogComponent, dialogProps, settingsContext, onboardingContext, editor } = this.state;
+    const { DialogComponent, dialogProps, settingsContext, onboardingContext, editor, project } = this.state;
+
     const toolbarMenu = this.generateToolbarMenu();
-    const isPublishedScene = !!editor.project && editor.project.sceneId;
+    const isPublishedScene = !!project && project.scene;
 
     return (
       <StyledEditorContainer id="editor-container">
@@ -706,3 +873,5 @@ export default class EditorContainer extends Component {
     );
   }
 }
+
+export default withApi(EditorContainer);

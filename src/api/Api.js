@@ -87,16 +87,6 @@ function guessContentType(url) {
 
 const LOCAL_STORE_KEY = "___hubs_store";
 
-function formatProject(json, data) {
-  return {
-    id: json.project_id,
-    name: json.name,
-    thumbnailUrl: json.thumbnail_url,
-    sceneId: json.scene_id,
-    data
-  };
-}
-
 export default class Project extends EventEmitter {
   constructor() {
     super();
@@ -213,7 +203,7 @@ export default class Project extends EventEmitter {
       throw new Error(`Error fetching projects: ${json.error || "Unknown error."}`);
     }
 
-    return json.projects.map(formatProject);
+    return json.projects;
   }
 
   async getProject(projectId) {
@@ -230,14 +220,7 @@ export default class Project extends EventEmitter {
 
     const json = await response.json();
 
-    let data = null;
-
-    if (json.project_url) {
-      const projectFileResponse = await this.fetch(json.project_url, { headers });
-      data = await projectFileResponse.json();
-    }
-
-    return formatProject(json, data);
+    return json;
   }
 
   async resolveUrl(url, index) {
@@ -390,7 +373,7 @@ export default class Project extends EventEmitter {
     };
   }
 
-  async createProject(scene, thumbnailBlob, signal, showDialog, hideDialog) {
+  async createProject(scene, parentSceneId, thumbnailBlob, signal, showDialog, hideDialog) {
     this.emit("project-saving");
 
     // Ensure the user is authenticated before continuing.
@@ -433,15 +416,19 @@ export default class Project extends EventEmitter {
       authorization: `Bearer ${token}`
     };
 
-    const body = JSON.stringify({
-      project: {
-        name: scene.name,
-        thumbnail_file_id,
-        thumbnail_file_token,
-        project_file_id,
-        project_file_token
-      }
-    });
+    const project = {
+      name: scene.name,
+      thumbnail_file_id,
+      thumbnail_file_token,
+      project_file_id,
+      project_file_token
+    };
+
+    if (parentSceneId) {
+      project.parent_scene_id = parentSceneId;
+    }
+
+    const body = JSON.stringify({ project });
 
     const projectEndpoint = `https://${RETICULUM_SERVER}/api/v1/projects`;
 
@@ -456,7 +443,14 @@ export default class Project extends EventEmitter {
         showDialog(LoginDialog, {
           onSuccess: async () => {
             try {
-              const result = await this.createProject(scene, thumbnailBlob, signal, showDialog, hideDialog);
+              const result = await this.createProject(
+                scene,
+                parentSceneId,
+                thumbnailBlob,
+                signal,
+                showDialog,
+                hideDialog
+              );
               resolve(result);
             } catch (e) {
               reject(e);
@@ -474,7 +468,7 @@ export default class Project extends EventEmitter {
 
     this.emit("project-saved");
 
-    return formatProject(json);
+    return json;
   }
 
   async deleteProject(projectId) {
@@ -583,6 +577,7 @@ export default class Project extends EventEmitter {
           onSuccess: async () => {
             try {
               const result = await this.saveProject(projectId, editor, signal, showDialog, hideDialog);
+              console.log(result);
               resolve(result);
             } catch (e) {
               reject(e);
@@ -598,7 +593,21 @@ export default class Project extends EventEmitter {
 
     this.emit("project-saved");
 
-    return formatProject(json);
+    return json;
+  }
+
+  async getScene(sceneId) {
+    const headers = {
+      "content-type": "application/json"
+    };
+
+    const response = await this.fetch(`https://${RETICULUM_SERVER}/api/v1/scenes/${sceneId}`, {
+      headers
+    });
+
+    const json = await response.json();
+
+    return json.scenes[0];
   }
 
   getSceneUrl(sceneId) {
@@ -855,13 +864,12 @@ export default class Project extends EventEmitter {
         throw new Error(`Scene creation failed. ${await resp.text()}`);
       }
 
-      const json = await resp.json();
-      project = formatProject(json);
+      project = await resp.json();
 
       showDialog(PublishedSceneDialog, {
         sceneName: sceneParams.name,
         screenshotUrl,
-        sceneUrl: this.getSceneUrl(project.sceneId),
+        sceneUrl: this.getSceneUrl(project.scene.scene_id),
         onConfirm: () => {
           this.emit("project-published");
           hideDialog();
