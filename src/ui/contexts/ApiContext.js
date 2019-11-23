@@ -1,6 +1,6 @@
 import React from "react";
 
-const ApiContext = React.createContext();
+export const ApiContext = React.createContext();
 
 export const ApiContextProvider = ApiContext.Provider;
 

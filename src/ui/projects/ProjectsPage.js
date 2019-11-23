@@ -15,6 +15,7 @@ import styled from "styled-components";
 export const ProjectsSection = styled.section`
   padding-bottom: 100px;
   display: flex;
+  flex: 1;
 
   &:first-child {
     padding-top: 100px;
@@ -184,7 +185,7 @@ class ProjectsPage extends Component {
             <ProjectsContainer>
               <ProjectsHeader>
                 <h1>Projects</h1>
-                <MediumButton as={Link} to="/projects/templates">
+                <MediumButton as={Link} to="/projects/create">
                   New Project
                 </MediumButton>
               </ProjectsHeader>

@@ -353,7 +353,19 @@ export default class Project extends EventEmitter {
 
     const resp = await this.fetch(url, { headers, signal });
 
+    if (signal.aborted) {
+      const error = new Error("Media search aborted");
+      error.aborted = true;
+      throw error;
+    }
+
     const json = await resp.json();
+
+    if (signal.aborted) {
+      const error = new Error("Media search aborted");
+      error.aborted = true;
+      throw error;
+    }
 
     const thumbnailedEntries = json.entries.map(entry => {
       if (entry.images && entry.images.preview && entry.images.preview.url) {
