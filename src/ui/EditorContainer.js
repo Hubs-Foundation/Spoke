@@ -772,7 +772,7 @@ class EditorContainer extends Component {
     try {
       const { editor, project } = this.state;
 
-      if (!project.project_id) {
+      if (!project) {
         await this.createProject();
       }
 
