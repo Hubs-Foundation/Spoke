@@ -116,7 +116,7 @@ export default class Editor extends EventEmitter {
     super();
     this.api = api;
     this.settings = settings;
-    this.projectId = null;
+    this.project = null;
 
     this.selected = [];
     this.selectedTransformRoots = [];
@@ -158,6 +158,7 @@ export default class Editor extends EventEmitter {
     this.centerScreenSpace = new Vector2();
     this.clock = new Clock();
     this.disableUpdate = false;
+    this.initializing = false;
     this.initialized = false;
     this.sceneLoading = false;
   }
@@ -190,6 +191,35 @@ export default class Editor extends EventEmitter {
   }
 
   async init() {
+    if (this.initialized) {
+      return;
+    }
+
+    if (this.initializing) {
+      return new Promise((resolve, reject) => {
+        let cleanup = null;
+
+        const onInitialize = () => {
+          resolve();
+          cleanup();
+        };
+        const onError = err => {
+          reject(err);
+          cleanup();
+        };
+
+        cleanup = () => {
+          this.removeListener("initialized", onInitialize);
+          this.removeListener("error", onError);
+        };
+
+        this.addListener("initialized", onInitialize);
+        this.addListener("error", onError);
+      });
+    }
+
+    this.initializing = true;
+
     const tasks = [rendererPromise, loadEnvironmentMap(), LoadingCube.load(), TransformGizmo.load()];
 
     for (const NodeConstructor of this.nodeTypes) {
@@ -234,7 +264,7 @@ export default class Editor extends EventEmitter {
     this.gltfCache.disposeAndClear();
   }
 
-  async loadProject(json) {
+  async loadProject(projectFile) {
     this.removeListener("objectsChanged", this.onEmitSceneModified);
     this.removeListener("sceneGraphChanged", this.onEmitSceneModified);
 
@@ -245,12 +275,11 @@ export default class Editor extends EventEmitter {
     this.sceneLoading = true;
     this.disableUpdate = true;
 
-    const scene = await SceneNode.loadProject(this, json);
+    const scene = await SceneNode.loadProject(this, projectFile);
 
     this.sceneLoading = false;
     this.disableUpdate = false;
     this.scene = scene;
-    this.sceneUrl = null;
 
     this.camera.position.set(0, 5, 10);
     this.camera.lookAt(new Vector3());
