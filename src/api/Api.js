@@ -618,9 +618,8 @@ export default class Project extends EventEmitter {
     }
   }
 
-  async publishProject(projectId, editor, showDialog, hideDialog) {
+  async publishProject(project, editor, showDialog, hideDialog) {
     let screenshotUrl;
-    let project;
 
     try {
       const scene = editor.scene;
@@ -639,7 +638,9 @@ export default class Project extends EventEmitter {
           }
         });
 
-        await this.saveProject(projectId, editor, signal, showDialog, hideDialog);
+        project = await this.saveProject(project.project_id, editor, signal, showDialog, hideDialog);
+
+        console.log(project);
 
         if (signal.aborted) {
           const error = new Error("Publish project aborted");
@@ -667,17 +668,19 @@ export default class Project extends EventEmitter {
         throw error;
       }
 
-      // Gather all the info needed to display the publish dialog
-      const { name, creatorAttribution, allowRemixing, allowPromotion } = scene.metadata;
       const userInfo = this.getUserInfo();
 
-      let initialCreatorAttribution = creatorAttribution;
-      if (
-        (!initialCreatorAttribution || initialCreatorAttribution.length === 0) &&
-        userInfo &&
-        userInfo.creatorAttribution
-      ) {
-        initialCreatorAttribution = userInfo.creatorAttribution;
+      // Gather all the info needed to display the publish dialog
+      let { name, creatorAttribution, allowRemixing, allowPromotion } = scene.metadata;
+
+      name = (project.scene && project.scene.name) || name || editor.scene.name;
+
+      if (project.scene) {
+        allowPromotion = project.scene.allow_promotion;
+        allowRemixing = project.scene.allow_remixing;
+        creatorAttribution = project.scene.attribution || "";
+      } else if ((!creatorAttribution || creatorAttribution.length === 0) && userInfo && userInfo.creatorAttribution) {
+        creatorAttribution = userInfo.creatorAttribution;
       }
 
       const contentAttributions = scene.getContentAttributions();
@@ -688,8 +691,8 @@ export default class Project extends EventEmitter {
           screenshotUrl,
           contentAttributions,
           initialSceneParams: {
-            name: name || editor.scene.name,
-            creatorAttribution: initialCreatorAttribution || "",
+            name,
+            creatorAttribution: creatorAttribution || "",
             allowRemixing: typeof allowRemixing !== "undefined" ? allowRemixing : true,
             allowPromotion: typeof allowPromotion !== "undefined" ? allowPromotion : true
           },
@@ -833,7 +836,7 @@ export default class Project extends EventEmitter {
       };
       const body = JSON.stringify({ scene: sceneParams });
 
-      const resp = await this.fetch(`https://${RETICULUM_SERVER}/api/v1/projects/${projectId}/publish`, {
+      const resp = await this.fetch(`https://${RETICULUM_SERVER}/api/v1/projects/${project.project_id}/publish`, {
         method: "POST",
         headers,
         body

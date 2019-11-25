@@ -14,7 +14,7 @@ export default class TemplatesPage extends Component {
 
   onSelectTemplate = template => {
     const search = new URLSearchParams();
-    search.set("template", template.url);
+    search.set("template", template.project_url);
     this.props.history.push(`/projects/new?${search}`);
   };
 
