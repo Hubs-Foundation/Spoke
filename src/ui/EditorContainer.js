@@ -195,6 +195,11 @@ class EditorContainer extends Component {
       const scene = await this.props.api.getScene(sceneId);
       const projectFile = await this.props.api.fetch(scene.scene_project_url).then(response => response.json());
 
+      if (projectFile.metadata) {
+        delete projectFile.metadata.sceneUrl;
+        delete projectFile.metadata.sceneId;
+      }
+
       await editor.init();
 
       await editor.loadProject(projectFile);
