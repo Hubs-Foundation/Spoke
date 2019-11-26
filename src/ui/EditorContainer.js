@@ -775,6 +775,10 @@ class EditorContainer extends Component {
 
       project = await this.props.api.publishProject(project, editor, this.showDialog, this.hideDialog);
 
+      if (!project) {
+        return;
+      }
+
       this.setState({ project });
     } catch (error) {
       if (error.aborted) {
