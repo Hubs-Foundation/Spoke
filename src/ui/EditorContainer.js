@@ -791,11 +791,16 @@ class EditorContainer extends Component {
     }
   };
 
-  onOpenScene = () => {
-    const scene = this.state.project.scene;
+  getSceneId() {
+    const { editor, project } = this.state;
+    return (project && project.scene && project.scene.scene_id) || editor.scene.metadata.sceneId;
+  }
 
-    if (scene) {
-      const url = this.props.api.getSceneUrl(scene.scene_id);
+  onOpenScene = () => {
+    const sceneId = this.getSceneId();
+
+    if (sceneId) {
+      const url = this.props.api.getSceneUrl(sceneId);
       window.open(url);
     }
   };
@@ -805,10 +810,10 @@ class EditorContainer extends Component {
   };
 
   render() {
-    const { DialogComponent, dialogProps, settingsContext, onboardingContext, editor, project } = this.state;
+    const { DialogComponent, dialogProps, settingsContext, onboardingContext, editor } = this.state;
 
     const toolbarMenu = this.generateToolbarMenu();
-    const isPublishedScene = !!(project && project.scene);
+    const isPublishedScene = !!this.getSceneId();
 
     return (
       <StyledEditorContainer id="editor-container">
