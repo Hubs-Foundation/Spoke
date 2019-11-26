@@ -119,28 +119,18 @@ class EditorContainer extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    const { projectId } = this.props.match.params;
-    const queryParams = new URLSearchParams(location.search);
+    if (this.props.match.url !== prevProps.match.url && !this.state.creatingProject) {
+      const prevProjectId = prevProps.match.params.projectId;
+      const { projectId } = this.props.match.params;
+      const queryParams = new URLSearchParams(location.search);
+      let templateUrl = null;
 
-    let templateUrl = null;
+      if (projectId === "new" && !queryParams.has("sceneId")) {
+        templateUrl = queryParams.get("template") || defaultTemplateUrl;
+      } else if (projectId === "tutorial") {
+        templateUrl = tutorialTemplateUrl;
+      }
 
-    if (projectId === "new" && !queryParams.has("sceneId")) {
-      templateUrl = queryParams.get("template") || defaultTemplateUrl;
-    } else if (projectId === "tutorial") {
-      templateUrl = tutorialTemplateUrl;
-    }
-
-    const { projectId: prevProjectId } = prevProps.match.params;
-
-    console.log(
-      projectId !== prevProjectId || this.state.templateUrl !== templateUrl,
-      projectId,
-      prevProjectId,
-      this.state.templateUrl,
-      templateUrl
-    );
-
-    if (projectId !== prevProjectId || this.state.templateUrl !== templateUrl) {
       if (projectId === "new" || projectId === "tutorial") {
         this.loadProjectTemplate(templateUrl);
       } else if (prevProjectId !== "tutorial" && prevProjectId !== "new") {
@@ -271,7 +261,7 @@ class EditorContainer extends Component {
     try {
       const project = await this.props.api.getProject(projectId);
 
-      const projectFile = await this.props.api.fetch(project.project_url).then(response => response.json);
+      const projectFile = await this.props.api.fetch(project.project_url).then(response => response.json());
 
       await editor.init();
 
@@ -567,11 +557,13 @@ class EditorContainer extends Component {
       editor.sceneModified = false;
 
       this.updateModifiedState(() => {
-        this.setState({ creatingProject: true }, () => {
-          this.props.history.replace(`/projects/${project.id}`);
+        this.setState({ creatingProject: true, project }, () => {
+          this.props.history.replace(`/projects/${project.project_id}`);
           this.setState({ creatingProject: false });
         });
       });
+
+      return project;
     }
   }
 
@@ -750,15 +742,15 @@ class EditorContainer extends Component {
 
   onExportLegacyProject = async () => {
     const editor = this.state.editor;
-    const project = editor.scene.serialize();
+    const projectFile = editor.scene.serialize();
 
-    if (project.metadata) {
-      delete project.metadata.sceneUrl;
-      delete project.metadata.sceneId;
+    if (projectFile.metadata) {
+      delete projectFile.metadata.sceneUrl;
+      delete projectFile.metadata.sceneId;
     }
 
-    const projectString = JSON.stringify(project);
-    const projectBlob = new Blob([projectString]);
+    const projectJson = JSON.stringify(projectFile);
+    const projectBlob = new Blob([projectJson]);
     const el = document.createElement("a");
     const fileName = this.state.editor.scene.name.toLowerCase().replace(" ", "-");
     el.download = fileName + ".spoke";
@@ -770,20 +762,20 @@ class EditorContainer extends Component {
 
   onPublishProject = async () => {
     try {
-      const { editor, project } = this.state;
+      const editor = this.state.editor;
+      let project = this.state.project;
 
       if (!project) {
-        await this.createProject();
+        project = await this.createProject();
       }
 
-      const nextProject = await this.props.api.publishProject(
-        project.project_id,
-        editor,
-        this.showDialog,
-        this.hideDialog
-      );
+      if (!project) {
+        return;
+      }
 
-      this.setState({ project: nextProject });
+      project = await this.props.api.publishProject(project, editor, this.showDialog, this.hideDialog);
+
+      this.setState({ project });
     } catch (error) {
       if (error.aborted) {
         this.hideDialog();
@@ -816,7 +808,7 @@ class EditorContainer extends Component {
     const { DialogComponent, dialogProps, settingsContext, onboardingContext, editor, project } = this.state;
 
     const toolbarMenu = this.generateToolbarMenu();
-    const isPublishedScene = !!project && project.scene;
+    const isPublishedScene = !!(project && project.scene);
 
     return (
       <StyledEditorContainer id="editor-container">
