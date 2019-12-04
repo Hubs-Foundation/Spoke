@@ -25,8 +25,8 @@ import { Column } from "./layout/Flex";
 
 import theme from "./theme";
 
-const ProjectPage = lazy(() =>
-  import(/* webpackChunkName: "project-page", webpackPrefetch: true */ "./projects/ProjectPage")
+const EditorContainer = lazy(() =>
+  import(/* webpackChunkName: "project-page", webpackPrefetch: true */ "./EditorContainer")
 );
 
 const PackageKitPage = lazy(() =>
@@ -76,7 +76,7 @@ export default class App extends Component {
                   <Route path="/logout" exact component={LogoutPage} />
                   <Route path="/projects/templates" exact component={TemplatesPage} />
                   <Route path="/projects" exact component={ProjectsPage} />
-                  <Route path="/projects/:projectId" component={ProjectPage} />
+                  <Route path="/projects/:projectId" component={EditorContainer} />
                   <Route path="/kits/package" component={PackageKitPage} />
                   <Route render={() => <Error message="Page not found." />} />
                 </Switch>
