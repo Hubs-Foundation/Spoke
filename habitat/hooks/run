@@ -51,9 +51,10 @@ fi
 if [[ "{{ cfg.deploy.type }}" == "cp" ]] ;
 then
   mkdir -p "{{ cfg.deploy.target }}/spoke/pages/releases"
+  mkdir -p "{{ cfg.deploy.target }}/spoke/pages/latest"
 
   cp -R "$TEMP_DIST_PATH/assets" "{{ cfg.deploy.target }}/spoke"
-  cp -R "$TEMP_DIST_PATH/pages" "{{ cfg.deploy.target }}/spoke/pages/latest"
+  cp -R $TEMP_DIST_PATH/pages/* "{{ cfg.deploy.target }}/spoke/pages/latest"
   cp -R "{{ cfg.deploy.target }}/spoke/pages/latest" "{{ cfg.deploy.target }}/spoke/pages/releases/{{ pkg.version }}.{{ pkg.release }}"
 fi
 
