@@ -24,6 +24,7 @@ export default class WayPointNodeEditor extends Component {
     this.onChangeCanBeOccupied = createPropSetter("canBeOccupied");
     this.onChangeCanBeClicked = createPropSetter("canBeClicked");
     this.onChangeWillDisableMotion = createPropSetter("willDisableMotion");
+    this.onChangeWillDisableTeleporting = createPropSetter("willDisableTeleporting");
     this.onChangeSnapToNavMesh = createPropSetter("snapToNavMesh");
     this.onChangeWillMaintainInitialOrientation = createPropSetter("willMaintainInitialOrientation");
   }
@@ -43,6 +44,9 @@ export default class WayPointNodeEditor extends Component {
         </InputGroup>
         <InputGroup name="Disable Motion">
           <BooleanInput value={node.willDisableMotion} onChange={this.onChangeWillDisableMotion} />
+        </InputGroup>
+        <InputGroup name="Disable Teleporting">
+          <BooleanInput value={node.willDisableTeleporting} onChange={this.onChangeWillDisableTeleporting} />
         </InputGroup>
         <InputGroup name="Snap to floor plan">
           <BooleanInput value={node.snapToNavMesh} onChange={this.onChangeSnapToNavMesh} />
