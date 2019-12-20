@@ -121,7 +121,14 @@ export default function CreateProjectPage({ history, location }) {
     api
       .searchMedia("scene_listings", { filter, query }, cursor, abortControllerRef.current.signal)
       .then(({ results, nextCursor }) => {
-        setResults(results);
+        console.log(results);
+        setResults(
+          results.map(result => ({
+            ...result,
+            url: `/projects/new?sceneId=${result.id}`,
+            thumbnailUrl: result && result.images && result.images.preview && result.images.preview.url
+          }))
+        );
         setNextCursor(nextCursor);
         setLoading(false);
       })
@@ -183,7 +190,7 @@ export default function CreateProjectPage({ history, location }) {
                 {error && <ErrorMessage>{error.message}</ErrorMessage>}
                 {loading && <CenteredMessage>Searching scenes...</CenteredMessage>}
                 {results.length === 0 && !loading && !error && <CenteredMessage>No Results</CenteredMessage>}
-                <ProjectGrid projects={results} onSelectProject={onSelectScene} />
+                {!error && !loading && <ProjectGrid projects={results} onSelectProject={onSelectScene} />}
               </ProjectGridContent>
             </ProjectGridContainer>
           </ProjectsContainer>
