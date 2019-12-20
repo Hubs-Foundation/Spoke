@@ -102,7 +102,8 @@ class ProjectsPage extends Component {
           this.setState({
             projects: projects.map(project => ({
               ...project,
-              url: `/projects/${project.project_id}`
+              url: `/projects/${project.id}`,
+              thumbnailUrl: project && project.images && project.images.preview && project.images.preview.url
             })),
             loading: false
           });
