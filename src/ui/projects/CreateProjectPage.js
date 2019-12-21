@@ -1,73 +1,24 @@
 import React, { useCallback, useEffect, useState, useContext, useRef } from "react";
 import PropTypes from "prop-types";
 import NavBar from "../navigation/NavBar";
-import ProjectGrid from "./ProjectGrid";
+import {
+  ProjectGrid,
+  ProjectGridContainer,
+  ProjectGridHeader,
+  ProjectGridHeaderRow,
+  Filter,
+  Separator,
+  SearchInput,
+  ProjectGridContent,
+  CenteredMessage,
+  ErrorMessage
+} from "./ProjectGrid";
 import Footer from "../navigation/Footer";
 import PrimaryLink from "../inputs/PrimaryLink";
-import { ProjectsSection, ProjectsContainer, ProjectsHeader } from "./ProjectsPage";
-import styled from "styled-components";
-import { Row } from "../layout/Flex";
 import { Button } from "../inputs/Button";
-import StringInput from "../inputs/StringInput";
+import { ProjectsSection, ProjectsContainer, ProjectsHeader } from "./ProjectsPage";
 import { ApiContext } from "../contexts/ApiContext";
 import { Link } from "react-router-dom";
-
-const ProjectGridContainer = styled.div`
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  background-color: ${props => props.theme.panel2};
-  border-radius: 3px;
-`;
-
-const ProjectGridContent = styled.div`
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  padding: 20px;
-`;
-
-const ProjectGridHeader = styled.div`
-  display: flex;
-  background-color: ${props => props.theme.toolbar2};
-  border-radius: 3px 3px 0px 0px;
-  height: 48px;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px;
-`;
-
-const Filter = styled.a`
-  font-size: 1.25em;
-  cursor: pointer;
-`;
-
-const Separator = styled.div`
-  height: 48px;
-  width: 1px;
-  background-color: ${props => props.theme.border};
-  margin: 0 20px;
-`;
-
-const ProjectGridHeaderRow = styled(Row)`
-  align-items: center;
-`;
-
-const SearchInput = styled(StringInput)`
-  width: auto;
-  min-width: 180px;
-`;
-
-const CenteredMessage = styled.div`
-  display: flex;
-  flex: 1;
-  justify-content: center;
-  align-items: center;
-`;
-
-const ErrorMessage = styled(CenteredMessage)`
-  color: ${props => props.theme.red};
-`;
 
 export default function CreateProjectPage({ history, location }) {
   const queryParams = new URLSearchParams(location.search);
@@ -93,6 +44,13 @@ export default function CreateProjectPage({ history, location }) {
 
   const onSetFeaturedRemixable = useCallback(() => {
     setFilter("featured-remixable");
+    setQuery("");
+    setCursor();
+    setNextCursor();
+  }, [setFilter]);
+
+  const onSetAll = useCallback(() => {
+    setFilter("remixable");
     setQuery("");
     setCursor();
     setNextCursor();
@@ -126,7 +84,7 @@ export default function CreateProjectPage({ history, location }) {
           results.map(result => ({
             ...result,
             url: `/projects/new?sceneId=${result.id}`,
-            thumbnailUrl: result && result.images && result.images.preview && result.images.preview.url
+            thumbnail_url: result && result.images && result.images.preview && result.images.preview.url
           }))
         );
         setNextCursor(nextCursor);
@@ -176,21 +134,32 @@ export default function CreateProjectPage({ history, location }) {
             <ProjectGridContainer>
               <ProjectGridHeader>
                 <ProjectGridHeaderRow>
-                  <Filter onClick={onSetFeaturedRemixable}>Featured</Filter>
+                  <Filter onClick={onSetFeaturedRemixable} active={filter === "featured-remixable"}>
+                    Featured
+                  </Filter>
+                  <Filter onClick={onSetAll} active={filter === "remixable"}>
+                    All
+                  </Filter>
                   <Separator />
                   <SearchInput placeholder="Search scenes..." value={query} onChange={onChangeQuery} />
                 </ProjectGridHeaderRow>
                 <ProjectGridHeaderRow>
                   <Button as={Link} to="/projects/new">
-                    New Empty Scene
+                    New Empty Project
                   </Button>
                 </ProjectGridHeaderRow>
               </ProjectGridHeader>
               <ProjectGridContent>
                 {error && <ErrorMessage>{error.message}</ErrorMessage>}
                 {loading && <CenteredMessage>Searching scenes...</CenteredMessage>}
-                {results.length === 0 && !loading && !error && <CenteredMessage>No Results</CenteredMessage>}
-                {!error && !loading && <ProjectGrid projects={results} onSelectProject={onSelectScene} />}
+                {!error && !loading && (
+                  <ProjectGrid
+                    projects={results}
+                    newProjectPath="/projects/new"
+                    newProjectLabel="New Empty Project"
+                    onSelectProject={onSelectScene}
+                  />
+                )}
               </ProjectGridContent>
             </ProjectGridContainer>
           </ProjectsContainer>

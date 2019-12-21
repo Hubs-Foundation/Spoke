@@ -10,12 +10,14 @@ const StyledNewProjectGridItem = styled(Link)`
   height: 220px;
   border-radius: 6px;
   text-decoration: none;
-  border: 5px dashed ${props => props.theme.panel};
+  /*border: 5px dashed ${props => props.theme.text};*/
+  background-color: ${props => props.theme.toolbar};
   justify-content: center;
   align-items: center;
+  border: 1px solid transparent;
 
   &:hover {
-    color: ${props => props.theme.text};
+    color: inherit;
     border-color: ${props => props.theme.selected};
   }
 
@@ -28,14 +30,21 @@ const StyledNewProjectGridItem = styled(Link)`
 
 export default class NewProjectGridItem extends Component {
   static propTypes = {
-    newProjectUrl: PropTypes.string.isRequired
+    path: PropTypes.oneOf([PropTypes.string, PropTypes.object]).isRequired,
+    label: PropTypes.string.isRequired
+  };
+
+  static defaultProps = {
+    label: "New Project"
   };
 
   render() {
+    const { path, label } = this.props;
+
     return (
-      <StyledNewProjectGridItem to={this.props.newProjectUrl}>
+      <StyledNewProjectGridItem to={path}>
         <Plus />
-        <h3>New Project</h3>
+        <h3>{label}</h3>
       </StyledNewProjectGridItem>
     );
   }
