@@ -10,7 +10,6 @@ import {
   Separator,
   SearchInput,
   ProjectGridContent,
-  CenteredMessage,
   ErrorMessage
 } from "./ProjectGrid";
 import Footer from "../navigation/Footer";
@@ -19,6 +18,7 @@ import { Button } from "../inputs/Button";
 import { ProjectsSection, ProjectsContainer, ProjectsHeader } from "./ProjectsPage";
 import { ApiContext } from "../contexts/ApiContext";
 import { Link } from "react-router-dom";
+import InfiniteScroll from "react-infinite-scroller";
 
 export default function CreateProjectPage({ history, location }) {
   const queryParams = new URLSearchParams(location.search);
@@ -30,7 +30,7 @@ export default function CreateProjectPage({ history, location }) {
   const [filter, setFilter] = useState(queryParams.get("filter") || "featured-remixable");
   const [results, setResults] = useState([]);
   const [cursor, setCursor] = useState();
-  const [_nextCursor, setNextCursor] = useState();
+  const [nextCursor, setNextCursor] = useState();
 
   const onChangeQuery = useCallback(
     value => {
@@ -65,6 +65,7 @@ export default function CreateProjectPage({ history, location }) {
 
     setLoading(true);
     setError(null);
+    setResults([]);
 
     const search = new URLSearchParams();
 
@@ -79,7 +80,6 @@ export default function CreateProjectPage({ history, location }) {
     api
       .searchMedia("scene_listings", { filter, query }, cursor, abortControllerRef.current.signal)
       .then(({ results, nextCursor }) => {
-        console.log(results);
         setResults(
           results.map(result => ({
             ...result,
@@ -105,12 +105,11 @@ export default function CreateProjectPage({ history, location }) {
     };
   }, [api, filter, query, cursor, setResults, setNextCursor, setError, setLoading]);
 
-  // TODO: Add infinite scrolling
-  // const hasMore = !!nextCursor;
+  const hasMore = !!nextCursor;
 
-  // const loadMore = useCallback(() => {
-  //   setCursor(nextCursor);
-  // }, [nextCursor, setCursor]);
+  const loadMore = useCallback(() => {
+    setCursor(nextCursor);
+  }, [nextCursor, setCursor]);
 
   const onSelectScene = useCallback(
     scene => {
@@ -151,14 +150,16 @@ export default function CreateProjectPage({ history, location }) {
               </ProjectGridHeader>
               <ProjectGridContent>
                 {error && <ErrorMessage>{error.message}</ErrorMessage>}
-                {loading && <CenteredMessage>Searching scenes...</CenteredMessage>}
-                {!error && !loading && (
-                  <ProjectGrid
-                    projects={results}
-                    newProjectPath="/projects/new"
-                    newProjectLabel="New Empty Project"
-                    onSelectProject={onSelectScene}
-                  />
+                {!error && (
+                  <InfiniteScroll pageStart={0} loadMore={loadMore} hasMore={hasMore} threshold={100} useWindow={true}>
+                    <ProjectGrid
+                      projects={results}
+                      newProjectPath="/projects/new"
+                      newProjectLabel="New Empty Project"
+                      onSelectProject={onSelectScene}
+                      loading={loading}
+                    />
+                  </InfiniteScroll>
                 )}
               </ProjectGridContent>
             </ProjectGridContainer>

@@ -28,7 +28,7 @@ const StyledNewProjectGridItem = styled(Link)`
   }
 `;
 
-export default class NewProjectGridItem extends Component {
+export class NewProjectGridItem extends Component {
   static propTypes = {
     path: PropTypes.oneOf([PropTypes.string, PropTypes.object]).isRequired,
     label: PropTypes.string.isRequired
@@ -48,4 +48,12 @@ export default class NewProjectGridItem extends Component {
       </StyledNewProjectGridItem>
     );
   }
+}
+
+export function LoadingProjectGridItem() {
+  return (
+    <StyledNewProjectGridItem>
+      <h3>Loading...</h3>
+    </StyledNewProjectGridItem>
+  );
 }

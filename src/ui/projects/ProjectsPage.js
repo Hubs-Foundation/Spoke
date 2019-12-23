@@ -8,7 +8,6 @@ import {
   ProjectGridHeader,
   ProjectGridHeaderRow,
   ProjectGridContent,
-  CenteredMessage,
   ErrorMessage
 } from "./ProjectGrid";
 import { Button } from "../inputs/Button";
@@ -100,7 +99,7 @@ class ProjectsPage extends Component {
           this.setState({
             projects: projects.map(project => ({
               ...project,
-              url: `/projects/${project.id}`
+              url: `/projects/${project.project_id}`
             })),
             loading: false
           });
@@ -183,9 +182,9 @@ class ProjectsPage extends Component {
                 </ProjectGridHeader>
                 <ProjectGridContent>
                   {error && <ErrorMessage>{error.message}</ErrorMessage>}
-                  {loading && <CenteredMessage>Loading projects...</CenteredMessage>}
-                  {!error && !loading && (
+                  {!error && (
                     <ProjectGrid
+                      loading={loading}
                       projects={projects}
                       newProjectPath="/projects/templates"
                       contextMenuId={contextMenuId}
