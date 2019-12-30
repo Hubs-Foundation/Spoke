@@ -235,6 +235,18 @@ module.exports = env => {
           to: "assets/images/favicon.ico"
         }
       ]),
+      new CopyWebpackPlugin([
+        {
+          from: path.join(__dirname, "src", "assets", "favicon-spoke.ico"),
+          to: "assets/images/favicon-spoke.ico"
+        }
+      ]),
+      new CopyWebpackPlugin([
+        {
+          from: path.join(__dirname, "src", "assets", "favicon-editor.ico"),
+          to: "assets/images/favicon-editor.ico"
+        }
+      ]),
       new HTMLWebpackPlugin({
         template: path.join(__dirname, "src", "index.html"),
         faviconPath: (process.env.BASE_ASSETS_PATH || "/") + "assets/images/favicon.ico"
