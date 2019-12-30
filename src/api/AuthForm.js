@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
+import configs from "../configs";
 import styled from "styled-components";
 import Input from "../ui/inputs/Input";
 
@@ -82,7 +83,7 @@ export default class AuthForm extends Component {
       <StyledAuthForm onSubmit={this.onSubmit}>
         {this.props.error && <ErrorMessage>{this.props.error}</ErrorMessage>}
         <h3>Register or Login</h3>
-        <h4>Login to save projects and publish scenes to Hubs.</h4>
+        <h4>Login to save projects and publish scenes{configs.isMoz() && " to Hubs"}.</h4>
         <FormInput
           type="email"
           name="email"

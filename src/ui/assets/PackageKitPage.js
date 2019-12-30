@@ -65,7 +65,7 @@ export default function PackageKitPage() {
       <NavBar />
       <main>
         <Container>
-          <h1>Spoke Kit Packager</h1>
+          <h1>Kit Packager</h1>
           {message && <div>{message}</div>}
           {isGenerating ? (
             <ProgressBar />

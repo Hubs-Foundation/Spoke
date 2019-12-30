@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
+import configs from "../configs";
 import Modal from "react-modal";
 import { Helmet } from "react-helmet";
 import * as Sentry from "@sentry/browser";
@@ -321,7 +322,7 @@ class EditorContainer extends Component {
             action: this.onDuplicateProject
           },
           {
-            name: "Publish to Hubs...",
+            name: configs.isMoz() ? "Publish to Hubs..." : "Publish Scene...",
             action: this.onPublishProject
           },
           {
@@ -861,7 +862,7 @@ class EditorContainer extends Component {
                     )}
                   </Modal>
                   <Helmet>
-                    <title>{`${this.state.modified ? "*" : ""}${editor.scene.name} | Spoke by Mozilla`}</title>
+                    <title>{`${this.state.modified ? "*" : ""}${editor.scene.name} | ${configs.longName()}`}</title>
                     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
                   </Helmet>
                   {this.state.modified && (
