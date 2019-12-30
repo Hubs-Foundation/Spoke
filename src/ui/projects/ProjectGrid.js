@@ -22,7 +22,7 @@ export default class ProjectGrid extends Component {
     return (
       <StyledProjectGrid>
         {this.props.projects.map(project => (
-          <ProjectGridItem key={project.id} project={project} contextMenuId={this.props.contextMenuId} />
+          <ProjectGridItem key={project.project_id} project={project} contextMenuId={this.props.contextMenuId} />
         ))}
         {this.props.newProjectUrl && <NewProjectGridItem newProjectUrl={this.props.newProjectUrl} />}
       </StyledProjectGrid>

@@ -102,7 +102,7 @@ class ProjectsPage extends Component {
           this.setState({
             projects: projects.map(project => ({
               ...project,
-              url: `/projects/${project.id}`
+              url: `/projects/${project.project_id}`
             })),
             loading: false
           });
@@ -123,8 +123,8 @@ class ProjectsPage extends Component {
 
   onDeleteProject = project => {
     this.props.api
-      .deleteProject(project.id)
-      .then(() => this.setState({ projects: this.state.projects.filter(p => p.id !== project.id) }))
+      .deleteProject(project.project_id)
+      .then(() => this.setState({ projects: this.state.projects.filter(p => p.project_id !== project.project_id) }))
       .catch(error => this.setState({ error }));
   };
 

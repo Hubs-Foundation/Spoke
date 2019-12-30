@@ -22,6 +22,8 @@ import HemisphereLightNode from "./editor/nodes/HemisphereLightNode";
 import HemisphereLightNodeEditor from "./ui/properties/HemisphereLightNodeEditor";
 import SpawnPointNode from "./editor/nodes/SpawnPointNode";
 import SpawnPointNodeEditor from "./ui/properties/SpawnPointNodeEditor";
+import WayPointNode from "./editor/nodes/WayPointNode";
+import WayPointNodeEditor from "./ui/properties/WayPointNodeEditor";
 import SkyboxNode from "./editor/nodes/SkyboxNode";
 import SkyboxNodeEditor from "./ui/properties/SkyboxNodeEditor";
 import FloorPlanNode from "./editor/nodes/FloorPlanNode";
@@ -66,6 +68,7 @@ export function createEditor(api, settings) {
   editor.registerNode(SpotLightNode, SpotLightNodeEditor);
   editor.registerNode(PointLightNode, PointLightNodeEditor);
   editor.registerNode(SpawnPointNode, SpawnPointNodeEditor);
+  editor.registerNode(WayPointNode, WayPointNodeEditor);
   editor.registerNode(SkyboxNode, SkyboxNodeEditor);
   editor.registerNode(FloorPlanNode, FloorPlanNodeEditor);
   editor.registerNode(ImageNode, ImageNodeEditor);

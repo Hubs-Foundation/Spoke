@@ -202,7 +202,8 @@ export default class ToolBar extends Component {
     menu: PropTypes.array,
     editor: PropTypes.object,
     onPublish: PropTypes.func,
-    onOpenScene: PropTypes.func
+    onOpenScene: PropTypes.func,
+    isPublishedScene: PropTypes.bool
   };
 
   constructor(props) {
@@ -471,7 +472,7 @@ export default class ToolBar extends Component {
           </ToolbarInputGroup>
         </ToolToggles>
         <Spacer />
-        {this.props.editor.sceneUrl && (
+        {this.props.isPublishedScene && (
           <PublishButton onClick={this.props.onOpenScene}>
             {configs.isMoz() ? "Open in Hubs" : "Open Scene"}
           </PublishButton>
