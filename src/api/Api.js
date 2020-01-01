@@ -690,7 +690,7 @@ export default class Project extends EventEmitter {
       if (project.scene) {
         allowPromotion = project.scene.allow_promotion;
         allowRemixing = project.scene.allow_remixing;
-        creatorAttribution = project.scene.attributions.creator || creatorAttribution;
+        creatorAttribution = project.scene.attributions.creator || "";
       } else if ((!creatorAttribution || creatorAttribution.length === 0) && userInfo && userInfo.creatorAttribution) {
         creatorAttribution = userInfo.creatorAttribution;
       }
