@@ -57,7 +57,7 @@ export default function CreateProjectPage({ history, location }) {
       updateParams({
         source: "scene_listings",
         filter: "remixable",
-        q: value.trim()
+        q: value
       });
     },
     [updateParams]
@@ -131,7 +131,14 @@ export default function CreateProjectPage({ history, location }) {
                 <ScrollToTop />
                 {error && <ErrorMessage>{error.message}</ErrorMessage>}
                 {!error && (
-                  <InfiniteScroll pageStart={0} loadMore={loadMore} hasMore={hasMore} threshold={100} useWindow={true}>
+                  <InfiniteScroll
+                    initialLoad={false}
+                    pageStart={0}
+                    loadMore={loadMore}
+                    hasMore={hasMore}
+                    threshold={100}
+                    useWindow={true}
+                  >
                     <ProjectGrid
                       projects={filteredEntries}
                       newProjectPath="/projects/new"
