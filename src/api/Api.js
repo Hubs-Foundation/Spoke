@@ -94,6 +94,7 @@ export default class Project extends EventEmitter {
     const { protocol, host } = new URL(window.location.href);
 
     this.serverURL = protocol + "//" + host;
+    this.apiURL = `https://${RETICULUM_SERVER}`;
 
     this.projectDirectoryPath = "/api/files/";
 

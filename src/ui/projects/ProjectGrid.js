@@ -18,7 +18,7 @@ export function ProjectGrid({ newProjectPath, newProjectLabel, projects, context
     <StyledProjectGrid>
       {newProjectPath && !loading && <NewProjectGridItem path={newProjectPath} label={newProjectLabel} />}
       {projects.map(project => (
-        <ProjectGridItem key={project.project_id} project={project} contextMenuId={contextMenuId} />
+        <ProjectGridItem key={project.project_id || project.id} project={project} contextMenuId={contextMenuId} />
       ))}
       {loading && <LoadingProjectGridItem />}
     </StyledProjectGrid>
@@ -28,7 +28,7 @@ export function ProjectGrid({ newProjectPath, newProjectLabel, projects, context
 ProjectGrid.propTypes = {
   contextMenuId: PropTypes.string,
   projects: PropTypes.arrayOf(PropTypes.object).isRequired,
-  newProjectPath: PropTypes.oneOf([PropTypes.string, PropTypes.object]),
+  newProjectPath: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
   newProjectLabel: PropTypes.string,
   loading: PropTypes.bool
 };

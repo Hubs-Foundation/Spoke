@@ -74,6 +74,15 @@ const Thumbnail = styled.div`
   background-image: url(${props => props.src});
 `;
 
+const Col = styled.div`
+  display: flex;
+  flex-direction: column;
+
+  p {
+    color: ${props => props.theme.text2};
+  }
+`;
+
 export default class ProjectGridItem extends Component {
   static propTypes = {
     contextMenuId: PropTypes.string,
@@ -98,12 +107,16 @@ export default class ProjectGridItem extends Component {
 
   render() {
     const { project, contextMenuId } = this.props;
+    const creatorAttribution = project.attributions && project.attributions.creator;
 
     const content = (
       <>
         <ThumbnailContainer>{project.thumbnail_url && <Thumbnail src={project.thumbnail_url} />}</ThumbnailContainer>
         <TitleContainer>
-          <h3>{project.name}</h3>
+          <Col>
+            <h3>{project.name}</h3>
+            {creatorAttribution && <p>{creatorAttribution}</p>}
+          </Col>
           {contextMenuId && (
             <MenuButton onClick={this.onShowMenu}>
               <EllipsisV />

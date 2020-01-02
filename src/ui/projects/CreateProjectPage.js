@@ -1,5 +1,6 @@
-import React, { useCallback, useEffect, useState, useContext, useRef } from "react";
+import React, { useCallback, useState, useContext } from "react";
 import PropTypes from "prop-types";
+import ScrollToTop from "../router/ScrollToTop";
 import NavBar from "../navigation/NavBar";
 import {
   ProjectGrid,
@@ -19,97 +20,64 @@ import { ProjectsSection, ProjectsContainer, ProjectsHeader } from "./ProjectsPa
 import { ApiContext } from "../contexts/ApiContext";
 import { Link } from "react-router-dom";
 import InfiniteScroll from "react-infinite-scroller";
+import usePaginatedSearch from "./usePaginatedSearch";
 
 export default function CreateProjectPage({ history, location }) {
-  const queryParams = new URLSearchParams(location.search);
   const api = useContext(ApiContext);
-  const abortControllerRef = useRef();
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState();
-  const [query, setQuery] = useState(queryParams.get("q") || "");
-  const [filter, setFilter] = useState(queryParams.get("filter") || "featured-remixable");
-  const [results, setResults] = useState([]);
-  const [cursor, setCursor] = useState();
-  const [nextCursor, setNextCursor] = useState();
+
+  const queryParams = new URLSearchParams(location.search);
+
+  const [params, setParams] = useState({
+    source: "scene_listings",
+    filter: queryParams.get("filter") || "featured-remixable",
+    q: queryParams.get("q") || ""
+  });
+
+  const updateParams = useCallback(
+    nextParams => {
+      const search = new URLSearchParams();
+
+      for (const name in nextParams) {
+        if (name === "source" || !nextParams[name]) {
+          continue;
+        }
+
+        search.set(name, nextParams[name]);
+      }
+
+      history.push(`/projects/create?${search}`);
+
+      setParams(nextParams);
+    },
+    [history]
+  );
 
   const onChangeQuery = useCallback(
     value => {
-      setFilter("remixable");
-      setQuery(value.trim());
-      setCursor();
-      setNextCursor();
+      updateParams({
+        source: "scene_listings",
+        filter: "remixable",
+        q: value.trim()
+      });
     },
-    [setFilter, setQuery]
+    [updateParams]
   );
 
   const onSetFeaturedRemixable = useCallback(() => {
-    setFilter("featured-remixable");
-    setQuery("");
-    setCursor();
-    setNextCursor();
-  }, [setFilter]);
+    updateParams({
+      ...params,
+      filter: "featured-remixable",
+      q: ""
+    });
+  }, [updateParams, params]);
 
   const onSetAll = useCallback(() => {
-    setFilter("remixable");
-    setQuery("");
-    setCursor();
-    setNextCursor();
-  }, [setFilter]);
-
-  useEffect(() => {
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-    }
-
-    abortControllerRef.current = new AbortController();
-
-    setLoading(true);
-    setError(null);
-    setResults([]);
-
-    const search = new URLSearchParams();
-
-    search.set("filter", filter);
-
-    if (query !== "") {
-      search.set("q", query);
-    }
-
-    history.push(`/projects/create?${search}`);
-
-    api
-      .searchMedia("scene_listings", { filter, query }, cursor, abortControllerRef.current.signal)
-      .then(({ results, nextCursor }) => {
-        setResults(
-          results.map(result => ({
-            ...result,
-            url: `/projects/new?sceneId=${result.id}`,
-            thumbnail_url: result && result.images && result.images.preview && result.images.preview.url
-          }))
-        );
-        setNextCursor(nextCursor);
-        setLoading(false);
-      })
-      .catch(err => {
-        if (err.name === "AbortError") return;
-        setError(err);
-        setResults([]);
-        setNextCursor();
-        setLoading(false);
-      });
-
-    return () => {
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
-      }
-    };
-  }, [api, filter, query, cursor, setResults, setNextCursor, setError, setLoading]);
-
-  const hasMore = !!nextCursor;
-
-  const loadMore = useCallback(() => {
-    setCursor(nextCursor);
-  }, [nextCursor, setCursor]);
+    updateParams({
+      ...params,
+      filter: "remixable",
+      q: ""
+    });
+  }, [updateParams, params]);
 
   const onSelectScene = useCallback(
     scene => {
@@ -119,6 +87,17 @@ export default function CreateProjectPage({ history, location }) {
     },
     [history]
   );
+
+  const { loading, error, entries, hasMore, loadMore } = usePaginatedSearch(
+    `${api.apiURL}/api/v1/media/search`,
+    params
+  );
+
+  const filteredEntries = entries.map(result => ({
+    ...result,
+    url: `/projects/new?sceneId=${result.id}`,
+    thumbnail_url: result && result.images && result.images.preview && result.images.preview.url
+  }));
 
   return (
     <>
@@ -133,14 +112,14 @@ export default function CreateProjectPage({ history, location }) {
             <ProjectGridContainer>
               <ProjectGridHeader>
                 <ProjectGridHeaderRow>
-                  <Filter onClick={onSetFeaturedRemixable} active={filter === "featured-remixable"}>
+                  <Filter onClick={onSetFeaturedRemixable} active={params.filter === "featured-remixable"}>
                     Featured
                   </Filter>
-                  <Filter onClick={onSetAll} active={filter === "remixable"}>
+                  <Filter onClick={onSetAll} active={params.filter === "remixable"}>
                     All
                   </Filter>
                   <Separator />
-                  <SearchInput placeholder="Search scenes..." value={query} onChange={onChangeQuery} />
+                  <SearchInput placeholder="Search scenes..." value={params.q} onChange={onChangeQuery} />
                 </ProjectGridHeaderRow>
                 <ProjectGridHeaderRow>
                   <Button as={Link} to="/projects/new">
@@ -149,11 +128,12 @@ export default function CreateProjectPage({ history, location }) {
                 </ProjectGridHeaderRow>
               </ProjectGridHeader>
               <ProjectGridContent>
+                <ScrollToTop />
                 {error && <ErrorMessage>{error.message}</ErrorMessage>}
                 {!error && (
                   <InfiniteScroll pageStart={0} loadMore={loadMore} hasMore={hasMore} threshold={100} useWindow={true}>
                     <ProjectGrid
-                      projects={results}
+                      projects={filteredEntries}
                       newProjectPath="/projects/new"
                       newProjectLabel="New Empty Project"
                       onSelectProject={onSelectScene}

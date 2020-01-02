@@ -4,7 +4,7 @@ import PropTypes from "prop-types";
 import styled from "styled-components";
 import { Plus } from "styled-icons/fa-solid/Plus";
 
-const StyledNewProjectGridItem = styled(Link)`
+const ProjectGridItemContainer = styled.div`
   display: flex;
   flex-direction: column;
   height: 220px;
@@ -30,7 +30,7 @@ const StyledNewProjectGridItem = styled(Link)`
 
 export class NewProjectGridItem extends Component {
   static propTypes = {
-    path: PropTypes.oneOf([PropTypes.string, PropTypes.object]).isRequired,
+    path: PropTypes.oneOfType([PropTypes.string, PropTypes.object]).isRequired,
     label: PropTypes.string.isRequired
   };
 
@@ -42,18 +42,18 @@ export class NewProjectGridItem extends Component {
     const { path, label } = this.props;
 
     return (
-      <StyledNewProjectGridItem to={path}>
+      <ProjectGridItemContainer as={Link} to={path}>
         <Plus />
         <h3>{label}</h3>
-      </StyledNewProjectGridItem>
+      </ProjectGridItemContainer>
     );
   }
 }
 
 export function LoadingProjectGridItem() {
   return (
-    <StyledNewProjectGridItem>
+    <ProjectGridItemContainer>
       <h3>Loading...</h3>
-    </StyledNewProjectGridItem>
+    </ProjectGridItemContainer>
   );
 }
