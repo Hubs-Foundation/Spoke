@@ -439,9 +439,13 @@ export default class Editor extends EventEmitter {
         if (nodeDef.extensions && nodeDef.extensions.MOZ_hubs_components) {
           const components = nodeDef.extensions.MOZ_hubs_components;
           for (const componentName in components) {
+            if (!Object.prototype.hasOwnProperty.call(components, componentName)) continue;
+
             const component = components[componentName];
 
             for (const propertyName in component) {
+              if (!Object.prototype.hasOwnProperty.call(component, propertyName)) continue;
+
               const property = component[propertyName];
 
               if (
@@ -1736,6 +1740,8 @@ export default class Editor extends EventEmitter {
     }
 
     for (const propertyName in properties) {
+      if (!Object.prototype.hasOwnProperty.call(properties, propertyName)) continue;
+
       const value = properties[propertyName];
 
       if (value && value.copy) {

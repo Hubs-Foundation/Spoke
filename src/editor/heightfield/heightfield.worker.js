@@ -66,7 +66,9 @@ function generateHeightfield(geometry, params) {
   const heightfieldMesh = new THREE.Mesh(geometry);
 
   const maxSide = Math.max(size.x, size.z);
-  const distance = params.hasOwnProperty("distance") ? params.distance : Math.max(0.25, Math.pow(maxSide, 1 / 2) / 10);
+  const distance = Object.prototype.hasOwnProperty.call(params, "distance")
+    ? params.distance
+    : Math.max(0.25, Math.pow(maxSide, 1 / 2) / 10);
   const resolution = Math.ceil(maxSide / distance);
 
   const data = [];

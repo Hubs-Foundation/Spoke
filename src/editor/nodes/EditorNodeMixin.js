@@ -159,10 +159,14 @@ export default function EditorNodeMixin(Object3DClass) {
 
       if (components) {
         for (const componentName in components) {
+          if (!Object.prototype.hasOwnProperty.call(components, componentName)) continue;
+
           const serializedProps = {};
           const componentProps = components[componentName];
 
           for (const propName in componentProps) {
+            if (!Object.prototype.hasOwnProperty.call(componentProps, propName)) continue;
+
             const propValue = componentProps[propName];
 
             if (propValue instanceof Color) {
@@ -208,6 +212,8 @@ export default function EditorNodeMixin(Object3DClass) {
       const componentProps = {};
 
       for (const key in props) {
+        if (!Object.prototype.hasOwnProperty.call(props, key)) continue;
+
         const value = props[key];
 
         if (value instanceof Color) {

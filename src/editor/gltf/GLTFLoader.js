@@ -1161,6 +1161,8 @@ class GLTFLoader {
     };
 
     for (const gltfAttributeName in attributes) {
+      if (!Object.prototype.hasOwnProperty.call(attributes, gltfAttributeName)) continue;
+
       const threeAttributeName = ATTRIBUTES[gltfAttributeName] || gltfAttributeName.toLowerCase();
 
       // Skip attributes already provided by e.g. Draco extension.

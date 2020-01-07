@@ -5,6 +5,8 @@ export default function sortEntities(entitiesObj) {
 
   // First add entities without parents
   for (const entityId in entitiesObj) {
+    if (!Object.prototype.hasOwnProperty.call(entitiesObj, entityId)) continue;
+
     const entity = entitiesObj[entityId];
 
     if (!entity.parent || !entitiesObj[entity.parent]) {
@@ -29,6 +31,8 @@ export default function sortEntities(entitiesObj) {
 
   // Then sort child entities by their index
   for (const parentName in entitiesByParent) {
+    if (!Object.prototype.hasOwnProperty.call(entitiesByParent, parentName)) continue;
+
     entitiesByParent[parentName].sort((a, b) => {
       const entityA = entitiesObj[a];
       const entityB = entitiesObj[b];

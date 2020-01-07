@@ -14,7 +14,9 @@ function migrateV1ToV2(json) {
   const rootUUID = _Math.generateUUID();
   const nameToUUID = { [root]: rootUUID };
   for (const name in entities) {
-    nameToUUID[name] = _Math.generateUUID();
+    if (Object.prototype.hasOwnProperty.call(entities, name)) {
+      nameToUUID[name] = _Math.generateUUID();
+    }
   }
 
   // Replace names with uuids in entities and add the name property.
@@ -39,6 +41,8 @@ function migrateV2ToV3(json) {
   json.version = 3;
 
   for (const entityId in json.entities) {
+    if (!Object.prototype.hasOwnProperty.call(json.entities, entityId)) continue;
+
     const entity = json.entities[entityId];
 
     if (!entity.components) {
@@ -102,6 +106,8 @@ function migrateV3ToV4(json) {
   json.version = 4;
 
   for (const entityId in json.entities) {
+    if (!Object.prototype.hasOwnProperty.call(json.entities, entityId)) continue;
+
     const entity = json.entities[entityId];
 
     if (!entity.components) {
@@ -311,7 +317,7 @@ export default class SceneNode extends EditorNodeMixin(Scene) {
     function hasExtrasOrExtensions(object) {
       const userData = object.userData;
       for (const key in userData) {
-        if (userData.hasOwnProperty(key)) {
+        if (Object.prototype.hasOwnProperty.call(userData, key)) {
           return true;
         }
       }

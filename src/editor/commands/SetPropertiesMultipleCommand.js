@@ -10,6 +10,8 @@ export default class SetPropertiesMultipleCommand extends Command {
     this.objectsOldProperties = [];
 
     for (const propertyName in properties) {
+      if (!Object.prototype.hasOwnProperty.call(properties, propertyName)) continue;
+
       const value = properties[propertyName];
 
       if (value && value.clone) {
@@ -24,6 +26,8 @@ export default class SetPropertiesMultipleCommand extends Command {
       const objectOldProperties = {};
 
       for (const propertyName in properties) {
+        if (!Object.prototype.hasOwnProperty.call(properties, propertyName)) continue;
+
         const oldValue = object[propertyName];
 
         if (oldValue && oldValue.clone) {

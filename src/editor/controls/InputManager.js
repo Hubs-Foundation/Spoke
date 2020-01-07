@@ -52,7 +52,7 @@ function initializeValue(source, initialState, state, resetKeys, value, reset, r
   if (!source) return;
 
   for (const sourceKey in source) {
-    if (source.hasOwnProperty(sourceKey)) {
+    if (Object.prototype.hasOwnProperty.call(source, sourceKey)) {
       const targetKey = source[sourceKey];
 
       if (sourceKey === "event") {
@@ -149,6 +149,7 @@ function mergeMappings(mappings) {
 
 function deleteValues(state, mappingObj) {
   for (const key in mappingObj) {
+    if (!Object.prototype.hasOwnProperty.call(mappingObj, key)) continue;
     const action = mappingObj[key];
     delete state[action];
   }
@@ -207,14 +208,22 @@ export default class InputManager {
         if (keyboard.pressed) deleteValues(state, keyboard.pressed);
         if (keyboard.keyup) deleteValues(state, keyboard.keyup);
         if (keyboard.keydown) deleteValues(state, keyboard.keydown);
-        if (keyboard.hotkeys) {
-          for (const binding in keyboard.hotkeys) {
+
+        const hotkeys = keyboard.hotkeys;
+
+        if (hotkeys) {
+          for (const binding in hotkeys) {
+            if (!Object.prototype.hasOwnProperty.call(hotkeys, binding)) continue;
             Mousetrap.unbind(binding);
           }
           deleteValues(state, keyboard.hotkeys);
         }
-        if (keyboard.globalHotkeys) {
-          for (const binding in keyboard.globalHotkeys) {
+
+        const globalHotkeys = keyboard.globalHotkeys;
+
+        if (globalHotkeys) {
+          for (const binding in globalHotkeys) {
+            if (!Object.prototype.hasOwnProperty.call(globalHotkeys, binding)) continue;
             Mousetrap.unbindGlobal(binding);
           }
           deleteValues(state, keyboard.globalHotkeys);
@@ -260,6 +269,8 @@ export default class InputManager {
 
       if (hotkeys) {
         for (const binding in hotkeys) {
+          if (!Object.prototype.hasOwnProperty.call(hotkeys, binding)) continue;
+
           const action = hotkeys[binding];
           Mousetrap.bind(binding, () => {
             state[action] = true;
@@ -275,6 +286,8 @@ export default class InputManager {
 
       if (globalHotkeys) {
         for (const binding in globalHotkeys) {
+          if (!Object.prototype.hasOwnProperty.call(globalHotkeys, binding)) continue;
+
           const action = globalHotkeys[binding];
           Mousetrap.bindGlobal(binding, () => {
             state[action] = true;
@@ -339,6 +352,8 @@ export default class InputManager {
     let preventDefault = false;
 
     for (const key in keyMappings) {
+      if (!Object.prototype.hasOwnProperty.call(keyMappings, key)) continue;
+
       const action = keyMappings[key];
 
       if (eventKey === key) {
@@ -531,7 +546,7 @@ export default class InputManager {
     if (!moveMapping) return;
 
     for (const key in moveMapping) {
-      if (moveMapping.hasOwnProperty(key)) {
+      if (Object.prototype.hasOwnProperty.call(moveMapping, key)) {
         if (key === "event") {
           this.handleEventMappings(moveMapping.event, event);
         } else if (key === "movementX" || key === "movementY") {
@@ -559,7 +574,7 @@ export default class InputManager {
     if (!wheelMapping) return;
 
     for (const key in wheelMapping) {
-      if (wheelMapping.hasOwnProperty(key)) {
+      if (Object.prototype.hasOwnProperty.call(wheelMapping, key)) {
         if (key === "event") {
           this.handleEventMappings(wheelMapping.event, event);
         } else if (key === "deltaX" || key === "deltaY") {
@@ -620,8 +635,12 @@ export default class InputManager {
   };
 
   onWindowBlur = () => {
-    for (const key in this.initialState) {
-      this.state[key] = this.initialState[key];
+    const initialState = this.initialState;
+
+    for (const key in initialState) {
+      if (Object.prototype.hasOwnProperty.call(initialState, key)) {
+        this.state[key] = initialState[key];
+      }
     }
   };
 
