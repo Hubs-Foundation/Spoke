@@ -2,9 +2,59 @@ import React from "react";
 import PropTypes from "prop-types";
 import styled from "styled-components";
 import ProjectGridItem from "./ProjectGridItem";
-import { LoadingProjectGridItem, NewProjectGridItem } from "./NewProjectGridItem";
 import { Row } from "../layout/Flex";
 import StringInput from "../inputs/StringInput";
+import { Link } from "react-router-dom";
+import { Plus } from "styled-icons/fa-solid/Plus";
+
+const ProjectGridItemContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  height: 220px;
+  border-radius: 6px;
+  text-decoration: none;
+  background-color: ${props => props.theme.toolbar};
+  justify-content: center;
+  align-items: center;
+  border: 1px solid transparent;
+
+  &:hover {
+    color: inherit;
+    border-color: ${props => props.theme.selected};
+  }
+
+  svg {
+    width: 3em;
+    height: 3em;
+    margin-bottom: 20px;
+  }
+`;
+
+export function NewProjectGridItem({ path, label }) {
+  return (
+    <ProjectGridItemContainer as={Link} to={path}>
+      <Plus />
+      <h3>{label}</h3>
+    </ProjectGridItemContainer>
+  );
+}
+
+NewProjectGridItem.propTypes = {
+  path: PropTypes.oneOfType([PropTypes.string, PropTypes.object]).isRequired,
+  label: PropTypes.string.isRequired
+};
+
+NewProjectGridItem.defaultProps = {
+  label: "New Project"
+};
+
+export function LoadingProjectGridItem() {
+  return (
+    <ProjectGridItemContainer>
+      <h3>Loading...</h3>
+    </ProjectGridItemContainer>
+  );
+}
 
 const StyledProjectGrid = styled.div`
   display: grid;
