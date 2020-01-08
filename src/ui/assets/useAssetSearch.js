@@ -14,7 +14,7 @@ function useIsMounted() {
   return () => ref.current;
 }
 
-function useLoadAsync(callback, initialResults = [], initialCursor = 0) {
+export function useLoadAsync(callback, initialResults = [], initialCursor = 0) {
   const currentPromise = useRef();
   const abortControllerRef = useRef();
   const getIsMounted = useIsMounted();
