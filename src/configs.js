@@ -30,7 +30,7 @@ function fixBaseAssetsPath(path) {
   // eslint-disable-next-line no-undef
   if (!path.startsWith(__webpack_public_path__)) {
     // eslint-disable-next-line no-useless-escape
-    const matches = path.match(/^([^\/]+)\/.+$/);
+    const matches = path.match(/^([^\/]+\/).+$/);
 
     if (matches.length > 1) {
       // eslint-disable-next-line no-undef
