@@ -26,12 +26,19 @@ if (configs.BASE_ASSETS_PATH) {
   __webpack_public_path__ = configs.BASE_ASSETS_PATH;
 }
 
+function fixBaseAssetsPath(path) {
+  // eslint-disable-next-line no-undef
+  if (!path.startsWith(__webpack_public_path__)) {
+    // eslint-disable-next-line
+    return __webpack_public_path__ + path.replace(/^([^\/]+)\/.+$/, "");
+  } else {
+    return path;
+  }
+}
+
 configs.isMoz = () => configs.IS_MOZ === "true";
 configs.name = () => (configs.isMoz() ? "Spoke" : "Scene Editor");
 configs.longName = () => (configs.isMoz() ? "Spoke by Mozilla" : "Scene Editor");
-configs.icon = () =>
-  configs.isMoz()
-    ? new URL(spokeIcon, configs.BASE_ASSETS_PATH || window.location).href
-    : new URL(editorIcon, configs.BASE_ASSETS_PATH || window.location).href;
+configs.icon = () => (configs.isMoz() ? fixBaseAssetsPath(spokeIcon) : fixBaseAssetsPath(editorIcon));
 
 export default configs;
