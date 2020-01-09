@@ -29,9 +29,8 @@ if (configs.BASE_ASSETS_PATH) {
 configs.isMoz = () => configs.IS_MOZ === "true";
 configs.name = () => (configs.isMoz() ? "Spoke" : "Scene Editor");
 configs.longName = () => (configs.isMoz() ? "Spoke by Mozilla" : "Scene Editor");
-configs.icon = () =>
-  configs.isMoz()
-    ? new URL(spokeIcon, configs.BASE_ASSETS_PATH || window.location).href
-    : new URL(editorIcon, configs.BASE_ASSETS_PATH || window.location).href;
+configs.icon = () => (configs.isMoz() ? spokeIcon : editorIcon);
+
+console.log({ spokeIcon, editorIcon });
 
 export default configs;
