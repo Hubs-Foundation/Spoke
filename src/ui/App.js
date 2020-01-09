@@ -18,7 +18,7 @@ import WhatsNewPage from "./whats-new/WhatsNewPage";
 import LoginPage from "./auth/LoginPage";
 import LogoutPage from "./auth/LogoutPage";
 import ProjectsPage from "./projects/ProjectsPage";
-import TemplatesPage from "./projects/TemplatesPage";
+import CreateProjectPage from "./projects/CreateProjectPage";
 
 import { ThemeProvider } from "styled-components";
 
@@ -76,7 +76,8 @@ export default class App extends Component {
                   <RedirectRoute path="/new" exact to="/projects" />
                   <Route path="/login" exact component={LoginPage} />
                   <Route path="/logout" exact component={LogoutPage} />
-                  <Route path="/projects/templates" exact component={TemplatesPage} />
+                  <Route path="/projects/create" exact component={CreateProjectPage} />
+                  <RedirectRoute path="/projects/templates" exact to="/projects/create" />
                   <Route path="/projects" exact component={ProjectsPage} />
                   <Route path="/projects/:projectId" component={EditorContainer} />
                   <Route path="/kits/package" component={PackageKitPage} />

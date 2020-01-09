@@ -1,4 +1,5 @@
 import Fuse from "fuse.js";
+import { proxiedUrlFor } from "../../api/Api";
 import { BaseSource } from "./sources/index";
 import { ItemTypes } from "../dnd";
 import KitSourcePanel from "./KitSourcePanel";
@@ -17,7 +18,7 @@ function hasTags(result, tags) {
 export default class KitSource extends BaseSource {
   constructor(kitUrl) {
     super();
-    this.kitUrl = new URL(kitUrl, window.location).href;
+    this.kitUrl = proxiedUrlFor(new URL(kitUrl, window.location).href);
     this.component = KitSourcePanel;
     this.assets = [];
     this.tags = [];
