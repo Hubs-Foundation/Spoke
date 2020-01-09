@@ -40,7 +40,7 @@ const StyledAuthForm = styled.form`
 
   h4 {
     font-size: 1.1em;
-    color: text;
+    color: ${props => props.theme.text};
   }
 `;
 

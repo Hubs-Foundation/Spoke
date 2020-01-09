@@ -241,7 +241,7 @@ export default class ToolBar extends Component {
       editor.spokeControls.removeListener("transformPivotChanged", this.onSpokeControlsChanged);
       editor.spokeControls.removeListener("snapSettingsChanged", this.onSpokeControlsChanged);
       editor.removeListener("gridHeightChanged", this.onSpokeControlsChanged);
-      editor.addListener("gridVisibilityChanged", this.onSpokeControlsChanged);
+      editor.removeListener("gridVisibilityChanged", this.onSpokeControlsChanged);
     }
   }
 

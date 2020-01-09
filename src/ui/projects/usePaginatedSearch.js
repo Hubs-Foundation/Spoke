@@ -56,8 +56,10 @@ export default function usePaginatedSearch(path, queryParams, options = {}) {
   );
 
   const loadMore = useCallback(() => {
-    urlRef.current.searchParams.set("cursor", next_cursor);
-    setHref(urlRef.current.href);
+    if (next_cursor) {
+      urlRef.current.searchParams.set("cursor", next_cursor);
+      setHref(urlRef.current.href);
+    }
   }, [urlRef, next_cursor]);
 
   const hasMore = next_cursor && cursor !== next_cursor;
