@@ -17,7 +17,13 @@ export default function ModelInput({ onChange, ...rest }) {
   });
 
   return (
-    <StringInput ref={dropRef} onChange={onChange} error={isOver && !canDrop} canDrop={isOver && canDrop} {...rest} />
+    <StringInput
+      ref={dropRef}
+      onChange={(value, e) => onChange(value, {}, e)}
+      error={isOver && !canDrop}
+      canDrop={isOver && canDrop}
+      {...rest}
+    />
   );
 }
 
