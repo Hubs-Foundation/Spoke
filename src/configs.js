@@ -29,11 +29,16 @@ if (configs.BASE_ASSETS_PATH) {
 function fixBaseAssetsPath(path) {
   // eslint-disable-next-line no-undef
   if (!path.startsWith(__webpack_public_path__)) {
-    // eslint-disable-next-line
-    return __webpack_public_path__ + path.replace(/^([^\/]+)\/.+$/, "");
-  } else {
-    return path;
+    // eslint-disable-next-line no-useless-escape
+    const matches = path.match(/^([^\/]+)\/.+$/);
+
+    if (matches.length > 1) {
+      // eslint-disable-next-line no-undef
+      return __webpack_public_path__ + path.replace(matches[1], "");
+    }
   }
+
+  return path;
 }
 
 configs.isMoz = () => configs.IS_MOZ === "true";
