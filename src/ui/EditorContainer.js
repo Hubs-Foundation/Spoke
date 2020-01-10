@@ -199,6 +199,7 @@ class EditorContainer extends Component {
       if (projectFile.metadata) {
         delete projectFile.metadata.sceneUrl;
         delete projectFile.metadata.sceneId;
+        delete projectFile.metadata.creatorAttribution;
       }
 
       await editor.init();
