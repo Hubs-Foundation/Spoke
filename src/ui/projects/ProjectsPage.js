@@ -157,7 +157,7 @@ class ProjectsPage extends Component {
                 <h1>Welcome{configs.isMoz() ? " to Spoke" : ""}</h1>
                 <h2>
                   If you&#39;re new here we recommend going through the tutorial. Otherwise, jump right in and create a
-                  project from scratch or one of our templates.
+                  project from scratch or from one of our templates.
                 </h2>
                 <MediumButton as={Link} to="/projects/tutorial">
                   Start Tutorial
