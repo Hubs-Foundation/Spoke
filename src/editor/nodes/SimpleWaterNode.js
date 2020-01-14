@@ -6,10 +6,6 @@ export default class SimpleWaterNode extends EditorNodeMixin(SimpleWater) {
 
   static nodeName = "SimpleWater";
 
-  static canAddNode(editor) {
-    return editor.scene.findNodeByType(SimpleWaterNode) === null;
-  }
-
   static async load() {
     await SimpleWater.loadNormalMap();
   }
