@@ -234,6 +234,9 @@ export default class SceneNode extends EditorNodeMixin(Scene) {
       if (object.material && object.material.isMeshStandardMaterial) {
         object.material.envMap = environmentMap;
         object.material.needsUpdate = true;
+      } else if (object.material && object.material.name === "SimpleWaterMaterial") {
+        object.material.uniforms.envMap.value = environmentMap;
+        object.material.needsUpdate = true;
       }
     });
   }
