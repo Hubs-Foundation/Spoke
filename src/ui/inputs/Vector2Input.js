@@ -2,13 +2,13 @@ import React, { Component } from "react";
 import PropTypes from "prop-types";
 import NumericInput from "./NumericInput";
 import Scrubber from "./Scrubber";
-import { Vector3 } from "three";
+import { Vector2 } from "three";
 import styled from "styled-components";
 import { Link } from "styled-icons/fa-solid/Link";
 import { Unlink } from "styled-icons/fa-solid/Unlink";
 import Hidden from "../layout/Hidden";
 
-export const Vector3InputContainer = styled.div`
+export const Vector2InputContainer = styled.div`
   display: flex;
   flex-direction: row;
   flex: 1 1 auto;
@@ -16,7 +16,7 @@ export const Vector3InputContainer = styled.div`
   justify-content: flex-start;
 `;
 
-export const Vector3Scrubber = styled(Scrubber)`
+export const Vector2Scrubber = styled(Scrubber)`
   display: flex;
   align-items: center;
   padding: 0 8px;
@@ -42,7 +42,7 @@ const UniformButtonContainer = styled.div`
 
 let uniqueId = 0;
 
-export default class Vector3Input extends Component {
+export default class Vector2Input extends Component {
   static propTypes = {
     uniformScaling: PropTypes.bool,
     value: PropTypes.object,
@@ -50,7 +50,7 @@ export default class Vector3Input extends Component {
   };
 
   static defaultProps = {
-    value: new Vector3(),
+    value: new Vector2(),
     onChange: () => {}
   };
 
@@ -59,7 +59,7 @@ export default class Vector3Input extends Component {
 
     this.id = uniqueId++;
 
-    this.newValue = new Vector3();
+    this.newValue = new Vector2();
 
     this.state = {
       uniformEnabled: props.uniformScaling
@@ -74,15 +74,13 @@ export default class Vector3Input extends Component {
     const value = this.props.value;
 
     if (this.state.uniformEnabled) {
-      this.newValue.set(fieldValue, fieldValue, fieldValue);
+      this.newValue.set(fieldValue, fieldValue);
     } else {
       const x = value ? value.x : 0;
       const y = value ? value.y : 0;
-      const z = value ? value.z : 0;
 
       this.newValue.x = field === "x" ? fieldValue : x;
       this.newValue.y = field === "y" ? fieldValue : y;
-      this.newValue.z = field === "z" ? fieldValue : z;
     }
 
     this.props.onChange(this.newValue);
@@ -92,18 +90,15 @@ export default class Vector3Input extends Component {
 
   onChangeY = y => this.onChange("y", y);
 
-  onChangeZ = z => this.onChange("z", z);
-
   render() {
     const { uniformScaling, value, onChange, ...rest } = this.props;
     const { uniformEnabled } = this.state;
     const vx = value ? value.x : 0;
     const vy = value ? value.y : 0;
-    const vz = value ? value.z : 0;
     const checkboxId = "uniform-button-" + this.id;
 
     return (
-      <Vector3InputContainer>
+      <Vector2InputContainer>
         {uniformScaling && (
           <UniformButtonContainer>
             <Hidden
@@ -118,19 +113,15 @@ export default class Vector3Input extends Component {
             </label>
           </UniformButtonContainer>
         )}
-        <Vector3Scrubber {...rest} tag="div" value={vx} onChange={this.onChangeX}>
+        <Vector2Scrubber {...rest} tag="div" value={vx} onChange={this.onChangeX}>
           X:
-        </Vector3Scrubber>
+        </Vector2Scrubber>
         <NumericInput {...rest} value={vx} onChange={this.onChangeX} />
-        <Vector3Scrubber {...rest} tag="div" value={vy} onChange={this.onChangeY}>
+        <Vector2Scrubber {...rest} tag="div" value={vy} onChange={this.onChangeY}>
           Y:
-        </Vector3Scrubber>
+        </Vector2Scrubber>
         <NumericInput {...rest} value={vy} onChange={this.onChangeY} />
-        <Vector3Scrubber {...rest} tag="div" value={vz} onChange={this.onChangeZ}>
-          Z:
-        </Vector3Scrubber>
-        <NumericInput {...rest} value={vz} onChange={this.onChangeZ} />
-      </Vector3InputContainer>
+      </Vector2InputContainer>
     );
   }
 }

@@ -4,13 +4,15 @@ import Portal from "./Portal";
 import Positioner from "./Positioner";
 import Overlay from "./Overlay";
 
-export default function Popover({ children, padding, position, renderContent, ...rest }) {
+export default function Popover({ children, padding, position, renderContent, disabled, ...rest }) {
   const popoverTriggerRef = useRef();
   const [isOpen, setIsOpen] = useState(false);
 
   const onOpen = useCallback(() => {
-    setIsOpen(true);
-  }, [setIsOpen]);
+    if (!disabled) {
+      setIsOpen(true);
+    }
+  }, [setIsOpen, disabled]);
 
   const onClose = useCallback(
     e => {
@@ -44,6 +46,7 @@ export default function Popover({ children, padding, position, renderContent, ..
 }
 
 Popover.propTypes = {
+  disabled: PropTypes.bool,
   children: PropTypes.node,
   padding: PropTypes.number,
   position: PropTypes.string,

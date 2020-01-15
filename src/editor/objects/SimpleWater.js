@@ -1,11 +1,11 @@
 import {
   Mesh,
   PlaneBufferGeometry,
+  MeshStandardMaterial,
   MeshPhongMaterial,
   Vector2,
   TextureLoader,
   RepeatWrapping,
-  Color,
   UniformsUtils
 } from "three";
 import { SimplexNoise } from "three/examples/jsm/math/SimplexNoise";
@@ -37,26 +37,22 @@ export default class SimpleWater extends Mesh {
     waterNormalsTexture.wrapS = waterNormalsTexture.wrapT = RepeatWrapping;
   }
 
-  constructor(resolution = 20) {
+  constructor(resolution = 24, lowQuality = false) {
     const geometry = new PlaneBufferGeometry(10, 10, resolution, resolution);
     geometry.rotateX(-Math.PI / 2);
 
     const waterUniforms = {
-      alpha: { value: 1 },
-      scale: { value: 0.1 },
-      intensity: { value: 1 },
-      speed: { value: 1 },
-      time: { value: 0 },
-      color: { value: new Color(0xffffff) },
-      colorA: { value: new Color(0xffffff) },
-      colorB: { value: new Color(0x0054df) }
+      ripplesSpeed: { value: 0.25 },
+      ripplesScale: { value: 1 },
+      time: { value: 0 }
     };
 
-    const material = new MeshPhongMaterial();
+    const materialClass = lowQuality ? MeshPhongMaterial : MeshStandardMaterial;
+
+    const material = new materialClass({ color: 0x0054df });
     material.name = "SimpleWaterMaterial";
 
     material.onBeforeCompile = shader => {
-      console.log("onBeforeCompile", shader.vertexShader);
       Object.assign(shader.uniforms, waterUniforms);
 
       shader.vertexShader = shader.vertexShader.replace(
@@ -64,7 +60,6 @@ export default class SimpleWater extends Mesh {
         `
         #include <fog_pars_vertex>
         varying vec3 vWPosition;
-        varying vec3 vWNormal;
       `
       );
 
@@ -73,88 +68,75 @@ export default class SimpleWater extends Mesh {
         `
         #include <fog_vertex>
         vWPosition = ( modelMatrix * vec4( transformed, 1.0 ) ).xyz;
-        vWNormal = inverseTransformDirection( transformedNormal, viewMatrix ).xyz;
       `
       );
 
       shader.fragmentShader = shader.fragmentShader.replace(
-        "#include <fog_pars_fragment>",
+        "#include <normalmap_pars_fragment>",
         `
-        #include <fog_pars_vertex>
-        
-        uniform vec3 color;
-        uniform vec3 colorB;
-        uniform vec3 colorA;
-        uniform float scale;
+        #include <normalmap_pars_fragment>
+
         uniform float time;
-        uniform float speed;
-        uniform float intensity;
-        uniform float alpha;
+        uniform float ripplesSpeed;
+        uniform float ripplesScale;
       
         varying vec3 vWPosition;
-        varying vec3 vWNormal;
       
-        vec2 hash2(vec2 p) {
-          return fract(sin(vec2(dot(p, vec2(123.4, 748.6)), dot(p, vec2(547.3, 659.3))))*5232.85324);
-        }
-      
-        float voronoi(vec2 p, in float time) {
-          vec2 n = floor(p);
-          vec2 f = fract(p);
-          float md = 5.0;
-          vec2 m = vec2(0.0);
-          for (int i = -1; i <= 1; i++) {
-            for (int j = -1; j <= 1; j++) {
-              vec2 g = vec2(i, j);
-              vec2 o = hash2(n + g);
-              o = 0.5 + 0.5 * sin(time + 5.038 * o);
-              vec2 r = g + o - f;
-              float d = dot(r, r);
-              if (d < md) {
-                md = d;
-                m = n+g+o;
-              }
-            }
-          }
-          return md;
-        }
-      
-        float voronoiLayers(vec2 p, in float time) {
-          float v = 0.0;
-          float a = 0.4;
-          for (int i = 0; i < 3; i++) {
-            v += voronoi(p, time) * a;
-            p *= 2.0;
-            a *= 0.5;
-          }
-          return v;
+        vec4 getNoise(vec2 uv){
+          float timeOffset = time * ripplesSpeed;
+          uv = (uv - 0.5) * ripplesScale + (0.5 * ripplesScale);
+          vec2 uv0 = (uv/103.0)+vec2(timeOffset/17.0, timeOffset/29.0);
+          vec2 uv1 = uv/107.0-vec2(timeOffset/-19.0, timeOffset/31.0);
+          vec2 uv2 = uv/vec2(897.0, 983.0)+vec2(timeOffset/101.0, timeOffset/97.0);
+          vec2 uv3 = uv/vec2(991.0, 877.0)-vec2(timeOffset/109.0, timeOffset/-113.0);
+          vec4 noise = (texture2D(normalMap, uv0)) +
+                       (texture2D(normalMap, uv1)) +
+                       (texture2D(normalMap, uv2)) +
+                       (texture2D(normalMap, uv3));
+          return noise / 4.0;
         }
       `
       );
 
       shader.fragmentShader = shader.fragmentShader.replace(
-        "vec4 diffuseColor = vec4( diffuse, opacity );",
+        "#include <normal_fragment_maps>",
         `
-        vec2 uvPos = ( vWPosition.xz * vec2( scale ) );
-        float timeOffset = ( time * speed );
-        float voronoiValue = voronoiLayers( uvPos, timeOffset );
-        float voronoiIntensity = ( voronoiValue * intensity );
-        float mask = saturate( vWNormal.y );
-        float maskCaustic = ( alpha * mask );
-        vec4 diffuseColor = vec4(mix( color, mix( colorB, colorA, saturate( voronoiIntensity ) ), maskCaustic ), opacity);
-      `
+          // Workaround for Adreno 3XX dFd*( vec3 ) bug. See #9988
+
+          vec3 eye_pos = -vViewPosition;
+          vec3 q0 = vec3( dFdx( eye_pos.x ), dFdx( eye_pos.y ), dFdx( eye_pos.z ) );
+          vec3 q1 = vec3( dFdy( eye_pos.x ), dFdy( eye_pos.y ), dFdy( eye_pos.z ) );
+          vec2 st0 = dFdx( vUv.st );
+          vec2 st1 = dFdy( vUv.st );
+
+          float scale = sign( st1.t * st0.s - st0.t * st1.s ); // we do not care about the magnitude
+
+          vec3 S = normalize( ( q0 * st1.t - q1 * st0.t ) * scale );
+          vec3 T = normalize( ( - q0 * st1.s + q1 * st0.s ) * scale );
+          vec3 N = normalize( normal );
+          mat3 tsn = mat3( S, T, N );
+
+          vec3 mapN = getNoise(vWPosition.xz).xyz * 2.0 - 1.0;
+
+          mapN.xy *= normalScale;
+          mapN.xy *= ( float( gl_FrontFacing ) * 2.0 - 1.0 );
+
+          normal = normalize( tsn * mapN );
+        `
       );
-
-      material.needsUpdate = true;
-
-      console.log(shader.vertexShader, shader.fragmentShader);
     };
 
     super(geometry, material);
 
     this.waterUniforms = waterUniforms;
-    //this.material.normalMap = waterNormalsTexture;
-    this.receiveShadow = true;
+    this.material.normalMap = waterNormalsTexture;
+    this.material.color.set();
+
+    if (lowQuality) {
+      this.material.specular.set(0xffffff);
+    } else {
+      this.receiveShadow = true;
+    }
 
     // TODO: Use dynamic draw after updating three
     //this.geometry.attributes.position.usage = DynamicDrawUsage;
@@ -162,7 +144,7 @@ export default class SimpleWater extends Mesh {
     this.resolution = resolution;
     this.octaves = [
       new Octave(new Vector2(0.5, 0.5), new Vector2(1, 1), 0.01, true),
-      new Octave(new Vector2(0.05, 6), new Vector2(0.5, 20), 0.1, false)
+      new Octave(new Vector2(0.05, 6), new Vector2(1, 20), 0.1, false)
     ];
 
     this.simplex = new SimplexNoise();

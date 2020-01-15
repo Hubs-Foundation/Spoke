@@ -1,4 +1,4 @@
-import { Math as _Math, Scene, Group, Object3D } from "three";
+import { Math as _Math, Scene, Group, Object3D, FogExp2 } from "three";
 import EditorNodeMixin from "./EditorNodeMixin";
 import { setStaticMode, StaticModes, isStatic } from "../StaticMode";
 import sortEntities from "../utils/sortEntities";
@@ -220,7 +220,29 @@ export default class SceneNode extends EditorNodeMixin(Scene) {
     this.url = null;
     this.metadata = {};
     this._environmentMap = null;
+    this._fog = new FogExp2(0xffffff, 0.0025);
+    this.fog = null;
     setStaticMode(this, StaticModes.Static);
+  }
+
+  get fogEnabled() {
+    return !!this.fog;
+  }
+
+  set fogEnabled(value) {
+    this.fog = value ? this._fog : null;
+  }
+
+  get fogColor() {
+    return this._fog.color;
+  }
+
+  get fogDensity() {
+    return this._fog.density;
+  }
+
+  set fogDensity(value) {
+    this._fog.density = value;
   }
 
   get environmentMap() {

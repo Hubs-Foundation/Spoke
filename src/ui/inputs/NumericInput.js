@@ -47,6 +47,11 @@ const StyledNumericInput = styled.input`
   &:focus {
     border-color: ${props => props.theme.blue};
   }
+
+  &:disabled {
+    background-color: ${props => props.theme.disabled};
+    color: ${props => props.theme.disabledText};
+  }
 `;
 
 const NumericInputUnit = styled.div`
