@@ -4,10 +4,40 @@ import SimpleWater from "../objects/SimpleWater";
 export default class SimpleWaterNode extends EditorNodeMixin(SimpleWater) {
   static legacyComponentName = "simple-water";
 
-  static nodeName = "SimpleWater";
+  static nodeName = "Simple Water";
 
   static async load() {
     await SimpleWater.loadNormalMap();
+  }
+
+  static async deserialize(editor, json) {
+    const node = await super.deserialize(editor, json);
+
+    const {
+      opacity,
+      color,
+      tideHeight,
+      tideScale,
+      tideSpeed,
+      waveHeight,
+      waveScale,
+      waveSpeed,
+      ripplesHeight,
+      ripplesScale
+    } = json.components.find(c => c.name === SimpleWaterNode.legacyComponentName).props;
+
+    node.opacity = opacity;
+    node.color.set(color);
+    node.tideHeight = tideHeight;
+    node.tideScale.copy(tideScale);
+    node.tideSpeed.copy(tideSpeed);
+    node.waveHeight = waveHeight;
+    node.waveScale.copy(waveScale);
+    node.waveSpeed.copy(waveSpeed);
+    node.ripplesHeight = ripplesHeight;
+    node.ripplesScale = ripplesScale;
+
+    return node;
   }
 
   get opacity() {
@@ -74,17 +104,41 @@ export default class SimpleWaterNode extends EditorNodeMixin(SimpleWater) {
     return this.waterUniforms.ripplesScale.value;
   }
 
-  onUpdate(dt, time) {
+  onUpdate(_dt, time) {
     this.update(time);
   }
 
   serialize() {
-    return super.serialize({ "simple-water": {} });
+    return super.serialize({
+      "simple-water": {
+        opacity: this.opacity,
+        color: this.color,
+        tideHeight: this.tideHeight,
+        tideScale: this.tideScale,
+        tideSpeed: this.tideSpeed,
+        waveHeight: this.waveHeight,
+        waveScale: this.waveScale,
+        waveSpeed: this.waveSpeed,
+        ripplesHeight: this.ripplesHeight,
+        ripplesScale: this.ripplesScale
+      }
+    });
   }
 
   prepareForExport() {
     super.prepareForExport();
-    this.addGLTFComponent("simple-water");
+    this.addGLTFComponent("simple-water", {
+      opacity: this.opacity,
+      color: this.color,
+      tideHeight: this.tideHeight,
+      tideScale: this.tideScale,
+      tideSpeed: this.tideSpeed,
+      waveHeight: this.waveHeight,
+      waveScale: this.waveScale,
+      waveSpeed: this.waveSpeed,
+      ripplesHeight: this.ripplesHeight,
+      ripplesScale: this.ripplesScale
+    });
     this.replaceObject();
   }
 }

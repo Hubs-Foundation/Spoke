@@ -5,6 +5,7 @@ import sortEntities from "../utils/sortEntities";
 import MeshCombinationGroup from "../MeshCombinationGroup";
 import GroupNode from "./GroupNode";
 import getNodeWithUUID from "../utils/getNodeWithUUID";
+import serializeColor from "../utils/serializeColor";
 
 // Migrate v1 spoke scene to v2
 function migrateV1ToV2(json) {
@@ -215,6 +216,23 @@ export default class SceneNode extends EditorNodeMixin(Scene) {
     return entityJson.parent === undefined;
   }
 
+  static async deserialize(editor, json) {
+    const node = await super.deserialize(editor, json);
+
+    if (json.components) {
+      const fog = json.components.find(c => c.name === "fog");
+
+      if (fog) {
+        const { enabled, color, density } = fog.props;
+        node.fogEnabled = enabled;
+        node.fogColor.set(color);
+        node.fogDensity = density;
+      }
+    }
+
+    return node;
+  }
+
   constructor(editor) {
     super(editor);
     this.url = null;
@@ -277,7 +295,17 @@ export default class SceneNode extends EditorNodeMixin(Scene) {
       metadata: JSON.parse(JSON.stringify(this.metadata)),
       entities: {
         [this.uuid]: {
-          name: this.name
+          name: this.name,
+          components: [
+            {
+              name: "fog",
+              props: {
+                enabled: this.fogEnabled,
+                color: serializeColor(this.fogColor),
+                density: this.fogDensity
+              }
+            }
+          ]
         }
       }
     };
@@ -320,6 +348,13 @@ export default class SceneNode extends EditorNodeMixin(Scene) {
 
     for (const node of nodeList) {
       node.prepareForExport(ctx);
+    }
+
+    if (this.fogEnabled) {
+      this.addGLTFComponent("fog", {
+        color: this.fogColor,
+        density: this.fogDensity
+      });
     }
   }
 

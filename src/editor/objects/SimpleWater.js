@@ -84,7 +84,7 @@ export default class SimpleWater extends Mesh {
       
         vec4 getNoise(vec2 uv){
           float timeOffset = time * ripplesSpeed;
-          uv = (uv - 0.5) * ripplesScale + (0.5 * ripplesScale);
+          uv = (uv - 0.5) * (1.0 / ripplesScale);
           vec2 uv0 = (uv/103.0)+vec2(timeOffset/17.0, timeOffset/29.0);
           vec2 uv1 = uv/107.0-vec2(timeOffset/-19.0, timeOffset/31.0);
           vec2 uv2 = uv/vec2(897.0, 983.0)+vec2(timeOffset/101.0, timeOffset/97.0);
@@ -130,7 +130,6 @@ export default class SimpleWater extends Mesh {
 
     this.waterUniforms = waterUniforms;
     this.material.normalMap = waterNormalsTexture;
-    this.material.color.set();
 
     if (lowQuality) {
       this.material.specular.set(0xffffff);
@@ -138,8 +137,7 @@ export default class SimpleWater extends Mesh {
       this.receiveShadow = true;
     }
 
-    // TODO: Use dynamic draw after updating three
-    //this.geometry.attributes.position.usage = DynamicDrawUsage;
+    this.geometry.attributes.position.dynamic = true;
 
     this.resolution = resolution;
     this.octaves = [
