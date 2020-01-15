@@ -1,4 +1,4 @@
-import { Math as _Math, Scene, Group, Object3D, FogExp2 } from "three";
+import { Math as _Math, Scene, Group, Object3D, FogExp2, Color } from "three";
 import EditorNodeMixin from "./EditorNodeMixin";
 import { setStaticMode, StaticModes, isStatic } from "../StaticMode";
 import sortEntities from "../utils/sortEntities";
@@ -228,6 +228,13 @@ export default class SceneNode extends EditorNodeMixin(Scene) {
         node.fogColor.set(color);
         node.fogDensity = density;
       }
+
+      const background = json.components.find(c => c.name === "background");
+
+      if (background) {
+        const { color } = background.props;
+        node.background.set(color);
+      }
     }
 
     return node;
@@ -237,6 +244,7 @@ export default class SceneNode extends EditorNodeMixin(Scene) {
     super(editor);
     this.url = null;
     this.metadata = {};
+    this.background = new Color(0xaaaaaa);
     this._environmentMap = null;
     this._fog = new FogExp2(0xffffff, 0.0025);
     this.fog = null;
@@ -304,6 +312,12 @@ export default class SceneNode extends EditorNodeMixin(Scene) {
                 color: serializeColor(this.fogColor),
                 density: this.fogDensity
               }
+            },
+            {
+              name: "background",
+              props: {
+                color: serializeColor(this.background)
+              }
             }
           ]
         }
@@ -349,6 +363,10 @@ export default class SceneNode extends EditorNodeMixin(Scene) {
     for (const node of nodeList) {
       node.prepareForExport(ctx);
     }
+
+    this.addGLTFComponent("background", {
+      color: this.background
+    });
 
     if (this.fogEnabled) {
       this.addGLTFComponent("fog", {

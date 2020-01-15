@@ -17,6 +17,10 @@ export default class SceneNodeEditor extends Component {
 
   static description = "The root object of the scene.";
 
+  onChangeBackground = background => {
+    this.props.editor.setPropertySelected("background", background);
+  };
+
   onChangeFogEnabled = fogEnabled => {
     this.props.editor.setPropertySelected("fogEnabled", fogEnabled);
   };
@@ -34,6 +38,9 @@ export default class SceneNodeEditor extends Component {
 
     return (
       <NodeEditor {...this.props} description={SceneNodeEditor.description}>
+        <InputGroup name="Background Color">
+          <ColorInput value={node.background} onChange={this.onChangeBackground} />
+        </InputGroup>
         <InputGroup name="Fog Enabled">
           <BooleanInput value={node.fogEnabled} onChange={this.onChangeFogEnabled} />
         </InputGroup>

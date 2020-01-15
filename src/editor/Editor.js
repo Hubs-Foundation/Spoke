@@ -9,7 +9,6 @@ import {
   AudioListener,
   Raycaster,
   Clock,
-  Color,
   Scene
 } from "three";
 import { GLTFExporter } from "./gltf/GLTFExporter";
@@ -287,7 +286,6 @@ export default class Editor extends EventEmitter {
 
     this.spokeControls.center.set(0, 0, 0);
     this.spokeControls.onSceneSet(scene);
-    scene.background = new Color(0xaaaaaa);
 
     this.renderer.onSceneSet();
 
