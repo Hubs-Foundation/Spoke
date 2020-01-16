@@ -1,4 +1,4 @@
-import { Math as _Math, Scene, Group, Object3D, FogExp2, Color } from "three";
+import { Math as _Math, Scene, Group, Object3D, Fog, FogExp2, Color } from "three";
 import EditorNodeMixin from "./EditorNodeMixin";
 import { setStaticMode, StaticModes, isStatic } from "../StaticMode";
 import sortEntities from "../utils/sortEntities";
@@ -131,6 +131,12 @@ function migrateV3ToV4(json) {
   return json;
 }
 
+export const FogType = {
+  Disabled: "disabled",
+  Linear: "linear",
+  Exponential: "exponential"
+};
+
 export default class SceneNode extends EditorNodeMixin(Scene) {
   static nodeName = "Scene";
 
@@ -223,10 +229,12 @@ export default class SceneNode extends EditorNodeMixin(Scene) {
       const fog = json.components.find(c => c.name === "fog");
 
       if (fog) {
-        const { enabled, color, density } = fog.props;
-        node.fogEnabled = enabled;
+        const { type, color, density, near, far } = fog.props;
+        node.fogType = type;
         node.fogColor.set(color);
         node.fogDensity = density;
+        node.fogNearDistance = near;
+        node.fogFarDistance = far;
       }
 
       const background = json.components.find(c => c.name === "background");
@@ -246,29 +254,63 @@ export default class SceneNode extends EditorNodeMixin(Scene) {
     this.metadata = {};
     this.background = new Color(0xaaaaaa);
     this._environmentMap = null;
-    this._fog = new FogExp2(0xffffff, 0.0025);
+    this._fogType = FogType.Disabled;
+    this._fog = new Fog(0xffffff, 0.0025);
+    this._fogExp2 = new FogExp2(0xffffff, 0.0025);
     this.fog = null;
     setStaticMode(this, StaticModes.Static);
   }
 
-  get fogEnabled() {
-    return !!this.fog;
+  get fogType() {
+    return this._fogType;
   }
 
-  set fogEnabled(value) {
-    this.fog = value ? this._fog : null;
+  set fogType(type) {
+    this._fogType = type;
+
+    switch (type) {
+      case FogType.Linear:
+        this.fog = this._fog;
+        break;
+      case FogType.Exponential:
+        this.fog = this._fogExp2;
+        break;
+      default:
+        this.fog = null;
+        break;
+    }
   }
 
   get fogColor() {
-    return this._fog.color;
+    if (this.fogType === FogType.Linear) {
+      return this._fog.color;
+    } else {
+      return this._fogExp2.color;
+    }
   }
 
   get fogDensity() {
-    return this._fog.density;
+    return this._fogExp2.density;
   }
 
   set fogDensity(value) {
-    this._fog.density = value;
+    this._fogExp2.density = value;
+  }
+
+  get fogNearDistance() {
+    return this._fog.near;
+  }
+
+  set fogNearDistance(value) {
+    this._fog.near = value;
+  }
+
+  get fogFarDistance() {
+    return this._fog.far;
+  }
+
+  set fogFarDistance(value) {
+    this._fog.far = value;
   }
 
   get environmentMap() {
@@ -292,6 +334,11 @@ export default class SceneNode extends EditorNodeMixin(Scene) {
     this.url = source.url;
     this.metadata = source.metadata;
     this._environmentMap = source._environmentMap;
+    this.fogType = source.fogType;
+    this.fogColor.copy(source.fogColor);
+    this.fogDensity = source.fogDensity;
+    this.fogNearDistance = source.fogNearDistance;
+    this.fogFarDistance = source.fogFarDistance;
 
     return this;
   }
@@ -308,8 +355,10 @@ export default class SceneNode extends EditorNodeMixin(Scene) {
             {
               name: "fog",
               props: {
-                enabled: this.fogEnabled,
+                type: this.fogType,
                 color: serializeColor(this.fogColor),
+                near: this.fogNearDistance,
+                far: this.fogFarDistance,
                 density: this.fogDensity
               }
             },
@@ -368,9 +417,17 @@ export default class SceneNode extends EditorNodeMixin(Scene) {
       color: this.background
     });
 
-    if (this.fogEnabled) {
+    if (this.fogType === FogType.Linear) {
       this.addGLTFComponent("fog", {
-        color: this.fogColor,
+        type: this.fogType,
+        color: serializeColor(this.fogColor),
+        near: this.fogNearDistance,
+        far: this.fogFarDistance
+      });
+    } else if (this.fogType === FogType.Exponential) {
+      this.addGLTFComponent("fog", {
+        type: this.fogType,
+        color: serializeColor(this.fogColor),
         density: this.fogDensity
       });
     }

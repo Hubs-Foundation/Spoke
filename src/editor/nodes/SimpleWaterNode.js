@@ -1,14 +1,15 @@
+import { TextureLoader } from "three";
 import EditorNodeMixin from "./EditorNodeMixin";
 import SimpleWater from "../objects/SimpleWater";
+import waterNormalsUrl from "three/examples/textures/waternormals.jpg";
+import eventToMessage from "../utils/eventToMessage";
+
+let waterNormalMap = null;
 
 export default class SimpleWaterNode extends EditorNodeMixin(SimpleWater) {
   static legacyComponentName = "simple-water";
 
   static nodeName = "Simple Water";
-
-  static async load() {
-    await SimpleWater.loadNormalMap();
-  }
 
   static async deserialize(editor, json) {
     const node = await super.deserialize(editor, json);
@@ -22,7 +23,7 @@ export default class SimpleWaterNode extends EditorNodeMixin(SimpleWater) {
       waveHeight,
       waveScale,
       waveSpeed,
-      ripplesHeight,
+      ripplesSpeed,
       ripplesScale
     } = json.components.find(c => c.name === SimpleWaterNode.legacyComponentName).props;
 
@@ -34,74 +35,27 @@ export default class SimpleWaterNode extends EditorNodeMixin(SimpleWater) {
     node.waveHeight = waveHeight;
     node.waveScale.copy(waveScale);
     node.waveSpeed.copy(waveSpeed);
-    node.ripplesHeight = ripplesHeight;
+    node.ripplesSpeed = ripplesSpeed;
     node.ripplesScale = ripplesScale;
 
     return node;
   }
 
-  get opacity() {
-    return this.material.opacity;
-  }
-
-  set opacity(value) {
-    this.material.opacity = value;
-
-    if (value !== 1) {
-      this.material.transparent = true;
+  constructor(editor) {
+    if (!waterNormalMap) {
+      waterNormalMap = new TextureLoader().load(
+        waterNormalsUrl,
+        undefined,
+        undefined,
+        event => `Error loading simple-water normal map: "${eventToMessage(event)}"`
+      );
     }
-  }
+    super(editor, waterNormalMap);
 
-  get color() {
-    return this.material.color;
-  }
-
-  get tideHeight() {
-    return this.octaves[0].height;
-  }
-
-  get tideScale() {
-    return this.octaves[0].scale;
-  }
-
-  get tideSpeed() {
-    return this.octaves[0].speed;
-  }
-
-  set tideHeight(value) {
-    this.octaves[0].height = value;
-  }
-
-  get waveHeight() {
-    return this.octaves[1].height;
-  }
-
-  set waveHeight(value) {
-    this.octaves[1].height = value;
-  }
-
-  get waveScale() {
-    return this.octaves[1].scale;
-  }
-
-  get waveSpeed() {
-    return this.octaves[1].speed;
-  }
-
-  set ripplesSpeed(value) {
-    this.waterUniforms.ripplesSpeed.value = value;
-  }
-
-  get ripplesSpeed() {
-    return this.waterUniforms.ripplesSpeed.value;
-  }
-
-  set ripplesScale(value) {
-    this.waterUniforms.ripplesScale.value = value;
-  }
-
-  get ripplesScale() {
-    return this.waterUniforms.ripplesScale.value;
+    if (editor.scene) {
+      this.material.envMap = editor.scene.environmentMap;
+      this.material.needsUpdate = true;
+    }
   }
 
   onUpdate(_dt, time) {
@@ -119,7 +73,7 @@ export default class SimpleWaterNode extends EditorNodeMixin(SimpleWater) {
         waveHeight: this.waveHeight,
         waveScale: this.waveScale,
         waveSpeed: this.waveSpeed,
-        ripplesHeight: this.ripplesHeight,
+        ripplesSpeed: this.ripplesSpeed,
         ripplesScale: this.ripplesScale
       }
     });
@@ -136,7 +90,7 @@ export default class SimpleWaterNode extends EditorNodeMixin(SimpleWater) {
       waveHeight: this.waveHeight,
       waveScale: this.waveScale,
       waveSpeed: this.waveSpeed,
-      ripplesHeight: this.ripplesHeight,
+      ripplesSpeed: this.ripplesSpeed,
       ripplesScale: this.ripplesScale
     });
     this.replaceObject();

@@ -1,4 +1,6 @@
 import {
+  Scene,
+  CubeCamera,
   Object3D,
   Vector3,
   BoxBufferGeometry,
@@ -8,6 +10,9 @@ import {
   Mesh,
   UniformsLib
 } from "three";
+import { PMREMGenerator } from "three/examples/jsm/pmrem/PMREMGenerator";
+import { PMREMCubeUVPacker } from "three/examples/jsm/pmrem/PMREMCubeUVPacker";
+
 /**
  * @author zz85 / https://github.com/zz85
  *
@@ -238,6 +243,10 @@ export default class Sky extends Object3D {
       fog: true
     });
 
+    this.skyScene = new Scene();
+    this.cubeCamera = new CubeCamera(1, 100000, 512);
+    this.skyScene.add(this.cubeCamera);
+
     this.sky = new Mesh(Sky._geometry, material);
     this.sky.name = "Sky";
     this.add(this.sky);
@@ -327,6 +336,22 @@ export default class Sky extends Object3D {
 
     this.sky.material.uniforms.sunPosition.value.set(x, y, z).normalize();
     this.sky.scale.set(distance, distance, distance);
+  }
+
+  generateEnvironmentMap(renderer) {
+    this.skyScene.add(this.sky);
+    this.cubeCamera.update(renderer, this.skyScene);
+    this.add(this.sky);
+    const vrEnabled = renderer.vr.enabled;
+    renderer.vr.enabled = false;
+    const pmremGenerator = new PMREMGenerator(this.cubeCamera.renderTarget.texture);
+    pmremGenerator.update(renderer);
+    const pmremCubeUVPacker = new PMREMCubeUVPacker(pmremGenerator.cubeLods);
+    pmremCubeUVPacker.update(renderer);
+    renderer.vr.enabled = vrEnabled;
+    pmremGenerator.dispose();
+    pmremCubeUVPacker.dispose();
+    return pmremCubeUVPacker.CubeUVRenderTarget.texture;
   }
 
   copy(source, recursive = true) {

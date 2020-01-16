@@ -1,22 +1,9 @@
-import {
-  Mesh,
-  PlaneBufferGeometry,
-  MeshStandardMaterial,
-  MeshPhongMaterial,
-  Vector2,
-  TextureLoader,
-  RepeatWrapping,
-  UniformsUtils
-} from "three";
+import { Mesh, PlaneBufferGeometry, MeshStandardMaterial, MeshPhongMaterial, Vector2, RepeatWrapping } from "three";
 import { SimplexNoise } from "three/examples/jsm/math/SimplexNoise";
-import waterNormalsUrl from "three/examples/textures/waternormals.jpg";
-import eventToMessage from "../utils/eventToMessage";
 
 /**
  * Adapted dynamic geometry code from: https://github.com/ditzel/UnityOceanWavesAndShip
  */
-
-let waterNormalsTexture = null;
 
 class Octave {
   constructor(speed = new Vector2(1, 1), scale = new Vector2(1, 1), height = 0.0025, alternate = true) {
@@ -28,16 +15,7 @@ class Octave {
 }
 
 export default class SimpleWater extends Mesh {
-  static async loadNormalMap() {
-    waterNormalsTexture = await new Promise((resolve, reject) => {
-      new TextureLoader().load(waterNormalsUrl, resolve, null, e =>
-        reject(`Error loading Image. ${eventToMessage(e)}`)
-      );
-    });
-    waterNormalsTexture.wrapS = waterNormalsTexture.wrapT = RepeatWrapping;
-  }
-
-  constructor(resolution = 24, lowQuality = false) {
+  constructor(normalMap, resolution = 24, lowQuality = false) {
     const geometry = new PlaneBufferGeometry(10, 10, resolution, resolution);
     geometry.rotateX(-Math.PI / 2);
 
@@ -49,7 +27,9 @@ export default class SimpleWater extends Mesh {
 
     const materialClass = lowQuality ? MeshPhongMaterial : MeshStandardMaterial;
 
-    const material = new materialClass({ color: 0x0054df });
+    normalMap.wrapS = normalMap.wrapT = RepeatWrapping;
+
+    const material = new materialClass({ color: 0x0054df, normalMap });
     material.name = "SimpleWaterMaterial";
 
     material.onBeforeCompile = shader => {
@@ -128,8 +108,8 @@ export default class SimpleWater extends Mesh {
 
     super(geometry, material);
 
+    this.lowQuality = lowQuality;
     this.waterUniforms = waterUniforms;
-    this.material.normalMap = waterNormalsTexture;
 
     if (lowQuality) {
       this.material.specular.set(0xffffff);
@@ -146,6 +126,70 @@ export default class SimpleWater extends Mesh {
     ];
 
     this.simplex = new SimplexNoise();
+  }
+
+  get opacity() {
+    return this.material.opacity;
+  }
+
+  set opacity(value) {
+    this.material.opacity = value;
+
+    if (value !== 1) {
+      this.material.transparent = true;
+    }
+  }
+
+  get color() {
+    return this.material.color;
+  }
+
+  get tideHeight() {
+    return this.octaves[0].height;
+  }
+
+  get tideScale() {
+    return this.octaves[0].scale;
+  }
+
+  get tideSpeed() {
+    return this.octaves[0].speed;
+  }
+
+  set tideHeight(value) {
+    this.octaves[0].height = value;
+  }
+
+  get waveHeight() {
+    return this.octaves[1].height;
+  }
+
+  set waveHeight(value) {
+    this.octaves[1].height = value;
+  }
+
+  get waveScale() {
+    return this.octaves[1].scale;
+  }
+
+  get waveSpeed() {
+    return this.octaves[1].speed;
+  }
+
+  set ripplesSpeed(value) {
+    this.waterUniforms.ripplesSpeed.value = value;
+  }
+
+  get ripplesSpeed() {
+    return this.waterUniforms.ripplesSpeed.value;
+  }
+
+  set ripplesScale(value) {
+    this.waterUniforms.ripplesScale.value = value;
+  }
+
+  get ripplesScale() {
+    return this.waterUniforms.ripplesScale.value;
   }
 
   update(time) {
@@ -183,8 +227,24 @@ export default class SimpleWater extends Mesh {
     this.waterUniforms.time.value = time;
   }
 
-  copy(source, recursive) {
+  clone(recursive) {
+    return new SimpleWater(this.material.normalMap, this.resolution, this.lowQuality).copy(this, recursive);
+  }
+
+  copy(source, recursive = true) {
     super.copy(source, recursive);
-    this.waterUniforms = UniformsUtils.clone(source.waterUniforms);
+
+    this.opacity = source.opacity;
+    this.color.copy(source.color);
+    this.tideHeight = source.tideHeight;
+    this.tideScale.copy(source.tideScale);
+    this.tideSpeed.copy(source.tideSpeed);
+    this.waveHeight = source.waveHeight;
+    this.waveScale.copy(source.waveScale);
+    this.waveSpeed.copy(source.waveSpeed);
+    this.ripplesSpeed = source.ripplesSpeed;
+    this.ripplesScale = source.ripplesScale;
+
+    return this;
   }
 }
