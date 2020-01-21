@@ -1,4 +1,18 @@
-import { Object3D, Vector3, BoxBufferGeometry, ShaderMaterial, UniformsUtils, BackSide, Mesh } from "three";
+import {
+  Scene,
+  CubeCamera,
+  Object3D,
+  Vector3,
+  BoxBufferGeometry,
+  ShaderMaterial,
+  UniformsUtils,
+  BackSide,
+  Mesh,
+  UniformsLib
+} from "three";
+import { PMREMGenerator } from "three/examples/jsm/pmrem/PMREMGenerator";
+import { PMREMCubeUVPacker } from "three/examples/jsm/pmrem/PMREMCubeUVPacker";
+
 /**
  * @author zz85 / https://github.com/zz85
  *
@@ -16,6 +30,9 @@ import { Object3D, Vector3, BoxBufferGeometry, ShaderMaterial, UniformsUtils, Ba
  */
 
 const vertexShader = `
+#include <common>
+#include <fog_pars_vertex>
+
 uniform vec3 sunPosition;
 uniform float rayleigh;
 uniform float turbidity;
@@ -64,11 +81,12 @@ vec3 totalMie( float T ) {
 }
 
 void main() {
+  #include <begin_vertex>
 
   vec4 worldPosition = modelMatrix * vec4( position, 1.0 );
   vWorldPosition = worldPosition.xyz;
 
-  gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+  #include <project_vertex>
 
   vSunDirection = normalize( sunPosition );
 
@@ -85,10 +103,14 @@ void main() {
   // mie coefficients
   vBetaM = totalMie( turbidity ) * mieCoefficient;
 
+  #include <fog_vertex>
 }
 `;
 
 const fragmentShader = `
+#include <common>
+#include <fog_pars_fragment>
+
 varying vec3 vWorldPosition;
 varying vec3 vSunDirection;
 varying float vSunfade;
@@ -187,19 +209,23 @@ void main() {
 
   gl_FragColor = vec4( retColor, 1.0 );
 
+  #include <fog_fragment>
 }
 `;
 
 export default class Sky extends Object3D {
   static shader = {
-    uniforms: {
-      luminance: { value: 1 },
-      turbidity: { value: 10 },
-      rayleigh: { value: 2 },
-      mieCoefficient: { value: 0.005 },
-      mieDirectionalG: { value: 0.8 },
-      sunPosition: { value: new Vector3() }
-    },
+    uniforms: UniformsUtils.merge([
+      UniformsLib.fog,
+      {
+        luminance: { value: 1 },
+        turbidity: { value: 10 },
+        rayleigh: { value: 2 },
+        mieCoefficient: { value: 0.005 },
+        mieDirectionalG: { value: 0.8 },
+        sunPosition: { value: new Vector3() }
+      }
+    ]),
     vertexShader,
     fragmentShader
   };
@@ -213,8 +239,13 @@ export default class Sky extends Object3D {
       fragmentShader: Sky.shader.fragmentShader,
       vertexShader: Sky.shader.vertexShader,
       uniforms: UniformsUtils.clone(Sky.shader.uniforms),
-      side: BackSide
+      side: BackSide,
+      fog: true
     });
+
+    this.skyScene = new Scene();
+    this.cubeCamera = new CubeCamera(1, 100000, 512);
+    this.skyScene.add(this.cubeCamera);
 
     this.sky = new Mesh(Sky._geometry, material);
     this.sky.name = "Sky";
@@ -305,6 +336,22 @@ export default class Sky extends Object3D {
 
     this.sky.material.uniforms.sunPosition.value.set(x, y, z).normalize();
     this.sky.scale.set(distance, distance, distance);
+  }
+
+  generateEnvironmentMap(renderer) {
+    this.skyScene.add(this.sky);
+    this.cubeCamera.update(renderer, this.skyScene);
+    this.add(this.sky);
+    const vrEnabled = renderer.vr.enabled;
+    renderer.vr.enabled = false;
+    const pmremGenerator = new PMREMGenerator(this.cubeCamera.renderTarget.texture);
+    pmremGenerator.update(renderer);
+    const pmremCubeUVPacker = new PMREMCubeUVPacker(pmremGenerator.cubeLods);
+    pmremCubeUVPacker.update(renderer);
+    renderer.vr.enabled = vrEnabled;
+    pmremGenerator.dispose();
+    pmremCubeUVPacker.dispose();
+    return pmremCubeUVPacker.CubeUVRenderTarget.texture;
   }
 
   copy(source, recursive = true) {

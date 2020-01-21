@@ -11,10 +11,10 @@ function borderColor(props, defaultColor) {
 }
 
 const Input = styled.input`
-  background-color: ${props => props.theme.inputBackground};
+  background-color: ${props => (props.disabled ? props.theme.disabled : props.theme.inputBackground)};
   border-radius: 4px;
   border: 1px solid ${props => borderColor(props, props.theme.border)};
-  color: ${props => props.theme.text};
+  color: ${props => (props.disabled ? props.theme.disabledText : props.theme.text)};
   height: 24px;
   padding: 6px 8px;
 
