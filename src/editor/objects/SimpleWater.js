@@ -2,6 +2,11 @@ import { Mesh, PlaneBufferGeometry, MeshStandardMaterial, MeshPhongMaterial, Vec
 import { SimplexNoise } from "three/examples/jsm/math/SimplexNoise";
 
 /**
+ * SimpleWater
+ * Keep in sync with Spoke's SimpleWater class
+ */
+
+/**
  * Adapted dynamic geometry code from: https://github.com/ditzel/UnityOceanWavesAndShip
  */
 
@@ -51,6 +56,7 @@ export default class SimpleWater extends Mesh {
       `
       );
 
+      // getNoise function from https://github.com/mrdoob/three.js/blob/dev/examples/jsm/objects/Water.js
       shader.fragmentShader = shader.fragmentShader.replace(
         "#include <normalmap_pars_fragment>",
         `
@@ -78,6 +84,7 @@ export default class SimpleWater extends Mesh {
       `
       );
 
+      // https://github.com/mrdoob/three.js/blob/dev/src/renderers/shaders/ShaderChunk/normalmap_pars_fragment.glsl.js#L20
       shader.fragmentShader = shader.fragmentShader.replace(
         "#include <normal_fragment_maps>",
         `
