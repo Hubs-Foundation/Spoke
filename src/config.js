@@ -57,6 +57,7 @@ import ElementsSource from "./ui/assets/sources/ElementsSource";
 import MyAssetsSource from "./ui/assets/sources/MyAssetsSource";
 import ArchitectureKitSource from "./ui/assets/sources/ArchitectureKitSource";
 import RockKitSource from "./ui/assets/sources/RockKitSource";
+import HubsSoundPackSource from "./ui/assets/sources/HubsSoundPackSource";
 
 export function createEditor(api, settings) {
   const editor = new Editor(api, settings);
@@ -93,8 +94,9 @@ export function createEditor(api, settings) {
   editor.registerSource(new PolySource(api));
   editor.registerSource(new BingImagesSource(api));
   editor.registerSource(new BingVideosSource(api));
-  editor.registerSource(new TwitchSource(api));
+  editor.registerSource(new HubsSoundPackSource(editor));
   editor.registerSource(new TenorSource(api));
+  editor.registerSource(new TwitchSource(api));
 
   return editor;
 }

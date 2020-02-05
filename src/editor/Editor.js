@@ -85,6 +85,7 @@ import ModelNode from "./nodes/ModelNode";
 import VideoNode from "./nodes/VideoNode";
 import ImageNode from "./nodes/ImageNode";
 import LinkNode from "./nodes/LinkNode";
+import AssetManifestSource from "../ui/assets/AssetManifestSource";
 
 const tempMatrix1 = new Matrix4();
 const tempMatrix2 = new Matrix4();
@@ -174,6 +175,14 @@ export default class Editor extends EventEmitter {
 
   registerSource(source) {
     this.sources.push(source);
+  }
+
+  async installAssetSource(manifestUrl) {
+    const proxiedUrl = this.api.proxyUrl(new URL(manifestUrl, window.location).href);
+    const res = await fetch(proxiedUrl);
+    const json = await res.json();
+    this.sources.push(new AssetManifestSource(this, json.name, manifestUrl));
+    this.emit("settingsChanged");
   }
 
   getSource(sourceId) {

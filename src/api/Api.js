@@ -297,6 +297,10 @@ export default class Project extends EventEmitter {
     return { canonicalUrl, accessibleUrl, contentType };
   }
 
+  proxyUrl(url) {
+    return proxiedUrlFor(url);
+  }
+
   unproxyUrl(baseUrl, url) {
     if (configs.CORS_PROXY_SERVER) {
       const corsProxyPrefix = `https://${configs.CORS_PROXY_SERVER}/`;
