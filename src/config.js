@@ -44,6 +44,8 @@ import KitPieceNode from "./editor/nodes/KitPieceNode";
 import KitPieceNodeEditor from "./ui/properties/KitPieceNodeEditor";
 import SimpleWaterNode from "./editor/nodes/SimpleWaterNode";
 import SimpleWaterNodeEditor from "./ui/properties/SimpleWaterNodeEditor";
+import AudioNode from "./editor/nodes/AudioNode";
+import AudioNodeEditor from "./ui/properties/AudioNodeEditor";
 
 import SketchfabSource from "./ui/assets/sources/SketchfabSource";
 import PolySource from "./ui/assets/sources/PolySource";
@@ -81,6 +83,7 @@ export function createEditor(api, settings) {
   editor.registerNode(ParticleEmitterNode, ParticleEmitterNodeEditor);
   editor.registerNode(KitPieceNode, KitPieceNodeEditor);
   editor.registerNode(SimpleWaterNode, SimpleWaterNodeEditor);
+  editor.registerNode(AudioNode, AudioNodeEditor);
 
   editor.registerSource(new ElementsSource(editor));
   editor.registerSource(new MyAssetsSource(editor));

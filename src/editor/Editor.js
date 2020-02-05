@@ -21,6 +21,7 @@ import SceneNode from "./nodes/SceneNode";
 import FloorPlanNode from "./nodes/FloorPlanNode";
 
 import LoadingCube from "./objects/LoadingCube";
+import ErrorIcon from "./objects/ErrorIcon";
 import TransformGizmo from "./objects/TransformGizmo";
 import SpokeInfiniteGridHelper from "./helpers/SpokeInfiniteGridHelper";
 
@@ -219,7 +220,7 @@ export default class Editor extends EventEmitter {
 
     this.initializing = true;
 
-    const tasks = [rendererPromise, loadEnvironmentMap(), LoadingCube.load(), TransformGizmo.load()];
+    const tasks = [rendererPromise, loadEnvironmentMap(), LoadingCube.load(), ErrorIcon.load(), TransformGizmo.load()];
 
     for (const NodeConstructor of this.nodeTypes) {
       tasks.push(NodeConstructor.load());

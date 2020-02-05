@@ -24,7 +24,7 @@ export default class SpawnerNodeEditor extends Component {
 
     return (
       <NodeEditor {...this.props} description={SpawnerNodeEditor.description}>
-        <InputGroup name="Model">
+        <InputGroup name="Model Url">
           <ModelInput value={node.src} onChange={this.onChangeSrc} />
         </InputGroup>
       </NodeEditor>
