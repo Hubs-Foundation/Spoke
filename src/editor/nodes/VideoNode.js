@@ -57,11 +57,22 @@ export default class VideoNode extends EditorNodeMixin(Video) {
 
   constructor(editor) {
     super(editor, editor.audioListener);
+
     this._canonicalUrl = "";
+    this._autoPlay = true;
+    this.volume = 0.5;
   }
 
   get src() {
     return this._canonicalUrl;
+  }
+
+  get autoPlay() {
+    return this._autoPlay;
+  }
+
+  set autoPlay(value) {
+    this._autoPlay = value;
   }
 
   set src(value) {

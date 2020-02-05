@@ -61,6 +61,8 @@ export default class AudioNode extends EditorNodeMixin(AudioSource) {
     super(editor, editor.audioListener);
 
     this._canonicalUrl = "";
+    this._autoPlay = true;
+    this.volume = 0.5;
 
     const geometry = new PlaneBufferGeometry();
     const material = new MeshBasicMaterial();
@@ -78,6 +80,14 @@ export default class AudioNode extends EditorNodeMixin(AudioSource) {
 
   set src(value) {
     this.load(value).catch(console.error);
+  }
+
+  get autoPlay() {
+    return this._autoPlay;
+  }
+
+  set autoPlay(value) {
+    this._autoPlay = value;
   }
 
   async load(src) {
