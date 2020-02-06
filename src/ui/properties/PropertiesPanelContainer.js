@@ -5,7 +5,6 @@ import DefaultNodeEditor from "./DefaultNodeEditor";
 import Panel from "../layout/Panel";
 import styled from "styled-components";
 import { SlidersH } from "styled-icons/fa-solid/SlidersH";
-import ReactTooltip from "react-tooltip";
 import TransformPropertyGroup from "./TransformPropertyGroup";
 import NameInputGroup from "./NameInputGroup";
 import InputGroup from "../inputs/InputGroup";
@@ -38,13 +37,6 @@ const VisibleInputGroup = styled(InputGroup)`
     width: auto !important;
     padding-right: 8px;
   }
-`;
-
-const NodeEditorTooltip = styled(ReactTooltip)`
-  max-width: 200px;
-  overflow: hidden;
-  overflow-wrap: break-word;
-  user-select: none;
 `;
 
 const PropertiesPanelContent = styled.div`
@@ -165,7 +157,6 @@ class PropertiesPanelContainer extends Component {
     return (
       <Panel id="properties-panel" title="Properties" icon={SlidersH}>
         <PropertiesPanelContent>{content}</PropertiesPanelContent>
-        <NodeEditorTooltip id="node-editor" />
       </Panel>
     );
   }
