@@ -9,6 +9,7 @@ import {
 import { Color, Object3D } from "three";
 import serializeColor from "../utils/serializeColor";
 import LoadingCube from "../objects/LoadingCube";
+import ErrorIcon from "../objects/ErrorIcon";
 
 export default function EditorNodeMixin(Object3DClass) {
   return class extends Object3DClass {
@@ -78,6 +79,7 @@ export default function EditorNodeMixin(Object3DClass) {
       this.originalStaticMode = null;
       this.saveParent = false;
       this.loadingCube = null;
+      this.errorIcon = null;
     }
 
     clone(recursive) {
@@ -87,6 +89,7 @@ export default function EditorNodeMixin(Object3DClass) {
     copy(source, recursive = true) {
       if (recursive) {
         this.remove(this.loadingCube);
+        this.remove(this.errorIcon);
       }
 
       super.copy(source, recursive);
@@ -96,6 +99,12 @@ export default function EditorNodeMixin(Object3DClass) {
 
         if (loadingCubeIndex !== -1) {
           this.loadingCube = this.children[loadingCubeIndex];
+        }
+
+        const errorIconIndex = source.children.findIndex(child => child === source.errorIcon);
+
+        if (errorIconIndex !== -1) {
+          this.errorIcon = this.children[errorIconIndex];
         }
       }
 
@@ -275,6 +284,20 @@ export default function EditorNodeMixin(Object3DClass) {
       if (this.loadingCube) {
         this.remove(this.loadingCube);
         this.loadingCube = null;
+      }
+    }
+
+    showErrorIcon() {
+      if (!this.errorIcon) {
+        this.errorIcon = new ErrorIcon();
+        this.add(this.errorIcon);
+      }
+    }
+
+    hideErrorIcon() {
+      if (this.errorIcon) {
+        this.remove(this.errorIcon);
+        this.errorIcon = null;
       }
     }
 

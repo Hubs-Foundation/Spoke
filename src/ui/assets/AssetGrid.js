@@ -12,6 +12,8 @@ import { getEmptyImage } from "react-dnd-html5-backend";
 import AssetTooltip from "./AssetTooltip";
 import { EditorContext } from "../contexts/EditorContext";
 import { OnboardingContext } from "../contexts/OnboardingContext";
+import { ItemTypes } from "../dnd";
+import AudioPreview from "./AudioPreview";
 
 function collectMenuProps({ item }) {
   return { item };
@@ -78,6 +80,22 @@ function AssetGridItem({ contextMenuId, tooltipId, item, onClick, ...rest }) {
     );
   }
 
+  if (item.type === ItemTypes.Audio) {
+    content = (
+      <AudioPreview src={item.url}>
+        <IconMediaGridItem
+          iconComponent={item.iconComponent}
+          onClick={onClickItem}
+          data-tip={item.id}
+          data-for={tooltipId}
+          data-effect="solid"
+          label={item.label}
+          {...rest}
+        />
+      </AudioPreview>
+    );
+  }
+
   const [_dragProps, drag, preview] = useDrag({
     item: { type: item.type },
     begin() {
@@ -127,7 +145,8 @@ AssetGridItem.propTypes = {
     label: PropTypes.string,
     thumbnailUrl: PropTypes.string,
     videoUrl: PropTypes.string,
-    iconComponent: PropTypes.object
+    iconComponent: PropTypes.object,
+    url: PropTypes.string
   }).isRequired
 };
 

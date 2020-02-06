@@ -1,8 +1,7 @@
-import { Object3D, PlaneBufferGeometry, MeshBasicMaterial, DoubleSide, Mesh } from "three";
+import { Object3D } from "three";
 import { GLTFLoader } from "../gltf/GLTFLoader";
 import cloneObject3D from "../utils/cloneObject3D";
 import eventToMessage from "../utils/eventToMessage";
-import loadErrorTexture from "../utils/loadErrorTexture";
 
 export default class Model extends Object3D {
   constructor() {
@@ -53,30 +52,12 @@ export default class Model extends Object3D {
       this.model = null;
     }
 
-    try {
-      const model = await this.loadGLTF(src, ...args);
-      this.model = model;
-      this.add(model);
+    const model = await this.loadGLTF(src, ...args);
+    this.model = model;
+    this.add(model);
 
-      this.castShadow = this._castShadow;
-      this.receiveShadow = this._receiveShadow;
-    } catch (err) {
-      const texture = await loadErrorTexture();
-      const geometry = new PlaneBufferGeometry();
-      const material = new MeshBasicMaterial();
-      material.side = DoubleSide;
-      material.map = texture;
-      material.transparent = true;
-      const mesh = new Mesh(geometry, material);
-      const ratio = (texture.image.height || 1.0) / (texture.image.width || 1.0);
-      const width = Math.min(1.0, 1.0 / ratio);
-      const height = Math.min(1.0, ratio);
-      mesh.scale.set(width, height, 1);
-      this.errorMesh = mesh;
-      this.add(mesh);
-      console.warn(`Error loading model node with src: "${src}": "${err.message || "unknown error"}"`);
-      console.error(err);
-    }
+    this.castShadow = this._castShadow;
+    this.receiveShadow = this._receiveShadow;
 
     return this;
   }

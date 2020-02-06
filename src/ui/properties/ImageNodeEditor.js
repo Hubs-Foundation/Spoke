@@ -31,7 +31,7 @@ export default class ImageNodeEditor extends Component {
     const { node } = this.props;
     return (
       <NodeEditor description={ImageNodeEditor.description} {...this.props}>
-        <InputGroup name="Image">
+        <InputGroup name="Image Url">
           <ImageInput value={node.src} onChange={this.onChangeSrc} />
         </InputGroup>
         <InputGroup name="Projection">

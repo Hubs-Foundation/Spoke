@@ -54,7 +54,7 @@ export default class SpawnerNode extends EditorNodeMixin(Model) {
   async load(src) {
     const nextSrc = src || "";
 
-    if (nextSrc === this._canonicalUrl) {
+    if (nextSrc === this._canonicalUrl && nextSrc !== "") {
       return;
     }
 
@@ -71,6 +71,7 @@ export default class SpawnerNode extends EditorNodeMixin(Model) {
       this.errorMesh = null;
     }
 
+    this.hideErrorIcon();
     this.showLoadingCube();
 
     try {
@@ -123,6 +124,7 @@ export default class SpawnerNode extends EditorNodeMixin(Model) {
         }
       }
     } catch (e) {
+      this.showErrorIcon();
       console.error(e);
     }
 

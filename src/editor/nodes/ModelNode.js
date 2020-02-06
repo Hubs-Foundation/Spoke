@@ -105,7 +105,7 @@ export default class ModelNode extends EditorNodeMixin(Model) {
   async load(src) {
     const nextSrc = src || "";
 
-    if (nextSrc === this._canonicalUrl) {
+    if (nextSrc === this._canonicalUrl && nextSrc !== "") {
       return;
     }
 
@@ -118,11 +118,7 @@ export default class ModelNode extends EditorNodeMixin(Model) {
       this.model = null;
     }
 
-    if (this.errorMesh) {
-      this.remove(this.errorMesh);
-      this.errorMesh = null;
-    }
-
+    this.hideErrorIcon();
     this.showLoadingCube();
 
     try {
@@ -188,6 +184,7 @@ export default class ModelNode extends EditorNodeMixin(Model) {
       }
     } catch (e) {
       console.error(e);
+      this.showErrorIcon();
     }
 
     this.hideLoadingCube();
