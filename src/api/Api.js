@@ -1011,12 +1011,17 @@ export default class Project extends EventEmitter {
   lastUploadAssetRequest = 0;
 
   async _uploadAsset(endpoint, editor, file, onProgress, signal) {
-    const thumbnailBlob = await editor.generateFileThumbnail(file);
+    let thumbnail_file_id = null;
+    let thumbnail_access_token = null;
 
-    const {
-      file_id: thumbnail_file_id,
-      meta: { access_token: thumbnail_access_token }
-    } = await this.upload(thumbnailBlob, undefined, signal);
+    if (!file.name.toLowerCase().endsWith(".mp3")) {
+      const thumbnailBlob = await editor.generateFileThumbnail(file);
+
+      const response = await this.upload(thumbnailBlob, undefined, signal);
+
+      thumbnail_file_id = response.file_id;
+      thumbnail_access_token = response.meta.access_token;
+    }
 
     const {
       file_id: asset_file_id,
