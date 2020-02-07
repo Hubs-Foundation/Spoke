@@ -49,11 +49,7 @@ function AssetGridItem({ contextMenuId, tooltipComponent, disableTooltip, item, 
   }
 
   if (item.type === ItemTypes.Audio) {
-    content = (
-      <AudioPreview src={item.url}>
-        <IconMediaGridItem iconComponent={item.iconComponent} onClick={onClickItem} label={item.label} {...rest} />
-      </AudioPreview>
-    );
+    content = <AudioPreview src={item.url}>{content}</AudioPreview>;
   }
 
   const [_dragProps, drag, preview] = useDrag({
