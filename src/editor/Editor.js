@@ -562,6 +562,7 @@ export default class Editor extends EventEmitter {
         node.onPlay();
       }
     });
+    this.emit("playModeChanged");
   }
 
   leavePlayMode() {
@@ -573,6 +574,7 @@ export default class Editor extends EventEmitter {
         node.onPause();
       }
     });
+    this.emit("playModeChanged");
   }
 
   update = () => {

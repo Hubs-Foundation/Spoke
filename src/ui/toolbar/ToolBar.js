@@ -16,9 +16,11 @@ import { Bullseye } from "styled-icons/fa-solid/Bullseye";
 import { Magnet } from "styled-icons/fa-solid/Magnet";
 import { Bars } from "styled-icons/fa-solid/Bars";
 import { Grid } from "styled-icons/boxicons-regular/Grid";
+import { Play } from "styled-icons/fa-solid/Play";
 import styled from "styled-components";
 import styledTheme from "../theme";
 import { InfoTooltip } from "../layout/Tooltip";
+import { Pause } from "styled-icons/fa-solid";
 
 const StyledToolbar = styled.div`
   display: flex;
@@ -224,16 +226,18 @@ export default class ToolBar extends Component {
   componentDidMount() {
     const editor = this.props.editor;
     editor.addListener("initialized", this.onEditorInitialized);
+    editor.addListener("playModeChanged", this.onForceUpdate);
+    editor.addListener("settingsChanged", this.onForceUpdate);
   }
 
   onEditorInitialized = () => {
     const editor = this.props.editor;
-    editor.spokeControls.addListener("transformModeChanged", this.onSpokeControlsChanged);
-    editor.spokeControls.addListener("transformSpaceChanged", this.onSpokeControlsChanged);
-    editor.spokeControls.addListener("transformPivotChanged", this.onSpokeControlsChanged);
-    editor.spokeControls.addListener("snapSettingsChanged", this.onSpokeControlsChanged);
-    editor.addListener("gridHeightChanged", this.onSpokeControlsChanged);
-    editor.addListener("gridVisibilityChanged", this.onSpokeControlsChanged);
+    editor.spokeControls.addListener("transformModeChanged", this.onForceUpdate);
+    editor.spokeControls.addListener("transformSpaceChanged", this.onForceUpdate);
+    editor.spokeControls.addListener("transformPivotChanged", this.onForceUpdate);
+    editor.spokeControls.addListener("snapSettingsChanged", this.onForceUpdate);
+    editor.addListener("gridHeightChanged", this.onForceUpdate);
+    editor.addListener("gridVisibilityChanged", this.onForceUpdate);
     this.setState({ editorInitialized: true });
   };
 
@@ -242,16 +246,18 @@ export default class ToolBar extends Component {
     editor.removeListener("initialized", this.onEditorInitialized);
 
     if (editor.spokeControls) {
-      editor.spokeControls.removeListener("transformModeChanged", this.onSpokeControlsChanged);
-      editor.spokeControls.removeListener("transformSpaceChanged", this.onSpokeControlsChanged);
-      editor.spokeControls.removeListener("transformPivotChanged", this.onSpokeControlsChanged);
-      editor.spokeControls.removeListener("snapSettingsChanged", this.onSpokeControlsChanged);
-      editor.removeListener("gridHeightChanged", this.onSpokeControlsChanged);
-      editor.removeListener("gridVisibilityChanged", this.onSpokeControlsChanged);
+      editor.spokeControls.removeListener("transformModeChanged", this.onForceUpdate);
+      editor.spokeControls.removeListener("transformSpaceChanged", this.onForceUpdate);
+      editor.spokeControls.removeListener("transformPivotChanged", this.onForceUpdate);
+      editor.spokeControls.removeListener("snapSettingsChanged", this.onForceUpdate);
+      editor.removeListener("gridHeightChanged", this.onForceUpdate);
+      editor.removeListener("gridVisibilityChanged", this.onForceUpdate);
+      editor.removeListener("playModeChanged", this.onForceUpdate);
+      editor.removeListener("settingsChanged", this.onForceUpdate);
     }
   }
 
-  onSpokeControlsChanged = () => {
+  onForceUpdate = () => {
     this.forceUpdate();
   };
 
@@ -342,6 +348,14 @@ export default class ToolBar extends Component {
 
   onToggleGridVisible = () => {
     this.props.editor.toggleGridVisible();
+  };
+
+  onTogglePlayMode = () => {
+    if (this.props.editor.playing) {
+      this.props.editor.leavePlayMode();
+    } else {
+      this.props.editor.enterPlayMode();
+    }
   };
 
   render() {
@@ -456,6 +470,16 @@ export default class ToolBar extends Component {
               decrementTooltip="[=] Decrement Grid Height"
             />
           </ToolbarInputGroup>
+          {this.props.editor.settings.enableExperimentalFeatures && (
+            <ToolbarInputGroup id="preview">
+              <ToggleButton
+                onClick={this.onTogglePlayMode}
+                tooltip={this.props.editor.playing ? "Stop Previewing Scene" : "Preview Scene"}
+              >
+                {this.props.editor.playing ? <Pause size={14} /> : <Play size={14} />}
+              </ToggleButton>
+            </ToolbarInputGroup>
+          )}
         </ToolToggles>
         <Spacer />
         {this.props.isPublishedScene && (
