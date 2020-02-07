@@ -217,7 +217,9 @@ export default class ModelNode extends EditorNodeMixin(Model) {
   }
 
   onUpdate(dt) {
-    this.update(dt);
+    if (this.editor.playing) {
+      this.update(dt);
+    }
   }
 
   updateStaticModes() {
