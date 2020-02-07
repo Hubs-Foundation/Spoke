@@ -14,7 +14,7 @@ export default class Model extends Object3D {
     this._castShadow = false;
     this._receiveShadow = false;
     // Use index instead of references to AnimationClips to simplify animation cloning / track name remapping
-    this._activeClipIndex = -1;
+    this.activeClipIndex = -1;
     this.animationMixer = null;
     this.activeClipAction = null;
   }
