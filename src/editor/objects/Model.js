@@ -1,4 +1,4 @@
-import { Object3D } from "three";
+import { Object3D, AnimationMixer } from "three";
 import { GLTFLoader } from "../gltf/GLTFLoader";
 import cloneObject3D from "../utils/cloneObject3D";
 import eventToMessage from "../utils/eventToMessage";
@@ -15,6 +15,8 @@ export default class Model extends Object3D {
     this._receiveShadow = false;
     // Use index instead of references to AnimationClips to simplify animation cloning / track name remapping
     this.activeClipIndex = -1;
+    this.animationMixer = null;
+    this.activeClipAction = null;
   }
 
   get src() {
@@ -56,6 +58,10 @@ export default class Model extends Object3D {
     this.model = model;
     this.add(model);
 
+    if (model.animations.length > 0) {
+      this.animationMixer = new AnimationMixer(this.model);
+    }
+
     this.castShadow = this._castShadow;
     this.receiveShadow = this._receiveShadow;
 
@@ -73,6 +79,42 @@ export default class Model extends Object3D {
 
   get activeClip() {
     return (this.model && this.model.animations && this.model.animations[this.activeClipIndex]) || null;
+  }
+
+  updateAnimationState() {
+    const clip = this.activeClip;
+    const playingClip = this.activeClipAction && this.activeClipAction.getClip();
+
+    if (clip !== playingClip) {
+      if (this.activeClipAction) {
+        this.activeClipAction.stop();
+      }
+
+      if (this.animationMixer && clip) {
+        this.activeClipAction = this.animationMixer.clipAction(clip);
+        this.activeClipAction.play();
+      } else {
+        this.activeClipAction = null;
+      }
+    }
+  }
+
+  playAnimation() {
+    this.updateAnimationState();
+  }
+
+  stopAnimation() {
+    if (this.activeClipAction) {
+      this.activeClipAction.stop();
+      this.activeClipAction = null;
+    }
+  }
+
+  update(dt) {
+    if (this.animationMixer) {
+      this.updateAnimationState();
+      this.animationMixer.update(dt);
+    }
   }
 
   get castShadow() {
@@ -159,6 +201,10 @@ export default class Model extends Object3D {
       if (child === source.model) {
         clonedChild = cloneObject3D(child);
         this.model = clonedChild;
+
+        if (this.model.animations.length > 0) {
+          this.animationMixer = new AnimationMixer(this.model);
+        }
       } else if (recursive === true && child !== source.errorMesh && child !== source.loadingCube) {
         clonedChild = child.clone();
       }
