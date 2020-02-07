@@ -4,6 +4,7 @@ import NumericInput from "./NumericInput";
 import styled from "styled-components";
 import { CaretLeft } from "styled-icons/boxicons-regular/CaretLeft";
 import { CaretRight } from "styled-icons/boxicons-regular/CaretRight";
+import { InfoTooltip } from "../layout/Tooltip";
 
 const StepperInputContainer = styled.div`
   display: flex;
@@ -46,14 +47,7 @@ const StepperButton = styled.button`
   }
 `;
 
-export default function NumericStepperInput({
-  style,
-  className,
-  tooltipId,
-  decrementTooltip,
-  incrementTooltip,
-  ...rest
-}) {
+export default function NumericStepperInput({ style, className, decrementTooltip, incrementTooltip, ...rest }) {
   const inputRef = useRef();
 
   const onDecrement = useCallback(() => {
@@ -66,27 +60,17 @@ export default function NumericStepperInput({
 
   return (
     <StepperInputContainer style={style} className={className}>
-      <StepperButton
-        left
-        onClick={onDecrement}
-        data-tip={decrementTooltip}
-        data-for={tooltipId}
-        data-delay-show="500"
-        data-place="bottom"
-      >
-        <CaretLeft size={16} />
-      </StepperButton>
+      <InfoTooltip info={decrementTooltip} position="bottom">
+        <StepperButton left onClick={onDecrement}>
+          <CaretLeft size={16} />
+        </StepperButton>
+      </InfoTooltip>
       <NumericInput ref={inputRef} {...rest} />
-      <StepperButton
-        right
-        onClick={onIncrement}
-        data-tip={incrementTooltip}
-        data-for={tooltipId}
-        data-delay-show="500"
-        data-place="bottom"
-      >
-        <CaretRight size={16} />
-      </StepperButton>
+      <InfoTooltip info={incrementTooltip} position="bottom">
+        <StepperButton right onClick={onIncrement}>
+          <CaretRight size={16} />
+        </StepperButton>
+      </InfoTooltip>
     </StepperInputContainer>
   );
 }
@@ -94,7 +78,6 @@ export default function NumericStepperInput({
 NumericStepperInput.propTypes = {
   style: PropTypes.object,
   className: PropTypes.string,
-  tooltipId: PropTypes.string,
   decrementTooltip: PropTypes.string,
   incrementTooltip: PropTypes.string
 };

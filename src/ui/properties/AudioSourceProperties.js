@@ -30,13 +30,13 @@ export default function AudioSourceProperties({ node, editor, multiEdit }) {
 
   return (
     <>
-      <InputGroup name="Controls">
+      <InputGroup name="Controls" info="Toggle the visibility of the media controls in Hubs.">
         <BooleanInput value={node.controls} onChange={onChangeControls} />
       </InputGroup>
-      <InputGroup name="Auto Play">
+      <InputGroup name="Auto Play" info="If true, the media will play when first entering the scene.">
         <BooleanInput value={node.autoPlay} onChange={onChangeAutoPlay} />
       </InputGroup>
-      <InputGroup name="Loop">
+      <InputGroup name="Loop" info="If true the media will loop indefinitely.">
         <BooleanInput value={node.loop} onChange={onChangeLoop} />
       </InputGroup>
       <InputGroup name="Audio Type">
@@ -47,12 +47,15 @@ export default function AudioSourceProperties({ node, editor, multiEdit }) {
       </InputGroup>
       {!multiEdit && node.audioType === AudioType.PannerNode && (
         <>
-          <InputGroup name="Distance Model">
+          <InputGroup name="Distance Model" info="The algorithim used to calculate audio rolloff.">
             <SelectInput options={distanceModelOptions} value={node.distanceModel} onChange={onChangeDistanceModel} />
           </InputGroup>
 
           {node.distanceModel === DistanceModelType.linear ? (
-            <InputGroup name="Rolloff Factor">
+            <InputGroup
+              name="Rolloff Factor"
+              info="A double value describing how quickly the volume is reduced as the source moves away from the listener. 0 to 1"
+            >
               <CompoundNumericInput
                 min={0}
                 max={1}
@@ -66,6 +69,7 @@ export default function AudioSourceProperties({ node, editor, multiEdit }) {
           ) : (
             <NumericInputGroup
               name="Rolloff Factor"
+              info="A double value describing how quickly the volume is reduced as the source moves away from the listener. 0 to Infinity"
               min={0}
               smallStep={0.1}
               mediumStep={1}
@@ -76,6 +80,7 @@ export default function AudioSourceProperties({ node, editor, multiEdit }) {
           )}
           <NumericInputGroup
             name="Ref Distance"
+            info="A double value representing the reference distance for reducing volume as the audio source moves further from the listener."
             min={0}
             smallStep={0.1}
             mediumStep={1}
@@ -86,6 +91,7 @@ export default function AudioSourceProperties({ node, editor, multiEdit }) {
           />
           <NumericInputGroup
             name="Max Distance"
+            info="A double value representing the maximum distance between the audio source and the listener, after which the volume is not reduced any further."
             min={0}
             smallStep={0.1}
             mediumStep={1}
@@ -96,6 +102,7 @@ export default function AudioSourceProperties({ node, editor, multiEdit }) {
           />
           <NumericInputGroup
             name="Cone Inner Angle"
+            info="A double value describing the angle, in degrees, of a cone inside of which there will be no volume reduction."
             min={0}
             max={360}
             smallStep={0.1}
@@ -108,6 +115,7 @@ export default function AudioSourceProperties({ node, editor, multiEdit }) {
           />
           <NumericInputGroup
             name="Cone Outer Angle"
+            info="A double value describing the angle, in degrees, of a cone outside of which the volume will be reduced by a constant value, defined by the coneOuterGain attribute."
             min={0}
             max={360}
             smallStep={0.1}
@@ -118,7 +126,10 @@ export default function AudioSourceProperties({ node, editor, multiEdit }) {
             unit="°"
             disabled={multiEdit}
           />
-          <InputGroup name="Cone Outer Gain">
+          <InputGroup
+            name="Cone Outer Gain"
+            info="A double value describing the amount of volume reduction outside the cone defined by the coneOuterAngle attribute. Its default value is 0, meaning that no sound can be heard."
+          >
             <CompoundNumericInput
               min={0}
               max={1}

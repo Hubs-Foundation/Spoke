@@ -4,26 +4,21 @@ import { InputGroupContainer, InputGroupContent, InputGroupInfo } from "./InputG
 import Scrubber from "./Scrubber";
 import NumericInput from "./NumericInput";
 
-export default function NumericInputGroup({ name, className, tooltipId, info, ...rest }) {
+export default function NumericInputGroup({ name, className, info, ...rest }) {
   const { displayPrecision, ...scrubberProps } = rest;
   return (
     <InputGroupContainer>
       <Scrubber {...scrubberProps}>{name}:</Scrubber>
       <InputGroupContent>
         <NumericInput {...rest} />
-        {info && <InputGroupInfo data-for={tooltipId} data-tip={info} />}
+        {info && <InputGroupInfo info={info} />}
       </InputGroupContent>
     </InputGroupContainer>
   );
 }
 
-NumericInputGroup.defaultProps = {
-  tooltipId: "node-editor"
-};
-
 NumericInputGroup.propTypes = {
   name: PropTypes.string.isRequired,
   className: PropTypes.string,
-  tooltipId: PropTypes.string,
   info: PropTypes.string
 };

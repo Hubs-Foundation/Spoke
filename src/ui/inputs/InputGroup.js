@@ -2,6 +2,7 @@ import React from "react";
 import PropTypes from "prop-types";
 import styled from "styled-components";
 import { QuestionCircle } from "styled-icons/fa-regular/QuestionCircle";
+import { InfoTooltip } from "../layout/Tooltip";
 
 export const InputGroupContainer = styled.div`
   display: flex;
@@ -33,7 +34,7 @@ export const InputGroupContent = styled.div`
   padding-left: 8px;
 `;
 
-export const InputGroupInfo = styled(QuestionCircle)`
+export const InputGroupInfoIcon = styled(QuestionCircle)`
   width: 20px;
   display: flex;
   padding-left: 8px;
@@ -42,27 +43,34 @@ export const InputGroupInfo = styled(QuestionCircle)`
   align-self: center;
 `;
 
-export default function InputGroup({ name, children, disabled, tooltipId, info, ...rest }) {
+export function InputGroupInfo({ info }) {
+  return (
+    <InfoTooltip info={info}>
+      <InputGroupInfoIcon />
+    </InfoTooltip>
+  );
+}
+
+InputGroupInfo.propTypes = {
+  info: PropTypes.string
+};
+
+export default function InputGroup({ name, children, disabled, info, ...rest }) {
   return (
     <InputGroupContainer disabled={disabled} {...rest}>
       <label>{name}:</label>
       <InputGroupContent>
         {children}
-        {info && <InputGroupInfo data-for={tooltipId} data-tip={info} />}
+        {info && <InputGroupInfo info={info} />}
       </InputGroupContent>
     </InputGroupContainer>
   );
 }
-
-InputGroup.defaultProps = {
-  tooltipId: "node-editor"
-};
 
 InputGroup.propTypes = {
   name: PropTypes.string,
   children: PropTypes.any,
   disabled: PropTypes.bool,
   className: PropTypes.string,
-  tooltipId: PropTypes.string,
   info: PropTypes.string
 };
