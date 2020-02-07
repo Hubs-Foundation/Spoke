@@ -1,4 +1,4 @@
-import { Object3D } from "three";
+import { Object3D, AnimationMixer } from "three";
 import { GLTFLoader } from "../gltf/GLTFLoader";
 import cloneObject3D from "../utils/cloneObject3D";
 import eventToMessage from "../utils/eventToMessage";
@@ -14,7 +14,8 @@ export default class Model extends Object3D {
     this._castShadow = false;
     this._receiveShadow = false;
     // Use index instead of references to AnimationClips to simplify animation cloning / track name remapping
-    this.activeClipIndex = -1;
+    this._activeClipIndex = -1;
+    this.animationMixer = null;
   }
 
   get src() {
@@ -56,6 +57,10 @@ export default class Model extends Object3D {
     this.model = model;
     this.add(model);
 
+    if (model.animations.length > 0) {
+      this.animationMixer = new AnimationMixer(this.model);
+    }
+
     this.castShadow = this._castShadow;
     this.receiveShadow = this._receiveShadow;
 
@@ -73,6 +78,28 @@ export default class Model extends Object3D {
 
   get activeClip() {
     return (this.model && this.model.animations && this.model.animations[this.activeClipIndex]) || null;
+  }
+
+  playAnimation() {
+    const clip = this.activeClip;
+
+    if (this.animationMixer && clip) {
+      this.animationMixer.clipAction(clip).play();
+    }
+  }
+
+  stopAnimation() {
+    const clip = this.activeClip;
+
+    if (clip && this.animationMixer) {
+      this.animationMixer.clipAction(clip).stop();
+    }
+  }
+
+  update(dt) {
+    if (this.animationMixer) {
+      this.animationMixer.update(dt);
+    }
   }
 
   get castShadow() {
@@ -159,6 +186,10 @@ export default class Model extends Object3D {
       if (child === source.model) {
         clonedChild = cloneObject3D(child);
         this.model = clonedChild;
+
+        if (this.model.animations.length > 0) {
+          this.animationMixer = new AnimationMixer(this.model);
+        }
       } else if (recursive === true && child !== source.errorMesh && child !== source.loadingCube) {
         clonedChild = child.clone();
       }

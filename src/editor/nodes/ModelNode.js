@@ -208,6 +208,18 @@ export default class ModelNode extends EditorNodeMixin(Model) {
     }
   }
 
+  onPlay() {
+    this.playAnimation();
+  }
+
+  onPause() {
+    this.stopAnimation();
+  }
+
+  onUpdate(dt) {
+    this.update(dt);
+  }
+
   updateStaticModes() {
     if (!this.model) return;
 
