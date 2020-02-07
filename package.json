@@ -92,7 +92,6 @@
     "react-router-dom": "^5.1.2",
     "react-select": "^3.0.4",
     "react-toggle": "^4.0.2",
-    "react-tooltip": "^3.11.1",
     "react-virtualized-auto-sizer": "^1.0.2",
     "react-window": "^1.8.5",
     "recast-wasm": "^0.1.1",
