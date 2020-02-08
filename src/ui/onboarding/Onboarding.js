@@ -407,7 +407,7 @@ const steps = [
             {configs.isMoz() && "to Hubs"}! To get started on your own scene check out your projects page. Or click
             finish to continue working on this scene.
           </p>
-          <Button as={Link} to="/projects">
+          <Button as={Link} onClick={() => props.onFinish("Navigate to Projects Page")} to="/projects">
             My Projects
           </Button>
         </OnboardingDialog>
@@ -416,10 +416,11 @@ const steps = [
   }
 ];
 
-export default function Onboarding({ onFinish }) {
-  return <OnboardingContainer steps={steps} onFinish={onFinish} />;
+export default function Onboarding({ onFinish, onSkip }) {
+  return <OnboardingContainer steps={steps} onFinish={() => onFinish("Continue")} onSkip={onSkip} />;
 }
 
 Onboarding.propTypes = {
-  onFinish: PropTypes.func.isRequired
+  onFinish: PropTypes.func.isRequired,
+  onSkip: PropTypes.func.isRequired
 };

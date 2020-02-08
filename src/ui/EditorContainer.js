@@ -8,6 +8,8 @@ import styled from "styled-components";
 import { DndProvider } from "react-dnd";
 import HTML5Backend from "react-dnd-html5-backend";
 
+import { trackEvent } from "../telemetry";
+
 import ToolBar from "./toolbar/ToolBar";
 
 import HierarchyPanelContainer from "./hierarchy/HierarchyPanelContainer";
@@ -115,6 +117,7 @@ class EditorContainer extends Component {
     }
 
     if (projectId === "tutorial") {
+      trackEvent("Tutorial Start");
       this.setState({ onboardingContext: { enabled: true } });
     }
   }
@@ -139,6 +142,7 @@ class EditorContainer extends Component {
       }
 
       if (projectId === "tutorial") {
+        trackEvent("Tutorial Start");
         this.setState({ onboardingContext: { enabled: true } });
       }
     }
@@ -178,6 +182,8 @@ class EditorContainer extends Component {
   }
 
   async loadScene(sceneId) {
+    trackEvent("Remix Scene");
+
     this.setState({
       project: null,
       parentSceneId: sceneId,
@@ -349,6 +355,7 @@ class EditorContainer extends Component {
               const { projectId } = this.props.match.params;
 
               if (projectId === "tutorial") {
+                trackEvent("Tutorial Start");
                 this.setState({ onboardingContext: { enabled: true } });
               } else {
                 this.props.history.push("/projects/tutorial");
@@ -583,6 +590,8 @@ class EditorContainer extends Component {
   };
 
   onSaveProject = async () => {
+    trackEvent("Project Save Start");
+
     const abortController = new AbortController();
 
     this.showDialog(ProgressDialog, {
@@ -619,6 +628,8 @@ class EditorContainer extends Component {
       this.updateModifiedState();
 
       this.hideDialog();
+
+      trackEvent("Project Save Successful");
     } catch (error) {
       console.error(error);
 
@@ -626,6 +637,8 @@ class EditorContainer extends Component {
         title: "Error Saving Project",
         message: error.message || "There was an error when saving the project."
       });
+
+      trackEvent("Project Save Error");
     }
   };
 
@@ -694,6 +707,8 @@ class EditorContainer extends Component {
       document.body.appendChild(el);
       el.click();
       document.body.removeChild(el);
+
+      trackEvent("Export Project as glTF");
     } catch (error) {
       if (error.aborted) {
         this.hideDialog();
@@ -745,6 +760,8 @@ class EditorContainer extends Component {
       }
     };
     el.click();
+
+    trackEvent("Import Legacy Project");
   };
 
   onExportLegacyProject = async () => {
@@ -765,9 +782,13 @@ class EditorContainer extends Component {
     document.body.appendChild(el);
     el.click();
     document.body.removeChild(el);
+
+    trackEvent("Project Exported");
   };
 
   onPublishProject = async () => {
+    trackEvent("Project Publish Started");
+
     try {
       const editor = this.state.editor;
       let project = this.state.project;
@@ -786,10 +807,13 @@ class EditorContainer extends Component {
         return;
       }
 
+      trackEvent("Project Publish Successful");
+
       this.setState({ project });
     } catch (error) {
       if (error.aborted) {
         this.hideDialog();
+        trackEvent("Project Publish Canceled");
         return;
       }
 
@@ -799,6 +823,8 @@ class EditorContainer extends Component {
         message: error.message || "There was an unknown error.",
         error
       });
+
+      trackEvent("Project Publish Error");
     }
   };
 
@@ -816,7 +842,13 @@ class EditorContainer extends Component {
     }
   };
 
-  onFinishTutorial = () => {
+  onFinishTutorial = nextAction => {
+    trackEvent("Tutorial Finished", nextAction);
+    this.setState({ onboardingContext: { enabled: false } });
+  };
+
+  onSkipTutorial = lastCompletedStep => {
+    trackEvent("Tutorial Skipped", lastCompletedStep);
     this.setState({ onboardingContext: { enabled: false } });
   };
 
@@ -871,7 +903,9 @@ class EditorContainer extends Component {
                       message={`${editor.scene.name} has unsaved changes, are you sure you wish to navigate away from the page?`}
                     />
                   )}
-                  {onboardingContext.enabled && <Onboarding onFinish={this.onFinishTutorial} />}
+                  {onboardingContext.enabled && (
+                    <Onboarding onFinish={this.onFinishTutorial} onSkip={this.onSkipTutorial} />
+                  )}
                 </DndProvider>
               </OnboardingContextProvider>
             </DialogContextProvider>

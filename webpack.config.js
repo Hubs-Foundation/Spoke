@@ -262,6 +262,7 @@ module.exports = env => {
         NON_CORS_PROXY_DOMAINS: "",
         ROUTER_BASE_PATH: "",
         SENTRY_DSN: null,
+        GA_TRACKING_ID: null,
         IS_MOZ: false,
         GITHUB_ORG: "mozilla",
         GITHUB_REPO: "spoke",
