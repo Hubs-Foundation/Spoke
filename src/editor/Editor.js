@@ -9,7 +9,6 @@ import {
   AudioListener,
   Raycaster,
   Clock,
-  Color,
   Scene
 } from "three";
 import { GLTFExporter } from "./gltf/GLTFExporter";
@@ -22,6 +21,7 @@ import SceneNode from "./nodes/SceneNode";
 import FloorPlanNode from "./nodes/FloorPlanNode";
 
 import LoadingCube from "./objects/LoadingCube";
+import ErrorIcon from "./objects/ErrorIcon";
 import TransformGizmo from "./objects/TransformGizmo";
 import SpokeInfiniteGridHelper from "./helpers/SpokeInfiniteGridHelper";
 
@@ -85,6 +85,7 @@ import ModelNode from "./nodes/ModelNode";
 import VideoNode from "./nodes/VideoNode";
 import ImageNode from "./nodes/ImageNode";
 import LinkNode from "./nodes/LinkNode";
+import AssetManifestSource from "../ui/assets/AssetManifestSource";
 
 const tempMatrix1 = new Matrix4();
 const tempMatrix2 = new Matrix4();
@@ -116,7 +117,7 @@ export default class Editor extends EventEmitter {
     super();
     this.api = api;
     this.settings = settings;
-    this.projectId = null;
+    this.project = null;
 
     this.selected = [];
     this.selectedTransformRoots = [];
@@ -158,6 +159,7 @@ export default class Editor extends EventEmitter {
     this.centerScreenSpace = new Vector2();
     this.clock = new Clock();
     this.disableUpdate = false;
+    this.initializing = false;
     this.initialized = false;
     this.sceneLoading = false;
   }
@@ -175,6 +177,14 @@ export default class Editor extends EventEmitter {
     this.sources.push(source);
   }
 
+  async installAssetSource(manifestUrl) {
+    const proxiedUrl = this.api.proxyUrl(new URL(manifestUrl, window.location).href);
+    const res = await fetch(proxiedUrl);
+    const json = await res.json();
+    this.sources.push(new AssetManifestSource(this, json.name, manifestUrl));
+    this.emit("settingsChanged");
+  }
+
   getSource(sourceId) {
     return this.sources.find(source => source.id === sourceId);
   }
@@ -190,7 +200,36 @@ export default class Editor extends EventEmitter {
   }
 
   async init() {
-    const tasks = [rendererPromise, loadEnvironmentMap(), LoadingCube.load(), TransformGizmo.load()];
+    if (this.initialized) {
+      return;
+    }
+
+    if (this.initializing) {
+      return new Promise((resolve, reject) => {
+        let cleanup = null;
+
+        const onInitialize = () => {
+          resolve();
+          cleanup();
+        };
+        const onError = err => {
+          reject(err);
+          cleanup();
+        };
+
+        cleanup = () => {
+          this.removeListener("initialized", onInitialize);
+          this.removeListener("error", onError);
+        };
+
+        this.addListener("initialized", onInitialize);
+        this.addListener("error", onError);
+      });
+    }
+
+    this.initializing = true;
+
+    const tasks = [rendererPromise, loadEnvironmentMap(), LoadingCube.load(), ErrorIcon.load(), TransformGizmo.load()];
 
     for (const NodeConstructor of this.nodeTypes) {
       tasks.push(NodeConstructor.load());
@@ -234,7 +273,7 @@ export default class Editor extends EventEmitter {
     this.gltfCache.disposeAndClear();
   }
 
-  async loadProject(json) {
+  async loadProject(projectFile) {
     this.removeListener("objectsChanged", this.onEmitSceneModified);
     this.removeListener("sceneGraphChanged", this.onEmitSceneModified);
 
@@ -245,12 +284,11 @@ export default class Editor extends EventEmitter {
     this.sceneLoading = true;
     this.disableUpdate = true;
 
-    const scene = await SceneNode.loadProject(this, json);
+    const scene = await SceneNode.loadProject(this, projectFile);
 
     this.sceneLoading = false;
     this.disableUpdate = false;
     this.scene = scene;
-    this.sceneUrl = null;
 
     this.camera.position.set(0, 5, 10);
     this.camera.lookAt(new Vector3());
@@ -258,7 +296,6 @@ export default class Editor extends EventEmitter {
 
     this.spokeControls.center.set(0, 0, 0);
     this.spokeControls.onSceneSet(scene);
-    scene.background = new Color(0xaaaaaa);
 
     this.renderer.onSceneSet();
 
@@ -285,7 +322,14 @@ export default class Editor extends EventEmitter {
     return scene;
   }
 
-  async exportScene(signal) {
+  static DefaultExportOptions = {
+    combineMeshes: true,
+    removeUnusedObjects: true
+  };
+
+  async exportScene(signal, options = {}) {
+    const { combineMeshes, removeUnusedObjects } = Object.assign({}, Editor.DefaultExportOptions, options);
+
     const scene = this.scene;
 
     const floorPlanNode = scene.findNodeByType(FloorPlanNode);
@@ -318,8 +362,14 @@ export default class Editor extends EventEmitter {
     const exportContext = { animations };
 
     clonedScene.prepareForExport(exportContext);
-    await clonedScene.combineMeshes();
-    clonedScene.removeUnusedObjects();
+
+    if (combineMeshes) {
+      await clonedScene.combineMeshes();
+    }
+
+    if (removeUnusedObjects) {
+      clonedScene.removeUnusedObjects();
+    }
 
     // Add a preview camera to the exported GLB if there is a transform in the metadata.
     const previewCamera = this.camera.clone();
@@ -1874,7 +1924,7 @@ export default class Editor extends EventEmitter {
       node = new ModelNode(this);
       this.getSpawnPosition(node.position);
       this.addObject(node);
-      node.scaleToFit = true;
+      node.initialScale = "fit";
       await node.load(url);
     } else if (contentType.startsWith("video/")) {
       node = new VideoNode(this);

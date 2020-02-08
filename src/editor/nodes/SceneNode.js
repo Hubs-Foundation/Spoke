@@ -1,10 +1,11 @@
-import { Math as _Math, Scene, Group, Object3D } from "three";
+import { Math as _Math, Scene, Group, Object3D, Fog, FogExp2, Color } from "three";
 import EditorNodeMixin from "./EditorNodeMixin";
 import { setStaticMode, StaticModes, isStatic } from "../StaticMode";
 import sortEntities from "../utils/sortEntities";
 import MeshCombinationGroup from "../MeshCombinationGroup";
 import GroupNode from "./GroupNode";
 import getNodeWithUUID from "../utils/getNodeWithUUID";
+import serializeColor from "../utils/serializeColor";
 
 // Migrate v1 spoke scene to v2
 function migrateV1ToV2(json) {
@@ -130,6 +131,12 @@ function migrateV3ToV4(json) {
   return json;
 }
 
+export const FogType = {
+  Disabled: "disabled",
+  Linear: "linear",
+  Exponential: "exponential"
+};
+
 export default class SceneNode extends EditorNodeMixin(Scene) {
   static nodeName = "Scene";
 
@@ -215,12 +222,95 @@ export default class SceneNode extends EditorNodeMixin(Scene) {
     return entityJson.parent === undefined;
   }
 
+  static async deserialize(editor, json) {
+    const node = await super.deserialize(editor, json);
+
+    if (json.components) {
+      const fog = json.components.find(c => c.name === "fog");
+
+      if (fog) {
+        const { type, color, density, near, far } = fog.props;
+        node.fogType = type;
+        node.fogColor.set(color);
+        node.fogDensity = density;
+        node.fogNearDistance = near;
+        node.fogFarDistance = far;
+      }
+
+      const background = json.components.find(c => c.name === "background");
+
+      if (background) {
+        const { color } = background.props;
+        node.background.set(color);
+      }
+    }
+
+    return node;
+  }
+
   constructor(editor) {
     super(editor);
     this.url = null;
     this.metadata = {};
+    this.background = new Color(0xaaaaaa);
     this._environmentMap = null;
+    this._fogType = FogType.Disabled;
+    this._fog = new Fog(0xffffff, 0.0025);
+    this._fogExp2 = new FogExp2(0xffffff, 0.0025);
+    this.fog = null;
     setStaticMode(this, StaticModes.Static);
+  }
+
+  get fogType() {
+    return this._fogType;
+  }
+
+  set fogType(type) {
+    this._fogType = type;
+
+    switch (type) {
+      case FogType.Linear:
+        this.fog = this._fog;
+        break;
+      case FogType.Exponential:
+        this.fog = this._fogExp2;
+        break;
+      default:
+        this.fog = null;
+        break;
+    }
+  }
+
+  get fogColor() {
+    if (this.fogType === FogType.Linear) {
+      return this._fog.color;
+    } else {
+      return this._fogExp2.color;
+    }
+  }
+
+  get fogDensity() {
+    return this._fogExp2.density;
+  }
+
+  set fogDensity(value) {
+    this._fogExp2.density = value;
+  }
+
+  get fogNearDistance() {
+    return this._fog.near;
+  }
+
+  set fogNearDistance(value) {
+    this._fog.near = value;
+  }
+
+  get fogFarDistance() {
+    return this._fog.far;
+  }
+
+  set fogFarDistance(value) {
+    this._fog.far = value;
   }
 
   get environmentMap() {
@@ -244,6 +334,11 @@ export default class SceneNode extends EditorNodeMixin(Scene) {
     this.url = source.url;
     this.metadata = source.metadata;
     this._environmentMap = source._environmentMap;
+    this.fogType = source.fogType;
+    this.fogColor.copy(source.fogColor);
+    this.fogDensity = source.fogDensity;
+    this.fogNearDistance = source.fogNearDistance;
+    this.fogFarDistance = source.fogFarDistance;
 
     return this;
   }
@@ -255,7 +350,25 @@ export default class SceneNode extends EditorNodeMixin(Scene) {
       metadata: JSON.parse(JSON.stringify(this.metadata)),
       entities: {
         [this.uuid]: {
-          name: this.name
+          name: this.name,
+          components: [
+            {
+              name: "fog",
+              props: {
+                type: this.fogType,
+                color: serializeColor(this.fogColor),
+                near: this.fogNearDistance,
+                far: this.fogFarDistance,
+                density: this.fogDensity
+              }
+            },
+            {
+              name: "background",
+              props: {
+                color: serializeColor(this.background)
+              }
+            }
+          ]
         }
       }
     };
@@ -298,6 +411,25 @@ export default class SceneNode extends EditorNodeMixin(Scene) {
 
     for (const node of nodeList) {
       node.prepareForExport(ctx);
+    }
+
+    this.addGLTFComponent("background", {
+      color: this.background
+    });
+
+    if (this.fogType === FogType.Linear) {
+      this.addGLTFComponent("fog", {
+        type: this.fogType,
+        color: serializeColor(this.fogColor),
+        near: this.fogNearDistance,
+        far: this.fogFarDistance
+      });
+    } else if (this.fogType === FogType.Exponential) {
+      this.addGLTFComponent("fog", {
+        type: this.fogType,
+        color: serializeColor(this.fogColor),
+        density: this.fogDensity
+      });
     }
   }
 

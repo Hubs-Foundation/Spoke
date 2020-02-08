@@ -4,19 +4,27 @@ import InfiniteScroll from "react-infinite-scroller";
 import styled from "styled-components";
 import { VerticalScrollContainer } from "../layout/Flex";
 import { MediaGrid, ImageMediaGridItem, VideoMediaGridItem, IconMediaGridItem } from "../layout/MediaGrid";
-import Tooltip from "react-tooltip";
 import { unique } from "../utils";
 import { ContextMenuTrigger, ContextMenu, MenuItem } from "../layout/ContextMenu";
 import { useDrag } from "react-dnd";
 import { getEmptyImage } from "react-dnd-html5-backend";
 import AssetTooltip from "./AssetTooltip";
 import { EditorContext } from "../contexts/EditorContext";
+import { OnboardingContext } from "../contexts/OnboardingContext";
+import { ItemTypes } from "../dnd";
+import AudioPreview from "./AudioPreview";
+import Tooltip, { TooltipContainer } from "../layout/Tooltip";
+
+const AssetGridTooltipContainer = styled(TooltipContainer)`
+  max-width: initial;
+  text-align: left;
+`;
 
 function collectMenuProps({ item }) {
   return { item };
 }
 
-function AssetGridItem({ contextMenuId, tooltipId, item, onClick, ...rest }) {
+function AssetGridItem({ contextMenuId, tooltipComponent, disableTooltip, item, onClick, ...rest }) {
   const onClickItem = useCallback(
     e => {
       if (onClick) {
@@ -29,43 +37,19 @@ function AssetGridItem({ contextMenuId, tooltipId, item, onClick, ...rest }) {
   let content;
 
   if (item.thumbnailUrl) {
-    content = (
-      <ImageMediaGridItem
-        src={item.thumbnailUrl}
-        onClick={onClickItem}
-        data-tip={item.id}
-        data-for={tooltipId}
-        data-effect="solid"
-        {...rest}
-      />
-    );
+    content = <ImageMediaGridItem src={item.thumbnailUrl} onClick={onClickItem} label={item.label} {...rest} />;
   } else if (item.videoUrl) {
-    content = (
-      <VideoMediaGridItem
-        src={item.videoUrl}
-        onClick={onClickItem}
-        data-tip={item.id}
-        data-for={tooltipId}
-        data-effect="solid"
-        {...rest}
-      />
-    );
+    content = <VideoMediaGridItem src={item.videoUrl} onClick={onClickItem} label={item.label} {...rest} />;
   } else if (item.iconComponent) {
     content = (
-      <IconMediaGridItem
-        iconComponent={item.iconComponent}
-        onClick={onClickItem}
-        data-tip={item.id}
-        data-for={tooltipId}
-        data-effect="solid"
-        label={item.label}
-        {...rest}
-      />
+      <IconMediaGridItem iconComponent={item.iconComponent} onClick={onClickItem} label={item.label} {...rest} />
     );
   } else {
-    content = (
-      <ImageMediaGridItem onClick={onClickItem} data-tip={item.id} data-for={tooltipId} data-effect="solid" {...rest} />
-    );
+    content = <ImageMediaGridItem onClick={onClickItem} label={item.label} {...rest} />;
+  }
+
+  if (item.type === ItemTypes.Audio) {
+    content = <AudioPreview src={item.url}>{content}</AudioPreview>;
   }
 
   const [_dragProps, drag, preview] = useDrag({
@@ -75,6 +59,16 @@ function AssetGridItem({ contextMenuId, tooltipId, item, onClick, ...rest }) {
     }
   });
 
+  const renderTooltip = useCallback(() => {
+    const TooltipComponent = tooltipComponent;
+    return (
+      <AssetGridTooltipContainer>
+        <TooltipComponent item={item} />
+      </AssetGridTooltipContainer>
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [item, tooltipComponent]);
+
   useEffect(() => {
     preview(getEmptyImage(), { captureDraggingState: true });
   }, [preview]);
@@ -82,7 +76,9 @@ function AssetGridItem({ contextMenuId, tooltipId, item, onClick, ...rest }) {
   return (
     <div ref={drag}>
       <ContextMenuTrigger id={contextMenuId} item={item} collect={collectMenuProps} holdToDisplay={-1}>
-        {content}
+        <Tooltip renderContent={renderTooltip} disabled={disableTooltip}>
+          {content}
+        </Tooltip>
       </ContextMenuTrigger>
     </div>
   );
@@ -101,15 +97,9 @@ const LoadingItem = styled.div`
   user-select: none;
 `;
 
-const StyledTooltip = styled(Tooltip)`
-  max-width: 200px;
-  overflow: hidden;
-  overflow-wrap: break-word;
-  user-select: none;
-`;
-
 AssetGridItem.propTypes = {
-  tooltipId: PropTypes.string,
+  tooltipComponent: PropTypes.func,
+  disableTooltip: PropTypes.bool,
   contextMenuId: PropTypes.string,
   onClick: PropTypes.func,
   item: PropTypes.shape({
@@ -118,7 +108,8 @@ AssetGridItem.propTypes = {
     label: PropTypes.string,
     thumbnailUrl: PropTypes.string,
     videoUrl: PropTypes.string,
-    iconComponent: PropTypes.object
+    iconComponent: PropTypes.object,
+    url: PropTypes.string
   }).isRequired
 };
 
@@ -128,24 +119,12 @@ const MemoAssetGridItem = memo(AssetGridItem);
 
 export default function AssetGrid({ isLoading, selectedItems, items, onSelect, onLoadMore, hasMore, tooltip, source }) {
   const editor = useContext(EditorContext);
+  const onboarding = useContext(OnboardingContext);
   const uniqueId = useRef(`AssetGrid${lastId}`);
 
   useEffect(() => {
     lastId++;
   }, []);
-
-  const renderTooltip = useCallback(
-    id => {
-      const item = items.find(i => i.id == id);
-      const TooltipComponent = tooltip;
-      return item && <TooltipComponent item={item} />;
-    },
-    [items, tooltip]
-  );
-
-  useEffect(() => {
-    Tooltip.rebuild();
-  }, [items]);
 
   const placeObject = useCallback(
     (_, trigger) => {
@@ -206,7 +185,8 @@ export default function AssetGrid({ isLoading, selectedItems, items, onSelect, o
             {unique(items, "id").map(item => (
               <MemoAssetGridItem
                 key={item.id}
-                tooltipId={uniqueId.current}
+                tooltipComponent={tooltip}
+                disableTooltip={onboarding.enabled}
                 contextMenuId={uniqueId.current}
                 item={item}
                 selected={selectedItems.indexOf(item) !== -1}
@@ -217,7 +197,6 @@ export default function AssetGrid({ isLoading, selectedItems, items, onSelect, o
           </MediaGrid>
         </InfiniteScroll>
       </VerticalScrollContainer>
-      <StyledTooltip id={uniqueId.current} getContent={renderTooltip} />
       <ContextMenu id={uniqueId.current}>
         <MenuItem onClick={placeObject}>Place Object</MenuItem>
         <MenuItem onClick={placeObjectAtOrigin}>Place Object at Origin</MenuItem>

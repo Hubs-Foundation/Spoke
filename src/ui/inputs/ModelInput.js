@@ -8,7 +8,7 @@ export default function ModelInput({ onChange, ...rest }) {
   const [{ canDrop, isOver }, dropRef] = useDrop({
     accept: [ItemTypes.Model],
     drop(item) {
-      onChange(item.value.url, { scaleToFit: item.value.initialProps && item.value.initialProps.scaleToFit });
+      onChange(item.value.url, item.value.initialProps || {});
     },
     collect: monitor => ({
       canDrop: monitor.canDrop(),
@@ -17,7 +17,13 @@ export default function ModelInput({ onChange, ...rest }) {
   });
 
   return (
-    <StringInput ref={dropRef} onChange={onChange} error={isOver && !canDrop} canDrop={isOver && canDrop} {...rest} />
+    <StringInput
+      ref={dropRef}
+      onChange={(value, e) => onChange(value, {}, e)}
+      error={isOver && !canDrop}
+      canDrop={isOver && canDrop}
+      {...rest}
+    />
   );
 }
 

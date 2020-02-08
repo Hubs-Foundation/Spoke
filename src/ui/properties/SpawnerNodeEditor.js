@@ -15,8 +15,8 @@ export default class SpawnerNodeEditor extends Component {
 
   static description = "Spawns a model as an interactable object.";
 
-  onChangeSrc = (src, { scaleToFit }) => {
-    this.props.editor.setPropertiesSelected({ scaleToFit: scaleToFit || false, src });
+  onChangeSrc = (src, initialProps) => {
+    this.props.editor.setPropertiesSelected({ ...initialProps, src });
   };
 
   render() {
@@ -24,7 +24,7 @@ export default class SpawnerNodeEditor extends Component {
 
     return (
       <NodeEditor {...this.props} description={SpawnerNodeEditor.description}>
-        <InputGroup name="Model">
+        <InputGroup name="Model Url">
           <ModelInput value={node.src} onChange={this.onChangeSrc} />
         </InputGroup>
       </NodeEditor>

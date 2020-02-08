@@ -552,11 +552,13 @@ export default class InputManager {
   onWheel = event => {
     const mouseMapping = this.mapping.mouse;
 
-    if (!mouseMapping) return;
+    event.preventDefault();
+
+    if (!mouseMapping) return false;
 
     const wheelMapping = mouseMapping.wheel;
 
-    if (!wheelMapping) return;
+    if (!wheelMapping) return false;
 
     for (const key in wheelMapping) {
       if (wheelMapping.hasOwnProperty(key)) {
@@ -573,6 +575,8 @@ export default class InputManager {
         }
       }
     }
+
+    return false;
   };
 
   onClick = event => {

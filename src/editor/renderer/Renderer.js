@@ -177,8 +177,6 @@ export default class Renderer {
 
     this.screenshotRenderer = makeRenderer(1920, 1080);
 
-    editor.scene.background = new Color(0xaaaaaa);
-
     const camera = editor.camera;
     this.camera = camera;
   }

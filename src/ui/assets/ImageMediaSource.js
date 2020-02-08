@@ -25,6 +25,7 @@ export default class ImageMediaSource extends BaseSource {
       results: results.map(result => ({
         id: result.id,
         thumbnailUrl: result && result.images && result.images.preview && result.images.preview.url,
+        attributions: result.attributions,
         label: result.name,
         type: ItemTypes.Image,
         url: result.url,

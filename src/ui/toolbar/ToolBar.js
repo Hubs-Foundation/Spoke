@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
+import configs from "../../configs";
 import { showMenu, ContextMenu, MenuItem, SubMenu } from "../layout/ContextMenu";
-import ReactTooltip from "react-tooltip";
 import ToolButton from "./ToolButton";
 import { Button } from "../inputs/Button";
 import SelectInput from "../inputs/SelectInput";
@@ -18,6 +18,7 @@ import { Bars } from "styled-icons/fa-solid/Bars";
 import { Grid } from "styled-icons/boxicons-regular/Grid";
 import styled from "styled-components";
 import styledTheme from "../theme";
+import { InfoTooltip } from "../layout/Tooltip";
 
 const StyledToolbar = styled.div`
   display: flex;
@@ -46,13 +47,6 @@ const ToolToggles = styled.div`
 
 const Spacer = styled.div`
   flex: 1;
-`;
-
-const ToolTip = styled(ReactTooltip)`
-  max-width: 200px;
-  overflow: hidden;
-  overflow-wrap: break-word;
-  user-select: none;
 `;
 
 const PublishButton = styled(Button)`
@@ -118,7 +112,7 @@ const selectInputStyles = {
   })
 };
 
-const ToggleButton = styled.div`
+const StyledToggleButton = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
@@ -136,6 +130,19 @@ const ToggleButton = styled.div`
     background-color: ${props => props.theme.blue};
   }
 `;
+
+function ToggleButton({ tooltip, children, ...rest }) {
+  return (
+    <InfoTooltip info={tooltip}>
+      <StyledToggleButton {...rest}>{children}</StyledToggleButton>
+    </InfoTooltip>
+  );
+}
+
+ToggleButton.propTypes = {
+  tooltip: PropTypes.string,
+  children: PropTypes.node
+};
 
 const ToolbarInputGroup = styled.div`
   display: flex;
@@ -201,7 +208,8 @@ export default class ToolBar extends Component {
     menu: PropTypes.array,
     editor: PropTypes.object,
     onPublish: PropTypes.func,
-    onOpenScene: PropTypes.func
+    onOpenScene: PropTypes.func,
+    isPublishedScene: PropTypes.bool
   };
 
   constructor(props) {
@@ -239,7 +247,7 @@ export default class ToolBar extends Component {
       editor.spokeControls.removeListener("transformPivotChanged", this.onSpokeControlsChanged);
       editor.spokeControls.removeListener("snapSettingsChanged", this.onSpokeControlsChanged);
       editor.removeListener("gridHeightChanged", this.onSpokeControlsChanged);
-      editor.addListener("gridVisibilityChanged", this.onSpokeControlsChanged);
+      editor.removeListener("gridVisibilityChanged", this.onSpokeControlsChanged);
     }
   }
 
@@ -380,15 +388,11 @@ export default class ToolBar extends Component {
         </ToolButtons>
         <ToolToggles>
           <ToolbarInputGroup id="transform-space">
-            <ToggleButton
-              onClick={this.onToggleTransformSpace}
-              data-tip="[Z] Toggle Transform Space"
-              data-for="toolbar"
-              data-delay-show="500"
-              data-place="bottom"
-            >
-              <Globe size={12} />
-            </ToggleButton>
+            <InfoTooltip info="[Z] Toggle Transform Space" position="bottom">
+              <ToggleButton onClick={this.onToggleTransformSpace}>
+                <Globe size={12} />
+              </ToggleButton>
+            </InfoTooltip>
             <SelectInput
               styles={selectInputStyles}
               onChange={this.onChangeTransformSpace}
@@ -397,13 +401,7 @@ export default class ToolBar extends Component {
             />
           </ToolbarInputGroup>
           <ToolbarInputGroup id="transform-pivot">
-            <ToggleButton
-              onClick={this.onToggleTransformPivot}
-              data-tip="[X] Toggle Transform Pivot"
-              data-for="toolbar"
-              data-delay-show="500"
-              data-place="bottom"
-            >
+            <ToggleButton onClick={this.onToggleTransformPivot} tooltip="[X] Toggle Transform Pivot">
               <Bullseye size={12} />
             </ToggleButton>
             <SelectInput
@@ -417,10 +415,7 @@ export default class ToolBar extends Component {
             <ToggleButton
               value={snapMode === SnapMode.Grid}
               onClick={this.onToggleSnapMode}
-              data-tip="[C] Toggle Snap Mode"
-              data-for="toolbar"
-              data-delay-show="500"
-              data-place="bottom"
+              tooltip={"[C] Toggle Snap Mode"}
             >
               <Magnet size={12} />
             </ToggleButton>
@@ -446,13 +441,7 @@ export default class ToolBar extends Component {
             />
           </ToolbarInputGroup>
           <ToolbarInputGroup id="transform-grid">
-            <ToggleButton
-              onClick={this.onToggleGridVisible}
-              data-tip="Toggle Grid Visibility"
-              data-for="toolbar"
-              data-delay-show="500"
-              data-place="bottom"
-            >
+            <ToggleButton onClick={this.onToggleGridVisible} tooltip="Toggle Grid Visibility">
               <Grid size={16} />
             </ToggleButton>
             <ToolbarNumericStepperInput
@@ -463,23 +452,25 @@ export default class ToolBar extends Component {
               mediumStep={1.5}
               largeStep={4.5}
               unit="m"
-              tooltipId="toolbar"
               incrementTooltip="[-] Increment Grid Height"
               decrementTooltip="[=] Decrement Grid Height"
             />
           </ToolbarInputGroup>
         </ToolToggles>
         <Spacer />
-        {this.props.editor.sceneUrl && <PublishButton onClick={this.props.onOpenScene}>Open in Hubs</PublishButton>}
+        {this.props.isPublishedScene && (
+          <PublishButton onClick={this.props.onOpenScene}>
+            {configs.isMoz() ? "Open in Hubs" : "Open Scene"}
+          </PublishButton>
+        )}
         <PublishButton id="publish-button" onClick={this.props.onPublish}>
-          Publish to Hubs...
+          {configs.isMoz() ? "Publish to Hubs..." : "Publish Scene..."}
         </PublishButton>
         <ContextMenu id="menu">
           {this.props.menu.map(menu => {
             return this.renderMenu(menu);
           })}
         </ContextMenu>
-        <ToolTip id="toolbar" />
       </StyledToolbar>
     );
   }

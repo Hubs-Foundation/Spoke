@@ -39,3 +39,17 @@ export function isPiece(object, pieceId) {
 export function findKitPiece(object, pieceId) {
   return findObject(object, child => isPiece(child, pieceId));
 }
+
+export function traverseGltfNode(gltf, nodeIndex, callback) {
+  const nodeDef = gltf.nodes && gltf.nodes[nodeIndex];
+
+  if (nodeDef) {
+    callback(nodeDef, nodeIndex);
+
+    if (Array.isArray(nodeDef.children)) {
+      for (const childIndex of nodeDef.children) {
+        traverseGltfNode(gltf, childIndex, callback);
+      }
+    }
+  }
+}

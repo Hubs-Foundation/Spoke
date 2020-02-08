@@ -1217,15 +1217,15 @@
   resolved "https://registry.yarnpkg.com/@mozillareality/easing-functions/-/easing-functions-0.1.1.tgz#de7994336412b02e7d58e8391d0c230df8b79ad2"
   integrity sha512-rApZ0OOqreMULwHZOy+fB9wRLnikelE8pMbqUmtLBhT6OSKp5dz/7pA/EjnFXJDQBR/EgZUa3vwbFlTZnUgSlw==
 
-"@mozillareality/three-batch-manager@0.1.5":
-  version "0.1.5"
-  resolved "https://registry.yarnpkg.com/@mozillareality/three-batch-manager/-/three-batch-manager-0.1.5.tgz#d56d696d63a80d85781a2e414979e015b90e68d9"
-  integrity sha512-CgJikrvkL53g4TjkRQx9WL0e01MIbPLHys2IrdHYEu6QM34g4WQ/kkaoZfGBeGJ95b+MvHi57l8iOBnIlnThYw==
+"@mozillareality/three-batch-manager@^0.1.8":
+  version "0.1.8"
+  resolved "https://registry.yarnpkg.com/@mozillareality/three-batch-manager/-/three-batch-manager-0.1.8.tgz#03af65322dbce1f2e51db0fb2137b56315b265ce"
+  integrity sha512-CvyJSEnokog9vkTwPqXkoN6k5vGkyXSKPC7BS1RYZEsWo5TupVmYmMPCY5YNLFNs2+5hL1SEkQ1ufHKCxpM/PQ==
 
-"@mozillareality/three-particle-emitter@^0.1.5":
-  version "0.1.5"
-  resolved "https://registry.yarnpkg.com/@mozillareality/three-particle-emitter/-/three-particle-emitter-0.1.5.tgz#6ddd864b5f011f745bb7c5c406853a1fc8684fe6"
-  integrity sha512-90eOAzBegmTDFV4q0bM6qJfha9kVdQWz1z5hOc86MuNsEY0K43I/QJPU5PMjtnxBNutFUNMRqSQHQVqGkOdqIg==
+"@mozillareality/three-particle-emitter@^0.2.2":
+  version "0.2.2"
+  resolved "https://registry.yarnpkg.com/@mozillareality/three-particle-emitter/-/three-particle-emitter-0.2.2.tgz#b9aacf77fa689d100422fdc2a08a37e0f18513c3"
+  integrity sha512-5f6hVJHyb9ZcookyZZ8/sdzDcL9OzRzfhWo9kGv3OXe2dUxK61B4xa0RFP9bxaenKQt8WQUWlZYLcitDTg9s0Q==
   dependencies:
     "@mozillareality/easing-functions" "^0.1.1"
 
@@ -10828,23 +10828,23 @@ react-popper@^1.3.3:
     typed-styles "^0.0.7"
     warning "^4.0.2"
 
-react-router-dom@^5.0.1:
-  version "5.0.1"
-  resolved "https://registry.yarnpkg.com/react-router-dom/-/react-router-dom-5.0.1.tgz#ee66f4a5d18b6089c361958e443489d6bab714be"
-  integrity sha512-zaVHSy7NN0G91/Bz9GD4owex5+eop+KvgbxXsP/O+iW1/Ln+BrJ8QiIR5a6xNPtrdTvLkxqlDClx13QO1uB8CA==
+react-router-dom@^5.1.2:
+  version "5.1.2"
+  resolved "https://registry.yarnpkg.com/react-router-dom/-/react-router-dom-5.1.2.tgz#06701b834352f44d37fbb6311f870f84c76b9c18"
+  integrity sha512-7BPHAaIwWpZS074UKaw1FjVdZBSVWEk8IuDXdB+OkLb8vd/WRQIpA4ag9WQk61aEfQs47wHyjWUoUGGZxpQXew==
   dependencies:
     "@babel/runtime" "^7.1.2"
     history "^4.9.0"
     loose-envify "^1.3.1"
     prop-types "^15.6.2"
-    react-router "5.0.1"
+    react-router "5.1.2"
     tiny-invariant "^1.0.2"
     tiny-warning "^1.0.0"
 
-react-router@5.0.1:
-  version "5.0.1"
-  resolved "https://registry.yarnpkg.com/react-router/-/react-router-5.0.1.tgz#04ee77df1d1ab6cb8939f9f01ad5702dbadb8b0f"
-  integrity sha512-EM7suCPNKb1NxcTZ2LEOWFtQBQRQXecLxVpdsP4DW4PbbqYWeRiLyV/Tt1SdCrvT2jcyXAXmVTmzvSzrPR63Bg==
+react-router@5.1.2:
+  version "5.1.2"
+  resolved "https://registry.yarnpkg.com/react-router/-/react-router-5.1.2.tgz#6ea51d789cb36a6be1ba5f7c0d48dd9e817d3418"
+  integrity sha512-yjEuMFy1ONK246B+rsa0cUam5OeAQ8pyclRDgpxuSCrAlJ1qN9uZ5IgyKC7gQg0w8OM50NXHEegPh/ks9YuR2A==
   dependencies:
     "@babel/runtime" "^7.1.2"
     history "^4.9.0"
@@ -10933,14 +10933,6 @@ react-toggle@^4.0.2:
   integrity sha512-EPTWnN7gQHgEAUEmjheanZXNzY5TPnQeyyHfEs3YshaiWZf5WNjfYDrglO5F1Hl/dNveX18i4l0grTEsYH2Ccw==
   dependencies:
     classnames "^2.2.5"
-
-react-tooltip@^3.11.1:
-  version "3.11.1"
-  resolved "https://registry.yarnpkg.com/react-tooltip/-/react-tooltip-3.11.1.tgz#7b4ce48ed26a46e996662b19a2afebbfd483513b"
-  integrity sha512-YCMVlEC2KuHIzOQhPplTK5jmBBwoL+PYJJdJKXj7M/h7oevupd/QSVq6z5U7/ehIGXyHsAqvwpdxexDfyQ0o3A==
-  dependencies:
-    classnames "^2.2.5"
-    prop-types "^15.6.0"
 
 react-transition-group@^2.2.1, react-transition-group@^2.5.0:
   version "2.9.0"
@@ -13408,6 +13400,18 @@ url@^0.11.0:
   dependencies:
     punycode "1.3.2"
     querystring "0.2.0"
+
+use-http@^0.2.4:
+  version "0.2.4"
+  resolved "https://registry.yarnpkg.com/use-http/-/use-http-0.2.4.tgz#d107b5c809d6f9fc4ed44d9a37cf7fa37cb94a6e"
+  integrity sha512-4bkXaZc7Ac44N2VnewYkla1fsy4jX1j2wf2JMUfJD3j/e8W4RHbF6qZOJfbU0keaPTk+aUe8XYYN12IMIFsqEQ==
+  dependencies:
+    use-ssr "^1.0.22"
+
+use-ssr@^1.0.22:
+  version "1.0.22"
+  resolved "https://registry.yarnpkg.com/use-ssr/-/use-ssr-1.0.22.tgz#a43c2587b1907fabda61c6542b80542c619228fe"
+  integrity sha512-0kA0qfI4uw7PeRsz7X0XOdl2CdbgMBSFhj3n5JzMu8ZNlcZ2NrarhGjdmoxW1Q5d3WtNKbCNIjns/CKhpL7z8g==
 
 use@^3.1.0:
   version "3.1.1"

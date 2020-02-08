@@ -36,7 +36,7 @@ const ColorInputPopover = styled.div`
   margin-bottom: 3px;
 `;
 
-export default function ColorInput({ value, onChange, ...rest }) {
+export default function ColorInput({ value, onChange, disabled, ...rest }) {
   const onChangePicker = useCallback(
     ({ hex }) => {
       onChange(new Color(hex));
@@ -49,13 +49,14 @@ export default function ColorInput({ value, onChange, ...rest }) {
   return (
     <ColorInputContainer>
       <Popover
+        disabled={disabled}
         renderContent={() => (
           <ColorInputPopover>
             <SketchPicker {...rest} color={hexColor} disableAlpha={true} onChange={onChangePicker} />
           </ColorInputPopover>
         )}
       >
-        <StyledColorInput as="div">
+        <StyledColorInput as="div" disabled={disabled}>
           <ColorPreview style={{ background: hexColor }} />
           <ColorText>{hexColor.toUpperCase()}</ColorText>
         </StyledColorInput>
@@ -65,6 +66,7 @@ export default function ColorInput({ value, onChange, ...rest }) {
 }
 
 ColorInput.propTypes = {
+  disabled: PropTypes.bool,
   value: PropTypes.object.isRequired,
   onChange: PropTypes.func
 };

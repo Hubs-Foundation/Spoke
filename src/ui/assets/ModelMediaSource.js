@@ -11,29 +11,47 @@ export default class ModelMediaSource extends BaseSource {
   }
 
   async search(params, cursor, abortSignal) {
-    const { results, suggestions, nextCursor } = await this.api.searchMedia(
-      this.id,
-      {
-        query: params.query,
-        filter: params.tags && params.tags.length > 0 && params.tags[0].value
-      },
-      cursor,
-      abortSignal
-    );
+    const additionalNodeProps = {
+      initialScale: "fit"
+    };
+
+    const additionalItemProps = {};
+
+    const queryParams = {
+      query: params.query
+    };
+
+    if (params.tags && params.tags.length > 0) {
+      const tag = params.tags[0];
+      const paramsKey = tag.paramsKey !== undefined ? tag.paramsKey : "filter";
+      queryParams[paramsKey] = tag.value;
+
+      if (tag.initialNodeProps) {
+        Object.assign(additionalNodeProps, tag.initialNodeProps);
+      }
+
+      if (tag.itemProps) {
+        Object.assign(additionalItemProps, tag.itemProps);
+      }
+    }
+
+    const { results, suggestions, nextCursor } = await this.api.searchMedia(this.id, queryParams, cursor, abortSignal);
 
     return {
       results: results.map(result => ({
         id: result.id,
         thumbnailUrl: result && result.images && result.images.preview && result.images.preview.url,
+        attributions: result.attributions,
         label: result.name,
         type: ItemTypes.Model,
         url: result.url,
         nodeClass: ModelNode,
         initialProps: {
           name: result.name,
-          scaleToFit: true,
+          ...additionalNodeProps,
           src: result.url
-        }
+        },
+        ...additionalItemProps
       })),
       suggestions,
       nextCursor,

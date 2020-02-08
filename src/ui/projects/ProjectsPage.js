@@ -1,12 +1,20 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
+import configs from "../../configs";
 import { withApi } from "../contexts/ApiContext";
 import NavBar from "../navigation/NavBar";
-import ProjectGrid from "./ProjectGrid";
+import {
+  ProjectGrid,
+  ProjectGridContainer,
+  ProjectGridHeader,
+  ProjectGridHeaderRow,
+  ProjectGridContent,
+  ErrorMessage
+} from "./ProjectGrid";
+import { Button } from "../inputs/Button";
 import Footer from "../navigation/Footer";
 import { MediumButton } from "../inputs/Button";
 import { Link } from "react-router-dom";
-import Loading from "../Loading";
 import LatestUpdate from "../whats-new/LatestUpdate";
 import { connectMenu, ContextMenu, MenuItem } from "../layout/ContextMenu";
 import templates from "./templates";
@@ -15,6 +23,7 @@ import styled from "styled-components";
 export const ProjectsSection = styled.section`
   padding-bottom: 100px;
   display: flex;
+  flex: 1;
 
   &:first-child {
     padding-top: 100px;
@@ -61,16 +70,6 @@ export const ProjectsHeader = styled.div`
   align-items: center;
 `;
 
-const LoadingContainer = styled.div`
-  display: flex;
-  flex: 1;
-`;
-
-const ErrorMessage = styled.div`
-  margin-bottom: 20px;
-  color: ${props => props.theme.red};
-`;
-
 const contextMenuId = "project-menu";
 
 class ProjectsPage extends Component {
@@ -101,7 +100,7 @@ class ProjectsPage extends Component {
           this.setState({
             projects: projects.map(project => ({
               ...project,
-              url: `/projects/${project.id}`
+              url: `/projects/${project.project_id}`
             })),
             loading: false
           });
@@ -122,8 +121,8 @@ class ProjectsPage extends Component {
 
   onDeleteProject = project => {
     this.props.api
-      .deleteProject(project.id)
-      .then(() => this.setState({ projects: this.state.projects.filter(p => p.id !== project.id) }))
+      .deleteProject(project.project_id)
+      .then(() => this.setState({ projects: this.state.projects.filter(p => p.project_id !== project.project_id) }))
       .catch(error => this.setState({ error }));
   };
 
@@ -140,18 +139,6 @@ class ProjectsPage extends Component {
   render() {
     const { error, loading, projects, isAuthenticated } = this.state;
 
-    let content;
-
-    if (loading) {
-      content = (
-        <LoadingContainer>
-          <Loading message="Loading projects..." />
-        </LoadingContainer>
-      );
-    } else {
-      content = <ProjectGrid projects={projects} newProjectUrl="/projects/templates" contextMenuId={contextMenuId} />;
-    }
-
     const ProjectContextMenu = this.ProjectContextMenu;
 
     const topTemplates = [];
@@ -167,10 +154,10 @@ class ProjectsPage extends Component {
           {!isAuthenticated || (projects.length === 0 && !loading) ? (
             <ProjectsSection>
               <WelcomeContainer>
-                <h1>Welcome to Spoke</h1>
+                <h1>Welcome{configs.isMoz() ? " to Spoke" : ""}</h1>
                 <h2>
                   If you&#39;re new here we recommend going through the tutorial. Otherwise, jump right in and create a
-                  project from scratch or one of our templates.
+                  project from scratch or from one of our templates.
                 </h2>
                 <MediumButton as={Link} to="/projects/tutorial">
                   Start Tutorial
@@ -184,12 +171,28 @@ class ProjectsPage extends Component {
             <ProjectsContainer>
               <ProjectsHeader>
                 <h1>Projects</h1>
-                <MediumButton as={Link} to="/projects/templates">
-                  New Project
-                </MediumButton>
               </ProjectsHeader>
-              {error && <ErrorMessage>{error.message || "There was an unknown error."}</ErrorMessage>}
-              {content}
+              <ProjectGridContainer>
+                <ProjectGridHeader>
+                  <ProjectGridHeaderRow></ProjectGridHeaderRow>
+                  <ProjectGridHeaderRow>
+                    <Button as={Link} to="/projects/create">
+                      New Project
+                    </Button>
+                  </ProjectGridHeaderRow>
+                </ProjectGridHeader>
+                <ProjectGridContent>
+                  {error && <ErrorMessage>{error.message}</ErrorMessage>}
+                  {!error && (
+                    <ProjectGrid
+                      loading={loading}
+                      projects={projects}
+                      newProjectPath="/projects/templates"
+                      contextMenuId={contextMenuId}
+                    />
+                  )}
+                </ProjectGridContent>
+              </ProjectGridContainer>
             </ProjectsContainer>
           </ProjectsSection>
           <ProjectContextMenu />

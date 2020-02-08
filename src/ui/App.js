@@ -1,6 +1,7 @@
 import React, { Component, Suspense, lazy } from "react";
 import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
 import PropTypes from "prop-types";
+import configs from "../configs";
 
 import GlobalStyle from "./GlobalStyle";
 
@@ -18,7 +19,7 @@ import WhatsNewPage from "./whats-new/WhatsNewPage";
 import LoginPage from "./auth/LoginPage";
 import LogoutPage from "./auth/LogoutPage";
 import ProjectsPage from "./projects/ProjectsPage";
-import TemplatesPage from "./projects/TemplatesPage";
+import CreateProjectPage from "./projects/CreateProjectPage";
 
 import { ThemeProvider } from "styled-components";
 
@@ -26,8 +27,8 @@ import { Column } from "./layout/Flex";
 
 import theme from "./theme";
 
-const ProjectPage = lazy(() =>
-  import(/* webpackChunkName: "project-page", webpackPrefetch: true */ "./projects/ProjectPage")
+const EditorContainer = lazy(() =>
+  import(/* webpackChunkName: "project-page", webpackPrefetch: true */ "./EditorContainer")
 );
 
 const PackageKitPage = lazy(() =>
@@ -70,16 +71,18 @@ export default class App extends Component {
               <GlobalStyle />
               <Column as={Suspense} fallback={<Loading message="Loading..." fullScreen />}>
                 <Switch>
-                  <Route path="/" exact component={withPageView(LandingPage)} />
+                  {configs.isMoz() && <Route path="/" exact component={withPageView(LandingPage)} />}
+                  {!configs.isMoz() && <RedirectRoute path="/" exact to="/projects" />}
                   <Route path="/whats-new" exact component={withPageView(WhatsNewPage)} />
                   <RedirectRoute path="/new" exact to="/projects" />
                   <Route path="/login" exact component={withPageView(LoginPage)} />
                   <Route path="/logout" exact component={withPageView(LogoutPage)} />
-                  <Route path="/projects/templates" exact component={withPageView(TemplatesPage)} />
+                  <Route path="/projects/create" exact component={withPageView(CreateProjectPage)} />
+                  <RedirectRoute path="/projects/templates" exact to="/projects/create" />
                   <Route path="/projects" exact component={withPageView(ProjectsPage)} />
                   <Route
                     path="/projects/:projectId"
-                    component={withPageView(ProjectPage, "/projects/editor", "Editor")}
+                    component={withPageView(EditorContainer, "/projects/editor", "Editor")}
                   />
                   <Route path="/kits/package" component={withPageView(PackageKitPage)} />
                   <Route render={() => <Error message="Page not found." />} />

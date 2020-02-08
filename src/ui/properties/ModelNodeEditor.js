@@ -18,9 +18,8 @@ export default class ModelNodeEditor extends Component {
 
   static description = "A 3D model in your scene, loaded from a GLTF URL or file.";
 
-  onChangeSrc = (src, { scaleToFit }) => {
-    console.log(src, scaleToFit);
-    this.props.editor.setPropertiesSelected({ scaleToFit: scaleToFit || false, src });
+  onChangeSrc = (src, initialProps) => {
+    this.props.editor.setPropertiesSelected({ ...initialProps, src });
   };
 
   onChangeAnimation = activeClipIndex => {
@@ -58,7 +57,7 @@ export default class ModelNodeEditor extends Component {
 
     return (
       <NodeEditor description={ModelNodeEditor.description} {...this.props}>
-        <InputGroup name="Model">
+        <InputGroup name="Model Url">
           <ModelInput value={node.src} onChange={this.onChangeSrc} />
         </InputGroup>
         <InputGroup name="Loop Animation">

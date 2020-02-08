@@ -16,7 +16,7 @@ const StyledProjectGridItem = styled(Link)`
   flex-direction: column;
   height: 220px;
   border-radius: 6px;
-  background-color: ${props => props.theme.panel2};
+  background-color: ${props => props.theme.toolbar};
   text-decoration: none;
   border: 1px solid transparent;
 
@@ -71,9 +71,16 @@ const Thumbnail = styled.div`
   background-size: cover;
   background-position: 50%;
   background-repeat: no-repeat;
-  border-top-left-radius: inherit;
-  border-top-right-radius: inherit;
   background-image: url(${props => props.src});
+`;
+
+const Col = styled.div`
+  display: flex;
+  flex-direction: column;
+
+  p {
+    color: ${props => props.theme.text2};
+  }
 `;
 
 export default class ProjectGridItem extends Component {
@@ -100,12 +107,16 @@ export default class ProjectGridItem extends Component {
 
   render() {
     const { project, contextMenuId } = this.props;
+    const creatorAttribution = project.attributions && project.attributions.creator;
 
     const content = (
       <>
-        <ThumbnailContainer>{project.thumbnailUrl && <Thumbnail src={project.thumbnailUrl} />}</ThumbnailContainer>
+        <ThumbnailContainer>{project.thumbnail_url && <Thumbnail src={project.thumbnail_url} />}</ThumbnailContainer>
         <TitleContainer>
-          <h3>{project.name}</h3>
+          <Col>
+            <h3>{project.name}</h3>
+            {creatorAttribution && <p>{creatorAttribution}</p>}
+          </Col>
           {contextMenuId && (
             <MenuButton onClick={this.onShowMenu}>
               <EllipsisV />

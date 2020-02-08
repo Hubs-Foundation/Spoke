@@ -9,8 +9,9 @@ export NON_CORS_PROXY_DOMAINS=$6
 export SENTRY_DSN=$7
 export GA_TRACKING_ID=$8
 export TARGET_S3_BUCKET=$9
-export BUILD_NUMBER=${10}
-export GIT_COMMIT=${11}
+export IS_MOZ=${10}
+export BUILD_NUMBER=${11}
+export GIT_COMMIT=${12}
 export BUILD_VERSION="${BUILD_NUMBER} (${GIT_COMMIT})"
 export SENTRY_LOG_LEVEL=debug
 
@@ -48,6 +49,7 @@ cors_proxy_server = $CORS_PROXY_SERVER
 non_cors_proxy_domains = $NON_CORS_PROXY_DOMAINS
 sentry_dsn = $SENTRY_DSN
 ga_tracking_id = $GA_TRACKING_ID
+is_moz = $IS_MOZ
 
 [deploy]
 type = "s3"
@@ -55,7 +57,7 @@ target = $TARGET_S3_BUCKET
 region = "us-west-1"
 EOTOML
 
-cat build-config.toml
 sudo /usr/bin/hab-user-toml-install $pkg_name build-config.toml
 hab svc start $PKG
 sudo /usr/bin/hab-pkg-upload results/*.hart
+sudo /usr/bin/hab-ret-pkg-upload results/*.hart

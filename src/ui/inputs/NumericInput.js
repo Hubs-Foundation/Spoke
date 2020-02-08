@@ -47,6 +47,11 @@ const StyledNumericInput = styled.input`
   &:focus {
     border-color: ${props => props.theme.blue};
   }
+
+  &:disabled {
+    background-color: ${props => props.theme.disabled};
+    color: ${props => props.theme.disabledText};
+  }
 `;
 
 const NumericInputUnit = styled.div`
@@ -72,11 +77,11 @@ export default class NumericInput extends Component {
   }
 
   increment() {
-    this.handleStep(1);
+    this.handleStep(1, false);
   }
 
   decrement() {
-    this.handleStep(-1);
+    this.handleStep(-1, false);
   }
 
   handleKeyPress = event => {
@@ -92,10 +97,10 @@ export default class NumericInput extends Component {
 
     event.preventDefault();
 
-    this.handleStep(direction);
+    this.handleStep(direction, true);
   };
 
-  handleStep(direction) {
+  handleStep(direction, focus = true) {
     const { smallStep, mediumStep, largeStep, min, max, precision, convertTo, onChange, onCommit } = this.props;
 
     const nextValue =
@@ -116,7 +121,7 @@ export default class NumericInput extends Component {
         minimumFractionDigits: 0,
         maximumFractionDigits: Math.abs(Math.log10(precision)) + 1
       }),
-      focused: true
+      focused: focus
     });
   }
 

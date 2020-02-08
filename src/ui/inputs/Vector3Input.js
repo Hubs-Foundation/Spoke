@@ -13,7 +13,7 @@ export const Vector3InputContainer = styled.div`
   flex-direction: row;
   flex: 1 1 auto;
   width: 70%;
-  justify-content: flex-end;
+  justify-content: flex-start;
 `;
 
 export const Vector3Scrubber = styled(Scrubber)`

@@ -94,6 +94,7 @@ export default class Project extends EventEmitter {
     const { protocol, host } = new URL(window.location.href);
 
     this.serverURL = protocol + "//" + host;
+    this.apiURL = `https://${RETICULUM_SERVER}`;
 
     this.projectDirectoryPath = "/api/files/";
 
@@ -203,11 +204,7 @@ export default class Project extends EventEmitter {
       throw new Error(`Error fetching projects: ${json.error || "Unknown error."}`);
     }
 
-    return json.projects.map(project => ({
-      id: project.project_id,
-      name: project.name,
-      thumbnailUrl: project.thumbnail_url
-    }));
+    return json.projects;
   }
 
   async getProject(projectId) {
@@ -224,19 +221,7 @@ export default class Project extends EventEmitter {
 
     const json = await response.json();
 
-    let project = null;
-
-    if (json.project_url) {
-      const projectFileResponse = await this.fetch(json.project_url, { headers });
-      project = await projectFileResponse.json();
-    }
-
-    return {
-      id: json.project_id,
-      name: json.name,
-      thumbnailUrl: json.thumbnail_url,
-      project
-    };
+    return json;
   }
 
   async resolveUrl(url, index) {
@@ -312,6 +297,10 @@ export default class Project extends EventEmitter {
     return { canonicalUrl, accessibleUrl, contentType };
   }
 
+  proxyUrl(url) {
+    return proxiedUrlFor(url);
+  }
+
   unproxyUrl(baseUrl, url) {
     if (configs.CORS_PROXY_SERVER) {
       const corsProxyPrefix = `https://${configs.CORS_PROXY_SERVER}/`;
@@ -363,20 +352,36 @@ export default class Project extends EventEmitter {
       searchParams.set("filter", params.filter);
     }
 
+    if (params.collection) {
+      searchParams.set("collection", params.collection);
+    }
+
     if (cursor) {
       searchParams.set("cursor", cursor);
     }
 
     const resp = await this.fetch(url, { headers, signal });
 
+    if (signal.aborted) {
+      const error = new Error("Media search aborted");
+      error.aborted = true;
+      throw error;
+    }
+
     const json = await resp.json();
+
+    if (signal.aborted) {
+      const error = new Error("Media search aborted");
+      error.aborted = true;
+      throw error;
+    }
 
     const thumbnailedEntries = json.entries.map(entry => {
       if (entry.images && entry.images.preview && entry.images.preview.url) {
         if (entry.images.preview.type === "mp4") {
           entry.images.preview.url = proxiedUrlFor(entry.images.preview.url);
         } else {
-          entry.images.preview.url = scaledThumbnailUrlFor(entry.images.preview.url, 100, 100);
+          entry.images.preview.url = scaledThumbnailUrlFor(entry.images.preview.url, 200, 200);
         }
       }
       return entry;
@@ -389,7 +394,7 @@ export default class Project extends EventEmitter {
     };
   }
 
-  async createProject(scene, thumbnailBlob, signal, showDialog, hideDialog) {
+  async createProject(scene, parentSceneId, thumbnailBlob, signal, showDialog, hideDialog) {
     this.emit("project-saving");
 
     // Ensure the user is authenticated before continuing.
@@ -432,15 +437,19 @@ export default class Project extends EventEmitter {
       authorization: `Bearer ${token}`
     };
 
-    const body = JSON.stringify({
-      project: {
-        name: scene.name,
-        thumbnail_file_id,
-        thumbnail_file_token,
-        project_file_id,
-        project_file_token
-      }
-    });
+    const project = {
+      name: scene.name,
+      thumbnail_file_id,
+      thumbnail_file_token,
+      project_file_id,
+      project_file_token
+    };
+
+    if (parentSceneId) {
+      project.parent_scene_id = parentSceneId;
+    }
+
+    const body = JSON.stringify({ project });
 
     const projectEndpoint = `https://${RETICULUM_SERVER}/api/v1/projects`;
 
@@ -455,8 +464,15 @@ export default class Project extends EventEmitter {
         showDialog(LoginDialog, {
           onSuccess: async () => {
             try {
-              await this.createProject(scene, thumbnailBlob, signal, showDialog, hideDialog);
-              resolve();
+              const result = await this.createProject(
+                scene,
+                parentSceneId,
+                thumbnailBlob,
+                signal,
+                showDialog,
+                hideDialog
+              );
+              resolve(result);
             } catch (e) {
               reject(e);
             }
@@ -473,7 +489,7 @@ export default class Project extends EventEmitter {
 
     this.emit("project-saved");
 
-    return { projectId: json.project_id };
+    return json;
   }
 
   async deleteProject(projectId) {
@@ -548,19 +564,29 @@ export default class Project extends EventEmitter {
       authorization: `Bearer ${token}`
     };
 
+    const project = {
+      name: editor.scene.name,
+      thumbnail_file_id,
+      thumbnail_file_token,
+      project_file_id,
+      project_file_token
+    };
+
+    const sceneId = editor.scene.metadata && editor.scene.metadata.sceneId ? editor.scene.metadata.sceneId : null;
+
+    if (sceneId) {
+      project.scene_id = sceneId;
+    }
+
     const body = JSON.stringify({
-      project: {
-        name: editor.scene.name,
-        thumbnail_file_id,
-        thumbnail_file_token,
-        project_file_id,
-        project_file_token
-      }
+      project
     });
 
     const projectEndpoint = `https://${RETICULUM_SERVER}/api/v1/projects/${projectId}`;
 
     const resp = await this.fetch(projectEndpoint, { method: "PATCH", headers, body, signal });
+
+    const json = await resp.json();
 
     if (signal.aborted) {
       throw new Error("Save project aborted");
@@ -571,8 +597,9 @@ export default class Project extends EventEmitter {
         showDialog(LoginDialog, {
           onSuccess: async () => {
             try {
-              await this.saveProject(projectId, editor, signal, showDialog, hideDialog);
-              resolve();
+              const result = await this.saveProject(projectId, editor, signal, showDialog, hideDialog);
+              console.log(result);
+              resolve(result);
             } catch (e) {
               reject(e);
             }
@@ -586,6 +613,22 @@ export default class Project extends EventEmitter {
     }
 
     this.emit("project-saved");
+
+    return json;
+  }
+
+  async getScene(sceneId) {
+    const headers = {
+      "content-type": "application/json"
+    };
+
+    const response = await this.fetch(`https://${RETICULUM_SERVER}/api/v1/scenes/${sceneId}`, {
+      headers
+    });
+
+    const json = await response.json();
+
+    return json.scenes[0];
   }
 
   getSceneUrl(sceneId) {
@@ -596,7 +639,7 @@ export default class Project extends EventEmitter {
     }
   }
 
-  async publishProject(projectId, editor, showDialog, hideDialog) {
+  async publishProject(project, editor, showDialog, hideDialog) {
     let screenshotUrl;
 
     try {
@@ -616,7 +659,9 @@ export default class Project extends EventEmitter {
           }
         });
 
-        await this.saveProject(projectId, editor, signal, showDialog, hideDialog);
+        project = await this.saveProject(project.project_id, editor, signal, showDialog, hideDialog);
+
+        console.log(project);
 
         if (signal.aborted) {
           const error = new Error("Publish project aborted");
@@ -644,17 +689,19 @@ export default class Project extends EventEmitter {
         throw error;
       }
 
-      // Gather all the info needed to display the publish dialog
-      const { name, creatorAttribution, allowRemixing, allowPromotion, sceneId } = scene.metadata;
       const userInfo = this.getUserInfo();
 
-      let initialCreatorAttribution = creatorAttribution;
-      if (
-        (!initialCreatorAttribution || initialCreatorAttribution.length === 0) &&
-        userInfo &&
-        userInfo.creatorAttribution
-      ) {
-        initialCreatorAttribution = userInfo.creatorAttribution;
+      // Gather all the info needed to display the publish dialog
+      let { name, creatorAttribution, allowRemixing, allowPromotion } = scene.metadata;
+
+      name = (project.scene && project.scene.name) || name || editor.scene.name;
+
+      if (project.scene) {
+        allowPromotion = project.scene.allow_promotion;
+        allowRemixing = project.scene.allow_remixing;
+        creatorAttribution = project.scene.attributions.creator || "";
+      } else if ((!creatorAttribution || creatorAttribution.length === 0) && userInfo && userInfo.creatorAttribution) {
+        creatorAttribution = userInfo.creatorAttribution;
       }
 
       const contentAttributions = scene.getContentAttributions();
@@ -665,8 +712,8 @@ export default class Project extends EventEmitter {
           screenshotUrl,
           contentAttributions,
           initialSceneParams: {
-            name: name || editor.scene.name,
-            creatorAttribution: initialCreatorAttribution || "",
+            name,
+            creatorAttribution: creatorAttribution || "",
             allowRemixing: typeof allowRemixing !== "undefined" ? allowRemixing : true,
             allowPromotion: typeof allowPromotion !== "undefined" ? allowPromotion : true
           },
@@ -720,7 +767,7 @@ export default class Project extends EventEmitter {
 
       showDialog(ProgressDialog, {
         title: "Publishing Scene",
-        message: `${sceneId ? "updating" : "creating"} scene`,
+        message: `Publishing scene`,
         cancelable: true,
         onCancel: () => {
           abortController.abort();
@@ -812,14 +859,11 @@ export default class Project extends EventEmitter {
       };
       const body = JSON.stringify({ scene: sceneParams });
 
-      let sceneEndpoint = `https://${RETICULUM_SERVER}/api/v1/scenes`;
-      let method = "POST";
-      if (sceneId && !publishParams.isNewScene) {
-        sceneEndpoint = `${sceneEndpoint}/${sceneId}`;
-        method = "PATCH";
-      }
-
-      const resp = await this.fetch(sceneEndpoint, { method, headers, body });
+      const resp = await this.fetch(`https://${RETICULUM_SERVER}/api/v1/projects/${project.project_id}/publish`, {
+        method: "POST",
+        headers,
+        body
+      });
 
       if (signal.aborted) {
         const error = new Error("Publish project aborted");
@@ -832,8 +876,8 @@ export default class Project extends EventEmitter {
           showDialog(LoginDialog, {
             onSuccess: async () => {
               try {
-                await this.publish(editor, showDialog, hideDialog);
-                resolve();
+                const result = await this.publish(editor, showDialog, hideDialog);
+                resolve(result);
               } catch (e) {
                 reject(e);
               }
@@ -846,25 +890,12 @@ export default class Project extends EventEmitter {
         throw new Error(`Scene creation failed. ${await resp.text()}`);
       }
 
-      const json = await resp.json();
-      const newSceneId = json.scenes[0].scene_id;
-      const sceneUrl = this.getSceneUrl(newSceneId);
-      editor.sceneUrl = sceneUrl;
-
-      scene.setMetadata({ sceneUrl, sceneId: newSceneId });
-
-      await this.saveProject(projectId, editor, abortController.signal, showDialog, hideDialog);
-
-      if (signal.aborted) {
-        const error = new Error("Publish project aborted");
-        error.aborted = true;
-        throw error;
-      }
+      project = await resp.json();
 
       showDialog(PublishedSceneDialog, {
         sceneName: sceneParams.name,
         screenshotUrl,
-        sceneUrl,
+        sceneUrl: this.getSceneUrl(project.scene.scene_id),
         onConfirm: () => {
           this.emit("project-published");
           hideDialog();
@@ -875,6 +906,8 @@ export default class Project extends EventEmitter {
         URL.revokeObjectURL(screenshotUrl);
       }
     }
+
+    return project;
   }
 
   upload(blob, onUploadProgress, signal) {
@@ -980,12 +1013,17 @@ export default class Project extends EventEmitter {
   lastUploadAssetRequest = 0;
 
   async _uploadAsset(endpoint, editor, file, onProgress, signal) {
-    const thumbnailBlob = await editor.generateFileThumbnail(file);
+    let thumbnail_file_id = null;
+    let thumbnail_access_token = null;
 
-    const {
-      file_id: thumbnail_file_id,
-      meta: { access_token: thumbnail_access_token }
-    } = await this.upload(thumbnailBlob, undefined, signal);
+    if (!file.name.toLowerCase().endsWith(".mp3")) {
+      const thumbnailBlob = await editor.generateFileThumbnail(file);
+
+      const response = await this.upload(thumbnailBlob, undefined, signal);
+
+      thumbnail_file_id = response.file_id;
+      thumbnail_access_token = response.meta.access_token;
+    }
 
     const {
       file_id: asset_file_id,

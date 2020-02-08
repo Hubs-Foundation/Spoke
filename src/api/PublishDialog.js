@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
+import configs from "../configs";
 import PreviewDialog from "../ui/dialogs/PreviewDialog";
 import StringInput from "../ui/inputs/StringInput";
 import BooleanInput from "../ui/inputs/BooleanInput";
@@ -50,7 +51,7 @@ export default class PublishDialog extends Component {
     return (
       <PreviewDialog
         imageSrc={screenshotUrl}
-        title="Publish to Hubs"
+        title={configs.isMoz() ? "Publish to Hubs" : "Publish Scene"}
         onConfirm={this.onConfirm}
         onCancel={onCancel}
         confirmLabel="Save and Publish"
@@ -91,15 +92,15 @@ export default class PublishDialog extends Component {
         </FormField>
         <FormField inline>
           <label htmlFor="allowPromotion">
-            Allow Mozilla to{" "}
+            Allow {configs.isMoz() ? "Mozilla to " : ""}
             <a
               href="https://github.com/mozilla/Spoke/blob/master/PROMOTION.md"
               target="_blank"
               rel="noopener noreferrer"
             >
-              promote
+              {configs.isMoz() ? "promote" : "promotion"}
             </a>{" "}
-            my scene
+            {configs.isMoz() ? "" : "of "}my scene
           </label>
           <BooleanInput id="allowPromotion" value={allowPromotion} onChange={this.onChangeAllowPromotion} />
         </FormField>
