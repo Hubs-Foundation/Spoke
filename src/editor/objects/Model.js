@@ -58,7 +58,7 @@ export default class Model extends Object3D {
     this.model = model;
     this.add(model);
 
-    if (model.animations.length > 0) {
+    if (model.animations && model.animations.length > 0) {
       this.animationMixer = new AnimationMixer(this.model);
     }
 
