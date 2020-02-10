@@ -55,6 +55,7 @@ export default class Model extends Object3D {
     }
 
     const model = await this.loadGLTF(src, ...args);
+    model.animations = model.animations || [];
     this.model = model;
     this.add(model);
 
