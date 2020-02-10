@@ -6,6 +6,7 @@ import MeshCombinationGroup from "../MeshCombinationGroup";
 import GroupNode from "./GroupNode";
 import getNodeWithUUID from "../utils/getNodeWithUUID";
 import serializeColor from "../utils/serializeColor";
+import { DistanceModelType } from "../objects/AudioSource";
 
 // Migrate v1 spoke scene to v2
 function migrateV1ToV2(json) {
@@ -258,6 +259,19 @@ export default class SceneNode extends EditorNodeMixin(Scene) {
     this._fog = new Fog(0xffffff, 0.0025);
     this._fogExp2 = new FogExp2(0xffffff, 0.0025);
     this.fog = null;
+    this.overrideSceneAudioSettings = false;
+    this.avatarDistanceModel = DistanceModelType.Inverse;
+    this.avatarRolloffFactor = 1;
+    this.avatarRefDistance = 1;
+    this.avatarMaxDistance = 10000;
+    this.mediaVolume = 0.5;
+    this.mediaDistanceModel = DistanceModelType.Inverse;
+    this.mediaRolloffFactor = 1;
+    this.mediaRefDistance = 1;
+    this.mediaMaxDistance = 10000;
+    this.mediaConeInnerAngle = 360;
+    this.mediaConeOuterAngle = 0;
+    this.mediaConeOuterGain = 0;
     setStaticMode(this, StaticModes.Static);
   }
 
@@ -339,11 +353,63 @@ export default class SceneNode extends EditorNodeMixin(Scene) {
     this.fogDensity = source.fogDensity;
     this.fogNearDistance = source.fogNearDistance;
     this.fogFarDistance = source.fogFarDistance;
+    this.overrideSceneAudioSettings = source.overrideSceneAudioSettings;
+    this.avatarDistanceModel = source.avatarDistanceModel;
+    this.avatarRolloffFactor = source.avatarRolloffFactor;
+    this.avatarRefDistance = source.avatarRefDistance;
+    this.avatarMaxDistance = source.avatarMaxDistance;
+    this.mediaVolume = source.mediaVolume;
+    this.mediaDistanceModel = source.mediaDistanceModel;
+    this.mediaRolloffFactor = source.mediaRolloffFactor;
+    this.mediaRefDistance = source.mediaRefDistance;
+    this.mediaMaxDistance = source.mediaMaxDistance;
+    this.mediaConeInnerAngle = source.mediaConeInnerAngle;
+    this.mediaConeOuterAngle = source.mediaConeOuterAngle;
+    this.mediaConeOuterGain = source.mediaConeOuterGain;
 
     return this;
   }
 
   serialize() {
+    const components = [
+      {
+        name: "fog",
+        props: {
+          type: this.fogType,
+          color: serializeColor(this.fogColor),
+          near: this.fogNearDistance,
+          far: this.fogFarDistance,
+          density: this.fogDensity
+        }
+      },
+      {
+        name: "background",
+        props: {
+          color: serializeColor(this.background)
+        }
+      }
+    ];
+
+    if (this.overrideSceneAudioSettings) {
+      components.push({
+        name: "scene-audio-settings",
+        props: {
+          avatarDistanceModel: this.avatarDistanceModel,
+          avatarRolloffFactor: this.avatarRolloffFactor,
+          avatarRefDistance: this.avatarRefDistance,
+          avatarMaxDistance: this.avatarMaxDistance,
+          mediaVolume: this.mediaVolume,
+          mediaDistanceModel: this.mediaDistanceModel,
+          mediaRolloffFactor: this.mediaRolloffFactor,
+          mediaRefDistance: this.mediaRefDistance,
+          mediaMaxDistance: this.mediaMaxDistance,
+          mediaConeInnerAngle: this.mediaConeInnerAngle,
+          mediaConeOuterAngle: this.mediaConeOuterAngle,
+          mediaConeOuterGain: this.mediaConeOuterGain
+        }
+      });
+    }
+
     const sceneJson = {
       version: 4,
       root: this.uuid,
@@ -351,24 +417,7 @@ export default class SceneNode extends EditorNodeMixin(Scene) {
       entities: {
         [this.uuid]: {
           name: this.name,
-          components: [
-            {
-              name: "fog",
-              props: {
-                type: this.fogType,
-                color: serializeColor(this.fogColor),
-                near: this.fogNearDistance,
-                far: this.fogFarDistance,
-                density: this.fogDensity
-              }
-            },
-            {
-              name: "background",
-              props: {
-                color: serializeColor(this.background)
-              }
-            }
-          ]
+          components
         }
       }
     };
@@ -429,6 +478,23 @@ export default class SceneNode extends EditorNodeMixin(Scene) {
         type: this.fogType,
         color: serializeColor(this.fogColor),
         density: this.fogDensity
+      });
+    }
+
+    if (this.overrideSceneAudioSettings) {
+      this.addGLTFComponent("scene-audio-settings", {
+        avatarDistanceModel: this.avatarDistanceModel,
+        avatarRolloffFactor: this.avatarRolloffFactor,
+        avatarRefDistance: this.avatarRefDistance,
+        avatarMaxDistance: this.avatarMaxDistance,
+        mediaVolume: this.mediaVolume,
+        mediaDistanceModel: this.mediaDistanceModel,
+        mediaRolloffFactor: this.mediaRolloffFactor,
+        mediaRefDistance: this.mediaRefDistance,
+        mediaMaxDistance: this.mediaMaxDistance,
+        mediaConeInnerAngle: this.mediaConeInnerAngle,
+        mediaConeOuterAngle: this.mediaConeOuterAngle,
+        mediaConeOuterGain: this.mediaConeOuterGain
       });
     }
   }
