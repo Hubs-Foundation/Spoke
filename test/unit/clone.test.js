@@ -1,5 +1,4 @@
 import test from "ava";
-import assert from "assert";
 import { createEditor } from "../../src/config";
 import Api from "../../src/api/Api";
 import GroupNode from "../../src/editor/nodes/GroupNode";
@@ -64,8 +63,8 @@ function nodeEqual(t, value, expected, skipProps = false) {
   const expectedSerialized = expected.serialize();
 
   if (!skipProps) {
-    // AVA's deepEqual uses Object.is for comparisons. This makes -0 !== 0 which happens in serialization so use deepEqual instead.
-    assert.deepEqual(valueSerialized, expectedSerialized);
+    // AVA's deepEqual uses Object.is for comparisons. This makes -0 !== 0 which happens in serialization so json stringify and compare instead.
+    t.is(JSON.stringify(valueSerialized, undefined, 2), JSON.stringify(expectedSerialized, undefined, 2));
   }
 
   for (let i = 0; i < numChildren; i++) {

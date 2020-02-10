@@ -238,3 +238,11 @@ test("Editor should load V3TestScene", withPage(`/projects/new?template=${v3Test
   const serializedScene = await getSerializedScene(page, sceneHandle);
   t.snapshot(serializedScene);
 });
+
+const v4TestSceneUrl = getFixtureUrl("V4TestScene.spoke");
+
+test("Editor should load V4TestScene", withPage(`/projects/new?template=${v4TestSceneUrl}`), async (t, page) => {
+  const sceneHandle = await waitForProjectLoaded(page);
+  const serializedScene = await getSerializedScene(page, sceneHandle);
+  t.snapshot(serializedScene);
+});
