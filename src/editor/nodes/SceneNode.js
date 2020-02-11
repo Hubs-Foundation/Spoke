@@ -244,6 +244,25 @@ export default class SceneNode extends EditorNodeMixin(Scene) {
         const { color } = background.props;
         node.background.set(color);
       }
+
+      const sceneAudioSettings = json.components.find(c => c.name === "scene-audio-settings");
+
+      if (sceneAudioSettings) {
+        const props = sceneAudioSettings.props;
+        node.overrideAudioSettings = props.overrideAudioSettings;
+        node.avatarDistanceModel = props.avatarDistanceModel;
+        node.avatarRolloffFactor = props.avatarRolloffFactor;
+        node.avatarRefDistance = props.avatarRefDistance;
+        node.avatarMaxDistance = props.avatarMaxDistance;
+        node.mediaVolume = props.mediaVolume;
+        node.mediaDistanceModel = props.mediaDistanceModel;
+        node.mediaRolloffFactor = props.mediaRolloffFactor;
+        node.mediaRefDistance = props.mediaRefDistance;
+        node.mediaMaxDistance = props.mediaMaxDistance;
+        node.mediaConeInnerAngle = props.mediaConeInnerAngle;
+        node.mediaConeOuterAngle = props.mediaConeOuterAngle;
+        node.mediaConeOuterGain = props.mediaConeOuterGain;
+      }
     }
 
     return node;
@@ -259,7 +278,7 @@ export default class SceneNode extends EditorNodeMixin(Scene) {
     this._fog = new Fog(0xffffff, 0.0025);
     this._fogExp2 = new FogExp2(0xffffff, 0.0025);
     this.fog = null;
-    this.overrideSceneAudioSettings = false;
+    this.overrideAudioSettings = false;
     this.avatarDistanceModel = DistanceModelType.Inverse;
     this.avatarRolloffFactor = 1;
     this.avatarRefDistance = 1;
@@ -353,7 +372,7 @@ export default class SceneNode extends EditorNodeMixin(Scene) {
     this.fogDensity = source.fogDensity;
     this.fogNearDistance = source.fogNearDistance;
     this.fogFarDistance = source.fogFarDistance;
-    this.overrideSceneAudioSettings = source.overrideSceneAudioSettings;
+    this.overrideAudioSettings = source.overrideAudioSettings;
     this.avatarDistanceModel = source.avatarDistanceModel;
     this.avatarRolloffFactor = source.avatarRolloffFactor;
     this.avatarRefDistance = source.avatarRefDistance;
@@ -371,45 +390,6 @@ export default class SceneNode extends EditorNodeMixin(Scene) {
   }
 
   serialize() {
-    const components = [
-      {
-        name: "fog",
-        props: {
-          type: this.fogType,
-          color: serializeColor(this.fogColor),
-          near: this.fogNearDistance,
-          far: this.fogFarDistance,
-          density: this.fogDensity
-        }
-      },
-      {
-        name: "background",
-        props: {
-          color: serializeColor(this.background)
-        }
-      }
-    ];
-
-    if (this.overrideSceneAudioSettings) {
-      components.push({
-        name: "scene-audio-settings",
-        props: {
-          avatarDistanceModel: this.avatarDistanceModel,
-          avatarRolloffFactor: this.avatarRolloffFactor,
-          avatarRefDistance: this.avatarRefDistance,
-          avatarMaxDistance: this.avatarMaxDistance,
-          mediaVolume: this.mediaVolume,
-          mediaDistanceModel: this.mediaDistanceModel,
-          mediaRolloffFactor: this.mediaRolloffFactor,
-          mediaRefDistance: this.mediaRefDistance,
-          mediaMaxDistance: this.mediaMaxDistance,
-          mediaConeInnerAngle: this.mediaConeInnerAngle,
-          mediaConeOuterAngle: this.mediaConeOuterAngle,
-          mediaConeOuterGain: this.mediaConeOuterGain
-        }
-      });
-    }
-
     const sceneJson = {
       version: 4,
       root: this.uuid,
@@ -417,7 +397,42 @@ export default class SceneNode extends EditorNodeMixin(Scene) {
       entities: {
         [this.uuid]: {
           name: this.name,
-          components
+          components: [
+            {
+              name: "fog",
+              props: {
+                type: this.fogType,
+                color: serializeColor(this.fogColor),
+                near: this.fogNearDistance,
+                far: this.fogFarDistance,
+                density: this.fogDensity
+              }
+            },
+            {
+              name: "background",
+              props: {
+                color: serializeColor(this.background)
+              }
+            },
+            {
+              name: "scene-audio-settings",
+              props: {
+                overrideAudioSettings: this.overrideAudioSettings,
+                avatarDistanceModel: this.avatarDistanceModel,
+                avatarRolloffFactor: this.avatarRolloffFactor,
+                avatarRefDistance: this.avatarRefDistance,
+                avatarMaxDistance: this.avatarMaxDistance,
+                mediaVolume: this.mediaVolume,
+                mediaDistanceModel: this.mediaDistanceModel,
+                mediaRolloffFactor: this.mediaRolloffFactor,
+                mediaRefDistance: this.mediaRefDistance,
+                mediaMaxDistance: this.mediaMaxDistance,
+                mediaConeInnerAngle: this.mediaConeInnerAngle,
+                mediaConeOuterAngle: this.mediaConeOuterAngle,
+                mediaConeOuterGain: this.mediaConeOuterGain
+              }
+            }
+          ]
         }
       }
     };
@@ -481,7 +496,7 @@ export default class SceneNode extends EditorNodeMixin(Scene) {
       });
     }
 
-    if (this.overrideSceneAudioSettings) {
+    if (this.overrideAudioSettings) {
       this.addGLTFComponent("scene-audio-settings", {
         avatarDistanceModel: this.avatarDistanceModel,
         avatarRolloffFactor: this.avatarRolloffFactor,
