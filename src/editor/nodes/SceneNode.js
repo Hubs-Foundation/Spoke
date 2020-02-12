@@ -280,7 +280,7 @@ export default class SceneNode extends EditorNodeMixin(Scene) {
     this.fog = null;
     this.overrideAudioSettings = false;
     this.avatarDistanceModel = DistanceModelType.Inverse;
-    this.avatarRolloffFactor = 1;
+    this.avatarRolloffFactor = 2;
     this.avatarRefDistance = 1;
     this.avatarMaxDistance = 10000;
     this.mediaVolume = 0.5;
