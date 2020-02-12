@@ -5,12 +5,8 @@ import BooleanInput from "../inputs/BooleanInput";
 import SelectInput from "../inputs/SelectInput";
 import NumericInputGroup from "../inputs/NumericInputGroup";
 import CompoundNumericInput from "../inputs/CompoundNumericInput";
-import { AudioType, DistanceModelType } from "../../editor/objects/AudioSource";
+import { AudioType, AudioTypeOptions, DistanceModelOptions, DistanceModelType } from "../../editor/objects/AudioSource";
 import useSetPropertySelected from "./useSetPropertySelected";
-
-const audioTypeOptions = Object.values(AudioType).map(v => ({ label: v, value: v }));
-
-const distanceModelOptions = Object.values(DistanceModelType).map(v => ({ label: v, value: v }));
 
 export default function AudioSourceProperties({ node, editor, multiEdit }) {
   const onChangeControls = useSetPropertySelected(editor, "controls");
@@ -40,7 +36,7 @@ export default function AudioSourceProperties({ node, editor, multiEdit }) {
         <BooleanInput value={node.loop} onChange={onChangeLoop} />
       </InputGroup>
       <InputGroup name="Audio Type">
-        <SelectInput options={audioTypeOptions} value={node.audioType} onChange={onChangeAudioType} />
+        <SelectInput options={AudioTypeOptions} value={node.audioType} onChange={onChangeAudioType} />
       </InputGroup>
       <InputGroup name="Volume">
         <CompoundNumericInput value={node.volume} onChange={onChangeVolume} />
@@ -48,7 +44,7 @@ export default function AudioSourceProperties({ node, editor, multiEdit }) {
       {!multiEdit && node.audioType === AudioType.PannerNode && (
         <>
           <InputGroup name="Distance Model" info="The algorithim used to calculate audio rolloff.">
-            <SelectInput options={distanceModelOptions} value={node.distanceModel} onChange={onChangeDistanceModel} />
+            <SelectInput options={DistanceModelOptions} value={node.distanceModel} onChange={onChangeDistanceModel} />
           </InputGroup>
 
           {node.distanceModel === DistanceModelType.linear ? (

@@ -12,6 +12,10 @@ export const DistanceModelType = {
   Exponential: "exponential"
 };
 
+export const AudioTypeOptions = Object.values(AudioType).map(v => ({ label: v, value: v }));
+
+export const DistanceModelOptions = Object.values(DistanceModelType).map(v => ({ label: v, value: v }));
+
 export default class AudioSource extends Object3D {
   constructor(audioListener, elTag = "audio") {
     super();
