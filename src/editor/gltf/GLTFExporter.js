@@ -1129,47 +1129,6 @@ class GLTFExporter {
   }
 
   /**
-   * Process camera
-   * @param  {THREE.Camera} camera Camera to process
-   * @return {Integer}      Index of the processed mesh in the "camera" array
-   */
-  processCamera(camera) {
-    if (!this.outputJSON.cameras) {
-      this.outputJSON.cameras = [];
-    }
-
-    const isOrtho = camera.isOrthographicCamera;
-
-    const gltfCamera = {
-      type: isOrtho ? "orthographic" : "perspective"
-    };
-
-    if (isOrtho) {
-      gltfCamera.orthographic = {
-        xmag: camera.right * 2,
-        ymag: camera.top * 2,
-        zfar: camera.far <= 0 ? 0.001 : camera.far,
-        znear: camera.near < 0 ? 0 : camera.near
-      };
-    } else {
-      gltfCamera.perspective = {
-        aspectRatio: camera.aspect,
-        yfov: _Math.degToRad(camera.fov),
-        zfar: camera.far <= 0 ? 0.001 : camera.far,
-        znear: camera.near < 0 ? 0 : camera.near
-      };
-    }
-
-    if (camera.name !== "") {
-      gltfCamera.name = camera.type;
-    }
-
-    this.outputJSON.cameras.push(gltfCamera);
-
-    return this.outputJSON.cameras.length - 1;
-  }
-
-  /**
    * Creates glTF animation entry from AnimationClip object.
    *
    * Status:
@@ -1292,52 +1251,6 @@ class GLTFExporter {
     return skinIndex;
   }
 
-  processLight(light) {
-    const lightDef = {};
-
-    if (light.name) lightDef.name = light.name;
-
-    lightDef.color = light.color.toArray();
-
-    lightDef.intensity = light.intensity;
-
-    if (light.isDirectionalLight) {
-      lightDef.type = "directional";
-    } else if (light.isPointLight) {
-      lightDef.type = "point";
-      if (light.distance > 0) lightDef.range = light.distance;
-    } else if (light.isSpotLight) {
-      lightDef.type = "spot";
-      if (light.distance > 0) lightDef.range = light.distance;
-      lightDef.spot = {};
-      lightDef.spot.innerConeAngle = (light.penumbra - 1.0) * light.angle * -1.0;
-      lightDef.spot.outerConeAngle = light.angle;
-    }
-
-    if (light.decay !== undefined && light.decay !== 2) {
-      console.warn(
-        "THREE.GLTFExporter: Light decay may be lost. glTF is physically-based, " + "and expects light.decay=2."
-      );
-    }
-
-    if (
-      light.target &&
-      (light.target.parent !== light ||
-        light.target.position.x !== 0 ||
-        light.target.position.y !== 0 ||
-        light.target.position.z !== -1)
-    ) {
-      console.warn(
-        "THREE.GLTFExporter: Light direction may be lost. For best results, " +
-          "make light.target a child of the light with position 0,0,-1."
-      );
-    }
-
-    const lights = this.outputJSON.extensions["KHR_lights_punctual"].lights;
-    lights.push(lightDef);
-    return lights.length - 1;
-  }
-
   /**
    * Process Object3D node
    * @param  {THREE.Object3D} node Object3D to processNode
@@ -1389,20 +1302,6 @@ class GLTFExporter {
       if (mesh !== null) {
         gltfNode.mesh = mesh;
       }
-    } else if (object.isCamera) {
-      gltfNode.camera = this.processCamera(object);
-    } else if (object.isDirectionalLight || object.isPointLight || object.isSpotLight) {
-      if (!this.extensionsUsed["KHR_lights_punctual"]) {
-        this.outputJSON.extensions = this.outputJSON.extensions || {};
-        this.outputJSON.extensions["KHR_lights_punctual"] = { lights: [] };
-        this.extensionsUsed["KHR_lights_punctual"] = true;
-      }
-
-      gltfNode.extensions = gltfNode.extensions || {};
-      gltfNode.extensions["KHR_lights_punctual"] = { light: this.processLight(object) };
-    } else if (object.isLight) {
-      console.warn("THREE.GLTFExporter: Only directional, point, and spot lights are supported.", object);
-      return null;
     }
 
     if (object.isSkinnedMesh) {

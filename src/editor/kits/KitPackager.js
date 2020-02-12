@@ -20,7 +20,7 @@ export default class KitPackager {
   async package(kitName, url, onProgress) {
     onProgress("Loading glb...");
 
-    const loader = new GLTFLoader(url, undefined, { revokeObjectURLs: false });
+    const loader = new GLTFLoader(url, undefined, { revokeObjectURLs: false, addUnknownExtensionsToUserData: true });
 
     const { scene, json } = await loader.loadGLTF();
 
