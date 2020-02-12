@@ -245,10 +245,10 @@ export default class SceneNode extends EditorNodeMixin(Scene) {
         node.background.set(color);
       }
 
-      const sceneAudioSettings = json.components.find(c => c.name === "scene-audio-settings");
+      const audioSettings = json.components.find(c => c.name === "audio-settings");
 
-      if (sceneAudioSettings) {
-        const props = sceneAudioSettings.props;
+      if (audioSettings) {
+        const props = audioSettings.props;
         node.overrideAudioSettings = props.overrideAudioSettings;
         node.avatarDistanceModel = props.avatarDistanceModel;
         node.avatarRolloffFactor = props.avatarRolloffFactor;
@@ -415,7 +415,7 @@ export default class SceneNode extends EditorNodeMixin(Scene) {
               }
             },
             {
-              name: "scene-audio-settings",
+              name: "audio-settings",
               props: {
                 overrideAudioSettings: this.overrideAudioSettings,
                 avatarDistanceModel: this.avatarDistanceModel,
@@ -497,7 +497,7 @@ export default class SceneNode extends EditorNodeMixin(Scene) {
     }
 
     if (this.overrideAudioSettings) {
-      this.addGLTFComponent("scene-audio-settings", {
+      this.addGLTFComponent("audio-settings", {
         avatarDistanceModel: this.avatarDistanceModel,
         avatarRolloffFactor: this.avatarRolloffFactor,
         avatarRefDistance: this.avatarRefDistance,
