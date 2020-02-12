@@ -249,6 +249,7 @@ class GLTFCubicSplineInterpolant extends Interpolant {
 const defaultOptions = {
   revokeObjectURLs: true,
   crossOrigin: true,
+  addUnknownExtensionsToUserData: false,
   path: undefined
 };
 
@@ -1838,6 +1839,10 @@ class GLTFLoader {
 
   addUnknownExtensionsToUserData(object, objectDef) {
     // Add unknown glTF extensions to an object's userData.
+
+    if (!this.options.addUnknownExtensionsToUserData) {
+      return;
+    }
 
     for (const name in objectDef.extensions) {
       if (!this.knownExtensions.has(name)) {
