@@ -1,11 +1,13 @@
 import puppeteer from "puppeteer-core";
-import getChrome from "get-chrome";
+import locateChrome from "locate-chrome";
+
+const chromePromise = process.env.CHROME_PATH ? Promise.resolve(process.env.CHROME_PATH) : locateChrome();
 
 export default function withPage(path, timeout = 60000) {
   const url = new URL(path, "https://localhost:9091");
-  const chromePath = process.env.CHROME_PATH || getChrome();
 
   return async (t, run) => {
+    const chromePath = await chromePromise;
     const browser = await puppeteer.launch({
       headless: false,
       executablePath: chromePath,
