@@ -2,26 +2,63 @@ import { useCallback, useContext } from "react";
 import ErrorDialog from "../dialogs/ErrorDialog";
 import ProgressDialog from "../dialogs/ProgressDialog";
 import { DialogContext } from "../contexts/DialogContext";
+import { EditorContext } from "../contexts/EditorContext";
+import { AllFileTypes } from "../assets/fileTypes";
 
-export default function useUpload(source) {
+export default function useUpload(options = {}) {
+  const editor = useContext(EditorContext);
   const { showDialog, hideDialog } = useContext(DialogContext);
+
+  const multiple = options.multiple === undefined ? false : options.multiple;
+  const source = options.source || editor.defaultUploadSource;
+  const accepts = options.accepts || AllFileTypes;
 
   const onUpload = useCallback(
     async files => {
-      const abortController = new AbortController();
-
-      showDialog(ProgressDialog, {
-        title: "Uploading Files",
-        message: `Uploading files 1 of ${files.length}: 0%`,
-        cancelable: true,
-        onCancel: () => {
-          abortController.abort();
-          hideDialog();
-        }
-      });
+      let assets = [];
 
       try {
-        await source.upload(
+        if (!multiple && files.length > 1) {
+          throw new Error("Input does not accept multiple files.");
+        }
+
+        if (accepts) {
+          for (const file of files) {
+            let accepted = false;
+
+            for (const pattern of accepts) {
+              if (pattern.startsWith(".")) {
+                if (file.name.endsWith(pattern)) {
+                  accepted = true;
+                  break;
+                }
+              } else if (file.type.startsWith(pattern)) {
+                accepted = true;
+                break;
+              }
+            }
+
+            if (!accepted) {
+              throw new Error(
+                `"${file.name}" does not match the following mime types or extensions: ${accepts.join(", ")}`
+              );
+            }
+          }
+        }
+
+        const abortController = new AbortController();
+
+        showDialog(ProgressDialog, {
+          title: "Uploading Files",
+          message: `Uploading files 1 of ${files.length}: 0%`,
+          cancelable: true,
+          onCancel: () => {
+            abortController.abort();
+            hideDialog();
+          }
+        });
+
+        assets = await source.upload(
           files,
           (item, total, progress) => {
             showDialog(ProgressDialog, {
@@ -46,8 +83,10 @@ export default function useUpload(source) {
           error
         });
       }
+
+      return assets;
     },
-    [showDialog, hideDialog, source]
+    [showDialog, hideDialog, source, options.multiple, options.accepts]
   );
 
   return onUpload;

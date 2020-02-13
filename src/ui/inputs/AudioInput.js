@@ -3,12 +3,26 @@ import PropTypes from "prop-types";
 import StringInput from "./StringInput";
 import { useDrop } from "react-dnd";
 import { ItemTypes } from "../dnd";
+import useUpload from "../assets/useUpload";
+import { AudioFileTypes } from "../assets/fileTypes";
+
+const uploadOptions = {
+  multiple: false,
+  accepts: AudioFileTypes
+};
 
 export default function AudioInput({ onChange, ...rest }) {
+  const onUpload = useUpload(uploadOptions);
   const [{ canDrop, isOver }, dropRef] = useDrop({
-    accept: [ItemTypes.Audio],
+    accept: [ItemTypes.Audio, ItemTypes.File],
     drop(item) {
-      onChange(item.value.url);
+      if (item.type === ItemTypes.Audio) {
+        onChange(item.value.url, item.value.initialProps || {});
+      } else {
+        onUpload(item.files).then(assets => {
+          onChange(assets[0].url, {});
+        });
+      }
     },
     collect: monitor => ({
       canDrop: monitor.canDrop(),
