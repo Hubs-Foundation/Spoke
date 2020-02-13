@@ -131,7 +131,7 @@ export default class KitPieceNode extends EditorNodeMixin(Model) {
   }
 
   async loadGLTF(src, pieceId, subPiecesConfig = {}) {
-    const loader = this.editor.gltfCache.getLoader(src);
+    const loader = this.editor.gltfCache.getLoader(src, { addUnknownExtensionsToUserData: true });
     const { json } = await loader.getDependency("root");
 
     if (!Array.isArray(json.nodes)) {
