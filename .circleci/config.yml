@@ -23,7 +23,7 @@ jobs:
             source $BASH_ENV
       - run:
           name: Add hubs.local to /etc/hosts
-          command: echo "127.0.0.1  hubs.local" >> /etc/hosts
+          command: sudo echo "127.0.0.1  hubs.local" >> /etc/hosts
       - run: yarn
       - run: yarn test
       - persist_to_workspace:
