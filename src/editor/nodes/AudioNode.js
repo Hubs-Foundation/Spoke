@@ -1,8 +1,9 @@
 import EditorNodeMixin from "./EditorNodeMixin";
-import { TextureLoader, PlaneBufferGeometry, MeshBasicMaterial, Mesh, DoubleSide } from "three";
-import eventToMessage from "../utils/eventToMessage";
+import { PlaneBufferGeometry, MeshBasicMaterial, Mesh, DoubleSide } from "three";
 import audioIconUrl from "../../assets/audio-icon.png";
 import AudioSource from "../objects/AudioSource";
+import loadTexture from "../utils/loadTexture";
+import { RethrownError } from "../utils/errors";
 
 let audioHelperTexture = null;
 
@@ -12,12 +13,10 @@ export default class AudioNode extends EditorNodeMixin(AudioSource) {
   static nodeName = "Audio";
 
   static async load() {
-    audioHelperTexture = await new Promise((resolve, reject) => {
-      new TextureLoader().load(audioIconUrl, resolve, null, e => reject(`Error loading Image. ${eventToMessage(e)}`));
-    });
+    audioHelperTexture = await loadTexture(audioIconUrl);
   }
 
-  static async deserialize(editor, json, loadAsync) {
+  static async deserialize(editor, json, loadAsync, onError) {
     const node = await super.deserialize(editor, json);
 
     const {
@@ -38,7 +37,7 @@ export default class AudioNode extends EditorNodeMixin(AudioSource) {
 
     loadAsync(
       (async () => {
-        await node.load(src);
+        await node.load(src, onError);
         node.controls = controls;
         node.autoPlay = autoPlay;
         node.loop = loop;
@@ -90,7 +89,7 @@ export default class AudioNode extends EditorNodeMixin(AudioSource) {
     this._autoPlay = value;
   }
 
-  async load(src) {
+  async load(src, onError) {
     const nextSrc = src || "";
 
     if (nextSrc === this._canonicalUrl && nextSrc !== "") {
@@ -117,9 +116,16 @@ export default class AudioNode extends EditorNodeMixin(AudioSource) {
       }
 
       this.helper.visible = true;
-    } catch (e) {
+    } catch (error) {
       this.showErrorIcon();
-      console.error(e);
+
+      const audioError = new RethrownError(`Error loading audio ${this._canonicalUrl}`, error);
+
+      if (onError) {
+        onError(this, audioError);
+      }
+
+      console.error(audioError);
     }
 
     this.hideLoadingCube();

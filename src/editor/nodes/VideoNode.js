@@ -3,6 +3,7 @@ import Video from "../objects/Video";
 import Hls from "hls.js/dist/hls.light";
 import isHLS from "../utils/isHLS";
 import spokeLandingVideo from "../../assets/video/SpokePromo.mp4";
+import { RethrownError } from "../utils/errors";
 
 export default class VideoNode extends EditorNodeMixin(Video) {
   static legacyComponentName = "video";
@@ -13,7 +14,7 @@ export default class VideoNode extends EditorNodeMixin(Video) {
     src: new URL(spokeLandingVideo, location).href
   };
 
-  static async deserialize(editor, json, loadAsync) {
+  static async deserialize(editor, json, loadAsync, onError) {
     const node = await super.deserialize(editor, json);
 
     const {
@@ -35,7 +36,7 @@ export default class VideoNode extends EditorNodeMixin(Video) {
 
     loadAsync(
       (async () => {
-        await node.load(src);
+        await node.load(src, onError);
         node.controls = controls;
         node.autoPlay = autoPlay;
         node.loop = loop;
@@ -79,7 +80,7 @@ export default class VideoNode extends EditorNodeMixin(Video) {
     this.load(value).catch(console.error);
   }
 
-  async load(src) {
+  async load(src, onError) {
     const nextSrc = src || "";
 
     if (nextSrc === this._canonicalUrl && nextSrc !== "") {
@@ -121,9 +122,16 @@ export default class VideoNode extends EditorNodeMixin(Video) {
       if (this.editor.playing && this.autoPlay) {
         this.el.play();
       }
-    } catch (e) {
+    } catch (error) {
       this.showErrorIcon();
-      console.error(e);
+
+      const videoError = new RethrownError(`Error loading video ${this._canonicalUrl}`, error);
+
+      if (onError) {
+        onError(this, videoError);
+      }
+
+      console.error(videoError);
     }
 
     this.hideLoadingCube();

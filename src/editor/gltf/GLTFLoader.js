@@ -12,6 +12,9 @@
  * @author Don McCurdy / https://www.donmccurdy.com
  */
 
+import { RethrownError } from "../utils/errors";
+import loadTexture from "../utils/loadTexture";
+
 import {
   AnimationClip,
   Bone,
@@ -344,7 +347,11 @@ class GLTFLoader {
     let glbBuffer, json;
 
     try {
-      const data = await new Promise((resolve, reject) => fileLoader.load(this.url, resolve, undefined, reject));
+      const data = await new Promise((resolve, reject) =>
+        fileLoader.load(this.url, resolve, undefined, event => {
+          reject(event);
+        })
+      );
 
       let content;
 
@@ -419,7 +426,7 @@ class GLTFLoader {
     } catch (error) {
       this.manager.itemError(this.url);
       this.manager.itemEnd(this.url);
-      throw error;
+      throw new RethrownError(`Error loading glTF root`, error);
     }
 
     return { json, glbBuffer };
@@ -566,12 +573,16 @@ class GLTFLoader {
   }
 
   async loadGLTF() {
-    const { json } = await this.getDependency("root");
-    const sceneIndex = json.scene || 0;
-    const scene = await this.getDependency("scene", sceneIndex);
-    const sceneAnimations = await this.getDependency("sceneAnimations", sceneIndex);
-    scene.animations = sceneAnimations || [];
-    return { scene, json };
+    try {
+      const { json } = await this.getDependency("root");
+      const sceneIndex = json.scene || 0;
+      const scene = await this.getDependency("scene", sceneIndex);
+      const sceneAnimations = await this.getDependency("sceneAnimations", sceneIndex);
+      scene.animations = sceneAnimations || [];
+      return { scene, json };
+    } catch (error) {
+      throw new RethrownError(`Error loading glTF "${this.url}"`, error);
+    }
   }
 
   /**
@@ -1595,9 +1606,9 @@ class GLTFLoader {
       loader = textureLoader;
     }
 
-    const texture = await new Promise((resolve, reject) => {
-      loader.load(this.resolveURL(sourceURI, options.path), resolve, undefined, reject);
-    });
+    const textureUrl = this.resolveURL(sourceURI, options.path);
+
+    const texture = await loadTexture(textureUrl, this.textureLoader);
 
     // Clean up resources and configure Texture.
 

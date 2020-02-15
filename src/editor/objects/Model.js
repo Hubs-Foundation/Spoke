@@ -1,7 +1,6 @@
 import { Object3D, AnimationMixer } from "three";
 import { GLTFLoader } from "../gltf/GLTFLoader";
 import cloneObject3D from "../utils/cloneObject3D";
-import eventToMessage from "../utils/eventToMessage";
 
 export default class Model extends Object3D {
   constructor() {
@@ -28,17 +27,13 @@ export default class Model extends Object3D {
   }
 
   async loadGLTF(src) {
-    try {
-      const gltf = await new GLTFLoader(src).loadGLTF();
+    const gltf = await new GLTFLoader(src).loadGLTF();
 
-      const model = gltf.scene;
+    const model = gltf.scene;
 
-      model.animations = model.animations || [];
+    model.animations = model.animations || [];
 
-      return model;
-    } catch (error) {
-      throw new Error(`Error loading Model. ${eventToMessage(error)}`);
-    }
+    return model;
   }
 
   async load(src, ...args) {

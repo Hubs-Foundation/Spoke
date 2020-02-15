@@ -1,7 +1,7 @@
 import { Mesh, PlaneBufferGeometry, MeshBasicMaterial, DoubleSide } from "three";
-import { TextureLoader, RGBAFormat, NearestFilter } from "three";
-import eventToMessage from "../utils/eventToMessage";
+import { RGBAFormat, NearestFilter } from "three";
 import mediaErrorImageUrl from "../../assets/media-error.png";
+import loadTexture from "../utils/loadTexture";
 
 let errorTexturePromise = null;
 let errorTexture = null;
@@ -12,17 +12,10 @@ export default class ErrorIcon extends Mesh {
       return errorTexturePromise;
     }
 
-    errorTexturePromise = new Promise((resolve, reject) => {
-      new TextureLoader().load(
-        mediaErrorImageUrl,
-        texture => {
-          texture.format = RGBAFormat;
-          texture.magFilter = NearestFilter;
-          resolve(texture);
-        },
-        null,
-        e => reject(`Error loading error image. ${eventToMessage(e)}`)
-      );
+    errorTexturePromise = loadTexture(mediaErrorImageUrl).then(texture => {
+      texture.format = RGBAFormat;
+      texture.magFilter = NearestFilter;
+      return texture;
     });
 
     errorTexture = await errorTexturePromise;

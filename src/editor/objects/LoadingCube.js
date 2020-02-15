@@ -2,7 +2,6 @@ import { Object3D, AnimationMixer, Vector3 } from "three";
 import { GLTFLoader } from "../gltf/GLTFLoader";
 import loadingCubeUrl from "../../assets/loading-cube.glb";
 import cloneObject3D from "../utils/cloneObject3D";
-import eventToMessage from "../utils/eventToMessage";
 
 let cubeGltf = null;
 
@@ -12,15 +11,11 @@ export default class LoadingCube extends Object3D {
       return Promise.resolve(cubeGltf);
     }
 
-    try {
-      const gltf = await new GLTFLoader(loadingCubeUrl).loadGLTF();
+    const gltf = await new GLTFLoader(loadingCubeUrl).loadGLTF();
 
-      cubeGltf = gltf;
+    cubeGltf = gltf;
 
-      return cubeGltf;
-    } catch (error) {
-      throw new Error(`Error loading Model. ${eventToMessage(error)}`);
-    }
+    return cubeGltf;
   }
 
   constructor() {

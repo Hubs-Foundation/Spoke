@@ -2,7 +2,6 @@ import { Object3D } from "three";
 import { GLTFLoader } from "../gltf/GLTFLoader";
 import EditorNodeMixin from "./EditorNodeMixin";
 import spawnPointModelUrl from "../../assets/spawn-point.glb";
-import eventToMessage from "../utils/eventToMessage";
 
 let spawnPointHelperModel = null;
 
@@ -12,19 +11,15 @@ export default class SpawnPointNode extends EditorNodeMixin(Object3D) {
   static nodeName = "Spawn Point";
 
   static async load() {
-    try {
-      const { scene } = await new GLTFLoader(spawnPointModelUrl).loadGLTF();
+    const { scene } = await new GLTFLoader(spawnPointModelUrl).loadGLTF();
 
-      scene.traverse(child => {
-        if (child.isMesh) {
-          child.layers.set(1);
-        }
-      });
+    scene.traverse(child => {
+      if (child.isMesh) {
+        child.layers.set(1);
+      }
+    });
 
-      spawnPointHelperModel = scene;
-    } catch (error) {
-      throw new Error(`Error loading SpawnPointNode helper with url: ${spawnPointModelUrl}. ${eventToMessage(error)}`);
-    }
+    spawnPointHelperModel = scene;
   }
 
   constructor(editor) {

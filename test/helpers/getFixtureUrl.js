@@ -1,3 +1,3 @@
 export default function getFixtureUrl(path) {
-  return new URL(path, "https://localhost:9091");
+  return new URL(path, "https://hubs.local:9090");
 }

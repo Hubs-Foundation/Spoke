@@ -658,7 +658,7 @@
         {
           "name": "image",
           "props": {
-            "src": "https://assets-prod.reticulum.io/assets/images/hub-preview-light-no-shadow-5ebb166e8580d819b445892173ec0286.png",
+            "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/67/Firefox_Logo%2C_2017.svg/1200px-Firefox_Logo%2C_2017.svg.png",
             "projection": "flat"
           }
         }

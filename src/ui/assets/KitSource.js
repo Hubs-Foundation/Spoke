@@ -26,7 +26,7 @@ export default class KitSource extends BaseSource {
   }
 
   async load() {
-    const response = await fetch(this.kitUrl);
+    const response = await this.editor.api.fetch(this.kitUrl);
     const gltf = await response.json();
     const tagsSet = new Set();
 

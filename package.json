@@ -29,27 +29,29 @@
     "lint:css": "stylelint './src/**/*.js'",
     "pretest": "yarn lint",
     "test": "concurrently --success \"first\" --kill-others \"yarn test-all\" \"yarn test-server\"",
-    "test-server": "cross-env NODE_ENV=test webpack-dev-server --mode development --port 9091 --content-base ./test/fixtures",
-    "test-all": "ava",
+    "test-server": "cross-env NODE_ENV=test webpack-dev-server --mode development --content-base ./test/fixtures",
+    "test-all": "ava --verbose",
     "unit-tests": "ava ./test/unit/**/*.test.js",
     "integration-tests": "concurrently --success \"first\" --kill-others \"ava ./test/integration\" \"yarn test-server\"",
     "update-test-snapshots": "concurrently --success \"first\" --kill-others \"ava -u\" \"yarn test-server\"",
     "storybook": "start-storybook",
     "deploy-storybook": "storybook-to-ghpages"
   },
+  "esm": {
+    "mode": "auto",
+    "cjs": true
+  },
   "ava": {
     "files": [
       "./test/unit/**/*.test.js",
       "./test/integration/**/*.test.js"
     ],
-    "sources": [
-      "src/**/*.js"
-    ],
     "require": [
-      "@babel/register",
       "esm",
+      "@babel/register",
       "./test/entry.js"
-    ]
+    ],
+    "timeout": "60s"
   },
   "lint-staged": {
     "*.js": [
@@ -121,7 +123,7 @@
     "@storybook/source-loader": "^5.2.0",
     "@storybook/storybook-deployer": "^2.8.1",
     "@storybook/theming": "^5.2.0",
-    "ava": "2.3.0",
+    "ava": "^3.3.0",
     "babel-eslint": "^10.0.3",
     "babel-loader": "^8.0.0",
     "babel-plugin-styled-components": "^1.10.6",

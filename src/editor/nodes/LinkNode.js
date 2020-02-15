@@ -1,7 +1,7 @@
 import EditorNodeMixin from "./EditorNodeMixin";
-import { Object3D, TextureLoader, PlaneBufferGeometry, MeshBasicMaterial, Mesh, DoubleSide } from "three";
-import eventToMessage from "../utils/eventToMessage";
+import { Object3D, PlaneBufferGeometry, MeshBasicMaterial, Mesh, DoubleSide } from "three";
 import linkIconUrl from "../../assets/link-icon.png";
+import loadTexture from "../utils/loadTexture";
 
 let linkHelperTexture = null;
 
@@ -11,9 +11,7 @@ export default class LinkNode extends EditorNodeMixin(Object3D) {
   static nodeName = "Link";
 
   static async load() {
-    linkHelperTexture = await new Promise((resolve, reject) => {
-      new TextureLoader().load(linkIconUrl, resolve, null, e => reject(`Error loading Image. ${eventToMessage(e)}`));
-    });
+    linkHelperTexture = await loadTexture(linkIconUrl);
   }
 
   static async deserialize(editor, json) {

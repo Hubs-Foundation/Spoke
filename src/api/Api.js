@@ -9,6 +9,7 @@ import ProgressDialog from "../ui/dialogs/ProgressDialog";
 import jwtDecode from "jwt-decode";
 import { buildAbsoluteURL } from "url-toolkit";
 import PublishedSceneDialog from "./PublishedSceneDialog";
+import { RethrownError } from "../editor/utils/errors";
 
 // Media related functions should be kept up to date with Hubs media-utils:
 // https://github.com/mozilla/hubs/blob/master/src/utils/media-utils.js
@@ -239,12 +240,12 @@ export default class Project extends EventEmitter {
     });
 
     if (!response.ok) {
-      const message = `Error resolving url "${url}":`;
+      const message = `Error resolving url "${url}":\n  `;
       try {
         const body = await response.text();
-        throw new Error(message + " " + body);
+        throw new Error(message + body.replace(/\n/g, "\n  "));
       } catch (e) {
-        throw new Error(message + " " + response.statusText);
+        throw new Error(message + response.statusText.replace(/\n/g, "\n  "));
       }
     }
 
@@ -276,22 +277,32 @@ export default class Project extends EventEmitter {
       return { accessibleUrl: absoluteUrl };
     }
 
-    const result = await this.resolveUrl(absoluteUrl);
-    const canonicalUrl = result.origin;
-    const accessibleUrl = proxiedUrlFor(canonicalUrl, index);
+    let contentType, canonicalUrl, accessibleUrl;
 
-    const contentType =
-      (result.meta && result.meta.expected_content_type) ||
-      guessContentType(canonicalUrl) ||
-      (await this.fetchContentType(accessibleUrl));
+    try {
+      const result = await this.resolveUrl(absoluteUrl);
+      canonicalUrl = result.origin;
+      accessibleUrl = proxiedUrlFor(canonicalUrl, index);
 
-    if (contentType === "model/gltf+zip") {
-      // TODO: Sketchfab object urls should be revoked after they are loaded by the glTF loader.
-      const { getFilesFromSketchfabZip } = await import(
-        /* webpackChunkName: "SketchfabZipLoader", webpackPrefetch: true */ "./SketchfabZipLoader"
-      );
-      const files = await getFilesFromSketchfabZip(accessibleUrl);
-      return { canonicalUrl, accessibleUrl: files["scene.gtlf"], contentType, files };
+      contentType =
+        (result.meta && result.meta.expected_content_type) ||
+        guessContentType(canonicalUrl) ||
+        (await this.fetchContentType(accessibleUrl));
+    } catch (error) {
+      throw new RethrownError(`Error resolving media "${absoluteUrl}"`, error);
+    }
+
+    try {
+      if (contentType === "model/gltf+zip") {
+        // TODO: Sketchfab object urls should be revoked after they are loaded by the glTF loader.
+        const { getFilesFromSketchfabZip } = await import(
+          /* webpackChunkName: "SketchfabZipLoader", webpackPrefetch: true */ "./SketchfabZipLoader"
+        );
+        const files = await getFilesFromSketchfabZip(accessibleUrl);
+        return { canonicalUrl, accessibleUrl: files["scene.gtlf"], contentType, files };
+      }
+    } catch (error) {
+      throw new RethrownError(`Error loading Sketchfab model "${accessibleUrl}"`, error);
     }
 
     return { canonicalUrl, accessibleUrl, contentType };
@@ -934,11 +945,11 @@ export default class Project extends EventEmitter {
         }
       });
 
-      request.addEventListener("error", e => {
+      request.addEventListener("error", error => {
         if (signal) {
           signal.removeEventListener("abort", onAbort);
         }
-        reject(new Error(`Upload failed ${e}`));
+        reject(new RethrownError("Upload failed", error));
       });
 
       request.addEventListener("load", () => {
@@ -1128,14 +1139,23 @@ export default class Project extends EventEmitter {
   }
 
   async fetch(url, options) {
-    const res = await fetch(url, options);
+    try {
+      const res = await fetch(url, options);
 
-    if (res.ok) {
-      return res;
+      if (res.ok) {
+        return res;
+      }
+
+      const err = new Error(
+        `Network Error: ${res.status || "Unknown Status."} ${res.statusText || "Unknown Error. Possibly a CORS error."}`
+      );
+      err.response = res;
+      throw err;
+    } catch (error) {
+      if (error.message === "Failed to fetch") {
+        error.message += " (Possibly a CORS error)";
+      }
+      throw new RethrownError(`Failed to fetch "${url}"`, error);
     }
-
-    const err = new Error("Network Error: " + res.statusText);
-    err.response = res;
-    throw err;
   }
 }

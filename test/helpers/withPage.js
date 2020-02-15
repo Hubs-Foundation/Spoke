@@ -4,7 +4,7 @@ import locateChrome from "locate-chrome";
 const chromePromise = process.env.CHROME_PATH ? Promise.resolve(process.env.CHROME_PATH) : locateChrome();
 
 export default function withPage(path, timeout = 60000) {
-  const url = new URL(path, "https://localhost:9091");
+  const url = new URL(path, "https://hubs.local:9090");
 
   return async (t, run) => {
     const chromePath = await chromePromise;

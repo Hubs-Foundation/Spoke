@@ -1,6 +1,6 @@
 import { TextureLoader } from "three";
 import Cache from "./Cache";
-import eventToMessage from "../utils/eventToMessage";
+import loadTexture from "../utils/loadTexture";
 
 export default class TextureCache extends Cache {
   constructor() {
@@ -11,14 +11,7 @@ export default class TextureCache extends Cache {
   get(url) {
     const absoluteURL = new URL(url, window.location).href;
     if (!this._cache.has(absoluteURL)) {
-      this._cache.set(
-        absoluteURL,
-        new Promise((resolve, reject) => {
-          this.textureLoader.load(absoluteURL, resolve, null, e => {
-            reject(new Error(`Error loading texture with url: ${absoluteURL}. ${eventToMessage(e)}`));
-          });
-        })
-      );
+      this._cache.set(absoluteURL, loadTexture(absoluteURL, this.textureLoader));
     }
     return this._cache.get(absoluteURL);
   }

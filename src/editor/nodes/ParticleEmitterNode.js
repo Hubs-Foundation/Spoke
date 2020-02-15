@@ -1,9 +1,8 @@
-import { TextureLoader } from "three";
 import { ParticleEmitter } from "@mozillareality/three-particle-emitter";
 import EditorNodeMixin from "./EditorNodeMixin";
-import eventToMessage from "../utils/eventToMessage";
 import defaultParticleUrl from "../../assets/dot.png";
 import DirectionalPlaneHelper from "../helpers/DirectionalPlaneHelper";
+import loadTexture from "../utils/loadTexture";
 
 let defaultParticleSprite = null;
 
@@ -16,7 +15,7 @@ export default class ParticleEmitterNode extends EditorNodeMixin(ParticleEmitter
     src: new URL(defaultParticleUrl, location).href
   };
 
-  static async deserialize(editor, json, loadAsync) {
+  static async deserialize(editor, json, loadAsync, onError) {
     const node = await super.deserialize(editor, json);
 
     const {
@@ -64,7 +63,7 @@ export default class ParticleEmitterNode extends EditorNodeMixin(ParticleEmitter
 
     loadAsync(
       (async () => {
-        await node.load(src);
+        await node.load(src, onError);
       })()
     );
     node.updateParticles();
@@ -73,11 +72,7 @@ export default class ParticleEmitterNode extends EditorNodeMixin(ParticleEmitter
   }
 
   static async load() {
-    defaultParticleSprite = await new Promise((resolve, reject) => {
-      new TextureLoader().load(defaultParticleUrl, resolve, null, e =>
-        reject(`Error loading Image. ${eventToMessage(e)}`)
-      );
-    });
+    defaultParticleSprite = await loadTexture(defaultParticleUrl);
     defaultParticleSprite.flipY = false;
   }
 
@@ -98,7 +93,7 @@ export default class ParticleEmitterNode extends EditorNodeMixin(ParticleEmitter
     this.load(value).catch(console.error);
   }
 
-  async load(src) {
+  async load(src, onError) {
     const nextSrc = src || "";
     if (nextSrc === this._canonicalUrl) {
       return;
@@ -106,10 +101,16 @@ export default class ParticleEmitterNode extends EditorNodeMixin(ParticleEmitter
 
     this._canonicalUrl = nextSrc;
 
-    const { accessibleUrl } = await this.editor.api.resolveMedia(src);
-    this.material.uniforms.map.value = await new Promise((resolve, reject) => {
-      new TextureLoader().load(accessibleUrl, resolve, null, e => reject(`Error loading Image. ${eventToMessage(e)}`));
-    });
+    try {
+      const { accessibleUrl } = await this.editor.api.resolveMedia(src);
+      this.material.uniforms.map.value = await loadTexture(accessibleUrl);
+    } catch (error) {
+      if (onError) {
+        onError(this, error);
+      }
+
+      console.error(error);
+    }
 
     return this;
   }

@@ -2,7 +2,6 @@ import { Object3D } from "three";
 import { GLTFLoader } from "../gltf/GLTFLoader";
 import EditorNodeMixin from "./EditorNodeMixin";
 import wayPointModelUrl from "../../assets/spawn-point.glb";
-import eventToMessage from "../utils/eventToMessage";
 
 let wayPointHelperModel = null;
 
@@ -12,19 +11,15 @@ export default class WayPointNode extends EditorNodeMixin(Object3D) {
   static nodeName = "Way Point";
 
   static async load() {
-    try {
-      const { scene } = await new GLTFLoader(wayPointModelUrl).loadGLTF();
+    const { scene } = await new GLTFLoader(wayPointModelUrl).loadGLTF();
 
-      scene.traverse(child => {
-        if (child.isMesh) {
-          child.layers.set(1);
-        }
-      });
+    scene.traverse(child => {
+      if (child.isMesh) {
+        child.layers.set(1);
+      }
+    });
 
-      wayPointHelperModel = scene;
-    } catch (error) {
-      throw new Error(`Error loading WayPointNode helper with url: ${wayPointModelUrl}. ${eventToMessage(error)}`);
-    }
+    wayPointHelperModel = scene;
   }
 
   constructor(editor) {
