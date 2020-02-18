@@ -282,6 +282,7 @@ export default class KitPieceNode extends EditorNodeMixin(Model) {
     const nextPieceId = pieceId || null;
 
     this.hideErrorIcon();
+    this.showLoadingCube();
 
     if (nextKitId === this.kitId && nextPieceId === this.pieceId) {
       return;
@@ -321,10 +322,16 @@ export default class KitPieceNode extends EditorNodeMixin(Model) {
             if (object.userData.subPiece) {
               this.subPieces.push(object);
             }
-          });
-        }
 
-        this.editor.emit("objectsChanged", [this]);
+            if (object.material && object.material.isMeshStandardMaterial) {
+              object.material.envMap = this.editor.scene.environmentMap;
+              object.material.needsUpdate = true;
+            }
+          });
+
+          this.castShadow = true;
+          this.receiveShadow = true;
+        }
 
         if (files) {
           // Revoke any object urls from the SketchfabZipLoader.
@@ -348,19 +355,9 @@ export default class KitPieceNode extends EditorNodeMixin(Model) {
       console.error(kitPieceError);
     }
 
-    if (!this.model) {
-      return this;
-    }
-
-    this.model.traverse(object => {
-      if (object.material && object.material.isMeshStandardMaterial) {
-        object.material.envMap = this.editor.scene.environmentMap;
-        object.material.needsUpdate = true;
-      }
-    });
-
-    this.castShadow = true;
-    this.receiveShadow = true;
+    this.editor.emit("objectsChanged", [this]);
+    this.editor.emit("selectionChanged");
+    this.hideLoadingCube();
 
     return this;
   }
