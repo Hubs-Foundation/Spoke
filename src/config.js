@@ -88,8 +88,8 @@ export function createEditor(api, settings) {
 
   editor.registerSource(new ElementsSource(editor));
   editor.registerSource(new MyAssetsSource(editor));
-  editor.registerSource(new ArchitectureKitSource());
-  editor.registerSource(new RockKitSource());
+  editor.registerSource(new ArchitectureKitSource(api));
+  editor.registerSource(new RockKitSource(api));
   editor.registerSource(new SketchfabSource(api));
   editor.registerSource(new PolySource(api));
   editor.registerSource(new BingImagesSource(api));
