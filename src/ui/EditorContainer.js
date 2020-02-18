@@ -271,18 +271,16 @@ class EditorContainer extends Component {
 
     const editor = this.state.editor;
 
+    let project;
+
     try {
-      const project = await this.props.api.getProject(projectId);
+      project = await this.props.api.getProject(projectId);
 
       const projectFile = await this.props.api.fetch(project.project_url).then(response => response.json());
 
       await editor.init();
 
       await editor.loadProject(projectFile);
-
-      this.setState({
-        project
-      });
 
       this.hideDialog();
     } catch (error) {
@@ -293,6 +291,12 @@ class EditorContainer extends Component {
         message: error.message || "There was an error when loading the project.",
         error
       });
+    } finally {
+      if (project) {
+        this.setState({
+          project
+        });
+      }
     }
   }
 
