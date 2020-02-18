@@ -278,6 +278,14 @@ export default function EditorNodeMixin(Object3DClass) {
         this.loadingCube = new LoadingCube();
         this.add(this.loadingCube);
       }
+
+      const worldScale = this.getWorldScale(this.loadingCube.scale);
+
+      if (worldScale.x === 0 || worldScale.y === 0 || worldScale.z === 0) {
+        this.loadingCube.scale.set(1, 1, 1);
+      } else {
+        this.loadingCube.scale.set(1 / worldScale.x, 1 / worldScale.y, 1 / worldScale.z);
+      }
     }
 
     hideLoadingCube() {
@@ -291,6 +299,14 @@ export default function EditorNodeMixin(Object3DClass) {
       if (!this.errorIcon) {
         this.errorIcon = new ErrorIcon();
         this.add(this.errorIcon);
+      }
+
+      const worldScale = this.getWorldScale(this.errorIcon.scale);
+
+      if (worldScale.x === 0 || worldScale.y === 0 || worldScale.z === 0) {
+        this.errorIcon.scale.set(1, 1, 1);
+      } else {
+        this.errorIcon.scale.set(1 / worldScale.x, 1 / worldScale.y, 1 / worldScale.z);
       }
     }
 

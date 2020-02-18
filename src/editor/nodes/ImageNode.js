@@ -78,6 +78,8 @@ export default class ImageNode extends EditorNodeMixin(Image) {
       console.error(imageError);
     }
 
+    this.editor.emit("objectsChanged", [this]);
+    this.editor.emit("selectionChanged");
     this.hideLoadingCube();
 
     return this;

@@ -134,6 +134,8 @@ export default class VideoNode extends EditorNodeMixin(Video) {
       console.error(videoError);
     }
 
+    this.editor.emit("objectsChanged", [this]);
+    this.editor.emit("selectionChanged");
     this.hideLoadingCube();
 
     return this;

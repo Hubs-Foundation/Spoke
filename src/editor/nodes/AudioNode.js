@@ -128,6 +128,8 @@ export default class AudioNode extends EditorNodeMixin(AudioSource) {
       console.error(audioError);
     }
 
+    this.editor.emit("objectsChanged", [this]);
+    this.editor.emit("selectionChanged");
     this.hideLoadingCube();
 
     return this;
