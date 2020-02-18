@@ -31,7 +31,7 @@ import TextureCache from "./caches/TextureCache";
 import getDetachedObjectsRoots from "./utils/getDetachedObjectsRoots";
 import { loadEnvironmentMap } from "./utils/EnvironmentMap";
 import makeUniqueName from "./utils/makeUniqueName";
-import eventToMessage from "./utils/eventToMessage";
+import { RethrownError, MultiError } from "./utils/errors";
 import cloneObject3D from "./utils/cloneObject3D";
 import isEmptyObject from "./utils/isEmptyObject";
 import getIntersectingNode from "./utils/getIntersectingNode";
@@ -185,7 +185,7 @@ export default class Editor extends EventEmitter {
 
   async installAssetSource(manifestUrl) {
     const proxiedUrl = this.api.proxyUrl(new URL(manifestUrl, window.location).href);
-    const res = await fetch(proxiedUrl);
+    const res = await this.api.fetch(proxiedUrl);
     const json = await res.json();
     this.sources.push(new AssetManifestSource(this, json.name, manifestUrl));
     this.emit("settingsChanged");
@@ -290,7 +290,7 @@ export default class Editor extends EventEmitter {
     this.sceneLoading = true;
     this.disableUpdate = true;
 
-    const scene = await SceneNode.loadProject(this, projectFile);
+    const [scene, errors] = await SceneNode.loadProject(this, projectFile);
 
     this.sceneLoading = false;
     this.disableUpdate = false;
@@ -319,11 +319,20 @@ export default class Editor extends EventEmitter {
       }
     });
 
-    this.emit("projectLoaded");
+    if (errors.length === 0) {
+      this.emit("projectLoaded");
+    }
+
     this.emit("sceneGraphChanged");
 
     this.addListener("objectsChanged", this.onEmitSceneModified);
     this.addListener("sceneGraphChanged", this.onEmitSceneModified);
+
+    if (errors.length > 0) {
+      const error = new MultiError("Errors loading project", errors);
+      this.emit("error", error);
+      throw error;
+    }
 
     return scene;
   }
@@ -399,7 +408,7 @@ export default class Editor extends EventEmitter {
     try {
       chunks = await exporter.exportChunks(clonedScene);
     } catch (error) {
-      throw new Error(`Error exporting scene. ${eventToMessage(error)}`);
+      throw new RethrownError(`Error exporting scene`, error);
     }
 
     const json = chunks.json;
@@ -487,7 +496,7 @@ export default class Editor extends EventEmitter {
       const glbBlob = await exporter.exportGLBBlob(chunks);
       return glbBlob;
     } catch (error) {
-      throw new Error(`Error creating glb blob. ${eventToMessage(error)}`);
+      throw new RethrownError("Error creating glb blob", error);
     }
   }
 

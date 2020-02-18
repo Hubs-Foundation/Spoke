@@ -9,7 +9,7 @@ import {
   SphereBufferGeometry,
   RGBAFormat
 } from "three";
-import eventToMessage from "../utils/eventToMessage";
+import { RethrownError } from "../utils/errors";
 import Hls from "hls.js/dist/hls.light";
 import isHLS from "../utils/isHLS";
 import AudioSource from "./AudioSource";
@@ -65,9 +65,9 @@ export default class Video extends AudioSource {
         resolve(this._videoTexture);
       };
 
-      const onError = e => {
+      const onError = error => {
         cleanup();
-        reject(new Error(`Video "${this.el.src}" failed to load. ${eventToMessage(e)}`));
+        reject(new RethrownError(`Error loading video "${this.el.src}"`, error));
       };
 
       cleanup = () => {

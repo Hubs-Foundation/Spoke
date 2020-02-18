@@ -437,6 +437,7 @@ class EditorContainer extends Component {
     window.addEventListener("resize", this.onResize);
     this.onResize();
     editor.addListener("projectLoaded", this.onProjectLoaded);
+    editor.addListener("error", this.onEditorError);
     editor.addListener("sceneModified", this.onSceneModified);
     editor.addListener("saveProject", this.onSaveProject);
   };

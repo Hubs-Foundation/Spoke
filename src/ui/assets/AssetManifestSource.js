@@ -39,7 +39,7 @@ export default class AssetManifestSource extends BaseSource {
   }
 
   async load() {
-    const response = await fetch(this.manifestUrl);
+    const response = await this.editor.api.fetch(this.manifestUrl);
     const manifest = await response.json();
 
     if (manifest.searchPlaceholder) {

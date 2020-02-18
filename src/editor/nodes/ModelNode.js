@@ -3,6 +3,7 @@ import Model from "../objects/Model";
 import EditorNodeMixin from "./EditorNodeMixin";
 import { setStaticMode, StaticModes } from "../StaticMode";
 import cloneObject3D from "../utils/cloneObject3D";
+import { RethrownError } from "../utils/errors";
 
 export default class ModelNode extends EditorNodeMixin(Model) {
   static nodeName = "Model";
@@ -14,14 +15,14 @@ export default class ModelNode extends EditorNodeMixin(Model) {
     src: "https://sketchfab.com/models/a4c500d7358a4a199b6a5cd35f416466"
   };
 
-  static async deserialize(editor, json, loadAsync) {
+  static async deserialize(editor, json, loadAsync, onError) {
     const node = await super.deserialize(editor, json);
 
     loadAsync(
       (async () => {
         const { src, attribution } = json.components.find(c => c.name === "gltf-model").props;
 
-        await node.load(src);
+        await node.load(src, onError);
 
         // Legacy, might be a raw string left over before switch to JSON.
         if (attribution && typeof attribution === "string") {
@@ -102,7 +103,7 @@ export default class ModelNode extends EditorNodeMixin(Model) {
   }
 
   // Overrides Model's load method and resolves the src url before loading.
-  async load(src) {
+  async load(src, onError) {
     const nextSrc = src || "";
 
     if (nextSrc === this._canonicalUrl && nextSrc !== "") {
@@ -182,9 +183,16 @@ export default class ModelNode extends EditorNodeMixin(Model) {
         //   URL.revokeObjectURL(files[key]);
         // }
       }
-    } catch (e) {
-      console.error(e);
+    } catch (error) {
       this.showErrorIcon();
+
+      const modelError = new RethrownError(`Error loading model "${this._canonicalUrl}"`, error);
+
+      if (onError) {
+        onError(this, modelError);
+      }
+
+      console.error(modelError);
     }
 
     this.hideLoadingCube();

@@ -1,5 +1,5 @@
 import { Object3D, Audio, PositionalAudio } from "three";
-import eventToMessage from "../utils/eventToMessage";
+import { RethrownError } from "../utils/errors";
 
 export const AudioType = {
   Stereo: "stereo",
@@ -214,9 +214,9 @@ export default class AudioSource extends Object3D {
         resolve();
       };
 
-      const onError = e => {
+      const onError = error => {
         cleanup();
-        reject(new Error(`Video "${this.el.src}" failed to load. ${eventToMessage(e)}`));
+        reject(new RethrownError(`Error loading video "${this.el.src}"`, error));
       };
 
       cleanup = () => {

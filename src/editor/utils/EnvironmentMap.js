@@ -1,5 +1,5 @@
 import { CubeTextureLoader, RGBFormat } from "three";
-import eventToMessage from "./eventToMessage";
+import { RethrownError } from "./errors";
 import negx from "../../assets/cubemap/negx.jpg";
 import negy from "../../assets/cubemap/negy.jpg";
 import negz from "../../assets/cubemap/negz.jpg";
@@ -26,7 +26,10 @@ export function loadEnvironmentMap() {
         resolve(texture);
       },
       null,
-      e => reject(`Error loading cubemap image. ${eventToMessage(e)}`)
+      error =>
+        reject(
+          new RethrownError(`Error loading cubemap images ${cubeMapURLs.map(url => `"${url}"`).join(", ")}`, error)
+        )
     );
   });
 
