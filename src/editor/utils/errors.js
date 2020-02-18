@@ -54,7 +54,7 @@ export class RethrownError extends BaseError {
 //      Network Error: 404 Page not found.
 export class MultiError extends BaseError {
   constructor(message, errors) {
-    let finalMessage = `${message}:\n\n${errors.length} Errors:`;
+    let finalMessage = `${message}:\n\n${errors.length} Error${errors.length > 1 ? "s" : ""}:`;
 
     for (const error of errors) {
       const errorMessage = error.message ? error.message.replace(/\n/g, "\n  ") : "Unknown Error";
