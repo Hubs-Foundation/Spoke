@@ -1,8 +1,8 @@
-import { TextureLoader } from "three";
 import EditorNodeMixin from "./EditorNodeMixin";
 import SimpleWater from "../objects/SimpleWater";
 import waterNormalsUrl from "three/examples/textures/waternormals.jpg";
-import eventToMessage from "../utils/eventToMessage";
+import loadTexture from "../utils/loadTexture";
+import { Texture } from "three";
 
 let waterNormalMap = null;
 
@@ -41,16 +41,16 @@ export default class SimpleWaterNode extends EditorNodeMixin(SimpleWater) {
     return node;
   }
 
+  static async load() {
+    waterNormalMap = await loadTexture(waterNormalsUrl);
+  }
+
   constructor(editor) {
     if (!waterNormalMap) {
-      waterNormalMap = new TextureLoader().load(
-        waterNormalsUrl,
-        undefined,
-        undefined,
-        event => `Error loading simple-water normal map: "${eventToMessage(event)}"`
-      );
+      console.warn("SimpleWaterNode: water normal map was not loaded before creating a new SimpleWaterNode");
     }
-    super(editor, waterNormalMap);
+
+    super(editor, waterNormalMap || new Texture());
 
     if (editor.scene) {
       this.material.envMap = editor.scene.environmentMap;

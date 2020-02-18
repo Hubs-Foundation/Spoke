@@ -6,20 +6,19 @@
   "configurations": [
     {
       "type": "node",
-      "request": "attach",
-      "name": "Attach",
-      "port": 9229
-    },
-    {
-      "type": "node",
       "request": "launch",
-      "name": "Launch Program",
-      "program": "${workspaceFolder}/bin/spoke",
-      "env": {
-        "NODE_ENV": "development"
-      },
-      "args": [
-        "${workspaceFolder}/example"
+      "name": "Debug AVA test file (Start test-server first)",
+      "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/ava",
+      "runtimeArgs": [
+        "debug",
+        "--break",
+        "--serial",
+        "${file}"
+      ],
+      "port": 9229,
+      "outputCapture": "std",
+      "skipFiles": [
+        "<node_internals>/**/*.js"
       ]
     }
   ]

@@ -1,6 +1,5 @@
 import {
   Object3D,
-  TextureLoader,
   MeshBasicMaterial,
   SphereBufferGeometry,
   DoubleSide,
@@ -10,7 +9,7 @@ import {
   RGBAFormat,
   PlaneBufferGeometry
 } from "three";
-import eventToMessage from "../utils/eventToMessage";
+import loadTexture from "../utils/loadTexture";
 
 export const ImageProjection = {
   Flat: "flat",
@@ -41,9 +40,7 @@ export default class Image extends Object3D {
   }
 
   loadTexture(src) {
-    return new Promise((resolve, reject) => {
-      new TextureLoader().load(src, resolve, null, e => reject(`Error loading Image. ${eventToMessage(e)}`));
-    });
+    return loadTexture(src);
   }
 
   get projection() {

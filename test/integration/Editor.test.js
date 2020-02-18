@@ -11,7 +11,27 @@ async function waitForProjectLoaded(page) {
     const editor = window.editor;
 
     if (!editor.projectLoaded) {
-      await new Promise(resolve => editor.once("projectLoaded", resolve));
+      await new Promise((resolve, reject) => {
+        let cleanup = null;
+
+        const onProjectLoaded = () => {
+          cleanup();
+          resolve();
+        };
+
+        const onError = error => {
+          cleanup();
+          reject(error);
+        };
+
+        cleanup = () => {
+          editor.removeListener("projectLoaded", onProjectLoaded);
+          editor.removeListener("error", onError);
+        };
+
+        editor.addListener("projectLoaded", onProjectLoaded);
+        editor.addListener("error", onError);
+      });
     }
 
     return editor.scene;
@@ -173,7 +193,7 @@ test("Editor should load V1TestScene", withPage(`/projects/new?template=${v1Test
   const image1Props = image1Entity.components.find(c => c.name === "image").props;
   t.is(
     image1Props.src,
-    "https://assets-prod.reticulum.io/assets/images/hub-preview-light-no-shadow-5ebb166e8580d819b445892173ec0286.png"
+    "https://upload.wikimedia.org/wikipedia/commons/thumb/6/67/Firefox_Logo%2C_2017.svg/1200px-Firefox_Logo%2C_2017.svg.png"
   );
   t.is(image1Props.projection, "flat");
 

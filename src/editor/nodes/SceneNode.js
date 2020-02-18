@@ -170,6 +170,12 @@ export default class SceneNode extends EditorNodeMixin(Scene) {
       dependencies.push(promise);
     }
 
+    const errors = [];
+
+    function onError(object, error) {
+      errors.push(error);
+    }
+
     const sortedEntities = sortEntities(entities);
 
     for (const entityId of sortedEntities) {
@@ -188,7 +194,7 @@ export default class SceneNode extends EditorNodeMixin(Scene) {
         throw new Error(`No node constructor found for entity "${entity.name}"`);
       }
 
-      const node = await EntityNodeConstructor.deserialize(editor, entity, loadAsync);
+      const node = await EntityNodeConstructor.deserialize(editor, entity, loadAsync, onError);
       node.uuid = entityId;
 
       if (entity.parent) {
@@ -216,7 +222,7 @@ export default class SceneNode extends EditorNodeMixin(Scene) {
 
     await Promise.all(dependencies);
 
-    return scene;
+    return [scene, errors];
   }
 
   static shouldDeserialize(entityJson) {

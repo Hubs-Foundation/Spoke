@@ -2,7 +2,6 @@ import { Object3D, Color, Vector3 } from "three";
 import { GLTFLoader } from "../gltf/GLTFLoader";
 import transformGizmoUrl from "../../assets/TransformGizmo.glb";
 import cloneObject3D from "../utils/cloneObject3D";
-import eventToMessage from "../utils/eventToMessage";
 import { TransformMode, TransformAxis } from "../controls/SpokeControls";
 
 let gizmoGltf = null;
@@ -13,15 +12,11 @@ export default class TransformGizmo extends Object3D {
       return Promise.resolve(gizmoGltf);
     }
 
-    try {
-      const gltf = await new GLTFLoader(transformGizmoUrl).loadGLTF();
+    const gltf = await new GLTFLoader(transformGizmoUrl).loadGLTF();
 
-      gizmoGltf = gltf;
+    gizmoGltf = gltf;
 
-      return gizmoGltf;
-    } catch (error) {
-      throw new Error(`Error loading Model. ${eventToMessage(error)}`);
-    }
+    return gizmoGltf;
   }
 
   constructor() {
