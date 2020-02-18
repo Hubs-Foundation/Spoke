@@ -130,7 +130,7 @@ export default class SpawnerNode extends EditorNodeMixin(Model) {
       const spawnerError = new RethrownError(`Error loading spawner model "${this._canonicalUrl}"`, error);
 
       if (onError) {
-        onError(spawnerError);
+        onError(this, spawnerError);
       }
 
       console.error(spawnerError);
