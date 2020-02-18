@@ -298,11 +298,6 @@ export default class KitPieceNode extends EditorNodeMixin(Model) {
       this.model = null;
     }
 
-    if (this.errorMesh) {
-      this.remove(this.errorMesh);
-      this.errorMesh = null;
-    }
-
     this._canonicalUrl = (source && source.kitUrl) || "";
 
     try {

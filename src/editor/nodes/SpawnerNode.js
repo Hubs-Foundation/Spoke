@@ -67,11 +67,6 @@ export default class SpawnerNode extends EditorNodeMixin(Model) {
       this.model = null;
     }
 
-    if (this.errorMesh) {
-      this.remove(this.errorMesh);
-      this.errorMesh = null;
-    }
-
     this.hideErrorIcon();
     this.showLoadingCube();
 

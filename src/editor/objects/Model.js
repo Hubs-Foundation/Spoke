@@ -8,7 +8,6 @@ export default class Model extends Object3D {
     this.type = "Model";
 
     this.model = null;
-    this.errorMesh = null;
     this._src = null;
     this._castShadow = false;
     this._receiveShadow = false;
@@ -38,11 +37,6 @@ export default class Model extends Object3D {
 
   async load(src, ...args) {
     this._src = src;
-
-    if (this.errorMesh) {
-      this.remove(this.errorMesh);
-      this.errorMesh = null;
-    }
 
     if (this.model) {
       this.remove(this.model);
@@ -201,7 +195,7 @@ export default class Model extends Object3D {
         if (this.model.animations.length > 0) {
           this.animationMixer = new AnimationMixer(this.model);
         }
-      } else if (recursive === true && child !== source.errorMesh && child !== source.loadingCube) {
+      } else if (recursive === true && child !== source.loadingCube) {
         clonedChild = child.clone();
       }
 

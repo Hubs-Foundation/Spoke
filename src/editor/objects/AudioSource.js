@@ -242,7 +242,7 @@ export default class AudioSource extends Object3D {
     if (recursive) {
       for (let i = 0; i < source.children.length; i++) {
         const child = source.children[i];
-        if (child !== source.audio && child !== source._errorMesh) {
+        if (child !== source.audio) {
           this.add(child.clone());
         }
       }
