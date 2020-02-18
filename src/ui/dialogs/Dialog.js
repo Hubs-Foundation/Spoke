@@ -33,7 +33,7 @@ const DialogHeader = styled.div`
   }
 `;
 
-const DialogContent = styled.div`
+export const DialogContent = styled.div`
   color: ${props => props.theme.text2};
   display: flex;
   flex: 1;
@@ -79,7 +79,17 @@ const DialogBottomNav = styled.div`
   }
 `;
 
-export default function Dialog({ tag, title, onCancel, cancelLabel, onConfirm, confirmLabel, bottomNav, children }) {
+export default function Dialog({
+  tag,
+  title,
+  onCancel,
+  cancelLabel,
+  onConfirm,
+  confirmLabel,
+  bottomNav,
+  children,
+  ...rest
+}) {
   const onSubmitForm = useCallback(
     e => {
       e.preventDefault();
@@ -89,7 +99,7 @@ export default function Dialog({ tag, title, onCancel, cancelLabel, onConfirm, c
   );
 
   return (
-    <DialogContainer as={tag} onSubmit={onSubmitForm}>
+    <DialogContainer as={tag} onSubmit={onSubmitForm} {...rest}>
       <DialogHeader>
         <span>{title}</span>
       </DialogHeader>

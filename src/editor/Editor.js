@@ -313,15 +313,20 @@ export default class Editor extends EventEmitter {
       }
     });
 
-    if (errors.length > 0) {
-      this.emit("error", new MultiError("Errors loading project", errors));
+    if (errors.length === 0) {
+      this.emit("projectLoaded");
     }
 
-    this.emit("projectLoaded");
     this.emit("sceneGraphChanged");
 
     this.addListener("objectsChanged", this.onEmitSceneModified);
     this.addListener("sceneGraphChanged", this.onEmitSceneModified);
+
+    if (errors.length > 0) {
+      const error = new MultiError("Errors loading project", errors);
+      this.emit("error", error);
+      throw error;
+    }
 
     return scene;
   }
