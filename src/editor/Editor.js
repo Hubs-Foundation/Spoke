@@ -1924,7 +1924,7 @@ export default class Editor extends EventEmitter {
     let contentType = "";
 
     try {
-      contentType = await this.api.getContentType(url);
+      contentType = (await this.api.getContentType(url)) || "";
     } catch (error) {
       console.warn(`Couldn't fetch content type for url ${url}. Using LinkNode instead.`);
     }
