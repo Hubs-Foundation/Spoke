@@ -86,7 +86,7 @@ export default function useUpload(options = {}) {
 
       return assets;
     },
-    [showDialog, hideDialog, source, options.multiple, options.accepts]
+    [showDialog, hideDialog, source, multiple, accepts]
   );
 
   return onUpload;

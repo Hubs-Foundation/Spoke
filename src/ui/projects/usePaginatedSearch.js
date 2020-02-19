@@ -8,7 +8,9 @@ export default function usePaginatedSearch(path, queryParams, options = {}) {
     urlRef.current = new URL(path, window.location);
 
     for (const name in queryParams) {
-      urlRef.current.searchParams.set(name, queryParams[name]);
+      if (Object.prototype.hasOwnProperty.call(queryParams, name)) {
+        urlRef.current.searchParams.set(name, queryParams[name]);
+      }
     }
   }
 
@@ -18,7 +20,9 @@ export default function usePaginatedSearch(path, queryParams, options = {}) {
     urlRef.current = new URL(path, window.location);
 
     for (const name in queryParams) {
-      urlRef.current.searchParams.set(name, queryParams[name]);
+      if (Object.prototype.hasOwnProperty.call(queryParams, name)) {
+        urlRef.current.searchParams.set(name, queryParams[name]);
+      }
     }
 
     setHref(urlRef.current.href);
