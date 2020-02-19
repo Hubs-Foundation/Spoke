@@ -88,7 +88,7 @@ export default function AudioSourceProperties({ node, editor, multiEdit }) {
           <NumericInputGroup
             name="Max Distance"
             info="A double value representing the maximum distance between the audio source and the listener, after which the volume is not reduced any further."
-            min={0}
+            min={0.00001}
             smallStep={0.1}
             mediumStep={1}
             largeStep={10}
