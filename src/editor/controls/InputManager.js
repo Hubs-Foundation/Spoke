@@ -348,7 +348,14 @@ export default class InputManager {
   }
 
   handleKeyMappings(keyMappings, event, value) {
-    const eventKey = event.key.toLowerCase();
+    let eventKey = event.key;
+
+    if (!eventKey) {
+      eventKey = String.fromCharCode(event.which || event.code);
+    }
+
+    eventKey = eventKey.toLowerCase();
+
     let preventDefault = false;
 
     for (const key in keyMappings) {

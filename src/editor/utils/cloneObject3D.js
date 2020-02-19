@@ -75,6 +75,12 @@ export default function cloneObject3D(source, preserveUUIDs) {
   source.traverse(sourceNode => {
     const clonedNode = cloneLookup.get(sourceNode);
 
+    if (!clonedNode) {
+      throw new Error(
+        `Couldn't find the cloned node for ${sourceNode.nodeName || sourceNode.type} "${sourceNode.name}"`
+      );
+    }
+
     if (preserveUUIDs) {
       clonedNode.uuid = sourceNode.uuid;
     }

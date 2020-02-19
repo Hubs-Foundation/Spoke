@@ -835,7 +835,9 @@ class EditorContainer extends Component {
 
   getSceneId() {
     const { editor, project } = this.state;
-    return (project && project.scene && project.scene.scene_id) || editor.scene.metadata.sceneId;
+    return (
+      (project && project.scene && project.scene.scene_id) || (editor.scene.metadata && editor.scene.metadata.sceneId)
+    );
   }
 
   onOpenScene = () => {

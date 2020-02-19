@@ -97,10 +97,10 @@ export default class NumericInput extends Component {
 
     event.preventDefault();
 
-    this.handleStep(direction, true);
+    this.handleStep(event, direction, true);
   };
 
-  handleStep(direction, focus = true) {
+  handleStep(event, direction, focus = true) {
     const { smallStep, mediumStep, largeStep, min, max, precision, convertTo, onChange, onCommit } = this.props;
 
     const nextValue =

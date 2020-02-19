@@ -610,7 +610,6 @@ export default class Project extends EventEmitter {
           onSuccess: async () => {
             try {
               const result = await this.saveProject(projectId, editor, signal, showDialog, hideDialog);
-              console.log(result);
               resolve(result);
             } catch (e) {
               reject(e);
@@ -672,8 +671,6 @@ export default class Project extends EventEmitter {
         });
 
         project = await this.saveProject(project.project_id, editor, signal, showDialog, hideDialog);
-
-        console.log(project);
 
         if (signal.aborted) {
           const error = new Error("Publish project aborted");
