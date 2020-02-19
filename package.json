@@ -26,7 +26,7 @@
     "precommit": "lint-staged",
     "lint": "yarn lint:js && yarn lint:css",
     "lint:js": "eslint ./src",
-    "lint:css": "stylelint './src/**/*.js'",
+    "lint:css": "stylelint ./src/**/*.js",
     "pretest": "yarn lint",
     "test": "concurrently --success \"first\" --kill-others \"yarn test-all\" \"yarn test-server\"",
     "test-server": "cross-env NODE_ENV=test webpack-dev-server --mode development --content-base ./test/fixtures",

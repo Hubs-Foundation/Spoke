@@ -263,7 +263,10 @@ class GLTFExporter {
           gltfProperty.extensions = {};
         }
 
-        for (const extensionName in serializedUserData.gltfExtensions) {
+        const gltfExtensions = serializedUserData.gltfExtensions;
+
+        for (const extensionName in gltfExtensions) {
+          if (!Object.prototype.hasOwnProperty.call(gltfExtensions, extensionName)) continue;
           gltfProperty.extensions[extensionName] = serializedUserData.gltfExtensions[extensionName];
           this.extensionsUsed[extensionName] = true;
         }
@@ -300,7 +303,7 @@ class GLTFExporter {
       const obj = {};
 
       for (const key in value) {
-        if (value.hasOwnProperty(key)) {
+        if (Object.prototype.hasOwnProperty.call(value, key)) {
           obj[key] = this.serializeUserDataProperty(value[key]);
         }
       }
@@ -977,9 +980,13 @@ class GLTFExporter {
       const targetNames = [];
       const reverseDictionary = {};
 
-      if (mesh.morphTargetDictionary !== undefined) {
-        for (const key in mesh.morphTargetDictionary) {
-          reverseDictionary[mesh.morphTargetDictionary[key]] = key;
+      const morphTargetDictionary = mesh.morphTargetDictionary;
+
+      if (morphTargetDictionary !== undefined) {
+        for (const key in morphTargetDictionary) {
+          if (Object.prototype.hasOwnProperty.call(morphTargetDictionary, key)) {
+            reverseDictionary[morphTargetDictionary[key]] = key;
+          }
         }
       }
 
@@ -989,6 +996,8 @@ class GLTFExporter {
         let warned = false;
 
         for (const attributeName in geometry.morphAttributes) {
+          if (!Object.prototype.hasOwnProperty.call(geometry.morphAttributes, attributeName)) continue;
+
           // glTF 2.0 morph supports only POSITION/NORMAL/TANGENT.
           // Three.js doesn't support TANGENT yet.
 

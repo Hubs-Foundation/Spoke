@@ -10,6 +10,8 @@ export default class SetPropertiesCommand extends Command {
     this.oldProperties = {};
 
     for (const propertyName in properties) {
+      if (!Object.prototype.hasOwnProperty.call(properties, propertyName)) continue;
+
       const value = properties[propertyName];
 
       if (value && value.clone) {

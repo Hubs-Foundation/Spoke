@@ -31,8 +31,9 @@ module.exports = {
     "no-unused-vars": ["error", { varsIgnorePattern: "^_", argsIgnorePattern: "^_", ignoreRestSiblings: true }],
     "react-hooks/rules-of-hooks": "error",
     "react-hooks/exhaustive-deps": "warn",
-    "require-atomic-updates": "warn",
-    "no-prototype-builtins": "warn"
+    "require-atomic-updates": "off",
+    "no-prototype-builtins": "warn",
+    "guard-for-in": "warn"
   },
   extends: ["prettier", "plugin:react/recommended", "eslint:recommended"],
   settings: {
