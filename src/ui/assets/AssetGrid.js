@@ -128,8 +128,6 @@ export default function AssetGrid({ isLoading, selectedItems, items, onSelect, o
 
   const placeObject = useCallback(
     (_, trigger) => {
-      Tooltip.hide();
-
       const item = trigger.item;
 
       const node = new item.nodeClass(editor);
