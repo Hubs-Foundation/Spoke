@@ -8,6 +8,7 @@ export class BaseSource extends EventEmitter {
     this.iconComponent = undefined;
     this.assetPanelComponent = undefined;
     this.requiresAuthentication = false;
+    this.uploadSource = false;
   }
 
   search(_query, _params, _cursor, _abortSignal) {

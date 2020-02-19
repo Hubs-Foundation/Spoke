@@ -67,11 +67,6 @@ export default class SpawnerNode extends EditorNodeMixin(Model) {
       this.model = null;
     }
 
-    if (this.errorMesh) {
-      this.remove(this.errorMesh);
-      this.errorMesh = null;
-    }
-
     this.hideErrorIcon();
     this.showLoadingCube();
 
@@ -116,7 +111,12 @@ export default class SpawnerNode extends EditorNodeMixin(Model) {
         this.initialScale = 1;
       }
 
-      this.editor.emit("objectsChanged", [this]);
+      this.model.traverse(object => {
+        if (object.material && object.material.isMeshStandardMaterial) {
+          object.material.envMap = this.editor.scene.environmentMap;
+          object.material.needsUpdate = true;
+        }
+      });
 
       if (files) {
         // Revoke any object urls from the SketchfabZipLoader.
@@ -136,18 +136,9 @@ export default class SpawnerNode extends EditorNodeMixin(Model) {
       console.error(spawnerError);
     }
 
+    this.editor.emit("objectsChanged", [this]);
+    this.editor.emit("selectionChanged");
     this.hideLoadingCube();
-
-    if (!this.model) {
-      return this;
-    }
-
-    this.model.traverse(object => {
-      if (object.material && object.material.isMeshStandardMaterial) {
-        object.material.envMap = this.editor.scene.environmentMap;
-        object.material.needsUpdate = true;
-      }
-    });
 
     return this;
   }

@@ -84,6 +84,7 @@ import GroupNode from "./nodes/GroupNode";
 import ModelNode from "./nodes/ModelNode";
 import VideoNode from "./nodes/VideoNode";
 import ImageNode from "./nodes/ImageNode";
+import AudioNode from "./nodes/AudioNode";
 import LinkNode from "./nodes/LinkNode";
 import AssetManifestSource from "../ui/assets/AssetManifestSource";
 
@@ -133,6 +134,7 @@ export default class Editor extends EventEmitter {
     this.nodeTypes = new Set();
     this.nodeEditors = new Map();
     this.sources = [];
+    this.defaultUploadSource = null;
 
     this.textureCache = new TextureCache();
     this.gltfCache = new GLTFCache();
@@ -175,6 +177,10 @@ export default class Editor extends EventEmitter {
 
   registerSource(source) {
     this.sources.push(source);
+
+    if (source.uploadSource && !this.defaultUploadSource) {
+      this.defaultUploadSource = source;
+    }
   }
 
   async installAssetSource(manifestUrl) {
@@ -1920,7 +1926,7 @@ export default class Editor extends EventEmitter {
     }
   };
 
-  async addMedia(url) {
+  async addMedia(url, parent, before) {
     let contentType = "";
 
     try {
@@ -1934,23 +1940,28 @@ export default class Editor extends EventEmitter {
     if (contentType.startsWith("model/gltf")) {
       node = new ModelNode(this);
       this.getSpawnPosition(node.position);
-      this.addObject(node);
+      this.addObject(node, parent, before);
       node.initialScale = "fit";
       await node.load(url);
     } else if (contentType.startsWith("video/")) {
       node = new VideoNode(this);
       this.getSpawnPosition(node.position);
-      this.addObject(node);
+      this.addObject(node, parent, before);
       await node.load(url);
     } else if (contentType.startsWith("image/")) {
       node = new ImageNode(this);
       this.getSpawnPosition(node.position);
-      this.addObject(node);
+      this.addObject(node, parent, before);
+      await node.load(url);
+    } else if (contentType.startsWith("audio/")) {
+      node = new AudioNode(this);
+      this.getSpawnPosition(node.position);
+      this.addObject(node, parent, before);
       await node.load(url);
     } else {
       node = new LinkNode(this);
       this.getSpawnPosition(node.position);
-      this.addObject(node);
+      this.addObject(node, parent, before);
       node.href = url;
     }
 

@@ -3,6 +3,7 @@ import styled from "styled-components";
 import PropTypes from "prop-types";
 
 export const PanelContainer = styled.div`
+  position: relative;
   display: flex;
   flex: 1;
   flex-direction: column;

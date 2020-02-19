@@ -9,6 +9,7 @@ import ProgressDialog from "../ui/dialogs/ProgressDialog";
 import jwtDecode from "jwt-decode";
 import { buildAbsoluteURL } from "url-toolkit";
 import PublishedSceneDialog from "./PublishedSceneDialog";
+import { matchesFileTypes, AudioFileTypes } from "../ui/assets/fileTypes";
 import { RethrownError } from "../editor/utils/errors";
 
 // Media related functions should be kept up to date with Hubs media-utils:
@@ -1027,7 +1028,7 @@ export default class Project extends EventEmitter {
     let thumbnail_file_id = null;
     let thumbnail_access_token = null;
 
-    if (!file.name.toLowerCase().endsWith(".mp3")) {
+    if (!matchesFileTypes(file, AudioFileTypes)) {
       const thumbnailBlob = await editor.generateFileThumbnail(file);
 
       const response = await this.upload(thumbnailBlob, undefined, signal);

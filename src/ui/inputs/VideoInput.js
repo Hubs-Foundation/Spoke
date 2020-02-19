@@ -3,12 +3,26 @@ import PropTypes from "prop-types";
 import StringInput from "./StringInput";
 import { useDrop } from "react-dnd";
 import { ItemTypes } from "../dnd";
+import useUpload from "../assets/useUpload";
+import { VideoFileTypes } from "../assets/fileTypes";
+
+const uploadOptions = {
+  multiple: false,
+  accepts: VideoFileTypes
+};
 
 export default function VideoInput({ onChange, ...rest }) {
+  const onUpload = useUpload(uploadOptions);
   const [{ canDrop, isOver }, dropRef] = useDrop({
-    accept: [ItemTypes.Video],
+    accept: [ItemTypes.Video, ItemTypes.File],
     drop(item) {
-      onChange(item.value.url);
+      if (item.type === ItemTypes.Video) {
+        onChange(item.value.url, item.value.initialProps || {});
+      } else {
+        onUpload(item.files).then(assets => {
+          onChange(assets[0].url, {});
+        });
+      }
     },
     collect: monitor => ({
       canDrop: monitor.canDrop(),

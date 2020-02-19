@@ -42,7 +42,7 @@ export default function MediaSourcePanel({
     [editor, source.transformPivot]
   );
 
-  const onUpload = useUpload(source);
+  const onUpload = useUpload({ source });
 
   const onLoadMore = useCallback(() => {
     loadMore(params);

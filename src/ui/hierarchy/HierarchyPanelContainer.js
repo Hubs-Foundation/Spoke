@@ -15,6 +15,13 @@ import traverseEarlyOut from "../../editor/utils/traverseEarlyOut";
 import { CaretRight } from "styled-icons/fa-solid/CaretRight";
 import { CaretDown } from "styled-icons/fa-solid/CaretDown";
 import { ProjectDiagram } from "styled-icons/fa-solid/ProjectDiagram";
+import useUpload from "../assets/useUpload";
+import { AllFileTypes } from "../assets/fileTypes";
+
+const uploadOptions = {
+  multiple: true,
+  accepts: AllFileTypes
+};
 
 function collectNodeMenuProps({ node }) {
   return node;
@@ -156,7 +163,7 @@ function isAncestor(object, otherObject) {
 
 function TreeNode({
   index,
-  data: { nodes, renamingNode, onToggle, onKeyDown, onMouseDown, onClick, onChangeName, onRenameSubmit },
+  data: { nodes, renamingNode, onToggle, onKeyDown, onMouseDown, onClick, onChangeName, onRenameSubmit, onUpload },
   style
 }) {
   const node = nodes[index];
@@ -246,8 +253,17 @@ function TreeNode({
   }, [preview]);
 
   const [{ canDropBefore, isOverBefore }, beforeDropTarget] = useDrop({
-    accept: [ItemTypes.Node, ...AssetTypes],
+    accept: [ItemTypes.Node, ItemTypes.File, ...AssetTypes],
     drop(item) {
+      if (item.files) {
+        onUpload(item.files).then(assets => {
+          for (const asset of assets) {
+            editor.addMedia(asset.url, object.parent, object);
+          }
+        });
+        return;
+      }
+
       if (addAssetOnDrop(editor, item, object.parent, object)) {
         return;
       } else {
@@ -267,12 +283,16 @@ function TreeNode({
         return true;
       }
 
-      return (
-        object.parent &&
-        !(item.multiple
-          ? item.value.some(otherObject => isAncestor(otherObject, object))
-          : isAncestor(item.value, object))
-      );
+      if (item.type === ItemTypes.Node) {
+        return (
+          object.parent &&
+          !(item.multiple
+            ? item.value.some(otherObject => isAncestor(otherObject, object))
+            : isAncestor(item.value, object))
+        );
+      }
+
+      return true;
     },
     collect: monitor => ({
       canDropBefore: monitor.canDrop(),
@@ -281,9 +301,19 @@ function TreeNode({
   });
 
   const [{ canDropAfter, isOverAfter }, afterDropTarget] = useDrop({
-    accept: [ItemTypes.Node, ...AssetTypes],
+    accept: [ItemTypes.Node, ItemTypes.File, ...AssetTypes],
     drop(item) {
       const next = !lastChild && object.parent.children[childIndex + 1];
+
+      if (item.files) {
+        onUpload(item.files).then(assets => {
+          for (const asset of assets) {
+            editor.addMedia(asset.url, object.parent, next);
+          }
+        });
+        return;
+      }
+
       if (addAssetOnDrop(editor, item, object.parent, next)) {
         return;
       } else {
@@ -303,12 +333,16 @@ function TreeNode({
         return true;
       }
 
-      return (
-        object.parent &&
-        !(item.multiple
-          ? item.value.some(otherObject => isAncestor(otherObject, object))
-          : isAncestor(item.value, object))
-      );
+      if (item.type === ItemTypes.Node) {
+        return (
+          object.parent &&
+          !(item.multiple
+            ? item.value.some(otherObject => isAncestor(otherObject, object))
+            : isAncestor(item.value, object))
+        );
+      }
+
+      return true;
     },
     collect: monitor => ({
       canDropAfter: monitor.canDrop(),
@@ -317,8 +351,17 @@ function TreeNode({
   });
 
   const [{ canDropOn, isOverOn }, onDropTarget] = useDrop({
-    accept: [ItemTypes.Node, ...AssetTypes],
+    accept: [ItemTypes.Node, ItemTypes.File, ...AssetTypes],
     drop(item) {
+      if (item.files) {
+        onUpload(item.files).then(assets => {
+          for (const asset of assets) {
+            editor.addMedia(asset.url, object);
+          }
+        });
+        return;
+      }
+
       if (addAssetOnDrop(editor, item, object)) {
         return;
       } else {
@@ -338,9 +381,13 @@ function TreeNode({
         return true;
       }
 
-      return !(item.multiple
-        ? item.value.some(otherObject => isAncestor(otherObject, object))
-        : isAncestor(item.value, object));
+      if (item.type === ItemTypes.Node) {
+        return !(item.multiple
+          ? item.value.some(otherObject => isAncestor(otherObject, object))
+          : isAncestor(item.value, object));
+      }
+
+      return true;
     },
     collect: monitor => ({
       canDropOn: monitor.canDrop(),
@@ -434,7 +481,8 @@ TreeNode.propTypes = {
     onMouseDown: PropTypes.func.isRequired,
     onClick: PropTypes.func.isRequired,
     onToggle: PropTypes.func.isRequired,
-    onKeyDown: PropTypes.func.isRequired
+    onKeyDown: PropTypes.func.isRequired,
+    onUpload: PropTypes.func.isRequired
   }),
   index: PropTypes.number,
   style: PropTypes.object.isRequired,
@@ -493,6 +541,7 @@ function* treeWalker(editor, collapsedNodes) {
 
 export default function HierarchyPanel() {
   const editor = useContext(EditorContext);
+  const onUpload = useUpload(uploadOptions);
   const [renamingNode, setRenamingNode] = useState(null);
   const [collapsedNodes, setCollapsedNodes] = useState({});
   const [nodes, setNodes] = useState([]);
@@ -726,9 +775,18 @@ export default function HierarchyPanel() {
   );
 
   const [, treeContainerDropTarget] = useDrop({
-    accept: [ItemTypes.Node, ...AssetTypes],
+    accept: [ItemTypes.Node, ItemTypes.File, ...AssetTypes],
     drop(item, monitor) {
       if (monitor.didDrop()) {
+        return;
+      }
+
+      if (item.files) {
+        onUpload(item.files).then(assets => {
+          for (const asset of assets) {
+            editor.addMedia(asset.url);
+          }
+        });
         return;
       }
 
@@ -751,9 +809,13 @@ export default function HierarchyPanel() {
         return true;
       }
 
-      return !(item.multiple
-        ? item.value.some(otherObject => isAncestor(otherObject, editor.scene))
-        : isAncestor(item.value, editor.scene));
+      if (item.type === ItemTypes.Node) {
+        return !(item.multiple
+          ? item.value.some(otherObject => isAncestor(otherObject, editor.scene))
+          : isAncestor(item.value, editor.scene));
+      }
+
+      return true;
     }
   });
 
@@ -780,7 +842,8 @@ export default function HierarchyPanel() {
                   onRenameSubmit,
                   onMouseDown,
                   onClick,
-                  onToggle
+                  onToggle,
+                  onUpload
                 }}
                 itemKey={getNodeKey}
                 outerRef={treeContainerDropTarget}

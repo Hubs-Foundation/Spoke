@@ -1,4 +1,7 @@
+import { NativeTypes } from "react-dnd-html5-backend";
+
 export const ItemTypes = {
+  File: NativeTypes.FILE,
   Node: "Node",
   Model: "Model",
   Image: "Image",
@@ -22,6 +25,7 @@ export function isAsset(item) {
 }
 
 export function addAssetOnDrop(editor, item, parent, before) {
+  console.log(item);
   if (isAsset(item)) {
     const { nodeClass, initialProps } = item.value;
     const node = new nodeClass(editor);

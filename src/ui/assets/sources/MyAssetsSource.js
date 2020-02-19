@@ -5,6 +5,7 @@ import ModelNode from "../../../editor/nodes/ModelNode";
 import VideoNode from "../../../editor/nodes/VideoNode";
 import ImageNode from "../../../editor/nodes/ImageNode";
 import AudioNode from "../../../editor/nodes/AudioNode";
+import { AcceptsAllFileTypes } from "../fileTypes";
 
 const assetTypeToNode = {
   model: ModelNode,
@@ -35,15 +36,16 @@ export default class MyAssetsSource extends BaseSource {
     ];
     this.searchLegalCopy = "Search by Mozilla Hubs";
     this.privacyPolicyUrl = "https://github.com/mozilla/hubs/blob/master/PRIVACY.md";
+    this.uploadSource = true;
     this.uploadMultiple = true;
-    this.acceptFileTypes =
-      ".png,.jpeg,.jpg,.gif,.mp4,.glb,.mp3,image/png,image/jpeg,image/gif,video/mp4,model/gltf-binary,audio/mpeg";
+    this.acceptFileTypes = AcceptsAllFileTypes;
     this.requiresAuthentication = true;
   }
 
   async upload(files, onProgress, abortSignal) {
-    await this.editor.api.uploadAssets(this.editor, files, onProgress, abortSignal);
+    const assets = await this.editor.api.uploadAssets(this.editor, files, onProgress, abortSignal);
     this.emit("resultsChanged");
+    return assets;
   }
 
   async delete(item) {

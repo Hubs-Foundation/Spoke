@@ -174,9 +174,6 @@ export default class ModelNode extends EditorNodeMixin(Model) {
 
       this.updateStaticModes();
 
-      this.editor.emit("objectsChanged", [this]);
-      this.editor.emit("selectionChanged");
-
       if (files) {
         // Revoke any object urls from the SketchfabZipLoader.
         // for (const key in files) {
@@ -195,11 +192,9 @@ export default class ModelNode extends EditorNodeMixin(Model) {
       console.error(modelError);
     }
 
+    this.editor.emit("objectsChanged", [this]);
+    this.editor.emit("selectionChanged");
     this.hideLoadingCube();
-
-    if (!this.model) {
-      return this;
-    }
 
     return this;
   }
@@ -225,6 +220,8 @@ export default class ModelNode extends EditorNodeMixin(Model) {
   }
 
   onUpdate(dt) {
+    super.onUpdate(dt);
+
     if (this.editor.playing) {
       this.update(dt);
     }
