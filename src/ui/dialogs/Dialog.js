@@ -93,7 +93,10 @@ export default function Dialog({
   const onSubmitForm = useCallback(
     e => {
       e.preventDefault();
-      onConfirm(e);
+
+      if (onConfirm) {
+        onConfirm(e);
+      }
     },
     [onConfirm]
   );
