@@ -259,7 +259,7 @@ function TreeNode({
       }
     },
     canDrop(item, monitor) {
-      if (!monitor.isOver()) {
+      if (!monitor.isOver() || !object.parent) {
         return false;
       }
 
@@ -295,7 +295,7 @@ function TreeNode({
       }
     },
     canDrop(item, monitor) {
-      if (!monitor.isOver()) {
+      if (!monitor.isOver() || !object.parent) {
         return false;
       }
 
