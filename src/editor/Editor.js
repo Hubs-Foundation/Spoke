@@ -1993,6 +1993,9 @@ export default class Editor extends EventEmitter {
 
   dispose() {
     this.clearCaches();
-    this.renderer.dispose();
+
+    if (this.renderer) {
+      this.renderer.dispose();
+    }
   }
 }
