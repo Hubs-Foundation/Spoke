@@ -9,7 +9,7 @@ export default class DuplicateMultipleCommand extends Command {
     this.before = before;
     this.selectObjects = selectObjects;
     this.oldSelection = editor.selected.slice(0);
-    this.duplicatedObjects = null;
+    this.duplicatedObjects = [];
   }
 
   execute(redo) {
