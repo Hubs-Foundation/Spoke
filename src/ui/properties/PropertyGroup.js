@@ -5,6 +5,7 @@ import styled from "styled-components";
 const StyledPropertyGroup = styled.div`
   display: flex;
   flex-direction: column;
+  flex-shrink: 0;
   width: 100%;
   padding: 12px 0;
   border-bottom: 1px solid ${props => props.theme.border};

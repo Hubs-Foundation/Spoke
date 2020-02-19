@@ -9,6 +9,7 @@ import { useDrop } from "react-dnd";
 import { ItemTypes, AssetTypes, addAssetAtCursorPositionOnDrop } from "../dnd";
 import SelectInput from "../inputs/SelectInput";
 import { TransformMode } from "../../editor/controls/SpokeControls";
+import AssetDropZone from "../assets/AssetDropZone";
 
 function borderColor(props, defaultColor) {
   if (props.canDrop) {
@@ -183,6 +184,19 @@ export default function ViewportPanelContainer() {
     })
   });
 
+  const onAfterUploadAssets = useCallback(
+    assets => {
+      Promise.all(
+        assets.map(({ url }) => {
+          editor.addMedia(url);
+        })
+      ).catch(err => {
+        editor.emit("error", err);
+      });
+    },
+    [editor]
+  );
+
   let controlsText;
 
   if (flyModeEnabled) {
@@ -210,6 +224,7 @@ export default function ViewportPanelContainer() {
         <ViewportContainer error={isOver && !canDrop} canDrop={isOver && canDrop} ref={dropRef}>
           <Viewport ref={canvasRef} tabIndex="-1" />
           <ControlsText>{controlsText}</ControlsText>
+          <AssetDropZone afterUpload={onAfterUploadAssets} />
         </ViewportContainer>
         <AssetsPanel />
       </Resizeable>

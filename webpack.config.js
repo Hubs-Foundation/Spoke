@@ -226,13 +226,30 @@ module.exports = env => {
       }),
       new CopyWebpackPlugin([
         {
+          from: path.join(
+            __dirname,
+            "src",
+            "assets",
+            process.env.IS_MOZ === "true" ? "favicon-spoke.ico" : "favicon-editor.ico"
+          ),
+          to: "assets/images/favicon.ico"
+        }
+      ]),
+      new CopyWebpackPlugin([
+        {
           from: path.join(__dirname, "src", "assets", "favicon-spoke.ico"),
           to: "assets/images/favicon-spoke.ico"
         }
       ]),
+      new CopyWebpackPlugin([
+        {
+          from: path.join(__dirname, "src", "assets", "favicon-editor.ico"),
+          to: "assets/images/favicon-editor.ico"
+        }
+      ]),
       new HTMLWebpackPlugin({
         template: path.join(__dirname, "src", "index.html"),
-        faviconPath: (process.env.BASE_ASSETS_PATH || "/") + "assets/images/favicon-spoke.ico"
+        faviconPath: (process.env.BASE_ASSETS_PATH || "/") + "assets/images/favicon.ico"
       }),
       new webpack.EnvironmentPlugin({
         BUILD_VERSION: "dev",
@@ -245,6 +262,8 @@ module.exports = env => {
         NON_CORS_PROXY_DOMAINS: "",
         ROUTER_BASE_PATH: "",
         SENTRY_DSN: null,
+        GA_TRACKING_ID: null,
+        IS_MOZ: false,
         GITHUB_ORG: "mozilla",
         GITHUB_REPO: "spoke",
         GITHUB_PUBLIC_TOKEN: "de8cbfb4cc0281c7b731c891df431016c29b0ace"

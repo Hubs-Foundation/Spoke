@@ -1,6 +1,7 @@
 import EditorNodeMixin from "./EditorNodeMixin";
 import Image from "../objects/Image";
 import spokeLogoSrc from "../../assets/spoke-icon.png";
+import { RethrownError } from "../utils/errors";
 
 export default class ImageNode extends EditorNodeMixin(Image) {
   static legacyComponentName = "image";
@@ -11,14 +12,14 @@ export default class ImageNode extends EditorNodeMixin(Image) {
     src: new URL(spokeLogoSrc, location).href
   };
 
-  static async deserialize(editor, json, loadAsync) {
+  static async deserialize(editor, json, loadAsync, onError) {
     const node = await super.deserialize(editor, json);
 
     const { src, projection } = json.components.find(c => c.name === "image").props;
 
     loadAsync(
       (async () => {
-        await node.load(src);
+        await node.load(src, onError);
         node.projection = projection;
       })()
     );
@@ -48,10 +49,10 @@ export default class ImageNode extends EditorNodeMixin(Image) {
     return this.editor.textureCache.get(src);
   }
 
-  async load(src) {
+  async load(src, onError) {
     const nextSrc = src || "";
 
-    if (nextSrc === this._canonicalUrl) {
+    if (nextSrc === this._canonicalUrl && nextSrc !== "") {
       return;
     }
 
@@ -59,15 +60,26 @@ export default class ImageNode extends EditorNodeMixin(Image) {
 
     this._mesh.visible = false;
 
+    this.hideErrorIcon();
     this.showLoadingCube();
 
     try {
       const { accessibleUrl } = await this.editor.api.resolveMedia(src);
       await super.load(accessibleUrl);
-    } catch (e) {
-      console.error(e);
+    } catch (error) {
+      this.showErrorIcon();
+
+      const imageError = new RethrownError(`Error loading image ${this._canonicalUrl}`, error);
+
+      if (onError) {
+        onError(this, imageError);
+      }
+
+      console.error(imageError);
     }
 
+    this.editor.emit("objectsChanged", [this]);
+    this.editor.emit("selectionChanged");
     this.hideLoadingCube();
 
     return this;

@@ -1,6 +1,5 @@
 import {
   Object3D,
-  TextureLoader,
   MeshBasicMaterial,
   SphereBufferGeometry,
   DoubleSide,
@@ -10,8 +9,7 @@ import {
   RGBAFormat,
   PlaneBufferGeometry
 } from "three";
-import eventToMessage from "../utils/eventToMessage";
-import loadErrorTexture from "../utils/loadErrorTexture";
+import loadTexture from "../utils/loadTexture";
 
 export const ImageProjection = {
   Flat: "flat",
@@ -42,9 +40,7 @@ export default class Image extends Object3D {
   }
 
   loadTexture(src) {
-    return new Promise((resolve, reject) => {
-      new TextureLoader().load(src, resolve, null, e => reject(`Error loading Image. ${eventToMessage(e)}`));
-    });
+    return loadTexture(src);
   }
 
   get projection() {
@@ -67,10 +63,15 @@ export default class Image extends Object3D {
 
     material.map = this._texture;
 
+    if (this._texture && this._texture.format === RGBAFormat) {
+      material.transparent = true;
+    }
+
     this._projection = projection;
 
     const nextMesh = new Mesh(geometry, material);
     nextMesh.name = "ImageMesh";
+    nextMesh.visible = this._mesh.visible;
 
     const meshIndex = this.children.indexOf(this._mesh);
 
@@ -96,27 +97,10 @@ export default class Image extends Object3D {
       material.map.dispose();
     }
 
-    if (!src) {
-      material.map = null;
-      this._mesh.visible = true;
-      return;
-    }
-
-    let texture;
-
-    try {
-      if (src) {
-        texture = await this.loadTexture(src);
-        // TODO: resize to maintain aspect ratio but still allow scaling.
-        texture.encoding = sRGBEncoding;
-        texture.minFilter = LinearFilter;
-      } else {
-        texture = await loadErrorTexture();
-      }
-    } catch (err) {
-      texture = await loadErrorTexture();
-      console.warn(`Error loading image node with src: "${src}": "${err.message || "unknown error"}"`);
-    }
+    const texture = await this.loadTexture(src);
+    // TODO: resize to maintain aspect ratio but still allow scaling.
+    texture.encoding = sRGBEncoding;
+    texture.minFilter = LinearFilter;
 
     this._texture = texture;
 

@@ -1,11 +1,14 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
+import configs from "../configs";
 import Modal from "react-modal";
 import { Helmet } from "react-helmet";
 import * as Sentry from "@sentry/browser";
 import styled from "styled-components";
 import { DndProvider } from "react-dnd";
 import HTML5Backend from "react-dnd-html5-backend";
+
+import { trackEvent } from "../telemetry";
 
 import ToolBar from "./toolbar/ToolBar";
 
@@ -114,6 +117,7 @@ class EditorContainer extends Component {
     }
 
     if (projectId === "tutorial") {
+      trackEvent("Tutorial Start");
       this.setState({ onboardingContext: { enabled: true } });
     }
   }
@@ -138,6 +142,7 @@ class EditorContainer extends Component {
       }
 
       if (projectId === "tutorial") {
+        trackEvent("Tutorial Start");
         this.setState({ onboardingContext: { enabled: true } });
       }
     }
@@ -177,6 +182,8 @@ class EditorContainer extends Component {
   }
 
   async loadScene(sceneId) {
+    trackEvent("Remix Scene");
+
     this.setState({
       project: null,
       parentSceneId: sceneId,
@@ -198,6 +205,7 @@ class EditorContainer extends Component {
       if (projectFile.metadata) {
         delete projectFile.metadata.sceneUrl;
         delete projectFile.metadata.sceneId;
+        delete projectFile.metadata.creatorAttribution;
       }
 
       await editor.init();
@@ -263,18 +271,16 @@ class EditorContainer extends Component {
 
     const editor = this.state.editor;
 
+    let project;
+
     try {
-      const project = await this.props.api.getProject(projectId);
+      project = await this.props.api.getProject(projectId);
 
       const projectFile = await this.props.api.fetch(project.project_url).then(response => response.json());
 
       await editor.init();
 
       await editor.loadProject(projectFile);
-
-      this.setState({
-        project
-      });
 
       this.hideDialog();
     } catch (error) {
@@ -285,6 +291,12 @@ class EditorContainer extends Component {
         message: error.message || "There was an error when loading the project.",
         error
       });
+    } finally {
+      if (project) {
+        this.setState({
+          project
+        });
+      }
     }
   }
 
@@ -321,7 +333,7 @@ class EditorContainer extends Component {
             action: this.onDuplicateProject
           },
           {
-            name: "Publish to Hubs...",
+            name: configs.isMoz() ? "Publish to Hubs..." : "Publish Scene...",
             action: this.onPublishProject
           },
           {
@@ -347,6 +359,7 @@ class EditorContainer extends Component {
               const { projectId } = this.props.match.params;
 
               if (projectId === "tutorial") {
+                trackEvent("Tutorial Start");
                 this.setState({ onboardingContext: { enabled: true } });
               } else {
                 this.props.history.push("/projects/tutorial");
@@ -428,6 +441,7 @@ class EditorContainer extends Component {
     window.addEventListener("resize", this.onResize);
     this.onResize();
     editor.addListener("projectLoaded", this.onProjectLoaded);
+    editor.addListener("error", this.onEditorError);
     editor.addListener("sceneModified", this.onSceneModified);
     editor.addListener("saveProject", this.onSaveProject);
   };
@@ -581,6 +595,8 @@ class EditorContainer extends Component {
   };
 
   onSaveProject = async () => {
+    trackEvent("Project Save Start");
+
     const abortController = new AbortController();
 
     this.showDialog(ProgressDialog, {
@@ -617,6 +633,8 @@ class EditorContainer extends Component {
       this.updateModifiedState();
 
       this.hideDialog();
+
+      trackEvent("Project Save Successful");
     } catch (error) {
       console.error(error);
 
@@ -624,6 +642,8 @@ class EditorContainer extends Component {
         title: "Error Saving Project",
         message: error.message || "There was an error when saving the project."
       });
+
+      trackEvent("Project Save Error");
     }
   };
 
@@ -692,6 +712,8 @@ class EditorContainer extends Component {
       document.body.appendChild(el);
       el.click();
       document.body.removeChild(el);
+
+      trackEvent("Export Project as glTF");
     } catch (error) {
       if (error.aborted) {
         this.hideDialog();
@@ -743,6 +765,8 @@ class EditorContainer extends Component {
       }
     };
     el.click();
+
+    trackEvent("Import Legacy Project");
   };
 
   onExportLegacyProject = async () => {
@@ -763,9 +787,13 @@ class EditorContainer extends Component {
     document.body.appendChild(el);
     el.click();
     document.body.removeChild(el);
+
+    trackEvent("Project Exported");
   };
 
   onPublishProject = async () => {
+    trackEvent("Project Publish Started");
+
     try {
       const editor = this.state.editor;
       let project = this.state.project;
@@ -784,10 +812,13 @@ class EditorContainer extends Component {
         return;
       }
 
+      trackEvent("Project Publish Successful");
+
       this.setState({ project });
     } catch (error) {
       if (error.aborted) {
         this.hideDialog();
+        trackEvent("Project Publish Canceled");
         return;
       }
 
@@ -797,6 +828,8 @@ class EditorContainer extends Component {
         message: error.message || "There was an unknown error.",
         error
       });
+
+      trackEvent("Project Publish Error");
     }
   };
 
@@ -814,7 +847,13 @@ class EditorContainer extends Component {
     }
   };
 
-  onFinishTutorial = () => {
+  onFinishTutorial = nextAction => {
+    trackEvent("Tutorial Finished", nextAction);
+    this.setState({ onboardingContext: { enabled: false } });
+  };
+
+  onSkipTutorial = lastCompletedStep => {
+    trackEvent("Tutorial Skipped", lastCompletedStep);
     this.setState({ onboardingContext: { enabled: false } });
   };
 
@@ -861,7 +900,7 @@ class EditorContainer extends Component {
                     )}
                   </Modal>
                   <Helmet>
-                    <title>{`${this.state.modified ? "*" : ""}${editor.scene.name} | Spoke by Mozilla`}</title>
+                    <title>{`${this.state.modified ? "*" : ""}${editor.scene.name} | ${configs.longName()}`}</title>
                     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
                   </Helmet>
                   {this.state.modified && (
@@ -869,7 +908,9 @@ class EditorContainer extends Component {
                       message={`${editor.scene.name} has unsaved changes, are you sure you wish to navigate away from the page?`}
                     />
                   )}
-                  {onboardingContext.enabled && <Onboarding onFinish={this.onFinishTutorial} />}
+                  {onboardingContext.enabled && (
+                    <Onboarding onFinish={this.onFinishTutorial} onSkip={this.onSkipTutorial} />
+                  )}
                 </DndProvider>
               </OnboardingContextProvider>
             </DialogContextProvider>

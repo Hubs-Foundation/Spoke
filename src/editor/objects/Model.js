@@ -1,8 +1,6 @@
-import { Object3D, PlaneBufferGeometry, MeshBasicMaterial, DoubleSide, Mesh } from "three";
+import { Object3D, AnimationMixer } from "three";
 import { GLTFLoader } from "../gltf/GLTFLoader";
 import cloneObject3D from "../utils/cloneObject3D";
-import eventToMessage from "../utils/eventToMessage";
-import loadErrorTexture from "../utils/loadErrorTexture";
 
 export default class Model extends Object3D {
   constructor() {
@@ -10,12 +8,13 @@ export default class Model extends Object3D {
     this.type = "Model";
 
     this.model = null;
-    this.errorMesh = null;
     this._src = null;
     this._castShadow = false;
     this._receiveShadow = false;
     // Use index instead of references to AnimationClips to simplify animation cloning / track name remapping
     this.activeClipIndex = -1;
+    this.animationMixer = null;
+    this.activeClipAction = null;
   }
 
   get src() {
@@ -27,56 +26,34 @@ export default class Model extends Object3D {
   }
 
   async loadGLTF(src) {
-    try {
-      const gltf = await new GLTFLoader(src).loadGLTF();
+    const gltf = await new GLTFLoader(src).loadGLTF();
 
-      const model = gltf.scene;
+    const model = gltf.scene;
 
-      model.animations = model.animations || [];
+    model.animations = model.animations || [];
 
-      return model;
-    } catch (error) {
-      throw new Error(`Error loading Model. ${eventToMessage(error)}`);
-    }
+    return model;
   }
 
   async load(src, ...args) {
     this._src = src;
-
-    if (this.errorMesh) {
-      this.remove(this.errorMesh);
-      this.errorMesh = null;
-    }
 
     if (this.model) {
       this.remove(this.model);
       this.model = null;
     }
 
-    try {
-      const model = await this.loadGLTF(src, ...args);
-      this.model = model;
-      this.add(model);
+    const model = await this.loadGLTF(src, ...args);
+    model.animations = model.animations || [];
+    this.model = model;
+    this.add(model);
 
-      this.castShadow = this._castShadow;
-      this.receiveShadow = this._receiveShadow;
-    } catch (err) {
-      const texture = await loadErrorTexture();
-      const geometry = new PlaneBufferGeometry();
-      const material = new MeshBasicMaterial();
-      material.side = DoubleSide;
-      material.map = texture;
-      material.transparent = true;
-      const mesh = new Mesh(geometry, material);
-      const ratio = (texture.image.height || 1.0) / (texture.image.width || 1.0);
-      const width = Math.min(1.0, 1.0 / ratio);
-      const height = Math.min(1.0, ratio);
-      mesh.scale.set(width, height, 1);
-      this.errorMesh = mesh;
-      this.add(mesh);
-      console.warn(`Error loading model node with src: "${src}": "${err.message || "unknown error"}"`);
-      console.error(err);
+    if (model.animations && model.animations.length > 0) {
+      this.animationMixer = new AnimationMixer(this.model);
     }
+
+    this.castShadow = this._castShadow;
+    this.receiveShadow = this._receiveShadow;
 
     return this;
   }
@@ -92,6 +69,42 @@ export default class Model extends Object3D {
 
   get activeClip() {
     return (this.model && this.model.animations && this.model.animations[this.activeClipIndex]) || null;
+  }
+
+  updateAnimationState() {
+    const clip = this.activeClip;
+    const playingClip = this.activeClipAction && this.activeClipAction.getClip();
+
+    if (clip !== playingClip) {
+      if (this.activeClipAction) {
+        this.activeClipAction.stop();
+      }
+
+      if (this.animationMixer && clip) {
+        this.activeClipAction = this.animationMixer.clipAction(clip);
+        this.activeClipAction.play();
+      } else {
+        this.activeClipAction = null;
+      }
+    }
+  }
+
+  playAnimation() {
+    this.updateAnimationState();
+  }
+
+  stopAnimation() {
+    if (this.activeClipAction) {
+      this.activeClipAction.stop();
+      this.activeClipAction = null;
+    }
+  }
+
+  update(dt) {
+    if (this.animationMixer) {
+      this.updateAnimationState();
+      this.animationMixer.update(dt);
+    }
   }
 
   get castShadow() {
@@ -178,7 +191,11 @@ export default class Model extends Object3D {
       if (child === source.model) {
         clonedChild = cloneObject3D(child);
         this.model = clonedChild;
-      } else if (recursive === true && child !== source.errorMesh && child !== source.loadingCube) {
+
+        if (this.model.animations.length > 0) {
+          this.animationMixer = new AnimationMixer(this.model);
+        }
+      } else if (recursive === true && child !== source.loadingCube) {
         clonedChild = child.clone();
       }
 

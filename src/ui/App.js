@@ -1,6 +1,7 @@
 import React, { Component, Suspense, lazy } from "react";
 import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
 import PropTypes from "prop-types";
+import configs from "../configs";
 
 import GlobalStyle from "./GlobalStyle";
 
@@ -11,13 +12,14 @@ import { ApiContextProvider } from "./contexts/ApiContext";
 import { AuthContextProvider } from "./contexts/AuthContext";
 
 import RedirectRoute from "./router/RedirectRoute";
+import { withPageView } from "../telemetry";
 
 import LandingPage from "./landing/LandingPage";
 import WhatsNewPage from "./whats-new/WhatsNewPage";
 import LoginPage from "./auth/LoginPage";
 import LogoutPage from "./auth/LogoutPage";
 import ProjectsPage from "./projects/ProjectsPage";
-import TemplatesPage from "./projects/TemplatesPage";
+import CreateProjectPage from "./projects/CreateProjectPage";
 
 import { ThemeProvider } from "styled-components";
 
@@ -69,15 +71,20 @@ export default class App extends Component {
               <GlobalStyle />
               <Column as={Suspense} fallback={<Loading message="Loading..." fullScreen />}>
                 <Switch>
-                  <Route path="/" exact component={LandingPage} />
-                  <Route path="/whats-new" exact component={WhatsNewPage} />
+                  {configs.isMoz() && <Route path="/" exact component={withPageView(LandingPage)} />}
+                  {!configs.isMoz() && <RedirectRoute path="/" exact to="/projects" />}
+                  <Route path="/whats-new" exact component={withPageView(WhatsNewPage)} />
                   <RedirectRoute path="/new" exact to="/projects" />
-                  <Route path="/login" exact component={LoginPage} />
-                  <Route path="/logout" exact component={LogoutPage} />
-                  <Route path="/projects/templates" exact component={TemplatesPage} />
-                  <Route path="/projects" exact component={ProjectsPage} />
-                  <Route path="/projects/:projectId" component={EditorContainer} />
-                  <Route path="/kits/package" component={PackageKitPage} />
+                  <Route path="/login" exact component={withPageView(LoginPage)} />
+                  <Route path="/logout" exact component={withPageView(LogoutPage)} />
+                  <Route path="/projects/create" exact component={withPageView(CreateProjectPage)} />
+                  <RedirectRoute path="/projects/templates" exact to="/projects/create" />
+                  <Route path="/projects" exact component={withPageView(ProjectsPage)} />
+                  <Route
+                    path="/projects/:projectId"
+                    component={withPageView(EditorContainer, "/projects/editor", "Editor")}
+                  />
+                  <Route path="/kits/package" component={withPageView(PackageKitPage)} />
                   <Route render={() => <Error message="Page not found." />} />
                 </Switch>
               </Column>

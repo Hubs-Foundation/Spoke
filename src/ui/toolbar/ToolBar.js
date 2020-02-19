@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
+import configs from "../../configs";
 import { showMenu, ContextMenu, MenuItem, SubMenu } from "../layout/ContextMenu";
-import ReactTooltip from "react-tooltip";
 import ToolButton from "./ToolButton";
 import { Button } from "../inputs/Button";
 import SelectInput from "../inputs/SelectInput";
@@ -16,8 +16,11 @@ import { Bullseye } from "styled-icons/fa-solid/Bullseye";
 import { Magnet } from "styled-icons/fa-solid/Magnet";
 import { Bars } from "styled-icons/fa-solid/Bars";
 import { Grid } from "styled-icons/boxicons-regular/Grid";
+import { Play } from "styled-icons/fa-solid/Play";
 import styled from "styled-components";
 import styledTheme from "../theme";
+import { InfoTooltip } from "../layout/Tooltip";
+import { Pause } from "styled-icons/fa-solid";
 
 const StyledToolbar = styled.div`
   display: flex;
@@ -46,13 +49,6 @@ const ToolToggles = styled.div`
 
 const Spacer = styled.div`
   flex: 1;
-`;
-
-const ToolTip = styled(ReactTooltip)`
-  max-width: 200px;
-  overflow: hidden;
-  overflow-wrap: break-word;
-  user-select: none;
 `;
 
 const PublishButton = styled(Button)`
@@ -118,7 +114,7 @@ const selectInputStyles = {
   })
 };
 
-const ToggleButton = styled.div`
+const StyledToggleButton = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
@@ -136,6 +132,19 @@ const ToggleButton = styled.div`
     background-color: ${props => props.theme.blue};
   }
 `;
+
+function ToggleButton({ tooltip, children, ...rest }) {
+  return (
+    <InfoTooltip info={tooltip}>
+      <StyledToggleButton {...rest}>{children}</StyledToggleButton>
+    </InfoTooltip>
+  );
+}
+
+ToggleButton.propTypes = {
+  tooltip: PropTypes.string,
+  children: PropTypes.node
+};
 
 const ToolbarInputGroup = styled.div`
   display: flex;
@@ -217,16 +226,18 @@ export default class ToolBar extends Component {
   componentDidMount() {
     const editor = this.props.editor;
     editor.addListener("initialized", this.onEditorInitialized);
+    editor.addListener("playModeChanged", this.onForceUpdate);
+    editor.addListener("settingsChanged", this.onForceUpdate);
   }
 
   onEditorInitialized = () => {
     const editor = this.props.editor;
-    editor.spokeControls.addListener("transformModeChanged", this.onSpokeControlsChanged);
-    editor.spokeControls.addListener("transformSpaceChanged", this.onSpokeControlsChanged);
-    editor.spokeControls.addListener("transformPivotChanged", this.onSpokeControlsChanged);
-    editor.spokeControls.addListener("snapSettingsChanged", this.onSpokeControlsChanged);
-    editor.addListener("gridHeightChanged", this.onSpokeControlsChanged);
-    editor.addListener("gridVisibilityChanged", this.onSpokeControlsChanged);
+    editor.spokeControls.addListener("transformModeChanged", this.onForceUpdate);
+    editor.spokeControls.addListener("transformSpaceChanged", this.onForceUpdate);
+    editor.spokeControls.addListener("transformPivotChanged", this.onForceUpdate);
+    editor.spokeControls.addListener("snapSettingsChanged", this.onForceUpdate);
+    editor.addListener("gridHeightChanged", this.onForceUpdate);
+    editor.addListener("gridVisibilityChanged", this.onForceUpdate);
     this.setState({ editorInitialized: true });
   };
 
@@ -235,16 +246,18 @@ export default class ToolBar extends Component {
     editor.removeListener("initialized", this.onEditorInitialized);
 
     if (editor.spokeControls) {
-      editor.spokeControls.removeListener("transformModeChanged", this.onSpokeControlsChanged);
-      editor.spokeControls.removeListener("transformSpaceChanged", this.onSpokeControlsChanged);
-      editor.spokeControls.removeListener("transformPivotChanged", this.onSpokeControlsChanged);
-      editor.spokeControls.removeListener("snapSettingsChanged", this.onSpokeControlsChanged);
-      editor.removeListener("gridHeightChanged", this.onSpokeControlsChanged);
-      editor.addListener("gridVisibilityChanged", this.onSpokeControlsChanged);
+      editor.spokeControls.removeListener("transformModeChanged", this.onForceUpdate);
+      editor.spokeControls.removeListener("transformSpaceChanged", this.onForceUpdate);
+      editor.spokeControls.removeListener("transformPivotChanged", this.onForceUpdate);
+      editor.spokeControls.removeListener("snapSettingsChanged", this.onForceUpdate);
+      editor.removeListener("gridHeightChanged", this.onForceUpdate);
+      editor.removeListener("gridVisibilityChanged", this.onForceUpdate);
+      editor.removeListener("playModeChanged", this.onForceUpdate);
+      editor.removeListener("settingsChanged", this.onForceUpdate);
     }
   }
 
-  onSpokeControlsChanged = () => {
+  onForceUpdate = () => {
     this.forceUpdate();
   };
 
@@ -337,6 +350,14 @@ export default class ToolBar extends Component {
     this.props.editor.toggleGridVisible();
   };
 
+  onTogglePlayMode = () => {
+    if (this.props.editor.playing) {
+      this.props.editor.leavePlayMode();
+    } else {
+      this.props.editor.enterPlayMode();
+    }
+  };
+
   render() {
     const { editorInitialized, menuOpen } = this.state;
 
@@ -381,15 +402,11 @@ export default class ToolBar extends Component {
         </ToolButtons>
         <ToolToggles>
           <ToolbarInputGroup id="transform-space">
-            <ToggleButton
-              onClick={this.onToggleTransformSpace}
-              data-tip="[Z] Toggle Transform Space"
-              data-for="toolbar"
-              data-delay-show="500"
-              data-place="bottom"
-            >
-              <Globe size={12} />
-            </ToggleButton>
+            <InfoTooltip info="[Z] Toggle Transform Space" position="bottom">
+              <ToggleButton onClick={this.onToggleTransformSpace}>
+                <Globe size={12} />
+              </ToggleButton>
+            </InfoTooltip>
             <SelectInput
               styles={selectInputStyles}
               onChange={this.onChangeTransformSpace}
@@ -398,13 +415,7 @@ export default class ToolBar extends Component {
             />
           </ToolbarInputGroup>
           <ToolbarInputGroup id="transform-pivot">
-            <ToggleButton
-              onClick={this.onToggleTransformPivot}
-              data-tip="[X] Toggle Transform Pivot"
-              data-for="toolbar"
-              data-delay-show="500"
-              data-place="bottom"
-            >
+            <ToggleButton onClick={this.onToggleTransformPivot} tooltip="[X] Toggle Transform Pivot">
               <Bullseye size={12} />
             </ToggleButton>
             <SelectInput
@@ -418,10 +429,7 @@ export default class ToolBar extends Component {
             <ToggleButton
               value={snapMode === SnapMode.Grid}
               onClick={this.onToggleSnapMode}
-              data-tip="[C] Toggle Snap Mode"
-              data-for="toolbar"
-              data-delay-show="500"
-              data-place="bottom"
+              tooltip={"[C] Toggle Snap Mode"}
             >
               <Magnet size={12} />
             </ToggleButton>
@@ -447,13 +455,7 @@ export default class ToolBar extends Component {
             />
           </ToolbarInputGroup>
           <ToolbarInputGroup id="transform-grid">
-            <ToggleButton
-              onClick={this.onToggleGridVisible}
-              data-tip="Toggle Grid Visibility"
-              data-for="toolbar"
-              data-delay-show="500"
-              data-place="bottom"
-            >
+            <ToggleButton onClick={this.onToggleGridVisible} tooltip="Toggle Grid Visibility">
               <Grid size={16} />
             </ToggleButton>
             <ToolbarNumericStepperInput
@@ -464,23 +466,35 @@ export default class ToolBar extends Component {
               mediumStep={1.5}
               largeStep={4.5}
               unit="m"
-              tooltipId="toolbar"
               incrementTooltip="[-] Increment Grid Height"
               decrementTooltip="[=] Decrement Grid Height"
             />
           </ToolbarInputGroup>
+          {this.props.editor.settings.enableExperimentalFeatures && (
+            <ToolbarInputGroup id="preview">
+              <ToggleButton
+                onClick={this.onTogglePlayMode}
+                tooltip={this.props.editor.playing ? "Stop Previewing Scene" : "Preview Scene"}
+              >
+                {this.props.editor.playing ? <Pause size={14} /> : <Play size={14} />}
+              </ToggleButton>
+            </ToolbarInputGroup>
+          )}
         </ToolToggles>
         <Spacer />
-        {this.props.isPublishedScene && <PublishButton onClick={this.props.onOpenScene}>Open in Hubs</PublishButton>}
+        {this.props.isPublishedScene && (
+          <PublishButton onClick={this.props.onOpenScene}>
+            {configs.isMoz() ? "Open in Hubs" : "Open Scene"}
+          </PublishButton>
+        )}
         <PublishButton id="publish-button" onClick={this.props.onPublish}>
-          Publish to Hubs...
+          {configs.isMoz() ? "Publish to Hubs..." : "Publish Scene..."}
         </PublishButton>
         <ContextMenu id="menu">
           {this.props.menu.map(menu => {
             return this.renderMenu(menu);
           })}
         </ContextMenu>
-        <ToolTip id="toolbar" />
       </StyledToolbar>
     );
   }

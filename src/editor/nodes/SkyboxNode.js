@@ -1,6 +1,3 @@
-import { Scene, CubeCamera } from "three";
-import { PMREMGenerator } from "three/examples/jsm/pmrem/PMREMGenerator";
-import { PMREMCubeUVPacker } from "three/examples/jsm/pmrem/PMREMCubeUVPacker";
 import EditorNodeMixin from "./EditorNodeMixin";
 import Sky from "../objects/Sky";
 
@@ -43,14 +40,6 @@ export default class SkyboxNode extends EditorNodeMixin(Sky) {
     return node;
   }
 
-  constructor(editor) {
-    super(editor);
-
-    this.skyScene = new Scene();
-    this.cubeCamera = new CubeCamera(1, 100000, 512);
-    this.skyScene.add(this.cubeCamera);
-  }
-
   onRendererChanged() {
     this.updateEnvironmentMap();
   }
@@ -69,16 +58,8 @@ export default class SkyboxNode extends EditorNodeMixin(Sky) {
 
   updateEnvironmentMap() {
     const renderer = this.editor.renderer.renderer;
-    this.skyScene.add(this.sky);
-    this.cubeCamera.update(renderer, this.skyScene);
-    this.add(this.sky);
-    const pmremGenerator = new PMREMGenerator(this.cubeCamera.renderTarget.texture);
-    pmremGenerator.update(renderer);
-    const pmremCubeUVPacker = new PMREMCubeUVPacker(pmremGenerator.cubeLods);
-    pmremCubeUVPacker.update(renderer);
-    this.editor.scene.updateEnvironmentMap(pmremCubeUVPacker.CubeUVRenderTarget.texture);
-    pmremGenerator.dispose();
-    pmremCubeUVPacker.dispose();
+    const envMap = this.generateEnvironmentMap(renderer);
+    this.editor.scene.updateEnvironmentMap(envMap);
   }
 
   serialize() {

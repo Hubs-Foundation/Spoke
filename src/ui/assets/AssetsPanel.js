@@ -4,8 +4,10 @@ import styled from "styled-components";
 import { Column, Row } from "../layout/Flex";
 import { List, ListItem } from "../layout/List";
 import { EditorContext } from "../contexts/EditorContext";
+import AssetDropZone from "./AssetDropZone";
 
 const AssetsPanelContainer = styled(Row)`
+  position: relative;
   flex: 1;
   background-color: ${props => props.theme.panel};
 `;
@@ -134,6 +136,7 @@ export default function AssetsPanel() {
           />
         )}
       </Column>
+      <AssetDropZone />
     </AssetsPanelContainer>
   );
 }

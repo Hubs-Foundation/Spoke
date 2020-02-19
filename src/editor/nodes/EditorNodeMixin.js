@@ -9,6 +9,7 @@ import {
 import { Color, Object3D } from "three";
 import serializeColor from "../utils/serializeColor";
 import LoadingCube from "../objects/LoadingCube";
+import ErrorIcon from "../objects/ErrorIcon";
 
 export default function EditorNodeMixin(Object3DClass) {
   return class extends Object3DClass {
@@ -78,6 +79,7 @@ export default function EditorNodeMixin(Object3DClass) {
       this.originalStaticMode = null;
       this.saveParent = false;
       this.loadingCube = null;
+      this.errorIcon = null;
     }
 
     clone(recursive) {
@@ -87,6 +89,7 @@ export default function EditorNodeMixin(Object3DClass) {
     copy(source, recursive = true) {
       if (recursive) {
         this.remove(this.loadingCube);
+        this.remove(this.errorIcon);
       }
 
       super.copy(source, recursive);
@@ -96,6 +99,12 @@ export default function EditorNodeMixin(Object3DClass) {
 
         if (loadingCubeIndex !== -1) {
           this.loadingCube = this.children[loadingCubeIndex];
+        }
+
+        const errorIconIndex = source.children.findIndex(child => child === source.errorIcon);
+
+        if (errorIconIndex !== -1) {
+          this.errorIcon = this.children[errorIconIndex];
         }
       }
 
@@ -275,12 +284,42 @@ export default function EditorNodeMixin(Object3DClass) {
         this.loadingCube = new LoadingCube();
         this.add(this.loadingCube);
       }
+
+      const worldScale = this.getWorldScale(this.loadingCube.scale);
+
+      if (worldScale.x === 0 || worldScale.y === 0 || worldScale.z === 0) {
+        this.loadingCube.scale.set(1, 1, 1);
+      } else {
+        this.loadingCube.scale.set(1 / worldScale.x, 1 / worldScale.y, 1 / worldScale.z);
+      }
     }
 
     hideLoadingCube() {
       if (this.loadingCube) {
         this.remove(this.loadingCube);
         this.loadingCube = null;
+      }
+    }
+
+    showErrorIcon() {
+      if (!this.errorIcon) {
+        this.errorIcon = new ErrorIcon();
+        this.add(this.errorIcon);
+      }
+
+      const worldScale = this.getWorldScale(this.errorIcon.scale);
+
+      if (worldScale.x === 0 || worldScale.y === 0 || worldScale.z === 0) {
+        this.errorIcon.scale.set(1, 1, 1);
+      } else {
+        this.errorIcon.scale.set(1 / worldScale.x, 1 / worldScale.y, 1 / worldScale.z);
+      }
+    }
+
+    hideErrorIcon() {
+      if (this.errorIcon) {
+        this.remove(this.errorIcon);
+        this.errorIcon = null;
       }
     }
 

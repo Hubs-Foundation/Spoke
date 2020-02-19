@@ -34,6 +34,12 @@ done
 
 cd -
 
+if [[ "{{ cfg.general.is_moz }}" == "true" ]] ; then
+  cp "$TEMP_DIST_PATH/assets/images/favicon-spoke.ico" "$TEMP_DIST_PATH/assets/images/favicon.ico"
+else
+  cp "$TEMP_DIST_PATH/assets/images/favicon-editor.ico" "$TEMP_DIST_PATH/assets/images/favicon.ico"
+fi
+
 if [[ "{{ cfg.deploy.type }}" == "s3" ]] ;
 then
   # need to upload wasm blobs with wasm content type explicitly because, unlike all

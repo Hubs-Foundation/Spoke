@@ -108,6 +108,11 @@ const GlobalStyle = createGlobalStyle`
     }
   }
 
+  html, body {
+    width: 100%;
+    height: 100%;
+  }
+
   #app {
     display: flex;
     flex-direction: column;
@@ -118,11 +123,6 @@ const GlobalStyle = createGlobalStyle`
     display: flex;
     flex-direction: column;
     flex: 1;
-  }
-
-  html, body, #app {
-    width: 100%;
-    height: 100%;
   }
 
   body {
@@ -167,14 +167,6 @@ const GlobalStyle = createGlobalStyle`
     .form-field:not(:last-child) {
       display: none;
     }
-  }
-
-  .__react_component_tooltip.show {
-    opacity: 1;
-  }
-
-  .__react_component_tooltip.type-dark {
-    background-color: rgba(21, 23, 27, 0.9);
   }
 `;
 

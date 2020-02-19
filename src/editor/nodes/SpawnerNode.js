@@ -2,6 +2,7 @@ import { Box3, Sphere } from "three";
 import Model from "../objects/Model";
 import EditorNodeMixin from "./EditorNodeMixin";
 import cloneObject3D from "../utils/cloneObject3D";
+import { RethrownError } from "../utils/errors";
 
 export default class SpawnerNode extends EditorNodeMixin(Model) {
   static legacyComponentName = "spawner";
@@ -13,12 +14,12 @@ export default class SpawnerNode extends EditorNodeMixin(Model) {
     src: "https://sketchfab.com/models/a4c500d7358a4a199b6a5cd35f416466"
   };
 
-  static async deserialize(editor, json, loadAsync) {
+  static async deserialize(editor, json, loadAsync, onError) {
     const node = await super.deserialize(editor, json);
 
     const { src } = json.components.find(c => c.name === "spawner").props;
 
-    loadAsync(node.load(src));
+    loadAsync(node.load(src, onError));
 
     return node;
   }
@@ -51,10 +52,10 @@ export default class SpawnerNode extends EditorNodeMixin(Model) {
   }
 
   // Overrides Model's load method and resolves the src url before loading.
-  async load(src) {
+  async load(src, onError) {
     const nextSrc = src || "";
 
-    if (nextSrc === this._canonicalUrl) {
+    if (nextSrc === this._canonicalUrl && nextSrc !== "") {
       return;
     }
 
@@ -66,11 +67,7 @@ export default class SpawnerNode extends EditorNodeMixin(Model) {
       this.model = null;
     }
 
-    if (this.errorMesh) {
-      this.remove(this.errorMesh);
-      this.errorMesh = null;
-    }
-
+    this.hideErrorIcon();
     this.showLoadingCube();
 
     try {
@@ -114,7 +111,12 @@ export default class SpawnerNode extends EditorNodeMixin(Model) {
         this.initialScale = 1;
       }
 
-      this.editor.emit("objectsChanged", [this]);
+      this.model.traverse(object => {
+        if (object.material && object.material.isMeshStandardMaterial) {
+          object.material.envMap = this.editor.scene.environmentMap;
+          object.material.needsUpdate = true;
+        }
+      });
 
       if (files) {
         // Revoke any object urls from the SketchfabZipLoader.
@@ -124,22 +126,21 @@ export default class SpawnerNode extends EditorNodeMixin(Model) {
           }
         }
       }
-    } catch (e) {
-      console.error(e);
-    }
+    } catch (error) {
+      this.showErrorIcon();
 
-    this.hideLoadingCube();
+      const spawnerError = new RethrownError(`Error loading spawner model "${this._canonicalUrl}"`, error);
 
-    if (!this.model) {
-      return this;
-    }
-
-    this.model.traverse(object => {
-      if (object.material && object.material.isMeshStandardMaterial) {
-        object.material.envMap = this.editor.scene.environmentMap;
-        object.material.needsUpdate = true;
+      if (onError) {
+        onError(this, spawnerError);
       }
-    });
+
+      console.error(spawnerError);
+    }
+
+    this.editor.emit("objectsChanged", [this]);
+    this.editor.emit("selectionChanged");
+    this.hideLoadingCube();
 
     return this;
   }

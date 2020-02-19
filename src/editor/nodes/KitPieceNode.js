@@ -4,6 +4,7 @@ import { PropertyBinding } from "three";
 import { setStaticMode, StaticModes } from "../StaticMode";
 import cloneObject3D from "../utils/cloneObject3D";
 import { isKitPieceNode, getComponent, getGLTFComponent, traverseGltfNode } from "../gltf/moz-hubs-components";
+import { RethrownError } from "../utils/errors";
 
 export default class KitPieceNode extends EditorNodeMixin(Model) {
   static legacyComponentName = "kit-piece";
@@ -16,14 +17,14 @@ export default class KitPieceNode extends EditorNodeMixin(Model) {
 
   static nodeName = "Kit Piece";
 
-  static async deserialize(editor, json, loadAsync) {
+  static async deserialize(editor, json, loadAsync, onError) {
     const node = await super.deserialize(editor, json);
 
     loadAsync(
       (async () => {
         const { kitId, pieceId, subPiecesConfig } = json.components.find(c => c.name === "kit-piece").props;
 
-        await node.load(kitId || "architecture-kit", pieceId, subPiecesConfig);
+        await node.load(kitId || "architecture-kit", pieceId, subPiecesConfig, onError);
 
         node.collidable = !!json.components.find(c => c.name === "collidable");
         node.walkable = !!json.components.find(c => c.name === "walkable");
@@ -131,7 +132,7 @@ export default class KitPieceNode extends EditorNodeMixin(Model) {
   }
 
   async loadGLTF(src, pieceId, subPiecesConfig = {}) {
-    const loader = this.editor.gltfCache.getLoader(src);
+    const loader = this.editor.gltfCache.getLoader(src, { addUnknownExtensionsToUserData: true });
     const { json } = await loader.getDependency("root");
 
     if (!Array.isArray(json.nodes)) {
@@ -276,9 +277,12 @@ export default class KitPieceNode extends EditorNodeMixin(Model) {
     return clonedPiece;
   }
 
-  async load(kitId, pieceId, subPiecesConfig) {
+  async load(kitId, pieceId, subPiecesConfig, onError) {
     const nextKitId = kitId || null;
     const nextPieceId = pieceId || null;
+
+    this.hideErrorIcon();
+    this.showLoadingCube();
 
     if (nextKitId === this.kitId && nextPieceId === this.pieceId) {
       return;
@@ -295,15 +299,10 @@ export default class KitPieceNode extends EditorNodeMixin(Model) {
       this.model = null;
     }
 
-    if (this.errorMesh) {
-      this.remove(this.errorMesh);
-      this.errorMesh = null;
-    }
-
     this._canonicalUrl = (source && source.kitUrl) || "";
 
-    if (this._canonicalUrl && nextPieceId) {
-      try {
+    try {
+      if (this._canonicalUrl && nextPieceId) {
         const { accessibleUrl, files } = await this.editor.api.resolveMedia(this._canonicalUrl);
 
         if (this.model) {
@@ -323,10 +322,16 @@ export default class KitPieceNode extends EditorNodeMixin(Model) {
             if (object.userData.subPiece) {
               this.subPieces.push(object);
             }
-          });
-        }
 
-        this.editor.emit("objectsChanged", [this]);
+            if (object.material && object.material.isMeshStandardMaterial) {
+              object.material.envMap = this.editor.scene.environmentMap;
+              object.material.needsUpdate = true;
+            }
+          });
+
+          this.castShadow = true;
+          this.receiveShadow = true;
+        }
 
         if (files) {
           // Revoke any object urls from the SketchfabZipLoader.
@@ -336,24 +341,25 @@ export default class KitPieceNode extends EditorNodeMixin(Model) {
             }
           }
         }
-      } catch (e) {
-        console.error(e);
       }
+    } catch (error) {
+      this.showErrorIcon();
+
+      const kitPieceError = new RethrownError(
+        `Error loading kit piece. Kit Url: "${this._canonicalUrl}" Kit Id: "${this._kitId}" Piece Id: "${this.pieceId}"`,
+        error
+      );
+
+      if (onError) {
+        onError(this, kitPieceError);
+      }
+
+      console.error(kitPieceError);
     }
 
-    if (!this.model) {
-      return this;
-    }
-
-    this.model.traverse(object => {
-      if (object.material && object.material.isMeshStandardMaterial) {
-        object.material.envMap = this.editor.scene.environmentMap;
-        object.material.needsUpdate = true;
-      }
-    });
-
-    this.castShadow = true;
-    this.receiveShadow = true;
+    this.editor.emit("objectsChanged", [this]);
+    this.editor.emit("selectionChanged");
+    this.hideLoadingCube();
 
     return this;
   }

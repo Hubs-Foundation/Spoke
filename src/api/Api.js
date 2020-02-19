@@ -9,6 +9,8 @@ import ProgressDialog from "../ui/dialogs/ProgressDialog";
 import jwtDecode from "jwt-decode";
 import { buildAbsoluteURL } from "url-toolkit";
 import PublishedSceneDialog from "./PublishedSceneDialog";
+import { matchesFileTypes, AudioFileTypes } from "../ui/assets/fileTypes";
+import { RethrownError } from "../editor/utils/errors";
 
 // Media related functions should be kept up to date with Hubs media-utils:
 // https://github.com/mozilla/hubs/blob/master/src/utils/media-utils.js
@@ -94,6 +96,7 @@ export default class Project extends EventEmitter {
     const { protocol, host } = new URL(window.location.href);
 
     this.serverURL = protocol + "//" + host;
+    this.apiURL = `https://${RETICULUM_SERVER}`;
 
     this.projectDirectoryPath = "/api/files/";
 
@@ -238,12 +241,12 @@ export default class Project extends EventEmitter {
     });
 
     if (!response.ok) {
-      const message = `Error resolving url "${url}":`;
+      const message = `Error resolving url "${url}":\n  `;
       try {
         const body = await response.text();
-        throw new Error(message + " " + body);
+        throw new Error(message + body.replace(/\n/g, "\n  "));
       } catch (e) {
-        throw new Error(message + " " + response.statusText);
+        throw new Error(message + response.statusText.replace(/\n/g, "\n  "));
       }
     }
 
@@ -275,25 +278,39 @@ export default class Project extends EventEmitter {
       return { accessibleUrl: absoluteUrl };
     }
 
-    const result = await this.resolveUrl(absoluteUrl);
-    const canonicalUrl = result.origin;
-    const accessibleUrl = proxiedUrlFor(canonicalUrl, index);
+    let contentType, canonicalUrl, accessibleUrl;
 
-    const contentType =
-      (result.meta && result.meta.expected_content_type) ||
-      guessContentType(canonicalUrl) ||
-      (await this.fetchContentType(accessibleUrl));
+    try {
+      const result = await this.resolveUrl(absoluteUrl);
+      canonicalUrl = result.origin;
+      accessibleUrl = proxiedUrlFor(canonicalUrl, index);
 
-    if (contentType === "model/gltf+zip") {
-      // TODO: Sketchfab object urls should be revoked after they are loaded by the glTF loader.
-      const { getFilesFromSketchfabZip } = await import(
-        /* webpackChunkName: "SketchfabZipLoader", webpackPrefetch: true */ "./SketchfabZipLoader"
-      );
-      const files = await getFilesFromSketchfabZip(accessibleUrl);
-      return { canonicalUrl, accessibleUrl: files["scene.gtlf"], contentType, files };
+      contentType =
+        (result.meta && result.meta.expected_content_type) ||
+        guessContentType(canonicalUrl) ||
+        (await this.fetchContentType(accessibleUrl));
+    } catch (error) {
+      throw new RethrownError(`Error resolving media "${absoluteUrl}"`, error);
+    }
+
+    try {
+      if (contentType === "model/gltf+zip") {
+        // TODO: Sketchfab object urls should be revoked after they are loaded by the glTF loader.
+        const { getFilesFromSketchfabZip } = await import(
+          /* webpackChunkName: "SketchfabZipLoader", webpackPrefetch: true */ "./SketchfabZipLoader"
+        );
+        const files = await getFilesFromSketchfabZip(accessibleUrl);
+        return { canonicalUrl, accessibleUrl: files["scene.gtlf"], contentType, files };
+      }
+    } catch (error) {
+      throw new RethrownError(`Error loading Sketchfab model "${accessibleUrl}"`, error);
     }
 
     return { canonicalUrl, accessibleUrl, contentType };
+  }
+
+  proxyUrl(url) {
+    return proxiedUrlFor(url);
   }
 
   unproxyUrl(baseUrl, url) {
@@ -357,7 +374,19 @@ export default class Project extends EventEmitter {
 
     const resp = await this.fetch(url, { headers, signal });
 
+    if (signal.aborted) {
+      const error = new Error("Media search aborted");
+      error.aborted = true;
+      throw error;
+    }
+
     const json = await resp.json();
+
+    if (signal.aborted) {
+      const error = new Error("Media search aborted");
+      error.aborted = true;
+      throw error;
+    }
 
     const thumbnailedEntries = json.entries.map(entry => {
       if (entry.images && entry.images.preview && entry.images.preview.url) {
@@ -682,7 +711,7 @@ export default class Project extends EventEmitter {
       if (project.scene) {
         allowPromotion = project.scene.allow_promotion;
         allowRemixing = project.scene.allow_remixing;
-        creatorAttribution = project.scene.attribution || "";
+        creatorAttribution = project.scene.attributions.creator || "";
       } else if ((!creatorAttribution || creatorAttribution.length === 0) && userInfo && userInfo.creatorAttribution) {
         creatorAttribution = userInfo.creatorAttribution;
       }
@@ -709,7 +738,9 @@ export default class Project extends EventEmitter {
       if (!publishParams) {
         URL.revokeObjectURL(screenshotUrl);
         hideDialog();
-        return;
+        const error = new Error("Publish project aborted");
+        error.aborted = true;
+        throw error;
       }
 
       // Update the scene with the metadata from the publishDialog
@@ -915,11 +946,11 @@ export default class Project extends EventEmitter {
         }
       });
 
-      request.addEventListener("error", e => {
+      request.addEventListener("error", error => {
         if (signal) {
           signal.removeEventListener("abort", onAbort);
         }
-        reject(new Error(`Upload failed ${e}`));
+        reject(new RethrownError("Upload failed", error));
       });
 
       request.addEventListener("load", () => {
@@ -994,12 +1025,17 @@ export default class Project extends EventEmitter {
   lastUploadAssetRequest = 0;
 
   async _uploadAsset(endpoint, editor, file, onProgress, signal) {
-    const thumbnailBlob = await editor.generateFileThumbnail(file);
+    let thumbnail_file_id = null;
+    let thumbnail_access_token = null;
 
-    const {
-      file_id: thumbnail_file_id,
-      meta: { access_token: thumbnail_access_token }
-    } = await this.upload(thumbnailBlob, undefined, signal);
+    if (!matchesFileTypes(file, AudioFileTypes)) {
+      const thumbnailBlob = await editor.generateFileThumbnail(file);
+
+      const response = await this.upload(thumbnailBlob, undefined, signal);
+
+      thumbnail_file_id = response.file_id;
+      thumbnail_access_token = response.meta.access_token;
+    }
 
     const {
       file_id: asset_file_id,
@@ -1104,14 +1140,23 @@ export default class Project extends EventEmitter {
   }
 
   async fetch(url, options) {
-    const res = await fetch(url, options);
+    try {
+      const res = await fetch(url, options);
 
-    if (res.ok) {
-      return res;
+      if (res.ok) {
+        return res;
+      }
+
+      const err = new Error(
+        `Network Error: ${res.status || "Unknown Status."} ${res.statusText || "Unknown Error. Possibly a CORS error."}`
+      );
+      err.response = res;
+      throw err;
+    } catch (error) {
+      if (error.message === "Failed to fetch") {
+        error.message += " (Possibly a CORS error)";
+      }
+      throw new RethrownError(`Failed to fetch "${url}"`, error);
     }
-
-    const err = new Error("Network Error: " + res.statusText);
-    err.response = res;
-    throw err;
   }
 }

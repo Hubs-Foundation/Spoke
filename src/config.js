@@ -42,6 +42,10 @@ import ParticleEmitterNode from "./editor/nodes/ParticleEmitterNode";
 import ParticleEmitterNodeEditor from "./ui/properties/ParticleEmitterNodeEditor";
 import KitPieceNode from "./editor/nodes/KitPieceNode";
 import KitPieceNodeEditor from "./ui/properties/KitPieceNodeEditor";
+import SimpleWaterNode from "./editor/nodes/SimpleWaterNode";
+import SimpleWaterNodeEditor from "./ui/properties/SimpleWaterNodeEditor";
+import AudioNode from "./editor/nodes/AudioNode";
+import AudioNodeEditor from "./ui/properties/AudioNodeEditor";
 
 import SketchfabSource from "./ui/assets/sources/SketchfabSource";
 import PolySource from "./ui/assets/sources/PolySource";
@@ -53,6 +57,7 @@ import ElementsSource from "./ui/assets/sources/ElementsSource";
 import MyAssetsSource from "./ui/assets/sources/MyAssetsSource";
 import ArchitectureKitSource from "./ui/assets/sources/ArchitectureKitSource";
 import RockKitSource from "./ui/assets/sources/RockKitSource";
+import HubsSoundPackSource from "./ui/assets/sources/HubsSoundPackSource";
 
 export function createEditor(api, settings) {
   const editor = new Editor(api, settings);
@@ -73,22 +78,25 @@ export function createEditor(api, settings) {
   editor.registerNode(FloorPlanNode, FloorPlanNodeEditor);
   editor.registerNode(ImageNode, ImageNodeEditor);
   editor.registerNode(VideoNode, VideoNodeEditor);
+  editor.registerNode(AudioNode, AudioNodeEditor);
   editor.registerNode(SpawnerNode, SpawnerNodeEditor);
   editor.registerNode(TriggerVolumeNode, TriggerVolumeNodeEditor);
   editor.registerNode(LinkNode, LinkNodeEditor);
   editor.registerNode(ParticleEmitterNode, ParticleEmitterNodeEditor);
   editor.registerNode(KitPieceNode, KitPieceNodeEditor);
+  editor.registerNode(SimpleWaterNode, SimpleWaterNodeEditor);
 
   editor.registerSource(new ElementsSource(editor));
   editor.registerSource(new MyAssetsSource(editor));
-  editor.registerSource(new ArchitectureKitSource());
-  editor.registerSource(new RockKitSource());
+  editor.registerSource(new ArchitectureKitSource(api));
+  editor.registerSource(new RockKitSource(api));
   editor.registerSource(new SketchfabSource(api));
   editor.registerSource(new PolySource(api));
   editor.registerSource(new BingImagesSource(api));
   editor.registerSource(new BingVideosSource(api));
-  editor.registerSource(new TwitchSource(api));
+  editor.registerSource(new HubsSoundPackSource(editor));
   editor.registerSource(new TenorSource(api));
+  editor.registerSource(new TwitchSource(api));
 
   return editor;
 }

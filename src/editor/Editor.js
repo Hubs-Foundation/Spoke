@@ -9,7 +9,6 @@ import {
   AudioListener,
   Raycaster,
   Clock,
-  Color,
   Scene
 } from "three";
 import { GLTFExporter } from "./gltf/GLTFExporter";
@@ -22,6 +21,7 @@ import SceneNode from "./nodes/SceneNode";
 import FloorPlanNode from "./nodes/FloorPlanNode";
 
 import LoadingCube from "./objects/LoadingCube";
+import ErrorIcon from "./objects/ErrorIcon";
 import TransformGizmo from "./objects/TransformGizmo";
 import SpokeInfiniteGridHelper from "./helpers/SpokeInfiniteGridHelper";
 
@@ -31,7 +31,7 @@ import TextureCache from "./caches/TextureCache";
 import getDetachedObjectsRoots from "./utils/getDetachedObjectsRoots";
 import { loadEnvironmentMap } from "./utils/EnvironmentMap";
 import makeUniqueName from "./utils/makeUniqueName";
-import eventToMessage from "./utils/eventToMessage";
+import { RethrownError, MultiError } from "./utils/errors";
 import cloneObject3D from "./utils/cloneObject3D";
 import isEmptyObject from "./utils/isEmptyObject";
 import getIntersectingNode from "./utils/getIntersectingNode";
@@ -84,7 +84,9 @@ import GroupNode from "./nodes/GroupNode";
 import ModelNode from "./nodes/ModelNode";
 import VideoNode from "./nodes/VideoNode";
 import ImageNode from "./nodes/ImageNode";
+import AudioNode from "./nodes/AudioNode";
 import LinkNode from "./nodes/LinkNode";
+import AssetManifestSource from "../ui/assets/AssetManifestSource";
 
 const tempMatrix1 = new Matrix4();
 const tempMatrix2 = new Matrix4();
@@ -132,6 +134,7 @@ export default class Editor extends EventEmitter {
     this.nodeTypes = new Set();
     this.nodeEditors = new Map();
     this.sources = [];
+    this.defaultUploadSource = null;
 
     this.textureCache = new TextureCache();
     this.gltfCache = new GLTFCache();
@@ -174,6 +177,18 @@ export default class Editor extends EventEmitter {
 
   registerSource(source) {
     this.sources.push(source);
+
+    if (source.uploadSource && !this.defaultUploadSource) {
+      this.defaultUploadSource = source;
+    }
+  }
+
+  async installAssetSource(manifestUrl) {
+    const proxiedUrl = this.api.proxyUrl(new URL(manifestUrl, window.location).href);
+    const res = await this.api.fetch(proxiedUrl);
+    const json = await res.json();
+    this.sources.push(new AssetManifestSource(this, json.name, manifestUrl));
+    this.emit("settingsChanged");
   }
 
   getSource(sourceId) {
@@ -220,7 +235,7 @@ export default class Editor extends EventEmitter {
 
     this.initializing = true;
 
-    const tasks = [rendererPromise, loadEnvironmentMap(), LoadingCube.load(), TransformGizmo.load()];
+    const tasks = [rendererPromise, loadEnvironmentMap(), LoadingCube.load(), ErrorIcon.load(), TransformGizmo.load()];
 
     for (const NodeConstructor of this.nodeTypes) {
       tasks.push(NodeConstructor.load());
@@ -275,7 +290,7 @@ export default class Editor extends EventEmitter {
     this.sceneLoading = true;
     this.disableUpdate = true;
 
-    const scene = await SceneNode.loadProject(this, projectFile);
+    const [scene, errors] = await SceneNode.loadProject(this, projectFile);
 
     this.sceneLoading = false;
     this.disableUpdate = false;
@@ -287,7 +302,6 @@ export default class Editor extends EventEmitter {
 
     this.spokeControls.center.set(0, 0, 0);
     this.spokeControls.onSceneSet(scene);
-    scene.background = new Color(0xaaaaaa);
 
     this.renderer.onSceneSet();
 
@@ -305,11 +319,20 @@ export default class Editor extends EventEmitter {
       }
     });
 
-    this.emit("projectLoaded");
+    if (errors.length === 0) {
+      this.emit("projectLoaded");
+    }
+
     this.emit("sceneGraphChanged");
 
     this.addListener("objectsChanged", this.onEmitSceneModified);
     this.addListener("sceneGraphChanged", this.onEmitSceneModified);
+
+    if (errors.length > 0) {
+      const error = new MultiError("Errors loading project", errors);
+      this.emit("error", error);
+      throw error;
+    }
 
     return scene;
   }
@@ -385,7 +408,7 @@ export default class Editor extends EventEmitter {
     try {
       chunks = await exporter.exportChunks(clonedScene);
     } catch (error) {
-      throw new Error(`Error exporting scene. ${eventToMessage(error)}`);
+      throw new RethrownError(`Error exporting scene`, error);
     }
 
     const json = chunks.json;
@@ -477,7 +500,7 @@ export default class Editor extends EventEmitter {
       const glbBlob = await exporter.exportGLBBlob(chunks);
       return glbBlob;
     } catch (error) {
-      throw new Error(`Error creating glb blob. ${eventToMessage(error)}`);
+      throw new RethrownError("Error creating glb blob", error);
     }
   }
 
@@ -558,6 +581,7 @@ export default class Editor extends EventEmitter {
         node.onPlay();
       }
     });
+    this.emit("playModeChanged");
   }
 
   leavePlayMode() {
@@ -569,6 +593,7 @@ export default class Editor extends EventEmitter {
         node.onPause();
       }
     });
+    this.emit("playModeChanged");
   }
 
   update = () => {
@@ -1907,7 +1932,7 @@ export default class Editor extends EventEmitter {
     }
   };
 
-  async addMedia(url) {
+  async addMedia(url, parent, before) {
     let contentType = "";
 
     try {
@@ -1921,23 +1946,28 @@ export default class Editor extends EventEmitter {
     if (contentType.startsWith("model/gltf")) {
       node = new ModelNode(this);
       this.getSpawnPosition(node.position);
-      this.addObject(node);
+      this.addObject(node, parent, before);
       node.initialScale = "fit";
       await node.load(url);
     } else if (contentType.startsWith("video/")) {
       node = new VideoNode(this);
       this.getSpawnPosition(node.position);
-      this.addObject(node);
+      this.addObject(node, parent, before);
       await node.load(url);
     } else if (contentType.startsWith("image/")) {
       node = new ImageNode(this);
       this.getSpawnPosition(node.position);
-      this.addObject(node);
+      this.addObject(node, parent, before);
+      await node.load(url);
+    } else if (contentType.startsWith("audio/")) {
+      node = new AudioNode(this);
+      this.getSpawnPosition(node.position);
+      this.addObject(node, parent, before);
       await node.load(url);
     } else {
       node = new LinkNode(this);
       this.getSpawnPosition(node.position);
-      this.addObject(node);
+      this.addObject(node, parent, before);
       node.href = url;
     }
 

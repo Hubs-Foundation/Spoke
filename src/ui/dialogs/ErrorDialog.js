@@ -1,8 +1,26 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
 import * as Sentry from "@sentry/browser";
-import Dialog from "./Dialog";
+import Dialog, { DialogContent } from "./Dialog";
 import { Button } from "../inputs/Button";
+import styled from "styled-components";
+
+const ErrorDialogContainer = styled(Dialog)`
+  max-width: 600px;
+
+  ${DialogContent} {
+    padding: 0;
+  }
+`;
+
+const ErrorMessage = styled.code`
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 16px;
+  color: ${props => props.theme.red};
+`;
 
 export default class ErrorDialog extends Component {
   state = { eventId: null };
@@ -32,9 +50,9 @@ export default class ErrorDialog extends Component {
     const { error, message, onCancel, ...props } = this.props;
 
     return (
-      <Dialog {...props} bottomNav={this.renderBottomNav()}>
-        {message}
-      </Dialog>
+      <ErrorDialogContainer {...props} bottomNav={this.renderBottomNav()}>
+        <ErrorMessage>{message}</ErrorMessage>
+      </ErrorDialogContainer>
     );
   }
 }
