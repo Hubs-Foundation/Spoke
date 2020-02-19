@@ -471,6 +471,14 @@ export default class SpokeControls extends EventEmitter {
         }
 
         if (this.transformSpace === TransformSpace.World) {
+          if (!selectedAxisInfo.rotationTarget) {
+            throw new Error(
+              `Couldn't rotate object due to an unknown error. The selected axis is ${
+                this.transformGizmo.selectedAxis.name
+              } The selected axis info is: ${JSON.stringify(selectedAxisInfo)}`
+            );
+          }
+
           selectedAxisInfo.rotationTarget.rotateOnAxis(selectedAxisInfo.planeNormal, relativeRotationAngle);
         } else {
           this.transformGizmo.rotateOnAxis(selectedAxisInfo.planeNormal, relativeRotationAngle);
