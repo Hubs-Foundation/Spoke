@@ -537,6 +537,14 @@ class EditorContainer extends Component {
   async createProject() {
     const { editor, parentSceneId } = this.state;
 
+    this.showDialog(ProgressDialog, {
+      title: "Generating Project Screenshot",
+      message: "Generating project screenshot..."
+    });
+
+    // Wait for 5ms so that the ProgressDialog shows up.
+    await new Promise(resolve => setTimeout(resolve, 5));
+
     const { blob } = await editor.takeScreenshot(512, 320);
 
     const result = await new Promise(resolve => {
@@ -548,42 +556,45 @@ class EditorContainer extends Component {
       });
     });
 
-    if (result) {
-      const abortController = new AbortController();
-
-      this.showDialog(ProgressDialog, {
-        title: "Saving Project",
-        message: "Saving project...",
-        cancelable: true,
-        onCancel: () => {
-          abortController.abort();
-          this.hideDialog();
-        }
-      });
-
-      editor.setProperty(editor.scene, "name", result.name, false);
-      editor.scene.setMetadata({ name: result.name });
-
-      const project = await this.props.api.createProject(
-        editor.scene,
-        parentSceneId,
-        blob,
-        abortController.signal,
-        this.showDialog,
-        this.hideDialog
-      );
-
-      editor.sceneModified = false;
-
-      this.updateModifiedState(() => {
-        this.setState({ creatingProject: true, project }, () => {
-          this.props.history.replace(`/projects/${project.project_id}`);
-          this.setState({ creatingProject: false });
-        });
-      });
-
-      return project;
+    if (!result) {
+      this.hideDialog();
+      return null;
     }
+
+    const abortController = new AbortController();
+
+    this.showDialog(ProgressDialog, {
+      title: "Saving Project",
+      message: "Saving project...",
+      cancelable: true,
+      onCancel: () => {
+        abortController.abort();
+        this.hideDialog();
+      }
+    });
+
+    editor.setProperty(editor.scene, "name", result.name, false);
+    editor.scene.setMetadata({ name: result.name });
+
+    const project = await this.props.api.createProject(
+      editor.scene,
+      parentSceneId,
+      blob,
+      abortController.signal,
+      this.showDialog,
+      this.hideDialog
+    );
+
+    editor.sceneModified = false;
+
+    this.updateModifiedState(() => {
+      this.setState({ creatingProject: true, project }, () => {
+        this.props.history.replace(`/projects/${project.project_id}`);
+        this.setState({ creatingProject: false });
+      });
+    });
+
+    return project;
   }
 
   onNewProject = async () => {
@@ -811,6 +822,9 @@ class EditorContainer extends Component {
       if (!project) {
         return;
       }
+
+      editor.sceneModified = false;
+      this.updateModifiedState();
 
       trackEvent("Project Publish Successful");
 
