@@ -10,7 +10,7 @@ export default class SpawnerNode extends EditorNodeMixin(Model) {
   static nodeName = "Spawner";
 
   static initialElementProps = {
-    initialScale: 1,
+    initialScale: "fit",
     src: "https://sketchfab.com/models/a4c500d7358a4a199b6a5cd35f416466"
   };
 
@@ -83,7 +83,7 @@ export default class SpawnerNode extends EditorNodeMixin(Model) {
         this.editor.renderer.addBatchedObject(this.model);
       }
 
-      if (this.initialScale) {
+      if (this.initialScale === "fit") {
         this.scale.set(1, 1, 1);
 
         if (this.model) {
