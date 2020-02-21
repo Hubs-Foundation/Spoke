@@ -803,8 +803,6 @@ class EditorContainer extends Component {
   };
 
   onPublishProject = async () => {
-    console.log("onPublishProject");
-
     trackEvent("Project Publish Started");
 
     try {
@@ -812,7 +810,6 @@ class EditorContainer extends Component {
       let project = this.state.project;
 
       if (!project) {
-        console.log("beforeCreateProject");
         project = await this.createProject();
       }
 
@@ -825,6 +822,9 @@ class EditorContainer extends Component {
       if (!project) {
         return;
       }
+
+      editor.sceneModified = false;
+      this.updateModifiedState();
 
       trackEvent("Project Publish Successful");
 
