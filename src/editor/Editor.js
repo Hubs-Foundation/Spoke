@@ -1967,8 +1967,8 @@ export default class Editor extends EventEmitter {
     } else {
       node = new LinkNode(this);
       this.getSpawnPosition(node.position);
-      this.addObject(node, parent, before);
       node.href = url;
+      this.addObject(node, parent, before);
     }
 
     return node;
