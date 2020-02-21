@@ -688,6 +688,14 @@ export default class Project extends EventEmitter {
         });
       }
 
+      showDialog(ProgressDialog, {
+        title: "Generating Project Screenshot",
+        message: "Generating project screenshot..."
+      });
+
+      // Wait for 5ms so that the ProgressDialog shows up.
+      await new Promise(resolve => setTimeout(resolve, 5));
+
       // Take a screenshot of the scene from the current camera position to use as the thumbnail
       const { blob: screenshotBlob, cameraTransform: screenshotCameraTransform } = await editor.takeScreenshot();
       screenshotUrl = URL.createObjectURL(screenshotBlob);
