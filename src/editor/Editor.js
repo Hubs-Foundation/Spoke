@@ -88,6 +88,8 @@ import AudioNode from "./nodes/AudioNode";
 import LinkNode from "./nodes/LinkNode";
 import AssetManifestSource from "../ui/assets/AssetManifestSource";
 
+import UVUnwrapper from "./xatlas/UVUnwrapper";
+
 const tempMatrix1 = new Matrix4();
 const tempMatrix2 = new Matrix4();
 const tempMatrix3 = new Matrix4();
@@ -164,6 +166,8 @@ export default class Editor extends EventEmitter {
     this.initializing = false;
     this.initialized = false;
     this.sceneLoading = false;
+
+    this.uvUnwrapper = new UVUnwrapper();
   }
 
   registerNode(nodeConstructor, nodeEditor) {
@@ -235,7 +239,14 @@ export default class Editor extends EventEmitter {
 
     this.initializing = true;
 
-    const tasks = [rendererPromise, loadEnvironmentMap(), LoadingCube.load(), ErrorIcon.load(), TransformGizmo.load()];
+    const tasks = [
+      rendererPromise,
+      loadEnvironmentMap(),
+      LoadingCube.load(),
+      ErrorIcon.load(),
+      TransformGizmo.load(),
+      UVUnwrapper.load()
+    ];
 
     for (const NodeConstructor of this.nodeTypes) {
       tasks.push(NodeConstructor.load());
