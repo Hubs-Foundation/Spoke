@@ -173,9 +173,7 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
 
     this.setNavMesh(navMesh);
 
-    if (this.editor.selected.indexOf(this) !== -1) {
-      navMesh.visible = true;
-    }
+    navMesh.visible = this.editor.selected.indexOf(this) !== -1;
 
     const collidableGeometry = mergeMeshGeometries(collidableMeshes);
 
@@ -229,9 +227,7 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
       this.heightfieldMesh.layers.set(1);
       heightfieldMesh.position.set(heightfield.offset.x, 0, heightfield.offset.z);
 
-      if (this.editor.selected.indexOf(this) !== -1) {
-        this.heightfieldMesh.visible = true;
-      }
+      this.heightfieldMesh.visible = this.editor.selected.indexOf(this) !== -1;
     } else {
       const trimesh = new Mesh(collidableGeometry, new MeshBasicMaterial({ wireframe: true, color: 0xff0000 }));
 
