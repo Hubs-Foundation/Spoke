@@ -25,7 +25,6 @@ export function isAsset(item) {
 }
 
 export function addAssetOnDrop(editor, item, parent, before) {
-  console.log(item);
   if (isAsset(item)) {
     const { nodeClass, initialProps } = item.value;
     const node = new nodeClass(editor);
