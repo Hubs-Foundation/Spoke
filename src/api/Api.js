@@ -927,8 +927,12 @@ export default class Project extends EventEmitter {
     return project;
   }
 
-  upload(blob, onUploadProgress, signal) {
-    return new Promise((resolve, reject) => {
+  async upload(blob, onUploadProgress, signal) {
+    // Use direct upload API, see: https://github.com/mozilla/reticulum/pull/319
+    const { phx_host: uploadHost } = await (await this.fetch(`https://${RETICULUM_SERVER}/api/v1/meta`)).json();
+    const uploadPort = new URL(`https://${RETICULUM_SERVER}`).port;
+
+    await new Promise((resolve, reject) => {
       const request = new XMLHttpRequest();
 
       const onAbort = () => {
@@ -943,7 +947,7 @@ export default class Project extends EventEmitter {
         signal.addEventListener("abort", onAbort);
       }
 
-      request.open("post", `https://${RETICULUM_SERVER}/api/v1/media`, true);
+      request.open("post", `https://${uploadHost}:${uploadPort}/api/v1/media`, true);
 
       request.upload.addEventListener("progress", e => {
         if (onUploadProgress) {
