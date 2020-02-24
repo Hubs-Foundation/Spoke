@@ -932,7 +932,7 @@ export default class Project extends EventEmitter {
     const { phx_host: uploadHost } = await (await this.fetch(`https://${RETICULUM_SERVER}/api/v1/meta`)).json();
     const uploadPort = new URL(`https://${RETICULUM_SERVER}`).port;
 
-    await new Promise((resolve, reject) => {
+    return await new Promise((resolve, reject) => {
       const request = new XMLHttpRequest();
 
       const onAbort = () => {
