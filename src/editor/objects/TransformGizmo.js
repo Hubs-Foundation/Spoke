@@ -253,6 +253,28 @@ export default class TransformGizmo extends Object3D {
     return newAxisInfo.axis;
   }
 
+  highlightHoveredAxis(raycaster) {
+    if (!this.activeControls) {
+      return undefined;
+    }
+
+    if (this.hoveredAxis) {
+      this.hoveredAxis.axisInfo.selectionColorTarget.opacity = 0.5;
+    }
+
+    this.raycasterResults.length = 0;
+    raycaster.intersectObject(this.activeControls, true, this.raycasterResults);
+
+    const axisResult = this.raycasterResults.find(result => result.object.axisInfo !== undefined);
+
+    if (!axisResult) {
+      return undefined;
+    }
+
+    axisResult.object.axisInfo.selectionColorTarget.opacity = 1;
+    this.hoveredAxis = axisResult.object;
+  }
+
   deselectAxis() {
     if (this.selectedAxis) {
       const oldAxisInfo = this.selectedAxis.axisInfo;
