@@ -309,6 +309,9 @@ export default class SpokeControls extends EventEmitter {
     this.transformPivotChanged = false;
     this.transformSpaceChanged = false;
 
+    // Set up the transformRay
+    const cursorPosition = input.get(Spoke.cursorPosition);
+
     if (selectStart) {
       const selectStartPosition = input.get(Spoke.selectStartPosition);
       this.selectStartPosition.copy(selectStartPosition);
@@ -330,14 +333,14 @@ export default class SpokeControls extends EventEmitter {
           this.dragging = false;
         }
       }
+    } else if (this.transformGizmo.activeControls && !this.dragging) {
+      this.raycaster.setFromCamera(cursorPosition, this.camera);
+      this.transformGizmo.highlightHoveredAxis(this.raycaster);
     }
 
     const selectEnd = input.get(Spoke.selectEnd) === 1;
 
     if (this.dragging || this.transformMode === TransformMode.Grab || this.transformMode === TransformMode.Placement) {
-      // Set up the transformRay
-      const cursorPosition = input.get(Spoke.cursorPosition);
-
       let constraint;
 
       if (this.transformMode === TransformMode.Grab || this.transformMode === TransformMode.Placement) {
