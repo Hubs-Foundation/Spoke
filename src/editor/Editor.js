@@ -1050,7 +1050,7 @@ export default class Editor extends EventEmitter {
       }
     });
 
-    this.addObject(clonedObject, parent, before, false, false, false);
+    this.addObject(clonedObject, parent || object.parent, before, false, false, false);
 
     if (selectObject) {
       this.setSelection([clonedObject], false, false, false);
@@ -1079,9 +1079,16 @@ export default class Editor extends EventEmitter {
     }
 
     const validNodes = objects.filter(object => object.constructor.canAddNode(this));
-    const duplicatedRoots = getDetachedObjectsRoots(validNodes).map(object => object.clone());
+    const roots = getDetachedObjectsRoots(validNodes);
+    const duplicatedRoots = roots.map(object => object.clone());
 
-    this.addMultipleObjects(duplicatedRoots, parent, before, false, false, false, true);
+    if (parent) {
+      this.addMultipleObjects(duplicatedRoots, parent, before, false, false, false, true);
+    } else {
+      for (let i = 0; i < roots.length; i++) {
+        this.addObject(duplicatedRoots[i], roots[i].parent, undefined, false, false, false, true);
+      }
+    }
 
     if (selectObjects) {
       this.setSelection(duplicatedRoots, false, false, false);
