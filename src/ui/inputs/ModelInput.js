@@ -20,7 +20,9 @@ export default function ModelInput({ onChange, ...rest }) {
         onChange(item.value.url, item.value.initialProps || {});
       } else {
         onUpload(item.files, uploadOptions).then(assets => {
-          onChange(assets[0].url, {});
+          if (assets && assets.length > 0) {
+            onChange(assets[0].url, {});
+          }
         });
       }
     },
