@@ -1,5 +1,6 @@
-import React, { Component } from "react";
+import React from "react";
 import PropTypes from "prop-types";
+import { useLocation, matchPath } from "react-router-dom";
 import configs from "./configs";
 
 const telemetryEnabled = configs.GA_TRACKING_ID && window.ga;
@@ -21,26 +22,31 @@ export function trackEvent(eventAction, eventValue) {
   window.ga("send", { hitType: "event", eventCategory: "Spoke", eventAction, eventValue });
 }
 
-export function withPageView(WrappedComponent, overridePage, overrideTitle) {
-  return class TelemetryWrapper extends Component {
-    static propTypes = {
-      match: PropTypes.object
-    };
+export function Telemetry({ overridePage, overrideTitle }) {
+  const location = useLocation();
 
-    componentDidMount() {
-      const page = "/spoke" + (overridePage || this.props.match.url);
-      const title = overrideTitle ? "Spoke by Mozilla | " + overrideTitle : document.title;
+  React.useEffect(() => {
+    let overridePage, overrideTitle;
 
-      console.info(`Telemetry ${telemetryEnabled ? "enabled" : "disabled"} | Navigated to: ${page}`);
-
-      if (telemetryEnabled) {
-        window.ga("set", { page, title });
-        window.ga("send", "pageview");
-      }
+    if (matchPath(location.pathname, { path: "/projects/:projectId" })) {
+      overridePage = "/projects/editor";
+      overrideTitle = "Editor";
     }
 
-    render() {
-      return <WrappedComponent {...this.props} />;
+    const page = "/spoke" + (overridePage || location.pathname);
+    const title = overrideTitle ? "Spoke by Mozilla | " + overrideTitle : document.title;
+
+    console.info(`Telemetry ${telemetryEnabled ? "enabled" : "disabled"} | Navigated to: ${page}`);
+
+    if (telemetryEnabled) {
+      window.ga("set", { page, title });
+      window.ga("send", "pageview");
     }
-  };
+  }, [location, overridePage, overrideTitle]);
+
+  return null;
 }
+
+Telemetry.propTypes = {
+  match: PropTypes.object
+};

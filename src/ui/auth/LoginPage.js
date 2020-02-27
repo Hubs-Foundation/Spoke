@@ -35,7 +35,7 @@ class LoginPage extends Component {
   };
 
   render() {
-    if (this.state.redirectToReferrer) {
+    if (this.state.redirectToReferrer || this.props.api.isAuthenticated()) {
       const location = this.props.location;
       const from = location.state ? location.state.from : "/projects";
       return <Redirect to={from} />;
