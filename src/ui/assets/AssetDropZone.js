@@ -36,10 +36,12 @@ export default function AssetDropZone({ afterUpload, uploadOptions }) {
     accept: [ItemTypes.File],
     drop(item) {
       onUpload(item.files).then(assets => {
-        editor.setSource(editor.defaultUploadSource.id);
+        if (assets) {
+          editor.setSource(editor.defaultUploadSource.id);
 
-        if (afterUpload) {
-          afterUpload(assets);
+          if (afterUpload) {
+            afterUpload(assets);
+          }
         }
       });
     },
