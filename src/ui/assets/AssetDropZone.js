@@ -35,8 +35,9 @@ export default function AssetDropZone({ afterUpload, uploadOptions }) {
   const [{ canDrop, isOver, isDragging }, onDropTarget] = useDrop({
     accept: [ItemTypes.File],
     drop(item) {
-      editor.setSource(editor.defaultUploadSource.id);
       onUpload(item.files).then(assets => {
+        editor.setSource(editor.defaultUploadSource.id);
+
         if (afterUpload) {
           afterUpload(assets);
         }
