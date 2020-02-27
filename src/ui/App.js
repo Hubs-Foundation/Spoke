@@ -12,7 +12,7 @@ import { ApiContextProvider } from "./contexts/ApiContext";
 import { AuthContextProvider } from "./contexts/AuthContext";
 
 import RedirectRoute from "./router/RedirectRoute";
-import { withPageView } from "../telemetry";
+import { Telemetry } from "../telemetry";
 
 import LandingPage from "./landing/LandingPage";
 import WhatsNewPage from "./whats-new/WhatsNewPage";
@@ -71,23 +71,21 @@ export default class App extends Component {
               <GlobalStyle />
               <Column as={Suspense} fallback={<Loading message="Loading..." fullScreen />}>
                 <Switch>
-                  {configs.isMoz() && <Route path="/" exact component={withPageView(LandingPage)} />}
+                  {configs.isMoz() && <Route path="/" exact component={LandingPage} />}
                   {!configs.isMoz() && <RedirectRoute path="/" exact to="/projects" />}
-                  <Route path="/whats-new" exact component={withPageView(WhatsNewPage)} />
+                  <Route path="/whats-new" exact component={WhatsNewPage} />
                   <RedirectRoute path="/new" exact to="/projects" />
-                  <Route path="/login" exact component={withPageView(LoginPage)} />
-                  <Route path="/logout" exact component={withPageView(LogoutPage)} />
-                  <Route path="/projects/create" exact component={withPageView(CreateProjectPage)} />
+                  <Route path="/login" exact component={LoginPage} />
+                  <Route path="/logout" exact component={LogoutPage} />
+                  <Route path="/projects/create" exact component={CreateProjectPage} />
                   <RedirectRoute path="/projects/templates" exact to="/projects/create" />
-                  <Route path="/projects" exact component={withPageView(ProjectsPage)} />
-                  <Route
-                    path="/projects/:projectId"
-                    component={withPageView(EditorContainer, "/projects/editor", "Editor")}
-                  />
-                  <Route path="/kits/package" component={withPageView(PackageKitPage)} />
+                  <Route path="/projects" exact component={ProjectsPage} />
+                  <Route path="/projects/:projectId" component={EditorContainer} />
+                  <Route path="/kits/package" component={PackageKitPage} />
                   <Route render={() => <Error message="Page not found." />} />
                 </Switch>
               </Column>
+              <Telemetry />
             </Router>
           </ThemeProvider>
         </AuthContextProvider>

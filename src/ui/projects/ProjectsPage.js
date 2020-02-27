@@ -23,7 +23,7 @@ import styled from "styled-components";
 export const ProjectsSection = styled.section`
   padding-bottom: 100px;
   display: flex;
-  flex: 1;
+  flex: ${props => (props.flex === undefined ? 1 : props.flex)};
 
   &:first-child {
     padding-top: 100px;
@@ -152,7 +152,7 @@ class ProjectsPage extends Component {
         <NavBar />
         <main>
           {!isAuthenticated || (projects.length === 0 && !loading) ? (
-            <ProjectsSection>
+            <ProjectsSection flex={0}>
               <WelcomeContainer>
                 <h1>Welcome{configs.isMoz() ? " to Spoke" : ""}</h1>
                 <h2>

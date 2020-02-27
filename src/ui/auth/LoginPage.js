@@ -1,7 +1,6 @@
-import React, { Component } from "react";
+import React, { useContext } from "react";
 import { Redirect } from "react-router-dom";
-import PropTypes from "prop-types";
-import { withApi } from "../contexts/ApiContext";
+import { ApiContext } from "../contexts/ApiContext";
 import NavBar from "../navigation/NavBar";
 import Footer from "../navigation/Footer";
 import styled from "styled-components";
@@ -20,43 +19,26 @@ const LoginContainer = styled.div`
   border-radius: 8px;
 `;
 
-class LoginPage extends Component {
-  static propTypes = {
-    location: PropTypes.object.isRequired,
-    api: PropTypes.object.isRequired
-  };
+export default function LoginPage() {
+  const api = useContext(ApiContext);
 
-  state = {
-    redirectToReferrer: false
-  };
-
-  onSuccess = () => {
-    this.setState({ redirectToReferrer: true });
-  };
-
-  render() {
-    if (this.state.redirectToReferrer) {
-      const location = this.props.location;
-      const from = location.state ? location.state.from : "/projects";
-      return <Redirect to={from} />;
-    }
-
-    const AuthContainer = this.props.api.getAuthContainer();
-
-    return (
-      <>
-        <NavBar />
-        <main>
-          <LoginSection>
-            <LoginContainer>
-              <AuthContainer {...this.props} onSuccess={this.onSuccess} />
-            </LoginContainer>
-          </LoginSection>
-        </main>
-        <Footer />
-      </>
-    );
+  if (api.isAuthenticated()) {
+    return <Redirect to="/projects" />;
   }
-}
 
-export default withApi(LoginPage);
+  const AuthContainer = api.getAuthContainer();
+
+  return (
+    <>
+      <NavBar />
+      <main>
+        <LoginSection>
+          <LoginContainer>
+            <AuthContainer />
+          </LoginContainer>
+        </LoginSection>
+      </main>
+      <Footer />
+    </>
+  );
+}
