@@ -51,7 +51,6 @@ import SketchfabSource from "./ui/assets/sources/SketchfabSource";
 import PolySource from "./ui/assets/sources/PolySource";
 import BingImagesSource from "./ui/assets/sources/BingImagesSource";
 import BingVideosSource from "./ui/assets/sources/BingVideosSource";
-import TwitchSource from "./ui/assets/sources/TwitchSource";
 import TenorSource from "./ui/assets/sources/TenorSource";
 import ElementsSource from "./ui/assets/sources/ElementsSource";
 import MyAssetsSource from "./ui/assets/sources/MyAssetsSource";
@@ -96,7 +95,6 @@ export function createEditor(api, settings) {
   editor.registerSource(new BingVideosSource(api));
   editor.registerSource(new HubsSoundPackSource(editor));
   editor.registerSource(new TenorSource(api));
-  editor.registerSource(new TwitchSource(api));
 
   return editor;
 }
