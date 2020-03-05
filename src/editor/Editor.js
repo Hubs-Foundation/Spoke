@@ -1946,6 +1946,8 @@ export default class Editor extends EventEmitter {
   async addMedia(url, parent, before) {
     let contentType = "";
 
+    const { hostname } = new URL(url);
+
     try {
       contentType = (await this.api.getContentType(url)) || "";
     } catch (error) {
@@ -1960,7 +1962,7 @@ export default class Editor extends EventEmitter {
       this.addObject(node, parent, before);
       node.initialScale = "fit";
       await node.load(url);
-    } else if (contentType.startsWith("video/")) {
+    } else if (contentType.startsWith("video/") || hostname === "www.twitch.tv") {
       node = new VideoNode(this);
       this.getSpawnPosition(node.position);
       this.addObject(node, parent, before);
