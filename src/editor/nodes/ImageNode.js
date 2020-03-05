@@ -20,7 +20,7 @@ export default class ImageNode extends EditorNodeMixin(Image) {
     loadAsync(
       (async () => {
         await node.load(src, onError);
-        node.controls = controls === undefined ? true : controls;
+        node.controls = controls || false;
         node.projection = projection;
       })()
     );
@@ -32,6 +32,7 @@ export default class ImageNode extends EditorNodeMixin(Image) {
     super(editor);
 
     this._canonicalUrl = "";
+    this.controls = true;
   }
 
   get src() {

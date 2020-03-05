@@ -38,7 +38,7 @@ export default class AudioNode extends EditorNodeMixin(AudioSource) {
     loadAsync(
       (async () => {
         await node.load(src, onError);
-        node.controls = controls === undefined ? true : controls;
+        node.controls = controls || false;
         node.autoPlay = autoPlay;
         node.loop = loop;
         node.audioType = audioType;
@@ -62,7 +62,7 @@ export default class AudioNode extends EditorNodeMixin(AudioSource) {
     this._canonicalUrl = "";
     this._autoPlay = true;
     this.volume = 0.5;
-    this.controls = false;
+    this.controls = true;
 
     const geometry = new PlaneBufferGeometry();
     const material = new MeshBasicMaterial();
