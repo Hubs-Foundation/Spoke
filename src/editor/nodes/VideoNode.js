@@ -37,7 +37,7 @@ export default class VideoNode extends EditorNodeMixin(Video) {
     loadAsync(
       (async () => {
         await node.load(src, onError);
-        node.controls = controls;
+        node.controls = controls === undefined ? true : controls;
         node.autoPlay = autoPlay;
         node.loop = loop;
         node.audioType = audioType;
@@ -62,6 +62,7 @@ export default class VideoNode extends EditorNodeMixin(Video) {
     this._canonicalUrl = "";
     this._autoPlay = true;
     this.volume = 0.5;
+    this.controls = false;
   }
 
   get src() {
@@ -163,6 +164,7 @@ export default class VideoNode extends EditorNodeMixin(Video) {
   copy(source, recursive = true) {
     super.copy(source, recursive);
 
+    this.controls = source.controls;
     this._canonicalUrl = source._canonicalUrl;
 
     return this;
