@@ -23,8 +23,8 @@ export default class PublishDialog extends Component {
     this.state = {
       name: "",
       creatorAttribution: "",
-      allowRemixing: true,
-      allowPromotion: true,
+      allowRemixing: false,
+      allowPromotion: false,
       ...props.initialSceneParams
     };
   }
