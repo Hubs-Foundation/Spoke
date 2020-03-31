@@ -731,8 +731,8 @@ export default class Project extends EventEmitter {
           initialSceneParams: {
             name,
             creatorAttribution: creatorAttribution || "",
-            allowRemixing: typeof allowRemixing !== "undefined" ? allowRemixing : true,
-            allowPromotion: typeof allowPromotion !== "undefined" ? allowPromotion : true
+            allowRemixing: typeof allowRemixing !== "undefined" ? allowRemixing : false,
+            allowPromotion: typeof allowPromotion !== "undefined" ? allowPromotion : false
           },
           onCancel: () => resolve(null),
           onPublish: resolve
