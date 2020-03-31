@@ -36,6 +36,7 @@ export default class AssetManifestSource extends BaseSource {
     this.assets = [];
     this.tags = [];
     this.loaded = false;
+    this.searchDebounceTimeout = 0;
   }
 
   async load() {
