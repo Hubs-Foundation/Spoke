@@ -14,6 +14,7 @@ export default class ElementsSource extends BaseSource {
     this.editor.addListener("settingsChanged", this.onSettingsChanged);
     this.editor.addListener("sceneGraphChanged", this.onSceneGraphChanged);
     this.disableUrl = true;
+    this.searchDebounceTimeout = 0;
   }
 
   onSettingsChanged = () => {
