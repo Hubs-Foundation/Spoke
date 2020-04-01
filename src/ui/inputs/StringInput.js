@@ -32,8 +32,13 @@ StringInput.propTypes = {
 
 export default StringInput;
 
+const DropContainer = styled.div`
+  display: flex;
+  width: 100%;
+`;
+
 export const ControlledStringInput = React.forwardRef(({ onChange, value, ...rest }, ref) => {
-  const inputRef = useRef(ref);
+  const inputRef = useRef();
 
   const [tempValue, setTempValue] = useState(value);
 
@@ -59,14 +64,16 @@ export const ControlledStringInput = React.forwardRef(({ onChange, value, ...res
   );
 
   return (
-    <StyledStringInput
-      ref={inputRef}
-      onChange={onChangeValue}
-      onBlur={onBlur}
-      onKeyUp={onKeyUp}
-      value={tempValue}
-      {...rest}
-    />
+    <DropContainer ref={ref}>
+      <StyledStringInput
+        ref={inputRef}
+        onChange={onChangeValue}
+        onBlur={onBlur}
+        onKeyUp={onKeyUp}
+        value={tempValue}
+        {...rest}
+      />
+    </DropContainer>
   );
 });
 
