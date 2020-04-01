@@ -14,6 +14,7 @@
 
 import { RethrownError } from "../utils/errors";
 import loadTexture from "../utils/loadTexture";
+import ClonableInterleavedBufferAttribute from "../utils/ClonableInterleavedBufferAttribute";
 
 import {
   AnimationClip,
@@ -28,7 +29,6 @@ import {
   FrontSide,
   Group,
   InterleavedBuffer,
-  InterleavedBufferAttribute,
   Interpolant,
   InterpolateDiscrete,
   InterpolateLinear,
@@ -1255,13 +1255,13 @@ class GLTFLoader {
     for (let i = 0, il = morphPositions.length; i < il; i++) {
       if (geometry.attributes.position === morphPositions[i]) continue;
 
-      morphPositions[i] = this.cloneBufferAttribute(morphPositions[i]);
+      morphPositions[i] = morphPositions[i].clone();
     }
 
     for (let i = 0, il = morphNormals.length; i < il; i++) {
       if (geometry.attributes.normal === morphNormals[i]) continue;
 
-      morphNormals[i] = this.cloneBufferAttribute(morphNormals[i]);
+      morphNormals[i] = morphNormals[i].clone();
     }
 
     for (let i = 0, il = targets.length; i < il; i++) {
@@ -1724,7 +1724,7 @@ class GLTFLoader {
         this.cache.set(ibCacheKey, ib);
       }
 
-      bufferAttribute = new InterleavedBufferAttribute(ib, itemSize, byteOffset / elementBytes, normalized);
+      bufferAttribute = new ClonableInterleavedBufferAttribute(ib, itemSize, byteOffset / elementBytes, normalized);
     } else {
       if (bufferView === null) {
         array = new TypedArray(accessorDef.count * itemSize);
@@ -1893,25 +1893,6 @@ class GLTFLoader {
     }
 
     return attributesKey;
-  }
-
-  cloneBufferAttribute(attribute) {
-    if (attribute.isInterleavedBufferAttribute) {
-      const count = attribute.count;
-      const itemSize = attribute.itemSize;
-      const array = attribute.array.slice(0, count * itemSize);
-
-      for (let i = 0, j = 0; i < count; ++i) {
-        array[j++] = attribute.getX(i);
-        if (itemSize >= 2) array[j++] = attribute.getY(i);
-        if (itemSize >= 3) array[j++] = attribute.getZ(i);
-        if (itemSize >= 4) array[j++] = attribute.getW(i);
-      }
-
-      return new BufferAttribute(array, itemSize, attribute.normalized);
-    }
-
-    return attribute.clone();
   }
 }
 
