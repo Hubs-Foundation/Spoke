@@ -14,7 +14,6 @@
 
 import { RethrownError } from "../utils/errors";
 import loadTexture from "../utils/loadTexture";
-import ClonableInterleavedBufferAttribute from "../utils/ClonableInterleavedBufferAttribute";
 
 import {
   AnimationClip,
@@ -28,7 +27,6 @@ import {
   FileLoader,
   FrontSide,
   Group,
-  InterleavedBuffer,
   Interpolant,
   InterpolateDiscrete,
   InterpolateLinear,
@@ -1707,33 +1705,31 @@ class GLTFLoader {
     const byteStride =
       accessorDef.bufferView !== undefined ? json.bufferViews[accessorDef.bufferView].byteStride : undefined;
     const normalized = accessorDef.normalized === true;
-    let array, bufferAttribute;
+    let array;
 
     // The buffer is not interleaved if the stride is the item size in bytes.
     if (byteStride && byteStride !== itemBytes) {
-      const ibCacheKey = "InterleavedBuffer:" + accessorDef.bufferView + ":" + accessorDef.componentType;
-      let ib = this.cache.get(ibCacheKey);
+      // Convert interleaved accessors to non-interleaved accessors.
+      // Simplifies mesh cloning, combination, and export at the expense of some performace.
+      const stride = byteStride / elementBytes;
+      const offset = byteOffset / elementBytes;
+      const typedBufferView = new TypedArray(bufferView);
+      array = new TypedArray(accessorDef.count * itemSize);
 
-      if (!ib) {
-        // Use the full buffer if it's interleaved.
-        array = new TypedArray(bufferView);
-
-        // Integer parameters to IB/IBA are in array elements, not bytes.
-        ib = new InterleavedBuffer(array, byteStride / elementBytes);
-
-        this.cache.set(ibCacheKey, ib);
+      for (let elementIndex = 0; elementIndex < accessorDef.count; elementIndex++) {
+        for (let itemIndex = 0; itemIndex < itemSize; itemIndex++) {
+          array[elementIndex * itemSize + itemIndex] = typedBufferView[elementIndex * stride + itemIndex + offset];
+        }
       }
-
-      bufferAttribute = new ClonableInterleavedBufferAttribute(ib, itemSize, byteOffset / elementBytes, normalized);
     } else {
       if (bufferView === null) {
         array = new TypedArray(accessorDef.count * itemSize);
       } else {
         array = new TypedArray(bufferView, byteOffset, accessorDef.count * itemSize);
       }
-
-      bufferAttribute = new BufferAttribute(array, itemSize, normalized);
     }
+
+    const bufferAttribute = new BufferAttribute(array, itemSize, normalized);
 
     // https://github.com/KhronosGroup/glTF/blob/master/specification/2.0/README.md#sparse-accessors
     if (accessorDef.sparse !== undefined) {
