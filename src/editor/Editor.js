@@ -617,7 +617,7 @@ export default class Editor extends EventEmitter {
       this.flyControls.update(delta);
       this.spokeControls.update(delta);
 
-      this.renderer.update();
+      this.renderer.update(delta, time);
       this.inputManager.reset();
     }
 

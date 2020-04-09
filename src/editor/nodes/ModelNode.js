@@ -5,6 +5,19 @@ import { setStaticMode, StaticModes } from "../StaticMode";
 import cloneObject3D from "../utils/cloneObject3D";
 import { RethrownError } from "../utils/errors";
 
+const defaultStats = {
+  nodes: 0,
+  meshes: 0,
+  materials: 0,
+  textures: 0,
+  polygons: 0,
+  vertices: 0,
+  jsonSize: 0,
+  bufferInfo: {},
+  textureInfo: {},
+  meshInfo: {}
+};
+
 export default class ModelNode extends EditorNodeMixin(Model) {
   static nodeName = "Model";
 
@@ -69,6 +82,7 @@ export default class ModelNode extends EditorNodeMixin(Model) {
     this.initialScale = 1;
     this.boundingBox = new Box3();
     this.boundingSphere = new Sphere();
+    this.stats = defaultStats;
   }
 
   // Overrides Model's src property and stores the original (non-resolved) url.
@@ -85,7 +99,10 @@ export default class ModelNode extends EditorNodeMixin(Model) {
   async loadGLTF(src) {
     const loader = this.editor.gltfCache.getLoader(src);
 
-    const { scene, json } = await loader.getDependency("gltf");
+    const { scene, json, stats } = await loader.getDependency("gltf");
+
+    this.stats = stats;
+    this.gltfJson = json;
 
     const clonedScene = cloneObject3D(scene);
 
@@ -131,6 +148,29 @@ export default class ModelNode extends EditorNodeMixin(Model) {
 
       await super.load(accessibleUrl);
 
+      if (this.stats) {
+        const textureInfo = this.stats.textureInfo;
+        for (const key in textureInfo) {
+          if (!Object.prototype.hasOwnProperty.call(textureInfo, key)) continue;
+          const info = textureInfo[key];
+
+          if (info.size === undefined) {
+            let file;
+
+            for (const name in files) {
+              if (Object.prototype.hasOwnProperty.call(files, name) && files[name].url === info.url) {
+                file = files[name];
+                break;
+              }
+            }
+
+            if (file) {
+              info.size = file.size;
+            }
+          }
+        }
+      }
+
       if (this.model) {
         this.editor.renderer.addBatchedObject(this.model);
       }
@@ -174,12 +214,14 @@ export default class ModelNode extends EditorNodeMixin(Model) {
 
       this.updateStaticModes();
 
-      if (files) {
-        // Revoke any object urls from the SketchfabZipLoader.
-        // for (const key in files) {
-        //   URL.revokeObjectURL(files[key]);
-        // }
-      }
+      // if (files) {
+      //   // Revoke any object urls from the SketchfabZipLoader.
+      //   for (const key in files) {
+      //     if (Object.prototype.hasOwnProperty.call(files, key)) {
+      //       URL.revokeObjectURL(files[key].url);
+      //     }
+      //   }
+      // }
     } catch (error) {
       this.showErrorIcon();
 
@@ -287,6 +329,7 @@ export default class ModelNode extends EditorNodeMixin(Model) {
       this.load(source.src);
     } else {
       this.updateStaticModes();
+      this.stats = JSON.parse(JSON.stringify(this.stats));
       this._canonicalUrl = source._canonicalUrl;
     }
 

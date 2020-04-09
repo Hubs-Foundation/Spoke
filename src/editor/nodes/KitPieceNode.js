@@ -337,7 +337,7 @@ export default class KitPieceNode extends EditorNodeMixin(Model) {
           // Revoke any object urls from the SketchfabZipLoader.
           for (const key in files) {
             if (Object.prototype.hasOwnProperty.call(files, key)) {
-              URL.revokeObjectURL(files[key]);
+              URL.revokeObjectURL(files[key].url);
             }
           }
         }
