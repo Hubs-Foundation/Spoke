@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import { PieChart, Pie, Legend, Label, Cell } from "recharts";
 import styled, { ThemeContext } from "styled-components";
 import { PropertiesPanelButton } from "./Button";
-import { validateString } from "gltf-validator";
+import GLTFValidator from "gltf-validator";
 import { EditorContext } from "../contexts/EditorContext";
 import Collapsible from "./Collapsible";
 
@@ -28,12 +28,14 @@ export function GLTFFileChart({ node }) {
   const payload = [{ name: "JSON", type: "application/json", size: stats.jsonSize }];
 
   for (const key in stats.bufferInfo) {
+    if (!Object.prototype.hasOwnProperty.call(stats.bufferInfo, key)) continue;
     const item = stats.bufferInfo[key];
     totalSize += item.size || 0;
     payload.push(item);
   }
 
   for (const key in stats.textureInfo) {
+    if (!Object.prototype.hasOwnProperty.call(stats.textureInfo, key)) continue;
     const item = stats.textureInfo[key];
     totalSize += item.size || 0;
     payload.push(item);
@@ -336,7 +338,7 @@ export function GLTFValidation({ node }) {
       setValidating(true);
 
       try {
-        const validation = await validateString(JSON.stringify(node.gltfJson));
+        const validation = await GLTFValidator.validateString(JSON.stringify(node.gltfJson));
         console.log(validation);
         setValidation(validation);
       } catch (error) {
