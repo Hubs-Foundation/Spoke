@@ -202,4 +202,14 @@ export default class ParticleEmitterNode extends EditorNodeMixin(ParticleEmitter
     });
     this.replaceObject();
   }
+
+  getRuntimeResourcesForStats() {
+    const textures = [];
+
+    if (this.material.uniforms.map.value) {
+      textures.push(this.material.uniforms.map.value);
+    }
+
+    return { meshes: [this], materials: [this.material], textures };
+  }
 }

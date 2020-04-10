@@ -475,7 +475,7 @@ export default class Editor extends EventEmitter {
       let scores;
 
       if (options.scores) {
-        scores = calculateGLTFPerformanceScores(glbBlob, chunks);
+        scores = calculateGLTFPerformanceScores(scene, glbBlob, chunks);
       }
 
       return { glbBlob, chunks, scores };

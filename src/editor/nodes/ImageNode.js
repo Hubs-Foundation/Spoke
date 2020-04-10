@@ -118,4 +118,10 @@ export default class ImageNode extends EditorNodeMixin(Image) {
     });
     this.replaceObject();
   }
+
+  getRuntimeResourcesForStats() {
+    if (this._texture) {
+      return { textures: [this._texture], meshes: [this._mesh], materials: [this._mesh.material] };
+    }
+  }
 }

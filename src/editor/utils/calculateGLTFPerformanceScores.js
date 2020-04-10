@@ -1,4 +1,5 @@
 import { traverseGltfScene, traverseGltfSceneEarlyOut, getGLTFComponents } from "../gltf/moz-hubs-components";
+import { PointLight, DirectionalLight, SpotLight } from "three";
 
 function calculateUncompressedMipmapedTextureSize(width, height) {
   if (width === 1 && height === 1) {
@@ -11,7 +12,16 @@ function calculateUncompressedMipmapedTextureSize(width, height) {
   );
 }
 
-export default function calculateGLTFPerformanceScores(glbBlob, chunks) {
+function isVisible(components) {
+  const visibleComponent = components && components["visible"];
+  return visibleComponent ? visibleComponent.visible : true;
+}
+
+function isLight(components) {
+  return components && (components["directional-light"] || components["point-light"] || components["spot-light"]);
+}
+
+export default function calculateGLTFPerformanceScores(scene, glbBlob, chunks) {
   const json = chunks.json;
 
   let polygons = 0;
@@ -19,7 +29,7 @@ export default function calculateGLTFPerformanceScores(glbBlob, chunks) {
   traverseGltfSceneEarlyOut(json, json.scene, node => {
     const components = getGLTFComponents(node);
 
-    if (components && (components["nav-mesh"] || components.trimesh)) {
+    if (!isVisible(components)) {
       return false;
     }
 
@@ -54,35 +64,15 @@ export default function calculateGLTFPerformanceScores(glbBlob, chunks) {
     }
   });
 
-  let polygonsScore;
-
-  if (polygons <= 50000) {
-    polygonsScore = "Low";
-  } else if (polygons <= 75000) {
-    polygonsScore = "Medium";
-  } else {
-    polygonsScore = "High";
-  }
-
   let lights = 0;
 
   traverseGltfScene(json, json.scene, node => {
     const components = getGLTFComponents(node);
 
-    if (components && (components["directional-light"] || components["point-light"] || components["spot-light"])) {
+    if (isVisible(components) && isLight(components)) {
       lights++;
     }
   });
-
-  let lightsScore;
-
-  if (lights <= 3) {
-    lightsScore = "Low";
-  } else if (lights <= 6) {
-    lightsScore = "Medium";
-  } else {
-    lightsScore = "High";
-  }
 
   let totalVRAM = 0;
   let largeTextures = 0;
@@ -95,6 +85,93 @@ export default function calculateGLTFPerformanceScores(glbBlob, chunks) {
     }
   }
 
+  let uniqueMaterials = json.materials.length || 0;
+
+  const fileSize = glbBlob.size;
+
+  const runtimeUniqueMaterials = new Set();
+  const runtimeUniqueTextures = new Set();
+  const runtimeMeshes = [];
+
+  scene.traverse(object => {
+    if (object.isNode && object.visible) {
+      const results = object.getRuntimeResourcesForStats();
+
+      if (!results) {
+        return;
+      }
+
+      if (results.lights) {
+        lights += results.lights.filter(
+          light => light instanceof PointLight || light instanceof DirectionalLight || light instanceof SpotLight
+        ).length;
+      }
+
+      if (results.materials) {
+        results.materials.forEach(material => runtimeUniqueMaterials.add(material));
+      }
+
+      if (results.textures) {
+        results.textures.forEach(texture => runtimeUniqueTextures.add(texture));
+      }
+
+      if (results.meshes) {
+        runtimeMeshes.push(...results.meshes);
+      }
+    }
+  });
+
+  uniqueMaterials += runtimeUniqueMaterials.size;
+
+  for (const texture of runtimeUniqueTextures) {
+    if (!texture.image) {
+      continue;
+    }
+
+    const imageOrVideo = texture.image;
+
+    const width = imageOrVideo.width || imageOrVideo.videoWidth;
+    const height = imageOrVideo.height || imageOrVideo.videoHeight;
+
+    if (width && height) {
+      totalVRAM += calculateUncompressedMipmapedTextureSize(width, height);
+
+      if (width * height > 2048 * 2048) {
+        largeTextures++;
+      }
+    }
+  }
+
+  for (const mesh of runtimeMeshes) {
+    if (mesh.geometry.index) {
+      polygons += mesh.geometry.index.count / 3;
+    } else {
+      polygons += mesh.geometry.attributes.position.count / 3;
+    }
+  }
+
+  // Calculate Scores
+
+  let polygonsScore;
+
+  if (polygons <= 50000) {
+    polygonsScore = "Low";
+  } else if (polygons <= 75000) {
+    polygonsScore = "Medium";
+  } else {
+    polygonsScore = "High";
+  }
+
+  let lightsScore;
+
+  if (lights <= 3) {
+    lightsScore = "Low";
+  } else if (lights <= 6) {
+    lightsScore = "Medium";
+  } else {
+    lightsScore = "High";
+  }
+
   let texturesScore;
 
   if (totalVRAM <= 268435500) {
@@ -105,7 +182,6 @@ export default function calculateGLTFPerformanceScores(glbBlob, chunks) {
     texturesScore = "High";
   }
 
-  const uniqueMaterials = json.materials.length || 0;
   const largeTexturesScore = largeTextures > 0 ? "High" : "Low";
 
   let materialsScore;
@@ -117,8 +193,6 @@ export default function calculateGLTFPerformanceScores(glbBlob, chunks) {
   } else {
     materialsScore = "High";
   }
-
-  const fileSize = glbBlob.size;
 
   let fileSizeScore;
 

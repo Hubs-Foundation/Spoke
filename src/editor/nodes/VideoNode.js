@@ -214,4 +214,10 @@ export default class VideoNode extends EditorNodeMixin(Video) {
     });
     this.replaceObject();
   }
+
+  getRuntimeResourcesForStats() {
+    if (this._texture) {
+      return { textures: [this._texture], meshes: [this._mesh], materials: [this._mesh.material] };
+    }
+  }
 }

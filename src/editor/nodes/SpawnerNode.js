@@ -3,6 +3,7 @@ import Model from "../objects/Model";
 import EditorNodeMixin from "./EditorNodeMixin";
 import cloneObject3D from "../utils/cloneObject3D";
 import { RethrownError } from "../utils/errors";
+import { collectUniqueMaterials } from "../utils/materials";
 
 export default class SpawnerNode extends EditorNodeMixin(Model) {
   static legacyComponentName = "spawner";
@@ -184,5 +185,21 @@ export default class SpawnerNode extends EditorNodeMixin(Model) {
       src: this._canonicalUrl
     });
     this.replaceObject();
+  }
+
+  getRuntimeResourcesForStats() {
+    if (this.model) {
+      const meshes = [];
+
+      this.model.traverse(object => {
+        if (object.isMesh) {
+          meshes.push(object);
+        }
+      });
+
+      const materials = collectUniqueMaterials(this.model);
+
+      return { meshes, materials };
+    }
   }
 }

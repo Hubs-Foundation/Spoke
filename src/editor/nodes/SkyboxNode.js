@@ -91,4 +91,8 @@ export default class SkyboxNode extends EditorNodeMixin(Sky) {
     });
     this.replaceObject();
   }
+
+  getRuntimeResourcesForStats() {
+    return { meshes: [this.sky], materials: [this.sky.material] };
+  }
 }

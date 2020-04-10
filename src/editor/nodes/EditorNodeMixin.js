@@ -372,5 +372,10 @@ export default function EditorNodeMixin(Object3DClass) {
 
       return nodes;
     }
+
+    // Used for calculating stats for the Performance Check Dialog
+    getRuntimeResourcesForStats() {
+      // return { textures: [], materials: [], meshes: [], lights: [] };
+    }
   };
 }
