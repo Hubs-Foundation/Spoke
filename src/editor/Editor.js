@@ -38,6 +38,7 @@ import getIntersectingNode from "./utils/getIntersectingNode";
 import { generateImageFileThumbnail, generateVideoFileThumbnail } from "./utils/thumbnails";
 import resizeShadowCameraFrustum from "./utils/resizeShadowCameraFrustum";
 import isInputSelected from "./utils/isInputSelected";
+import calculateGLTFPerformanceScores from "./utils/calculateGLTFPerformanceScores";
 
 import InputManager from "./controls/InputManager";
 import FlyControls from "./controls/FlyControls";
@@ -413,34 +414,6 @@ export default class Editor extends EventEmitter {
 
     const json = chunks.json;
 
-    // De-duplicate images.
-    const imageDefs = json.images;
-    if (imageDefs && imageDefs.length > 0) {
-      // Map containing imageProp -> newIndex
-      const uniqueImageProps = new Map();
-      // Map containing oldIndex -> newIndex
-      const imageIndexMap = new Map();
-      // Array containing unique imageDefs
-      const uniqueImageDefs = [];
-      // Array containing unique image blobs
-      const uniqueImages = [];
-      for (const [index, imageDef] of imageDefs.entries()) {
-        const imageProp = imageDef.uri === undefined ? imageDef.bufferView : imageDef.uri;
-        let newIndex = uniqueImageProps.get(imageProp);
-        if (newIndex === undefined) {
-          newIndex = uniqueImageDefs.push(imageDef) - 1;
-          uniqueImageProps.set(imageProp, newIndex);
-          uniqueImages.push(chunks.images[index]);
-        }
-        imageIndexMap.set(index, newIndex);
-      }
-      json.images = uniqueImageDefs;
-      chunks.images = uniqueImages;
-      for (const textureDef of json.textures) {
-        textureDef.source = imageIndexMap.get(textureDef.source);
-      }
-    }
-
     const nodeDefs = json.nodes;
     if (nodeDefs) {
       const uuidToIndexMap = {};
@@ -498,7 +471,14 @@ export default class Editor extends EventEmitter {
 
     try {
       const glbBlob = await exporter.exportGLBBlob(chunks);
-      return glbBlob;
+
+      let scores;
+
+      if (options.scores) {
+        scores = calculateGLTFPerformanceScores(glbBlob, chunks);
+      }
+
+      return { glbBlob, chunks, scores };
     } catch (error) {
       throw new RethrownError("Error creating glb blob", error);
     }

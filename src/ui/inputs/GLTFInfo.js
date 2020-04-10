@@ -3,16 +3,10 @@ import PropTypes from "prop-types";
 import { PieChart, Pie, Legend, Label, Cell } from "recharts";
 import styled, { ThemeContext } from "styled-components";
 import { PropertiesPanelButton } from "./Button";
-import GLTFValidator from "gltf-validator";
+import { validateString } from "gltf-validator";
 import { EditorContext } from "../contexts/EditorContext";
 import Collapsible from "./Collapsible";
-
-function bytesToSize(bytes) {
-  const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
-  if (bytes == 0) return "0 Byte";
-  const i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
-  return Math.round(bytes / Math.pow(1024, i), 2) + " " + sizes[i];
-}
+import { bytesToSize } from "../utils";
 
 const ChartContainer = styled.div`
   margin: 4px 0;
@@ -338,8 +332,7 @@ export function GLTFValidation({ node }) {
       setValidating(true);
 
       try {
-        const validation = await GLTFValidator.validateString(JSON.stringify(node.gltfJson));
-        console.log(validation);
+        const validation = await validateString(JSON.stringify(node.gltfJson));
         setValidation(validation);
       } catch (error) {
         console.log(error);
