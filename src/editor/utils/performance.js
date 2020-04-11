@@ -1,5 +1,7 @@
 import { traverseGltfScene, traverseGltfSceneEarlyOut, getGLTFComponents } from "../gltf/moz-hubs-components";
-import { PointLight, DirectionalLight, SpotLight } from "three";
+import { PointLight, DirectionalLight, SpotLight, Texture } from "three";
+import { forEachMaterial } from "./materials";
+import { bytesToSize } from "../../ui/utils";
 
 function calculateUncompressedMipmapedTextureSize(width, height) {
   if (width === 1 && height === 1) {
@@ -21,7 +23,170 @@ function isLight(components) {
   return components && (components["directional-light"] || components["point-light"] || components["spot-light"]);
 }
 
+function isLargeImage(width, height) {
+  return width * height > 2048 * 2048;
+}
+
+export function isLargeTexture(texture) {
+  const imageOrVideo = texture.image;
+
+  if (!imageOrVideo) {
+    return false;
+  }
+
+  const width = imageOrVideo.width || imageOrVideo.videoWidth;
+  const height = imageOrVideo.height || imageOrVideo.videoHeight;
+
+  return isLargeImage(width, height);
+}
+
+export function calculateTextureVRAM(texture) {
+  const imageOrVideo = texture.image;
+
+  if (!imageOrVideo) {
+    return 0;
+  }
+
+  const width = imageOrVideo.width || imageOrVideo.videoWidth;
+  const height = imageOrVideo.height || imageOrVideo.videoHeight;
+
+  return calculateUncompressedMipmapedTextureSize(width, height);
+}
+
+const fileTypeSuggestedMaxSizes = {
+  gltf: 10485760,
+  image: 4194304,
+  default: 4194304
+};
+
+export function maybeAddLargeFileIssue(type, fileSize, issues) {
+  const suggestedMaxFileSize = fileTypeSuggestedMaxSizes[type] || fileTypeSuggestedMaxSizes.default;
+
+  if (fileSize > suggestedMaxFileSize) {
+    issues.push({
+      severity: "warning",
+      message: `Large file (${bytesToSize(fileSize)}). Suggested ${type} max file size is ${suggestedMaxFileSize}.`
+    });
+  }
+}
+
+export function getObjectPerfIssues(object, traverse = true) {
+  const issues = [];
+
+  let polygons = 0;
+  let totalVRAM = 0;
+  let largeTextures = 0;
+  const uniqueMaterials = new Set();
+
+  const getChildPerfIssues = child => {
+    if (child.isMesh) {
+      polygons += calculateMeshPolygons(child);
+
+      forEachMaterial(child, material => {
+        uniqueMaterials.add(material);
+      });
+    }
+  };
+
+  if (traverse) {
+    object.traverse(getChildPerfIssues);
+  } else {
+    getChildPerfIssues(object);
+  }
+
+  for (const material of uniqueMaterials) {
+    if (material.map) {
+      totalVRAM += calculateTextureVRAM(material.map);
+
+      if (isLargeTexture(material.map)) {
+        largeTextures++;
+      }
+    }
+
+    if (material.aoMap) {
+      totalVRAM += calculateTextureVRAM(material.aoMap);
+
+      if (isLargeTexture(material.aoMap)) {
+        largeTextures++;
+      }
+    }
+
+    if (material.roughnessMap && material.roughnessMap !== material.aoMap) {
+      totalVRAM += calculateTextureVRAM(material.roughnessMap);
+
+      if (isLargeTexture(material.roughnessMap)) {
+        largeTextures++;
+      }
+    }
+
+    if (material.normalMap) {
+      totalVRAM += calculateTextureVRAM(material.normalMap);
+
+      if (isLargeTexture(material.normalMap)) {
+        largeTextures++;
+      }
+    }
+
+    if (material.emissiveMap) {
+      totalVRAM += calculateTextureVRAM(material.emissiveMap);
+
+      if (isLargeTexture(material.emissiveMap)) {
+        largeTextures++;
+      }
+    }
+
+    if (material.uniforms) {
+      for (const name in material.uniforms) {
+        if (!Object.prototype.hasOwnProperty.call(material.uniforms, name)) continue;
+
+        const { value } = material.uniforms[name];
+
+        if (value instanceof Texture) {
+          totalVRAM += calculateTextureVRAM(value);
+
+          if (isLargeTexture(material.value)) {
+            largeTextures++;
+          }
+        }
+      }
+    }
+  }
+
+  if (polygons > 10000) {
+    issues.push({ severity: "warning", message: `This object contains ${polygons.toLocaleString()} polygons.` });
+  }
+
+  if (uniqueMaterials > 10) {
+    issues.push({ severity: "warning", message: `This object contains ${uniqueMaterials.size} unique materials.` });
+  }
+
+  if (largeTextures > 0) {
+    issues.push({
+      severity: "warning",
+      message: `This object contains ${largeTextures} texture${largeTextures > 1 ? "s" : ""} larger than 2048 x 2048.`
+    });
+  }
+
+  if (totalVRAM > 67108860) {
+    issues.push({
+      severity: "warning",
+      message: `This object's textures use ~${bytesToSize(totalVRAM)} of video RAM.`
+    });
+  }
+
+  return issues;
+}
+
+export function calculateMeshPolygons(mesh) {
+  if (mesh.geometry.index) {
+    return mesh.geometry.index.count / 3;
+  } else {
+    return mesh.geometry.attributes.position.count / 3;
+  }
+}
+
 export default function calculateGLTFPerformanceScores(scene, glbBlob, chunks) {
+  // Calculate glTF scene cost
   const json = chunks.json;
 
   let polygons = 0;
@@ -80,7 +245,7 @@ export default function calculateGLTFPerformanceScores(scene, glbBlob, chunks) {
   for (const { width, height } of chunks.images) {
     totalVRAM += calculateUncompressedMipmapedTextureSize(width, height);
 
-    if (width * height > 2048 * 2048) {
+    if (isLargeImage(width, height)) {
       largeTextures++;
     }
   }
@@ -88,6 +253,8 @@ export default function calculateGLTFPerformanceScores(scene, glbBlob, chunks) {
   let uniqueMaterials = json.materials.length || 0;
 
   const fileSize = glbBlob.size;
+
+  // Calculate runtime loaded costs
 
   const runtimeUniqueMaterials = new Set();
   const runtimeUniqueTextures = new Set();
@@ -124,30 +291,15 @@ export default function calculateGLTFPerformanceScores(scene, glbBlob, chunks) {
   uniqueMaterials += runtimeUniqueMaterials.size;
 
   for (const texture of runtimeUniqueTextures) {
-    if (!texture.image) {
-      continue;
-    }
+    totalVRAM += calculateTextureVRAM(texture);
 
-    const imageOrVideo = texture.image;
-
-    const width = imageOrVideo.width || imageOrVideo.videoWidth;
-    const height = imageOrVideo.height || imageOrVideo.videoHeight;
-
-    if (width && height) {
-      totalVRAM += calculateUncompressedMipmapedTextureSize(width, height);
-
-      if (width * height > 2048 * 2048) {
-        largeTextures++;
-      }
+    if (isLargeTexture(texture)) {
+      largeTextures++;
     }
   }
 
   for (const mesh of runtimeMeshes) {
-    if (mesh.geometry.index) {
-      polygons += mesh.geometry.index.count / 3;
-    } else {
-      polygons += mesh.geometry.attributes.position.count / 3;
-    }
+    polygons += calculateMeshPolygons(mesh);
   }
 
   // Calculate Scores

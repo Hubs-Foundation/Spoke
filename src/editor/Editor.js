@@ -38,7 +38,7 @@ import getIntersectingNode from "./utils/getIntersectingNode";
 import { generateImageFileThumbnail, generateVideoFileThumbnail } from "./utils/thumbnails";
 import resizeShadowCameraFrustum from "./utils/resizeShadowCameraFrustum";
 import isInputSelected from "./utils/isInputSelected";
-import calculateGLTFPerformanceScores from "./utils/calculateGLTFPerformanceScores";
+import { calculateGLTFPerformanceScores } from "./utils/performance";
 
 import InputManager from "./controls/InputManager";
 import FlyControls from "./controls/FlyControls";

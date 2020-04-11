@@ -80,6 +80,7 @@ export default function EditorNodeMixin(Object3DClass) {
       this.saveParent = false;
       this.loadingCube = null;
       this.errorIcon = null;
+      this.issues = [];
     }
 
     clone(recursive) {
@@ -107,6 +108,8 @@ export default function EditorNodeMixin(Object3DClass) {
           this.errorIcon = this.children[errorIconIndex];
         }
       }
+
+      this.issues = source.issues.slice();
 
       return this;
     }

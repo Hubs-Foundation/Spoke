@@ -4,6 +4,7 @@ import EditorNodeMixin from "./EditorNodeMixin";
 import { setStaticMode, StaticModes } from "../StaticMode";
 import cloneObject3D from "../utils/cloneObject3D";
 import { RethrownError } from "../utils/errors";
+import { getObjectPerfIssues, maybeAddLargeFileIssue } from "../utils/performance";
 
 const defaultStats = {
   nodes: 0,
@@ -129,6 +130,7 @@ export default class ModelNode extends EditorNodeMixin(Model) {
 
     this._canonicalUrl = nextSrc;
     this.attribution = null;
+    this.issues = [];
 
     if (this.model) {
       this.editor.renderer.removeBatchedObject(this.model);
@@ -166,6 +168,7 @@ export default class ModelNode extends EditorNodeMixin(Model) {
 
             if (file) {
               info.size = file.size;
+              this.stats.totalSize += file.size;
             }
           }
         }
@@ -210,6 +213,9 @@ export default class ModelNode extends EditorNodeMixin(Model) {
             object.material.needsUpdate = true;
           }
         });
+
+        this.issues = getObjectPerfIssues(this.model);
+        maybeAddLargeFileIssue("gltf", this.stats.totalSize, this.issues);
       }
 
       this.updateStaticModes();
@@ -232,6 +238,8 @@ export default class ModelNode extends EditorNodeMixin(Model) {
       }
 
       console.error(modelError);
+
+      this.issues.push({ severity: "error", message: "Error loading model." });
     }
 
     this.editor.emit("objectsChanged", [this]);
@@ -329,7 +337,8 @@ export default class ModelNode extends EditorNodeMixin(Model) {
       this.load(source.src);
     } else {
       this.updateStaticModes();
-      this.stats = JSON.parse(JSON.stringify(this.stats));
+      this.stats = JSON.parse(JSON.stringify(source.stats));
+      this.gltfJson = source.gltfJson;
       this._canonicalUrl = source._canonicalUrl;
     }
 

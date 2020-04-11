@@ -274,6 +274,7 @@ class GLTFLoader {
       textures: 0,
       triangles: 0,
       vertices: 0,
+      totalSize: 0,
       jsonSize: 0,
       bufferInfo: {},
       textureInfo: {},
@@ -595,7 +596,24 @@ class GLTFLoader {
       const scene = await this.getDependency("scene", sceneIndex);
       const sceneAnimations = await this.getDependency("sceneAnimations", sceneIndex);
       scene.animations = sceneAnimations || [];
-      return { scene, json, stats: this.stats };
+
+      const stats = this.stats;
+
+      stats.totalSize = stats.jsonSize;
+
+      for (const key in stats.bufferInfo) {
+        if (!Object.prototype.hasOwnProperty.call(stats.bufferInfo, key)) continue;
+        const item = stats.bufferInfo[key];
+        stats.totalSize += item.size || 0;
+      }
+
+      for (const key in stats.textureInfo) {
+        if (!Object.prototype.hasOwnProperty.call(stats.textureInfo, key)) continue;
+        const item = stats.textureInfo[key];
+        stats.totalSize += item.size || 0;
+      }
+
+      return { scene, json, stats };
     } catch (error) {
       throw new RethrownError(`Error loading glTF "${this.url}"`, error);
     }
