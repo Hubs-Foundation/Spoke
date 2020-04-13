@@ -82,23 +82,25 @@ export default class ModelNodeEditor extends Component {
         <InputGroup name="Receive Shadow">
           <BooleanInput value={node.receiveShadow} onChange={this.onChangeReceiveShadow} />
         </InputGroup>
-        <Collapsible label="glTF Info">
-          <Collapsible open label="Stats">
-            <GLTFStats node={node} />
+        {node.model && (
+          <Collapsible label="glTF Info">
+            <Collapsible open label="Stats">
+              <GLTFStats node={node} />
+            </Collapsible>
+            <Collapsible open label="Files">
+              <GLTFFileChart node={node} />
+            </Collapsible>
+            <Collapsible open label="Textures">
+              <GLTFTextureList node={node} />
+            </Collapsible>
+            <Collapsible open label="Meshes">
+              <GLTFMeshList node={node} />
+            </Collapsible>
+            <Collapsible open label="Validation">
+              <GLTFValidation node={node} />
+            </Collapsible>
           </Collapsible>
-          <Collapsible open label="Files">
-            <GLTFFileChart node={node} />
-          </Collapsible>
-          <Collapsible open label="Textures">
-            <GLTFTextureList node={node} />
-          </Collapsible>
-          <Collapsible open label="Meshes">
-            <GLTFMeshList node={node} />
-          </Collapsible>
-          <Collapsible open label="Validation">
-            <GLTFValidation node={node} />
-          </Collapsible>
-        </Collapsible>
+        )}
       </NodeEditor>
     );
   }

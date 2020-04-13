@@ -84,6 +84,7 @@ export default class ModelNode extends EditorNodeMixin(Model) {
     this.boundingBox = new Box3();
     this.boundingSphere = new Sphere();
     this.stats = defaultStats;
+    this.gltfJson = null;
   }
 
   // Overrides Model's src property and stores the original (non-resolved) url.
@@ -131,6 +132,8 @@ export default class ModelNode extends EditorNodeMixin(Model) {
     this._canonicalUrl = nextSrc;
     this.attribution = null;
     this.issues = [];
+    this.stats = defaultStats;
+    this.gltfJson = null;
 
     if (this.model) {
       this.editor.renderer.removeBatchedObject(this.model);
