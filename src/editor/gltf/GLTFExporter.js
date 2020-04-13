@@ -552,18 +552,13 @@ class GLTFExporter {
     return this.outputJSON.accessors.length - 1;
   }
 
-  transformImage(image, mimeType, flipY, onError, onDone) {
+  async transformImage(image, mimeType, flipY) {
     const shouldResize = this.options.forcePowerOfTwoTextures && !GLTFExporter.Utils.isPowerOfTwo(image);
 
     if (!shouldResize && !flipY) {
-      fetch(image.src)
-        .then(response => {
-          return response.blob();
-        })
-        .then(onDone)
-        .catch(onError);
-
-      return;
+      const response = await fetch(image.src);
+      const blob = await response.blob();
+      return { blob, src: image.src, width: image.width, height: image.height };
     }
 
     const canvas = (this.cachedCanvas = this.cachedCanvas || document.createElement("canvas"));
@@ -587,7 +582,9 @@ class GLTFExporter {
 
     ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
 
-    canvas.toBlob(onDone, mimeType);
+    const blob = await new Promise(resolve => canvas.toBlob(resolve, mimeType));
+
+    return { blob, src: image.src, width: canvas.width, height: canvas.height };
   }
 
   /**
@@ -624,16 +621,9 @@ class GLTFExporter {
 
     if (this.options.mode === "glb") {
       this.pending.push(
-        new Promise((resolve, reject) => {
-          this.transformImage(image, mimeType, flipY, reject, blob => {
-            this.processBufferViewImage(blob)
-              .then(bufferViewIndex => {
-                gltfImage.bufferView = bufferViewIndex;
-
-                resolve();
-              })
-              .catch(reject);
-          });
+        this.transformImage(image, mimeType, flipY).then(async result => {
+          gltfImage.bufferView = await this.processBufferViewImage(result.blob);
+          this.outputImages[index] = result;
         })
       );
     } else {
@@ -642,13 +632,7 @@ class GLTFExporter {
       gltfImage.uri = fileName + index + extension;
 
       this.pending.push(
-        new Promise((resolve, reject) => {
-          this.transformImage(image, mimeType, flipY, reject, blob => {
-            this.outputImages[index] = blob;
-
-            resolve();
-          });
-        })
+        this.transformImage(image, mimeType, flipY).then(result => (this.outputImages[index] = result))
       );
     }
 

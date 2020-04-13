@@ -267,6 +267,19 @@ class GLTFLoader {
     this.primitiveCache = {};
     this.meshReferences = {};
     this.meshUses = {};
+    this.stats = {
+      nodes: 0,
+      meshes: 0,
+      materials: 0,
+      textures: 0,
+      triangles: 0,
+      vertices: 0,
+      totalSize: 0,
+      jsonSize: 0,
+      bufferInfo: {},
+      textureInfo: {},
+      meshInfo: {}
+    };
 
     this.textureLoader = new TextureLoader(this.manager);
     this.textureLoader.setCrossOrigin(this.options.crossOrigin);
@@ -413,6 +426,12 @@ class GLTFLoader {
           "THREE.GLTFLoader: Unsupported asset. glTF versions >=2.0 are supported. Use LegacyGLTFLoader instead."
         );
       }
+
+      this.stats.nodes = json.nodes ? json.nodes.length : 0;
+      this.stats.meshes = json.meshes ? json.meshes.length : 0;
+      this.stats.materials = json.materials ? json.materials.length : 0;
+      this.stats.textures = json.textures ? json.textures.length : 0;
+      this.stats.jsonSize = content.length;
 
       this.markDefs(json);
 
@@ -577,7 +596,24 @@ class GLTFLoader {
       const scene = await this.getDependency("scene", sceneIndex);
       const sceneAnimations = await this.getDependency("sceneAnimations", sceneIndex);
       scene.animations = sceneAnimations || [];
-      return { scene, json };
+
+      const stats = this.stats;
+
+      stats.totalSize = stats.jsonSize;
+
+      for (const key in stats.bufferInfo) {
+        if (!Object.prototype.hasOwnProperty.call(stats.bufferInfo, key)) continue;
+        const item = stats.bufferInfo[key];
+        stats.totalSize += item.size || 0;
+      }
+
+      for (const key in stats.textureInfo) {
+        if (!Object.prototype.hasOwnProperty.call(stats.textureInfo, key)) continue;
+        const item = stats.textureInfo[key];
+        stats.totalSize += item.size || 0;
+      }
+
+      return { scene, json, stats };
     } catch (error) {
       throw new RethrownError(`Error loading glTF "${this.url}"`, error);
     }
@@ -1044,6 +1080,12 @@ class GLTFLoader {
     const geometries = await this.loadGeometries(primitives);
     const meshes = [];
 
+    const stats = {
+      name: meshDef.name || `Mesh ${meshIndex}`,
+      triangles: 0,
+      vertices: 0
+    };
+
     for (let i = 0, il = geometries.length; i < il; i++) {
       const geometry = geometries[i];
       const primitive = primitives[i];
@@ -1076,6 +1118,17 @@ class GLTFLoader {
         }
       }
 
+      if (mesh.geometry.index) {
+        stats.triangles += mesh.geometry.index.count / 3;
+      } else {
+        stats.triangles += mesh.geometry.attributes.position.count / 3;
+      }
+
+      stats.vertices += mesh.geometry.attributes.position.count;
+
+      this.stats.triangles += stats.triangles;
+      this.stats.vertices += stats.vertices;
+
       if (mesh.isMesh) {
         if (primitive.mode === WEBGL_CONSTANTS.TRIANGLE_STRIP) {
           mesh.drawMode = TriangleStripDrawMode;
@@ -1104,6 +1157,8 @@ class GLTFLoader {
 
       meshes.push(mesh);
     }
+
+    this.stats.meshInfo[meshIndex] = stats;
 
     if (meshes.length === 1) {
       return meshes[0];
@@ -1591,12 +1646,15 @@ class GLTFLoader {
     let sourceURI = source.uri;
     let isObjectURL = false;
 
+    let imageSize;
+
     if (source.bufferView !== undefined) {
       // Load binary image data from bufferView, if provided.
       const bufferView = await this.getDependency("bufferView", source.bufferView);
       isObjectURL = true;
       const blob = new Blob([bufferView], { type: source.mimeType });
       sourceURI = URL.createObjectURL(blob);
+      imageSize = blob.size;
     }
 
     // Load Texture resource.
@@ -1609,6 +1667,22 @@ class GLTFLoader {
     const textureUrl = this.resolveURL(sourceURI, options.path);
 
     const texture = await loadTexture(textureUrl, this.textureLoader);
+
+    if (!imageSize) {
+      const perfEntries = performance.getEntriesByName(textureUrl);
+      if (perfEntries.length > 0) {
+        imageSize = perfEntries[0].encodedBodySize;
+      }
+    }
+
+    this.stats.textureInfo[textureDef.source] = {
+      name: source.name || textureDef.name || `Image ${textureDef.source}`,
+      size: imageSize,
+      url: textureUrl,
+      width: texture.image.width,
+      height: texture.image.height,
+      type: source.mimeType
+    };
 
     // Clean up resources and configure Texture.
 
@@ -1794,18 +1868,27 @@ class GLTFLoader {
       throw new Error("THREE.GLTFLoader: " + bufferDef.type + " buffer type is not supported.");
     }
 
+    let buffer;
+
     // If present, GLB container is required to be the first buffer.
     if (bufferDef.uri === undefined && bufferIndex === 0) {
-      return glbBuffer;
+      buffer = glbBuffer;
+    } else {
+      const options = this.options;
+
+      buffer = await new Promise((resolve, reject) => {
+        loader.load(this.resolveURL(bufferDef.uri, options.path), resolve, undefined, () => {
+          reject(new Error('THREE.GLTFLoader: Failed to load buffer "' + bufferDef.uri + '".'));
+        });
+      });
     }
 
-    const options = this.options;
+    this.stats.bufferInfo[bufferIndex] = {
+      name: bufferDef.name || `Buffer ${bufferIndex}`,
+      size: buffer.byteLength
+    };
 
-    return new Promise((resolve, reject) => {
-      loader.load(this.resolveURL(bufferDef.uri, options.path), resolve, undefined, () => {
-        reject(new Error('THREE.GLTFLoader: Failed to load buffer "' + bufferDef.uri + '".'));
-      });
-    });
+    return buffer;
   }
 
   resolveURL(url, path) {

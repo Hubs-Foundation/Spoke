@@ -157,6 +157,7 @@ export default class Renderer {
       }
     );
     renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.info.autoReset = false;
     this.renderer = renderer;
 
     this.renderMode = new LitRenderMode(renderer, editor, this);
@@ -181,12 +182,20 @@ export default class Renderer {
     this.camera = camera;
   }
 
-  update(dt) {
+  update(dt, _time) {
+    this.renderer.info.reset();
+
     if (this.batchManager) {
       this.batchManager.update();
     }
 
     this.renderMode.render(dt);
+
+    if (this.onUpdateStats) {
+      this.renderer.info.render.fps = 1 / dt;
+      this.renderer.info.render.frameTime = dt * 1000;
+      this.onUpdateStats(this.renderer.info);
+    }
   }
 
   setRenderMode(mode) {

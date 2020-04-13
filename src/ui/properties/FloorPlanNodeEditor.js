@@ -4,19 +4,12 @@ import NodeEditor from "./NodeEditor";
 import InputGroup from "../inputs/InputGroup";
 import BooleanInput from "../inputs/BooleanInput";
 import NumericInputGroup from "../inputs/NumericInputGroup";
-import { Button } from "../inputs/Button";
+import { PropertiesPanelButton } from "../inputs/Button";
 import ProgressDialog from "../dialogs/ProgressDialog";
 import ErrorDialog from "../dialogs/ErrorDialog";
 import { withDialog } from "../contexts/DialogContext";
 import { withSettings } from "../contexts/SettingsContext";
-import styled from "styled-components";
 import { ShoePrints } from "styled-icons/fa-solid/ShoePrints";
-
-const RegenerateButton = styled(Button)`
-  align-self: center;
-  justify-content: center;
-  width: 200px;
-`;
 
 class FloorPlanNodeEditor extends Component {
   static propTypes = {
@@ -171,7 +164,7 @@ class FloorPlanNodeEditor extends Component {
             onChange={this.onChangeMaxTriangles}
           />
         )}
-        <RegenerateButton onClick={this.onRegenerate}>Regenerate</RegenerateButton>
+        <PropertiesPanelButton onClick={this.onRegenerate}>Regenerate</PropertiesPanelButton>
       </NodeEditor>
     );
   }

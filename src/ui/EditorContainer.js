@@ -723,7 +723,7 @@ class EditorContainer extends Component {
     try {
       const editor = this.state.editor;
 
-      const glbBlob = await editor.exportScene(abortController.signal, options);
+      const { glbBlob } = await editor.exportScene(abortController.signal, options);
 
       this.hideDialog();
 

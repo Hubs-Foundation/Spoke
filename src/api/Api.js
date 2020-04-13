@@ -6,6 +6,7 @@ import AuthContainer from "./AuthContainer";
 import LoginDialog from "./LoginDialog";
 import PublishDialog from "./PublishDialog";
 import ProgressDialog from "../ui/dialogs/ProgressDialog";
+import PerformanceCheckDialog from "../ui/dialogs/PerformanceCheckDialog";
 import jwtDecode from "jwt-decode";
 import { buildAbsoluteURL } from "url-toolkit";
 import PublishedSceneDialog from "./PublishedSceneDialog";
@@ -300,7 +301,7 @@ export default class Project extends EventEmitter {
           /* webpackChunkName: "SketchfabZipLoader", webpackPrefetch: true */ "./SketchfabZipLoader"
         );
         const files = await getFilesFromSketchfabZip(accessibleUrl);
-        return { canonicalUrl, accessibleUrl: files["scene.gtlf"], contentType, files };
+        return { canonicalUrl, accessibleUrl: files["scene.gtlf"].url, contentType, files };
       }
     } catch (error) {
       throw new RethrownError(`Error loading Sketchfab model "${accessibleUrl}"`, error);
@@ -770,10 +771,24 @@ export default class Project extends EventEmitter {
       });
 
       // Clone the existing scene, process it for exporting, and then export as a glb blob
-      const glbBlob = await editor.exportScene(abortController.signal);
+      const { glbBlob, scores } = await editor.exportScene(abortController.signal, { scores: true });
 
       if (signal.aborted) {
         const error = new Error("Publish project aborted");
+        error.aborted = true;
+        throw error;
+      }
+
+      const performanceCheckResult = await new Promise(resolve => {
+        showDialog(PerformanceCheckDialog, {
+          scores,
+          onCancel: () => resolve(false),
+          onConfirm: () => resolve(true)
+        });
+      });
+
+      if (!performanceCheckResult) {
+        const error = new Error("Publish project canceled");
         error.aborted = true;
         throw error;
       }
