@@ -250,7 +250,7 @@ export function calculateGLTFPerformanceScores(scene, glbBlob, chunks) {
     }
   }
 
-  let uniqueMaterials = json.materials.length || 0;
+  let uniqueMaterials = json.materials ? json.materials.length : 0;
 
   const fileSize = glbBlob.size;
 
