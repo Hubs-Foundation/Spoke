@@ -1286,6 +1286,11 @@
   resolved "https://registry.yarnpkg.com/@react-dnd/shallowequal/-/shallowequal-2.0.0.tgz#a3031eb54129f2c66b2753f8404266ec7bf67f0a"
   integrity sha512-Pc/AFTdwZwEKJxFJvlxrSmGe/di+aAOBn60sremrpLo6VI/6cmiUYNNwlI5KNYttg7uypzA3ILPMPgxB2GYZEg==
 
+"@robertlong/gltf-validator@^2.0.0-dev.3.2":
+  version "2.0.0-dev.3.2"
+  resolved "https://registry.yarnpkg.com/@robertlong/gltf-validator/-/gltf-validator-2.0.0-dev.3.2.tgz#5c9f8df9faebccc28bafb79995012b6b970ae671"
+  integrity sha512-JJcO5ThH/CUjC+1nW67D5/rMnNUNNWlyyNPnNy0nzMt0GFXZg/pOrLnTUjl6MzAFBNUJo9TW+u776PrYTIN0dQ==
+
 "@samverschueren/stream-to-observable@^0.3.0":
   version "0.3.0"
   resolved "https://registry.yarnpkg.com/@samverschueren/stream-to-observable/-/stream-to-observable-0.3.0.tgz#ecdf48d532c58ea477acfcab80348424f8d0662f"
@@ -6465,11 +6470,6 @@ globjoin@^0.1.4:
   version "0.1.4"
   resolved "https://registry.yarnpkg.com/globjoin/-/globjoin-0.1.4.tgz#2f4494ac8919e3767c5cbb691e9f463324285d43"
   integrity sha1-L0SUrIkZ43Z8XLtpHp9GMyQoXUM=
-
-gltf-validator@^2.0.0-dev.3.2:
-  version "2.0.0-dev.3.2"
-  resolved "https://registry.yarnpkg.com/gltf-validator/-/gltf-validator-2.0.0-dev.3.2.tgz#37fe4ccd8011be7e0bebd5fe4afa88c6b9e080eb"
-  integrity sha512-gdG28HR+nDF00b8XkUl/Vxua4Cndc7v1nK4RO3G7JBAm7TiEnCQWETMYRgJR+0BfBt3dWWKsnJXGC+WjaILVmQ==
 
 "gltf-webpack-loader@https://github.com/MozillaReality/gltf-webpack-loader.git#fix/relative-and-output-paths":
   version "1.0.6"
