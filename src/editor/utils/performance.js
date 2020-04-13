@@ -185,7 +185,7 @@ export function calculateMeshPolygons(mesh) {
   }
 }
 
-export default function calculateGLTFPerformanceScores(scene, glbBlob, chunks) {
+export function calculateGLTFPerformanceScores(scene, glbBlob, chunks) {
   // Calculate glTF scene cost
   const json = chunks.json;
 
