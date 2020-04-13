@@ -46,6 +46,7 @@ export default class SpawnerNode extends EditorNodeMixin(Model) {
     this.boundingBox = new Box3();
     this.boundingSphere = new Sphere();
     this.stats = defaultStats;
+    this.gltfJson = null;
   }
 
   // Overrides Model's src property and stores the original (non-resolved) url.
@@ -80,6 +81,8 @@ export default class SpawnerNode extends EditorNodeMixin(Model) {
 
     this._canonicalUrl = nextSrc;
 
+    this.stats = defaultStats;
+    this.gltfJson = null;
     this.issues = [];
 
     if (this.model) {

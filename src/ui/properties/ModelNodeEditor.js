@@ -6,8 +6,7 @@ import InputGroup from "../inputs/InputGroup";
 import BooleanInput from "../inputs/BooleanInput";
 import ModelInput from "../inputs/ModelInput";
 import { Cube } from "styled-icons/fa-solid/Cube";
-import Collapsible from "../inputs/Collapsible";
-import { GLTFStats, GLTFFileChart, GLTFMeshList, GLTFTextureList, GLTFValidation } from "../inputs/GLTFInfo";
+import { GLTFInfo } from "../inputs/GLTFInfo";
 
 export default class ModelNodeEditor extends Component {
   static propTypes = {
@@ -82,25 +81,7 @@ export default class ModelNodeEditor extends Component {
         <InputGroup name="Receive Shadow">
           <BooleanInput value={node.receiveShadow} onChange={this.onChangeReceiveShadow} />
         </InputGroup>
-        {node.model && (
-          <Collapsible label="glTF Info">
-            <Collapsible open label="Stats">
-              <GLTFStats node={node} />
-            </Collapsible>
-            <Collapsible open label="Files">
-              <GLTFFileChart node={node} />
-            </Collapsible>
-            <Collapsible open label="Textures">
-              <GLTFTextureList node={node} />
-            </Collapsible>
-            <Collapsible open label="Meshes">
-              <GLTFMeshList node={node} />
-            </Collapsible>
-            <Collapsible open label="Validation">
-              <GLTFValidation node={node} />
-            </Collapsible>
-          </Collapsible>
-        )}
+        {node.model && <GLTFInfo node={node} />}
       </NodeEditor>
     );
   }

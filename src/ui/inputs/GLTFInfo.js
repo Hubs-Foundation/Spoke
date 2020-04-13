@@ -415,3 +415,29 @@ export function GLTFValidation({ node }) {
 GLTFValidation.propTypes = {
   node: PropTypes.object
 };
+
+export function GLTFInfo({ node }) {
+  return (
+    <Collapsible label="glTF Info">
+      <Collapsible open label="Stats">
+        <GLTFStats node={node} />
+      </Collapsible>
+      <Collapsible open label="Files">
+        <GLTFFileChart node={node} />
+      </Collapsible>
+      <Collapsible open label="Textures">
+        <GLTFTextureList node={node} />
+      </Collapsible>
+      <Collapsible open label="Meshes">
+        <GLTFMeshList node={node} />
+      </Collapsible>
+      <Collapsible open label="Validation">
+        <GLTFValidation node={node} />
+      </Collapsible>
+    </Collapsible>
+  );
+}
+
+GLTFInfo.propTypes = {
+  node: PropTypes.object
+};
