@@ -17,6 +17,7 @@ import { RethrownError } from "../editor/utils/errors";
 // https://github.com/mozilla/hubs/blob/master/src/utils/media-utils.js
 
 const resolveUrlCache = new Map();
+const resolveMediaCache = new Map();
 
 const RETICULUM_SERVER = configs.RETICULUM_SERVER || document.location.hostname;
 
@@ -235,25 +236,27 @@ export default class Project extends EventEmitter {
     const cacheKey = `${url}|${index}`;
     if (resolveUrlCache.has(cacheKey)) return resolveUrlCache.get(cacheKey);
 
-    const response = await this.fetch(`https://${RETICULUM_SERVER}/api/v1/media`, {
+    const request = this.fetch(`https://${RETICULUM_SERVER}/api/v1/media`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ media: { url, index } })
+    }).then(async response => {
+      if (!response.ok) {
+        const message = `Error resolving url "${url}":\n  `;
+        try {
+          const body = await response.text();
+          throw new Error(message + body.replace(/\n/g, "\n  "));
+        } catch (e) {
+          throw new Error(message + response.statusText.replace(/\n/g, "\n  "));
+        }
+      }
+
+      return response.json();
     });
 
-    if (!response.ok) {
-      const message = `Error resolving url "${url}":\n  `;
-      try {
-        const body = await response.text();
-        throw new Error(message + body.replace(/\n/g, "\n  "));
-      } catch (e) {
-        throw new Error(message + response.statusText.replace(/\n/g, "\n  "));
-      }
-    }
+    resolveUrlCache.set(cacheKey, request);
 
-    const resolved = await response.json();
-    resolveUrlCache.set(cacheKey, resolved);
-    return resolved;
+    return request;
   }
 
   fetchContentType(accessibleUrl) {
@@ -279,35 +282,45 @@ export default class Project extends EventEmitter {
       return { accessibleUrl: absoluteUrl };
     }
 
-    let contentType, canonicalUrl, accessibleUrl;
+    const cacheKey = `${absoluteUrl}|${index}`;
 
-    try {
-      const result = await this.resolveUrl(absoluteUrl);
-      canonicalUrl = result.origin;
-      accessibleUrl = proxiedUrlFor(canonicalUrl, index);
+    if (resolveMediaCache.has(cacheKey)) return resolveMediaCache.get(cacheKey);
 
-      contentType =
-        (result.meta && result.meta.expected_content_type) ||
-        guessContentType(canonicalUrl) ||
-        (await this.fetchContentType(accessibleUrl));
-    } catch (error) {
-      throw new RethrownError(`Error resolving media "${absoluteUrl}"`, error);
-    }
+    const request = (async () => {
+      let contentType, canonicalUrl, accessibleUrl;
 
-    try {
-      if (contentType === "model/gltf+zip") {
-        // TODO: Sketchfab object urls should be revoked after they are loaded by the glTF loader.
-        const { getFilesFromSketchfabZip } = await import(
-          /* webpackChunkName: "SketchfabZipLoader", webpackPrefetch: true */ "./SketchfabZipLoader"
-        );
-        const files = await getFilesFromSketchfabZip(accessibleUrl);
-        return { canonicalUrl, accessibleUrl: files["scene.gtlf"].url, contentType, files };
+      try {
+        const result = await this.resolveUrl(absoluteUrl);
+        canonicalUrl = result.origin;
+        accessibleUrl = proxiedUrlFor(canonicalUrl, index);
+
+        contentType =
+          (result.meta && result.meta.expected_content_type) ||
+          guessContentType(canonicalUrl) ||
+          (await this.fetchContentType(accessibleUrl));
+      } catch (error) {
+        throw new RethrownError(`Error resolving media "${absoluteUrl}"`, error);
       }
-    } catch (error) {
-      throw new RethrownError(`Error loading Sketchfab model "${accessibleUrl}"`, error);
-    }
 
-    return { canonicalUrl, accessibleUrl, contentType };
+      try {
+        if (contentType === "model/gltf+zip") {
+          // TODO: Sketchfab object urls should be revoked after they are loaded by the glTF loader.
+          const { getFilesFromSketchfabZip } = await import(
+            /* webpackChunkName: "SketchfabZipLoader", webpackPrefetch: true */ "./SketchfabZipLoader"
+          );
+          const files = await getFilesFromSketchfabZip(accessibleUrl);
+          return { canonicalUrl, accessibleUrl: files["scene.gtlf"].url, contentType, files };
+        }
+      } catch (error) {
+        throw new RethrownError(`Error loading Sketchfab model "${accessibleUrl}"`, error);
+      }
+
+      return { canonicalUrl, accessibleUrl, contentType };
+    })();
+
+    resolveMediaCache.set(cacheKey, request);
+
+    return request;
   }
 
   proxyUrl(url) {
