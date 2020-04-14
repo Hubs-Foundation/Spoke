@@ -10,7 +10,15 @@ import { initTelemetry } from "./telemetry";
 if (configs.SENTRY_DSN) {
   Sentry.init({
     dsn: configs.SENTRY_DSN,
-    release: process.env.BUILD_VERSION
+    release: process.env.BUILD_VERSION,
+    beforeBreadcrumb(breadcrumb) {
+      // Just send the console message and avoid expensive argument serialization.
+      if (breadcrumb.category === "console") {
+        delete breadcrumb.data;
+      }
+
+      return breadcrumb;
+    }
   });
 }
 
