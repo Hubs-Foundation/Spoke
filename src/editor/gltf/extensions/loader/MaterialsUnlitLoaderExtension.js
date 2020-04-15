@@ -69,7 +69,5 @@ export class MaterialsUnlitLoaderExtension extends LoaderExtension {
     }
 
     await Promise.all(pending);
-
-    console.log("unlit material", material, materialDef);
   };
 }
