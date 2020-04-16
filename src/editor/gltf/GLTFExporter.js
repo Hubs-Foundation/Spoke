@@ -37,6 +37,8 @@ import {
   Object3D
 } from "three";
 
+import { LightmapExporterExtension } from "./extensions/exporter/LightmapExporterExtension";
+
 //------------------------------------------------------------------------------
 // Constants
 //------------------------------------------------------------------------------
@@ -144,6 +146,8 @@ class GLTFExporter {
 
     this.extensions = [];
     this.hooks = [];
+
+    this.registerExtension(LightmapExporterExtension);
   }
 
   registerExtension(Extension, options = {}) {
@@ -162,7 +166,7 @@ class GLTFExporter {
     hooks.push({ test, callback });
   }
 
-  runHook(hookName, ...args) {
+  async runFirstHook(hookName, ...args) {
     const hooks = this.hooks[hookName];
 
     if (hooks) {
@@ -174,6 +178,22 @@ class GLTFExporter {
     }
 
     return undefined;
+  }
+
+  async runAllHooks(hookName, ...args) {
+    const hooks = this.hooks[hookName];
+
+    const matchedHooks = [];
+
+    if (hooks) {
+      for (const { test, callback } of hooks) {
+        if (test(...args)) {
+          matchedHooks.push(callback(...args));
+        }
+      }
+    }
+
+    return Promise.all(matchedHooks);
   }
 
   /**
@@ -838,12 +858,12 @@ class GLTFExporter {
 
     this.serializeUserData(material, gltfMaterial);
 
+    this.runAllHooks("addMaterialProperties", material, gltfMaterial);
+
     this.outputJSON.materials.push(gltfMaterial);
 
     const index = this.outputJSON.materials.length - 1;
     this.cachedData.materials.set(material, index);
-
-    this.runHook("afterProcessMaterial", material, gltfMaterial, index);
 
     return index;
   }
@@ -1327,8 +1347,6 @@ class GLTFExporter {
 
     const nodeIndex = this.outputJSON.nodes.length - 1;
     this.nodeMap.set(object, nodeIndex);
-
-    this.runHook("afterProcessNode", object, gltfNode, nodeIndex);
 
     return nodeIndex;
   }
