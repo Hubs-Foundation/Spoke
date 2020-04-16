@@ -1459,7 +1459,7 @@ class GLTFLoader {
 
     const metallicRoughness = materialDef.pbrMetallicRoughness || {};
 
-    material.color.set(1.0, 1.0, 1.0);
+    material.color.set(0xffffff);
     material.opacity = 1.0;
 
     const alphaMode = materialDef.alphaMode || ALPHA_MODES.OPAQUE;
