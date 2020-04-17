@@ -17,6 +17,7 @@ import { CaretDown } from "styled-icons/fa-solid/CaretDown";
 import { ProjectDiagram } from "styled-icons/fa-solid/ProjectDiagram";
 import useUpload from "../assets/useUpload";
 import { AllFileTypes } from "../assets/fileTypes";
+import NodeIssuesIcon from "./NodeIssuesIcon";
 
 const uploadOptions = {
   multiple: true,
@@ -90,7 +91,12 @@ const TreeNodeContainer = styled.div`
 const TreeNodeSelectTarget = styled.div`
   display: flex;
   flex: 1;
-  padding: 2px 0;
+  padding: 2px 4px 2px 0;
+`;
+
+const TreeNodeLabelContainer = styled.div`
+  display: flex;
+  flex: 1;
 `;
 
 const TreeNodeContent = styled.div`
@@ -257,8 +263,10 @@ function TreeNode({
     drop(item) {
       if (item.files) {
         onUpload(item.files).then(assets => {
-          for (const asset of assets) {
-            editor.addMedia(asset.url, object.parent, object);
+          if (assets) {
+            for (const asset of assets) {
+              editor.addMedia(asset.url, object.parent, object);
+            }
           }
         });
         return;
@@ -307,8 +315,10 @@ function TreeNode({
 
       if (item.files) {
         onUpload(item.files).then(assets => {
-          for (const asset of assets) {
-            editor.addMedia(asset.url, object.parent, next);
+          if (assets) {
+            for (const asset of assets) {
+              editor.addMedia(asset.url, object.parent, next);
+            }
           }
         });
         return;
@@ -355,8 +365,10 @@ function TreeNode({
     drop(item) {
       if (item.files) {
         onUpload(item.files).then(assets => {
-          for (const asset of assets) {
-            editor.addMedia(asset.url, object);
+          if (assets) {
+            for (const asset of assets) {
+              editor.addMedia(asset.url, object);
+            }
           }
         });
         return;
@@ -427,22 +439,25 @@ function TreeNode({
 
             <TreeNodeSelectTarget>
               <TreeNodeIcon as={iconComponent} />
-              {renaming ? (
-                <TreeNodeRenameInputContainer>
-                  <TreeNodeRenameInput
-                    type="text"
-                    onChange={onChangeNodeName}
-                    onKeyDown={onKeyDownNameInput}
-                    onBlur={onSubmitNodeName}
-                    value={renamingNode.name}
-                    autoFocus
-                  />
-                </TreeNodeRenameInputContainer>
-              ) : (
-                <TreeNodeLabel canDrop={canDropOn} isOver={isOverOn}>
-                  {object.name}
-                </TreeNodeLabel>
-              )}
+              <TreeNodeLabelContainer>
+                {renaming ? (
+                  <TreeNodeRenameInputContainer>
+                    <TreeNodeRenameInput
+                      type="text"
+                      onChange={onChangeNodeName}
+                      onKeyDown={onKeyDownNameInput}
+                      onBlur={onSubmitNodeName}
+                      value={renamingNode.name}
+                      autoFocus
+                    />
+                  </TreeNodeRenameInputContainer>
+                ) : (
+                  <TreeNodeLabel canDrop={canDropOn} isOver={isOverOn}>
+                    {object.name}
+                  </TreeNodeLabel>
+                )}
+              </TreeNodeLabelContainer>
+              {node.object.issues.length > 0 && <NodeIssuesIcon node={node.object} />}
             </TreeNodeSelectTarget>
           </TreeNodeContent>
 
@@ -783,8 +798,10 @@ export default function HierarchyPanel() {
 
       if (item.files) {
         onUpload(item.files).then(assets => {
-          for (const asset of assets) {
-            editor.addMedia(asset.url);
+          if (assets) {
+            for (const asset of assets) {
+              editor.addMedia(asset.url);
+            }
           }
         });
         return;

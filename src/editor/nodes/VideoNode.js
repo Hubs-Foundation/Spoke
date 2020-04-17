@@ -4,6 +4,7 @@ import Hls from "hls.js/dist/hls.light";
 import isHLS from "../utils/isHLS";
 import spokeLandingVideo from "../../assets/video/SpokePromo.mp4";
 import { RethrownError } from "../utils/errors";
+import { getObjectPerfIssues } from "../utils/performance";
 
 export default class VideoNode extends EditorNodeMixin(Video) {
   static legacyComponentName = "video";
@@ -37,7 +38,7 @@ export default class VideoNode extends EditorNodeMixin(Video) {
     loadAsync(
       (async () => {
         await node.load(src, onError);
-        node.controls = controls;
+        node.controls = controls || false;
         node.autoPlay = autoPlay;
         node.loop = loop;
         node.audioType = audioType;
@@ -62,6 +63,7 @@ export default class VideoNode extends EditorNodeMixin(Video) {
     this._canonicalUrl = "";
     this._autoPlay = true;
     this.volume = 0.5;
+    this.controls = true;
   }
 
   get src() {
@@ -89,6 +91,7 @@ export default class VideoNode extends EditorNodeMixin(Video) {
 
     this._canonicalUrl = src || "";
 
+    this.issues = [];
     this._mesh.visible = false;
 
     this.hideErrorIcon();
@@ -122,6 +125,8 @@ export default class VideoNode extends EditorNodeMixin(Video) {
       if (this.editor.playing && this.autoPlay) {
         this.el.play();
       }
+
+      this.issues = getObjectPerfIssues(this._mesh, false);
     } catch (error) {
       this.showErrorIcon();
 
@@ -132,6 +137,8 @@ export default class VideoNode extends EditorNodeMixin(Video) {
       }
 
       console.error(videoError);
+
+      this.issues.push({ severity: "error", message: "Error loading video." });
     }
 
     this.editor.emit("objectsChanged", [this]);
@@ -163,6 +170,7 @@ export default class VideoNode extends EditorNodeMixin(Video) {
   copy(source, recursive = true) {
     super.copy(source, recursive);
 
+    this.controls = source.controls;
     this._canonicalUrl = source._canonicalUrl;
 
     return this;
@@ -211,5 +219,11 @@ export default class VideoNode extends EditorNodeMixin(Video) {
       id: this.uuid
     });
     this.replaceObject();
+  }
+
+  getRuntimeResourcesForStats() {
+    if (this._texture) {
+      return { textures: [this._texture], meshes: [this._mesh], materials: [this._mesh.material] };
+    }
   }
 }

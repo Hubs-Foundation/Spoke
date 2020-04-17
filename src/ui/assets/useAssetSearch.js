@@ -1,4 +1,5 @@
 import { useRef, useState, useCallback, useEffect } from "react";
+import { useDebouncedCallback } from "use-debounce";
 
 function useIsMounted() {
   const ref = useRef(false);
@@ -139,12 +140,14 @@ export function useAssetSearch(source, initialParams = {}, initialResults = [], 
     };
   }, [source, loadAsync, params]);
 
+  const [debouncedLoadAsync] = useDebouncedCallback(loadAsync, source.searchDebounceTimeout);
+
   const setParams = useCallback(
     nextParams => {
-      loadAsync(nextParams);
+      debouncedLoadAsync(nextParams);
       setParamsInternal(nextParams);
     },
-    [loadAsync, setParamsInternal]
+    [debouncedLoadAsync, setParamsInternal]
   );
 
   return {

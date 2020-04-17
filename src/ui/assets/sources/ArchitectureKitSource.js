@@ -10,5 +10,7 @@ export default class ArchitectureKitSource extends KitSource {
     this.id = "architecture-kit";
     this.name = "Architecture Kit";
     this.transformPivot = TransformPivot.Selection;
+    // Images take a while to load so we set a debounce timeout
+    this.searchDebounceTimeout = 500;
   }
 }

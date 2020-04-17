@@ -1,6 +1,7 @@
 import { useCallback, useContext } from "react";
 import ErrorDialog from "../dialogs/ErrorDialog";
 import ProgressDialog from "../dialogs/ProgressDialog";
+import LoginDialog from "../../api/LoginDialog";
 import { DialogContext } from "../contexts/DialogContext";
 import { EditorContext } from "../contexts/EditorContext";
 import { AllFileTypes } from "../assets/fileTypes";
@@ -46,6 +47,21 @@ export default function useUpload(options = {}) {
           }
         }
 
+        if (!editor.api.isAuthenticated()) {
+          // Ensure the user is authenticated before continuing.
+          const loggedIn = await new Promise(resolve => {
+            showDialog(LoginDialog, {
+              onSuccess: () => resolve(true),
+              onCancel: () => resolve(false)
+            });
+          });
+
+          if (!loggedIn) {
+            hideDialog();
+            return null;
+          }
+        }
+
         const abortController = new AbortController();
 
         showDialog(ProgressDialog, {
@@ -82,11 +98,13 @@ export default function useUpload(options = {}) {
           message: `Error uploading file: ${error.message || "There was an unknown error."}`,
           error
         });
+
+        return null;
       }
 
       return assets;
     },
-    [showDialog, hideDialog, source, multiple, accepts]
+    [showDialog, hideDialog, source, multiple, accepts, editor]
   );
 
   return onUpload;

@@ -10,7 +10,10 @@ import { initTelemetry } from "./telemetry";
 if (configs.SENTRY_DSN) {
   Sentry.init({
     dsn: configs.SENTRY_DSN,
-    release: process.env.BUILD_VERSION
+    release: process.env.BUILD_VERSION,
+    integrations(integrations) {
+      return integrations.filter(integration => integration.name !== "Breadcrumbs");
+    }
   });
 }
 

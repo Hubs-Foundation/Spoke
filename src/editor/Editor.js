@@ -38,6 +38,7 @@ import getIntersectingNode from "./utils/getIntersectingNode";
 import { generateImageFileThumbnail, generateVideoFileThumbnail } from "./utils/thumbnails";
 import resizeShadowCameraFrustum from "./utils/resizeShadowCameraFrustum";
 import isInputSelected from "./utils/isInputSelected";
+import { calculateGLTFPerformanceScores } from "./utils/performance";
 
 import InputManager from "./controls/InputManager";
 import FlyControls from "./controls/FlyControls";
@@ -413,34 +414,6 @@ export default class Editor extends EventEmitter {
 
     const json = chunks.json;
 
-    // De-duplicate images.
-    const imageDefs = json.images;
-    if (imageDefs && imageDefs.length > 0) {
-      // Map containing imageProp -> newIndex
-      const uniqueImageProps = new Map();
-      // Map containing oldIndex -> newIndex
-      const imageIndexMap = new Map();
-      // Array containing unique imageDefs
-      const uniqueImageDefs = [];
-      // Array containing unique image blobs
-      const uniqueImages = [];
-      for (const [index, imageDef] of imageDefs.entries()) {
-        const imageProp = imageDef.uri === undefined ? imageDef.bufferView : imageDef.uri;
-        let newIndex = uniqueImageProps.get(imageProp);
-        if (newIndex === undefined) {
-          newIndex = uniqueImageDefs.push(imageDef) - 1;
-          uniqueImageProps.set(imageProp, newIndex);
-          uniqueImages.push(chunks.images[index]);
-        }
-        imageIndexMap.set(index, newIndex);
-      }
-      json.images = uniqueImageDefs;
-      chunks.images = uniqueImages;
-      for (const textureDef of json.textures) {
-        textureDef.source = imageIndexMap.get(textureDef.source);
-      }
-    }
-
     const nodeDefs = json.nodes;
     if (nodeDefs) {
       const uuidToIndexMap = {};
@@ -498,7 +471,14 @@ export default class Editor extends EventEmitter {
 
     try {
       const glbBlob = await exporter.exportGLBBlob(chunks);
-      return glbBlob;
+
+      let scores;
+
+      if (options.scores) {
+        scores = calculateGLTFPerformanceScores(scene, glbBlob, chunks);
+      }
+
+      return { glbBlob, chunks, scores };
     } catch (error) {
       throw new RethrownError("Error creating glb blob", error);
     }
@@ -617,7 +597,7 @@ export default class Editor extends EventEmitter {
       this.flyControls.update(delta);
       this.spokeControls.update(delta);
 
-      this.renderer.update();
+      this.renderer.update(delta, time);
       this.inputManager.reset();
     }
 
@@ -1050,7 +1030,7 @@ export default class Editor extends EventEmitter {
       }
     });
 
-    this.addObject(clonedObject, parent, before, false, false, false);
+    this.addObject(clonedObject, parent || object.parent, before, false, false, false);
 
     if (selectObject) {
       this.setSelection([clonedObject], false, false, false);
@@ -1079,9 +1059,16 @@ export default class Editor extends EventEmitter {
     }
 
     const validNodes = objects.filter(object => object.constructor.canAddNode(this));
-    const duplicatedRoots = getDetachedObjectsRoots(validNodes).map(object => object.clone());
+    const roots = getDetachedObjectsRoots(validNodes);
+    const duplicatedRoots = roots.map(object => object.clone());
 
-    this.addMultipleObjects(duplicatedRoots, parent, before, false, false, false, true);
+    if (parent) {
+      this.addMultipleObjects(duplicatedRoots, parent, before, false, false, false, true);
+    } else {
+      for (let i = 0; i < roots.length; i++) {
+        this.addObject(duplicatedRoots[i], roots[i].parent, undefined, false, false, false, true);
+      }
+    }
 
     if (selectObjects) {
       this.setSelection(duplicatedRoots, false, false, false);
@@ -1939,6 +1926,8 @@ export default class Editor extends EventEmitter {
   async addMedia(url, parent, before) {
     let contentType = "";
 
+    const { hostname } = new URL(url);
+
     try {
       contentType = (await this.api.getContentType(url)) || "";
     } catch (error) {
@@ -1953,7 +1942,7 @@ export default class Editor extends EventEmitter {
       this.addObject(node, parent, before);
       node.initialScale = "fit";
       await node.load(url);
-    } else if (contentType.startsWith("video/")) {
+    } else if (contentType.startsWith("video/") || hostname === "www.twitch.tv") {
       node = new VideoNode(this);
       this.getSpawnPosition(node.position);
       this.addObject(node, parent, before);

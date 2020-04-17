@@ -167,6 +167,14 @@ class EditorContainer extends Component {
 
       await editor.init();
 
+      if (templateFile.metadata) {
+        delete templateFile.metadata.sceneUrl;
+        delete templateFile.metadata.sceneId;
+        delete templateFile.metadata.creatorAttribution;
+        delete templateFile.metadata.allowRemixing;
+        delete templateFile.metadata.allowPromotion;
+      }
+
       await editor.loadProject(templateFile);
 
       this.hideDialog();
@@ -206,6 +214,8 @@ class EditorContainer extends Component {
         delete projectFile.metadata.sceneUrl;
         delete projectFile.metadata.sceneId;
         delete projectFile.metadata.creatorAttribution;
+        delete projectFile.metadata.allowRemixing;
+        delete projectFile.metadata.allowPromotion;
       }
 
       await editor.init();
@@ -713,7 +723,7 @@ class EditorContainer extends Component {
     try {
       const editor = this.state.editor;
 
-      const glbBlob = await editor.exportScene(abortController.signal, options);
+      const { glbBlob } = await editor.exportScene(abortController.signal, options);
 
       this.hideDialog();
 

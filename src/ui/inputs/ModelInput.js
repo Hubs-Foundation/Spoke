@@ -1,6 +1,6 @@
 import React from "react";
 import PropTypes from "prop-types";
-import StringInput from "./StringInput";
+import { ControlledStringInput } from "./StringInput";
 import { useDrop } from "react-dnd";
 import { ItemTypes } from "../dnd";
 import useUpload from "../assets/useUpload";
@@ -20,7 +20,9 @@ export default function ModelInput({ onChange, ...rest }) {
         onChange(item.value.url, item.value.initialProps || {});
       } else {
         onUpload(item.files, uploadOptions).then(assets => {
-          onChange(assets[0].url, {});
+          if (assets && assets.length > 0) {
+            onChange(assets[0].url, {});
+          }
         });
       }
     },
@@ -31,7 +33,7 @@ export default function ModelInput({ onChange, ...rest }) {
   });
 
   return (
-    <StringInput
+    <ControlledStringInput
       ref={dropRef}
       onChange={(value, e) => onChange(value, {}, e)}
       error={isOver && !canDrop}

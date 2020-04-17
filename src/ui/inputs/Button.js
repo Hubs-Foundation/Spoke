@@ -95,3 +95,9 @@ export const MenuButton = styled(Button)`
     }
   }
 `;
+
+export const PropertiesPanelButton = styled(Button)`
+  align-self: center;
+  justify-content: center;
+  width: 200px;
+`;

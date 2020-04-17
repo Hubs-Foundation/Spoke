@@ -9,7 +9,7 @@ import AuthForm from "./AuthForm";
 class AuthContainer extends Component {
   static propTypes = {
     api: PropTypes.object.isRequired,
-    onSuccess: PropTypes.func.isRequired,
+    onSuccess: PropTypes.func,
     onChange: PropTypes.func
   };
 
@@ -29,7 +29,7 @@ class AuthContainer extends Component {
 
     this.props.api
       .authenticate(email, abortController.signal)
-      .then(this.props.onSuccess)
+      .then(this.onSuccess)
       .catch(this.onError);
 
     const nextState = { emailSent: true, email, abortController };
@@ -45,7 +45,10 @@ class AuthContainer extends Component {
 
   onSuccess = (...args) => {
     trackEvent("Login Successful");
-    this.props.onSuccess(...args);
+
+    if (this.props.onSuccess) {
+      this.props.onSuccess(...args);
+    }
   };
 
   onError = err => {

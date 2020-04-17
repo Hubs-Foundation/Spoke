@@ -6,6 +6,7 @@ import InputGroup from "../inputs/InputGroup";
 import BooleanInput from "../inputs/BooleanInput";
 import ModelInput from "../inputs/ModelInput";
 import { Cube } from "styled-icons/fa-solid/Cube";
+import { GLTFInfo } from "../inputs/GLTFInfo";
 
 export default class ModelNodeEditor extends Component {
   static propTypes = {
@@ -80,6 +81,7 @@ export default class ModelNodeEditor extends Component {
         <InputGroup name="Receive Shadow">
           <BooleanInput value={node.receiveShadow} onChange={this.onChangeReceiveShadow} />
         </InputGroup>
+        {node.model && <GLTFInfo node={node} />}
       </NodeEditor>
     );
   }

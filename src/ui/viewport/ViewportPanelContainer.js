@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useCallback, useContext, useState } from "react";
+import PropTypes from "prop-types";
 import { EditorContext } from "../contexts/EditorContext";
 import styled from "styled-components";
 import Panel from "../layout/Panel";
@@ -10,6 +11,9 @@ import { ItemTypes, AssetTypes, addAssetAtCursorPositionOnDrop } from "../dnd";
 import SelectInput from "../inputs/SelectInput";
 import { TransformMode } from "../../editor/controls/SpokeControls";
 import AssetDropZone from "../assets/AssetDropZone";
+import { ChartArea } from "styled-icons/fa-solid/ChartArea";
+import { InfoTooltip } from "../layout/Tooltip";
+import Stats from "./Stats";
 
 function borderColor(props, defaultColor) {
   if (props.canDrop) {
@@ -60,7 +64,46 @@ const ViewportToolbarContainer = styled.div`
   flex: 1;
 `;
 
+const ToolbarIconContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0 8px;
+  border-left: 1px solid rgba(255, 255, 255, 0.2);
+  background-color: ${props => (props.value ? props.theme.blue : "transparent")};
+  cursor: pointer;
+
+  :hover {
+    background-color: ${props => (props.value ? props.theme.blueHover : props.theme.hover)};
+  }
+
+  :active {
+    background-color: ${props => (props.value ? props.theme.bluePressed : props.theme.hover2)};
+  }
+`;
+
 const initialPanelSizes = [0.8, 0.2];
+
+function IconToggle({ icon: Icon, value, onClick, tooltip, ...rest }) {
+  const onToggle = useCallback(() => {
+    onClick(!value);
+  }, [value, onClick]);
+
+  return (
+    <InfoTooltip info={tooltip}>
+      <ToolbarIconContainer onClick={onToggle} value={value} {...rest}>
+        <Icon size={14} />
+      </ToolbarIconContainer>
+    </InfoTooltip>
+  );
+}
+
+IconToggle.propTypes = {
+  icon: PropTypes.elementType,
+  value: PropTypes.bool,
+  onClick: PropTypes.func,
+  tooltip: PropTypes.string
+};
 
 const selectInputStyles = {
   container: base => ({
@@ -81,7 +124,7 @@ const selectInputStyles = {
   })
 };
 
-function ViewportToolbar() {
+function ViewportToolbar({ onToggleStats, showStats }) {
   const editor = useContext(EditorContext);
 
   const renderer = editor.renderer;
@@ -110,10 +153,16 @@ function ViewportToolbar() {
 
   return (
     <ViewportToolbarContainer>
+      <IconToggle onClick={onToggleStats} value={showStats} tooltip="Toggle Stats" icon={ChartArea} />
       <SelectInput value={renderMode} options={options} onChange={onChangeRenderMode} styles={selectInputStyles} />
     </ViewportToolbarContainer>
   );
 }
+
+ViewportToolbar.propTypes = {
+  showStats: PropTypes.bool,
+  onToggleStats: PropTypes.func
+};
 
 export default function ViewportPanelContainer() {
   const editor = useContext(EditorContext);
@@ -121,6 +170,7 @@ export default function ViewportPanelContainer() {
   const [flyModeEnabled, setFlyModeEnabled] = useState(false);
   const [objectSelected, setObjectSelected] = useState(false);
   const [transformMode, setTransformMode] = useState(null);
+  const [showStats, setShowStats] = useState(false);
 
   const onSelectionChanged = useCallback(() => {
     setObjectSelected(editor.selected.length > 0);
@@ -219,11 +269,17 @@ export default function ViewportPanelContainer() {
 
   // id used in onboarding
   return (
-    <Panel id="viewport-panel" title="Viewport" icon={WindowMaximize} toolbarContent={<ViewportToolbar />}>
+    <Panel
+      id="viewport-panel"
+      title="Viewport"
+      icon={WindowMaximize}
+      toolbarContent={<ViewportToolbar onToggleStats={setShowStats} showStats={showStats} />}
+    >
       <Resizeable axis="y" onChange={onResize} min={0.01} initialSizes={initialPanelSizes}>
         <ViewportContainer error={isOver && !canDrop} canDrop={isOver && canDrop} ref={dropRef}>
           <Viewport ref={canvasRef} tabIndex="-1" />
           <ControlsText>{controlsText}</ControlsText>
+          {showStats && <Stats editor={editor} />}
           <AssetDropZone afterUpload={onAfterUploadAssets} />
         </ViewportContainer>
         <AssetsPanel />

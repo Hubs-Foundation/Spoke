@@ -24,6 +24,7 @@ export default class KitSource extends BaseSource {
     this.assets = [];
     this.tags = [];
     this.loaded = false;
+    this.searchDebounceTimeout = 0;
   }
 
   async load() {
