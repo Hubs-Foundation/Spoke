@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect, useRef } from "react";
 import { useFetch } from "use-http";
 
 export default function usePaginatedSearch(path, queryParams, options = {}) {
+  console.log(queryParams);
   const urlRef = useRef();
 
   if (!urlRef.current) {

@@ -19,6 +19,13 @@ const resolveUrlCache = new Map();
 
 const RETICULUM_SERVER = configs.RETICULUM_SERVER || document.location.hostname;
 
+//initializing BLOCK_SEARCH_TERMS constant
+const BLOCK_SEARCH_TERMS = configs.BLOCK_SEARCH_TERMS;
+const objectOfVerification = {};
+for (let i = 0; i < BLOCK_SEARCH_TERMS.length; i++) {
+  objectOfVerification[BLOCK_SEARCH_TERMS[i]] = 0;
+}
+
 // thanks to https://developer.mozilla.org/en-US/docs/Web/API/WindowBase64/Base64_encoding_and_decoding
 function b64EncodeUnicode(str) {
   // first we use encodeURIComponent to get percent-encoded UTF-8, then we convert the percent-encodings
@@ -335,6 +342,12 @@ export default class Project extends EventEmitter {
     return proxiedUrlFor(url);
   }
 
+  // initializing searchTermFilteringBlacklist service
+  searchTermFilteringBlacklist(value) {
+    if (value.trim() in objectOfVerification) return true;
+    else return false;
+  }
+
   async searchMedia(source, params, cursor, signal) {
     const url = new URL(`https://${RETICULUM_SERVER}/api/v1/media/search`);
 
@@ -357,7 +370,9 @@ export default class Project extends EventEmitter {
     }
 
     if (params.query) {
-      searchParams.set("q", params.query);
+      //checking BLOCK_SEARCH_TERMS
+      if (this.searchTermFilteringBlacklist(params.query)) searchParams.set("q", "");
+      else searchParams.set("q", params.query);
     }
 
     if (params.filter) {

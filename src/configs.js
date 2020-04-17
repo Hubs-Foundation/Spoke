@@ -21,6 +21,8 @@ get(configs, "SENTRY_DSN", process.env.SENTRY_DSN);
 get(configs, "GA_TRACKING_ID", process.env.GA_TRACKING_ID);
 get(configs, "BASE_ASSETS_PATH", process.env.BASE_ASSETS_PATH);
 get(configs, "IS_MOZ", process.env.IS_MOZ);
+//add config BLOCK_SEARCH_TERMS
+get(configs, "BLOCK_SEARCH_TERMS", require("./block_search_terms.js"));
 
 if (configs.BASE_ASSETS_PATH) {
   // eslint-disable-next-line no-undef
