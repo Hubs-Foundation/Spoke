@@ -344,8 +344,12 @@ export default class Project extends EventEmitter {
 
   // initializing searchTermFilteringBlacklist service
   searchTermFilteringBlacklist(value) {
-    if (value.trim() in objectOfVerification) return true;
-    else return false;
+    const wordsArray = value.split(" ");
+    let okBlacklist = false;
+    for (let i = 0; i < wordsArray.length; i++) {
+      if (wordsArray[i].trim() in objectOfVerification) okBlacklist = true;
+    }
+    return okBlacklist;
   }
 
   async searchMedia(source, params, cursor, signal) {
@@ -371,7 +375,7 @@ export default class Project extends EventEmitter {
 
     if (params.query) {
       //checking BLOCK_SEARCH_TERMS
-      if (this.searchTermFilteringBlacklist(params.query)) searchParams.set("q", "");
+      if (this.searchTermFilteringBlacklist(params.query)) false;
       else searchParams.set("q", params.query);
     }
 
