@@ -1,0 +1,5 @@
+#!/bin/sh
+# Make an empty HTML file to be served by default.
+touch "{{ pkg.svc_static_path }}/index.html"
+# Apply permissions allowing Nginx workers to read what's in our static path.
+chown hab:hab "{{ pkg.svc_static_path }}"

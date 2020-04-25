@@ -1,0 +1,41 @@
+# build stage
+# FROM habitat/default-studio-x86_64-linux:1.6.2
+FROM alpine
+RUN apk add --no-cache curl bash
+RUN curl https://raw.githubusercontent.com/habitat-sh/habitat/master/components/hab/install.sh | bash
+
+# hubs modules
+COPY . /spoke/
+
+RUN hab license accept 
+RUN hab studio  run build /spoke --verbose
+
+# production stage
+FROM nginx:stable as production-stage
+
+COPY scripts/ /spoke/scripts/
+COPY --from=build-stage /spoke/dist /spoke/dist
+
+ENV NODE_TLS_REJECT_UNAUTHORIZED=0
+ENV ROUTER_BASE_PATH=/
+ENV BASE_ASSETS_PATH=http://xrchat.local/ 
+ENV HUBS_SERVER=xrchat.local:4000
+ENV RETICULUM_SERVER=xrchat.local:4000
+
+ENV BASE_ASSETS_PATH=
+ENV HUBS_SERVER=
+ENV RETICULUM_SERVER=
+ENV THUMBNAIL_SERVER=
+ENV CORS_PROXY_SERVER=
+ENV NON_CORS_PROXY_DOMAINS=
+ENV SENTRY_DSN=
+ENV GA_TRACKING_ID=
+ENV IS_MOZ=false
+
+
+WORKDIR /spoke
+RUN ./scripts/replace_env_stub.sh
+RUN cp /spoke/dist /usr/share/nginx/html
+
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]

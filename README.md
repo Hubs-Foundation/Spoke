@@ -28,6 +28,10 @@ Then open **https://localhost:9090** (note: HTTPS is required).
 
 When running against a local self-signed cert reticulum server, you'll need to `export NODE_TLS_REJECT_UNAUTHORIZED=0` for publishing to work.
 
+## Docker
+
+To run inside a docker container, check [Dockerizing Spoke](docs/dockerize.md) document.
+
 ## Credits
 
 Parts of this project are derived from the [three.js editor](https://threejs.org/editor/)

@@ -19,5 +19,4 @@ test/integration/.spoke-server
 test/integration/project/generated
 .tersercache
 results/
-
 .cache/
