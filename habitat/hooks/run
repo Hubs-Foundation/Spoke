@@ -64,4 +64,9 @@ then
   cp -R "{{ cfg.deploy.target }}/spoke/pages/latest" "{{ cfg.deploy.target }}/spoke/pages/releases/{{ pkg.version }}.{{ pkg.release }}"
 fi
 
-exec sleep 999999999999
+
+if [[ "{{ cfg.deploy.type }}" == "serve" ]] ;
+then
+# Start the Nginx server, passing it our bundled configuration file.
+exec {{ pkgPathFor "core/nginx" }}/bin/nginx -c "{{ pkg.svc_config_path }}/nginx.conf" 2>&1
+fi
