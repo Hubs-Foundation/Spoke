@@ -12,6 +12,7 @@ import { buildAbsoluteURL } from "url-toolkit";
 import PublishedSceneDialog from "./PublishedSceneDialog";
 import { matchesFileTypes, AudioFileTypes } from "../ui/assets/fileTypes";
 import { RethrownError } from "../editor/utils/errors";
+import { searchTermsExistInBlacklist } from "./BlockSearchTerms.js";
 
 // Media related functions should be kept up to date with Hubs media-utils:
 // https://github.com/mozilla/hubs/blob/master/src/utils/media-utils.js
@@ -350,6 +351,11 @@ export default class Project extends EventEmitter {
   }
 
   async searchMedia(source, params, cursor, signal) {
+    if (searchTermsExistInBlacklist(params.query)) {
+      // If search params contain a blacklisted word, return nothing
+      return { results: {}, suggestions: {}, nextCursor: null };
+    }
+
     const url = new URL(`https://${RETICULUM_SERVER}/api/v1/media/search`);
 
     const headers = {
