@@ -138,11 +138,11 @@ export default class KitPackager {
     }
 
     const imageDefs = chunks.json.images;
-    const imageBlobs = chunks.images;
+    const imageChunks = chunks.images;
 
-    for (let i = 0; i < imageBlobs.length; i++) {
+    for (let i = 0; i < imageChunks.length; i++) {
       const imageDef = imageDefs[i];
-      const imageBlob = imageBlobs[i];
+      const imageBlob = imageChunks[i].blob;
       const contentHash = await getBlobContentHash(imageBlob);
       const mimeType = imageDef.mimeType;
       const fileExtension = mimeType === "image/png" ? ".png" : ".jpg";

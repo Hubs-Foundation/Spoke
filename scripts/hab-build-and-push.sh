@@ -1,8 +1,8 @@
 #!/bin/bash
 
 export BASE_ASSETS_PATH=$1
-export HUBS_SERVER=$2
-export RETICULUM_SERVER=$3
+export CLIENT_ADDRESS=$2
+export API_SERVER_ADDRESS=$3
 export THUMBNAIL_SERVER=$4
 export CORS_PROXY_SERVER=$5
 export NON_CORS_PROXY_DOMAINS=$6
@@ -42,8 +42,8 @@ hab svc stop $PKG
 cat > build-config.toml << EOTOML
 [general]
 base_assets_path = $BASE_ASSETS_PATH
-hubs_server = $HUBS_SERVER
-reticulum_server = $RETICULUM_SERVER
+hubs_server = $CLIENT_ADDRESS
+reticulum_server = $API_SERVER_ADDRESS
 thumbnail_server = $THUMBNAIL_SERVER
 cors_proxy_server = $CORS_PROXY_SERVER
 non_cors_proxy_domains = $NON_CORS_PROXY_DOMAINS

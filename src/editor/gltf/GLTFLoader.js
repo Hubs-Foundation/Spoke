@@ -21,7 +21,6 @@ import {
   BufferAttribute,
   BufferGeometry,
   ClampToEdgeWrapping,
-  Color,
   DefaultLoadingManager,
   DoubleSide,
   FileLoader,
@@ -65,13 +64,13 @@ import {
   TextureLoader,
   TriangleFanDrawMode,
   TriangleStripDrawMode,
-  Vector2,
   VectorKeyframeTrack,
   VertexColors,
   sRGBEncoding
 } from "three";
 
 import { MaterialsUnlitLoaderExtension } from "./extensions/loader/MaterialsUnlitLoaderExtension";
+import { LightmapLoaderExtension } from "./extensions/loader/LightmapLoaderExtension";
 
 /* CONSTANTS */
 
@@ -267,6 +266,19 @@ class GLTFLoader {
     this.primitiveCache = {};
     this.meshReferences = {};
     this.meshUses = {};
+    this.stats = {
+      nodes: 0,
+      meshes: 0,
+      materials: 0,
+      textures: 0,
+      triangles: 0,
+      vertices: 0,
+      totalSize: 0,
+      jsonSize: 0,
+      bufferInfo: {},
+      textureInfo: {},
+      meshInfo: {}
+    };
 
     this.textureLoader = new TextureLoader(this.manager);
     this.textureLoader.setCrossOrigin(this.options.crossOrigin);
@@ -287,6 +299,7 @@ class GLTFLoader {
     this.hooks = {};
 
     this.registerExtension(MaterialsUnlitLoaderExtension);
+    this.registerExtension(LightmapLoaderExtension);
   }
 
   registerExtension(Extension, options = {}) {
@@ -313,7 +326,7 @@ class GLTFLoader {
     hooks.push({ test, callback });
   }
 
-  async runHook(hookName, ...args) {
+  async runFirstHook(hookName, ...args) {
     const hooks = this.hooks[hookName];
 
     if (hooks) {
@@ -325,6 +338,22 @@ class GLTFLoader {
     }
 
     return undefined;
+  }
+
+  async runAllHooks(hookName, ...args) {
+    const hooks = this.hooks[hookName];
+
+    const matchedHooks = [];
+
+    if (hooks) {
+      for (const { test, callback } of hooks) {
+        if (test(...args)) {
+          matchedHooks.push(callback(...args));
+        }
+      }
+    }
+
+    return Promise.all(matchedHooks);
   }
 
   async loadRoot() {
@@ -413,6 +442,12 @@ class GLTFLoader {
           "THREE.GLTFLoader: Unsupported asset. glTF versions >=2.0 are supported. Use LegacyGLTFLoader instead."
         );
       }
+
+      this.stats.nodes = json.nodes ? json.nodes.length : 0;
+      this.stats.meshes = json.meshes ? json.meshes.length : 0;
+      this.stats.materials = json.materials ? json.materials.length : 0;
+      this.stats.textures = json.textures ? json.textures.length : 0;
+      this.stats.jsonSize = content.length;
 
       this.markDefs(json);
 
@@ -577,7 +612,24 @@ class GLTFLoader {
       const scene = await this.getDependency("scene", sceneIndex);
       const sceneAnimations = await this.getDependency("sceneAnimations", sceneIndex);
       scene.animations = sceneAnimations || [];
-      return { scene, json };
+
+      const stats = this.stats;
+
+      stats.totalSize = stats.jsonSize;
+
+      for (const key in stats.bufferInfo) {
+        if (!Object.prototype.hasOwnProperty.call(stats.bufferInfo, key)) continue;
+        const item = stats.bufferInfo[key];
+        stats.totalSize += item.size || 0;
+      }
+
+      for (const key in stats.textureInfo) {
+        if (!Object.prototype.hasOwnProperty.call(stats.textureInfo, key)) continue;
+        const item = stats.textureInfo[key];
+        stats.totalSize += item.size || 0;
+      }
+
+      return { scene, json, stats };
     } catch (error) {
       throw new RethrownError(`Error loading glTF "${this.url}"`, error);
     }
@@ -1044,6 +1096,12 @@ class GLTFLoader {
     const geometries = await this.loadGeometries(primitives);
     const meshes = [];
 
+    const stats = {
+      name: meshDef.name || `Mesh ${meshIndex}`,
+      triangles: 0,
+      vertices: 0
+    };
+
     for (let i = 0, il = geometries.length; i < il; i++) {
       const geometry = geometries[i];
       const primitive = primitives[i];
@@ -1052,7 +1110,7 @@ class GLTFLoader {
 
       const material = originalMaterials[i];
 
-      let mesh = await this.runHook("createPrimitive", meshDef, primitive, geometry, material);
+      let mesh = await this.runFirstHook("createPrimitive", meshDef, primitive, geometry, material);
 
       if (!mesh) {
         if (
@@ -1075,6 +1133,17 @@ class GLTFLoader {
           throw new Error("THREE.GLTFLoader: Primitive mode unsupported: " + primitive.mode);
         }
       }
+
+      if (mesh.geometry.index) {
+        stats.triangles += mesh.geometry.index.count / 3;
+      } else {
+        stats.triangles += mesh.geometry.attributes.position.count / 3;
+      }
+
+      stats.vertices += mesh.geometry.attributes.position.count;
+
+      this.stats.triangles += stats.triangles;
+      this.stats.vertices += stats.vertices;
 
       if (mesh.isMesh) {
         if (primitive.mode === WEBGL_CONSTANTS.TRIANGLE_STRIP) {
@@ -1104,6 +1173,8 @@ class GLTFLoader {
 
       meshes.push(mesh);
     }
+
+    this.stats.meshInfo[meshIndex] = stats;
 
     if (meshes.length === 1) {
       return meshes[0];
@@ -1361,17 +1432,13 @@ class GLTFLoader {
     const { json } = await this.getDependency("root");
     const materialDef = json.materials[materialIndex];
 
-    let materialParams = await this.runHook("gatherMaterialParams", materialDef);
-
-    if (!materialParams) {
-      materialParams = await this.gatherStandardMaterialParams(materialDef);
-    }
-
-    let material = await this.runHook("createMaterial", materialDef, materialParams);
+    let material = await this.runFirstHook("createMaterial", materialDef);
 
     if (!material) {
-      material = new MeshStandardMaterial(materialParams);
+      material = await this.createStandardMaterial(materialDef);
     }
+
+    await this.runAllHooks("setMaterialParams", material, materialDef);
 
     if (materialDef.name !== undefined) material.name = materialDef.name;
 
@@ -1382,8 +1449,8 @@ class GLTFLoader {
     return material;
   }
 
-  async gatherStandardMaterialParams(materialDef) {
-    const materialParams = {};
+  async createStandardMaterial(materialDef) {
+    const material = new MeshStandardMaterial();
 
     const pending = [];
 
@@ -1392,93 +1459,78 @@ class GLTFLoader {
 
     const metallicRoughness = materialDef.pbrMetallicRoughness || {};
 
-    materialParams.color = new Color(1.0, 1.0, 1.0);
-    materialParams.opacity = 1.0;
+    material.color.set(0xffffff);
+    material.opacity = 1.0;
 
     const alphaMode = materialDef.alphaMode || ALPHA_MODES.OPAQUE;
 
     if (Array.isArray(metallicRoughness.baseColorFactor)) {
       const array = metallicRoughness.baseColorFactor;
 
-      materialParams.color.fromArray(array);
-      materialParams.opacity = array[3];
+      material.color.fromArray(array);
+      material.opacity = array[3];
     }
 
     if (metallicRoughness.baseColorTexture !== undefined) {
       const format = alphaMode === ALPHA_MODES.OPAQUE ? RGBFormat : RGBAFormat;
-      pending.push(this.assignTexture(materialParams, "map", metallicRoughness.baseColorTexture, sRGBEncoding, format));
+      pending.push(this.assignTexture(material, "map", metallicRoughness.baseColorTexture, sRGBEncoding, format));
     }
 
-    materialParams.metalness = metallicRoughness.metallicFactor !== undefined ? metallicRoughness.metallicFactor : 1.0;
-    materialParams.roughness =
-      metallicRoughness.roughnessFactor !== undefined ? metallicRoughness.roughnessFactor : 1.0;
+    material.metalness = metallicRoughness.metallicFactor !== undefined ? metallicRoughness.metallicFactor : 1.0;
+    material.roughness = metallicRoughness.roughnessFactor !== undefined ? metallicRoughness.roughnessFactor : 1.0;
 
     if (metallicRoughness.metallicRoughnessTexture !== undefined) {
       pending.push(
-        this.assignTexture(
-          materialParams,
-          "metalnessMap",
-          metallicRoughness.metallicRoughnessTexture,
-          undefined,
-          RGBFormat
-        )
+        this.assignTexture(material, "metalnessMap", metallicRoughness.metallicRoughnessTexture, undefined, RGBFormat)
       );
       pending.push(
-        this.assignTexture(
-          materialParams,
-          "roughnessMap",
-          metallicRoughness.metallicRoughnessTexture,
-          undefined,
-          RGBFormat
-        )
+        this.assignTexture(material, "roughnessMap", metallicRoughness.metallicRoughnessTexture, undefined, RGBFormat)
       );
     }
 
     if (materialDef.doubleSided === true) {
-      materialParams.side = DoubleSide;
+      material.side = DoubleSide;
     }
 
     if (alphaMode === ALPHA_MODES.BLEND) {
-      materialParams.transparent = true;
+      material.transparent = true;
     } else {
-      materialParams.transparent = false;
+      material.transparent = false;
 
       if (alphaMode === ALPHA_MODES.MASK) {
-        materialParams.alphaTest = materialDef.alphaCutoff !== undefined ? materialDef.alphaCutoff : 0.5;
+        material.alphaTest = materialDef.alphaCutoff !== undefined ? materialDef.alphaCutoff : 0.5;
       }
     }
 
     if (materialDef.normalTexture !== undefined) {
-      pending.push(this.assignTexture(materialParams, "normalMap", materialDef.normalTexture, undefined, RGBFormat));
+      pending.push(this.assignTexture(material, "normalMap", materialDef.normalTexture, undefined, RGBFormat));
 
-      materialParams.normalScale = new Vector2(1, 1);
+      material.normalScale.set(1, 1);
 
       if (materialDef.normalTexture.scale !== undefined) {
-        materialParams.normalScale.set(materialDef.normalTexture.scale, materialDef.normalTexture.scale);
+        material.normalScale.set(materialDef.normalTexture.scale, materialDef.normalTexture.scale);
       }
     }
 
     if (materialDef.occlusionTexture !== undefined) {
-      pending.push(this.assignTexture(materialParams, "aoMap", materialDef.occlusionTexture, undefined, RGBFormat));
+      pending.push(this.assignTexture(material, "aoMap", materialDef.occlusionTexture, undefined, RGBFormat));
 
       if (materialDef.occlusionTexture.strength !== undefined) {
-        materialParams.aoMapIntensity = materialDef.occlusionTexture.strength;
+        material.aoMapIntensity = materialDef.occlusionTexture.strength;
       }
     }
 
     if (materialDef.emissiveFactor !== undefined) {
-      materialParams.emissive = new Color().fromArray(materialDef.emissiveFactor);
+      material.emissive.fromArray(materialDef.emissiveFactor);
     }
 
     if (materialDef.emissiveTexture !== undefined) {
-      pending.push(
-        this.assignTexture(materialParams, "emissiveMap", materialDef.emissiveTexture, sRGBEncoding, RGBFormat)
-      );
+      pending.push(this.assignTexture(material, "emissiveMap", materialDef.emissiveTexture, sRGBEncoding, RGBFormat));
     }
 
     await Promise.all(pending);
 
-    return materialParams;
+    return material;
   }
 
   /**
@@ -1591,12 +1643,15 @@ class GLTFLoader {
     let sourceURI = source.uri;
     let isObjectURL = false;
 
+    let imageSize;
+
     if (source.bufferView !== undefined) {
       // Load binary image data from bufferView, if provided.
       const bufferView = await this.getDependency("bufferView", source.bufferView);
       isObjectURL = true;
       const blob = new Blob([bufferView], { type: source.mimeType });
       sourceURI = URL.createObjectURL(blob);
+      imageSize = blob.size;
     }
 
     // Load Texture resource.
@@ -1609,6 +1664,22 @@ class GLTFLoader {
     const textureUrl = this.resolveURL(sourceURI, options.path);
 
     const texture = await loadTexture(textureUrl, this.textureLoader);
+
+    if (!imageSize) {
+      const perfEntries = performance.getEntriesByName(textureUrl);
+      if (perfEntries.length > 0) {
+        imageSize = perfEntries[0].encodedBodySize;
+      }
+    }
+
+    this.stats.textureInfo[textureDef.source] = {
+      name: source.name || textureDef.name || `Image ${textureDef.source}`,
+      size: imageSize,
+      url: textureUrl,
+      width: texture.image.width,
+      height: texture.image.height,
+      type: source.mimeType
+    };
 
     // Clean up resources and configure Texture.
 
@@ -1642,13 +1713,13 @@ class GLTFLoader {
 
   /**
    * Asynchronously assigns a texture to the given material parameters.
-   * @param {Object} materialParams
+   * @param {Object} material
    * @param {string} mapName
    * @param {Object} mapDef
    * @param {PixelFormat} format
    * @return {Promise}
    */
-  async assignTexture(materialParams, mapName, mapDef, overrideEncoding, overrideFormat) {
+  async assignTexture(material, mapName, mapDef, overrideEncoding, overrideFormat) {
     const texture = await this.getDependency("texture", mapDef.index);
 
     if (!texture.isCompressedTexture && overrideFormat) {
@@ -1659,7 +1730,7 @@ class GLTFLoader {
       texture.encoding = overrideEncoding;
     }
 
-    materialParams[mapName] = texture;
+    material[mapName] = texture;
   }
 
   /**
@@ -1794,18 +1865,27 @@ class GLTFLoader {
       throw new Error("THREE.GLTFLoader: " + bufferDef.type + " buffer type is not supported.");
     }
 
+    let buffer;
+
     // If present, GLB container is required to be the first buffer.
     if (bufferDef.uri === undefined && bufferIndex === 0) {
-      return glbBuffer;
+      buffer = glbBuffer;
+    } else {
+      const options = this.options;
+
+      buffer = await new Promise((resolve, reject) => {
+        loader.load(this.resolveURL(bufferDef.uri, options.path), resolve, undefined, () => {
+          reject(new Error('THREE.GLTFLoader: Failed to load buffer "' + bufferDef.uri + '".'));
+        });
+      });
     }
 
-    const options = this.options;
+    this.stats.bufferInfo[bufferIndex] = {
+      name: bufferDef.name || `Buffer ${bufferIndex}`,
+      size: buffer.byteLength
+    };
 
-    return new Promise((resolve, reject) => {
-      loader.load(this.resolveURL(bufferDef.uri, options.path), resolve, undefined, () => {
-        reject(new Error('THREE.GLTFLoader: Failed to load buffer "' + bufferDef.uri + '".'));
-      });
-    });
+    return buffer;
   }
 
   resolveURL(url, path) {

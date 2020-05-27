@@ -35,8 +35,8 @@ pipeline {
           def targetS3Bucket = env.TARGET_S3_BUCKET
           def isMoz = env.IS_MOZ
           def smokeURL = env.SMOKE_URL
-          def hubsServer = env.HUBS_SERVER
-          def reticulumServer = env.RETICULUM_SERVER
+          def hubsServer = env.CLIENT_ADDRESS
+          def reticulumServer = env.API_SERVER_ADDRESS
           def thumbnailServer = env.THUMBNAIL_SERVER
           def corsProxyServer = env.CORS_PROXY_SERVER
           def nonCorsProxyDomains = env.NON_CORS_PROXY_DOMAINS

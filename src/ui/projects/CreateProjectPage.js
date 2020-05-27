@@ -21,9 +21,12 @@ import { ApiContext } from "../contexts/ApiContext";
 import { Link } from "react-router-dom";
 import InfiniteScroll from "react-infinite-scroller";
 import usePaginatedSearch from "./usePaginatedSearch";
+import configs from "../../configs";
 
 export default function CreateProjectPage({ history, location }) {
   const api = useContext(ApiContext);
+
+  const { API_MEDIA_ROUTE, API_MEDIA_SEARCH_ROUTE } = configs;
 
   const queryParams = new URLSearchParams(location.search);
 
@@ -89,7 +92,7 @@ export default function CreateProjectPage({ history, location }) {
   );
 
   const { loading, error, entries, hasMore, loadMore } = usePaginatedSearch(
-    `${api.apiURL}/api/v1/media/search`,
+    `${api.apiURL}${API_MEDIA_ROUTE}${API_MEDIA_SEARCH_ROUTE}`,
     params
   );
 

@@ -6,18 +6,41 @@ import AuthContainer from "./AuthContainer";
 import LoginDialog from "./LoginDialog";
 import PublishDialog from "./PublishDialog";
 import ProgressDialog from "../ui/dialogs/ProgressDialog";
+import PerformanceCheckDialog from "../ui/dialogs/PerformanceCheckDialog";
 import jwtDecode from "jwt-decode";
 import { buildAbsoluteURL } from "url-toolkit";
 import PublishedSceneDialog from "./PublishedSceneDialog";
 import { matchesFileTypes, AudioFileTypes } from "../ui/assets/fileTypes";
 import { RethrownError } from "../editor/utils/errors";
+import { searchTermsExistInBlacklist } from "./BlockSearchTerms.js";
 
 // Media related functions should be kept up to date with Hubs media-utils:
 // https://github.com/mozilla/hubs/blob/master/src/utils/media-utils.js
 
 const resolveUrlCache = new Map();
+const resolveMediaCache = new Map();
 
-const RETICULUM_SERVER = configs.RETICULUM_SERVER || document.location.hostname;
+const API_SERVER_ADDRESS = configs.API_SERVER_ADDRESS || document.location.hostname;
+
+const {
+  API_ASSETS_ROUTE,
+  API_ASSETS_ACTION,
+  API_MEDIA_ROUTE,
+  API_MEDIA_SEARCH_ROUTE,
+  API_META_ROUTE,
+  API_PROJECT_PUBLISH_ACTION,
+  API_PROJECTS_ROUTE,
+  API_SCENES_ROUTE,
+  API_SOCKET_ENDPOINT,
+  CLIENT_ADDRESS,
+  CLIENT_SCENE_ROUTE,
+  CLIENT_LOCAL_SCENE_ROUTE,
+  CORS_PROXY_SERVER,
+  THUMBNAIL_ROUTE,
+  THUMBNAIL_SERVER,
+  USE_DIRECT_UPLOAD_API,
+  NON_CORS_PROXY_DOMAINS
+} = configs;
 
 // thanks to https://developer.mozilla.org/en-US/docs/Web/API/WindowBase64/Base64_encoding_and_decoding
 function b64EncodeUnicode(str) {
@@ -36,9 +59,9 @@ const farsparkEncodeUrl = url => {
     .replace(/\//g, "_");
 };
 
-const nonCorsProxyDomains = (configs.NON_CORS_PROXY_DOMAINS || "").split(",");
-if (configs.CORS_PROXY_SERVER) {
-  nonCorsProxyDomains.push(configs.CORS_PROXY_SERVER);
+const nonCorsProxyDomains = (NON_CORS_PROXY_DOMAINS || "").split(",");
+if (CORS_PROXY_SERVER) {
+  nonCorsProxyDomains.push(CORS_PROXY_SERVER);
 }
 
 function shouldCorsProxy(url) {
@@ -60,15 +83,15 @@ export const proxiedUrlFor = url => {
     return url;
   }
 
-  return `https://${configs.CORS_PROXY_SERVER}/${url}`;
+  return `https://${CORS_PROXY_SERVER}/${url}`;
 };
 
 export const scaledThumbnailUrlFor = (url, width, height) => {
-  if (configs.RETICULUM_SERVER.includes("hubs.local") && url.includes("hubs.local")) {
+  if (API_SERVER_ADDRESS.includes("hubs.local") && url.includes("hubs.local")) {
     return url;
   }
 
-  return `https://${configs.THUMBNAIL_SERVER}/thumbnail/${farsparkEncodeUrl(url)}?w=${width}&h=${height}`;
+  return `https://${THUMBNAIL_SERVER}${THUMBNAIL_ROUTE}${farsparkEncodeUrl(url)}?w=${width}&h=${height}`;
 };
 
 const CommonKnownContentTypes = {
@@ -96,7 +119,7 @@ export default class Project extends EventEmitter {
     const { protocol, host } = new URL(window.location.href);
 
     this.serverURL = protocol + "//" + host;
-    this.apiURL = `https://${RETICULUM_SERVER}`;
+    this.apiURL = `https://${API_SERVER_ADDRESS}`;
 
     this.projectDirectoryPath = "/api/files/";
 
@@ -109,8 +132,8 @@ export default class Project extends EventEmitter {
   }
 
   async authenticate(email, signal) {
-    const reticulumServer = RETICULUM_SERVER;
-    const socketUrl = `wss://${reticulumServer}/socket`;
+    const reticulumServer = API_SERVER_ADDRESS;
+    const socketUrl = `wss://${reticulumServer}${API_SOCKET_ENDPOINT}`;
     const socket = new Socket(socketUrl, { params: { session_id: uuid() } });
     socket.connect();
 
@@ -198,7 +221,7 @@ export default class Project extends EventEmitter {
       authorization: `Bearer ${token}`
     };
 
-    const response = await this.fetch(`https://${RETICULUM_SERVER}/api/v1/projects`, { headers });
+    const response = await this.fetch(`https://${API_SERVER_ADDRESS}${API_PROJECTS_ROUTE}`, { headers });
 
     const json = await response.json();
 
@@ -217,7 +240,7 @@ export default class Project extends EventEmitter {
       authorization: `Bearer ${token}`
     };
 
-    const response = await this.fetch(`https://${RETICULUM_SERVER}/api/v1/projects/${projectId}`, {
+    const response = await this.fetch(`https://${API_SERVER_ADDRESS}${API_PROJECTS_ROUTE}/${projectId}`, {
       headers
     });
 
@@ -234,25 +257,27 @@ export default class Project extends EventEmitter {
     const cacheKey = `${url}|${index}`;
     if (resolveUrlCache.has(cacheKey)) return resolveUrlCache.get(cacheKey);
 
-    const response = await this.fetch(`https://${RETICULUM_SERVER}/api/v1/media`, {
+    const request = this.fetch(`https://${API_SERVER_ADDRESS}${API_MEDIA_ROUTE}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ media: { url, index } })
+    }).then(async response => {
+      if (!response.ok) {
+        const message = `Error resolving url "${url}":\n  `;
+        try {
+          const body = await response.text();
+          throw new Error(message + body.replace(/\n/g, "\n  "));
+        } catch (e) {
+          throw new Error(message + response.statusText.replace(/\n/g, "\n  "));
+        }
+      }
+
+      return response.json();
     });
 
-    if (!response.ok) {
-      const message = `Error resolving url "${url}":\n  `;
-      try {
-        const body = await response.text();
-        throw new Error(message + body.replace(/\n/g, "\n  "));
-      } catch (e) {
-        throw new Error(message + response.statusText.replace(/\n/g, "\n  "));
-      }
-    }
+    resolveUrlCache.set(cacheKey, request);
 
-    const resolved = await response.json();
-    resolveUrlCache.set(cacheKey, resolved);
-    return resolved;
+    return request;
   }
 
   fetchContentType(accessibleUrl) {
@@ -278,35 +303,45 @@ export default class Project extends EventEmitter {
       return { accessibleUrl: absoluteUrl };
     }
 
-    let contentType, canonicalUrl, accessibleUrl;
+    const cacheKey = `${absoluteUrl}|${index}`;
 
-    try {
-      const result = await this.resolveUrl(absoluteUrl);
-      canonicalUrl = result.origin;
-      accessibleUrl = proxiedUrlFor(canonicalUrl, index);
+    if (resolveMediaCache.has(cacheKey)) return resolveMediaCache.get(cacheKey);
 
-      contentType =
-        (result.meta && result.meta.expected_content_type) ||
-        guessContentType(canonicalUrl) ||
-        (await this.fetchContentType(accessibleUrl));
-    } catch (error) {
-      throw new RethrownError(`Error resolving media "${absoluteUrl}"`, error);
-    }
+    const request = (async () => {
+      let contentType, canonicalUrl, accessibleUrl;
 
-    try {
-      if (contentType === "model/gltf+zip") {
-        // TODO: Sketchfab object urls should be revoked after they are loaded by the glTF loader.
-        const { getFilesFromSketchfabZip } = await import(
-          /* webpackChunkName: "SketchfabZipLoader", webpackPrefetch: true */ "./SketchfabZipLoader"
-        );
-        const files = await getFilesFromSketchfabZip(accessibleUrl);
-        return { canonicalUrl, accessibleUrl: files["scene.gtlf"], contentType, files };
+      try {
+        const result = await this.resolveUrl(absoluteUrl);
+        canonicalUrl = result.origin;
+        accessibleUrl = proxiedUrlFor(canonicalUrl, index);
+
+        contentType =
+          (result.meta && result.meta.expected_content_type) ||
+          guessContentType(canonicalUrl) ||
+          (await this.fetchContentType(accessibleUrl));
+      } catch (error) {
+        throw new RethrownError(`Error resolving media "${absoluteUrl}"`, error);
       }
-    } catch (error) {
-      throw new RethrownError(`Error loading Sketchfab model "${accessibleUrl}"`, error);
-    }
 
-    return { canonicalUrl, accessibleUrl, contentType };
+      try {
+        if (contentType === "model/gltf+zip") {
+          // TODO: Sketchfab object urls should be revoked after they are loaded by the glTF loader.
+          const { getFilesFromSketchfabZip } = await import(
+            /* webpackChunkName: "SketchfabZipLoader", webpackPrefetch: true */ "./SketchfabZipLoader"
+          );
+          const files = await getFilesFromSketchfabZip(accessibleUrl);
+          return { canonicalUrl, accessibleUrl: files["scene.gtlf"].url, contentType, files };
+        }
+      } catch (error) {
+        throw new RethrownError(`Error loading Sketchfab model "${accessibleUrl}"`, error);
+      }
+
+      return { canonicalUrl, accessibleUrl, contentType };
+    })();
+
+    resolveMediaCache.set(cacheKey, request);
+
+    return request;
   }
 
   proxyUrl(url) {
@@ -314,8 +349,8 @@ export default class Project extends EventEmitter {
   }
 
   unproxyUrl(baseUrl, url) {
-    if (configs.CORS_PROXY_SERVER) {
-      const corsProxyPrefix = `https://${configs.CORS_PROXY_SERVER}/`;
+    if (CORS_PROXY_SERVER) {
+      const corsProxyPrefix = `https://${CORS_PROXY_SERVER}/`;
 
       if (baseUrl.startsWith(corsProxyPrefix)) {
         baseUrl = baseUrl.substring(corsProxyPrefix.length);
@@ -336,7 +371,12 @@ export default class Project extends EventEmitter {
   }
 
   async searchMedia(source, params, cursor, signal) {
-    const url = new URL(`https://${RETICULUM_SERVER}/api/v1/media/search`);
+    if (searchTermsExistInBlacklist(params.query)) {
+      // If search params contain a blacklisted word, return nothing
+      return { results: {}, suggestions: {}, nextCursor: null };
+    }
+
+    const url = new URL(`https://${API_SERVER_ADDRESS}${API_MEDIA_ROUTE}${API_MEDIA_SEARCH_ROUTE}`);
 
     const headers = {
       "content-type": "application/json"
@@ -463,7 +503,7 @@ export default class Project extends EventEmitter {
 
     const body = JSON.stringify({ project });
 
-    const projectEndpoint = `https://${RETICULUM_SERVER}/api/v1/projects`;
+    const projectEndpoint = `https://${API_SERVER_ADDRESS}${API_PROJECTS_ROUTE}`;
 
     const resp = await this.fetch(projectEndpoint, { method: "POST", headers, body, signal });
 
@@ -512,7 +552,7 @@ export default class Project extends EventEmitter {
       authorization: `Bearer ${token}`
     };
 
-    const projectEndpoint = `https://${RETICULUM_SERVER}/api/v1/projects/${projectId}`;
+    const projectEndpoint = `https://${API_SERVER_ADDRESS}${API_PROJECTS_ROUTE}/${projectId}`;
 
     const resp = await this.fetch(projectEndpoint, { method: "DELETE", headers });
 
@@ -594,7 +634,7 @@ export default class Project extends EventEmitter {
       project
     });
 
-    const projectEndpoint = `https://${RETICULUM_SERVER}/api/v1/projects/${projectId}`;
+    const projectEndpoint = `https://${API_SERVER_ADDRESS}${API_PROJECTS_ROUTE}/${projectId}`;
 
     const resp = await this.fetch(projectEndpoint, { method: "PATCH", headers, body, signal });
 
@@ -633,7 +673,7 @@ export default class Project extends EventEmitter {
       "content-type": "application/json"
     };
 
-    const response = await this.fetch(`https://${RETICULUM_SERVER}/api/v1/scenes/${sceneId}`, {
+    const response = await this.fetch(`https://${API_SERVER_ADDRESS}${API_SCENES_ROUTE}/${sceneId}`, {
       headers
     });
 
@@ -643,10 +683,11 @@ export default class Project extends EventEmitter {
   }
 
   getSceneUrl(sceneId) {
-    if (configs.HUBS_SERVER === "localhost:8080" || configs.HUBS_SERVER === "hubs.local:8080") {
-      return `https://${configs.HUBS_SERVER}/scene.html?scene_id=${sceneId}`;
+    // If we recognize a local address relative to this Spoke instance
+    if (CLIENT_ADDRESS === "localhost:8080" || CLIENT_ADDRESS === "hubs.local:8080") {
+      return `https://${CLIENT_ADDRESS}${CLIENT_LOCAL_SCENE_ROUTE}${sceneId}`;
     } else {
-      return `https://${configs.HUBS_SERVER}/scenes/${sceneId}`;
+      return `https://${CLIENT_ADDRESS}${CLIENT_SCENE_ROUTE}${sceneId}`;
     }
   }
 
@@ -770,10 +811,24 @@ export default class Project extends EventEmitter {
       });
 
       // Clone the existing scene, process it for exporting, and then export as a glb blob
-      const glbBlob = await editor.exportScene(abortController.signal);
+      const { glbBlob, scores } = await editor.exportScene(abortController.signal, { scores: true });
 
       if (signal.aborted) {
         const error = new Error("Publish project aborted");
+        error.aborted = true;
+        throw error;
+      }
+
+      const performanceCheckResult = await new Promise(resolve => {
+        showDialog(PerformanceCheckDialog, {
+          scores,
+          onCancel: () => resolve(false),
+          onConfirm: () => resolve(true)
+        });
+      });
+
+      if (!performanceCheckResult) {
+        const error = new Error("Publish project canceled");
         error.aborted = true;
         throw error;
       }
@@ -876,11 +931,14 @@ export default class Project extends EventEmitter {
       };
       const body = JSON.stringify({ scene: sceneParams });
 
-      const resp = await this.fetch(`https://${RETICULUM_SERVER}/api/v1/projects/${project.project_id}/publish`, {
-        method: "POST",
-        headers,
-        body
-      });
+      const resp = await this.fetch(
+        `https://${API_SERVER_ADDRESS}${API_PROJECTS_ROUTE}/${project.project_id}${API_PROJECT_PUBLISH_ACTION}`,
+        {
+          method: "POST",
+          headers,
+          body
+        }
+      );
 
       if (signal.aborted) {
         const error = new Error("Publish project aborted");
@@ -929,8 +987,14 @@ export default class Project extends EventEmitter {
 
   async upload(blob, onUploadProgress, signal) {
     // Use direct upload API, see: https://github.com/mozilla/reticulum/pull/319
-    const { phx_host: uploadHost } = await (await this.fetch(`https://${RETICULUM_SERVER}/api/v1/meta`)).json();
-    const uploadPort = new URL(`https://${RETICULUM_SERVER}`).port;
+    let host, port;
+
+    if (USE_DIRECT_UPLOAD_API) {
+      const { phx_host: uploadHost } = await (await this.fetch(`https://${API_SERVER_ADDRESS}${API_META_ROUTE}`)).json();
+      const uploadPort = new URL(`https://${API_SERVER_ADDRESS}`).port;
+      host = uploadHost;
+      port = uploadPort;
+    }
 
     return await new Promise((resolve, reject) => {
       const request = new XMLHttpRequest();
@@ -947,7 +1011,11 @@ export default class Project extends EventEmitter {
         signal.addEventListener("abort", onAbort);
       }
 
-      request.open("post", `https://${uploadHost}:${uploadPort}/api/v1/media`, true);
+      if (USE_DIRECT_UPLOAD_API) {
+        request.open("post", `https://${host}:${port}${API_MEDIA_ROUTE}`, true);
+      } else {
+        request.open("post", `http://${API_SERVER_ADDRESS}${API_MEDIA_ROUTE}`, true);
+      }
 
       request.upload.addEventListener("progress", e => {
         if (onUploadProgress) {
@@ -983,7 +1051,7 @@ export default class Project extends EventEmitter {
   }
 
   uploadAssets(editor, files, onProgress, signal) {
-    return this._uploadAssets(`https://${RETICULUM_SERVER}/api/v1/assets`, editor, files, onProgress, signal);
+    return this._uploadAssets(`https://${API_SERVER_ADDRESS}${API_ASSETS_ROUTE}`, editor, files, onProgress, signal);
   }
 
   async _uploadAssets(endpoint, editor, files, onProgress, signal) {
@@ -1018,12 +1086,12 @@ export default class Project extends EventEmitter {
   }
 
   uploadAsset(editor, file, onProgress, signal) {
-    return this._uploadAsset(`https://${RETICULUM_SERVER}/api/v1/assets`, editor, file, onProgress, signal);
+    return this._uploadAsset(`https://${API_SERVER_ADDRESS}${API_ASSETS_ROUTE}`, editor, file, onProgress, signal);
   }
 
   uploadProjectAsset(editor, projectId, file, onProgress, signal) {
     return this._uploadAsset(
-      `https://${RETICULUM_SERVER}/api/v1/projects/${projectId}/assets`,
+      `https://${API_SERVER_ADDRESS}${API_PROJECTS_ROUTE}/${projectId}${API_ASSETS_ACTION}`,
       editor,
       file,
       onProgress,
@@ -1102,7 +1170,7 @@ export default class Project extends EventEmitter {
       authorization: `Bearer ${token}`
     };
 
-    const assetEndpoint = `https://${RETICULUM_SERVER}/api/v1/assets/${assetId}`;
+    const assetEndpoint = `https://${API_SERVER_ADDRESS}${API_ASSETS_ROUTE}/${assetId}`;
 
     const resp = await this.fetch(assetEndpoint, { method: "DELETE", headers });
 
@@ -1125,7 +1193,7 @@ export default class Project extends EventEmitter {
       authorization: `Bearer ${token}`
     };
 
-    const projectAssetEndpoint = `https://${RETICULUM_SERVER}/api/v1/projects/${projectId}/assets/${assetId}`;
+    const projectAssetEndpoint = `https://${API_SERVER_ADDRESS}${API_PROJECTS_ROUTE}/${projectId}${API_ASSETS_ACTION}/${assetId}`;
 
     const resp = await this.fetch(projectAssetEndpoint, { method: "DELETE", headers });
 

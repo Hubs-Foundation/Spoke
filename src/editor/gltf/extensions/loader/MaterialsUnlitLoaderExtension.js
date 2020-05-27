@@ -1,9 +1,17 @@
-import { Color, DoubleSide, MeshBasicMaterial, sRGBEncoding, RGBFormat, RGBAFormat } from "three";
+import { DoubleSide, MeshBasicMaterial, sRGBEncoding, RGBFormat, RGBAFormat } from "three";
 import { ALPHA_MODES } from "../../GLTFLoader";
 import { LoaderExtension } from "./LoaderExtension";
 
-export function getUnlitMaterial(materialDef) {
+function getUnlitMaterial(materialDef) {
   return materialDef.extensions && materialDef.extensions[MaterialsUnlitLoaderExtension.extensionName];
+}
+
+function shouldCreateMaterial(materialDef) {
+  return getUnlitMaterial(materialDef);
+}
+
+function shouldSetMaterialParams(_material, materialDef) {
+  return getUnlitMaterial(materialDef);
 }
 
 export class MaterialsUnlitLoaderExtension extends LoaderExtension {
@@ -13,18 +21,18 @@ export class MaterialsUnlitLoaderExtension extends LoaderExtension {
 
   onLoad() {
     if (this.loader.usesExtension(MaterialsUnlitLoaderExtension.extensionName)) {
-      this.loader.addHook("gatherMaterialParams", getUnlitMaterial, this.gatherMaterialParams);
-      this.loader.addHook("createMaterial", getUnlitMaterial, this.createMaterial);
+      this.loader.addHook("createMaterial", shouldCreateMaterial, this.createMaterial);
+      this.loader.addHook("setMaterialParams", shouldSetMaterialParams, this.setMaterialParams);
     }
   }
 
-  gatherMaterialParams = async materialDef => {
-    const materialParams = {};
+  createMaterial = async () => new MeshBasicMaterial();
 
+  setMaterialParams = async (material, materialDef) => {
     const pending = [];
 
-    materialParams.color = new Color(1.0, 1.0, 1.0);
-    materialParams.opacity = 1.0;
+    material.color.set(0xffffff);
+    material.opacity = 1.0;
 
     const alphaMode = materialDef.alphaMode || ALPHA_MODES.OPAQUE;
 
@@ -34,36 +42,32 @@ export class MaterialsUnlitLoaderExtension extends LoaderExtension {
       if (Array.isArray(metallicRoughness.baseColorFactor)) {
         const array = metallicRoughness.baseColorFactor;
 
-        materialParams.color.fromArray(array);
-        materialParams.opacity = array[3];
+        material.color.fromArray(array);
+        material.opacity = array[3];
       }
 
       if (metallicRoughness.baseColorTexture !== undefined) {
         const format = alphaMode === ALPHA_MODES.OPAQUE ? RGBFormat : RGBAFormat;
         pending.push(
-          this.loader.assignTexture(materialParams, "map", metallicRoughness.baseColorTexture, sRGBEncoding, format)
+          this.loader.assignTexture(material, "map", metallicRoughness.baseColorTexture, sRGBEncoding, format)
         );
       }
     }
 
     if (materialDef.doubleSided === true) {
-      materialParams.side = DoubleSide;
+      material.side = DoubleSide;
     }
 
     if (alphaMode === ALPHA_MODES.BLEND) {
-      materialParams.transparent = true;
+      material.transparent = true;
     } else {
-      materialParams.transparent = false;
+      material.transparent = false;
 
       if (alphaMode === ALPHA_MODES.MASK) {
-        materialParams.alphaTest = materialDef.alphaCutoff !== undefined ? materialDef.alphaCutoff : 0.5;
+        material.alphaTest = materialDef.alphaCutoff !== undefined ? materialDef.alphaCutoff : 0.5;
       }
     }
 
     await Promise.all(pending);
-
-    return materialParams;
   };
-
-  createMaterial = async (materialDef, materialParams) => new MeshBasicMaterial(materialParams);
 }

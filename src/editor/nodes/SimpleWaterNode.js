@@ -95,4 +95,8 @@ export default class SimpleWaterNode extends EditorNodeMixin(SimpleWater) {
     });
     this.replaceObject();
   }
+
+  getRuntimeResourcesForStats() {
+    return { meshes: [this], materials: [this.material], textures: [waterNormalMap] };
+  }
 }

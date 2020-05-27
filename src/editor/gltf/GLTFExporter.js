@@ -37,6 +37,8 @@ import {
   Object3D
 } from "three";
 
+import { LightmapExporterExtension } from "./extensions/exporter/LightmapExporterExtension";
+
 //------------------------------------------------------------------------------
 // Constants
 //------------------------------------------------------------------------------
@@ -144,6 +146,8 @@ class GLTFExporter {
 
     this.extensions = [];
     this.hooks = [];
+
+    this.registerExtension(LightmapExporterExtension);
   }
 
   registerExtension(Extension, options = {}) {
@@ -162,7 +166,7 @@ class GLTFExporter {
     hooks.push({ test, callback });
   }
 
-  runHook(hookName, ...args) {
+  async runFirstHook(hookName, ...args) {
     const hooks = this.hooks[hookName];
 
     if (hooks) {
@@ -174,6 +178,22 @@ class GLTFExporter {
     }
 
     return undefined;
+  }
+
+  async runAllHooks(hookName, ...args) {
+    const hooks = this.hooks[hookName];
+
+    const matchedHooks = [];
+
+    if (hooks) {
+      for (const { test, callback } of hooks) {
+        if (test(...args)) {
+          matchedHooks.push(callback(...args));
+        }
+      }
+    }
+
+    return Promise.all(matchedHooks);
   }
 
   /**
@@ -552,18 +572,13 @@ class GLTFExporter {
     return this.outputJSON.accessors.length - 1;
   }
 
-  transformImage(image, mimeType, flipY, onError, onDone) {
+  async transformImage(image, mimeType, flipY) {
     const shouldResize = this.options.forcePowerOfTwoTextures && !GLTFExporter.Utils.isPowerOfTwo(image);
 
     if (!shouldResize && !flipY) {
-      fetch(image.src)
-        .then(response => {
-          return response.blob();
-        })
-        .then(onDone)
-        .catch(onError);
-
-      return;
+      const response = await fetch(image.src);
+      const blob = await response.blob();
+      return { blob, src: image.src, width: image.width, height: image.height };
     }
 
     const canvas = (this.cachedCanvas = this.cachedCanvas || document.createElement("canvas"));
@@ -587,7 +602,9 @@ class GLTFExporter {
 
     ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
 
-    canvas.toBlob(onDone, mimeType);
+    const blob = await new Promise(resolve => canvas.toBlob(resolve, mimeType));
+
+    return { blob, src: image.src, width: canvas.width, height: canvas.height };
   }
 
   /**
@@ -624,16 +641,9 @@ class GLTFExporter {
 
     if (this.options.mode === "glb") {
       this.pending.push(
-        new Promise((resolve, reject) => {
-          this.transformImage(image, mimeType, flipY, reject, blob => {
-            this.processBufferViewImage(blob)
-              .then(bufferViewIndex => {
-                gltfImage.bufferView = bufferViewIndex;
-
-                resolve();
-              })
-              .catch(reject);
-          });
+        this.transformImage(image, mimeType, flipY).then(async result => {
+          gltfImage.bufferView = await this.processBufferViewImage(result.blob);
+          this.outputImages[index] = result;
         })
       );
     } else {
@@ -642,13 +652,7 @@ class GLTFExporter {
       gltfImage.uri = fileName + index + extension;
 
       this.pending.push(
-        new Promise((resolve, reject) => {
-          this.transformImage(image, mimeType, flipY, reject, blob => {
-            this.outputImages[index] = blob;
-
-            resolve();
-          });
-        })
+        this.transformImage(image, mimeType, flipY).then(result => (this.outputImages[index] = result))
       );
     }
 
@@ -854,12 +858,12 @@ class GLTFExporter {
 
     this.serializeUserData(material, gltfMaterial);
 
+    this.runAllHooks("addMaterialProperties", material, gltfMaterial);
+
     this.outputJSON.materials.push(gltfMaterial);
 
     const index = this.outputJSON.materials.length - 1;
     this.cachedData.materials.set(material, index);
-
-    this.runHook("afterProcessMaterial", material, gltfMaterial, index);
 
     return index;
   }
@@ -1343,8 +1347,6 @@ class GLTFExporter {
 
     const nodeIndex = this.outputJSON.nodes.length - 1;
     this.nodeMap.set(object, nodeIndex);
-
-    this.runHook("afterProcessNode", object, gltfNode, nodeIndex);
 
     return nodeIndex;
   }

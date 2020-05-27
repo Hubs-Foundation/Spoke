@@ -3,6 +3,21 @@ import Model from "../objects/Model";
 import EditorNodeMixin from "./EditorNodeMixin";
 import cloneObject3D from "../utils/cloneObject3D";
 import { RethrownError } from "../utils/errors";
+import { collectUniqueMaterials } from "../utils/materials";
+import { getObjectPerfIssues, maybeAddLargeFileIssue } from "../utils/performance";
+
+const defaultStats = {
+  nodes: 0,
+  meshes: 0,
+  materials: 0,
+  textures: 0,
+  polygons: 0,
+  vertices: 0,
+  jsonSize: 0,
+  bufferInfo: {},
+  textureInfo: {},
+  meshInfo: {}
+};
 
 export default class SpawnerNode extends EditorNodeMixin(Model) {
   static legacyComponentName = "spawner";
@@ -30,6 +45,8 @@ export default class SpawnerNode extends EditorNodeMixin(Model) {
     this.initialScale = 1;
     this.boundingBox = new Box3();
     this.boundingSphere = new Sphere();
+    this.stats = defaultStats;
+    this.gltfJson = null;
   }
 
   // Overrides Model's src property and stores the original (non-resolved) url.
@@ -46,7 +63,10 @@ export default class SpawnerNode extends EditorNodeMixin(Model) {
   async loadGLTF(src) {
     const loader = this.editor.gltfCache.getLoader(src);
 
-    const { scene } = await loader.getDependency("gltf");
+    const { scene, json, stats } = await loader.getDependency("gltf");
+
+    this.stats = stats;
+    this.gltfJson = json;
 
     return cloneObject3D(scene);
   }
@@ -60,6 +80,10 @@ export default class SpawnerNode extends EditorNodeMixin(Model) {
     }
 
     this._canonicalUrl = nextSrc;
+
+    this.stats = defaultStats;
+    this.gltfJson = null;
+    this.issues = [];
 
     if (this.model) {
       this.remove(this.model);
@@ -78,6 +102,30 @@ export default class SpawnerNode extends EditorNodeMixin(Model) {
       }
 
       await super.load(accessibleUrl);
+
+      if (this.stats) {
+        const textureInfo = this.stats.textureInfo;
+        for (const key in textureInfo) {
+          if (!Object.prototype.hasOwnProperty.call(textureInfo, key)) continue;
+          const info = textureInfo[key];
+
+          if (info.size === undefined) {
+            let file;
+
+            for (const name in files) {
+              if (Object.prototype.hasOwnProperty.call(files, name) && files[name].url === info.url) {
+                file = files[name];
+                break;
+              }
+            }
+
+            if (file) {
+              info.size = file.size;
+              this.stats.totalSize += file.size;
+            }
+          }
+        }
+      }
 
       if (this.model) {
         this.editor.renderer.addBatchedObject(this.model);
@@ -111,18 +159,23 @@ export default class SpawnerNode extends EditorNodeMixin(Model) {
         this.initialScale = 1;
       }
 
-      this.model.traverse(object => {
-        if (object.material && object.material.isMeshStandardMaterial) {
-          object.material.envMap = this.editor.scene.environmentMap;
-          object.material.needsUpdate = true;
-        }
-      });
+      if (this.model) {
+        this.model.traverse(object => {
+          if (object.material && object.material.isMeshStandardMaterial) {
+            object.material.envMap = this.editor.scene.environmentMap;
+            object.material.needsUpdate = true;
+          }
+        });
+
+        this.issues = getObjectPerfIssues(this.model);
+        maybeAddLargeFileIssue("gltf", this.stats.totalSize, this.issues);
+      }
 
       if (files) {
         // Revoke any object urls from the SketchfabZipLoader.
         for (const key in files) {
           if (Object.prototype.hasOwnProperty.call(files, key)) {
-            URL.revokeObjectURL(files[key]);
+            URL.revokeObjectURL(files[key].url);
           }
         }
       }
@@ -136,6 +189,8 @@ export default class SpawnerNode extends EditorNodeMixin(Model) {
       }
 
       console.error(spawnerError);
+
+      this.issues.push({ severity: "error", message: "Error loading model." });
     }
 
     this.editor.emit("objectsChanged", [this]);
@@ -172,6 +227,8 @@ export default class SpawnerNode extends EditorNodeMixin(Model) {
       this.initialScale = source.initialScale;
       this.load(source.src);
     } else {
+      this.stats = JSON.parse(JSON.stringify(source.stats));
+      this.gltfJson = source.gltfJson;
       this._canonicalUrl = source._canonicalUrl;
     }
 
@@ -184,5 +241,21 @@ export default class SpawnerNode extends EditorNodeMixin(Model) {
       src: this._canonicalUrl
     });
     this.replaceObject();
+  }
+
+  getRuntimeResourcesForStats() {
+    if (this.model) {
+      const meshes = [];
+
+      this.model.traverse(object => {
+        if (object.isMesh) {
+          meshes.push(object);
+        }
+      });
+
+      const materials = collectUniqueMaterials(this.model);
+
+      return { meshes, materials };
+    }
   }
 }
