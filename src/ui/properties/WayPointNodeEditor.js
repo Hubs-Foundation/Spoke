@@ -61,7 +61,7 @@ export default class WayPointNodeEditor extends Component {
           <InputGroup
             key={`${name}-input-group`}
             name={messages[`waypoint.label-${name}`]}
-            title={messages[`waypoint.description-${name}`]}
+            info={messages[`waypoint.description-${name}`]}
           >
             <BooleanInput value={node[name]} onChange={this.setters.get(name)} />
           </InputGroup>
