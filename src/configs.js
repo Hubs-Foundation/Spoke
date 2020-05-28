@@ -33,6 +33,7 @@ get(configs, "SENTRY_DSN", process.env.SENTRY_DSN);
 get(configs, "THUMBNAIL_ROUTE", process.env.THUMBNAIL_ROUTE);
 get(configs, "THUMBNAIL_SERVER", process.env.THUMBNAIL_SERVER);
 get(configs, "USE_DIRECT_UPLOAD_API", process.env.USE_DIRECT_UPLOAD_API);
+get(configs, "USE_HTTPS", process.env.USE_HTTPS);
 
 if (configs.BASE_ASSETS_PATH) {
   // eslint-disable-next-line no-undef

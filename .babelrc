@@ -10,7 +10,6 @@
           "not op_mini all"
         ],
         "modules": false,
-        "useBuiltIns": "usage",
         "corejs": 3
       }
     ]

@@ -2,6 +2,9 @@ import { useState, useCallback, useEffect, useRef } from "react";
 import { useFetch } from "use-http";
 
 export default function usePaginatedSearch(path, queryParams, options = {}) {
+  console.log("path: " + path);
+  console.log("queryParams " + Object.values(queryParams));
+  return { loading: false, error: false, entries: [] };
   const urlRef = useRef();
 
   if (!urlRef.current) {
@@ -45,6 +48,8 @@ export default function usePaginatedSearch(path, queryParams, options = {}) {
         ...options.headers
       },
       onNewData: (data, newData) => {
+        console.log("data: " + data);
+        console.log("newData: " + newData);
         if (!cursor) {
           return newData;
         } else {

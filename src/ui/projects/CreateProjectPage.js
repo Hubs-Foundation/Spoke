@@ -72,6 +72,7 @@ export default function CreateProjectPage({ history, location }) {
       filter: "featured-remixable",
       q: ""
     });
+    console.log(params);
   }, [updateParams, params]);
 
   const onSetAll = useCallback(() => {
@@ -80,6 +81,7 @@ export default function CreateProjectPage({ history, location }) {
       filter: "remixable",
       q: ""
     });
+    console.log(params);
   }, [updateParams, params]);
 
   const onSelectScene = useCallback(

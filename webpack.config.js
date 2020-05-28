@@ -45,10 +45,6 @@ function createHTTPSConfig() {
               {
                 type: 2,
                 value: "localhost"
-              },
-              {
-                type: 2,
-                value: "hubs.local"
               }
             ]
           }
@@ -67,7 +63,7 @@ function createHTTPSConfig() {
   }
 }
 
-const defaultHostName = "hubs.local";
+const defaultHostName = "localhost";
 const host = process.env.HOST_IP || defaultHostName;
 const port = process.env.HOST_PORT || 9090;
 
@@ -280,6 +276,7 @@ module.exports = env => {
         SENTRY_DSN: null,
         GA_TRACKING_ID: null,
         IS_MOZ: false,
+        USE_HTTPS: true,
         GITHUB_ORG: "mozilla",
         GITHUB_REPO: "spoke",
         GITHUB_PUBLIC_TOKEN: "de8cbfb4cc0281c7b731c891df431016c29b0ace"

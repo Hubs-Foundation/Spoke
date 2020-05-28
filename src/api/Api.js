@@ -15,7 +15,7 @@ import { RethrownError } from "../editor/utils/errors";
 import { searchTermsExistInBlacklist } from "./BlockSearchTerms.js";
 
 // Media related functions should be kept up to date with Hubs media-utils:
-// https://github.com/mozilla/hubs/blob/master/src/utils/media-utils.js
+// ${prefix}github.com/mozilla/hubs/blob/master/src/utils/media-utils.js
 
 const resolveUrlCache = new Map();
 const resolveMediaCache = new Map();
@@ -39,10 +39,13 @@ const {
   THUMBNAIL_ROUTE,
   THUMBNAIL_SERVER,
   USE_DIRECT_UPLOAD_API,
-  NON_CORS_PROXY_DOMAINS
+  NON_CORS_PROXY_DOMAINS,
+  USE_HTTPS
 } = configs;
 
-// thanks to https://developer.mozilla.org/en-US/docs/Web/API/WindowBase64/Base64_encoding_and_decoding
+const prefix = USE_HTTPS === "true" ? "https://" : "http://";
+
+// thanks to developer.mozilla.org/en-US/docs/Web/API/WindowBase64/Base64_encoding_and_decoding
 function b64EncodeUnicode(str) {
   // first we use encodeURIComponent to get percent-encoded UTF-8, then we convert the percent-encodings
   // into raw bytes which can be fed into btoa.
@@ -83,15 +86,15 @@ export const proxiedUrlFor = url => {
     return url;
   }
 
-  return `https://${CORS_PROXY_SERVER}/${url}`;
+  return `${prefix}${CORS_PROXY_SERVER}/${url}`;
 };
 
 export const scaledThumbnailUrlFor = (url, width, height) => {
-  if (API_SERVER_ADDRESS.includes("hubs.local") && url.includes("hubs.local")) {
+  if (API_SERVER_ADDRESS.includes("localhost") && url.includes("localhost")) {
     return url;
   }
 
-  return `https://${THUMBNAIL_SERVER}${THUMBNAIL_ROUTE}${farsparkEncodeUrl(url)}?w=${width}&h=${height}`;
+  return `${prefix}${THUMBNAIL_SERVER}${THUMBNAIL_ROUTE}${farsparkEncodeUrl(url)}?w=${width}&h=${height}`;
 };
 
 const CommonKnownContentTypes = {
@@ -119,7 +122,7 @@ export default class Project extends EventEmitter {
     const { protocol, host } = new URL(window.location.href);
 
     this.serverURL = protocol + "//" + host;
-    this.apiURL = `https://${API_SERVER_ADDRESS}`;
+    this.apiURL = `${prefix}${API_SERVER_ADDRESS}`;
 
     this.projectDirectoryPath = "/api/files/";
 
@@ -221,7 +224,9 @@ export default class Project extends EventEmitter {
       authorization: `Bearer ${token}`
     };
 
-    const response = await this.fetch(`https://${API_SERVER_ADDRESS}${API_PROJECTS_ROUTE}`, { headers });
+    const response = await this.fetch(`${prefix}${API_SERVER_ADDRESS}${API_PROJECTS_ROUTE}`, { headers });
+
+    console.log("Response: " + Object.values(response));
 
     const json = await response.json();
 
@@ -240,11 +245,12 @@ export default class Project extends EventEmitter {
       authorization: `Bearer ${token}`
     };
 
-    const response = await this.fetch(`https://${API_SERVER_ADDRESS}${API_PROJECTS_ROUTE}/${projectId}`, {
+    const response = await this.fetch(`${prefix}${API_SERVER_ADDRESS}${API_PROJECTS_ROUTE}/${projectId}`, {
       headers
     });
 
     const json = await response.json();
+    console.log("Response: " + Object.values(response));
 
     return json;
   }
@@ -257,7 +263,7 @@ export default class Project extends EventEmitter {
     const cacheKey = `${url}|${index}`;
     if (resolveUrlCache.has(cacheKey)) return resolveUrlCache.get(cacheKey);
 
-    const request = this.fetch(`https://${API_SERVER_ADDRESS}${API_MEDIA_ROUTE}`, {
+    const request = this.fetch(`${prefix}${API_SERVER_ADDRESS}${API_MEDIA_ROUTE}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ media: { url, index } })
@@ -271,6 +277,7 @@ export default class Project extends EventEmitter {
           throw new Error(message + response.statusText.replace(/\n/g, "\n  "));
         }
       }
+      console.log("Response: " + Object.values(response));
 
       return response.json();
     });
@@ -281,7 +288,10 @@ export default class Project extends EventEmitter {
   }
 
   fetchContentType(accessibleUrl) {
-    return this.fetch(accessibleUrl, { method: "HEAD" }).then(r => r.headers.get("content-type"));
+    const f = this.fetch(accessibleUrl, { method: "HEAD" }).then(r => r.headers.get("content-type"));
+    console.log("Response: " + Object.values(f));
+
+    return f;
   }
 
   async getContentType(url) {
@@ -350,7 +360,7 @@ export default class Project extends EventEmitter {
 
   unproxyUrl(baseUrl, url) {
     if (CORS_PROXY_SERVER) {
-      const corsProxyPrefix = `https://${CORS_PROXY_SERVER}/`;
+      const corsProxyPrefix = `${prefix}${CORS_PROXY_SERVER}/`;
 
       if (baseUrl.startsWith(corsProxyPrefix)) {
         baseUrl = baseUrl.substring(corsProxyPrefix.length);
@@ -376,7 +386,7 @@ export default class Project extends EventEmitter {
       return { results: {}, suggestions: {}, nextCursor: null };
     }
 
-    const url = new URL(`https://${API_SERVER_ADDRESS}${API_MEDIA_ROUTE}${API_MEDIA_SEARCH_ROUTE}`);
+    const url = new URL(`${prefix}${API_SERVER_ADDRESS}${API_MEDIA_ROUTE}${API_MEDIA_SEARCH_ROUTE}`);
 
     const headers = {
       "content-type": "application/json"
@@ -412,7 +422,9 @@ export default class Project extends EventEmitter {
       searchParams.set("cursor", cursor);
     }
 
+    console.log("Fetching...");
     const resp = await this.fetch(url, { headers, signal });
+    console.log("Response: " + Object.values(resp));
 
     if (signal.aborted) {
       const error = new Error("Media search aborted");
@@ -503,9 +515,10 @@ export default class Project extends EventEmitter {
 
     const body = JSON.stringify({ project });
 
-    const projectEndpoint = `https://${API_SERVER_ADDRESS}${API_PROJECTS_ROUTE}`;
+    const projectEndpoint = `${prefix}${API_SERVER_ADDRESS}${API_PROJECTS_ROUTE}`;
 
     const resp = await this.fetch(projectEndpoint, { method: "POST", headers, body, signal });
+    console.log("Response: " + Object.values(resp));
 
     if (signal.aborted) {
       throw new Error("Save project aborted");
@@ -552,9 +565,10 @@ export default class Project extends EventEmitter {
       authorization: `Bearer ${token}`
     };
 
-    const projectEndpoint = `https://${API_SERVER_ADDRESS}${API_PROJECTS_ROUTE}/${projectId}`;
+    const projectEndpoint = `${prefix}${API_SERVER_ADDRESS}${API_PROJECTS_ROUTE}/${projectId}`;
 
     const resp = await this.fetch(projectEndpoint, { method: "DELETE", headers });
+    console.log("Response: " + Object.values(resp));
 
     if (resp.status === 401) {
       throw new Error("Not authenticated");
@@ -634,9 +648,10 @@ export default class Project extends EventEmitter {
       project
     });
 
-    const projectEndpoint = `https://${API_SERVER_ADDRESS}${API_PROJECTS_ROUTE}/${projectId}`;
+    const projectEndpoint = `${prefix}${API_SERVER_ADDRESS}${API_PROJECTS_ROUTE}/${projectId}`;
 
     const resp = await this.fetch(projectEndpoint, { method: "PATCH", headers, body, signal });
+    console.log("Response: " + Object.values(resp));
 
     const json = await resp.json();
 
@@ -673,9 +688,11 @@ export default class Project extends EventEmitter {
       "content-type": "application/json"
     };
 
-    const response = await this.fetch(`https://${API_SERVER_ADDRESS}${API_SCENES_ROUTE}/${sceneId}`, {
+    const response = await this.fetch(`${prefix}${API_SERVER_ADDRESS}${API_SCENES_ROUTE}/${sceneId}`, {
       headers
     });
+
+    console.log("Response: " + Object.values(response));
 
     const json = await response.json();
 
@@ -684,10 +701,10 @@ export default class Project extends EventEmitter {
 
   getSceneUrl(sceneId) {
     // If we recognize a local address relative to this Spoke instance
-    if (CLIENT_ADDRESS === "localhost:8080" || CLIENT_ADDRESS === "hubs.local:8080") {
-      return `https://${CLIENT_ADDRESS}${CLIENT_LOCAL_SCENE_ROUTE}${sceneId}`;
+    if (CLIENT_ADDRESS === "localhost:8080") {
+      return `${prefix}${CLIENT_ADDRESS}${CLIENT_LOCAL_SCENE_ROUTE}${sceneId}`;
     } else {
-      return `https://${CLIENT_ADDRESS}${CLIENT_SCENE_ROUTE}${sceneId}`;
+      return `${prefix}${CLIENT_ADDRESS}${CLIENT_SCENE_ROUTE}${sceneId}`;
     }
   }
 
@@ -932,13 +949,15 @@ export default class Project extends EventEmitter {
       const body = JSON.stringify({ scene: sceneParams });
 
       const resp = await this.fetch(
-        `https://${API_SERVER_ADDRESS}${API_PROJECTS_ROUTE}/${project.project_id}${API_PROJECT_PUBLISH_ACTION}`,
+        `${prefix}${API_SERVER_ADDRESS}${API_PROJECTS_ROUTE}/${project.project_id}${API_PROJECT_PUBLISH_ACTION}`,
         {
           method: "POST",
           headers,
           body
         }
       );
+
+      console.log("Response: " + Object.values(resp));
 
       if (signal.aborted) {
         const error = new Error("Publish project aborted");
@@ -986,12 +1005,14 @@ export default class Project extends EventEmitter {
   }
 
   async upload(blob, onUploadProgress, signal) {
-    // Use direct upload API, see: https://github.com/mozilla/reticulum/pull/319
+    // Use direct upload API, see: ${prefix}github.com/mozilla/reticulum/pull/319
     let host, port;
 
     if (USE_DIRECT_UPLOAD_API) {
-      const { phx_host: uploadHost } = await (await this.fetch(`https://${API_SERVER_ADDRESS}${API_META_ROUTE}`)).json();
-      const uploadPort = new URL(`https://${API_SERVER_ADDRESS}`).port;
+      const { phx_host: uploadHost } = await (
+        await this.fetch(`${prefix}${API_SERVER_ADDRESS}${API_META_ROUTE}`)
+      ).json();
+      const uploadPort = new URL(`${prefix}${API_SERVER_ADDRESS}`).port;
       host = uploadHost;
       port = uploadPort;
     }
@@ -1012,7 +1033,7 @@ export default class Project extends EventEmitter {
       }
 
       if (USE_DIRECT_UPLOAD_API) {
-        request.open("post", `https://${host}:${port}${API_MEDIA_ROUTE}`, true);
+        request.open("post", `${prefix}${host}:${port}${API_MEDIA_ROUTE}`, true);
       } else {
         request.open("post", `http://${API_SERVER_ADDRESS}${API_MEDIA_ROUTE}`, true);
       }
@@ -1051,7 +1072,7 @@ export default class Project extends EventEmitter {
   }
 
   uploadAssets(editor, files, onProgress, signal) {
-    return this._uploadAssets(`https://${API_SERVER_ADDRESS}${API_ASSETS_ROUTE}`, editor, files, onProgress, signal);
+    return this._uploadAssets(`${prefix}${API_SERVER_ADDRESS}${API_ASSETS_ROUTE}`, editor, files, onProgress, signal);
   }
 
   async _uploadAssets(endpoint, editor, files, onProgress, signal) {
@@ -1086,12 +1107,12 @@ export default class Project extends EventEmitter {
   }
 
   uploadAsset(editor, file, onProgress, signal) {
-    return this._uploadAsset(`https://${API_SERVER_ADDRESS}${API_ASSETS_ROUTE}`, editor, file, onProgress, signal);
+    return this._uploadAsset(`${prefix}${API_SERVER_ADDRESS}${API_ASSETS_ROUTE}`, editor, file, onProgress, signal);
   }
 
   uploadProjectAsset(editor, projectId, file, onProgress, signal) {
     return this._uploadAsset(
-      `https://${API_SERVER_ADDRESS}${API_PROJECTS_ROUTE}/${projectId}${API_ASSETS_ACTION}`,
+      `${prefix}${API_SERVER_ADDRESS}${API_PROJECTS_ROUTE}/${projectId}${API_ASSETS_ACTION}`,
       editor,
       file,
       onProgress,
@@ -1143,6 +1164,7 @@ export default class Project extends EventEmitter {
     });
 
     const resp = await this.fetch(endpoint, { method: "POST", headers, body, signal });
+    console.log("Response: " + Object.values(resp));
 
     const json = await resp.json();
 
@@ -1170,9 +1192,10 @@ export default class Project extends EventEmitter {
       authorization: `Bearer ${token}`
     };
 
-    const assetEndpoint = `https://${API_SERVER_ADDRESS}${API_ASSETS_ROUTE}/${assetId}`;
+    const assetEndpoint = `${prefix}${API_SERVER_ADDRESS}${API_ASSETS_ROUTE}/${assetId}`;
 
     const resp = await this.fetch(assetEndpoint, { method: "DELETE", headers });
+    console.log("Response: " + Object.values(resp));
 
     if (resp.status === 401) {
       throw new Error("Not authenticated");
@@ -1193,9 +1216,10 @@ export default class Project extends EventEmitter {
       authorization: `Bearer ${token}`
     };
 
-    const projectAssetEndpoint = `https://${API_SERVER_ADDRESS}${API_PROJECTS_ROUTE}/${projectId}${API_ASSETS_ACTION}/${assetId}`;
+    const projectAssetEndpoint = `${prefix}${API_SERVER_ADDRESS}${API_PROJECTS_ROUTE}/${projectId}${API_ASSETS_ACTION}/${assetId}`;
 
     const resp = await this.fetch(projectAssetEndpoint, { method: "DELETE", headers });
+    console.log("Response: " + Object.values(resp));
 
     if (resp.status === 401) {
       throw new Error("Not authenticated");
@@ -1219,6 +1243,7 @@ export default class Project extends EventEmitter {
   async fetch(url, options) {
     try {
       const res = await fetch(url, options);
+      console.log("Response: " + Object.values(res));
 
       if (res.ok) {
         return res;
