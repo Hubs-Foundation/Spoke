@@ -128,6 +128,9 @@ export default class Project extends EventEmitter {
 
     // Max size in MB
     this.maxUploadSize = 128;
+
+    // This will manage the not authorized users
+    this.handleAuthorization();
   }
 
   getAuthContainer() {
@@ -158,7 +161,7 @@ export default class Project extends EventEmitter {
 
     const authComplete = new Promise(resolve =>
       channel.on("auth_credentials", ({ credentials: token }) => {
-        localStorage.setItem(LOCAL_STORE_KEY, JSON.stringify({ credentials: { email, token } }));
+        this.saveCredentials(email, token);
         this.emit("authentication-changed", true);
         resolve();
       })
@@ -169,6 +172,10 @@ export default class Project extends EventEmitter {
     signal.removeEventListener("abort", onAbort);
 
     return authComplete;
+  }
+
+  saveCredentials(email, token) {
+    localStorage.setItem(LOCAL_STORE_KEY, JSON.stringify({ credentials: { email, token } }));
   }
 
   isAuthenticated() {
@@ -1259,6 +1266,17 @@ export default class Project extends EventEmitter {
         error.message += " (Possibly a CORS error)";
       }
       throw new RethrownError(`Failed to fetch "${url}"`, error);
+    }
+  }
+
+  handleAuthorization() {
+    if (!this.isAuthenticated()) {
+      window.location = `${window.location.origin}?redirectTo=spoke&login=true`;
+    } else {
+      const params = new URLSearchParams(document.location.search);
+      const accessToken = params.get("bearer");
+      const email = params.get("email");
+      this.saveCredentials(email, accessToken);
     }
   }
 }
