@@ -24,6 +24,7 @@ export class LightmapLoaderExtension extends LoaderExtension {
     const lightmap = getLightmap(materialDef);
 
     if (lightmap) {
+      material.lightMapIntensity = lightmap.intensity === undefined ? 1 : lightmap.intensity;
       await this.loader.assignTexture(material, "lightMap", lightmap, sRGBEncoding, RGBFormat);
     }
   };

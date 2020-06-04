@@ -59,6 +59,7 @@ async function meshBasicMaterialComparator(group, a, b) {
     a.side === b.side &&
     a.transparent === b.transparent &&
     a.color.equals(b.color) &&
+    a.lightMapIntensity === b.lightMapIntensity &&
     (await compareTextures(imageHashes, a.map, b.map)) &&
     (await compareTextures(imageHashes, a.lightMap, b.lightMap))
   );
@@ -78,8 +79,7 @@ async function meshStandardMaterialComparator(group, a, b) {
     (await compareTextures(imageHashes, a.metalnessMap, b.metalnessMap)) &&
     (await compareTextures(imageHashes, a.aoMap, b.aoMap)) &&
     (await compareTextures(imageHashes, a.normalMap, b.normalMap)) &&
-    (await compareTextures(imageHashes, a.emissiveMap, b.emissiveMap)) &&
-    (await compareTextures(imageHashes, a.lightMap, b.lightMap))
+    (await compareTextures(imageHashes, a.emissiveMap, b.emissiveMap))
   );
 }
 
@@ -122,6 +122,7 @@ export default class MeshCombinationGroup {
       material.aoMap = await dedupeTexture(imageHashes, textureCache, material.aoMap);
       material.normalMap = await dedupeTexture(imageHashes, textureCache, material.normalMap);
       material.emissiveMap = await dedupeTexture(imageHashes, textureCache, material.emissiveMap);
+      material.lightMap = await dedupeTexture(imageHashes, textureCache, material.lightMap);
     }
 
     await asyncTraverse(rootObject, async object => {
