@@ -59,7 +59,8 @@ async function meshBasicMaterialComparator(group, a, b) {
     a.side === b.side &&
     a.transparent === b.transparent &&
     a.color.equals(b.color) &&
-    (await compareTextures(imageHashes, a.map, b.map))
+    (await compareTextures(imageHashes, a.map, b.map)) &&
+    (await compareTextures(imageHashes, a.lightMap, b.lightMap))
   );
 }
 
@@ -77,7 +78,8 @@ async function meshStandardMaterialComparator(group, a, b) {
     (await compareTextures(imageHashes, a.metalnessMap, b.metalnessMap)) &&
     (await compareTextures(imageHashes, a.aoMap, b.aoMap)) &&
     (await compareTextures(imageHashes, a.normalMap, b.normalMap)) &&
-    (await compareTextures(imageHashes, a.emissiveMap, b.emissiveMap))
+    (await compareTextures(imageHashes, a.emissiveMap, b.emissiveMap)) &&
+    (await compareTextures(imageHashes, a.lightMap, b.lightMap))
   );
 }
 
