@@ -112,7 +112,7 @@ export default class ModelNode extends EditorNodeMixin(Model) {
 
     if (sketchfabExtras) {
       const name = sketchfabExtras.title;
-      const author = sketchfabExtras.author.replace(/ \(http.+\)/, "");
+      const author = sketchfabExtras.author ? sketchfabExtras.author.replace(/ \(http.+\)/, "") : "";
       const url = sketchfabExtras.source || this._canonicalUrl;
       clonedScene.name = name;
       this.attribution = { name, author, url };
