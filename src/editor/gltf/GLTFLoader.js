@@ -1927,14 +1927,11 @@ class GLTFLoader {
   }
 
   addUnknownExtensionsToUserData(object, objectDef) {
-    // Add unknown glTF extensions to an object's userData.
-
-    if (!this.options.addUnknownExtensionsToUserData) {
-      return;
-    }
-
     for (const name in objectDef.extensions) {
-      if (!this.knownExtensions.has(name)) {
+      if (
+        name == "MOZ_hubs_components" ||
+        (this.options.addUnknownExtensionsToUserData && !this.knownExtensions.has(name))
+      ) {
         object.userData.gltfExtensions = object.userData.gltfExtensions || {};
         object.userData.gltfExtensions[name] = objectDef.extensions[name];
       }
