@@ -50,7 +50,7 @@ export default class WayPointNodeEditor extends Component {
     const createPropSetter = propName => value => {
       return this.props.editor.setPropertySelected(propName, value);
     };
-    this.setters = new Map([propertyNames.map(name => [name, createPropSetter(name)])]);
+    this.setters = new Map(propertyNames.map(name => [name, createPropSetter(name)]));
   }
 
   render() {
