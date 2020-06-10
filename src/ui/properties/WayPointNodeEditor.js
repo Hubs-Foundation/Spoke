@@ -31,6 +31,7 @@ const propertyNames = [
   "canBeOccupied",
   "canBeClicked",
   "willDisableMotion",
+  "willDisableTeleport",
   "snapToNavMesh",
   "willMaintainInitialOrientation"
 ];
