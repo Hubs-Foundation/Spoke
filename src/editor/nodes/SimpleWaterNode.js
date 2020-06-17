@@ -1,6 +1,6 @@
 import EditorNodeMixin from "./EditorNodeMixin";
 import SimpleWater from "../objects/SimpleWater";
-import waterNormalsUrl from "three/examples/textures/waternormals.jpg";
+import waterNormalsUrl from "../../assets/waternormals.jpg";
 import loadTexture from "../utils/loadTexture";
 import { Texture } from "three";
 
