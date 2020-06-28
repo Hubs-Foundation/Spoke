@@ -58,28 +58,7 @@ const staticStyle = {
   })
 };
 
-export default function SelectInput({
-  value,
-  options,
-  onChange,
-  placeholder,
-  disabled,
-  error,
-  styles,
-  creatable,
-  ...rest
-}) {
-  const selectedOption =
-    options.find(o => {
-      if (o === null) {
-        return o;
-      } else if (o.value && o.value.equals) {
-        return o.value.equals(value);
-      } else {
-        return o.value === value;
-      }
-    }) || null;
-
+export function StyledSelectInput({ placeholder, disabled, error, styles, creatable, ...rest }) {
   const dynamicStyle = {
     ...staticStyle,
     placeholder: (base, { isDisabled }) => ({
@@ -95,12 +74,39 @@ export default function SelectInput({
     <Component
       {...rest}
       styles={dynamicStyle}
-      value={selectedOption}
       components={{ IndicatorSeparator: () => null }}
       placeholder={placeholder}
+      isDisabled={disabled}
+    />
+  );
+}
+
+StyledSelectInput.propTypes = {
+  styles: PropTypes.object,
+  placeholder: PropTypes.string,
+  error: PropTypes.bool,
+  disabled: PropTypes.bool,
+  creatable: PropTypes.bool
+};
+
+export default function SelectInput({ value, options, onChange, ...rest }) {
+  const selectedOption =
+    options.find(o => {
+      if (o === null) {
+        return o;
+      } else if (o.value && o.value.equals) {
+        return o.value.equals(value);
+      } else {
+        return o.value === value;
+      }
+    }) || null;
+
+  return (
+    <StyledSelectInput
+      {...rest}
+      value={selectedOption}
       options={options}
       onChange={option => onChange(option && option.value, option)}
-      isDisabled={disabled}
     />
   );
 }
@@ -120,10 +126,5 @@ SelectInput.propTypes = {
       label: PropTypes.string
     })
   ),
-  styles: PropTypes.object,
-  onChange: PropTypes.func,
-  placeholder: PropTypes.string,
-  error: PropTypes.bool,
-  disabled: PropTypes.bool,
-  creatable: PropTypes.bool
+  onChange: PropTypes.func
 };

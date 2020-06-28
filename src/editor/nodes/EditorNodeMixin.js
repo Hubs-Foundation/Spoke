@@ -81,6 +81,8 @@ export default function EditorNodeMixin(Object3DClass) {
       this.loadingCube = null;
       this.errorIcon = null;
       this.issues = [];
+
+      this.editor.world.createEntity().addObject3DComponent(this);
     }
 
     clone(recursive) {

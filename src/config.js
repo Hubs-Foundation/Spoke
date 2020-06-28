@@ -1,5 +1,13 @@
 import Editor from "./editor/Editor";
 
+import { Types } from "ecsy";
+import { ThreeTypes } from "ecsy-three";
+
+import NumericInput from "./ui/inputs/NumericInput";
+import BooleanInput from "./ui/inputs/BooleanInput";
+import StringInput from "./ui/inputs/StringInput";
+import Vector3Input from "./ui/inputs/Vector3Input";
+
 import SceneNode from "./editor/nodes/SceneNode";
 import SceneNodeEditor from "./ui/properties/SceneNodeEditor";
 import GroupNode from "./editor/nodes/GroupNode";
@@ -58,6 +66,10 @@ import ArchitectureKitSource from "./ui/assets/sources/ArchitectureKitSource";
 import RockKitSource from "./ui/assets/sources/RockKitSource";
 import HubsSoundPackSource from "./ui/assets/sources/HubsSoundPackSource";
 
+import { RotateComponent } from "./components/RotateComponent";
+
+import { RotateSystem } from "./systems/RotateSystem";
+
 export function createEditor(api, settings) {
   const editor = new Editor(api, settings);
 
@@ -95,6 +107,15 @@ export function createEditor(api, settings) {
   editor.registerSource(new BingVideosSource(api));
   editor.registerSource(new HubsSoundPackSource(editor));
   editor.registerSource(new TenorSource(api));
+
+  editor.registerPropType(Types.Number, NumericInput);
+  editor.registerPropType(Types.String, StringInput);
+  editor.registerPropType(Types.Boolean, BooleanInput);
+  editor.registerPropType(ThreeTypes.Vector3Type, Vector3Input);
+
+  editor.registerComponent(RotateComponent);
+
+  editor.registerSystem(RotateSystem);
 
   return editor;
 }

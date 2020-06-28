@@ -11,6 +11,7 @@ import {
   Clock,
   Scene
 } from "three";
+import { ECSYThreeWorld, Object3DComponent, MeshTagComponent, SceneTagComponent, CameraTagComponent } from "ecsy-three";
 import { GLTFExporter } from "./gltf/GLTFExporter";
 import { GLTFLoader } from "./gltf/GLTFLoader";
 import History from "./History";
@@ -114,12 +115,27 @@ const rendererPromise = new Promise((resolve, reject) => {
 
 const removeObjectsRoots = [];
 
+const DefaultComponentOptions = {
+  canAdd: true,
+  canRemove: true,
+  canEdit: true
+};
+
 export default class Editor extends EventEmitter {
   constructor(api, settings = {}) {
     super();
     this.api = api;
     this.settings = settings;
     this.project = null;
+
+    this.world = new ECSYThreeWorld();
+    this.propTypeEditors = new Map();
+    this.registeredComponents = [];
+    this.registeredComponentsById = {};
+    this.registerComponent(Object3DComponent, { canAdd: false, canRemove: false, canEdit: false });
+    this.registerComponent(MeshTagComponent, { canAdd: false, canRemove: false, canEdit: false });
+    this.registerComponent(SceneTagComponent, { canAdd: false, canRemove: false, canEdit: false });
+    this.registerComponent(CameraTagComponent, { canAdd: false, canRemove: false, canEdit: false });
 
     this.selected = [];
     this.selectedTransformRoots = [];
@@ -182,6 +198,31 @@ export default class Editor extends EventEmitter {
     if (source.uploadSource && !this.defaultUploadSource) {
       this.defaultUploadSource = source;
     }
+  }
+
+  registerPropType(Type, PropTypeEditor) {
+    this.propTypeEditors.set(Type, PropTypeEditor);
+  }
+
+  registerComponent(Component, options = {}) {
+    const componentInfo = Object.assign(
+      {
+        id: Component.name,
+        name: Component.name,
+        Component
+      },
+      DefaultComponentOptions,
+      options
+    );
+
+    this.registeredComponentsById[Component.name] = componentInfo;
+    this.registeredComponents.push(componentInfo);
+
+    this.world.registerComponent(Component, options.objectPool);
+  }
+
+  registerSystem(system, attributes) {
+    this.world.registerSystem(system, attributes);
   }
 
   async installAssetSource(manifestUrl) {
@@ -596,6 +637,8 @@ export default class Editor extends EventEmitter {
       });
       this.flyControls.update(delta);
       this.spokeControls.update(delta);
+
+      this.world.execute(delta * 1000, time * 1000);
 
       this.renderer.update(delta, time);
       this.inputManager.reset();
