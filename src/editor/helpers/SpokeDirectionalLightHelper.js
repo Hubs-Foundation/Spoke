@@ -14,7 +14,7 @@ export default class SpokeDirectionalLightHelper extends Object3D {
     if (size === undefined) size = 1;
 
     let geometry = new BufferGeometry();
-    geometry.addAttribute(
+    geometry.setAttribute(
       "position",
       new Float32BufferAttribute([-size, size, 0, size, size, 0, size, -size, 0, -size, -size, 0, -size, size, 0], 3)
     );
@@ -26,7 +26,7 @@ export default class SpokeDirectionalLightHelper extends Object3D {
     this.add(this.lightPlane);
 
     geometry = new BufferGeometry();
-    geometry.addAttribute("position", new Float32BufferAttribute([0, 0, 0, 0, 0, 1], 3));
+    geometry.setAttribute("position", new Float32BufferAttribute([0, 0, 0, 0, 0, 1], 3));
 
     this.targetLine = new Line(geometry, material);
     this.targetLine.layers.set(1);

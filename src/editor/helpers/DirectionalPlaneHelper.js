@@ -8,7 +8,7 @@ export default class DirectionalPlaneHelper extends Object3D {
     this.name = "DirectionalPlaneHelper";
 
     let geometry = new BufferGeometry();
-    geometry.addAttribute(
+    geometry.setAttribute(
       "position",
       new Float32BufferAttribute([-size, size, 0, size, size, 0, size, -size, 0, -size, -size, 0, -size, size, 0], 3)
     );
@@ -20,7 +20,7 @@ export default class DirectionalPlaneHelper extends Object3D {
     this.add(this.plane);
 
     geometry = new BufferGeometry();
-    geometry.addAttribute("position", new Float32BufferAttribute([0, 0, 0, 0, 0, 1], 3));
+    geometry.setAttribute("position", new Float32BufferAttribute([0, 0, 0, 0, 0, 1], 3));
 
     this.directionLine = new Line(geometry, material);
     this.directionLine.layers.set(1);

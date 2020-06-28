@@ -226,6 +226,8 @@ export default class OutlinePass extends Pass {
   }
 
   render(renderer, writeBuffer, readBuffer, delta, maskActive) {
+    const gl = renderer.getContext();
+
     if (this.selectedObjects.length > 0) {
       this.oldClearColor.copy(renderer.getClearColor());
       this.oldClearAlpha = renderer.getClearAlpha();
@@ -233,7 +235,9 @@ export default class OutlinePass extends Pass {
 
       renderer.autoClear = false;
 
-      if (maskActive) renderer.context.disable(renderer.context.STENCIL_TEST);
+      if (maskActive) {
+        gl.disable(gl.STENCIL_TEST);
+      }
 
       renderer.setClearColor(0xffffff, 1);
 
@@ -354,7 +358,7 @@ export default class OutlinePass extends Pass {
         this.renderTargetEdgeBuffer.height
       );
 
-      if (maskActive) renderer.context.enable(renderer.context.STENCIL_TEST);
+      if (maskActive) gl.enable(gl.STENCIL_TEST);
 
       renderer.setRenderTarget(readBuffer);
       renderer.render(this.outlineScene, this.outlineCamera);

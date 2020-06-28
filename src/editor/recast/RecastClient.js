@@ -95,7 +95,7 @@ export default class RecastClient {
     }
 
     const navmesh = new BufferGeometry();
-    navmesh.addAttribute("position", new Float32BufferAttribute(result.verts, 3));
+    navmesh.setAttribute("position", new Float32BufferAttribute(result.verts, 3));
     navmesh.setIndex(new Uint16BufferAttribute(result.indices, 1));
 
     return navmesh;

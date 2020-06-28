@@ -931,7 +931,7 @@ class GLTFExporter {
     if (originalNormal !== undefined && !this.isNormalizedNormalAttribute(originalNormal)) {
       console.warn("THREE.GLTFExporter: Creating normalized normal attribute from the non-normalized one.");
 
-      geometry.addAttribute("normal", this.createNormalizedNormalAttribute(originalNormal));
+      geometry.setAttribute("normal", this.createNormalizedNormalAttribute(originalNormal));
     }
 
     // @QUESTION Detect if .vertexColors = THREE.VertexColors?
@@ -971,7 +971,7 @@ class GLTFExporter {
       }
     }
 
-    if (originalNormal !== undefined) geometry.addAttribute("normal", originalNormal);
+    if (originalNormal !== undefined) geometry.setAttribute("normal", originalNormal);
 
     // Skip if no exportable attributes found
     if (Object.keys(attributes).length === 0) {

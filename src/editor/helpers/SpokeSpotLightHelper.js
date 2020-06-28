@@ -22,7 +22,7 @@ export default class SpokeSpotLightHelper extends Object3D {
       positions.push(Math.cos(p1), Math.sin(p1), 1, Math.cos(p2), Math.sin(p2), 1);
     }
 
-    geometry.addAttribute("position", new Float32BufferAttribute(positions, 3));
+    geometry.setAttribute("position", new Float32BufferAttribute(positions, 3));
 
     const material = new LineBasicMaterial({ fog: false });
 

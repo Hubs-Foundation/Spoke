@@ -152,7 +152,7 @@ self.onmessage = async event => {
   const params = Object.assign({}, defaultParams, message.params || {});
 
   const geometry = new THREE.BufferGeometry();
-  geometry.addAttribute("position", new THREE.Float32BufferAttribute(message.verts, 3));
+  geometry.setAttribute("position", new THREE.Float32BufferAttribute(message.verts, 3));
   const heightfield = generateHeightfield(geometry, params);
 
   self.postMessage({ heightfield });
