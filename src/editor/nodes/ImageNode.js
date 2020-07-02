@@ -16,12 +16,13 @@ export default class ImageNode extends EditorNodeMixin(Image) {
   static async deserialize(editor, json, loadAsync, onError) {
     const node = await super.deserialize(editor, json);
 
-    const { src, projection, controls } = json.components.find(c => c.name === "image").props;
+    const { src, projection, controls, transparent } = json.components.find(c => c.name === "image").props;
 
     loadAsync(
       (async () => {
         await node.load(src, onError);
         node.controls = controls || false;
+        node.transparent = transparent === undefined ? true : transparent;
         node.projection = projection;
       })()
     );
@@ -34,6 +35,7 @@ export default class ImageNode extends EditorNodeMixin(Image) {
 
     this._canonicalUrl = "";
     this.controls = true;
+    this.transparent = false;
   }
 
   get src() {
@@ -103,6 +105,7 @@ export default class ImageNode extends EditorNodeMixin(Image) {
     super.copy(source, recursive);
 
     this.controls = source.controls;
+    this.transparent = source.transparent;
     this._canonicalUrl = source._canonicalUrl;
 
     return this;
@@ -113,6 +116,7 @@ export default class ImageNode extends EditorNodeMixin(Image) {
       image: {
         src: this._canonicalUrl,
         controls: this.controls,
+        transparent: this.transparent,
         projection: this.projection
       }
     });
@@ -123,6 +127,7 @@ export default class ImageNode extends EditorNodeMixin(Image) {
     this.addGLTFComponent("image", {
       src: this._canonicalUrl,
       controls: this.controls,
+      transparent: this.transparent,
       projection: this.projection
     });
     this.addGLTFComponent("networked", {

@@ -6,7 +6,6 @@ import {
   Mesh,
   sRGBEncoding,
   LinearFilter,
-  RGBAFormat,
   PlaneBufferGeometry
 } from "three";
 import loadTexture from "../utils/loadTexture";
@@ -21,10 +20,12 @@ export default class Image extends Object3D {
     super();
     this._src = null;
     this._projection = "flat";
+    this._transparent = false;
 
     const geometry = new PlaneBufferGeometry();
     const material = new MeshBasicMaterial();
     material.side = DoubleSide;
+    material.transparent = this._transparent;
     this._mesh = new Mesh(geometry, material);
     this._mesh.name = "ImageMesh";
     this.add(this._mesh);
@@ -41,6 +42,15 @@ export default class Image extends Object3D {
 
   loadTexture(src) {
     return loadTexture(src);
+  }
+
+  get transparent() {
+    return this._transparent;
+  }
+
+  set transparent(v) {
+    this._transparent = v;
+    this._mesh.material.transparent = v;
   }
 
   get projection() {
@@ -63,9 +73,7 @@ export default class Image extends Object3D {
 
     material.map = this._texture;
 
-    if (this._texture && this._texture.format === RGBAFormat) {
-      material.transparent = true;
-    }
+    material.transparent = this._transparent;
 
     this._projection = projection;
 
@@ -106,9 +114,7 @@ export default class Image extends Object3D {
 
     this.onResize();
 
-    if (texture.format === RGBAFormat) {
-      this._mesh.material.transparent = true;
-    }
+    this._mesh.material.transparent = this._transparent;
 
     this._mesh.material.map = this._texture;
     this._mesh.material.needsUpdate = true;
