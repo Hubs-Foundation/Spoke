@@ -50,6 +50,8 @@ export const TooltipContainer = styled.div`
   overflow-wrap: break-word;
   user-select: none;
   text-align: center;
+  white-space: pre-wrap;
+}
 `;
 
 export function InfoTooltip({ info, children, ...rest }) {

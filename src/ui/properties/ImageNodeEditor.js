@@ -4,19 +4,23 @@ import NodeEditor from "./NodeEditor";
 import InputGroup from "../inputs/InputGroup";
 import SelectInput from "../inputs/SelectInput";
 import BooleanInput from "../inputs/BooleanInput";
-import { ImageProjection } from "../../editor/objects/Image";
+import NumericInputGroup from "../inputs/NumericInputGroup";
+import { ImageProjection, ImageTransparencyMode } from "../../editor/objects/Image";
 import ImageInput from "../inputs/ImageInput";
 import { Image } from "styled-icons/fa-solid/Image";
 import useSetPropertySelected from "./useSetPropertySelected";
 
-const imageProjectionOptions = Object.values(ImageProjection).map(v => ({ label: v, value: v }));
+const mapValue = v => ({ label: v, value: v });
+const imageProjectionOptions = Object.values(ImageProjection).map(mapValue);
+const imageTransparencyOptions = Object.values(ImageTransparencyMode).map(mapValue);
 
 export default function ImageNodeEditor(props) {
   const { editor, node } = props;
   const onChangeSrc = useSetPropertySelected(editor, "src");
   const onChangeControls = useSetPropertySelected(editor, "controls");
   const onChangeProjection = useSetPropertySelected(editor, "projection");
-  const onChangeTransparent = useSetPropertySelected(editor, "transparent");
+  const onChangeTransparencyMode = useSetPropertySelected(editor, "transparencyMode");
+  const onChangeAlphaCutoff = useSetPropertySelected(editor, "alphaCutoff");
 
   return (
     <NodeEditor description={ImageNodeEditor.description} {...props}>
@@ -26,9 +30,34 @@ export default function ImageNodeEditor(props) {
       <InputGroup name="Controls" info="Toggle the visibility of the media controls in Hubs.">
         <BooleanInput value={node.controls} onChange={onChangeControls} />
       </InputGroup>
-      <InputGroup name="Transparent" info="Enable transparency">
-        <BooleanInput value={node.transparent} onChange={onChangeTransparent} />
+      <InputGroup
+        name="Transparency Mode"
+        info={`How to apply transparency:
+'none' = no transparency
+'alpha' = use the images alpha channel
+'cutout' = Use a specified cutoff value for on/off transparency (more performant)
+`}
+      >
+        <SelectInput
+          options={imageTransparencyOptions}
+          value={node.transparencyMode}
+          onChange={onChangeTransparencyMode}
+        />
       </InputGroup>
+
+      {node.transparencyMode === ImageTransparencyMode.Cutout && (
+        <NumericInputGroup
+          name="Alpha Cutoff"
+          info="Pixels with alpha values lower than this will be transparent"
+          min={0}
+          max={1}
+          smallStep={0.01}
+          mediumStep={0.1}
+          largeStep={0.25}
+          value={node.alphaCutoff}
+          onChange={onChangeAlphaCutoff}
+        />
+      )}
       <InputGroup name="Projection">
         <SelectInput options={imageProjectionOptions} value={node.projection} onChange={onChangeProjection} />
       </InputGroup>

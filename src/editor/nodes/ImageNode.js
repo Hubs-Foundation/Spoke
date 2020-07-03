@@ -1,5 +1,5 @@
 import EditorNodeMixin from "./EditorNodeMixin";
-import Image from "../objects/Image";
+import Image, { ImageTransparencyMode } from "../objects/Image";
 import spokeLogoSrc from "../../assets/spoke-icon.png";
 import { RethrownError } from "../utils/errors";
 import { getObjectPerfIssues, maybeAddLargeFileIssue } from "../utils/performance";
@@ -16,13 +16,16 @@ export default class ImageNode extends EditorNodeMixin(Image) {
   static async deserialize(editor, json, loadAsync, onError) {
     const node = await super.deserialize(editor, json);
 
-    const { src, projection, controls, transparent } = json.components.find(c => c.name === "image").props;
+    const { src, projection, controls, transparencyMode, alphaCutoff } = json.components.find(
+      c => c.name === "image"
+    ).props;
 
     loadAsync(
       (async () => {
         await node.load(src, onError);
         node.controls = controls || false;
-        node.transparent = transparent === undefined ? true : transparent;
+        node.transparencyMode = transparencyMode === undefined ? ImageTransparencyMode.Alpha : transparencyMode;
+        node.alphaCutoff = alphaCutoff || 0.5;
         node.projection = projection;
       })()
     );
@@ -35,7 +38,6 @@ export default class ImageNode extends EditorNodeMixin(Image) {
 
     this._canonicalUrl = "";
     this.controls = true;
-    this.transparent = false;
   }
 
   get src() {
@@ -105,7 +107,8 @@ export default class ImageNode extends EditorNodeMixin(Image) {
     super.copy(source, recursive);
 
     this.controls = source.controls;
-    this.transparent = source.transparent;
+    this.transparencyMode = source.transparencyMode;
+    this.alphaCutoff = source.alphaCutoff;
     this._canonicalUrl = source._canonicalUrl;
 
     return this;
@@ -116,7 +119,8 @@ export default class ImageNode extends EditorNodeMixin(Image) {
       image: {
         src: this._canonicalUrl,
         controls: this.controls,
-        transparent: this.transparent,
+        transparencyMode: this.transparencyMode,
+        alphaCutoff: this.alphaCutoff,
         projection: this.projection
       }
     });
@@ -124,12 +128,18 @@ export default class ImageNode extends EditorNodeMixin(Image) {
 
   prepareForExport() {
     super.prepareForExport();
-    this.addGLTFComponent("image", {
+
+    const imageData = {
       src: this._canonicalUrl,
       controls: this.controls,
-      transparent: this.transparent,
+      transparencyMode: this.transparencyMode,
       projection: this.projection
-    });
+    };
+    if (this.transparencyMode === ImageTransparencyMode.Cutout) {
+      imageData.alphaCutoff = this.alphaCutoff;
+    }
+
+    this.addGLTFComponent("image", imageData);
     this.addGLTFComponent("networked", {
       id: this.uuid
     });
