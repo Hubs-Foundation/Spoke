@@ -1,5 +1,5 @@
 import EditorNodeMixin from "./EditorNodeMixin";
-import Image from "../objects/Image";
+import Image, { ImageAlphaMode } from "../objects/Image";
 import spokeLogoSrc from "../../assets/spoke-icon.png";
 import { RethrownError } from "../utils/errors";
 import { getObjectPerfIssues, maybeAddLargeFileIssue } from "../utils/performance";
@@ -16,12 +16,14 @@ export default class ImageNode extends EditorNodeMixin(Image) {
   static async deserialize(editor, json, loadAsync, onError) {
     const node = await super.deserialize(editor, json);
 
-    const { src, projection, controls } = json.components.find(c => c.name === "image").props;
+    const { src, projection, controls, alphaMode, alphaCutoff } = json.components.find(c => c.name === "image").props;
 
     loadAsync(
       (async () => {
         await node.load(src, onError);
         node.controls = controls || false;
+        node.alphaMode = alphaMode === undefined ? ImageAlphaMode.Blend : alphaMode;
+        node.alphaCutoff = alphaCutoff === undefined ? 0.5 : alphaCutoff;
         node.projection = projection;
       })()
     );
@@ -103,6 +105,8 @@ export default class ImageNode extends EditorNodeMixin(Image) {
     super.copy(source, recursive);
 
     this.controls = source.controls;
+    this.alphaMode = source.alphaMode;
+    this.alphaCutoff = source.alphaCutoff;
     this._canonicalUrl = source._canonicalUrl;
 
     return this;
@@ -113,6 +117,8 @@ export default class ImageNode extends EditorNodeMixin(Image) {
       image: {
         src: this._canonicalUrl,
         controls: this.controls,
+        alphaMode: this.alphaMode,
+        alphaCutoff: this.alphaCutoff,
         projection: this.projection
       }
     });
@@ -120,11 +126,18 @@ export default class ImageNode extends EditorNodeMixin(Image) {
 
   prepareForExport() {
     super.prepareForExport();
-    this.addGLTFComponent("image", {
+
+    const imageData = {
       src: this._canonicalUrl,
       controls: this.controls,
+      alphaMode: this.alphaMode,
       projection: this.projection
-    });
+    };
+    if (this.alphaMode === ImageAlphaMode.Mask) {
+      imageData.alphaCutoff = this.alphaCutoff;
+    }
+
+    this.addGLTFComponent("image", imageData);
     this.addGLTFComponent("networked", {
       id: this.uuid
     });
