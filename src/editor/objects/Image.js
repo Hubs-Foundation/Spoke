@@ -15,7 +15,7 @@ export const ImageProjection = {
   Equirectangular360: "360-equirectangular"
 };
 
-export const ImageTransparencyMode = {
+export const ImageAlphaMode = {
   None: "none",
   Blend: "blend",
   Mask: "mask"
@@ -26,14 +26,14 @@ export default class Image extends Object3D {
     super();
     this._src = null;
     this._projection = "flat";
-    this._transparencyMode = ImageTransparencyMode.None;
+    this._alphaMode = ImageAlphaMode.None;
     this._alphaCutoff = 0.5;
 
     const geometry = new PlaneBufferGeometry();
     const material = new MeshBasicMaterial();
     material.side = DoubleSide;
-    material.transparent = this.transparencyMode === ImageTransparencyMode.Blend;
-    material.alphaTest = this.transparencyMode === ImageTransparencyMode.Mask ? this._alphaCutoff : 0;
+    material.transparent = this.alphaMode === ImageAlphaMode.Blend;
+    material.alphaTest = this.alphaMode === ImageAlphaMode.Mask ? this._alphaCutoff : 0;
     this._mesh = new Mesh(geometry, material);
     this._mesh.name = "ImageMesh";
     this.add(this._mesh);
@@ -52,14 +52,14 @@ export default class Image extends Object3D {
     return loadTexture(src);
   }
 
-  get transparencyMode() {
-    return this._transparencyMode;
+  get alphaMode() {
+    return this._alphaMode;
   }
 
-  set transparencyMode(v) {
-    this._transparencyMode = v;
-    this._mesh.material.transparent = v === ImageTransparencyMode.Blend;
-    this._mesh.material.alphaTest = v === ImageTransparencyMode.Mask ? this.alphaCutoff : 0;
+  set alphaMode(v) {
+    this._alphaMode = v;
+    this._mesh.material.transparent = v === ImageAlphaMode.Blend;
+    this._mesh.material.alphaTest = v === ImageAlphaMode.Mask ? this.alphaCutoff : 0;
     this._mesh.material.needsUpdate = true;
   }
 
@@ -93,8 +93,8 @@ export default class Image extends Object3D {
 
     material.map = this._texture;
 
-    material.transparent = this.transparencyMode === ImageTransparencyMode.Blend;
-    material.alphaTest = this.transparencyMode === ImageTransparencyMode.Mask ? this._alphaCutoff : 0;
+    material.transparent = this.alphaMode === ImageAlphaMode.Blend;
+    material.alphaTest = this.alphaMode === ImageAlphaMode.Mask ? this._alphaCutoff : 0;
 
     this._projection = projection;
 
@@ -135,8 +135,8 @@ export default class Image extends Object3D {
 
     this.onResize();
 
-    material.transparent = this.transparencyMode === ImageTransparencyMode.Blend;
-    material.alphaTest = this.transparencyMode === ImageTransparencyMode.Mask ? this._alphaCutoff : 0;
+    material.transparent = this.alphaMode === ImageAlphaMode.Blend;
+    material.alphaTest = this.alphaMode === ImageAlphaMode.Mask ? this._alphaCutoff : 0;
 
     this._mesh.material.map = this._texture;
     this._mesh.material.needsUpdate = true;

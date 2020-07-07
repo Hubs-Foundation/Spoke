@@ -5,21 +5,21 @@ import InputGroup from "../inputs/InputGroup";
 import SelectInput from "../inputs/SelectInput";
 import BooleanInput from "../inputs/BooleanInput";
 import NumericInputGroup from "../inputs/NumericInputGroup";
-import { ImageProjection, ImageTransparencyMode } from "../../editor/objects/Image";
+import { ImageProjection, ImageAlphaMode } from "../../editor/objects/Image";
 import ImageInput from "../inputs/ImageInput";
 import { Image } from "styled-icons/fa-solid/Image";
 import useSetPropertySelected from "./useSetPropertySelected";
 
 const mapValue = v => ({ label: v, value: v });
 const imageProjectionOptions = Object.values(ImageProjection).map(mapValue);
-const imageTransparencyOptions = Object.values(ImageTransparencyMode).map(mapValue);
+const imageTransparencyOptions = Object.values(ImageAlphaMode).map(mapValue);
 
 export default function ImageNodeEditor(props) {
   const { editor, node } = props;
   const onChangeSrc = useSetPropertySelected(editor, "src");
   const onChangeControls = useSetPropertySelected(editor, "controls");
   const onChangeProjection = useSetPropertySelected(editor, "projection");
-  const onChangeTransparencyMode = useSetPropertySelected(editor, "transparencyMode");
+  const onChangeTransparencyMode = useSetPropertySelected(editor, "alphaMode");
   const onChangeAlphaCutoff = useSetPropertySelected(editor, "alphaCutoff");
 
   return (
@@ -33,19 +33,14 @@ export default function ImageNodeEditor(props) {
       <InputGroup
         name="Transparency Mode"
         info={`How to apply transparency:
-'none' = no transparency
-'alpha' = use the images alpha channel
-'cutout' = Use a specified cutoff value for on/off transparency (more performant)
+'opaque' = no transparency
+'blend' = use the images alpha channel
+'mask' = Use a specified cutoff value for on/off transparency (more performant)
 `}
       >
-        <SelectInput
-          options={imageTransparencyOptions}
-          value={node.transparencyMode}
-          onChange={onChangeTransparencyMode}
-        />
+        <SelectInput options={imageTransparencyOptions} value={node.alphaMode} onChange={onChangeTransparencyMode} />
       </InputGroup>
-
-      {node.transparencyMode === ImageTransparencyMode.Mask && (
+      {node.alphaMode === ImageAlphaMode.Mask && (
         <NumericInputGroup
           name="Alpha Cutoff"
           info="Pixels with alpha values lower than this will be transparent"
