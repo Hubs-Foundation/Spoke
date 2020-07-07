@@ -17,8 +17,8 @@ export const ImageProjection = {
 
 export const ImageTransparencyMode = {
   None: "none",
-  Alpha: "alpha",
-  Cutout: "cutout"
+  Blend: "blend",
+  Mask: "mask"
 };
 
 export default class Image extends Object3D {
@@ -32,8 +32,8 @@ export default class Image extends Object3D {
     const geometry = new PlaneBufferGeometry();
     const material = new MeshBasicMaterial();
     material.side = DoubleSide;
-    material.transparent = this.transparencyMode === ImageTransparencyMode.Alpha;
-    material.alphaTest = this.transparencyMode === ImageTransparencyMode.Cutout ? this._alphaCutoff : 0;
+    material.transparent = this.transparencyMode === ImageTransparencyMode.Blend;
+    material.alphaTest = this.transparencyMode === ImageTransparencyMode.Mask ? this._alphaCutoff : 0;
     this._mesh = new Mesh(geometry, material);
     this._mesh.name = "ImageMesh";
     this.add(this._mesh);
@@ -58,8 +58,8 @@ export default class Image extends Object3D {
 
   set transparencyMode(v) {
     this._transparencyMode = v;
-    this._mesh.material.transparent = v === ImageTransparencyMode.Alpha;
-    this._mesh.material.alphaTest = v === ImageTransparencyMode.Cutout ? this.alphaCutoff : 0;
+    this._mesh.material.transparent = v === ImageTransparencyMode.Blend;
+    this._mesh.material.alphaTest = v === ImageTransparencyMode.Mask ? this.alphaCutoff : 0;
     this._mesh.material.needsUpdate = true;
   }
 
@@ -93,8 +93,8 @@ export default class Image extends Object3D {
 
     material.map = this._texture;
 
-    material.transparent = this.transparencyMode === ImageTransparencyMode.Alpha;
-    material.alphaTest = this.transparencyMode === ImageTransparencyMode.Cutout ? this._alphaCutoff : 0;
+    material.transparent = this.transparencyMode === ImageTransparencyMode.Blend;
+    material.alphaTest = this.transparencyMode === ImageTransparencyMode.Mask ? this._alphaCutoff : 0;
 
     this._projection = projection;
 
@@ -135,8 +135,8 @@ export default class Image extends Object3D {
 
     this.onResize();
 
-    material.transparent = this.transparencyMode === ImageTransparencyMode.Alpha;
-    material.alphaTest = this.transparencyMode === ImageTransparencyMode.Cutout ? this._alphaCutoff : 0;
+    material.transparent = this.transparencyMode === ImageTransparencyMode.Blend;
+    material.alphaTest = this.transparencyMode === ImageTransparencyMode.Mask ? this._alphaCutoff : 0;
 
     this._mesh.material.map = this._texture;
     this._mesh.material.needsUpdate = true;

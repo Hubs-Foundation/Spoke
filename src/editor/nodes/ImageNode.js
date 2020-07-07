@@ -24,8 +24,8 @@ export default class ImageNode extends EditorNodeMixin(Image) {
       (async () => {
         await node.load(src, onError);
         node.controls = controls || false;
-        node.transparencyMode = transparencyMode === undefined ? ImageTransparencyMode.Alpha : transparencyMode;
         node.alphaCutoff = alphaCutoff || 0.5;
+        node.transparencyMode = transparencyMode === undefined ? ImageTransparencyMode.Blend : transparencyMode;
         node.projection = projection;
       })()
     );
@@ -135,7 +135,7 @@ export default class ImageNode extends EditorNodeMixin(Image) {
       transparencyMode: this.transparencyMode,
       projection: this.projection
     };
-    if (this.transparencyMode === ImageTransparencyMode.Cutout) {
+    if (this.transparencyMode === ImageTransparencyMode.Mask) {
       imageData.alphaCutoff = this.alphaCutoff;
     }
 

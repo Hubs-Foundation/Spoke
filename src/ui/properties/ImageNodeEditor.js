@@ -45,7 +45,7 @@ export default function ImageNodeEditor(props) {
         />
       </InputGroup>
 
-      {node.transparencyMode === ImageTransparencyMode.Cutout && (
+      {node.transparencyMode === ImageTransparencyMode.Mask && (
         <NumericInputGroup
           name="Alpha Cutoff"
           info="Pixels with alpha values lower than this will be transparent"
