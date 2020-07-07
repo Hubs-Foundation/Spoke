@@ -16,7 +16,7 @@ export const ImageProjection = {
 };
 
 export const ImageAlphaMode = {
-  None: "none",
+  Opaque: "opaque",
   Blend: "blend",
   Mask: "mask"
 };
@@ -26,7 +26,7 @@ export default class Image extends Object3D {
     super();
     this._src = null;
     this._projection = "flat";
-    this._alphaMode = ImageAlphaMode.None;
+    this._alphaMode = ImageAlphaMode.Opaque;
     this._alphaCutoff = 0.5;
 
     const geometry = new PlaneBufferGeometry();
