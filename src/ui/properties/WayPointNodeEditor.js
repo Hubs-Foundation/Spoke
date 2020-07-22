@@ -10,7 +10,7 @@ const messages = {
   "waypoint.label-canBeOccupied": "Can be occupied",
   "waypoint.label-canBeClicked": "Clickable",
   "waypoint.label-willDisableMotion": "Disable Motion",
-  "waypoint.label-willDisableTeleport": "Disable Teleporting",
+  "waypoint.label-willDisableTeleporting": "Disable Teleporting",
   "waypoint.label-snapToNavMesh": "Snap to floor plan",
   "waypoint.label-willMaintainInitialOrientation": "Maintain initial orientation",
   "waypoint.description-canBeSpawnPoint": "Avatars may be teleported to this waypoint when entering the scene",
@@ -19,7 +19,7 @@ const messages = {
   "waypoint.description-canBeClicked":
     "This waypoint will be visible in pause mode and clicking on it will teleport you to it",
   "waypoint.description-willDisableMotion": "Avatars will not be able to move after using this waypoint",
-  "waypoint.description-willDisableTeleport": "Avatars will not be able to teleport after using this waypoint",
+  "waypoint.description-willDisableTeleporting": "Avatars will not be able to teleport after using this waypoint",
   "waypoint.description-snapToNavMesh":
     "Avatars will move as close as they can to this waypoint but will not leave the ground",
   "waypoint.description-willMaintainInitialOrientation":
@@ -31,7 +31,7 @@ const propertyNames = [
   "canBeOccupied",
   "canBeClicked",
   "willDisableMotion",
-  "willDisableTeleport",
+  "willDisableTeleporting",
   "snapToNavMesh",
   "willMaintainInitialOrientation"
 ];
