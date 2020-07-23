@@ -203,7 +203,7 @@ test("Editor should load V1TestScene", withPage(`/projects/new?template=${v1Test
   const video1Entity = entities.find(e => e.name === "Video");
   t.is(video1Entity.index, 14);
   const video1Props = video1Entity.components.find(c => c.name === "video").props;
-  t.is(video1Props.src, "https://hubs.local:9090/test-assets/landing-video.mp4");
+  t.is(video1Props.src, "https://hubs.local:9090/test-assets/landing-video.webm");
   t.is(video1Props.projection, "flat");
   t.is(video1Props.controls, false);
   t.is(video1Props.autoPlay, true);
@@ -221,7 +221,7 @@ test("Editor should load V1TestScene", withPage(`/projects/new?template=${v1Test
   const video2Entity = entities.find(e => e.name === "Video 1");
   t.is(video2Entity.index, 15);
   const video2Props = video2Entity.components.find(c => c.name === "video").props;
-  t.is(video2Props.src, "https://hubs.local:9090/test-assets/landing-video.mp4");
+  t.is(video2Props.src, "https://hubs.local:9090/test-assets/landing-video.webm");
   t.is(video2Props.projection, "360-equirectangular");
   t.is(video2Props.controls, true);
   t.is(video2Props.autoPlay, true);
