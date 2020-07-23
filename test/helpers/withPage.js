@@ -5,7 +5,7 @@ export default function withPage(path, timeout = 60000) {
 
   return async (t, run) => {
     const browser = await puppeteer.launch({
-      headless: false,
+      headless: true,
       args: ["--no-sandbox", "--disable-setuid-sandbox", "--ignore-gpu-blacklist", "--ignore-certificate-errors"]
     });
 
