@@ -235,6 +235,8 @@ class EditorContainer extends Component {
   }
 
   async importProject(projectFile) {
+    const project = this.state.project;
+
     this.setState({
       project: null,
       parentSceneId: null,
@@ -263,6 +265,12 @@ class EditorContainer extends Component {
         message: error.message || "There was an error when loading the project.",
         error
       });
+    } finally {
+      if (project) {
+        this.setState({
+          project
+        });
+      }
     }
   }
 
