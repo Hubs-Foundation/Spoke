@@ -208,7 +208,7 @@ test("Editor should load V1TestScene", withPage(`/projects/new?template=${v1Test
   t.is(video1Props.controls, false);
   t.is(video1Props.autoPlay, true);
   t.is(video1Props.loop, true);
-  t.is(video1Props.audioType, "pannernode");
+  t.is(video1Props.audioType, "bad value");
   t.is(video1Props.volume, 0.75);
   t.is(video1Props.distanceModel, "inverse");
   t.is(video1Props.rolloffFactor, 10);
