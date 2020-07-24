@@ -256,6 +256,9 @@ class EditorContainer extends Component {
 
       await editor.loadProject(projectFile);
 
+      editor.sceneModified = true;
+      this.updateModifiedState();
+
       this.hideDialog();
     } catch (error) {
       console.error(error);
