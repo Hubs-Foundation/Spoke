@@ -29,7 +29,15 @@ jobs:
           name: Add hubs.local to /etc/hosts
           command: echo 127.0.0.1 hubs.local | sudo tee -a /etc/hosts
       - run: yarn
+      - run:
+          name: Start Test Server
+          command: yarn test-server
+          background: true
       - run: yarn test-ci
+      - store_test_results:
+          path: ./test/reports
+      - store_artifacts:
+          path: ./test/reports
       - persist_to_workspace:
           root: .
           paths:
