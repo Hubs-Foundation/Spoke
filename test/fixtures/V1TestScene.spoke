@@ -572,7 +572,7 @@
         {
           "name": "video",
           "props": {
-            "src": "https://hubs.local:9090/test-assets/landing-video.mp4",
+            "src": "https://hubs.local:9090/test-assets/landing-video.webm",
             "controls": false,
             "autoPlay": true,
             "loop": true,
@@ -617,7 +617,7 @@
         {
           "name": "video",
           "props": {
-            "src": "https://hubs.local:9090/test-assets/landing-video.mp4",
+            "src": "https://hubs.local:9090/test-assets/landing-video.webm",
             "controls": true,
             "autoPlay": true,
             "loop": false,
