@@ -557,7 +557,7 @@ export default class Project extends EventEmitter {
       throw new Error("Save project aborted");
     }
 
-    const { blob: thumbnailBlob } = await editor.takeScreenshot(512, 320);
+    const thumbnailBlob = await editor.takeScreenshot(512, 320);
 
     if (signal.aborted) {
       throw new Error("Save project aborted");
@@ -711,7 +711,7 @@ export default class Project extends EventEmitter {
       await new Promise(resolve => setTimeout(resolve, 5));
 
       // Take a screenshot of the scene from the current camera position to use as the thumbnail
-      const { blob: screenshotBlob, cameraTransform: screenshotCameraTransform } = await editor.takeScreenshot();
+      const screenshotBlob = await editor.takeScreenshot();
       screenshotUrl = URL.createObjectURL(screenshotBlob);
 
       if (signal.aborted) {
@@ -767,8 +767,7 @@ export default class Project extends EventEmitter {
         name: publishParams.name,
         creatorAttribution: publishParams.creatorAttribution,
         allowRemixing: publishParams.allowRemixing,
-        allowPromotion: publishParams.allowPromotion,
-        previewCameraTransform: screenshotCameraTransform
+        allowPromotion: publishParams.allowPromotion
       });
 
       // Save the creatorAttribution to localStorage so that the user doesn't have to input it again
