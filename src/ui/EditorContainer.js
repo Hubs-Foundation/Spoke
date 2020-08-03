@@ -566,7 +566,7 @@ class EditorContainer extends Component {
     // Wait for 5ms so that the ProgressDialog shows up.
     await new Promise(resolve => setTimeout(resolve, 5));
 
-    const { blob } = await editor.takeScreenshot(512, 320);
+    const blob = await editor.takeScreenshot(512, 320);
 
     const result = await new Promise(resolve => {
       this.showDialog(SaveNewProjectDialog, {
