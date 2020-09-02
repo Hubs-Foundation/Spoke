@@ -18,11 +18,11 @@ const mediaTypeOptions = [
 
 export default function MediaFrameNodeEditor(props) {
   const { node, editor } = props;
-  const onChangeMediaTypes = useSetPropertySelected(editor, "mediaTypes");
+  const onChangeMediaType = useSetPropertySelected(editor, "mediaType");
   return (
     <NodeEditor description={MediaFrameNodeEditor.description} {...props}>
       <InputGroup name="Media Types" info="Limit what type of media this frame will capture">
-        <SelectInput options={mediaTypeOptions} value={node.mediaTypes} onChange={onChangeMediaTypes} />
+        <SelectInput options={mediaTypeOptions} value={node.mediaType} onChange={onChangeMediaType} />
       </InputGroup>
     </NodeEditor>
   );
