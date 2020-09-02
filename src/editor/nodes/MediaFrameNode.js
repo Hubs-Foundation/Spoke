@@ -134,8 +134,8 @@ export default class MediaFrameNode extends EditorNodeMixin(Object3D) {
     });
     // We use scale to configure bounds, we don't actually want to set the node's scale
     this.scale.setScalar(1);
-    // this.addGLTFComponent("networked", {
-    //   id: this.uuid
-    // });
+    this.addGLTFComponent("networked", {
+      id: this.uuid
+    });
   }
 }
