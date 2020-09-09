@@ -6,6 +6,7 @@ import OutlinePass from "./OutlinePass";
 import { getCanvasBlob } from "../utils/thumbnails";
 import makeRenderer from "./makeRenderer";
 import SpokeBatchRawUniformGroup from "./SpokeBatchRawUniformGroup";
+import ScenePreviewCameraNode from "../nodes/ScenePreviewCameraNode";
 
 /**
  * @author mrdoob / http://mrdoob.com/
@@ -272,15 +273,23 @@ export default class Renderer {
     this.renderer = screenshotRenderer;
 
     this.editor.disableUpdate = true;
-    const prevAspect = camera.aspect;
-    camera.aspect = width / height;
-    camera.updateProjectionMatrix();
 
-    camera.layers.disable(1);
+    let scenePreviewCamera = this.editor.scene.findNodeByType(ScenePreviewCameraNode);
+
+    if (!scenePreviewCamera) {
+      scenePreviewCamera = new ScenePreviewCameraNode(this.editor);
+      camera.matrix.decompose(scenePreviewCamera.position, scenePreviewCamera.rotation, scenePreviewCamera.scale);
+      this.editor.addObject(scenePreviewCamera);
+    }
+
+    const prevAspect = scenePreviewCamera.aspect;
+    scenePreviewCamera.aspect = width / height;
+
+    scenePreviewCamera.updateProjectionMatrix();
+
+    scenePreviewCamera.layers.disable(1);
 
     screenshotRenderer.setSize(width, height, true);
-
-    screenshotRenderer.render(this.editor.scene, camera);
 
     this.editor.scene.traverse(child => {
       if (child.isNode) {
@@ -292,17 +301,13 @@ export default class Renderer {
       this.shadowsRenderMode.onSceneSet();
     }
 
-    this.screenshotRenderer.render(this.editor.scene, camera);
-
-    camera.layers.enable(1);
-
-    camera.updateMatrixWorld();
-    const cameraTransform = camera.matrixWorld.clone();
+    screenshotRenderer.render(this.editor.scene, scenePreviewCamera);
 
     const blob = await getCanvasBlob(screenshotRenderer.domElement);
 
-    camera.aspect = prevAspect;
-    camera.updateProjectionMatrix();
+    scenePreviewCamera.aspect = prevAspect;
+    scenePreviewCamera.updateProjectionMatrix();
+    scenePreviewCamera.layers.enable(1);
     this.editor.disableUpdate = false;
 
     this.renderer = originalRenderer;
@@ -315,7 +320,7 @@ export default class Renderer {
       }
     });
 
-    return { blob, cameraTransform };
+    return blob;
   };
 
   dispose() {

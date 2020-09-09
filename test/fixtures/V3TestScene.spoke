@@ -257,7 +257,7 @@
         {
           "name": "gltf-model",
           "props": {
-            "src": "https://asset-bundles-prod.reticulum.io/interactables/Ducky/DuckyMesh-438ff8e022.gltf",
+            "src": "https://hubs.local:9090/test-assets/duck.glb",
             "attribution": null
           }
         },
@@ -312,7 +312,7 @@
         {
           "name": "gltf-model",
           "props": {
-            "src": "https://sketchfab.com/models/ec2c6087d4824211abc827f2a4c2b578",
+            "src": "https://hubs.local:9090/test-assets/ceiling-fan.glb",
             "attribution": {
               "name": "Ceiling Fan",
               "author": "mozillareality",
@@ -521,7 +521,7 @@
         {
           "name": "spawner",
           "props": {
-            "src": "https://sketchfab.com/models/2a09a3dc75364c8c84b25d2cc235cb9b"
+            "src": "https://hubs.local:9090/test-assets/camera.glb"
           }
         }
       ],
@@ -658,7 +658,7 @@
         {
           "name": "image",
           "props": {
-            "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/67/Firefox_Logo%2C_2017.svg/1200px-Firefox_Logo%2C_2017.svg.png",
+            "src": "https://hubs.local:9090/test-assets/spoke-logo.png",
             "projection": "flat"
           }
         }
@@ -698,7 +698,7 @@
         {
           "name": "video",
           "props": {
-            "src": "https://www.youtube.com/watch?v=WmQKZJPhV7s",
+            "src": "https://hubs.local:9090/test-assets/landing-video.webm",
             "controls": false,
             "autoPlay": true,
             "loop": true,
@@ -750,7 +750,7 @@
         {
           "name": "video",
           "props": {
-            "src": "https://www.youtube.com/watch?v=H6SsB3JYqQg",
+            "src": "https://hubs.local:9090/test-assets/landing-video.webm",
             "controls": true,
             "autoPlay": true,
             "loop": false,
@@ -802,7 +802,7 @@
         {
           "name": "image",
           "props": {
-            "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/SonyCenter_360panorama.jpg/2880px-SonyCenter_360panorama.jpg",
+            "src": "https://hubs.local:9090/test-assets/spoke-logo.png",
             "projection": "360-equirectangular"
           }
         }

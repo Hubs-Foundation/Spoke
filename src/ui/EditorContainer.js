@@ -235,6 +235,8 @@ class EditorContainer extends Component {
   }
 
   async importProject(projectFile) {
+    const project = this.state.project;
+
     this.setState({
       project: null,
       parentSceneId: null,
@@ -254,6 +256,9 @@ class EditorContainer extends Component {
 
       await editor.loadProject(projectFile);
 
+      editor.sceneModified = true;
+      this.updateModifiedState();
+
       this.hideDialog();
     } catch (error) {
       console.error(error);
@@ -263,6 +268,12 @@ class EditorContainer extends Component {
         message: error.message || "There was an error when loading the project.",
         error
       });
+    } finally {
+      if (project) {
+        this.setState({
+          project
+        });
+      }
     }
   }
 
@@ -555,7 +566,7 @@ class EditorContainer extends Component {
     // Wait for 5ms so that the ProgressDialog shows up.
     await new Promise(resolve => setTimeout(resolve, 5));
 
-    const { blob } = await editor.takeScreenshot(512, 320);
+    const blob = await editor.takeScreenshot(512, 320);
 
     const result = await new Promise(resolve => {
       this.showDialog(SaveNewProjectDialog, {
