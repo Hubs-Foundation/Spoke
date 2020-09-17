@@ -7,6 +7,9 @@ export class LightmapExporterExtension extends ExporterExtension {
       () => true,
       (material, materialDef) => {
         if (material.lightMap) {
+          if (materialDef.extensions === undefined) {
+            materialDef.extensions = {};
+          }
           materialDef.extensions.MOZ_lightmap = {
             index: this.exporter.processTexture(material.lightMap),
             texCoord: 1,
