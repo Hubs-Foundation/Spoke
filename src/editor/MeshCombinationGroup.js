@@ -36,6 +36,9 @@ export async function compareTextures(hashCache, a, b) {
       a.wrapT === b.wrapT &&
       a.magFilter === b.magFilter &&
       a.minFilter === b.minFilter &&
+      a.offset.equals(b.offset) &&
+      a.rotation == b.rotation &&
+      a.repeat.equals(b.repeat) &&
       (await compareImages(hashCache, a.image, b.image))
     );
   }
@@ -90,11 +93,13 @@ async function dedupeTexture(imageHashes, textureCache, texture) {
 
   const cachedTexture = textureCache.get(imageHash);
 
-  if (cachedTexture) {
-    return cachedTexture;
+  if (await compareTextures(imageHashes, texture, cachedTexture)) {
+    if (cachedTexture) {
+      return cachedTexture;
+    } else {
+      textureCache.set(imageHash, texture);
+    }
   }
-
-  textureCache.set(imageHash, texture);
 
   return texture;
 }
