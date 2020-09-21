@@ -167,6 +167,24 @@ export const MIME_TYPE_FORMATS = {
 };
 
 /*********************************/
+/********** GLTF EXTENSIONS ***********/
+/*********************************/
+
+const EXTENSIONS = {
+  KHR_BINARY_GLTF: "KHR_binary_glTF",
+  KHR_DRACO_MESH_COMPRESSION: "KHR_draco_mesh_compression",
+  KHR_LIGHTS_PUNCTUAL: "KHR_lights_punctual",
+  KHR_MATERIALS_CLEARCOAT: "KHR_materials_clearcoat",
+  KHR_MATERIALS_PBR_SPECULAR_GLOSSINESS: "KHR_materials_pbrSpecularGlossiness",
+  KHR_MATERIALS_TRANSMISSION: "KHR_materials_transmission",
+  KHR_MATERIALS_UNLIT: "KHR_materials_unlit",
+  KHR_TEXTURE_BASISU: "KHR_texture_basisu",
+  KHR_TEXTURE_TRANSFORM: "KHR_texture_transform",
+  KHR_MESH_QUANTIZATION: "KHR_mesh_quantization",
+  MSFT_TEXTURE_DDS: "MSFT_texture_dds"
+};
+
+/*********************************/
 /********** EXTENSIONS ***********/
 /*********************************/
 
@@ -1719,18 +1737,56 @@ class GLTFLoader {
    * @param {PixelFormat} format
    * @return {Promise}
    */
-  async assignTexture(material, mapName, mapDef, overrideEncoding, overrideFormat) {
-    const texture = await this.getDependency("texture", mapDef.index);
+  async assignTexture(materialParams, mapName, mapDef, overrideEncoding, overrideFormat) {
+    const parser = this;
 
-    if (!texture.isCompressedTexture && overrideFormat) {
-      texture.format = overrideFormat;
+    return this.getDependency("texture", mapDef.index).then(function(texture) {
+      if (mapDef.extensions !== undefined && mapDef.extensions[EXTENSIONS.KHR_TEXTURE_TRANSFORM]) {
+        const transform = mapDef.extensions[EXTENSIONS.KHR_TEXTURE_TRANSFORM];
+        if (transform) {
+          texture = parser.extendTexture(texture, transform);
+        }
+      }
+
+      if (!texture.isCompressedTexture && overrideFormat) {
+        texture.format = overrideFormat;
+      }
+
+      if (overrideEncoding) {
+        texture.encoding = overrideEncoding;
+      }
+
+      materialParams[mapName] = texture;
+    });
+  }
+
+  /**
+   * Applies a texture transform, if present, to the map definition. Requires
+   * the KHR_texture_transform extension.
+   */
+  extendTexture(texture, transform) {
+    texture = texture.clone();
+
+    if (transform.offset !== undefined) {
+      texture.offset.fromArray(transform.offset);
+      texture.needsUpdate = true;
     }
 
-    if (overrideEncoding) {
-      texture.encoding = overrideEncoding;
+    if (transform.rotation !== undefined) {
+      texture.rotation = transform.rotation;
+      texture.needsUpdate = true;
     }
 
-    material[mapName] = texture;
+    if (transform.scale !== undefined) {
+      texture.repeat.fromArray(transform.scale);
+      texture.needsUpdate = true;
+    }
+
+    if (texture.texCoord !== undefined) {
+      console.warn('THREE.GLTFLoader: Custom UV sets in "' + this.name + '" extension not yet supported.');
+    }
+
+    return texture;
   }
 
   /**
