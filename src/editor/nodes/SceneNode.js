@@ -577,11 +577,7 @@ export default class SceneNode extends EditorNodeMixin(Scene) {
 
     this.traverse(child => {
       if (child.isNode && child.type === "Model") {
-        const activeClip = child.activeClip;
-
-        if (activeClip) {
-          animations.push(child.activeClip);
-        }
+        animations.push(...child.clips);
       }
     });
 

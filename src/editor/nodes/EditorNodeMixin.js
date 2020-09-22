@@ -208,34 +208,72 @@ export default function EditorNodeMixin(Object3DClass) {
       }
     }
 
-    addGLTFComponent(name, props) {
-      if (!this.userData.gltfExtensions) {
-        this.userData.gltfExtensions = {};
-      }
+    /**
+     * Adds a GLTF component
+     * @param {String} name The component name to be replaced
+     * @param {Object} props The component properties to be set
+     * @param {boolean} params Parameters object
+     * @param {{THREE.Object3D} params.node The target Object3D element
+     * @param {boolean} params.replace Wether or not the component should be replaced or just added if it does not exist
+     * @param {boolean} params.recursive Call this method recursively on all the Object3D children
+     */
+    addGLTFComponent(name, props, params = {}) {
+      params.node = params.node || this;
+      params.replace = params.replace || false;
+      params.recursive = params.recursive || false;
 
-      if (!this.userData.gltfExtensions.MOZ_hubs_components) {
-        this.userData.gltfExtensions.MOZ_hubs_components = {};
+      let update = false;
+      if (params.replace) {
+        if (
+          params.node.userData.gltfExtensions &&
+          params.node.userData.gltfExtensions.MOZ_hubs_components &&
+          params.node.userData.gltfExtensions.MOZ_hubs_components[name]
+        ) {
+          update = true;
+        }
+      } else {
+        if (!params.node.userData.gltfExtensions) {
+          params.node.userData.gltfExtensions = {};
+        }
+
+        if (!params.node.userData.gltfExtensions.MOZ_hubs_components) {
+          params.node.userData.gltfExtensions.MOZ_hubs_components = {};
+        }
+
+        update = true;
       }
 
       if (props !== undefined && typeof props !== "object") {
         throw new Error("glTF component props must be an object or undefined");
       }
 
-      const componentProps = {};
+      if (update) {
+        const componentProps = {};
 
-      for (const key in props) {
-        if (!Object.prototype.hasOwnProperty.call(props, key)) continue;
+        for (const key in props) {
+          if (!Object.prototype.hasOwnProperty.call(props, key)) continue;
 
-        const value = props[key];
+          const value = props[key];
 
-        if (value instanceof Color) {
-          componentProps[key] = serializeColor(value);
-        } else {
-          componentProps[key] = value;
+          if (value instanceof Color) {
+            componentProps[key] = serializeColor(value);
+          } else {
+            componentProps[key] = value;
+          }
         }
+
+        params.node.userData.gltfExtensions.MOZ_hubs_components[name] = componentProps;
       }
 
-      this.userData.gltfExtensions.MOZ_hubs_components[name] = componentProps;
+      if (params.recursive) {
+        params.node.children.forEach(child => {
+          this.addGLTFComponent(name, props, {
+            node: child,
+            replace: params.replace,
+            recursive: params.recursive
+          });
+        });
+      }
     }
 
     replaceObject(replacementObject) {

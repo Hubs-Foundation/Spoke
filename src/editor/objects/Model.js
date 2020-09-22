@@ -1,4 +1,4 @@
-import { Object3D, AnimationMixer } from "three";
+import { Object3D, AnimationMixer, LoopRepeat } from "three";
 import { GLTFLoader } from "../gltf/GLTFLoader";
 import cloneObject3D from "../utils/cloneObject3D";
 
@@ -11,10 +11,9 @@ export default class Model extends Object3D {
     this._src = null;
     this._castShadow = false;
     this._receiveShadow = false;
-    // Use index instead of references to AnimationClips to simplify animation cloning / track name remapping
-    this.activeClipIndex = -1;
+    this.activeClipIndices = [];
     this.animationMixer = null;
-    this.activeClipAction = null;
+    this.currentActions = [];
   }
 
   get src() {
@@ -63,29 +62,58 @@ export default class Model extends Object3D {
       this.model && this.model.animations
         ? this.model.animations.map((clip, index) => ({ label: clip.name, value: index }))
         : [];
-    clipOptions.unshift({ label: "None", value: -1 });
+    if (clipOptions.length == 0) {
+      clipOptions.unshift({ label: "None", value: -1 });
+    }
     return clipOptions;
   }
 
-  get activeClip() {
-    return (this.model && this.model.animations && this.model.animations[this.activeClipIndex]) || null;
+  get activeClipNames() {
+    return this.activeClipIndices.filter(item => item.value >= 0).map(item => item.label);
+  }
+
+  getActiveClipIndices() {
+    const activeClipIndices = this.activeClips.map(clip => {
+      const index = this.model.animations.indexOf(clip);
+      if (index === -1) {
+        throw new Error(
+          `Error exporting model "${this.name}" with url "${this._canonicalUrl}". Animation could not be found.`
+        );
+      }
+      return index;
+    });
+    return activeClipIndices;
+  }
+
+  get activeClips() {
+    if (this.model && this.model.animations) {
+      return this.activeClipIndices
+        .filter(item => item.value >= 0)
+        .map(item => this.model.animations.find(({ name }) => name === item.label));
+    }
+    return null;
+  }
+
+  get clips() {
+    return this.model.animations;
   }
 
   updateAnimationState() {
-    const clip = this.activeClip;
-    const playingClip = this.activeClipAction && this.activeClipAction.getClip();
+    if (this.model.animations.length === 0) {
+      return;
+    }
 
-    if (clip !== playingClip) {
-      if (this.activeClipAction) {
-        this.activeClipAction.stop();
-      }
+    const activeClips = this.activeClips;
 
-      if (this.animationMixer && clip) {
-        this.activeClipAction = this.animationMixer.clipAction(clip);
-        this.activeClipAction.play();
-      } else {
-        this.activeClipAction = null;
-      }
+    if (!activeClips) return;
+
+    this.currentActions.length = 0;
+
+    for (let i = 0; i < activeClips.length; i++) {
+      const action = this.animationMixer.clipAction(activeClips[i], this.model);
+      action.enabled = true;
+      action.setLoop(LoopRepeat, Infinity).play();
+      this.currentActions.push(action);
     }
   }
 
@@ -94,10 +122,11 @@ export default class Model extends Object3D {
   }
 
   stopAnimation() {
-    if (this.activeClipAction) {
-      this.activeClipAction.stop();
-      this.activeClipAction = null;
+    for (let i = 0; i < this.currentActions.length; i++) {
+      this.currentActions[i].enabled = false;
+      this.currentActions[i].stop();
     }
+    this.currentActions.length = 0;
   }
 
   update(dt) {
@@ -205,7 +234,7 @@ export default class Model extends Object3D {
     }
 
     this._src = source._src;
-    this.activeClipIndex = source.activeClipIndex;
+    this.activeClipIndices = source.activeClipIndices;
 
     return this;
   }
