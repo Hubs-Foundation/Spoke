@@ -122,6 +122,10 @@ export default class KitPieceNodeEditor extends Component {
     this.props.editor.setPropertySelected("receiveShadow", receiveShadow);
   };
 
+  onChangeCombine = combine => {
+    this.props.editor.setPropertySelected("combine", combine);
+  };
+
   isAnimationPropertyDisabled() {
     const { multiEdit, editor, node } = this.props;
 
@@ -188,6 +192,9 @@ export default class KitPieceNodeEditor extends Component {
         </InputGroup>
         <InputGroup name="Receive Shadow">
           <BooleanInput value={node.receiveShadow} onChange={this.onChangeReceiveShadow} />
+        </InputGroup>
+        <InputGroup name="Combine">
+          <BooleanInput value={node.combine} onChange={this.onChangeCombine} />
         </InputGroup>
       </NodeEditor>
     );

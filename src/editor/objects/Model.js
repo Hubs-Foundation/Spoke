@@ -11,6 +11,7 @@ export default class Model extends Object3D {
     this._src = null;
     this._castShadow = false;
     this._receiveShadow = false;
+    this._combine = true;
     this.activeClipIndices = [];
     this.animationMixer = null;
     this.currentActions = [];
@@ -53,6 +54,7 @@ export default class Model extends Object3D {
 
     this.castShadow = this._castShadow;
     this.receiveShadow = this._receiveShadow;
+    this.combine = this._combine;
 
     return this;
   }
@@ -205,6 +207,20 @@ export default class Model extends Object3D {
             material.needsUpdate = true;
           }
         }
+      });
+    }
+  }
+
+  get combine() {
+    return this._combine;
+  }
+
+  set combine(value) {
+    this._combine = value;
+
+    if (this.model) {
+      this.model.traverse(child => {
+        child._combine = value;
       });
     }
   }

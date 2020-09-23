@@ -126,7 +126,7 @@ export default class MeshCombinationGroup {
     }
 
     await asyncTraverse(rootObject, async object => {
-      if (isStatic(object) && object.isMesh) {
+      if (isStatic(object) && object.isMesh && object._combine !== false) {
         let added = false;
 
         for (const group of meshCombinationGroups) {

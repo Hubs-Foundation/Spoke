@@ -48,6 +48,7 @@ export default class ModelNode extends EditorNodeMixin(Model) {
 
         node.collidable = !!json.components.find(c => c.name === "collidable");
         node.walkable = !!json.components.find(c => c.name === "walkable");
+        node.combine = !!json.components.find(c => c.name === "combine");
 
         const loopAnimationComponent = json.components.find(c => c.name === "loop-animation");
 
@@ -85,6 +86,7 @@ export default class ModelNode extends EditorNodeMixin(Model) {
     this._canonicalUrl = "";
     this.collidable = true;
     this.walkable = true;
+    this.combine = true;
     this.initialScale = 1;
     this.boundingBox = new Box3();
     this.boundingSphere = new Sphere();
@@ -332,6 +334,10 @@ export default class ModelNode extends EditorNodeMixin(Model) {
       components.walkable = {};
     }
 
+    if (this.combine) {
+      components.combine = {};
+    }
+
     return super.serialize(components);
   }
 
@@ -351,6 +357,7 @@ export default class ModelNode extends EditorNodeMixin(Model) {
     this.attribution = source.attribution;
     this.collidable = source.collidable;
     this.walkable = source.walkable;
+    this.combine = source.combine;
     return this;
   }
 

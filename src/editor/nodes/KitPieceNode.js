@@ -28,6 +28,7 @@ export default class KitPieceNode extends EditorNodeMixin(Model) {
 
         node.collidable = !!json.components.find(c => c.name === "collidable");
         node.walkable = !!json.components.find(c => c.name === "walkable");
+        node.combine = !!json.components.find(c => c.name === "combine");
 
         const loopAnimationComponent = json.components.find(c => c.name === "loop-animation");
 
@@ -65,6 +66,7 @@ export default class KitPieceNode extends EditorNodeMixin(Model) {
     this._canonicalUrl = "";
     this.collidable = true;
     this.walkable = true;
+    this.combine = true;
     this._kitId = null;
     this._pieceId = null;
     this.subPieces = [];
@@ -439,6 +441,10 @@ export default class KitPieceNode extends EditorNodeMixin(Model) {
       components.walkable = {};
     }
 
+    if (this.combine) {
+      components.combine = {};
+    }
+
     return super.serialize(components);
   }
 
@@ -451,6 +457,7 @@ export default class KitPieceNode extends EditorNodeMixin(Model) {
     this._pieceId = source._pieceId;
     this.collidable = source.collidable;
     this.walkable = source.walkable;
+    this.combine = source.combine;
 
     // TODO update the sub-piece copy method
     if (this.model) {
