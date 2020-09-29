@@ -76,6 +76,7 @@ export default class MediaFrameNode extends EditorNodeMixin(Object3D) {
     const previewMesh = new Mesh(new PlaneBufferGeometry(1, 1, 1, 1), previewMaterial);
     box.add(previewMesh);
 
+    previewMesh.layers.set(1);
     box.layers.set(1);
 
     this.helper = box;
