@@ -138,6 +138,33 @@ function migrateV3ToV4(json) {
   return json;
 }
 
+const combineComponents = ["gltf-model", "kit-piece"];
+
+function migrateV4ToV5(json) {
+  json.version = 5;
+
+  for (const entityId in json.entities) {
+    if (!Object.prototype.hasOwnProperty.call(json.entities, entityId)) continue;
+
+    const entity = json.entities[entityId];
+
+    if (!entity.components) {
+      continue;
+    }
+
+    const hasCombineComponent = entity.components.find(c => combineComponents.indexOf(c.name) !== -1);
+
+    if (hasCombineComponent) {
+      entity.components.push({
+        name: "combine",
+        props: {}
+      });
+    }
+  }
+
+  return json;
+}
+
 export const FogType = {
   Disabled: "disabled",
   Linear: "linear",
@@ -164,6 +191,10 @@ export default class SceneNode extends EditorNodeMixin(Scene) {
 
     if (json.version === 3) {
       json = migrateV3ToV4(json);
+    }
+
+    if (json.version === 4) {
+      json = migrateV4ToV5(json);
     }
 
     const { root, metadata, entities } = json;
@@ -403,7 +434,7 @@ export default class SceneNode extends EditorNodeMixin(Scene) {
 
   serialize() {
     const sceneJson = {
-      version: 4,
+      version: 5,
       root: this.uuid,
       metadata: JSON.parse(JSON.stringify(this.metadata)),
       entities: {
