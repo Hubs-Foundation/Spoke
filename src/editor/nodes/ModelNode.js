@@ -3,6 +3,7 @@ import Model from "../objects/Model";
 import EditorNodeMixin from "./EditorNodeMixin";
 import { setStaticMode, StaticModes } from "../StaticMode";
 import cloneObject3D from "../utils/cloneObject3D";
+import { getComponents } from "../gltf/moz-hubs-components";
 import { RethrownError } from "../utils/errors";
 import { getObjectPerfIssues, maybeAddLargeFileIssue } from "../utils/performance";
 
@@ -368,15 +369,22 @@ export default class ModelNode extends EditorNodeMixin(Model) {
       receive: this.receiveShadow
     });
 
-    this.addGLTFComponent(
-      "loop-animation",
-      {
-        activeClipIndices: this.getActiveClipIndices()
-      },
-      {
-        replace: true,
-        recursive: true
+    const activeClipIndices = this.getActiveClipIndices();
+
+    this.model.traverse(child => {
+      const components = getComponents(child);
+
+      // Remove existing loop-animation components in the model on export.
+      // Spoke has control over what animations are exported.
+      if (components && components["loop-animation"]) {
+        delete components["loop-animation"];
       }
-    );
+    });
+
+    if (activeClipIndices.length > 0) {
+      this.addGLTFComponent("loop-animation", {
+        activeClipIndices
+      });
+    }
   }
 }
