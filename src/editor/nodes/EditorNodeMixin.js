@@ -208,6 +208,13 @@ export default function EditorNodeMixin(Object3DClass) {
       }
     }
 
+    /**
+     * Adds a GLTF component
+     * @param {String} name The component name to be replaced
+     * @param {Object} props The component properties to be set
+     * @param {boolean} params Parameters object
+     * @param {{THREE.Object3D} params.node The target Object3D element
+     */
     addGLTFComponent(name, props) {
       if (!this.userData.gltfExtensions) {
         this.userData.gltfExtensions = {};

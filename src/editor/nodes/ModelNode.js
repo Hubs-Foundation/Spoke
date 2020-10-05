@@ -3,6 +3,7 @@ import Model from "../objects/Model";
 import EditorNodeMixin from "./EditorNodeMixin";
 import { setStaticMode, StaticModes } from "../StaticMode";
 import cloneObject3D from "../utils/cloneObject3D";
+import { getComponents } from "../gltf/moz-hubs-components";
 import { RethrownError } from "../utils/errors";
 import { getObjectPerfIssues, maybeAddLargeFileIssue } from "../utils/performance";
 
@@ -48,17 +49,23 @@ export default class ModelNode extends EditorNodeMixin(Model) {
 
         node.collidable = !!json.components.find(c => c.name === "collidable");
         node.walkable = !!json.components.find(c => c.name === "walkable");
+        node.combine = !!json.components.find(c => c.name === "combine");
 
         const loopAnimationComponent = json.components.find(c => c.name === "loop-animation");
 
         if (loopAnimationComponent && loopAnimationComponent.props) {
           const { clip, activeClipIndex } = loopAnimationComponent.props;
+          const { activeClipIndices } = loopAnimationComponent.props;
 
-          if (activeClipIndex !== undefined) {
-            node.activeClipIndex = loopAnimationComponent.props.activeClipIndex;
-          } else if (clip !== undefined && node.model && node.model.animations) {
-            // DEPRECATED: Old loop-animation component stored the clip name rather than the clip index
-            node.activeClipIndex = node.model.animations.findIndex(animation => animation.name === clip);
+          if (activeClipIndices !== undefined) {
+            node.activeClipIndices = activeClipIndices;
+          } else {
+            if (activeClipIndex !== undefined) {
+              node.activeClipIndices = activeClipIndex;
+            } else if (clip !== undefined && node.model && node.model.animations) {
+              // DEPRECATED: Old loop-animation component stored the clip name rather than the clip index
+              node.activeClipIndices = [node.model.animations.findIndex(animation => animation.name === clip)];
+            }
           }
         }
 
@@ -80,6 +87,7 @@ export default class ModelNode extends EditorNodeMixin(Model) {
     this._canonicalUrl = "";
     this.collidable = true;
     this.walkable = true;
+    this.combine = true;
     this.initialScale = 1;
     this.boundingBox = new Box3();
     this.boundingSphere = new Sphere();
@@ -315,11 +323,9 @@ export default class ModelNode extends EditorNodeMixin(Model) {
       }
     };
 
-    if (this.activeClipIndex !== -1) {
-      components["loop-animation"] = {
-        activeClipIndex: this.activeClipIndex
-      };
-    }
+    components["loop-animation"] = {
+      activeClipIndices: this.activeClipIndices
+    };
 
     if (this.collidable) {
       components.collidable = {};
@@ -327,6 +333,10 @@ export default class ModelNode extends EditorNodeMixin(Model) {
 
     if (this.walkable) {
       components.walkable = {};
+    }
+
+    if (this.combine) {
+      components.combine = {};
     }
 
     return super.serialize(components);
@@ -348,6 +358,7 @@ export default class ModelNode extends EditorNodeMixin(Model) {
     this.attribution = source.attribution;
     this.collidable = source.collidable;
     this.walkable = source.walkable;
+    this.combine = source.combine;
     return this;
   }
 
@@ -358,19 +369,22 @@ export default class ModelNode extends EditorNodeMixin(Model) {
       receive: this.receiveShadow
     });
 
-    // TODO: Support exporting more than one active clip.
-    if (this.activeClip) {
-      const activeClipIndex = ctx.animations.indexOf(this.activeClip);
+    const activeClipIndices = this.getActiveClipIndices().map(index => {
+      return ctx.animations.indexOf(this.model.animations[index]);
+    });
 
-      if (activeClipIndex === -1) {
-        throw new Error(
-          `Error exporting model "${this.name}" with url "${this._canonicalUrl}". Animation could not be found.`
-        );
-      } else {
-        this.addGLTFComponent("loop-animation", {
-          activeClipIndex: activeClipIndex
-        });
+    this.model.traverse(child => {
+      const components = getComponents(child);
+
+      if (components && components["loop-animation"]) {
+        delete components["loop-animation"];
       }
+    });
+
+    if (activeClipIndices.length > 0) {
+      this.addGLTFComponent("loop-animation", {
+        activeClipIndices
+      });
     }
   }
 }

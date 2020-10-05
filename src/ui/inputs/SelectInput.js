@@ -55,6 +55,18 @@ const staticStyle = {
   singleValue: (base, { isDisabled }) => ({
     ...base,
     color: isDisabled ? "grey" : "white"
+  }),
+  multiValue: (base, { isDisabled }) => ({
+    ...base,
+    backgroundColor: isDisabled ? "grey" : "#006EFF"
+  }),
+  multiValueLabel: (base, { isDisabled }) => ({
+    ...base,
+    color: isDisabled ? "black" : "white"
+  }),
+  multiValueRemove: (base, { isFocused }) => ({
+    ...base,
+    color: isFocused ? "grey" : "white"
   })
 };
 
@@ -69,16 +81,17 @@ export default function SelectInput({
   creatable,
   ...rest
 }) {
-  const selectedOption =
-    options.find(o => {
-      if (o === null) {
-        return o;
-      } else if (o.value && o.value.equals) {
-        return o.value.equals(value);
-      } else {
-        return o.value === value;
-      }
-    }) || null;
+  const selectedOption = Array.isArray(value)
+    ? value
+    : options.find(o => {
+        if (o === null) {
+          return o;
+        } else if (o.value && o.value.equals) {
+          return o.value.equals(value);
+        } else {
+          return o.value === value;
+        }
+      }) || null;
 
   const dynamicStyle = {
     ...staticStyle,
@@ -99,7 +112,17 @@ export default function SelectInput({
       components={{ IndicatorSeparator: () => null }}
       placeholder={placeholder}
       options={options}
-      onChange={option => onChange(option && option.value, option)}
+      onChange={option => {
+        if (Array.isArray(option)) {
+          onChange(
+            option.filter(item => {
+              return item.value >= 0;
+            })
+          );
+        } else {
+          onChange(option && option.value, option);
+        }
+      }}
       isDisabled={disabled}
     />
   );
