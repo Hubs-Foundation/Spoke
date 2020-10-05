@@ -34,18 +34,17 @@ export default class KitPieceNode extends EditorNodeMixin(Model) {
         const loopAnimationComponent = json.components.find(c => c.name === "loop-animation");
 
         if (loopAnimationComponent && loopAnimationComponent.props) {
-          const { clip, activeClipIndex } = loopAnimationComponent.props;
-          const { activeClipIndices } = loopAnimationComponent.props;
+          const { clip, activeClipIndices } = loopAnimationComponent.props;
 
-          if (activeClipIndices !== undefined) {
-            node.activeClipIndices = activeClipIndices;
-          } else {
-            if (activeClipIndex !== undefined) {
-              node.activeClipIndices = [activeClipIndex];
-            } else if (clip !== undefined && node.model && node.model.animations) {
-              // DEPRECATED: Old loop-animation component stored the clip name rather than the clip index
-              node.activeClipIndices = [node.model.animations.findIndex(animation => animation.name === clip)];
+          if (clip !== undefined && node.model && node.model.animations) {
+            // DEPRECATED: Old loop-animation component stored the clip name rather than the clip index
+            const clipIndex = node.model.animations.findIndex(animation => animation.name === clip);
+
+            if (clipIndex !== -1) {
+              node.activeClipIndices = [clipIndex];
             }
+          } else {
+            node.activeClipIndices = activeClipIndices;
           }
         }
 
@@ -430,9 +429,11 @@ export default class KitPieceNode extends EditorNodeMixin(Model) {
       }
     };
 
-    components["loop-animation"] = {
-      activeClipIndices: this.activeClipIndices
-    };
+    if (this.activeClipIndices.length > 0) {
+      components["loop-animation"] = {
+        activeClipIndices: this.activeClipIndices
+      };
+    }
 
     if (this.collidable) {
       components.collidable = {};

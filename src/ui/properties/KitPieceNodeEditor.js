@@ -102,8 +102,8 @@ export default class KitPieceNodeEditor extends Component {
     this.props.editor.loadMaterialSlotSelected(subPiece.id, materialSlot.id, materialId);
   };
 
-  onChangeAnimation = activeClipIndex => {
-    this.props.editor.setPropertySelected("activeClipIndex", activeClipIndex);
+  onChangeAnimation = activeClipIndices => {
+    this.props.editor.setPropertySelected("activeClipIndices", activeClipIndices || []);
   };
 
   onChangeCollidable = collidable => {
@@ -177,8 +177,11 @@ export default class KitPieceNodeEditor extends Component {
           <SelectInput
             disabled={this.isAnimationPropertyDisabled()}
             options={node.getClipOptions()}
-            value={node.activeClipIndex}
+            value={node.activeClipIndices}
             onChange={this.onChangeAnimation}
+            className="basic-multi-select"
+            classNamePrefix="select"
+            isMulti
           />
         </InputGroup>
         <InputGroup name="Collidable">
