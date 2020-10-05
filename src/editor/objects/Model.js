@@ -246,7 +246,7 @@ export default class Model extends Object3D {
     }
 
     this._src = source._src;
-    this.activeClipIndices = source.activeClipIndices || (source.activeClipIndex && [source.activeClipIndex]) || [];
+    this.activeClipIndices = source.activeClipIndices;
 
     return this;
   }

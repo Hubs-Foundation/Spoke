@@ -152,6 +152,17 @@ function migrateV4ToV5(json) {
       continue;
     }
 
+    const animationComponent = entity.components.find(c => c.name === "loop-animation");
+
+    if (animationComponent) {
+      // Prior to V5 animation clips were stored in activeClipIndex as an integer
+      const { activeClipIndex } = animationComponent.props;
+      delete animationComponent.props.activeClipIndex;
+      // In V5+ activeClipIndices stores an array of integers. It may be undefined if migrating from a legacy scene where the
+      // clip property stores the animation clip name. We can't migrate this here so we do it in ModelNode and KitPieceNode.
+      animationComponent.props.activeClipIndices = activeClipIndex !== undefined ? [activeClipIndex] : [];
+    }
+
     const hasCombineComponent = entity.components.find(c => combineComponents.indexOf(c.name) !== -1);
 
     if (hasCombineComponent) {
