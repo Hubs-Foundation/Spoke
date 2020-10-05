@@ -70,10 +70,6 @@ export default class Model extends Object3D {
     return clipOptions;
   }
 
-  get activeClipNames() {
-    return this.activeClipIndices.filter(item => item.value >= 0).map(item => item.label);
-  }
-
   getActiveClipIndices() {
     const activeClipIndices = this.activeClips.map(clip => {
       const index = this.model.animations.indexOf(clip);
@@ -93,7 +89,7 @@ export default class Model extends Object3D {
         .filter(item => item.value >= 0)
         .map(item => this.model.animations.find(({ name }) => name === item.label));
     }
-    return null;
+    return [];
   }
 
   get clips() {
@@ -250,7 +246,7 @@ export default class Model extends Object3D {
     }
 
     this._src = source._src;
-    this.activeClipIndices = source.activeClipIndices;
+    this.activeClipIndices = source.activeClipIndices || (source.activeClipIndex && [source.activeClipIndex]) || [];
 
     return this;
   }
