@@ -3,6 +3,7 @@ import Model from "../objects/Model";
 import { PropertyBinding } from "three";
 import { setStaticMode, StaticModes } from "../StaticMode";
 import cloneObject3D from "../utils/cloneObject3D";
+import { getComponents } from "../gltf/moz-hubs-components";
 import { isKitPieceNode, getComponent, getGLTFComponent, traverseGltfNode } from "../gltf/moz-hubs-components";
 import { RethrownError } from "../utils/errors";
 
@@ -505,23 +506,30 @@ export default class KitPieceNode extends EditorNodeMixin(Model) {
     return this;
   }
 
-  prepareForExport() {
+  prepareForExport(ctx) {
     super.prepareForExport();
     this.addGLTFComponent("shadow", {
       cast: this.castShadow,
       receive: this.receiveShadow
     });
 
-    this.addGLTFComponent(
-      "loop-animation",
-      {
-        activeClipIndices: this.getActiveClipIndices()
-      },
-      {
-        replace: true,
-        recursive: true
+    const activeClipIndices = this.getActiveClipIndices().map(index => {
+      return ctx.animations.indexOf(this.model.animations[index]);
+    });
+
+    this.model.traverse(child => {
+      const components = getComponents(child);
+
+      if (components && components["loop-animation"]) {
+        delete components["loop-animation"];
       }
-    );
+    });
+
+    if (activeClipIndices.length > 0) {
+      this.addGLTFComponent("loop-animation", {
+        activeClipIndices
+      });
+    }
 
     if (this.model) {
       // Clear kit-piece extension data
