@@ -41,7 +41,7 @@ export default class KitPieceNode extends EditorNodeMixin(Model) {
             node.activeClipIndices = activeClipIndices;
           } else {
             if (activeClipIndex !== undefined) {
-              node.activeClipIndices = activeClipIndex;
+              node.activeClipIndices = [activeClipIndex];
             } else if (clip !== undefined && node.model && node.model.animations) {
               // DEPRECATED: Old loop-animation component stored the clip name rather than the clip index
               node.activeClipIndices = [node.model.animations.findIndex(animation => animation.name === clip)];
