@@ -41,10 +41,10 @@ export default class KitPieceNode extends EditorNodeMixin(Model) {
             const clipIndex = node.model.animations.findIndex(animation => animation.name === clip);
 
             if (clipIndex !== -1) {
-              node.activeClipIndices = [clipIndex];
+              node.activeClipItems = node.getActiveItems([clipIndex]);
             }
           } else {
-            node.activeClipIndices = activeClipIndices;
+            node.activeClipItems = node.getActiveItems(activeClipIndices);
           }
         }
 
@@ -514,7 +514,7 @@ export default class KitPieceNode extends EditorNodeMixin(Model) {
       receive: this.receiveShadow
     });
 
-    const activeClipIndices = this.getActiveClipIndices().map(index => {
+    const clipIndices = this.activeClipIndices.map(index => {
       return ctx.animations.indexOf(this.model.animations[index]);
     });
 
@@ -526,9 +526,9 @@ export default class KitPieceNode extends EditorNodeMixin(Model) {
       }
     });
 
-    if (activeClipIndices.length > 0) {
+    if (clipIndices.length > 0) {
       this.addGLTFComponent("loop-animation", {
-        activeClipIndices
+        activeClipIndices: clipIndices
       });
     }
 
