@@ -287,11 +287,12 @@ export default class Project extends EventEmitter {
     if (resolveMediaCache.has(cacheKey)) return resolveMediaCache.get(cacheKey);
 
     const request = (async () => {
-      let contentType, canonicalUrl, accessibleUrl;
+      let contentType, canonicalUrl, accessibleUrl, meta;
 
       try {
         const result = await this.resolveUrl(absoluteUrl);
         canonicalUrl = result.origin;
+        meta = result.meta;
         accessibleUrl = proxiedUrlFor(canonicalUrl, index);
 
         contentType =
@@ -315,7 +316,7 @@ export default class Project extends EventEmitter {
         throw new RethrownError(`Error loading Sketchfab model "${accessibleUrl}"`, error);
       }
 
-      return { canonicalUrl, accessibleUrl, contentType };
+      return { canonicalUrl, accessibleUrl, contentType, meta };
     })();
 
     resolveMediaCache.set(cacheKey, request);

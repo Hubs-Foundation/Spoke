@@ -7,6 +7,7 @@ import BooleanInput from "../inputs/BooleanInput";
 import ModelInput from "../inputs/ModelInput";
 import { Cube } from "styled-icons/fa-solid/Cube";
 import { GLTFInfo } from "../inputs/GLTFInfo";
+import AttributionNodeEditor from "./AttributionNodeEditor";
 
 export default class ModelNodeEditor extends Component {
   static propTypes = {
@@ -92,6 +93,7 @@ export default class ModelNodeEditor extends Component {
           <BooleanInput value={node.combine} onChange={this.onChangeCombine} />
         </InputGroup>
         {node.model && <GLTFInfo node={node} />}
+        <AttributionNodeEditor name="Attribution" {...this.props} />
       </NodeEditor>
     );
   }

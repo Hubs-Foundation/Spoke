@@ -9,6 +9,7 @@ import { ImageProjection, ImageAlphaMode } from "../../editor/objects/Image";
 import ImageInput from "../inputs/ImageInput";
 import { Image } from "styled-icons/fa-solid/Image";
 import useSetPropertySelected from "./useSetPropertySelected";
+import AttributionNodeEditor from "./AttributionNodeEditor";
 
 const mapValue = v => ({ label: v, value: v });
 const imageProjectionOptions = Object.values(ImageProjection).map(mapValue);
@@ -56,6 +57,7 @@ export default function ImageNodeEditor(props) {
       <InputGroup name="Projection">
         <SelectInput options={imageProjectionOptions} value={node.projection} onChange={onChangeProjection} />
       </InputGroup>
+      <AttributionNodeEditor name="Attribution" {...props} />
     </NodeEditor>
   );
 }

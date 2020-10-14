@@ -133,8 +133,10 @@ export default class Video extends AudioSource {
 
     this.onResize();
 
-    this.audioSource = this.audioListener.context.createMediaElementSource(this.el);
-    this.audio.setNodeSource(this.audioSource);
+    if (this.audioSource === undefined) {
+      this.audioSource = this.audioListener.context.createMediaElementSource(this.el);
+      this.audio.setNodeSource(this.audioSource);
+    }
 
     if (this._texture.format === RGBAFormat) {
       this._mesh.material.transparent = true;

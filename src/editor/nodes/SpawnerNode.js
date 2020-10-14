@@ -71,6 +71,8 @@ export default class SpawnerNode extends EditorNodeMixin(Model) {
     this.stats = stats;
     this.gltfJson = json;
 
+    this.updateAttribution();
+
     return cloneObject3D(scene);
   }
 
@@ -98,7 +100,9 @@ export default class SpawnerNode extends EditorNodeMixin(Model) {
     this.showLoadingCube();
 
     try {
-      const { accessibleUrl, files } = await this.editor.api.resolveMedia(src);
+      const { accessibleUrl, files, meta } = await this.editor.api.resolveMedia(src);
+
+      this.meta = meta;
 
       if (this.model) {
         this.editor.renderer.removeBatchedObject(this.model);

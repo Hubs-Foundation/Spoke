@@ -102,7 +102,11 @@ export default class VideoNode extends EditorNodeMixin(Video) {
     }
 
     try {
-      const { accessibleUrl, contentType } = await this.editor.api.resolveMedia(src);
+      const { accessibleUrl, contentType, meta } = await this.editor.api.resolveMedia(src);
+
+      this.meta = meta;
+
+      this.updateAttribution();
 
       const isHls = isHLS(src, contentType);
 
