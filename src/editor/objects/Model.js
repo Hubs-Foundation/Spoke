@@ -79,7 +79,7 @@ export default class Model extends Object3D {
           return { label: clip.name, value: item };
         });
     }
-    return null;
+    return [];
   }
 
   get activeClipIndices() {
