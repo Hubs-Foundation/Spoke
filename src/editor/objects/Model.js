@@ -12,7 +12,7 @@ export default class Model extends Object3D {
     this._castShadow = false;
     this._receiveShadow = false;
     this._combine = true;
-    this.activeClipIndices = [];
+    this.activeClipItems = [];
     this.animationMixer = null;
     this.currentActions = [];
   }
@@ -70,7 +70,19 @@ export default class Model extends Object3D {
     return clipOptions;
   }
 
-  getActiveClipIndices() {
+  getActiveItems(indices) {
+    if (this.model && this.model.animations) {
+      return indices
+        .filter(item => item >= 0 && this.model.animations[item])
+        .map(item => {
+          const clip = this.model.animations[item];
+          return { label: clip.name, value: item };
+        });
+    }
+    return [];
+  }
+
+  get activeClipIndices() {
     const activeClipIndices = this.activeClips.map(clip => {
       const index = this.model.animations.indexOf(clip);
       if (index === -1) {
@@ -85,7 +97,7 @@ export default class Model extends Object3D {
 
   get activeClips() {
     if (this.model && this.model.animations) {
-      return this.activeClipIndices
+      return this.activeClipItems
         .filter(item => item.value >= 0)
         .map(item => this.model.animations.find(({ name }) => name === item.label));
     }
@@ -246,7 +258,7 @@ export default class Model extends Object3D {
     }
 
     this._src = source._src;
-    this.activeClipIndices = source.activeClipIndices;
+    this.activeClipItems = source.activeClipItems;
 
     return this;
   }

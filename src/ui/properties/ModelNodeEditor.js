@@ -23,8 +23,8 @@ export default class ModelNodeEditor extends Component {
     this.props.editor.setPropertiesSelected({ ...initialProps, src });
   };
 
-  onChangeAnimation = activeClipIndices => {
-    this.props.editor.setPropertySelected("activeClipIndices", activeClipIndices || []);
+  onChangeAnimation = activeClipItems => {
+    this.props.editor.setPropertySelected("activeClipItems", activeClipItems || []);
   };
 
   onChangeCollidable = collidable => {
@@ -69,7 +69,7 @@ export default class ModelNodeEditor extends Component {
           <SelectInput
             disabled={this.isAnimationPropertyDisabled()}
             options={node.getClipOptions()}
-            value={node.activeClipIndices}
+            value={node.activeClipItems}
             onChange={this.onChangeAnimation}
             className="basic-multi-select"
             classNamePrefix="select"
