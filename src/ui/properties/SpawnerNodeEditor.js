@@ -21,8 +21,8 @@ export default class SpawnerNodeEditor extends Component {
     this.props.editor.setPropertiesSelected({ ...initialProps, src });
   };
 
-  onChangeModifyGravityOnRelease = modifyGravityOnRelease => {
-    this.props.editor.setPropertySelected("modifyGravityOnRelease", modifyGravityOnRelease);
+  onChangeApplyGravity = applyGravity => {
+    this.props.editor.setPropertySelected("applyGravity", applyGravity);
   };
 
   render() {
@@ -33,8 +33,8 @@ export default class SpawnerNodeEditor extends Component {
         <InputGroup name="Model Url">
           <ModelInput value={node.src} onChange={this.onChangeSrc} />
         </InputGroup>
-        <InputGroup name="Spawned object is floaty">
-          <BooleanInput value={node.modifyGravityOnRelease} onChange={this.onChangeModifyGravityOnRelease} />
+        <InputGroup name="Apply gravity to spawned object">
+          <BooleanInput value={node.applyGravity} onChange={this.onChangeApplyGravity} />
         </InputGroup>
         {node.model && <GLTFInfo node={node} />}
       </NodeEditor>
