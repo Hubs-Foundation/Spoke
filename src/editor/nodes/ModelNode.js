@@ -42,7 +42,8 @@ export default class ModelNode extends EditorNodeMixin(Model) {
         // Legacy, might be a raw string left over before switch to JSON.
         if (attribution && typeof attribution === "string") {
           const [name, author] = attribution.split(" by ");
-          node.attribution = { name, author };
+          node.attribution = node.attribution || {};
+          Object.assign(node.attribution, author ? { author: author } : null, name ? { title: name } : null);
         } else {
           node.attribution = attribution;
         }
@@ -115,15 +116,7 @@ export default class ModelNode extends EditorNodeMixin(Model) {
 
     const clonedScene = cloneObject3D(scene);
 
-    const sketchfabExtras = json.asset && json.asset.extras;
-
-    if (sketchfabExtras) {
-      const name = sketchfabExtras.title;
-      const author = sketchfabExtras.author ? sketchfabExtras.author.replace(/ \(http.+\)/, "") : "";
-      const url = sketchfabExtras.source || this._canonicalUrl;
-      clonedScene.name = name;
-      this.attribution = { name, author, url };
-    }
+    this.updateAttribution();
 
     return clonedScene;
   }
@@ -152,7 +145,9 @@ export default class ModelNode extends EditorNodeMixin(Model) {
     this.showLoadingCube();
 
     try {
-      const { accessibleUrl, files } = await this.editor.api.resolveMedia(src);
+      const { accessibleUrl, files, meta } = await this.editor.api.resolveMedia(src);
+
+      this.meta = meta;
 
       if (this.model) {
         this.editor.renderer.removeBatchedObject(this.model);
@@ -257,6 +252,23 @@ export default class ModelNode extends EditorNodeMixin(Model) {
     this.hideLoadingCube();
 
     return this;
+  }
+
+  getAttribution() {
+    // Sketchfab models use an extra object inside the asset object
+    // Blender & Google Poly exporters add a copyright property to the asset object
+    const name = this.name.replace(/\.[^/.]+$/, "");
+    const assetDef = this.gltfJson.asset;
+    const attributions = {};
+    Object.assign(
+      attributions,
+      assetDef.extras && assetDef.extras.author
+        ? { author: assetDef.extras.author }
+        : (assetDef.copyright && { author: assetDef.copyright }) || null,
+      assetDef.extras && assetDef.extras.source ? { url: assetDef.extras.source } : null,
+      assetDef.extras && assetDef.extras.title ? { title: assetDef.extras.title } : this.name ? { title: name } : null
+    );
+    return attributions;
   }
 
   onAdd() {

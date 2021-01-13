@@ -387,5 +387,45 @@ export default function EditorNodeMixin(Object3DClass) {
     getRuntimeResourcesForStats() {
       // return { textures: [], materials: [], meshes: [], lights: [] };
     }
+
+    // Returns the node's attribution information by default just the name
+    // This should be overriding by nodes that can provide a more specific info (ie. models based on GLTF)
+    getAttribution() {
+      return {
+        title: this.name.replace(/\.[^/.]+$/, "")
+      };
+    }
+
+    // Updates attribution information. The meta information from the API is consider the most authoritative source
+    // That info then would be updated with node's source information if exists.
+    updateAttribution() {
+      const attribution = this.getAttribution();
+      this.attribution = this.attribution || {};
+      if (this.meta) {
+        Object.assign(
+          this.attribution,
+          this.meta.author ? { author: this.meta.author ? this.meta.author.replace(/ \(http.+\)/, "") : "" } : null,
+          this.meta.name ? { title: this.meta.name } : this.name ? { title: this.name.replace(/\.[^/.]+$/, "") } : null,
+          this.meta.author && this.meta.name && this._canonicalUrl ? { url: this._canonicalUrl } : null
+        );
+      }
+      // Replace the attribute keys only if they don't exist otherwise
+      // we give preference to the info coming from the API source over the GLTF asset
+      Object.keys(this.attribution).forEach(key => {
+        if (!this.attribution[key] || this.attribution[key] == null) {
+          this.attribution[key] = attribution[key];
+        }
+      });
+      // If the GLTF attribution info has keys that are missing form the API source, we add them
+      for (const key in attribution) {
+        if (!Object.prototype.hasOwnProperty.call(this.attribution, key)) {
+          if (key === "author") {
+            this.attribution[key] = attribution[key] ? attribution[key].replace(/ \(http.+\)/, "") : "";
+          } else {
+            this.attribution[key] = attribution[key];
+          }
+        }
+      }
+    }
   };
 }

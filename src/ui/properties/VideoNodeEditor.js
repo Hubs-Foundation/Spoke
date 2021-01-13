@@ -8,6 +8,7 @@ import VideoInput from "../inputs/VideoInput";
 import { Video } from "styled-icons/fa-solid/Video";
 import AudioSourceProperties from "./AudioSourceProperties";
 import useSetPropertySelected from "./useSetPropertySelected";
+import AttributionNodeEditor from "./AttributionNodeEditor";
 
 const videoProjectionOptions = Object.values(VideoProjection).map(v => ({ label: v, value: v }));
 
@@ -25,6 +26,7 @@ export default function VideoNodeEditor(props) {
         <SelectInput options={videoProjectionOptions} value={node.projection} onChange={onChangeProjection} />
       </InputGroup>
       <AudioSourceProperties {...props} />
+      <AttributionNodeEditor name="Attribution" {...props} />
     </NodeEditor>
   );
 }

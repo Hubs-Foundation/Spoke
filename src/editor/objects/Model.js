@@ -15,6 +15,7 @@ export default class Model extends Object3D {
     this.activeClipItems = [];
     this.animationMixer = null;
     this.currentActions = [];
+    this.meta = null;
   }
 
   get src() {

@@ -70,7 +70,12 @@ export default class ImageNode extends EditorNodeMixin(Image) {
     this.showLoadingCube();
 
     try {
-      const { accessibleUrl } = await this.editor.api.resolveMedia(src);
+      const { accessibleUrl, meta } = await this.editor.api.resolveMedia(src);
+
+      this.meta = meta;
+
+      this.updateAttribution();
+
       await super.load(accessibleUrl);
       this.issues = getObjectPerfIssues(this._mesh, false);
 
