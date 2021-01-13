@@ -404,7 +404,7 @@ export default function EditorNodeMixin(Object3DClass) {
       if (this.meta) {
         Object.assign(
           this.attribution,
-          this.meta.author ? { author: this.meta.author } : null,
+          this.meta.author ? { author: this.meta.author ? this.meta.author.replace(/ \(http.+\)/, "") : "" } : null,
           this.meta.name ? { title: this.meta.name } : this.name ? { title: this.name.replace(/\.[^/.]+$/, "") } : null,
           this.meta.author && this.meta.name && this._canonicalUrl ? { url: this._canonicalUrl } : null
         );
@@ -419,7 +419,11 @@ export default function EditorNodeMixin(Object3DClass) {
       // If the GLTF attribution info has keys that are missing form the API source, we add them
       for (const key in attribution) {
         if (!Object.prototype.hasOwnProperty.call(this.attribution, key)) {
-          this.attribution[key] = attribution[key];
+          if (key === "author") {
+            this.attribution[key] = attribution[key] ? attribution[key].replace(/ \(http.+\)/, "") : "";
+          } else {
+            this.attribution[key] = attribution[key];
+          }
         }
       }
     }

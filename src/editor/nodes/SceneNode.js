@@ -631,7 +631,7 @@ export default class SceneNode extends EditorNodeMixin(Scene) {
     const seenAttributions = new Set();
 
     this.traverse(obj => {
-      if (!(obj.isNode && obj.type === "Model")) return;
+      if (!(obj.isNode && obj.attribution)) return;
       const attribution = obj.attribution;
 
       if (!attribution) return;
