@@ -1,10 +1,10 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
 import InputGroup from "../inputs/InputGroup";
-import ModelInput from "../inputs/ModelInput";
+import StringInput from "../inputs/StringInput";
 import Collapsible from "../inputs/Collapsible";
 
-export default class NodeEditor extends Component {
+export default class AttributionNodeEditor extends Component {
   static propTypes = {
     name: PropTypes.string,
     description: PropTypes.string,
@@ -29,19 +29,19 @@ export default class NodeEditor extends Component {
     return (
       <Collapsible label={name}>
         <InputGroup name="Title">
-          <ModelInput
+          <StringInput
             value={(node.attribution && node.attribution.title) || ""}
             onChange={title => this.onChangeAttribution(node.attribution, "title", title)}
           />
         </InputGroup>
         <InputGroup name="Author">
-          <ModelInput
+          <StringInput
             value={(node.attribution && node.attribution.author) || ""}
             onChange={author => this.onChangeAttribution(node.attribution, "author", author)}
           />
         </InputGroup>
         <InputGroup name="Url">
-          <ModelInput
+          <StringInput
             value={(node.attribution && node.attribution.url) || ""}
             onChange={url => this.onChangeAttribution(node.attribution, "url", url)}
           />
