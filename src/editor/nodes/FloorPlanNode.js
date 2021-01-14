@@ -8,10 +8,16 @@ import mergeMeshGeometries from "../utils/mergeMeshGeometries";
 import RecastClient from "../recast/RecastClient";
 import HeightfieldClient from "../heightfield/HeightfieldClient";
 import SpawnPointNode from "../nodes/SpawnPointNode";
+import { RethrownError } from "../utils/errors";
 import * as recastWasmUrl from "recast-wasm/dist/recast.wasm";
 
 const recastClient = new RecastClient();
 const heightfieldClient = new HeightfieldClient();
+
+export const NavMeshMode = {
+  Automatic: "Automatic",
+  Custom: "Custom"
+};
 
 export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
   static nodeName = "Floor Plan";
@@ -24,7 +30,7 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
     return editor.scene.findNodeByType(FloorPlanNode) === null;
   }
 
-  static async deserialize(editor, json) {
+  static async deserialize(editor, json, loadAsync, onError) {
     const node = await super.deserialize(editor, json);
 
     const {
@@ -37,7 +43,9 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
       agentMaxSlope,
       regionMinSize,
       maxTriangles,
-      forceTrimesh
+      forceTrimesh,
+      navMeshMode,
+      navMeshSrc
     } = json.components.find(c => c.name === "floor-plan").props;
 
     node.autoCellSize = autoCellSize;
@@ -50,6 +58,20 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
     node.regionMinSize = regionMinSize;
     node.maxTriangles = maxTriangles || 1000;
     node.forceTrimesh = forceTrimesh || false;
+
+    node._navMeshMode = navMeshMode || NavMeshMode.Automatic;
+
+    if (navMeshSrc) {
+      if (navMeshMode === NavMeshMode.Custom) {
+        loadAsync(
+          (async () => {
+            await node.load(navMeshSrc, onError);
+          })()
+        );
+      } else {
+        node._navMeshSrc = navMeshSrc;
+      }
+    }
 
     return node;
   }
@@ -67,6 +89,87 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
     this.maxTriangles = 1000;
     this.forceTrimesh = false;
     this.heightfieldMesh = null;
+    this._navMeshMode = NavMeshMode.Automatic;
+    this._navMeshSrc = "";
+    this.navMesh = null;
+    this.trimesh = null;
+    this.heightfieldMesh = null;
+  }
+
+  get navMeshMode() {
+    return this._navMeshMode;
+  }
+
+  set navMeshMode(value) {
+    if (value === NavMeshMode.Custom) {
+      this.load(this._navMeshSrc).catch(console.error);
+    } else if (this.navMesh) {
+      this.remove(this.navMesh);
+      this.navMesh = null;
+    }
+
+    this._navMeshMode = value;
+  }
+
+  get navMeshSrc() {
+    return this._navMeshSrc;
+  }
+
+  set navMeshSrc(value) {
+    this.load(value).catch(console.error);
+  }
+
+  async load(src, onError) {
+    const nextSrc = src || "";
+
+    if (nextSrc === this._navMeshSrc && nextSrc !== "") {
+      return;
+    }
+
+    this._navMeshSrc = nextSrc;
+    this.issues = [];
+
+    if (this.navMesh) {
+      this.remove(this.navMesh);
+      this.navMesh = null;
+    }
+
+    try {
+      const { accessibleUrl } = await this.editor.api.resolveMedia(nextSrc);
+
+      const loader = this.editor.gltfCache.getLoader(accessibleUrl);
+
+      const { scene } = await loader.getDependency("gltf");
+
+      const mesh = scene.getObjectByProperty("type", "Mesh");
+
+      if (!mesh) {
+        throw new Error("No mesh available.");
+      }
+
+      const geometry = mesh.geometry.clone(); // Clone in case the user reuses a mesh for the navmesh.
+      mesh.updateMatrixWorld();
+      geometry.applyMatrix(mesh.matrixWorld);
+
+      this.setNavMesh(new Mesh(geometry, new MeshBasicMaterial({ color: 0x0000ff, transparent: true, opacity: 0.2 })));
+
+      if (this.navMesh) {
+        this.navMesh.visible = this.editor.selected.indexOf(this) !== -1;
+      }
+    } catch (error) {
+      const modelError = new RethrownError(`Error loading custom navmesh "${this._navMeshSrc}"`, error);
+
+      if (onError) {
+        onError(this, modelError);
+      }
+
+      console.error(modelError);
+
+      this.issues.push({ severity: "error", message: "Error loading custom navmesh." });
+    }
+
+    this.editor.emit("objectsChanged", [this]);
+    this.editor.emit("selectionChanged");
   }
 
   onSelect() {
@@ -98,7 +201,6 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
   }
 
   async generate(signal) {
-    window.scene = this;
     const collidableMeshes = [];
     const walkableMeshes = [];
 
@@ -124,56 +226,63 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
       }
     });
 
-    const boxColliderNodes = this.editor.scene.getNodesByType(BoxColliderNode);
+    if (this.navMeshMode === NavMeshMode.Automatic) {
+      const boxColliderNodes = this.editor.scene.getNodesByType(BoxColliderNode);
 
-    for (const node of boxColliderNodes) {
-      if (node.walkable) {
-        const helperMesh = node.helper.object;
-        const boxColliderMesh = new Mesh(helperMesh.geometry, new MeshBasicMaterial());
-        boxColliderMesh.applyMatrix(node.matrixWorld);
-        boxColliderMesh.updateMatrixWorld();
-        walkableMeshes.push(boxColliderMesh);
+      for (const node of boxColliderNodes) {
+        if (node.walkable) {
+          const helperMesh = node.helper.object;
+          const boxColliderMesh = new Mesh(helperMesh.geometry, new MeshBasicMaterial());
+          boxColliderMesh.applyMatrix(node.matrixWorld);
+          boxColliderMesh.updateMatrixWorld();
+          walkableMeshes.push(boxColliderMesh);
+        }
       }
-    }
 
-    const walkableGeometry = mergeMeshGeometries(walkableMeshes);
+      const walkableGeometry = mergeMeshGeometries(walkableMeshes);
 
-    const box = new Box3().setFromBufferAttribute(walkableGeometry.attributes.position);
-    const size = new Vector3();
-    box.getSize(size);
-    if (Math.max(size.x, size.y, size.z) > 2000) {
-      throw new Error(
-        `Scene is too large (${size.x.toFixed(3)} x ${size.y.toFixed(3)} x ${size.z.toFixed(3)}) ` +
-          `to generate a floor plan.\n` +
-          `You can un-check the "walkable" checkbox on models to exclude them from the floor plan.`
+      const box = new Box3().setFromBufferAttribute(walkableGeometry.attributes.position);
+      const size = new Vector3();
+      box.getSize(size);
+      if (Math.max(size.x, size.y, size.z) > 2000) {
+        throw new Error(
+          `Scene is too large (${size.x.toFixed(3)} x ${size.y.toFixed(3)} x ${size.z.toFixed(3)}) ` +
+            `to generate a floor plan.\n` +
+            `You can un-check the "walkable" checkbox on models to exclude them from the floor plan.`
+        );
+      }
+
+      const area = size.x * size.z;
+
+      // Tuned to produce cell sizes from ~0.5 to ~1.5 for areas from ~200 to ~350,000.
+      const cellSize = this.autoCellSize ? Math.pow(area, 1 / 3) / 50 : this.cellSize;
+
+      const navGeometry = await recastClient.buildNavMesh(
+        walkableGeometry,
+        {
+          cellSize,
+          cellHeight: this.cellHeight,
+          agentHeight: this.agentHeight,
+          agentRadius: this.agentRadius,
+          agentMaxClimb: this.agentMaxClimb,
+          agentMaxSlope: this.agentMaxSlope,
+          regionMinSize: this.regionMinSize,
+          wasmUrl: new URL(recastWasmUrl, configs.BASE_ASSETS_PATH || window.location).href
+        },
+        signal
       );
+
+      const navMesh = new Mesh(
+        navGeometry,
+        new MeshBasicMaterial({ color: 0x0000ff, transparent: true, opacity: 0.2 })
+      );
+
+      this.setNavMesh(navMesh);
     }
 
-    const area = size.x * size.z;
-
-    // Tuned to produce cell sizes from ~0.5 to ~1.5 for areas from ~200 to ~350,000.
-    const cellSize = this.autoCellSize ? Math.pow(area, 1 / 3) / 50 : this.cellSize;
-
-    const navGeometry = await recastClient.buildNavMesh(
-      walkableGeometry,
-      {
-        cellSize,
-        cellHeight: this.cellHeight,
-        agentHeight: this.agentHeight,
-        agentRadius: this.agentRadius,
-        agentMaxClimb: this.agentMaxClimb,
-        agentMaxSlope: this.agentMaxSlope,
-        regionMinSize: this.regionMinSize,
-        wasmUrl: new URL(recastWasmUrl, configs.BASE_ASSETS_PATH || window.location).href
-      },
-      signal
-    );
-
-    const navMesh = new Mesh(navGeometry, new MeshBasicMaterial({ color: 0x0000ff, transparent: true, opacity: 0.2 }));
-
-    this.setNavMesh(navMesh);
-
-    navMesh.visible = this.editor.selected.indexOf(this) !== -1;
+    if (this.navMesh) {
+      this.navMesh.visible = this.editor.selected.indexOf(this) !== -1;
+    }
 
     const collidableGeometry = mergeMeshGeometries(collidableMeshes);
 
@@ -247,6 +356,7 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
   copy(source, recursive = true) {
     if (recursive) {
       this.remove(this.heightfieldMesh);
+      this.remove(this.navMesh);
     }
 
     super.copy(source, recursive);
@@ -256,6 +366,12 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
 
       if (heightfieldMeshIndex !== -1) {
         this.heightfieldMesh = this.children[heightfieldMeshIndex];
+      }
+
+      const navMeshIndex = source.children.findIndex(child => child === source.navMesh);
+
+      if (navMeshIndex !== -1) {
+        this.navMesh = this.children[navMeshIndex];
       }
     }
 
@@ -269,6 +385,9 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
     this.regionMinSize = source.regionMinSize;
     this.maxTriangles = source.maxTriangles;
     this.forceTrimesh = source.forceTrimesh;
+    this._navMeshMode = source._navMeshMode;
+    this._navMeshSrc = source._navMeshSrc;
+
     return this;
   }
 
@@ -284,7 +403,9 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
         agentMaxSlope: this.agentMaxSlope,
         regionMinSize: this.regionMinSize,
         maxTriangles: this.maxTriangles,
-        forceTrimesh: this.forceTrimesh
+        forceTrimesh: this.forceTrimesh,
+        navMeshMode: this.navMeshMode,
+        navMeshSrc: this.navMeshSrc
       }
     });
   }
@@ -294,6 +415,10 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
 
     if (this.heightfieldMesh) {
       this.remove(this.heightfieldMesh);
+    }
+
+    if (!this.navMesh && this.navMeshMode === NavMeshMode.Custom) {
+      throw new Error("The FloorPlan Node is set to use a custom navigation mesh but none was provided.");
     }
 
     const navMeshMaterial = this.navMesh.material;
