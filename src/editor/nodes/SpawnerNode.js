@@ -32,7 +32,9 @@ export default class SpawnerNode extends EditorNodeMixin(Model) {
   static async deserialize(editor, json, loadAsync, onError) {
     const node = await super.deserialize(editor, json);
 
-    const { src } = json.components.find(c => c.name === "spawner").props;
+    const { src, applyGravity } = json.components.find(c => c.name === "spawner").props;
+
+    node.applyGravity = !!applyGravity;
 
     loadAsync(node.load(src, onError));
 
@@ -47,6 +49,7 @@ export default class SpawnerNode extends EditorNodeMixin(Model) {
     this.boundingSphere = new Sphere();
     this.stats = defaultStats;
     this.gltfJson = null;
+    this.applyGravity = false;
   }
 
   // Overrides Model's src property and stores the original (non-resolved) url.
@@ -215,7 +218,8 @@ export default class SpawnerNode extends EditorNodeMixin(Model) {
   serialize() {
     return super.serialize({
       spawner: {
-        src: this._canonicalUrl
+        src: this._canonicalUrl,
+        applyGravity: this.applyGravity
       }
     });
   }
@@ -232,13 +236,18 @@ export default class SpawnerNode extends EditorNodeMixin(Model) {
       this._canonicalUrl = source._canonicalUrl;
     }
 
+    this.applyGravity = source.applyGravity;
+
     return this;
   }
 
   prepareForExport() {
     super.prepareForExport();
     this.addGLTFComponent("spawner", {
-      src: this._canonicalUrl
+      src: this._canonicalUrl,
+      mediaOptions: {
+        applyGravity: this.applyGravity
+      }
     });
     this.replaceObject();
   }

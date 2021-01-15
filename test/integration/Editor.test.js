@@ -141,7 +141,7 @@ test("Editor should load V1TestScene", withPage(`/projects/new?template=${v1Test
   t.is(shadow2Props.cast, false);
   t.is(shadow2Props.receive, false);
   const loopAnimation2Props = model2Entity.components.find(c => c.name === "loop-animation").props;
-  t.is(loopAnimation2Props.activeClipIndex, 0);
+  t.deepEqual(loopAnimation2Props.activeClipIndices, [0]);
 
   const groupNode1Entity = entities.find(e => e.name === "Group");
   const groupNode1EntityIndex = entities.findIndex(e => e.name === "Group");
@@ -256,6 +256,14 @@ test("Editor should load V3TestScene", withPage(`/projects/new?template=${v3Test
 const v4TestSceneUrl = getFixtureUrl("V4TestScene.spoke");
 
 test("Editor should load V4TestScene", withPage(`/projects/new?template=${v4TestSceneUrl}`), async (t, page) => {
+  const sceneHandle = await waitForProjectLoaded(page);
+  const serializedScene = await getSerializedScene(page, sceneHandle);
+  t.snapshot(serializedScene);
+});
+
+const v5TestSceneUrl = getFixtureUrl("V5TestScene.spoke");
+
+test("Editor should load V5TestScene", withPage(`/projects/new?template=${v5TestSceneUrl}`), async (t, page) => {
   const sceneHandle = await waitForProjectLoaded(page);
   const serializedScene = await getSerializedScene(page, sceneHandle);
   t.snapshot(serializedScene);

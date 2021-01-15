@@ -3,6 +3,7 @@ import PropTypes from "prop-types";
 import NodeEditor from "./NodeEditor";
 import InputGroup from "../inputs/InputGroup";
 import ModelInput from "../inputs/ModelInput";
+import BooleanInput from "../inputs/BooleanInput";
 import { Magic } from "styled-icons/fa-solid/Magic";
 import { GLTFInfo } from "../inputs/GLTFInfo";
 
@@ -20,6 +21,10 @@ export default class SpawnerNodeEditor extends Component {
     this.props.editor.setPropertiesSelected({ ...initialProps, src });
   };
 
+  onChangeApplyGravity = applyGravity => {
+    this.props.editor.setPropertySelected("applyGravity", applyGravity);
+  };
+
   render() {
     const node = this.props.node;
 
@@ -27,6 +32,9 @@ export default class SpawnerNodeEditor extends Component {
       <NodeEditor {...this.props} description={SpawnerNodeEditor.description}>
         <InputGroup name="Model Url">
           <ModelInput value={node.src} onChange={this.onChangeSrc} />
+        </InputGroup>
+        <InputGroup name="Apply gravity to spawned object">
+          <BooleanInput value={node.applyGravity} onChange={this.onChangeApplyGravity} />
         </InputGroup>
         {node.model && <GLTFInfo node={node} />}
       </NodeEditor>

@@ -138,6 +138,44 @@ function migrateV3ToV4(json) {
   return json;
 }
 
+const combineComponents = ["gltf-model", "kit-piece"];
+
+function migrateV4ToV5(json) {
+  json.version = 5;
+
+  for (const entityId in json.entities) {
+    if (!Object.prototype.hasOwnProperty.call(json.entities, entityId)) continue;
+
+    const entity = json.entities[entityId];
+
+    if (!entity.components) {
+      continue;
+    }
+
+    const animationComponent = entity.components.find(c => c.name === "loop-animation");
+
+    if (animationComponent) {
+      // Prior to V5 animation clips were stored in activeClipIndex as an integer
+      const { activeClipIndex } = animationComponent.props;
+      delete animationComponent.props.activeClipIndex;
+      // In V5+ activeClipIndices stores an array of integers. It may be undefined if migrating from a legacy scene where the
+      // clip property stores the animation clip name. We can't migrate this here so we do it in ModelNode and KitPieceNode.
+      animationComponent.props.activeClipIndices = activeClipIndex !== undefined ? [activeClipIndex] : [];
+    }
+
+    const hasCombineComponent = entity.components.find(c => combineComponents.indexOf(c.name) !== -1);
+
+    if (hasCombineComponent) {
+      entity.components.push({
+        name: "combine",
+        props: {}
+      });
+    }
+  }
+
+  return json;
+}
+
 export const FogType = {
   Disabled: "disabled",
   Linear: "linear",
@@ -164,6 +202,10 @@ export default class SceneNode extends EditorNodeMixin(Scene) {
 
     if (json.version === 3) {
       json = migrateV3ToV4(json);
+    }
+
+    if (json.version === 4) {
+      json = migrateV4ToV5(json);
     }
 
     const { root, metadata, entities } = json;
@@ -403,7 +445,7 @@ export default class SceneNode extends EditorNodeMixin(Scene) {
 
   serialize() {
     const sceneJson = {
-      version: 4,
+      version: 5,
       root: this.uuid,
       metadata: JSON.parse(JSON.stringify(this.metadata)),
       entities: {
@@ -577,11 +619,7 @@ export default class SceneNode extends EditorNodeMixin(Scene) {
 
     this.traverse(child => {
       if (child.isNode && child.type === "Model") {
-        const activeClip = child.activeClip;
-
-        if (activeClip) {
-          animations.push(child.activeClip);
-        }
+        animations.push(...child.clips);
       }
     });
 
