@@ -528,7 +528,11 @@ export default class SceneNode extends EditorNodeMixin(Scene) {
     });
 
     for (const node of nodeList) {
-      node.prepareForExport(ctx);
+      if (node.enabled) {
+        node.prepareForExport(ctx);
+      } else {
+        node.parent.remove(node);
+      }
     }
 
     this.addGLTFComponent("background", {
