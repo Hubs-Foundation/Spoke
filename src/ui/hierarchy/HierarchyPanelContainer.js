@@ -173,7 +173,7 @@ function TreeNode({
   style
 }) {
   const node = nodes[index];
-  const { isLeaf, object, depth, selected, active, iconComponent, isCollapsed, childIndex, lastChild } = node;
+  const { isLeaf, object, depth, selected, active, iconComponent, isExpanded, childIndex, lastChild } = node;
 
   const editor = useContext(EditorContext);
 
@@ -432,8 +432,8 @@ function TreeNode({
             {isLeaf ? (
               <TreeNodeLeafSpacer />
             ) : (
-              <TreeNodeToggle collapsed={isCollapsed} onClick={onClickToggle}>
-                {isCollapsed ? <CaretRight size={12} /> : <CaretDown size={12} />}
+              <TreeNodeToggle onClick={onClickToggle}>
+                {isExpanded ? <CaretDown size={12} /> : <CaretRight size={12} />}
               </TreeNodeToggle>
             )}
 
@@ -485,7 +485,7 @@ TreeNode.propTypes = {
         selected: PropTypes.bool,
         active: PropTypes.bool,
         iconComponent: PropTypes.object,
-        isCollapsed: PropTypes.bool,
+        isExpanded: PropTypes.bool,
         childIndex: PropTypes.number.isRequired,
         lastChild: PropTypes.bool.isRequired
       })
@@ -506,7 +506,7 @@ TreeNode.propTypes = {
 
 const MemoTreeNode = memo(TreeNode, areEqual);
 
-function* treeWalker(editor, collapsedNodes) {
+function* treeWalker(editor, expandedNodes) {
   const stack = [];
 
   stack.push({
@@ -522,12 +522,12 @@ function* treeWalker(editor, collapsedNodes) {
     const NodeEditor = editor.getNodeEditor(object) || DefaultNodeEditor;
     const iconComponent = NodeEditor.iconComponent || DefaultNodeEditor.iconComponent;
 
-    const isCollapsed = collapsedNodes[object.id];
+    const isExpanded = expandedNodes[object.id] || object === editor.scene;
 
     yield {
       id: object.id,
       isLeaf: object.children.filter(c => c.isNode).length === 0,
-      isCollapsed,
+      isExpanded,
       depth,
       object,
       iconComponent,
@@ -537,7 +537,7 @@ function* treeWalker(editor, collapsedNodes) {
       lastChild
     };
 
-    if (object.children.length !== 0 && !isCollapsed) {
+    if (object.children.length !== 0 && isExpanded) {
       for (let i = object.children.length - 1; i >= 0; i--) {
         const child = object.children[i];
 
@@ -558,64 +558,64 @@ export default function HierarchyPanel() {
   const editor = useContext(EditorContext);
   const onUpload = useUpload(uploadOptions);
   const [renamingNode, setRenamingNode] = useState(null);
-  const [collapsedNodes, setCollapsedNodes] = useState({});
+  const [expandedNodes, setExpandedNodes] = useState({});
   const [nodes, setNodes] = useState([]);
   const updateNodeHierarchy = useCallback(() => {
-    setNodes(Array.from(treeWalker(editor, collapsedNodes)));
-  }, [editor, collapsedNodes]);
+    setNodes(Array.from(treeWalker(editor, expandedNodes)));
+  }, [editor, expandedNodes]);
 
   const expandNode = useCallback(
     node => {
-      delete collapsedNodes[node.id];
-      setCollapsedNodes({ ...collapsedNodes });
+      setExpandedNodes({ ...expandedNodes, [node.id]: true });
     },
-    [collapsedNodes]
+    [expandedNodes]
   );
 
   const collapseNode = useCallback(
     node => {
-      setCollapsedNodes({ ...collapsedNodes, [node.id]: true });
+      delete expandedNodes[node.id];
+      setExpandedNodes({ ...expandedNodes });
     },
-    [setCollapsedNodes, collapsedNodes]
+    [setExpandedNodes, expandedNodes]
   );
 
   const expandChildren = useCallback(
     node => {
       node.object.traverse(child => {
         if (child.isNode) {
-          delete collapsedNodes[child.id];
+          expandedNodes[child.id] = true;
         }
       });
-      setCollapsedNodes({ ...collapsedNodes });
+      setExpandedNodes({ ...expandedNodes });
     },
-    [setCollapsedNodes, collapsedNodes]
+    [setExpandedNodes, expandedNodes]
   );
 
   const collapseChildren = useCallback(
     node => {
       node.object.traverse(child => {
         if (child.isNode) {
-          collapsedNodes[child.id] = true;
+          delete expandedNodes[child.id];
         }
       });
-      setCollapsedNodes({ ...collapsedNodes });
+      setExpandedNodes({ ...expandedNodes });
     },
-    [setCollapsedNodes, collapsedNodes]
+    [setExpandedNodes, expandedNodes]
   );
 
   const onExpandAllNodes = useCallback(() => {
-    setCollapsedNodes({});
-  }, [setCollapsedNodes]);
-
-  const onCollapseAllNodes = useCallback(() => {
-    const newCollapsedNodes = {};
+    const newExpandedNodes = {};
     editor.scene.traverse(child => {
       if (child.isNode) {
-        newCollapsedNodes[child.id] = true;
+        newExpandedNodes[child.id] = true;
       }
     });
-    setCollapsedNodes(newCollapsedNodes);
-  }, [editor, setCollapsedNodes]);
+    setExpandedNodes(newExpandedNodes);
+  }, [editor, setExpandedNodes]);
+
+  const onCollapseAllNodes = useCallback(() => {
+    setExpandedNodes({});
+  }, [setExpandedNodes]);
 
   const onObjectChanged = useCallback(
     (objects, propertyName) => {
@@ -664,13 +664,13 @@ export default function HierarchyPanel() {
 
   const onToggle = useCallback(
     (_e, node) => {
-      if (collapsedNodes[node.id]) {
-        expandNode(node);
-      } else {
+      if (expandedNodes[node.id]) {
         collapseNode(node);
+      } else {
+        expandNode(node);
       }
     },
-    [collapsedNodes, expandNode, collapseNode]
+    [expandedNodes, expandNode, collapseNode]
   );
 
   const onKeyDown = useCallback(
@@ -838,7 +838,7 @@ export default function HierarchyPanel() {
 
   useEffect(() => {
     updateNodeHierarchy();
-  }, [collapsedNodes, updateNodeHierarchy]);
+  }, [expandedNodes, updateNodeHierarchy]);
 
   return (
     <Panel id="hierarchy-panel" title="Hierarchy" icon={ProjectDiagram}>

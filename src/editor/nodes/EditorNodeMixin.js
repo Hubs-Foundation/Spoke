@@ -77,7 +77,6 @@ export default function EditorNodeMixin(Object3DClass) {
       this.nodeName = this.constructor.nodeName;
       this.name = this.constructor.nodeName;
       this.isNode = true;
-      this.isCollapsed = false;
       this.disableTransform = this.constructor.disableTransform;
       this.useMultiplePlacementMode = this.constructor.useMultiplePlacementMode;
       this.ignoreRaycast = this.constructor.ignoreRaycast;
