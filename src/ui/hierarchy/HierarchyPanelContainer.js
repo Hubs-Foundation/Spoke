@@ -132,6 +132,7 @@ const TreeNodeLabel = styled.div`
   color: ${props => (props.isOver && props.canDrop ? props.theme.text : "inherit")};
   border-radius: 4px;
   padding: 0 2px;
+  text-decoration: ${props => (props.enabled ? "none" : "line-through")};
 `;
 
 function borderStyle({ isOver, canDrop, position }) {
@@ -173,7 +174,7 @@ function TreeNode({
   style
 }) {
   const node = nodes[index];
-  const { isLeaf, object, depth, selected, active, iconComponent, isExpanded, childIndex, lastChild } = node;
+  const { isLeaf, object, depth, selected, active, iconComponent, isExpanded, childIndex, lastChild, enabled } = node;
 
   const editor = useContext(EditorContext);
 
@@ -452,7 +453,7 @@ function TreeNode({
                     />
                   </TreeNodeRenameInputContainer>
                 ) : (
-                  <TreeNodeLabel canDrop={canDropOn} isOver={isOverOn}>
+                  <TreeNodeLabel enabled={enabled} canDrop={canDropOn} isOver={isOverOn}>
                     {object.name}
                   </TreeNodeLabel>
                 )}
@@ -487,7 +488,8 @@ TreeNode.propTypes = {
         iconComponent: PropTypes.object,
         isExpanded: PropTypes.bool,
         childIndex: PropTypes.number.isRequired,
-        lastChild: PropTypes.bool.isRequired
+        lastChild: PropTypes.bool.isRequired,
+        enabled: PropTypes.bool.isRequired
       })
     ),
     renamingNode: PropTypes.object,
@@ -513,16 +515,18 @@ function* treeWalker(editor, expandedNodes) {
     depth: 0,
     object: editor.scene,
     childIndex: 0,
-    lastChild: true
+    lastChild: true,
+    parentEnabled: true
   });
 
   while (stack.length !== 0) {
-    const { depth, object, childIndex, lastChild } = stack.pop();
+    const { depth, object, childIndex, lastChild, parentEnabled } = stack.pop();
 
     const NodeEditor = editor.getNodeEditor(object) || DefaultNodeEditor;
     const iconComponent = NodeEditor.iconComponent || DefaultNodeEditor.iconComponent;
 
     const isExpanded = expandedNodes[object.id] || object === editor.scene;
+    const enabled = parentEnabled && object.enabled;
 
     yield {
       id: object.id,
@@ -533,6 +537,7 @@ function* treeWalker(editor, expandedNodes) {
       iconComponent,
       selected: editor.selected.indexOf(object) !== -1,
       active: editor.selected.length > 0 && object === editor.selected[editor.selected.length - 1],
+      enabled,
       childIndex,
       lastChild
     };
@@ -546,7 +551,8 @@ function* treeWalker(editor, expandedNodes) {
             depth: depth + 1,
             object: child,
             childIndex: i,
-            lastChild: i === 0
+            lastChild: i === 0,
+            parentEnabled: enabled
           });
         }
       }
@@ -619,7 +625,7 @@ export default function HierarchyPanel() {
 
   const onObjectChanged = useCallback(
     (objects, propertyName) => {
-      if (propertyName === "name" || !propertyName) {
+      if (propertyName === "name" || propertyName === "enabled" || !propertyName) {
         updateNodeHierarchy();
       }
     },
