@@ -7,6 +7,7 @@ import GroupNode from "./GroupNode";
 import getNodeWithUUID from "../utils/getNodeWithUUID";
 import serializeColor from "../utils/serializeColor";
 import { DistanceModelType } from "../objects/AudioSource";
+import traverseFilteredSubtrees from "../utils/traverseFilteredSubtrees";
 
 // Migrate v1 spoke scene to v2
 function migrateV1ToV2(json) {
@@ -621,8 +622,16 @@ export default class SceneNode extends EditorNodeMixin(Scene) {
   getAnimationClips() {
     const animations = [];
 
-    this.traverse(child => {
-      if (child.isNode && child.type === "Model") {
+    traverseFilteredSubtrees(this, child => {
+      if (!child.isNode) {
+        return;
+      }
+
+      if (!child.enabled) {
+        return false;
+      }
+
+      if (child.type === "Model") {
         animations.push(...child.clips);
       }
     });
@@ -634,18 +643,23 @@ export default class SceneNode extends EditorNodeMixin(Scene) {
     const contentAttributions = [];
     const seenAttributions = new Set();
 
-    this.traverse(obj => {
-      if (!(obj.isNode && obj.attribution)) return;
+    traverseFilteredSubtrees(this, obj => {
+      if (!obj.isNode) {
+        return;
+      }
+
+      if (!obj.enabled) {
+        return false;
+      }
+
       const attribution = obj.attribution;
 
       if (!attribution) return;
 
-      if (attribution) {
-        const attributionKey = attribution.url || `${attribution.title}_${attribution.author}`;
-        if (seenAttributions.has(attributionKey)) return;
-        seenAttributions.add(attributionKey);
-        contentAttributions.push(attribution);
-      }
+      const attributionKey = attribution.url || `${attribution.title}_${attribution.author}`;
+      if (seenAttributions.has(attributionKey)) return;
+      seenAttributions.add(attributionKey);
+      contentAttributions.push(attribution);
     });
 
     return contentAttributions;
