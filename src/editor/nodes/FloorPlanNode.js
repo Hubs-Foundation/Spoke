@@ -9,6 +9,7 @@ import RecastClient from "../recast/RecastClient";
 import HeightfieldClient from "../heightfield/HeightfieldClient";
 import SpawnPointNode from "../nodes/SpawnPointNode";
 import * as recastWasmUrl from "recast-wasm/dist/recast.wasm";
+import traverseFilteredSubtrees from "../utils/traverseFilteredSubtrees";
 
 const recastClient = new RecastClient();
 const heightfieldClient = new HeightfieldClient();
@@ -102,13 +103,17 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
     const collidableMeshes = [];
     const walkableMeshes = [];
 
-    const groundPlaneNode = this.editor.scene.findNodeByType(GroundPlaneNode);
+    const groundPlaneNode = this.editor.scene.findNodeByType(GroundPlaneNode, false);
 
     if (groundPlaneNode && groundPlaneNode.walkable) {
       walkableMeshes.push(groundPlaneNode.walkableMesh);
     }
 
-    this.editor.scene.traverse(object => {
+    traverseFilteredSubtrees(this.editor.scene, object => {
+      if (!object.enabled) {
+        return false;
+      }
+
       if (object.isNode && object.model && (object.collidable || object.walkable)) {
         object.model.traverse(child => {
           if (child.isMesh) {
@@ -124,7 +129,7 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
       }
     });
 
-    const boxColliderNodes = this.editor.scene.getNodesByType(BoxColliderNode);
+    const boxColliderNodes = this.editor.scene.getNodesByType(BoxColliderNode, false);
 
     for (const node of boxColliderNodes) {
       if (node.walkable) {
@@ -179,7 +184,7 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
 
     let heightfield = null;
     if (!this.forceTrimesh) {
-      const spawnPoints = this.editor.scene.getNodesByType(SpawnPointNode);
+      const spawnPoints = this.editor.scene.getNodesByType(SpawnPointNode, false);
 
       let minY = Number.POSITIVE_INFINITY;
       for (let j = 0; j < spawnPoints.length; j++) {
