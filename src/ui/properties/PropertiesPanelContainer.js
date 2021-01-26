@@ -98,7 +98,11 @@ class PropertiesPanelContainer extends Component {
   };
 
   onChangeVisible = value => {
-    this.props.editor.setPropertySelected("visible", value);
+    this.props.editor.setPropertySelected("_visible", value);
+  };
+
+  onChangeEnabled = value => {
+    this.props.editor.setPropertySelected("enabled", value);
   };
 
   render() {
@@ -140,9 +144,14 @@ class PropertiesPanelContainer extends Component {
             <NameInputGroupContainer>
               <NameInputGroup node={activeNode} editor={editor} />
               {activeNode.nodeName !== "Scene" && (
-                <VisibleInputGroup name="Visible">
-                  <BooleanInput value={activeNode.visible} onChange={this.onChangeVisible} />
-                </VisibleInputGroup>
+                <>
+                  <VisibleInputGroup name="Visible">
+                    <BooleanInput value={activeNode._visible} onChange={this.onChangeVisible} />
+                  </VisibleInputGroup>
+                  <VisibleInputGroup name="Enabled">
+                    <BooleanInput value={activeNode.enabled} onChange={this.onChangeEnabled} />
+                  </VisibleInputGroup>
+                </>
               )}
             </NameInputGroupContainer>
             {!disableTransform && <TransformPropertyGroup node={activeNode} editor={editor} />}
