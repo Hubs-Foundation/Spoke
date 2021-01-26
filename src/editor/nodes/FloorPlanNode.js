@@ -422,9 +422,10 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
       throw new Error("The FloorPlan Node is set to use a custom navigation mesh but none was provided.");
     }
 
-    const navMeshMaterial = this.navMesh.material;
+    const navMeshMaterial = this.navMesh.material.clone();
     navMeshMaterial.transparent = true;
     navMeshMaterial.opacity = 0;
+    this.navMesh.material = navMeshMaterial;
 
     this.navMesh.name = "navMesh";
     this.navMesh.userData.gltfExtensions = {
@@ -436,10 +437,11 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
 
     if (this.trimesh) {
       this.trimesh.name = "trimesh";
-      const trimeshMaterial = this.trimesh.material;
+      const trimeshMaterial = this.trimesh.material.clone();
       trimeshMaterial.transparent = true;
       trimeshMaterial.opacity = 0;
       trimeshMaterial.wireframe = false;
+      this.trimesh.material = trimeshMaterial;
 
       this.trimesh.userData.gltfExtensions = {
         MOZ_hubs_components: {
