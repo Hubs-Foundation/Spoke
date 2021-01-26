@@ -102,7 +102,8 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
 
   set navMeshMode(value) {
     if (value === NavMeshMode.Custom) {
-      this.load(this._navMeshSrc).catch(console.error);
+      // Force reloading nav mesh since it was removed and this._navMeshSrc didn't change
+      this.load(this._navMeshSrc, undefined, true).catch(console.error);
     } else if (this.navMesh) {
       this.remove(this.navMesh);
       this.navMesh = null;
@@ -119,10 +120,10 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
     this.load(value).catch(console.error);
   }
 
-  async load(src, onError) {
+  async load(src, onError, force = false) {
     const nextSrc = src || "";
 
-    if (nextSrc === this._navMeshSrc && nextSrc !== "") {
+    if (nextSrc === this._navMeshSrc && nextSrc !== "" && !force) {
       return;
     }
 
