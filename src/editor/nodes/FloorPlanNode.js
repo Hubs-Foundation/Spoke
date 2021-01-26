@@ -16,8 +16,8 @@ const recastClient = new RecastClient();
 const heightfieldClient = new HeightfieldClient();
 
 export const NavMeshMode = {
-  Automatic: "Automatic",
-  Custom: "Custom"
+  Automatic: "automatic",
+  Custom: "custom"
 };
 
 export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
