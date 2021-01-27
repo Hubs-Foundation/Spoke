@@ -191,7 +191,6 @@ export default class VideoNode extends EditorNodeMixin(Video) {
       video: {
         src: this._canonicalUrl,
         controls: this.controls,
-        billboard: this.billboard,
         autoPlay: this.autoPlay,
         loop: this.loop,
         audioType: this.audioType,
