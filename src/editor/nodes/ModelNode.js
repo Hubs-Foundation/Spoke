@@ -75,6 +75,10 @@ export default class ModelNode extends EditorNodeMixin(Model) {
           node.castShadow = shadowComponent.props.cast;
           node.receiveShadow = shadowComponent.props.receive;
         }
+
+        if (json.components.find(c => c.name === "billboard")) {
+          node.billboard = true;
+        }
       })()
     );
 
@@ -93,6 +97,7 @@ export default class ModelNode extends EditorNodeMixin(Model) {
     this.boundingSphere = new Sphere();
     this.stats = defaultStats;
     this.gltfJson = null;
+    this._billboard = false;
   }
 
   // Overrides Model's src property and stores the original (non-resolved) url.
@@ -103,6 +108,15 @@ export default class ModelNode extends EditorNodeMixin(Model) {
   // When getters are overridden you must also override the setter.
   set src(value) {
     this.load(value).catch(console.error);
+  }
+
+  get billboard() {
+    return this._billboard;
+  }
+
+  set billboard(value) {
+    this._billboard = value;
+    this.updateStaticModes();
   }
 
   // Overrides Model's loadGLTF method and uses the Editor's gltf cache.
@@ -320,6 +334,10 @@ export default class ModelNode extends EditorNodeMixin(Model) {
         }
       }
     }
+
+    if (this.billboard) {
+      setStaticMode(this.model, StaticModes.Dynamic);
+    }
   }
 
   serialize() {
@@ -352,6 +370,10 @@ export default class ModelNode extends EditorNodeMixin(Model) {
       components.combine = {};
     }
 
+    if (this.billboard) {
+      components.billboard = {};
+    }
+
     return super.serialize(components);
   }
 
@@ -372,6 +394,8 @@ export default class ModelNode extends EditorNodeMixin(Model) {
     this.collidable = source.collidable;
     this.walkable = source.walkable;
     this.combine = source.combine;
+    this.billboard = source.billboard;
+
     return this;
   }
 
@@ -398,6 +422,10 @@ export default class ModelNode extends EditorNodeMixin(Model) {
       this.addGLTFComponent("loop-animation", {
         activeClipIndices: clipIndices
       });
+    }
+
+    if (this.billboard) {
+      this.addGLTFComponent("billboard", {});
     }
   }
 }

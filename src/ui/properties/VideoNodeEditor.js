@@ -3,6 +3,7 @@ import PropTypes from "prop-types";
 import NodeEditor from "./NodeEditor";
 import InputGroup from "../inputs/InputGroup";
 import SelectInput from "../inputs/SelectInput";
+import BooleanInput from "../inputs/BooleanInput";
 import { VideoProjection } from "../../editor/objects/Video";
 import VideoInput from "../inputs/VideoInput";
 import { Video } from "styled-icons/fa-solid/Video";
@@ -16,11 +17,15 @@ export default function VideoNodeEditor(props) {
   const { editor, node } = props;
   const onChangeSrc = useSetPropertySelected(editor, "src");
   const onChangeProjection = useSetPropertySelected(editor, "projection");
+  const onChangeBillboard = useSetPropertySelected(editor, "billboard");
 
   return (
     <NodeEditor description={VideoNodeEditor.description} {...props}>
       <InputGroup name="Video">
         <VideoInput value={node.src} onChange={onChangeSrc} />
+      </InputGroup>
+      <InputGroup name="Billboard" info="Video always faces user in Hubs. Does not billboard in Spoke.">
+        <BooleanInput value={node.billboard} onChange={onChangeBillboard} />
       </InputGroup>
       <InputGroup name="Projection">
         <SelectInput options={videoProjectionOptions} value={node.projection} onChange={onChangeProjection} />
