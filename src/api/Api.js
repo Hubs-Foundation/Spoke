@@ -955,6 +955,74 @@ export default class Project extends EventEmitter {
     return project;
   }
 
+  async publishGLBScene(screenshotFile, glbFile, params, signal, sceneId) {
+    let screenshotId, screenshotToken;
+    if (screenshotFile) {
+      const {
+        file_id,
+        meta: { access_token }
+      } = await this.upload(screenshotFile, null, signal);
+      screenshotId = file_id;
+      screenshotToken = access_token;
+    }
+
+    let glbId, glbToken;
+    if (glbFile) {
+      const {
+        file_id,
+        meta: { access_token }
+      } = await this.upload(glbFile, null, signal);
+      glbId = file_id;
+      glbToken = access_token;
+    }
+
+    const headers = {
+      "content-type": "application/json",
+      authorization: `Bearer ${this.getToken()}`
+    };
+
+    // HACK: Create a dummy project to add this to project listings
+    let project_id;
+    if (!sceneId) {
+      const body = JSON.stringify({
+        project: { name: "GLB Only Project" }
+      });
+      const resp = await this.fetch(`https://${RETICULUM_SERVER}/api/v1/projects`, {
+        method: "POST",
+        headers,
+        body,
+        signal
+      });
+      const project = await resp.json();
+      project_id = project.project_id;
+    }
+
+    const sceneParams = {
+      screenshot_file_id: screenshotId,
+      screenshot_file_token: screenshotToken,
+      model_file_id: glbId,
+      model_file_token: glbToken,
+      allow_remixing: params.allowRemixing,
+      allow_promotion: params.allowPromotion,
+      name: params.name,
+      project_id,
+      attributions: {
+        creator: params.creatorAttribution,
+        content: []
+      }
+    };
+
+    const body = JSON.stringify({ scene: sceneParams });
+
+    const resp = await this.fetch(`https://${RETICULUM_SERVER}/api/v1/scenes${sceneId ? "/" + sceneId : ""}`, {
+      method: sceneId ? "PUT" : "POST",
+      headers,
+      body
+    });
+
+    return resp.json();
+  }
+
   async upload(blob, onUploadProgress, signal) {
     // Use direct upload API, see: https://github.com/mozilla/reticulum/pull/319
     const { phx_host: uploadHost } = await (await this.fetch(`https://${RETICULUM_SERVER}/api/v1/meta`)).json();

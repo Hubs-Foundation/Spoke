@@ -19,11 +19,23 @@ const StyledProjectGridItem = styled(Link)`
   background-color: ${props => props.theme.toolbar};
   text-decoration: none;
   border: 1px solid transparent;
+  position: relative;
 
   &:hover {
     color: inherit;
     border-color: ${props => props.theme.selected};
   }
+`;
+
+const Pill = styled.i`
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  padding: 3px 8px;
+  background-color: ${props => props.theme.pink};
+  color: white;
+  border-radius: 6px;
+  text-align: center;
 `;
 
 const StyledContextMenuTrigger = styled(StylableContextMenuTrigger)`
@@ -109,7 +121,21 @@ export default class ProjectGridItem extends Component {
     const { project, contextMenuId } = this.props;
     const creatorAttribution = project.attributions && project.attributions.creator;
 
-    const content = (
+    const isGLBOnlyProject = !project.project_url && project.scene;
+    const content = isGLBOnlyProject ? (
+      <>
+        <ThumbnailContainer>
+          {project.scene.screenshot_url && <Thumbnail src={project.scene.screenshot_url} />}
+        </ThumbnailContainer>
+        <TitleContainer>
+          <Col>
+            <h3>{project.scene.name}</h3>
+            {creatorAttribution && <p>{creatorAttribution}</p>}
+          </Col>
+          <Pill>GLB</Pill>
+        </TitleContainer>
+      </>
+    ) : (
       <>
         <ThumbnailContainer>{project.thumbnail_url && <Thumbnail src={project.thumbnail_url} />}</ThumbnailContainer>
         <TitleContainer>

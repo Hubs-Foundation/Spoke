@@ -100,7 +100,10 @@ class ProjectsPage extends Component {
           this.setState({
             projects: projects.map(project => ({
               ...project,
-              url: `/projects/${project.project_id}`
+              url:
+                !project.project_url && project.scene
+                  ? `/scenes/${project.scene.scene_id}`
+                  : `/projects/${project.project_id}`
             })),
             loading: false
           });
