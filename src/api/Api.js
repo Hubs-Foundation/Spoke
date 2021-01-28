@@ -228,6 +228,25 @@ export default class Project extends EventEmitter {
     return json;
   }
 
+  async getProjectlessScenes() {
+    const token = this.getToken();
+
+    const headers = {
+      "content-type": "application/json",
+      authorization: `Bearer ${token}`
+    };
+
+    const response = await this.fetch(`https://${RETICULUM_SERVER}/api/v1/scenes/projectless`, { headers });
+
+    const json = await response.json();
+
+    if (!Array.isArray(json.scenes)) {
+      throw new Error(`Error fetching scenes: ${json.error || "Unknown error."}`);
+    }
+
+    return json.scenes;
+  }
+
   async resolveUrl(url, index) {
     if (!shouldCorsProxy(url)) {
       return { origin: url };
@@ -981,22 +1000,6 @@ export default class Project extends EventEmitter {
       authorization: `Bearer ${this.getToken()}`
     };
 
-    // HACK: Create a dummy project to add this to project listings
-    let project_id;
-    if (!sceneId) {
-      const body = JSON.stringify({
-        project: { name: "GLB Only Project" }
-      });
-      const resp = await this.fetch(`https://${RETICULUM_SERVER}/api/v1/projects`, {
-        method: "POST",
-        headers,
-        body,
-        signal
-      });
-      const project = await resp.json();
-      project_id = project.project_id;
-    }
-
     const sceneParams = {
       screenshot_file_id: screenshotId,
       screenshot_file_token: screenshotToken,
@@ -1005,7 +1008,6 @@ export default class Project extends EventEmitter {
       allow_remixing: params.allowRemixing,
       allow_promotion: params.allowPromotion,
       name: params.name,
-      project_id,
       attributions: {
         creator: params.creatorAttribution,
         content: []

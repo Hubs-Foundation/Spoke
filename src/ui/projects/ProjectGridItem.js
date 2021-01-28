@@ -95,7 +95,7 @@ const Col = styled.div`
   }
 `;
 
-export default class ProjectGridItem extends Component {
+export class ProjectGridItem extends Component {
   static propTypes = {
     contextMenuId: PropTypes.string,
     project: PropTypes.object.isRequired
@@ -121,21 +121,7 @@ export default class ProjectGridItem extends Component {
     const { project, contextMenuId } = this.props;
     const creatorAttribution = project.attributions && project.attributions.creator;
 
-    const isGLBOnlyProject = !project.project_url && project.scene;
-    const content = isGLBOnlyProject ? (
-      <>
-        <ThumbnailContainer>
-          {project.scene.screenshot_url && <Thumbnail src={project.scene.screenshot_url} />}
-        </ThumbnailContainer>
-        <TitleContainer>
-          <Col>
-            <h3>{project.scene.name}</h3>
-            {creatorAttribution && <p>{creatorAttribution}</p>}
-          </Col>
-          <Pill>GLB</Pill>
-        </TitleContainer>
-      </>
-    ) : (
+    const content = (
       <>
         <ThumbnailContainer>{project.thumbnail_url && <Thumbnail src={project.thumbnail_url} />}</ThumbnailContainer>
         <TitleContainer>
@@ -165,3 +151,23 @@ export default class ProjectGridItem extends Component {
     }
   }
 }
+
+export function ProjectGridSceneItem({ scene }) {
+  const creatorAttribution = scene.attributions && scene.attributions.creator;
+  return (
+    <StyledProjectGridItem to={scene.url}>
+      <ThumbnailContainer>{scene.screenshot_url && <Thumbnail src={scene.screenshot_url} />}</ThumbnailContainer>
+      <TitleContainer>
+        <Col>
+          <h3>{scene.name}</h3>
+          {creatorAttribution && <p>{creatorAttribution}</p>}
+        </Col>
+        <Pill>GLB</Pill>
+      </TitleContainer>
+    </StyledProjectGridItem>
+  );
+}
+
+ProjectGridSceneItem.propTypes = {
+  scene: PropTypes.object.isRequired
+};
