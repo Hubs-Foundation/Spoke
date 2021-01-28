@@ -1005,13 +1005,7 @@ export default class Project extends EventEmitter {
       screenshot_file_token: screenshotToken,
       model_file_id: glbId,
       model_file_token: glbToken,
-      allow_remixing: params.allowRemixing,
-      allow_promotion: params.allowPromotion,
-      name: params.name,
-      attributions: {
-        creator: params.creatorAttribution,
-        content: []
-      }
+      ...params
     };
 
     const body = JSON.stringify({ scene: sceneParams });

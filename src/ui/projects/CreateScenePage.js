@@ -1,10 +1,12 @@
-import React, { Component } from "react";
 import PropTypes from "prop-types";
 import configs from "../../configs";
 import { withApi } from "../contexts/ApiContext";
 import NavBar from "../navigation/NavBar";
 import Footer from "../navigation/Footer";
 import styled from "styled-components";
+
+import React, { useState, useCallback, useEffect } from "react";
+import { useHistory } from "react-router-dom";
 
 import StringInput from "../inputs/StringInput";
 import BooleanInput from "../inputs/BooleanInput";
@@ -13,12 +15,17 @@ import FormField from "../inputs/FormField";
 import { Button } from "../inputs/Button";
 import ProgressBar from "../inputs/ProgressBar";
 
-export const SceneUploadFormContainer = styled.div`
+const SceneUploadFormContainer = styled.div`
   display: flex;
   flex: 1;
   flex-direction: row;
   background-color: ${props => props.theme.panel2};
   border-radius: 3px;
+`;
+
+const ErrorMessage = styled.div`
+  color: ${props => props.theme.red};
+  margin-top: 8px;
 `;
 
 export const UploadSceneSection = styled.form`
@@ -38,7 +45,7 @@ export const UploadSceneSection = styled.form`
   }
 `;
 
-export const UploadSceneContainer = styled.form`
+export const UploadSceneContainer = styled.div`
   display: flex;
   flex: 1;
   flex-direction: column;
@@ -93,252 +100,267 @@ const RightContent = styled.div`
   }
 `;
 
-class CreateScenePage extends Component {
-  static propTypes = {
-    api: PropTypes.object.isRequired,
-    history: PropTypes.object.isRequired,
-    match: PropTypes.object
-  };
+function CreateScenePage({ match, api }) {
+  const [isUploading, setIsUploading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  constructor(props) {
-    super(props);
+  const [sceneId, setSceneId] = useState(null);
+  const [error, setError] = useState(null);
 
-    const isAuthenticated = this.props.api.isAuthenticated();
+  const [sceneInfo, setSceneInfo] = useState({
+    name: "",
+    creatorAttribution: "",
+    allowRemixing: false,
+    allowPromotion: false
+  });
 
-    this.state = {
-      isAuthenticated,
-      isUploading: false,
-      isLoading: true,
+  const [glbFile, setGlbFile] = useState(null);
+  const [thumbnailFile, setThumbnailFile] = useState(null);
 
-      sceneId: null,
+  const [thumbnailUrl, setThumbnailUrl] = useState(null);
+  const [sceneUrl, setSceneUrl] = useState(null);
 
-      error: null,
+  const history = useHistory();
 
-      name: "",
-      creatorAttribution: "",
-      allowRemixing: false,
-      allowPromotion: false,
-      glbFile: null,
-      thumbnailFile: null,
+  const openScene = useCallback(
+    function() {
+      window.open(sceneUrl);
+    },
+    [sceneUrl]
+  );
 
-      thumbnailUrl: null,
-      sceneUrl: null
-    };
-  }
+  useEffect(
+    function() {
+      async function doInitialLoad() {
+        const sceneId = match.params.sceneId;
+        const isNew = sceneId === "new";
 
-  async componentDidMount() {
-    const { match } = this.props;
-    const sceneId = match.params.sceneId;
-    const isNew = sceneId === "new";
+        const scene = isNew ? {} : await api.getScene(sceneId);
+        setSceneInfo({
+          name: scene.name || "",
+          creatorAttribution: (scene.attributions && scene.attributions.creator) || "",
+          allowRemixing: scene.allow_remixing,
+          allowPromotion: scene.allow_promotion
+        });
+        setThumbnailUrl(scene.screenshot_url);
+        setSceneId(scene.scene_id);
+        setSceneUrl(scene.url);
+        setIsLoading(false);
+      }
+      doInitialLoad();
+    },
+    [match, api, setSceneInfo, setThumbnailUrl, setSceneId, setSceneUrl, setIsLoading]
+  );
 
-    const scene = isNew ? {} : await this.props.api.getScene(sceneId);
-    this.setState({
-      name: scene.name || "",
-      creatorAttribution: scene.creatorAttribution || "",
-      allowRemixing: scene.allowRemixing,
-      allowPromotion: scene.allowPromotion,
-      thumbnailUrl: scene.screenshot_url,
-      sceneId: scene.scene_id,
-      sceneUrl: scene.url,
-      isLoading: false
-    });
+  const onChangeName = useCallback(
+    function(name) {
+      setSceneInfo({ ...sceneInfo, name });
+    },
+    [sceneInfo, setSceneInfo]
+  );
 
-    console.log(sceneId, scene);
-  }
+  const onChangeCreatorAttribution = useCallback(
+    function(creatorAttribution) {
+      setSceneInfo({ ...sceneInfo, creatorAttribution });
+    },
+    [sceneInfo, setSceneInfo]
+  );
 
-  onChangeName = name => this.setState({ name });
+  const onChangeAllowRemixing = useCallback(
+    function(allowRemixing) {
+      setSceneInfo({ ...sceneInfo, allowRemixing });
+    },
+    [sceneInfo, setSceneInfo]
+  );
 
-  onChangeCreatorAttribution = creatorAttribution => this.setState({ creatorAttribution });
+  const onChangeAllowPromotion = useCallback(
+    function(allowPromotion) {
+      setSceneInfo({ ...sceneInfo, allowPromotion });
+    },
+    [sceneInfo, setSceneInfo]
+  );
 
-  onChangeAllowRemixing = allowRemixing => this.setState({ allowRemixing });
+  const onChangeGlbFile = useCallback(
+    function([file]) {
+      setGlbFile(file);
+    },
+    [setGlbFile]
+  );
 
-  onChangeAllowPromotion = allowPromotion => this.setState({ allowPromotion });
+  const onChangeThumbnailFile = useCallback(
+    function([file]) {
+      if (thumbnailUrl && thumbnailUrl.indexOf("data:") === 0) {
+        URL.revokeObjectURL(thumbnailUrl);
+      }
 
-  onChangeGlbFile = ([glbFile]) => this.setState({ glbFile });
+      setThumbnailFile(file);
 
-  onChangeThumbnailFile = ([thumbnailFile]) => {
-    if (this.state.thumbnailUrl && this.state.thumbnailUrl.indexOf("data:") === 0) {
-      URL.revokeObjectURL(this.state.thumbnailUrl);
-    }
+      // For preview
+      const reader = new FileReader();
+      reader.onload = e => {
+        setThumbnailUrl(e.target.result);
+      };
+      reader.readAsDataURL(file);
+    },
+    [thumbnailUrl, setThumbnailUrl, setThumbnailFile]
+  );
 
-    this.setState({ thumbnailFile });
+  const onPublish = useCallback(
+    function(e) {
+      e.preventDefault();
 
-    // For preview
-    const reader = new FileReader();
-    reader.onload = e => {
-      this.setState({
-        thumbnailUrl: e.target.result
-      });
-    };
-    reader.readAsDataURL(thumbnailFile);
-  };
+      setError(null);
+      setIsUploading(true);
 
-  onPublish = async e => {
-    const API = this.props.api;
+      const abortController = new AbortController();
 
-    e.preventDefault();
-    console.log(this.state);
+      api
+        .publishGLBScene(
+          thumbnailFile,
+          glbFile,
+          {
+            name: sceneInfo.name,
+            allow_remixing: sceneInfo.allowRemixing,
+            allow_promotion: sceneInfo.allowPromotion,
+            attributions: {
+              creator: sceneInfo.creatorAttribution,
+              content: []
+            }
+          },
+          abortController.signal,
+          sceneId
+        )
+        .then(() => history.push("/projects"))
+        .catch(e => {
+          setIsUploading(false);
+          setError(e.message);
+        });
+    },
+    [thumbnailFile, glbFile, sceneInfo, sceneId, setIsUploading, api, history, setError]
+  );
 
-    this.setState({ isUploading: true });
+  const isNew = !sceneId;
 
-    const abortController = new AbortController();
+  const content = isLoading ? (
+    <ProgressBar />
+  ) : (
+    <>
+      <SceneUploadHeader>
+        <h1>{isNew ? "Publish Scene From GLB" : "Update GLB Scene"}</h1>
 
-    const resp = await API.publishGLBScene(
-      this.state.thumbnailFile,
-      this.state.glbFile,
-      {
-        name: this.state.name,
-        allow_remixing: this.state.allowRemixing,
-        allow_promotion: this.state.allowPromotion,
-        attributions: {
-          creator: this.state.creatorAttribution,
-          content: []
-        }
-      },
-      abortController.signal,
-      this.state.sceneId
-    );
+        {sceneUrl && (
+          <Button disabled={isUploading} onClick={openScene}>
+            {configs.isMoz() ? "Open in Hubs" : "Open Scene"}
+          </Button>
+        )}
+      </SceneUploadHeader>
+      <SceneUploadFormContainer>
+        <LeftContent>
+          <label htmlFor="screenshotFile">
+            {thumbnailUrl ? <img src={thumbnailUrl} /> : <div>Click to select scene thumbnail (16:9 .png)</div>}
+          </label>
+          <input
+            id="screenshotFile"
+            type="file"
+            required={isNew}
+            accept=".png,image/png"
+            onChange={e => onChangeThumbnailFile(e.target.files)}
+          />
+        </LeftContent>
 
-    console.log(resp);
-    const scene = resp.scenes[0];
-    this.setState({
-      isUploading: false,
-      sceneId: scene.scene_id,
-      sceneUrl: scene.url,
-      glbFile: null,
-      thumbnailFile: null
-    });
-  };
+        <RightContent>
+          <FormField>
+            <label htmlFor="sceneName">Scene Name</label>
+            <StringInput
+              id="sceneName"
+              required
+              pattern={"[A-Za-z0-9-':\"!@#$%^&*(),.?~ ]{4,64}"}
+              title="Name must be between 4 and 64 characters and cannot contain underscores"
+              value={sceneInfo.name}
+              onChange={onChangeName}
+            />
+          </FormField>
+          <FormField>
+            <label htmlFor="creatorAttribution">Your Attribution (optional):</label>
+            <StringInput
+              id="creatorAttribution"
+              value={sceneInfo.creatorAttribution}
+              onChange={onChangeCreatorAttribution}
+            />
+          </FormField>
+          <FormField>
+            <FormField inline>
+              <label htmlFor="allowRemixing">
+                Allow{" "}
+                <a
+                  href="https://github.com/mozilla/Spoke/blob/master/REMIXING.md"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Remixing
+                </a>
+                &nbsp;with
+                <br />
+                Creative Commons&nbsp;
+                <a href="https://creativecommons.org/licenses/by/3.0/" target="_blank" rel="noopener noreferrer">
+                  CC-BY 3.0
+                </a>
+              </label>
+              <BooleanInput id="allowRemixing" value={sceneInfo.allowRemixing} onChange={onChangeAllowRemixing} />
+            </FormField>
+            <FormField inline>
+              <label htmlFor="allowPromotion">
+                Allow {configs.isMoz() ? "Mozilla to " : ""}
+                <a
+                  href="https://github.com/mozilla/Spoke/blob/master/PROMOTION.md"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {configs.isMoz() ? "promote" : "promotion"}
+                </a>{" "}
+                {configs.isMoz() ? "" : "of "}my scene
+              </label>
+              <BooleanInput id="allowPromotion" value={sceneInfo.allowPromotion} onChange={onChangeAllowPromotion} />
+            </FormField>
+          </FormField>
 
-  openScene = () => {
-    window.open(this.state.sceneUrl);
-  };
-
-  render() {
-    const { sceneId, sceneUrl, isLoading, isUploading } = this.state;
-
-    const isNew = !sceneId;
-
-    const { creatorAttribution, name, allowRemixing, allowPromotion } = this.state;
-
-    const maxSize = this.props.api.maxUploadSize;
-
-    const content = isLoading ? (
-      <ProgressBar />
-    ) : (
-      <>
-        <SceneUploadHeader>
-          <h1>{isNew ? "Publish Scene From GLB" : "Update GLB Scene"}</h1>
-
-          {sceneUrl && (
-            <Button disabled={isUploading} onClick={this.openScene}>
-              {configs.isMoz() ? "Open in Hubs" : "Open Scene"}
-            </Button>
-          )}
-        </SceneUploadHeader>
-        <SceneUploadFormContainer>
-          <LeftContent>
-            <label htmlFor="screenshotFile">
-              {this.state.thumbnailUrl ? (
-                <img src={this.state.thumbnailUrl} />
-              ) : (
-                <div>Click to select scene thumbnail (16:9 .png)</div>
-              )}
-            </label>
-            <input
-              id="screenshotFile"
+          <FormField>
+            <FileInput
+              label={
+                isNew ? "Select scene model file (.glb)" : `Replace scene model file (max ${api.maxUploadSize}mb .glb)`
+              }
+              id="glbFile"
               type="file"
               required={isNew}
-              accept=".png,image/png"
-              onChange={e => this.onChangeThumbnailFile(e.target.files)}
+              accept=".glb,model/gltf-binary"
+              showSelectedFile
+              onChange={onChangeGlbFile}
             />
-          </LeftContent>
+          </FormField>
+          {isUploading ? <ProgressBar /> : <Button type="submit">{isNew ? "Publish" : "Update"}</Button>}
+          {error && <ErrorMessage>{error}</ErrorMessage>}
+        </RightContent>
+      </SceneUploadFormContainer>
+    </>
+  );
 
-          <RightContent>
-            <FormField>
-              <label htmlFor="sceneName">Scene Name</label>
-              <StringInput
-                id="sceneName"
-                required
-                pattern={"[A-Za-z0-9-':\"!@#$%^&*(),.?~ ]{4,64}"}
-                title="Name must be between 4 and 64 characters and cannot contain underscores"
-                value={name}
-                onChange={this.onChangeName}
-              />
-            </FormField>
-            <FormField>
-              <label htmlFor="creatorAttribution">Your Attribution (optional):</label>
-              <StringInput
-                id="creatorAttribution"
-                value={creatorAttribution}
-                onChange={this.onChangeCreatorAttribution}
-              />
-            </FormField>
-            <FormField>
-              <FormField inline>
-                <label htmlFor="allowRemixing">
-                  Allow{" "}
-                  <a
-                    href="https://github.com/mozilla/Spoke/blob/master/REMIXING.md"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Remixing
-                  </a>
-                  &nbsp;with
-                  <br />
-                  Creative Commons&nbsp;
-                  <a href="https://creativecommons.org/licenses/by/3.0/" target="_blank" rel="noopener noreferrer">
-                    CC-BY 3.0
-                  </a>
-                </label>
-                <BooleanInput id="allowRemixing" value={allowRemixing} onChange={this.onChangeAllowRemixing} />
-              </FormField>
-              <FormField inline>
-                <label htmlFor="allowPromotion">
-                  Allow {configs.isMoz() ? "Mozilla to " : ""}
-                  <a
-                    href="https://github.com/mozilla/Spoke/blob/master/PROMOTION.md"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    {configs.isMoz() ? "promote" : "promotion"}
-                  </a>{" "}
-                  {configs.isMoz() ? "" : "of "}my scene
-                </label>
-                <BooleanInput id="allowPromotion" value={allowPromotion} onChange={this.onChangeAllowPromotion} />
-              </FormField>
-            </FormField>
-
-            <FormField>
-              <FileInput
-                label={isNew ? "Select scene model file (.glb)" : `Replace scene model file (max ${maxSize}mb .glb)`}
-                id="glbFile"
-                type="file"
-                required={isNew}
-                accept=".glb,model/gltf-binary"
-                showSelectedFile
-                onChange={this.onChangeGlbFile}
-              />
-            </FormField>
-            {isUploading ? <ProgressBar /> : <Button type="submit">{isNew ? "Publish" : "Update"}</Button>}
-          </RightContent>
-        </SceneUploadFormContainer>
-      </>
-    );
-
-    return (
-      <>
-        <NavBar />
-        <main>
-          <UploadSceneSection onSubmit={this.onPublish}>
-            <UploadSceneContainer>{content}</UploadSceneContainer>
-          </UploadSceneSection>
-        </main>
-        <Footer />
-      </>
-    );
-  }
+  return (
+    <>
+      <NavBar />
+      <main>
+        <UploadSceneSection onSubmit={onPublish}>
+          <UploadSceneContainer>{content}</UploadSceneContainer>
+        </UploadSceneSection>
+      </main>
+      <Footer />
+    </>
+  );
 }
+
+CreateScenePage.propTypes = {
+  api: PropTypes.object.isRequired,
+  history: PropTypes.object.isRequired,
+  match: PropTypes.object
+};
 
 export default withApi(CreateScenePage);
