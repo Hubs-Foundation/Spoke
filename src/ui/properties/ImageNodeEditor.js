@@ -2,6 +2,7 @@ import React from "react";
 import PropTypes from "prop-types";
 import NodeEditor from "./NodeEditor";
 import InputGroup from "../inputs/InputGroup";
+import StringInput from "../inputs/StringInput";
 import SelectInput from "../inputs/SelectInput";
 import BooleanInput from "../inputs/BooleanInput";
 import NumericInputGroup from "../inputs/NumericInputGroup";
@@ -23,6 +24,7 @@ export default function ImageNodeEditor(props) {
   const onChangeProjection = useSetPropertySelected(editor, "projection");
   const onChangeTransparencyMode = useSetPropertySelected(editor, "alphaMode");
   const onChangeAlphaCutoff = useSetPropertySelected(editor, "alphaCutoff");
+  const onChangeHref = useSetPropertySelected(editor, "href");
 
   return (
     <NodeEditor description={ImageNodeEditor.description} {...props}>
@@ -37,6 +39,9 @@ export default function ImageNodeEditor(props) {
       </InputGroup>
       <InputGroup name="Billboard" info="Image always faces user in Hubs.">
         <BooleanInput value={node.billboard} onChange={onChangeBillboard} />
+      </InputGroup>
+      <InputGroup name="Link Href" info="Allows the image to function as a link for the given url.">
+        <StringInput value={node.href} onChange={onChangeHref} />
       </InputGroup>
       <InputGroup
         name="Transparency Mode"

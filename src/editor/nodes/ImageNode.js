@@ -32,6 +32,12 @@ export default class ImageNode extends EditorNodeMixin(Image) {
       })()
     );
 
+    const linkComponent = json.components.find(c => c.name === "link");
+
+    if (linkComponent) {
+      node.href = linkComponent.props.href;
+    }
+
     return node;
   }
 
@@ -39,6 +45,7 @@ export default class ImageNode extends EditorNodeMixin(Image) {
     super(editor);
 
     this._canonicalUrl = "";
+    this.href = "";
     this.controls = true;
     this.billboard = false;
   }
@@ -119,6 +126,7 @@ export default class ImageNode extends EditorNodeMixin(Image) {
     this.alphaMode = source.alphaMode;
     this.alphaCutoff = source.alphaCutoff;
     this._canonicalUrl = source._canonicalUrl;
+    this.href = source.href;
 
     return this;
   }
@@ -136,6 +144,10 @@ export default class ImageNode extends EditorNodeMixin(Image) {
 
     if (this.billboard) {
       components.billboard = {};
+    }
+
+    if (this.href) {
+      components.link = { href: this.href };
     }
 
     return super.serialize(components);
@@ -163,6 +175,10 @@ export default class ImageNode extends EditorNodeMixin(Image) {
 
     if (this.billboard && this.projection === "flat") {
       this.addGLTFComponent("billboard", {});
+    }
+
+    if (this.href && this.projection === "flat") {
+      this.addGLTFComponent("link", { href: this.href });
     }
 
     this.replaceObject();
