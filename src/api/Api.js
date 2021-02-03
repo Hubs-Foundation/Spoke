@@ -891,7 +891,7 @@ export default class Project extends EventEmitter {
         allow_promotion: publishParams.allowPromotion,
         name: publishParams.name,
         attributions: {
-          creator: publishParams.creatorAttribution,
+          creator: publishParams.creatorAttribution && publishParams.creatorAttribution.trim(),
           content: publishParams.contentAttributions
         }
       };
