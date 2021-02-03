@@ -102,8 +102,8 @@ export default class KitPieceNodeEditor extends Component {
     this.props.editor.loadMaterialSlotSelected(subPiece.id, materialSlot.id, materialId);
   };
 
-  onChangeAnimation = activeClipIndex => {
-    this.props.editor.setPropertySelected("activeClipIndex", activeClipIndex);
+  onChangeAnimation = activeClipItems => {
+    this.props.editor.setPropertySelected("activeClipItems", activeClipItems || []);
   };
 
   onChangeCollidable = collidable => {
@@ -120,6 +120,10 @@ export default class KitPieceNodeEditor extends Component {
 
   onChangeReceiveShadow = receiveShadow => {
     this.props.editor.setPropertySelected("receiveShadow", receiveShadow);
+  };
+
+  onChangeCombine = combine => {
+    this.props.editor.setPropertySelected("combine", combine);
   };
 
   isAnimationPropertyDisabled() {
@@ -173,8 +177,11 @@ export default class KitPieceNodeEditor extends Component {
           <SelectInput
             disabled={this.isAnimationPropertyDisabled()}
             options={node.getClipOptions()}
-            value={node.activeClipIndex}
+            value={node.activeClipItems}
             onChange={this.onChangeAnimation}
+            className="basic-multi-select"
+            classNamePrefix="select"
+            isMulti
           />
         </InputGroup>
         <InputGroup name="Collidable">
@@ -188,6 +195,9 @@ export default class KitPieceNodeEditor extends Component {
         </InputGroup>
         <InputGroup name="Receive Shadow">
           <BooleanInput value={node.receiveShadow} onChange={this.onChangeReceiveShadow} />
+        </InputGroup>
+        <InputGroup name="Combine">
+          <BooleanInput value={node.combine} onChange={this.onChangeCombine} />
         </InputGroup>
       </NodeEditor>
     );
