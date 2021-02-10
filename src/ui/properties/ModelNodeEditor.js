@@ -48,6 +48,10 @@ export default class ModelNodeEditor extends Component {
     this.props.editor.setPropertySelected("combine", combine);
   };
 
+  onChangeBillboard = billboard => {
+    this.props.editor.setPropertySelected("billboard", billboard);
+  };
+
   isAnimationPropertyDisabled() {
     const { multiEdit, editor, node } = this.props;
 
@@ -91,6 +95,9 @@ export default class ModelNodeEditor extends Component {
         </InputGroup>
         <InputGroup name="Combine">
           <BooleanInput value={node.combine} onChange={this.onChangeCombine} />
+        </InputGroup>
+        <InputGroup name="Billboard" info="Model always faces user in Hubs. Does not billboard in Spoke.">
+          <BooleanInput value={node.billboard} onChange={this.onChangeBillboard} />
         </InputGroup>
         {node.model && <GLTFInfo node={node} />}
         <AttributionNodeEditor name="Attribution" {...this.props} />

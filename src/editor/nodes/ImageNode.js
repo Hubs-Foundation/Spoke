@@ -18,6 +18,10 @@ export default class ImageNode extends EditorNodeMixin(Image) {
 
     const { src, projection, controls, alphaMode, alphaCutoff } = json.components.find(c => c.name === "image").props;
 
+    if (json.components.find(c => c.name === "billboard")) {
+      node.billboard = true;
+    }
+
     loadAsync(
       (async () => {
         await node.load(src, onError);
@@ -36,6 +40,7 @@ export default class ImageNode extends EditorNodeMixin(Image) {
 
     this._canonicalUrl = "";
     this.controls = true;
+    this.billboard = false;
   }
 
   get src() {
@@ -110,6 +115,7 @@ export default class ImageNode extends EditorNodeMixin(Image) {
     super.copy(source, recursive);
 
     this.controls = source.controls;
+    this.billboard = source.billboard;
     this.alphaMode = source.alphaMode;
     this.alphaCutoff = source.alphaCutoff;
     this._canonicalUrl = source._canonicalUrl;
@@ -118,7 +124,7 @@ export default class ImageNode extends EditorNodeMixin(Image) {
   }
 
   serialize() {
-    return super.serialize({
+    const components = {
       image: {
         src: this._canonicalUrl,
         controls: this.controls,
@@ -126,7 +132,13 @@ export default class ImageNode extends EditorNodeMixin(Image) {
         alphaCutoff: this.alphaCutoff,
         projection: this.projection
       }
-    });
+    };
+
+    if (this.billboard) {
+      components.billboard = {};
+    }
+
+    return super.serialize(components);
   }
 
   prepareForExport() {
@@ -138,14 +150,21 @@ export default class ImageNode extends EditorNodeMixin(Image) {
       alphaMode: this.alphaMode,
       projection: this.projection
     };
+
     if (this.alphaMode === ImageAlphaMode.Mask) {
       imageData.alphaCutoff = this.alphaCutoff;
     }
 
     this.addGLTFComponent("image", imageData);
+
     this.addGLTFComponent("networked", {
       id: this.uuid
     });
+
+    if (this.billboard && this.projection === "flat") {
+      this.addGLTFComponent("billboard", {});
+    }
+
     this.replaceObject();
   }
 
