@@ -62,16 +62,10 @@ export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
 
     node._navMeshMode = navMeshMode || NavMeshMode.Automatic;
 
-    if (navMeshSrc) {
-      if (navMeshMode === NavMeshMode.Custom) {
-        loadAsync(
-          (async () => {
-            await node.load(navMeshSrc, onError);
-          })()
-        );
-      } else {
-        node._navMeshSrc = navMeshSrc;
-      }
+    if (navMeshMode === NavMeshMode.Custom) {
+      loadAsync(node.load(navMeshSrc, onError));
+    } else {
+      node._navMeshSrc = navMeshSrc || "";
     }
 
     return node;
