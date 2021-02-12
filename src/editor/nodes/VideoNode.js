@@ -35,6 +35,10 @@ export default class VideoNode extends EditorNodeMixin(Video) {
       projection
     } = json.components.find(c => c.name === "video").props;
 
+    if (json.components.find(c => c.name === "billboard")) {
+      node.billboard = true;
+    }
+
     loadAsync(
       (async () => {
         await node.load(src, onError);
@@ -64,6 +68,7 @@ export default class VideoNode extends EditorNodeMixin(Video) {
     this._autoPlay = true;
     this.volume = 0.5;
     this.controls = true;
+    this.billboard = false;
   }
 
   get src() {
@@ -175,13 +180,14 @@ export default class VideoNode extends EditorNodeMixin(Video) {
     super.copy(source, recursive);
 
     this.controls = source.controls;
+    this.billboard = source.billboard;
     this._canonicalUrl = source._canonicalUrl;
 
     return this;
   }
 
   serialize() {
-    return super.serialize({
+    const components = {
       video: {
         src: this._canonicalUrl,
         controls: this.controls,
@@ -198,11 +204,18 @@ export default class VideoNode extends EditorNodeMixin(Video) {
         coneOuterGain: this.coneOuterGain,
         projection: this.projection
       }
-    });
+    };
+
+    if (this.billboard) {
+      components.billboard = {};
+    }
+
+    return super.serialize(components);
   }
 
   prepareForExport() {
     super.prepareForExport();
+
     this.addGLTFComponent("video", {
       src: this._canonicalUrl,
       controls: this.controls,
@@ -219,9 +232,15 @@ export default class VideoNode extends EditorNodeMixin(Video) {
       coneOuterGain: this.coneOuterGain,
       projection: this.projection
     });
+
     this.addGLTFComponent("networked", {
       id: this.uuid
     });
+
+    if (this.billboard && this.projection === "flat") {
+      this.addGLTFComponent("billboard", {});
+    }
+
     this.replaceObject();
   }
 

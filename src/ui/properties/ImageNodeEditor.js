@@ -19,6 +19,7 @@ export default function ImageNodeEditor(props) {
   const { editor, node } = props;
   const onChangeSrc = useSetPropertySelected(editor, "src");
   const onChangeControls = useSetPropertySelected(editor, "controls");
+  const onChangeBillboard = useSetPropertySelected(editor, "billboard");
   const onChangeProjection = useSetPropertySelected(editor, "projection");
   const onChangeTransparencyMode = useSetPropertySelected(editor, "alphaMode");
   const onChangeAlphaCutoff = useSetPropertySelected(editor, "alphaCutoff");
@@ -28,8 +29,14 @@ export default function ImageNodeEditor(props) {
       <InputGroup name="Image Url">
         <ImageInput value={node.src} onChange={onChangeSrc} />
       </InputGroup>
-      <InputGroup name="Controls" info="Toggle the visibility of the media controls in Hubs.">
+      <InputGroup
+        name="Controls"
+        info="Toggle the visibility of the media controls in Hubs. Does not billboard in Spoke."
+      >
         <BooleanInput value={node.controls} onChange={onChangeControls} />
+      </InputGroup>
+      <InputGroup name="Billboard" info="Image always faces user in Hubs.">
+        <BooleanInput value={node.billboard} onChange={onChangeBillboard} />
       </InputGroup>
       <InputGroup
         name="Transparency Mode"
