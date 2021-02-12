@@ -79,12 +79,6 @@ export default class ModelNode extends EditorNodeMixin(Model) {
         if (json.components.find(c => c.name === "billboard")) {
           node.billboard = true;
         }
-
-        const linkComponent = json.components.find(c => c.name === "link");
-
-        if (linkComponent) {
-          node.href = linkComponent.props.href;
-        }
       })()
     );
 
@@ -104,7 +98,6 @@ export default class ModelNode extends EditorNodeMixin(Model) {
     this.stats = defaultStats;
     this.gltfJson = null;
     this._billboard = false;
-    this._href = "";
   }
 
   // Overrides Model's src property and stores the original (non-resolved) url.
@@ -123,15 +116,6 @@ export default class ModelNode extends EditorNodeMixin(Model) {
 
   set billboard(value) {
     this._billboard = value;
-    this.updateStaticModes();
-  }
-
-  get href() {
-    return this._href;
-  }
-
-  set href(value) {
-    this._href = value;
     this.updateStaticModes();
   }
 
@@ -351,7 +335,7 @@ export default class ModelNode extends EditorNodeMixin(Model) {
       }
     }
 
-    if (this.billboard || this.href) {
+    if (this.billboard) {
       setStaticMode(this.model, StaticModes.Dynamic);
     }
   }
@@ -390,10 +374,6 @@ export default class ModelNode extends EditorNodeMixin(Model) {
       components.billboard = {};
     }
 
-    if (this.href) {
-      components.link = { href: this.href };
-    }
-
     return super.serialize(components);
   }
 
@@ -414,7 +394,6 @@ export default class ModelNode extends EditorNodeMixin(Model) {
     this.walkable = source.walkable;
     this.combine = source.combine;
     this._billboard = source._billboard;
-    this._href = source._href;
 
     this.updateStaticModes();
 
@@ -424,45 +403,31 @@ export default class ModelNode extends EditorNodeMixin(Model) {
   prepareForExport(ctx) {
     super.prepareForExport();
 
-    if (this.billboard) {
-      this.addGLTFComponent("billboard", {});
+    this.addGLTFComponent("shadow", {
+      cast: this.castShadow,
+      receive: this.receiveShadow
+    });
+
+    const clipIndices = this.activeClipIndices.map(index => {
+      return ctx.animations.indexOf(this.model.animations[index]);
+    });
+
+    this.model.traverse(child => {
+      const components = getComponents(child);
+
+      if (components && components["loop-animation"]) {
+        delete components["loop-animation"];
+      }
+    });
+
+    if (clipIndices.length > 0) {
+      this.addGLTFComponent("loop-animation", {
+        activeClipIndices: clipIndices
+      });
     }
 
-    if (this.href) {
-      this.addGLTFComponent("networked", {
-        id: this.uuid
-      });
-
-      this.addGLTFComponent("link", { href: this.href });
-
-      this.addGLTFComponent("model", {
-        src: this._canonicalUrl
-      });
-
-      this.replaceObject();
-    } else {
-      this.addGLTFComponent("shadow", {
-        cast: this.castShadow,
-        receive: this.receiveShadow
-      });
-
-      const clipIndices = this.activeClipIndices.map(index => {
-        return ctx.animations.indexOf(this.model.animations[index]);
-      });
-
-      this.model.traverse(child => {
-        const components = getComponents(child);
-
-        if (components && components["loop-animation"]) {
-          delete components["loop-animation"];
-        }
-      });
-
-      if (clipIndices.length > 0) {
-        this.addGLTFComponent("loop-animation", {
-          activeClipIndices: clipIndices
-        });
-      }
+    if (this.billboard) {
+      this.addGLTFComponent("billboard", {});
     }
   }
 }

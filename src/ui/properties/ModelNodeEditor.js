@@ -3,7 +3,6 @@ import PropTypes from "prop-types";
 import NodeEditor from "./NodeEditor";
 import SelectInput from "../inputs/SelectInput";
 import InputGroup from "../inputs/InputGroup";
-import StringInput from "../inputs/StringInput";
 import BooleanInput from "../inputs/BooleanInput";
 import ModelInput from "../inputs/ModelInput";
 import { Cube } from "styled-icons/fa-solid/Cube";
@@ -53,10 +52,6 @@ export default class ModelNodeEditor extends Component {
     this.props.editor.setPropertySelected("billboard", billboard);
   };
 
-  onChangeHref = href => {
-    this.props.editor.setPropertySelected("href", href);
-  };
-
   isAnimationPropertyDisabled() {
     const { multiEdit, editor, node } = this.props;
 
@@ -103,9 +98,6 @@ export default class ModelNodeEditor extends Component {
         </InputGroup>
         <InputGroup name="Billboard" info="Model always faces user in Hubs. Does not billboard in Spoke.">
           <BooleanInput value={node.billboard} onChange={this.onChangeBillboard} />
-        </InputGroup>
-        <InputGroup name="Link Href" info="Allows the model to function as a link for the given url.">
-          <StringInput value={node.href} onChange={this.onChangeHref} />
         </InputGroup>
         {node.model && <GLTFInfo node={node} />}
         <AttributionNodeEditor name="Attribution" {...this.props} />
