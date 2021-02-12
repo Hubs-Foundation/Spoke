@@ -656,7 +656,13 @@ export default class SceneNode extends EditorNodeMixin(Scene) {
 
       if (!attribution) return;
 
-      const attributionKey = attribution.url || `${attribution.title}_${attribution.author}`;
+      const url = attribution.url && attribution.url.trim();
+      const title = attribution.title && attribution.title.trim();
+      const author = attribution.author && attribution.author.trim();
+
+      if (!url && !title && !author) return;
+
+      const attributionKey = url || `${title}_${author}`;
       if (seenAttributions.has(attributionKey)) return;
       seenAttributions.add(attributionKey);
       contentAttributions.push(attribution);
