@@ -40,9 +40,11 @@ export default function ImageNodeEditor(props) {
       <InputGroup name="Billboard" info="Image always faces user in Hubs.">
         <BooleanInput value={node.billboard} onChange={onChangeBillboard} />
       </InputGroup>
-      <InputGroup name="Link Href" info="Allows the image to function as a link for the given url.">
-        <StringInput value={node.href} onChange={onChangeHref} />
-      </InputGroup>
+      {node.projection === ImageProjection.Flat && (
+        <InputGroup name="Link Href" info="Allows the image to function as a link for the given url.">
+          <StringInput value={node.href} onChange={onChangeHref} />
+        </InputGroup>
+      )}
       <InputGroup
         name="Transparency Mode"
         info={`How to apply transparency:

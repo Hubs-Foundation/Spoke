@@ -29,9 +29,11 @@ export default function VideoNodeEditor(props) {
       <InputGroup name="Billboard" info="Video always faces user in Hubs. Does not billboard in Spoke.">
         <BooleanInput value={node.billboard} onChange={onChangeBillboard} />
       </InputGroup>
-      <InputGroup name="Link Href" info="Allows the video to function as a link for the given url.">
-        <StringInput value={node.href} onChange={onChangeHref} />
-      </InputGroup>
+      {node.projection === VideoProjection.Flat && (
+        <InputGroup name="Link Href" info="Allows the video to function as a link for the given url.">
+          <StringInput value={node.href} onChange={onChangeHref} />
+        </InputGroup>
+      )}
       <InputGroup name="Projection">
         <SelectInput options={videoProjectionOptions} value={node.projection} onChange={onChangeProjection} />
       </InputGroup>
