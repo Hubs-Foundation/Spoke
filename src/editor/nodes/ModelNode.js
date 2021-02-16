@@ -384,7 +384,6 @@ export default class ModelNode extends EditorNodeMixin(Model) {
       this.initialScale = source.initialScale;
       this.load(source.src);
     } else {
-      this.updateStaticModes();
       this.stats = JSON.parse(JSON.stringify(source.stats));
       this.gltfJson = source.gltfJson;
       this._canonicalUrl = source._canonicalUrl;
@@ -394,13 +393,16 @@ export default class ModelNode extends EditorNodeMixin(Model) {
     this.collidable = source.collidable;
     this.walkable = source.walkable;
     this.combine = source.combine;
-    this.billboard = source.billboard;
+    this._billboard = source._billboard;
+
+    this.updateStaticModes();
 
     return this;
   }
 
   prepareForExport(ctx) {
     super.prepareForExport();
+
     this.addGLTFComponent("shadow", {
       cast: this.castShadow,
       receive: this.receiveShadow
