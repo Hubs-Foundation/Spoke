@@ -92,6 +92,8 @@ class ProjectsPage extends Component {
   }
 
   componentDidMount() {
+    document.title = configs.longName();
+
     // We dont need to load projects if the user isn't logged in
     if (this.state.isAuthenticated) {
       this.props.api
