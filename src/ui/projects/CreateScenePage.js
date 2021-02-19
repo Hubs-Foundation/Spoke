@@ -4,6 +4,7 @@ import { withApi } from "../contexts/ApiContext";
 import NavBar from "../navigation/NavBar";
 import Footer from "../navigation/Footer";
 import styled from "styled-components";
+import { Redirect } from "react-router-dom";
 
 import React, { useState, useCallback, useEffect } from "react";
 import { useHistory } from "react-router-dom";
@@ -21,6 +22,14 @@ const SceneUploadFormContainer = styled.div`
   flex-direction: row;
   background-color: ${props => props.theme.panel2};
   border-radius: 3px;
+`;
+
+const InfoBox = styled.div`
+  background-color: ${props => props.theme.panel2};
+  margin-top: 10px;
+  padding: 10px;
+  border-radius: 3px;
+  text-align: center;
 `;
 
 const ErrorMessage = styled.div`
@@ -122,91 +131,96 @@ function CreateScenePage({ match, api }) {
 
   const history = useHistory();
 
-  const openScene = useCallback(
-    function() {
-      window.open(sceneUrl);
-    },
-    [sceneUrl]
-  );
+  const openScene = useCallback(() => {
+    window.open(sceneUrl);
+  }, [sceneUrl]);
 
-  useEffect(
-    function() {
-      async function doInitialLoad() {
-        const sceneId = match.params.sceneId;
-        const isNew = sceneId === "new";
+  useEffect(() => {
+    async function doInitialLoad() {
+      const sceneId = match.params.sceneId;
+      const isNew = sceneId === "new";
 
-        const scene = isNew ? {} : await api.getScene(sceneId);
-        setSceneInfo({
-          name: scene.name || "",
-          creatorAttribution: (scene.attributions && scene.attributions.creator) || "",
-          allowRemixing: scene.allow_remixing,
-          allowPromotion: scene.allow_promotion
-        });
-        setThumbnailUrl(scene.screenshot_url);
-        setSceneId(scene.scene_id);
-        setSceneUrl(scene.url);
-        setIsLoading(false);
-      }
-      doInitialLoad();
-    },
-    [match, api, setSceneInfo, setThumbnailUrl, setSceneId, setSceneUrl, setIsLoading]
-  );
+      const scene = isNew ? {} : await api.getScene(sceneId);
+      setSceneInfo({
+        name: scene.name || "",
+        creatorAttribution: (scene.attributions && scene.attributions.creator) || "",
+        allowRemixing: scene.allow_remixing,
+        allowPromotion: scene.allow_promotion
+      });
+      setThumbnailUrl(scene.screenshot_url);
+      setSceneId(scene.scene_id);
+      setSceneUrl(scene.url);
+      setIsLoading(false);
+    }
+    doInitialLoad().catch(e => {
+      console.error(e);
+      setError(e.message);
+    });
+  }, [match, api, setSceneInfo, setThumbnailUrl, setSceneId, setSceneUrl, setIsLoading]);
 
   const onChangeName = useCallback(
-    function(name) {
-      setSceneInfo({ ...sceneInfo, name });
+    name => {
+      setSceneInfo(sceneInfo => ({ ...sceneInfo, name }));
     },
-    [sceneInfo, setSceneInfo]
+    [setSceneInfo]
   );
 
   const onChangeCreatorAttribution = useCallback(
-    function(creatorAttribution) {
+    creatorAttribution => {
       setSceneInfo({ ...sceneInfo, creatorAttribution });
     },
     [sceneInfo, setSceneInfo]
   );
 
   const onChangeAllowRemixing = useCallback(
-    function(allowRemixing) {
+    allowRemixing => {
       setSceneInfo({ ...sceneInfo, allowRemixing });
     },
     [sceneInfo, setSceneInfo]
   );
 
   const onChangeAllowPromotion = useCallback(
-    function(allowPromotion) {
+    allowPromotion => {
       setSceneInfo({ ...sceneInfo, allowPromotion });
     },
     [sceneInfo, setSceneInfo]
   );
 
   const onChangeGlbFile = useCallback(
-    function([file]) {
+    ([file]) => {
       setGlbFile(file);
     },
     [setGlbFile]
   );
 
   const onChangeThumbnailFile = useCallback(
-    function([file]) {
-      if (thumbnailUrl && thumbnailUrl.indexOf("data:") === 0) {
-        URL.revokeObjectURL(thumbnailUrl);
-      }
-
+    ([file]) => {
       setThumbnailFile(file);
-
-      // For preview
-      const reader = new FileReader();
-      reader.onload = e => {
-        setThumbnailUrl(e.target.result);
-      };
-      reader.readAsDataURL(file);
     },
-    [thumbnailUrl, setThumbnailUrl, setThumbnailFile]
+    [setThumbnailFile]
   );
 
+  // For preview
+  useEffect(() => {
+    if (!thumbnailFile) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      setThumbnailUrl(prevUrl => {
+        if (prevUrl && prevUrl.indexOf("data:") === 0) {
+          URL.revokeObjectURL(prevUrl);
+        }
+        return e.target.result;
+      });
+    };
+    reader.readAsDataURL(thumbnailFile);
+
+    return () => {
+      reader.abort();
+    };
+  }, [thumbnailFile, setThumbnailUrl]);
+
   const onPublish = useCallback(
-    function(e) {
+    e => {
       e.preventDefault();
 
       setError(null);
@@ -239,14 +253,22 @@ function CreateScenePage({ match, api }) {
     [thumbnailFile, glbFile, sceneInfo, sceneId, setIsUploading, api, history, setError]
   );
 
+  if (!api.isAuthenticated()) {
+    return <Redirect to="/login" />;
+  }
+
   const isNew = !sceneId;
 
   const content = isLoading ? (
-    <ProgressBar />
+    error ? (
+      <ErrorMessage>{error}</ErrorMessage>
+    ) : (
+      <ProgressBar />
+    )
   ) : (
     <>
       <SceneUploadHeader>
-        <h1>{isNew ? "Publish Scene From GLB" : "Update GLB Scene"}</h1>
+        <h1>{isNew ? "Publish Scene From Blender" : "Update Blender Scene"}</h1>
 
         {sceneUrl && (
           <Button disabled={isUploading} onClick={openScene}>
@@ -326,9 +348,9 @@ function CreateScenePage({ match, api }) {
 
           <FormField>
             <FileInput
-              label={
-                isNew ? "Select scene model file (.glb)" : `Replace scene model file (max ${api.maxUploadSize}mb .glb)`
-              }
+              label={`${isNew ? "Select scene model file" : "Replace scene model file"} (max ${
+                api.maxUploadSize
+              }mb .glb)`}
               id="glbFile"
               type="file"
               required={isNew}
@@ -341,6 +363,10 @@ function CreateScenePage({ match, api }) {
           {error && <ErrorMessage>{error}</ErrorMessage>}
         </RightContent>
       </SceneUploadFormContainer>
+      <InfoBox>
+        For more info on creating scenes in Blender, check out the{" "}
+        <a href="https://github.com/mozillareality/hubs-blender-exporter">Hubs Blender Exporter</a>
+      </InfoBox>
     </>
   );
 
