@@ -837,14 +837,11 @@ class GLTFExporter {
     }
 
     // alphaMode
-    if (material.transparent || material.alphaTest > 0.0) {
-      // Write alphaCutoff if it's non-zero and different from the default (0.5).
-      if (material.alphaTest > 0.0 && material.alphaTest !== 0.5) {
-        gltfMaterial.alphaMode = "MASK";
-        gltfMaterial.alphaCutoff = material.alphaTest;
-      } else {
-        gltfMaterial.alphaMode = "BLEND";
-      }
+    if (material.transparent) {
+      gltfMaterial.alphaMode = "BLEND";
+    } else if (material.alphaTest > 0.0) {
+      gltfMaterial.alphaMode = "MASK";
+      gltfMaterial.alphaCutoff = material.alphaTest;
     }
 
     // doubleSided
