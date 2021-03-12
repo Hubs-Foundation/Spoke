@@ -107,7 +107,18 @@ export default class PublishDialog extends Component {
         {contentAttributions && (
           <FormField>
             <label>Model Attribution:</label>
-            <p>{contentAttributions.map(a => `${a.name} by ${a.author}\n`)}</p>
+            <ul>
+              {contentAttributions.map(
+                (a, i) =>
+                  a.author &&
+                  a.title && (
+                    <li key={i}>
+                      <b>{`${a.title}`}</b>
+                      {(a.author && ` (by ${a.author})`) || ` (by Unknown)`}
+                    </li>
+                  )
+              )}
+            </ul>
           </FormField>
         )}
       </PreviewDialog>

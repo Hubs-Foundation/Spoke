@@ -18,6 +18,10 @@ export default class ImageNode extends EditorNodeMixin(Image) {
 
     const { src, projection, controls, alphaMode, alphaCutoff } = json.components.find(c => c.name === "image").props;
 
+    if (json.components.find(c => c.name === "billboard")) {
+      node.billboard = true;
+    }
+
     loadAsync(
       (async () => {
         await node.load(src, onError);
@@ -28,6 +32,12 @@ export default class ImageNode extends EditorNodeMixin(Image) {
       })()
     );
 
+    const linkComponent = json.components.find(c => c.name === "link");
+
+    if (linkComponent) {
+      node.href = linkComponent.props.href;
+    }
+
     return node;
   }
 
@@ -35,7 +45,9 @@ export default class ImageNode extends EditorNodeMixin(Image) {
     super(editor);
 
     this._canonicalUrl = "";
+    this.href = "";
     this.controls = true;
+    this.billboard = false;
   }
 
   get src() {
@@ -70,7 +82,12 @@ export default class ImageNode extends EditorNodeMixin(Image) {
     this.showLoadingCube();
 
     try {
-      const { accessibleUrl } = await this.editor.api.resolveMedia(src);
+      const { accessibleUrl, meta } = await this.editor.api.resolveMedia(src);
+
+      this.meta = meta;
+
+      this.updateAttribution();
+
       await super.load(accessibleUrl);
       this.issues = getObjectPerfIssues(this._mesh, false);
 
@@ -105,15 +122,17 @@ export default class ImageNode extends EditorNodeMixin(Image) {
     super.copy(source, recursive);
 
     this.controls = source.controls;
+    this.billboard = source.billboard;
     this.alphaMode = source.alphaMode;
     this.alphaCutoff = source.alphaCutoff;
     this._canonicalUrl = source._canonicalUrl;
+    this.href = source.href;
 
     return this;
   }
 
   serialize() {
-    return super.serialize({
+    const components = {
       image: {
         src: this._canonicalUrl,
         controls: this.controls,
@@ -121,7 +140,17 @@ export default class ImageNode extends EditorNodeMixin(Image) {
         alphaCutoff: this.alphaCutoff,
         projection: this.projection
       }
-    });
+    };
+
+    if (this.billboard) {
+      components.billboard = {};
+    }
+
+    if (this.href) {
+      components.link = { href: this.href };
+    }
+
+    return super.serialize(components);
   }
 
   prepareForExport() {
@@ -133,14 +162,25 @@ export default class ImageNode extends EditorNodeMixin(Image) {
       alphaMode: this.alphaMode,
       projection: this.projection
     };
+
     if (this.alphaMode === ImageAlphaMode.Mask) {
       imageData.alphaCutoff = this.alphaCutoff;
     }
 
     this.addGLTFComponent("image", imageData);
+
     this.addGLTFComponent("networked", {
       id: this.uuid
     });
+
+    if (this.billboard && this.projection === "flat") {
+      this.addGLTFComponent("billboard", {});
+    }
+
+    if (this.href && this.projection === "flat") {
+      this.addGLTFComponent("link", { href: this.href });
+    }
+
     this.replaceObject();
   }
 

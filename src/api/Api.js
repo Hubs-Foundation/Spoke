@@ -228,6 +228,25 @@ export default class Project extends EventEmitter {
     return json;
   }
 
+  async getProjectlessScenes() {
+    const token = this.getToken();
+
+    const headers = {
+      "content-type": "application/json",
+      authorization: `Bearer ${token}`
+    };
+
+    const response = await this.fetch(`https://${RETICULUM_SERVER}/api/v1/scenes/projectless`, { headers });
+
+    const json = await response.json();
+
+    if (!Array.isArray(json.scenes)) {
+      throw new Error(`Error fetching scenes: ${json.error || "Unknown error."}`);
+    }
+
+    return json.scenes;
+  }
+
   async resolveUrl(url, index) {
     if (!shouldCorsProxy(url)) {
       return { origin: url };
@@ -287,11 +306,12 @@ export default class Project extends EventEmitter {
     if (resolveMediaCache.has(cacheKey)) return resolveMediaCache.get(cacheKey);
 
     const request = (async () => {
-      let contentType, canonicalUrl, accessibleUrl;
+      let contentType, canonicalUrl, accessibleUrl, meta;
 
       try {
         const result = await this.resolveUrl(absoluteUrl);
         canonicalUrl = result.origin;
+        meta = result.meta;
         accessibleUrl = proxiedUrlFor(canonicalUrl, index);
 
         contentType =
@@ -315,7 +335,7 @@ export default class Project extends EventEmitter {
         throw new RethrownError(`Error loading Sketchfab model "${accessibleUrl}"`, error);
       }
 
-      return { canonicalUrl, accessibleUrl, contentType };
+      return { canonicalUrl, accessibleUrl, contentType, meta };
     })();
 
     resolveMediaCache.set(cacheKey, request);
@@ -890,7 +910,7 @@ export default class Project extends EventEmitter {
         allow_promotion: publishParams.allowPromotion,
         name: publishParams.name,
         attributions: {
-          creator: publishParams.creatorAttribution,
+          creator: publishParams.creatorAttribution && publishParams.creatorAttribution.trim(),
           content: publishParams.contentAttributions
         }
       };
@@ -952,6 +972,51 @@ export default class Project extends EventEmitter {
     }
 
     return project;
+  }
+
+  async publishGLBScene(screenshotFile, glbFile, params, signal, sceneId) {
+    let screenshotId, screenshotToken;
+    if (screenshotFile) {
+      const {
+        file_id,
+        meta: { access_token }
+      } = await this.upload(screenshotFile, null, signal);
+      screenshotId = file_id;
+      screenshotToken = access_token;
+    }
+
+    let glbId, glbToken;
+    if (glbFile) {
+      const {
+        file_id,
+        meta: { access_token }
+      } = await this.upload(glbFile, null, signal);
+      glbId = file_id;
+      glbToken = access_token;
+    }
+
+    const headers = {
+      "content-type": "application/json",
+      authorization: `Bearer ${this.getToken()}`
+    };
+
+    const sceneParams = {
+      screenshot_file_id: screenshotId,
+      screenshot_file_token: screenshotToken,
+      model_file_id: glbId,
+      model_file_token: glbToken,
+      ...params
+    };
+
+    const body = JSON.stringify({ scene: sceneParams });
+
+    const resp = await this.fetch(`https://${RETICULUM_SERVER}/api/v1/scenes${sceneId ? "/" + sceneId : ""}`, {
+      method: sceneId ? "PUT" : "POST",
+      headers,
+      body
+    });
+
+    return resp.json();
   }
 
   async upload(blob, onUploadProgress, signal) {
