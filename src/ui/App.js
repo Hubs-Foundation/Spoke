@@ -20,6 +20,7 @@ import LoginPage from "./auth/LoginPage";
 import LogoutPage from "./auth/LogoutPage";
 import ProjectsPage from "./projects/ProjectsPage";
 import CreateProjectPage from "./projects/CreateProjectPage";
+import CreateScenePage from "./projects/CreateScenePage";
 
 import { ThemeProvider } from "styled-components";
 
@@ -82,6 +83,7 @@ export default class App extends Component {
                   <Route path="/projects" exact component={ProjectsPage} />
                   <Route path="/projects/:projectId" component={EditorContainer} />
                   <Route path="/kits/package" component={PackageKitPage} />
+                  <Route path="/scenes/:sceneId" component={CreateScenePage} />
                   <Route render={() => <Error message="Page not found." />} />
                 </Switch>
               </Column>

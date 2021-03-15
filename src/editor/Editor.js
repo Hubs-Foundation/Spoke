@@ -350,7 +350,7 @@ export default class Editor extends EventEmitter {
 
     const scene = this.scene;
 
-    const floorPlanNode = scene.findNodeByType(FloorPlanNode);
+    const floorPlanNode = scene.findNodeByType(FloorPlanNode, false);
 
     if (floorPlanNode) {
       await floorPlanNode.generate(signal);

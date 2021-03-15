@@ -10,6 +10,7 @@ import { Color, Object3D } from "three";
 import serializeColor from "../utils/serializeColor";
 import LoadingCube from "../objects/LoadingCube";
 import ErrorIcon from "../objects/ErrorIcon";
+import traverseFilteredSubtrees from "../utils/traverseFilteredSubtrees";
 
 export default function EditorNodeMixin(Object3DClass) {
   return class extends Object3DClass {
@@ -56,7 +57,13 @@ export default function EditorNodeMixin(Object3DClass) {
         const visibleComponent = json.components.find(c => c.name === "visible");
 
         if (visibleComponent) {
-          node.visible = visibleComponent.props.visible;
+          node._visible = visibleComponent.props.visible;
+        }
+
+        const editorSettingsComponent = json.components.find(c => c.name === "editor-settings");
+
+        if (editorSettingsComponent) {
+          node.enabled = editorSettingsComponent.props.enabled;
         }
       }
 
@@ -70,13 +77,14 @@ export default function EditorNodeMixin(Object3DClass) {
       this.nodeName = this.constructor.nodeName;
       this.name = this.constructor.nodeName;
       this.isNode = true;
-      this.isCollapsed = false;
       this.disableTransform = this.constructor.disableTransform;
       this.useMultiplePlacementMode = this.constructor.useMultiplePlacementMode;
       this.ignoreRaycast = this.constructor.ignoreRaycast;
 
       this.staticMode = StaticModes.Inherits;
       this.originalStaticMode = null;
+      this.enabled = true;
+      this._visible = true;
       this.saveParent = false;
       this.loadingCube = null;
       this.errorIcon = null;
@@ -110,8 +118,18 @@ export default function EditorNodeMixin(Object3DClass) {
       }
 
       this.issues = source.issues.slice();
+      this._visible = source._visible;
+      this.enabled = source.enabled;
 
       return this;
+    }
+
+    get visible() {
+      return this.enabled && this._visible;
+    }
+
+    set visible(value) {
+      this._visible = value;
     }
 
     onPlay() {}
@@ -163,7 +181,13 @@ export default function EditorNodeMixin(Object3DClass) {
           {
             name: "visible",
             props: {
-              visible: this.visible
+              visible: this._visible
+            }
+          },
+          {
+            name: "editor-settings",
+            props: {
+              enabled: this.enabled
             }
           }
         ]
@@ -345,40 +369,46 @@ export default function EditorNodeMixin(Object3DClass) {
       return isDynamic(this);
     }
 
-    findNodeByType(nodeType) {
-      if (this.constructor === nodeType) {
-        return this;
-      }
+    findNodeByType(nodeType, includeDisabled = true) {
+      let node = null;
 
-      for (const child of this.children) {
-        if (child.isNode) {
-          const result = child.findNodeByType(nodeType);
-
-          if (result) {
-            return result;
-          }
+      traverseFilteredSubtrees(this, child => {
+        if (node) {
+          return false;
         }
-      }
 
-      return null;
+        if (!child.isNode) {
+          return;
+        }
+
+        if (!child.enabled && !includeDisabled) {
+          return false;
+        }
+
+        if (child.constructor === nodeType) {
+          node = child;
+        }
+      });
+
+      return node;
     }
 
-    getNodesByType(nodeType) {
+    getNodesByType(nodeType, includeDisabled = true) {
       const nodes = [];
 
-      if (this.constructor === nodeType) {
-        nodes.push(this);
-      }
-
-      for (const child of this.children) {
-        if (child.isNode) {
-          const results = child.getNodesByType(nodeType);
-
-          for (const result of results) {
-            nodes.push(result);
-          }
+      traverseFilteredSubtrees(this, child => {
+        if (!child.isNode) {
+          return;
         }
-      }
+
+        if (!child.enabled && !includeDisabled) {
+          return false;
+        }
+
+        if (child.constructor === nodeType) {
+          nodes.push(this);
+        }
+      });
 
       return nodes;
     }
@@ -386,6 +416,46 @@ export default function EditorNodeMixin(Object3DClass) {
     // Used for calculating stats for the Performance Check Dialog
     getRuntimeResourcesForStats() {
       // return { textures: [], materials: [], meshes: [], lights: [] };
+    }
+
+    // Returns the node's attribution information by default just the name
+    // This should be overriding by nodes that can provide a more specific info (ie. models based on GLTF)
+    getAttribution() {
+      return {
+        title: this.name.replace(/\.[^/.]+$/, "")
+      };
+    }
+
+    // Updates attribution information. The meta information from the API is consider the most authoritative source
+    // That info then would be updated with node's source information if exists.
+    updateAttribution() {
+      const attribution = this.getAttribution();
+      this.attribution = this.attribution || {};
+      if (this.meta) {
+        Object.assign(
+          this.attribution,
+          this.meta.author ? { author: this.meta.author ? this.meta.author.replace(/ \(http.+\)/, "") : "" } : null,
+          this.meta.name ? { title: this.meta.name } : this.name ? { title: this.name.replace(/\.[^/.]+$/, "") } : null,
+          this.meta.author && this.meta.name && this._canonicalUrl ? { url: this._canonicalUrl } : null
+        );
+      }
+      // Replace the attribute keys only if they don't exist otherwise
+      // we give preference to the info coming from the API source over the GLTF asset
+      Object.keys(this.attribution).forEach(key => {
+        if (!this.attribution[key] || this.attribution[key] == null) {
+          this.attribution[key] = attribution[key];
+        }
+      });
+      // If the GLTF attribution info has keys that are missing form the API source, we add them
+      for (const key in attribution) {
+        if (!Object.prototype.hasOwnProperty.call(this.attribution, key)) {
+          if (key === "author") {
+            this.attribution[key] = attribution[key] ? attribution[key].replace(/ \(http.+\)/, "") : "";
+          } else {
+            this.attribution[key] = attribution[key];
+          }
+        }
+      }
     }
   };
 }

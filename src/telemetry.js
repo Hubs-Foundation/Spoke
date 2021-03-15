@@ -33,7 +33,7 @@ export function Telemetry({ overridePage, overrideTitle }) {
       overrideTitle = "Editor";
     }
 
-    const page = "/spoke" + (overridePage || location.pathname);
+    const page = `/spoke${overridePage || location.pathname}`;
     const title = overrideTitle ? "Spoke by Mozilla | " + overrideTitle : document.title;
 
     console.info(`Telemetry ${telemetryEnabled ? "enabled" : "disabled"} | Navigated to: ${page}`);

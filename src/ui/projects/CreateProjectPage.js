@@ -122,6 +122,9 @@ export default function CreateProjectPage({ history, location }) {
                   <SearchInput placeholder="Search scenes..." value={params.q} onChange={onChangeQuery} />
                 </ProjectGridHeaderRow>
                 <ProjectGridHeaderRow>
+                  <Button as={Link} to="/scenes/new">
+                    Import From Blender
+                  </Button>
                   <Button as={Link} to="/projects/new">
                     New Empty Project
                   </Button>
