@@ -6,7 +6,7 @@ import spawnPointModelUrl from "../../assets/spawn-point.glb";
 let spawnPointHelperModel = null;
 
 export default class SpawnPointNode extends EditorNodeMixin(Object3D) {
-  static legacyComponentName = "spawn-point";
+  static componentName = "spawn-point";
 
   static nodeName = "Spawn Point";
 

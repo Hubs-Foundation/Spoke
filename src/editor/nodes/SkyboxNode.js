@@ -2,7 +2,7 @@ import EditorNodeMixin from "./EditorNodeMixin";
 import Sky from "../objects/Sky";
 
 export default class SkyboxNode extends EditorNodeMixin(Sky) {
-  static legacyComponentName = "skybox";
+  static componentName = "skybox";
 
   static disableTransform = true;
 

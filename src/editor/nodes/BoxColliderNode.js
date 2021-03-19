@@ -2,7 +2,7 @@ import { Object3D, BoxBufferGeometry, Material, Mesh, BoxHelper } from "three";
 import EditorNodeMixin from "./EditorNodeMixin";
 
 export default class BoxColliderNode extends EditorNodeMixin(Object3D) {
-  static legacyComponentName = "box-collider";
+  static componentName = "box-collider";
 
   static nodeName = "Box Collider";
 

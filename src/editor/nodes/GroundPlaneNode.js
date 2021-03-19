@@ -3,7 +3,7 @@ import EditorNodeMixin from "./EditorNodeMixin";
 import GroundPlane from "../objects/GroundPlane";
 
 export default class GroundPlaneNode extends EditorNodeMixin(GroundPlane) {
-  static legacyComponentName = "ground-plane";
+  static componentName = "ground-plane";
 
   static nodeName = "Ground Plane";
 

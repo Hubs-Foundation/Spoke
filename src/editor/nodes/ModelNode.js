@@ -23,7 +23,7 @@ const defaultStats = {
 export default class ModelNode extends EditorNodeMixin(Model) {
   static nodeName = "Model";
 
-  static legacyComponentName = "gltf-model";
+  static componentName = "gltf-model";
 
   static initialElementProps = {
     initialScale: "fit",

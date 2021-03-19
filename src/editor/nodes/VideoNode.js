@@ -7,7 +7,7 @@ import { RethrownError } from "../utils/errors";
 import { getObjectPerfIssues } from "../utils/performance";
 
 export default class VideoNode extends EditorNodeMixin(Video) {
-  static legacyComponentName = "video";
+  static componentName = "video";
 
   static nodeName = "Video";
 
