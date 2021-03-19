@@ -3,7 +3,7 @@ import PhysicalPointLight from "../objects/PhysicalPointLight";
 import SpokePointLightHelper from "../helpers/SpokePointLightHelper";
 
 export default class PointLightNode extends EditorNodeMixin(PhysicalPointLight) {
-  static legacyComponentName = "point-light";
+  static componentName = "point-light";
 
   static nodeName = "Point Light";
 

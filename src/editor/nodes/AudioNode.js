@@ -8,7 +8,7 @@ import { RethrownError } from "../utils/errors";
 let audioHelperTexture = null;
 
 export default class AudioNode extends EditorNodeMixin(AudioSource) {
-  static legacyComponentName = "audio";
+  static componentName = "audio";
 
   static nodeName = "Audio";
 

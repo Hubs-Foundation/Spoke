@@ -3,7 +3,7 @@ import PhysicalSpotLight from "../objects/PhysicalSpotLight";
 import SpokeSpotLightHelper from "../helpers/SpokeSpotLightHelper";
 
 export default class SpotLightNode extends EditorNodeMixin(PhysicalSpotLight) {
-  static legacyComponentName = "spot-light";
+  static componentName = "spot-light";
 
   static nodeName = "Spot Light";
 

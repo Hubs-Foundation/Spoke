@@ -8,7 +8,7 @@ import { isKitPieceNode, getComponent, getGLTFComponent, traverseGltfNode } from
 import { RethrownError } from "../utils/errors";
 
 export default class KitPieceNode extends EditorNodeMixin(Model) {
-  static legacyComponentName = "kit-piece";
+  static componentName = "kit-piece";
 
   static experimental = true;
 

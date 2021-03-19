@@ -5,7 +5,7 @@ import { RethrownError } from "../utils/errors";
 import { getObjectPerfIssues, maybeAddLargeFileIssue } from "../utils/performance";
 
 export default class ImageNode extends EditorNodeMixin(Image) {
-  static legacyComponentName = "image";
+  static componentName = "image";
 
   static nodeName = "Image";
 

@@ -2,7 +2,7 @@ import { AmbientLight } from "three";
 import EditorNodeMixin from "./EditorNodeMixin";
 
 export default class AmbientLightNode extends EditorNodeMixin(AmbientLight) {
-  static legacyComponentName = "ambient-light";
+  static componentName = "ambient-light";
 
   static nodeName = "Ambient Light";
 

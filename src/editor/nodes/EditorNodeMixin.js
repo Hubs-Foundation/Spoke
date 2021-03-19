@@ -36,7 +36,7 @@ export default function EditorNodeMixin(Object3DClass) {
     }
 
     static shouldDeserialize(entityJson) {
-      return !!entityJson.components.find(c => c.name === this.legacyComponentName);
+      return !!entityJson.components.find(c => c.name === this.componentName);
     }
 
     static async deserialize(editor, json) {

@@ -3,7 +3,7 @@ import PhysicalDirectionalLight from "../objects/PhysicalDirectionalLight";
 import SpokeDirectionalLightHelper from "../helpers/SpokeDirectionalLightHelper";
 
 export default class DirectionalLightNode extends EditorNodeMixin(PhysicalDirectionalLight) {
-  static legacyComponentName = "directional-light";
+  static componentName = "directional-light";
 
   static nodeName = "Directional Light";
 

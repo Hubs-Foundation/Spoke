@@ -23,7 +23,7 @@ export const NavMeshMode = {
 export default class FloorPlanNode extends EditorNodeMixin(FloorPlan) {
   static nodeName = "Floor Plan";
 
-  static legacyComponentName = "floor-plan";
+  static componentName = "floor-plan";
 
   static disableTransform = true;
 
