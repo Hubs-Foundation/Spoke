@@ -17,16 +17,9 @@
 
 :tada: **Share**: Invite people to meet in your new space by publishing your content to Hubs immediately. With just a few clicks, you'll have a world of your own to experience and share - all from your browser.
 
-## Development
+## Contributing
 
-- `git clone https://github.com/mozilla/Spoke.git`
-- `cd Spoke`
-- `yarn install`
-- `yarn start`
-
-Then open **https://localhost:9090** (note: HTTPS is required).
-
-When running against a local self-signed cert reticulum server, you'll need to `export NODE_TLS_REJECT_UNAUTHORIZED=0` for publishing to work.
+Info on contributing to Spoke and general Spoke development can be found in the [CONTRIBUTING.md](./CONTRIBUTING.md) doc.
 
 ## Credits
 
