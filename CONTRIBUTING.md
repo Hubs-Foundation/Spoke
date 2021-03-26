@@ -115,7 +115,7 @@ The AssetsPanel renders all registered asset sources and their assets. It has dr
 
 The Toolbar contains a number of input components that interface with the Spoke controls and EditorContainer. It also renders the dropdown menu.
 
-## Elements
+### Elements
 
 Elements are 3D objects that are surfaced in the Spoke asset panel and visible in the scene hierarchy panel. Their properties can also be edited in the properties panel. They are higher-level instances of ThreeJS Object3Ds.
 
@@ -126,7 +126,7 @@ Creating an element requires three pieces:
 - Node Property Editor: A React component that shows up in the Spoke property panel when the element is selected. It contains all the editable properties of a given node.
 - Node Registration: All nodes are registered in `config.js`. When registering a node you need to provide the Node Property Editor and the Node Class.
 
-### Node Class
+#### Node Class
 
 A Node class is just a ThreeJS Object3D that uses the Object3DMixin.
 
@@ -159,7 +159,7 @@ In the `serialize` method we write out the `group` component so that it is prope
 
 The `EditorNodeMixin` class contains a number of other methods and lifecycle methods that are documented in that file.
 
-### Node Property Editor
+#### Node Property Editor
 
 In Spoke, node editors define the component shown in the property panel for the currently selected object. The `GroupNodeEditor` implementation is a very simple example of this. It renders a basic `NodeEditor` with just the component name and description. By default, the parent of the `NodeEditor` (`PropertiesPanelContainer`) will render the name field, visibility checkbox, the node enabled/disabled checkbox, and transform fields. Some of these can be enabled/disabled in the node class. For example the transform fields can be disabled by setting `disableTransform` to `true`.
 
@@ -182,7 +182,7 @@ GroupNodeEditor.description =
 
 Of course this is a simple node property editor without any additional fields. We'll get to a more advanced example in a later section.
 
-### Node Registration
+#### Node Registration
 
 For this Group Node to show up in Spoke, you need to register it with the `Editor` class.
 
@@ -205,4 +205,193 @@ export function createEditor(api, settings) {
 
 These are all of the required parts of a new element in Spoke.
 
-## Creating Custom Elements
+### Asset Sources
+
+Another extensible part of Spoke is the assets panel. Spoke comes with a number of asset source for elements, models, kits, and more. You can add your own sources with just a little code.
+
+Asset sources can be found in `/src/ui/assets/sources`. All sources should extend the `BaseAssetSource` class. You can also extend one of the higher level classes.
+
+- ImageMediaSource
+- VideoMediaSource
+- ModelMediaSource
+- KitSource
+- AssetManifestSource
+
+Each asset source must define a name, icon, asset panel component, and search function. These higher level classes have some good defaults for these various asset types.
+
+#### Image/Video/Model Media Sources
+
+These sources are relatively similar with the main difference being the `assetPanelComponent` being used.
+
+Media sources are intended to be used with an external API, in our case all of these requests are made through Reticulum's media search API.
+
+The sources can be relatively simple like the `BingImagesSource`:
+
+```js
+import ImageMediaSource from "../ImageMediaSource";
+
+export default class BingImagesSource extends ImageMediaSource {
+  constructor(api) {
+    super(api);
+    this.id = "bing_images";
+    this.name = "Bing Images";
+    this.searchLegalCopy = "Search by Bing";
+    this.privacyPolicyUrl = "https://privacy.microsoft.com/en-us/privacystatement";
+  }
+}
+```
+
+Or a bit more complex like the TenorSource which implements a custom search function:
+
+```js
+import VideoMediaSource from "../VideoMediaSource";
+import { ItemTypes } from "../../dnd";
+import VideoNode from "../../../editor/nodes/VideoNode";
+
+export default class TenorSource extends VideoMediaSource {
+  constructor(api) {
+    super(api);
+    this.id = "tenor";
+    this.name = "Tenor GIFs";
+    this.searchPlaceholder = "Search GIFs...";
+    this.searchLegalCopy = "Search by Tenor";
+    this.privacyPolicyUrl = "https://tenor.com/legal-privacy";
+  }
+
+  async search(params, cursor, abortSignal) {
+    const { results, suggestions, nextCursor } = await this.api.searchMedia(
+      this.id,
+      {
+        query: params.query,
+        filter: params.tags && params.tags.length > 0 && params.tags[0].value
+      },
+      cursor,
+      abortSignal
+    );
+
+    return {
+      results: results.map(result => ({
+        id: result.id,
+        videoUrl: result && result.images && result.images.preview && result.images.preview.url,
+        label: result.name,
+        type: ItemTypes.Video,
+        url: result.url,
+        nodeClass: VideoNode,
+        initialProps: {
+          name: result.name,
+          src: result.url
+        }
+      })),
+      suggestions,
+      nextCursor,
+      hasMore: !!nextCursor
+    };
+  }
+}
+```
+
+You can also add tags, categories, and more as search options. The `SketchfabSource` is a good example to follow for these settings.
+
+#### Kit Source
+
+Spoke comes with a few kits including the Architecture Kit and Rock Kit. These kits are packaged as a single glTF file where all of the pieces have a specific `kit-piece` glTF component.
+
+Defining a kit source is as simple as extending the `KitSource`, giving it a name, id and glTF model source.
+
+To create this glTF asset, you'll want to follow our kit packaging guide.
+
+```js
+import KitSource from "../KitSource";
+import { TransformPivot } from "../../../editor/controls/SpokeControls";
+
+export default class ArchitectureKitSource extends KitSource {
+  constructor(api) {
+    super(
+      api,
+      "https://assets-prod.reticulum.io/kits/architecture/ArchKit-64274f78e194a993850e208cbaa2fe7c5a35a955.gltf"
+    );
+    this.id = "architecture-kit";
+    this.name = "Architecture Kit";
+    this.transformPivot = TransformPivot.Selection;
+    // Images take a while to load so we set a debounce timeout
+    this.searchDebounceTimeout = 500;
+  }
+}
+```
+
+#### Asset Manifest Source
+
+The asset manifest source fetches an externally hosted asset manifest and lists all of the assets referenced in it. It's a good option if you have a collection of images, videos, sounds, or models and you want to include them as an asset source in spoke.
+
+To create an asset manifest source, extend the `AssetManifestSource` class and pass the name and asset manifest url to the constructor.
+
+An asset manifest is defined with the following structure:
+
+```json
+{
+  // Currently unused, but you should set this to the same value as you pass to the AssetManifestSource constructor.
+  "name": "Hubs Sound Pack",
+  // Placeholder trext to show in the asset source's search bar.
+  "searchPlaceholder": "Search sounds...",
+  // The assets to show in the assets panel
+  "assets": [
+    {
+      // Must be a unique id
+      "id": "Meeting_Room_no_Music",
+      // The text to show in the ui for the asset item
+      "label": "Meeting Room no Music",
+      // Used for filtering assets by type, what icon to show, the component to use, etc.
+      // "Audio", "Image", "Video" or "Model" are currently supported.
+      "type": "Audio",
+      // The relative path to the asset
+      "url": "Meeting_Room/Meeting_Room_no_Music.mp3",
+      // Tags are used to filter assets. They should be defined in the "tags" section in the manifest. The values in this array should match the values in the "tags" section.
+      "tags": [
+        "Full_Mix",
+        "Meeting_Room"
+      ]
+    }
+    // ...
+  ],
+  // Tags are used to filter assets. The tags hierarchy is shown on the left side of the assets panel.
+  "tags": [
+    {
+      // The text shown in the UI
+      "label": "Full Mix",
+      // The value used above in the "assets" section.
+      "value": "Full_Mix"
+    },
+    {
+      "label": "Meeting Room",
+      "value": "Meeting_Room",
+      // Tags can have children that can be expanded/collapsed.
+      "children": [
+        {
+          "label": "Components",
+          // Note that the value is a path to the tag. This is mostly to avoid collisions between values. All tag values must be unique.
+          "value": "Meeting_Room/Components"
+        }
+      ]
+    }
+    // ...
+  ]
+}
+```
+
+Here is an example of the `AssetManifestSource` in use with our Hubs Sound Pack.
+
+```js
+import AssetManifestSource from "../AssetManifestSource";
+
+export default class HubsSoundPackSource extends AssetManifestSource {
+  constructor(editor) {
+    super(editor, "Hubs Sound Pack", "https://assets-prod.reticulum.io/hubs-sound-pack/asset-manifest.json");
+  }
+}
+
+```
+
+Our [Hubs Sound Pack repository](https://github.com/MozillaReality/hubs-sound-pack) is a great example and starting point for creating your own asset manifest source.
+
+Note that the repository contains a [script for generating an asset manifest](https://github.com/MozillaReality/hubs-sound-pack/blob/master/scripts/manifest-generator.js) from the repository's folder structure. It's fairly specific for this project, but you could easily adopt it for your own project.
+
