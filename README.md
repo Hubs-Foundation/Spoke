@@ -7,7 +7,9 @@
 
   **Easily create custom 3D environments for [Mozilla Hubs](https://hubs.mozilla.com).**
 
-**[https://hubs.mozilla.com/spoke](https://hubs.mozilla.com/spoke)**
+**[Launch Spoke](https://hubs.mozilla.com/spoke)**
+
+**[Spoke Documentation](https://hubs.mozilla.com/docs/spoke-creating-projects.html)**
 
 ## Features
 
@@ -20,6 +22,8 @@
 ## Contributing
 
 Info on contributing to Spoke and general Spoke development can be found in the [CONTRIBUTING.md](./CONTRIBUTING.md) doc.
+
+Additional developer documentation can be found in the [docs](./docs/README.md) folder.
 
 ## Credits
 
