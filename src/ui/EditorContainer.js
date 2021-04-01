@@ -389,7 +389,7 @@ class EditorContainer extends Component {
           },
           {
             name: "Keyboard and Mouse Controls",
-            action: () => window.open("https://github.com/mozilla/Spoke/wiki/Keyboard-and-Mouse-Controls")
+            action: () => window.open("https://hubs.mozilla.com/docs/spoke-controls.html")
           },
           {
             name: "Get Support",
