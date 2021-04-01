@@ -1,4 +1,26 @@
-## Spoke Quick Start
+# Spoke Developer Documentation
+
+- [Getting Started](#getting-started)
+- [Project Structure](#project-structure)
+- [Architecture](#architecture)
+    - [UI](#ui)
+      - [ViewportPanelContainer](#ViewportPanelContainer)
+      - [HierarchyPanelContainer](#HierarchyPanelContainer)
+      - [PropertiesPanelContainer](#PropertiesPanelContainer)
+      - [AssetsPanel](#AssetsPanel)
+      - [Toolbar](#Toolbar)
+    - [Elements](#Elements)
+      - [Node Class](#node-class)
+      - [Node Property Editor](#node-property-editor)
+      - [Node Registration](#node-registration)
+    - [Asset Sources](#asset-sources)
+      - [Image/Video/Model Media Sources](#ImageVideoModel-Media-Sources)
+      - [Kit Source](#kit-source)
+      - [Asset Manifest Source](#asset-manifest-source)
+- Guides
+  - [Creating Custom Elements](./custom-elements)
+
+## Getting Started
 
 - `git clone https://github.com/mozilla/Spoke.git`
 - `cd Spoke`
@@ -9,7 +31,7 @@ Then open **https://localhost:9090** (note: HTTPS is required).
 
 When running against a local self-signed cert reticulum server, you'll need to `export NODE_TLS_REJECT_UNAUTHORIZED=0` for publishing to work.
 
-## Spoke Project Structure
+## Project Structure
 
 ```
 spoke/
@@ -73,7 +95,7 @@ spoke/
     entry.js <- Unit test entrypoint used to mock the browser context
 ```
 
-## Spoke Architecture
+## Architecture
 
 Spoke is a Single Page Web App built primarily with React and ThreeJS. There is a split between the UI code, the Editor code, and the API wrapper code and we will cover the architecture in these three sections.
 
