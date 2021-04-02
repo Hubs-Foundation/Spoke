@@ -62,6 +62,7 @@ import MyAssetsSource from "./ui/assets/sources/MyAssetsSource";
 import ArchitectureKitSource from "./ui/assets/sources/ArchitectureKitSource";
 import RockKitSource from "./ui/assets/sources/RockKitSource";
 import HubsSoundPackSource from "./ui/assets/sources/HubsSoundPackSource";
+import ShapeKitSource from "./ui/assets/sources/ShapeKitSource";
 
 export function createEditor(api, settings) {
   const editor = new Editor(api, settings);
@@ -102,6 +103,7 @@ export function createEditor(api, settings) {
   editor.registerSource(new BingVideosSource(api));
   editor.registerSource(new HubsSoundPackSource(editor));
   editor.registerSource(new TenorSource(api));
+  editor.registerSource(new ShapeKitSource(api));
 
   return editor;
 }
