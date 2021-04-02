@@ -18,8 +18,8 @@
       - [Kit Source](#kit-source)
       - [Asset Manifest Source](#asset-manifest-source)
 - Guides
-  - [Creating Custom Elements](./creating-custom-elements)
-  - [Creating Kits](./creating-kits)
+  - [Creating Custom Elements](./creating-custom-elements.md)
+  - [Creating Kits](./creating-kits.md)
 
 ## Getting Started
 
@@ -344,7 +344,7 @@ To create an asset manifest source, extend the `AssetManifestSource` class and p
 
 An asset manifest is defined with the following structure:
 
-```json
+```jsonc
 {
   // Currently unused, but you should set this to the same value as you pass to the AssetManifestSource constructor.
   "name": "Hubs Sound Pack",
