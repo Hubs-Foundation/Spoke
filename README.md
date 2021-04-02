@@ -7,7 +7,9 @@
 
   **Easily create custom 3D environments for [Mozilla Hubs](https://hubs.mozilla.com).**
 
-**[https://hubs.mozilla.com/spoke](https://hubs.mozilla.com/spoke)**
+**[Launch Spoke](https://hubs.mozilla.com/spoke)**
+
+**[Spoke Documentation](https://hubs.mozilla.com/docs/spoke-creating-projects.html)**
 
 ## Features
 
@@ -17,16 +19,11 @@
 
 :tada: **Share**: Invite people to meet in your new space by publishing your content to Hubs immediately. With just a few clicks, you'll have a world of your own to experience and share - all from your browser.
 
-## Development
+## Contributing
 
-- `git clone https://github.com/mozilla/Spoke.git`
-- `cd Spoke`
-- `yarn install`
-- `yarn start`
+Info on contributing to Spoke and general Spoke development can be found in the [CONTRIBUTING.md](./CONTRIBUTING.md) doc.
 
-Then open **https://localhost:9090** (note: HTTPS is required).
-
-When running against a local self-signed cert reticulum server, you'll need to `export NODE_TLS_REJECT_UNAUTHORIZED=0` for publishing to work.
+Additional developer documentation can be found in the [docs](./docs/README.md) folder.
 
 ## Credits
 
