@@ -18,7 +18,8 @@
       - [Kit Source](#kit-source)
       - [Asset Manifest Source](#asset-manifest-source)
 - Guides
-  - [Creating Custom Elements](./custom-elements)
+  - [Creating Custom Elements](./creating-custom-elements)
+  - [Creating Kits](./creating-kits)
 
 ## Getting Started
 
