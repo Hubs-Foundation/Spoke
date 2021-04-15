@@ -192,6 +192,11 @@ const GLB_HEADER_MAGIC = "glTF";
 const GLB_HEADER_LENGTH = 12;
 const GLB_CHUNK_TYPES = { JSON: 0x4e4f534a, BIN: 0x004e4942 };
 
+const HUBS_NODEREF_COMPONENTS = {
+  "video-texture-target": ["srcNode"],
+  "trigger-volume": ["target"]
+};
+
 /*********************************/
 /********** INTERPOLATION ********/
 /*********************************/
@@ -1990,6 +1995,22 @@ class GLTFLoader {
       ) {
         object.userData.gltfExtensions = object.userData.gltfExtensions || {};
         object.userData.gltfExtensions[name] = objectDef.extensions[name];
+        if (name === "MOZ_hubs_components") {
+          const components = object.userData.gltfExtensions[name];
+          for (const [componentName, componentProps] of Object.entries(components)) {
+            for (const [propName, propValue] of Object.entries(componentProps)) {
+              if (
+                HUBS_NODEREF_COMPONENTS[componentName] &&
+                HUBS_NODEREF_COMPONENTS[componentName].indexOf(propName) !== -1
+              ) {
+                this.getDependency("node", propValue).then(node => {
+                  node.userData.MOZ_spoke_uuid = node.uuid;
+                  componentProps[propName] = { __gltfIndexForUUID: node.uuid };
+                });
+              }
+            }
+          }
+        }
       }
     }
   }
