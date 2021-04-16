@@ -14,6 +14,7 @@
 
 import { RethrownError } from "../utils/errors";
 import loadTexture from "../utils/loadTexture";
+import { HUBS_NODEREF_COMPONENTS, getComponents } from "./moz-hubs-components";
 
 import {
   AnimationClip,
@@ -191,11 +192,6 @@ const EXTENSIONS = {
 const GLB_HEADER_MAGIC = "glTF";
 const GLB_HEADER_LENGTH = 12;
 const GLB_CHUNK_TYPES = { JSON: 0x4e4f534a, BIN: 0x004e4942 };
-
-const HUBS_NODEREF_COMPONENTS = {
-  "video-texture-target": ["srcNode"],
-  "trigger-volume": ["target"]
-};
 
 /*********************************/
 /********** INTERPOLATION ********/
@@ -1996,7 +1992,7 @@ class GLTFLoader {
         object.userData.gltfExtensions = object.userData.gltfExtensions || {};
         object.userData.gltfExtensions[name] = objectDef.extensions[name];
         if (name === "MOZ_hubs_components") {
-          const components = object.userData.gltfExtensions[name];
+          const components = getComponents(object);
           for (const [componentName, componentProps] of Object.entries(components)) {
             for (const [propName, propValue] of Object.entries(componentProps)) {
               if (
