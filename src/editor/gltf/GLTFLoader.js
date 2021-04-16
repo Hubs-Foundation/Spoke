@@ -14,6 +14,7 @@
 
 import { RethrownError } from "../utils/errors";
 import loadTexture from "../utils/loadTexture";
+import { HUBS_NODEREF_COMPONENTS, getComponents } from "./moz-hubs-components";
 
 import {
   AnimationClip,
@@ -1990,6 +1991,22 @@ class GLTFLoader {
       ) {
         object.userData.gltfExtensions = object.userData.gltfExtensions || {};
         object.userData.gltfExtensions[name] = objectDef.extensions[name];
+        if (name === "MOZ_hubs_components") {
+          const components = getComponents(object);
+          for (const [componentName, componentProps] of Object.entries(components)) {
+            for (const [propName, propValue] of Object.entries(componentProps)) {
+              if (
+                HUBS_NODEREF_COMPONENTS[componentName] &&
+                HUBS_NODEREF_COMPONENTS[componentName].indexOf(propName) !== -1
+              ) {
+                this.getDependency("node", propValue).then(node => {
+                  node.userData.MOZ_spoke_uuid = node.uuid;
+                  componentProps[propName] = { __gltfIndexForUUID: node.uuid };
+                });
+              }
+            }
+          }
+        }
       }
     }
   }

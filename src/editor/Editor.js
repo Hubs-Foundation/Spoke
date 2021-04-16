@@ -423,30 +423,8 @@ export default class Editor extends EventEmitter {
         }
       }
 
-      for (const nodeDef of nodeDefs) {
-        if (nodeDef.extensions && nodeDef.extensions.MOZ_hubs_components) {
-          const components = nodeDef.extensions.MOZ_hubs_components;
-          for (const componentName in components) {
-            if (!Object.prototype.hasOwnProperty.call(components, componentName)) continue;
-
-            const component = components[componentName];
-
-            for (const propertyName in component) {
-              if (!Object.prototype.hasOwnProperty.call(component, propertyName)) continue;
-
-              const property = component[propertyName];
-
-              if (
-                property !== null &&
-                typeof property === "object" &&
-                Object.prototype.hasOwnProperty.call(property, "__gltfIndexForUUID")
-              ) {
-                component[propertyName] = uuidToIndexMap[property.__gltfIndexForUUID];
-              }
-            }
-          }
-        }
-      }
+      this.remapNodeRefsInComponents(json.nodes, nodeDefs, uuidToIndexMap);
+      this.remapNodeRefsInComponents(json.materials, nodeDefs, uuidToIndexMap);
     }
 
     if (!json.extensions) {
@@ -473,6 +451,33 @@ export default class Editor extends EventEmitter {
       return { glbBlob, chunks, scores };
     } catch (error) {
       throw new RethrownError("Error creating glb blob", error);
+    }
+  }
+
+  remapNodeRefsInComponents(collection, nodeDefs, uuidToIndexMap) {
+    for (const def of collection) {
+      if (def.extensions && def.extensions.MOZ_hubs_components) {
+        const components = def.extensions.MOZ_hubs_components;
+        for (const componentName in components) {
+          if (!Object.prototype.hasOwnProperty.call(components, componentName)) continue;
+
+          const component = components[componentName];
+
+          for (const propertyName in component) {
+            if (!Object.prototype.hasOwnProperty.call(component, propertyName)) continue;
+
+            const property = component[propertyName];
+
+            if (
+              property !== null &&
+              typeof property === "object" &&
+              Object.prototype.hasOwnProperty.call(property, "__gltfIndexForUUID")
+            ) {
+              component[propertyName] = uuidToIndexMap[property.__gltfIndexForUUID];
+            }
+          }
+        }
+      }
     }
   }
 
