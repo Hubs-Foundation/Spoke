@@ -1999,6 +1999,9 @@ class GLTFLoader {
                 HUBS_NODEREF_COMPONENTS[componentName] &&
                 HUBS_NODEREF_COMPONENTS[componentName].indexOf(propName) !== -1
               ) {
+                // TODO we technically should we awaiting on this promise externally.
+                // In practice it doesn't matter since this is only used at exprot time,
+                // well after this Promise iwll have resolved.
                 this.getDependency("node", propValue).then(node => {
                   node.userData.MOZ_spoke_uuid = node.uuid;
                   componentProps[propName] = { __gltfIndexForUUID: node.uuid };
