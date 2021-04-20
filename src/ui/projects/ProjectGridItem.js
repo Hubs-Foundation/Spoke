@@ -19,11 +19,23 @@ const StyledProjectGridItem = styled(Link)`
   background-color: ${props => props.theme.toolbar};
   text-decoration: none;
   border: 1px solid transparent;
+  position: relative;
 
   &:hover {
     color: inherit;
     border-color: ${props => props.theme.selected};
   }
+`;
+
+const Pill = styled.i`
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  padding: 3px 8px;
+  background-color: ${props => props.theme.pink};
+  color: white;
+  border-radius: 6px;
+  text-align: center;
 `;
 
 const StyledContextMenuTrigger = styled(StylableContextMenuTrigger)`
@@ -83,7 +95,7 @@ const Col = styled.div`
   }
 `;
 
-export default class ProjectGridItem extends Component {
+export class ProjectGridItem extends Component {
   static propTypes = {
     contextMenuId: PropTypes.string,
     project: PropTypes.object.isRequired
@@ -139,3 +151,23 @@ export default class ProjectGridItem extends Component {
     }
   }
 }
+
+export function ProjectGridSceneItem({ scene }) {
+  const creatorAttribution = scene.attributions && scene.attributions.creator;
+  return (
+    <StyledProjectGridItem to={scene.url}>
+      <ThumbnailContainer>{scene.screenshot_url && <Thumbnail src={scene.screenshot_url} />}</ThumbnailContainer>
+      <TitleContainer>
+        <Col>
+          <h3>{scene.name}</h3>
+          {creatorAttribution && <p>{creatorAttribution}</p>}
+        </Col>
+        <Pill>GLB</Pill>
+      </TitleContainer>
+    </StyledProjectGridItem>
+  );
+}
+
+ProjectGridSceneItem.propTypes = {
+  scene: PropTypes.object.isRequired
+};

@@ -58,7 +58,7 @@ export default class SpotLightNodeEditor extends Component {
           largeStep={0.1}
           value={node.intensity}
           onChange={this.onChangeIntensity}
-          unit="°"
+          unit="cd"
         />
         <RadianNumericInputGroup
           name="Inner Cone Angle"

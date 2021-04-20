@@ -6,6 +6,7 @@ import ModelInput from "../inputs/ModelInput";
 import BooleanInput from "../inputs/BooleanInput";
 import { Magic } from "styled-icons/fa-solid/Magic";
 import { GLTFInfo } from "../inputs/GLTFInfo";
+import AttributionNodeEditor from "./AttributionNodeEditor";
 
 export default class SpawnerNodeEditor extends Component {
   static propTypes = {
@@ -37,6 +38,7 @@ export default class SpawnerNodeEditor extends Component {
           <BooleanInput value={node.applyGravity} onChange={this.onChangeApplyGravity} />
         </InputGroup>
         {node.model && <GLTFInfo node={node} />}
+        <AttributionNodeEditor name="Attribution" {...this.props} />
       </NodeEditor>
     );
   }

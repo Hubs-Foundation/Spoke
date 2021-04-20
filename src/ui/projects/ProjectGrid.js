@@ -1,7 +1,7 @@
 import React from "react";
 import PropTypes from "prop-types";
 import styled from "styled-components";
-import ProjectGridItem from "./ProjectGridItem";
+import { ProjectGridItem, ProjectGridSceneItem } from "./ProjectGridItem";
 import { Row } from "../layout/Flex";
 import StringInput from "../inputs/StringInput";
 import { Link } from "react-router-dom";
@@ -63,10 +63,14 @@ const StyledProjectGrid = styled.div`
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
 `;
 
-export function ProjectGrid({ newProjectPath, newProjectLabel, projects, contextMenuId, loading }) {
+export function ProjectGrid({ newProjectPath, newProjectLabel, projects, scenes, contextMenuId, loading }) {
   return (
     <StyledProjectGrid>
       {newProjectPath && !loading && <NewProjectGridItem path={newProjectPath} label={newProjectLabel} />}
+      {scenes &&
+        scenes.map(scene => (
+          <ProjectGridSceneItem key={scene.scene_id || scene.id} scene={scene} contextMenuId={contextMenuId} />
+        ))}
       {projects.map(project => (
         <ProjectGridItem key={project.project_id || project.id} project={project} contextMenuId={contextMenuId} />
       ))}
@@ -78,6 +82,7 @@ export function ProjectGrid({ newProjectPath, newProjectLabel, projects, context
 ProjectGrid.propTypes = {
   contextMenuId: PropTypes.string,
   projects: PropTypes.arrayOf(PropTypes.object).isRequired,
+  scenes: PropTypes.arrayOf(PropTypes.object),
   newProjectPath: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
   newProjectLabel: PropTypes.string,
   loading: PropTypes.bool

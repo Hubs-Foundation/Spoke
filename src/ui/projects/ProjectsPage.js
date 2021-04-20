@@ -85,6 +85,7 @@ class ProjectsPage extends Component {
 
     this.state = {
       projects: [],
+      scenes: [],
       loading: isAuthenticated,
       isAuthenticated,
       error: null
@@ -92,12 +93,17 @@ class ProjectsPage extends Component {
   }
 
   componentDidMount() {
+    document.title = configs.longName();
+
     // We dont need to load projects if the user isn't logged in
     if (this.state.isAuthenticated) {
-      this.props.api
-        .getProjects()
-        .then(projects => {
+      Promise.all([this.props.api.getProjects(), this.props.api.getProjectlessScenes()])
+        .then(([projects, scenes]) => {
           this.setState({
+            scenes: scenes.map(scene => ({
+              ...scene,
+              url: `/scenes/${scene.scene_id}`
+            })),
             projects: projects.map(project => ({
               ...project,
               url: `/projects/${project.project_id}`
@@ -137,7 +143,7 @@ class ProjectsPage extends Component {
   ProjectContextMenu = connectMenu(contextMenuId)(this.renderContextMenu);
 
   render() {
-    const { error, loading, projects, isAuthenticated } = this.state;
+    const { error, loading, projects, scenes, isAuthenticated } = this.state;
 
     const ProjectContextMenu = this.ProjectContextMenu;
 
@@ -187,6 +193,7 @@ class ProjectsPage extends Component {
                     <ProjectGrid
                       loading={loading}
                       projects={projects}
+                      scenes={scenes}
                       newProjectPath="/projects/templates"
                       contextMenuId={contextMenuId}
                     />

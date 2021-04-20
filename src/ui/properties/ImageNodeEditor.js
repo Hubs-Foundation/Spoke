@@ -2,6 +2,7 @@ import React from "react";
 import PropTypes from "prop-types";
 import NodeEditor from "./NodeEditor";
 import InputGroup from "../inputs/InputGroup";
+import StringInput from "../inputs/StringInput";
 import SelectInput from "../inputs/SelectInput";
 import BooleanInput from "../inputs/BooleanInput";
 import NumericInputGroup from "../inputs/NumericInputGroup";
@@ -9,6 +10,7 @@ import { ImageProjection, ImageAlphaMode } from "../../editor/objects/Image";
 import ImageInput from "../inputs/ImageInput";
 import { Image } from "styled-icons/fa-solid/Image";
 import useSetPropertySelected from "./useSetPropertySelected";
+import AttributionNodeEditor from "./AttributionNodeEditor";
 
 const mapValue = v => ({ label: v, value: v });
 const imageProjectionOptions = Object.values(ImageProjection).map(mapValue);
@@ -18,18 +20,31 @@ export default function ImageNodeEditor(props) {
   const { editor, node } = props;
   const onChangeSrc = useSetPropertySelected(editor, "src");
   const onChangeControls = useSetPropertySelected(editor, "controls");
+  const onChangeBillboard = useSetPropertySelected(editor, "billboard");
   const onChangeProjection = useSetPropertySelected(editor, "projection");
   const onChangeTransparencyMode = useSetPropertySelected(editor, "alphaMode");
   const onChangeAlphaCutoff = useSetPropertySelected(editor, "alphaCutoff");
+  const onChangeHref = useSetPropertySelected(editor, "href");
 
   return (
     <NodeEditor description={ImageNodeEditor.description} {...props}>
       <InputGroup name="Image Url">
         <ImageInput value={node.src} onChange={onChangeSrc} />
       </InputGroup>
-      <InputGroup name="Controls" info="Toggle the visibility of the media controls in Hubs.">
+      <InputGroup
+        name="Controls"
+        info="Toggle the visibility of the media controls in Hubs. Does not billboard in Spoke."
+      >
         <BooleanInput value={node.controls} onChange={onChangeControls} />
       </InputGroup>
+      <InputGroup name="Billboard" info="Image always faces user in Hubs.">
+        <BooleanInput value={node.billboard} onChange={onChangeBillboard} />
+      </InputGroup>
+      {node.projection === ImageProjection.Flat && (
+        <InputGroup name="Link Href" info="Allows the image to function as a link for the given url.">
+          <StringInput value={node.href} onChange={onChangeHref} />
+        </InputGroup>
+      )}
       <InputGroup
         name="Transparency Mode"
         info={`How to apply transparency:
@@ -56,6 +71,7 @@ export default function ImageNodeEditor(props) {
       <InputGroup name="Projection">
         <SelectInput options={imageProjectionOptions} value={node.projection} onChange={onChangeProjection} />
       </InputGroup>
+      <AttributionNodeEditor name="Attribution" {...props} />
     </NodeEditor>
   );
 }
