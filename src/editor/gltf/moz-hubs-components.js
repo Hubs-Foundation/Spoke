@@ -4,6 +4,7 @@ import findObject from "../utils/findObject";
 // TODO these should be part of any sort of larger component schema efforts
 export const HUBS_NODEREF_COMPONENTS = {
   "video-texture-target": ["srcNode"],
+  "audio-target": ["srcNode"],
   "trigger-volume": ["target"]
 };
 
