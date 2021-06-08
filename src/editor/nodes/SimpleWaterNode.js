@@ -7,7 +7,7 @@ import { Texture } from "three";
 let waterNormalMap = null;
 
 export default class SimpleWaterNode extends EditorNodeMixin(SimpleWater) {
-  static legacyComponentName = "simple-water";
+  static componentName = "simple-water";
 
   static nodeName = "Simple Water";
 
@@ -25,7 +25,7 @@ export default class SimpleWaterNode extends EditorNodeMixin(SimpleWater) {
       waveSpeed,
       ripplesSpeed,
       ripplesScale
-    } = json.components.find(c => c.name === SimpleWaterNode.legacyComponentName).props;
+    } = json.components.find(c => c.name === SimpleWaterNode.componentName).props;
 
     node.opacity = opacity;
     node.color.set(color);

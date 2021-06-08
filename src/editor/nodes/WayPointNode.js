@@ -6,7 +6,7 @@ import wayPointModelUrl from "../../assets/spawn-point.glb";
 let wayPointHelperModel = null;
 
 export default class WayPointNode extends EditorNodeMixin(Object3D) {
-  static legacyComponentName = "waypoint";
+  static componentName = "waypoint";
 
   static nodeName = "Way Point";
 

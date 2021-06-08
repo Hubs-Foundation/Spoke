@@ -2,7 +2,7 @@ import { Matrix4, PerspectiveCamera, CameraHelper } from "three";
 import EditorNodeMixin from "./EditorNodeMixin";
 
 export default class ScenePreviewCameraNode extends EditorNodeMixin(PerspectiveCamera) {
-  static legacyComponentName = "scene-preview-camera";
+  static componentName = "scene-preview-camera";
 
   static nodeName = "Scene Preview Camera";
 

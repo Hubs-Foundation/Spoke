@@ -7,7 +7,7 @@ import loadTexture from "../utils/loadTexture";
 let defaultParticleSprite = null;
 
 export default class ParticleEmitterNode extends EditorNodeMixin(ParticleEmitter) {
-  static legacyComponentName = "particle-emitter";
+  static componentName = "particle-emitter";
 
   static nodeName = "Particle Emitter";
 

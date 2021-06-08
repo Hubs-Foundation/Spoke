@@ -17,7 +17,6 @@ import { MediumButton } from "../inputs/Button";
 import { Link } from "react-router-dom";
 import LatestUpdate from "../whats-new/LatestUpdate";
 import { connectMenu, ContextMenu, MenuItem } from "../layout/ContextMenu";
-import templates from "./templates";
 import styled from "styled-components";
 
 export const ProjectsSection = styled.section`
@@ -146,12 +145,6 @@ class ProjectsPage extends Component {
     const { error, loading, projects, scenes, isAuthenticated } = this.state;
 
     const ProjectContextMenu = this.ProjectContextMenu;
-
-    const topTemplates = [];
-
-    for (let i = 0; i < templates.length && i < 4; i++) {
-      topTemplates.push(templates[i]);
-    }
 
     return (
       <>

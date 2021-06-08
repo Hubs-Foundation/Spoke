@@ -1,5 +1,13 @@
 import findObject from "../utils/findObject";
 
+// Component prooperties that contain node references
+// TODO these should be part of any sort of larger component schema efforts
+export const HUBS_NODEREF_COMPONENTS = {
+  "video-texture-target": ["srcNode"],
+  "audio-target": ["srcNode"],
+  "trigger-volume": ["target"]
+};
+
 export function getComponents(object) {
   return (
     object.userData.gltfExtensions &&

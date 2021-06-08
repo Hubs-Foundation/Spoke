@@ -23,7 +23,7 @@ const defaultStats = {
 export default class ModelNode extends EditorNodeMixin(Model) {
   static nodeName = "Model";
 
-  static legacyComponentName = "gltf-model";
+  static componentName = "gltf-model";
 
   static initialElementProps = {
     initialScale: "fit",
@@ -270,7 +270,7 @@ export default class ModelNode extends EditorNodeMixin(Model) {
 
   getAttribution() {
     // Sketchfab models use an extra object inside the asset object
-    // Blender & Google Poly exporters add a copyright property to the asset object
+    // Blender exporters add a copyright property to the asset object
     const name = this.name.replace(/\.[^/.]+$/, "");
     const assetDef = this.gltfJson.asset;
     const attributions = {};
