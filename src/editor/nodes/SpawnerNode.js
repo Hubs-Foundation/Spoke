@@ -20,7 +20,7 @@ const defaultStats = {
 };
 
 export default class SpawnerNode extends EditorNodeMixin(Model) {
-  static legacyComponentName = "spawner";
+  static componentName = "spawner";
 
   static nodeName = "Spawner";
 

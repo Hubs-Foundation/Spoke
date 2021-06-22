@@ -6,7 +6,7 @@ import loadTexture from "../utils/loadTexture";
 let linkHelperTexture = null;
 
 export default class LinkNode extends EditorNodeMixin(Object3D) {
-  static legacyComponentName = "link";
+  static componentName = "link";
 
   static nodeName = "Link";
 

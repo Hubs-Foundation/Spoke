@@ -128,8 +128,7 @@ export default class LandingPage extends Component {
                 <h3>Discover</h3>
                 <p>
                   Explore images, videos, and 3D models from around the web, all without opening up a new tab. With
-                  media integrations from Sketchfab and Google Poly, you&#39;ll be on your way to creating a scene in no
-                  time.
+                  media integrations from Sketchfab, you&#39;ll be on your way to creating a scene in no time.
                 </p>
               </Callout>
               <Callout imageSrc={editor}>

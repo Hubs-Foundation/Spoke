@@ -1262,6 +1262,47 @@ class GLTFExporter {
   }
 
   /**
+   * Process camera
+   * @param  {THREE.Camera} camera Camera to process
+   * @return {Integer}      Index of the processed mesh in the "camera" array
+   */
+  processCamera(camera) {
+    if (!this.outputJSON.cameras) {
+      this.outputJSON.cameras = [];
+    }
+
+    const isOrtho = camera.isOrthographicCamera;
+
+    const gltfCamera = {
+      type: isOrtho ? "orthographic" : "perspective"
+    };
+
+    if (isOrtho) {
+      gltfCamera.orthographic = {
+        xmag: camera.right * 2,
+        ymag: camera.top * 2,
+        zfar: camera.far <= 0 ? 0.001 : camera.far,
+        znear: camera.near < 0 ? 0 : camera.near
+      };
+    } else {
+      gltfCamera.perspective = {
+        aspectRatio: camera.aspect,
+        yfov: _Math.degToRad(camera.fov),
+        zfar: camera.far <= 0 ? 0.001 : camera.far,
+        znear: camera.near < 0 ? 0 : camera.near
+      };
+    }
+
+    if (camera.name !== "") {
+      gltfCamera.name = camera.type;
+    }
+
+    this.outputJSON.cameras.push(gltfCamera);
+
+    return this.outputJSON.cameras.length - 1;
+  }
+
+  /**
    * Process Object3D node
    * @param  {THREE.Object3D} node Object3D to processNode
    * @return {Integer}      Index of the node in the nodes list
@@ -1312,6 +1353,8 @@ class GLTFExporter {
       if (mesh !== null) {
         gltfNode.mesh = mesh;
       }
+    } else if (object.isCamera) {
+      gltfNode.camera = this.processCamera(object);
     }
 
     if (object.isSkinnedMesh) {

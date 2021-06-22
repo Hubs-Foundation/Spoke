@@ -20,7 +20,7 @@ export const MediaType = {
 };
 
 export default class MediaFrameNode extends EditorNodeMixin(Object3D) {
-  static legacyComponentName = "media-frame";
+  static componentName = "media-frame";
 
   static nodeName = "Media Frame";
 
