@@ -6,7 +6,7 @@ import MeshCombinationGroup from "../MeshCombinationGroup";
 import GroupNode from "./GroupNode";
 import getNodeWithUUID from "../utils/getNodeWithUUID";
 import serializeColor from "../utils/serializeColor";
-import { DistanceModelType } from "../objects/AudioSource";
+import { DistanceModelType } from "../objects/AudioParams";
 import traverseFilteredSubtrees from "../utils/traverseFilteredSubtrees";
 
 // Migrate v1 spoke scene to v2

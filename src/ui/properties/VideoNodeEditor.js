@@ -8,7 +8,7 @@ import StringInput from "../inputs/StringInput";
 import { VideoProjection } from "../../editor/objects/Video";
 import VideoInput from "../inputs/VideoInput";
 import { Video } from "styled-icons/fa-solid/Video";
-import AudioSourceProperties from "./AudioSourceProperties";
+import AudioParamsProperties from "./AudioParamsProperties";
 import useSetPropertySelected from "./useSetPropertySelected";
 import AttributionNodeEditor from "./AttributionNodeEditor";
 
@@ -37,7 +37,7 @@ export default function VideoNodeEditor(props) {
       <InputGroup name="Projection">
         <SelectInput options={videoProjectionOptions} value={node.projection} onChange={onChangeProjection} />
       </InputGroup>
-      <AudioSourceProperties {...props} />
+      <AudioParamsProperties {...props} />
       <AttributionNodeEditor name="Attribution" {...props} />
     </NodeEditor>
   );

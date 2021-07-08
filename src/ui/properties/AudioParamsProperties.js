@@ -1,19 +1,15 @@
 import React from "react";
 import PropTypes from "prop-types";
 import InputGroup from "../inputs/InputGroup";
-import BooleanInput from "../inputs/BooleanInput";
 import SelectInput from "../inputs/SelectInput";
 import NumericInputGroup from "../inputs/NumericInputGroup";
 import CompoundNumericInput from "../inputs/CompoundNumericInput";
-import { AudioType, AudioTypeOptions, DistanceModelOptions, DistanceModelType } from "../../editor/objects/AudioSource";
+import { AudioType, AudioTypeOptions, DistanceModelOptions, DistanceModelType } from "../../editor/objects/AudioParams";
 import useSetPropertySelected from "./useSetPropertySelected";
 
-export default function AudioSourceProperties({ node, editor, multiEdit }) {
-  const onChangeControls = useSetPropertySelected(editor, "controls");
-  const onChangeAutoPlay = useSetPropertySelected(editor, "autoPlay");
-  const onChangeLoop = useSetPropertySelected(editor, "loop");
+export default function AudioParamsProperties({ node, editor, multiEdit }) {
   const onChangeAudioType = useSetPropertySelected(editor, "audioType");
-  const onChangeVolume = useSetPropertySelected(editor, "volume");
+  const onChangeGain = useSetPropertySelected(editor, "gain");
   const onChangeDistanceModel = useSetPropertySelected(editor, "distanceModel");
   const onChangeRolloffFactor = useSetPropertySelected(editor, "rolloffFactor");
   const onChangeRefDistance = useSetPropertySelected(editor, "refDistance");
@@ -26,20 +22,11 @@ export default function AudioSourceProperties({ node, editor, multiEdit }) {
 
   return (
     <>
-      <InputGroup name="Controls" info="Toggle the visibility of the media controls in Hubs.">
-        <BooleanInput value={node.controls} onChange={onChangeControls} />
-      </InputGroup>
-      <InputGroup name="Auto Play" info="If true, the media will play when first entering the scene.">
-        <BooleanInput value={node.autoPlay} onChange={onChangeAutoPlay} />
-      </InputGroup>
-      <InputGroup name="Loop" info="If true the media will loop indefinitely.">
-        <BooleanInput value={node.loop} onChange={onChangeLoop} />
-      </InputGroup>
       <InputGroup name="Audio Type">
         <SelectInput options={AudioTypeOptions} value={node.audioType} onChange={onChangeAudioType} />
       </InputGroup>
       <InputGroup name="Volume">
-        <CompoundNumericInput value={node.volume} onChange={onChangeVolume} />
+        <CompoundNumericInput value={node.gain} onChange={onChangeGain} />
       </InputGroup>
       {!multiEdit && node.audioType === AudioType.PannerNode && (
         <>
@@ -140,7 +127,7 @@ export default function AudioSourceProperties({ node, editor, multiEdit }) {
   );
 }
 
-AudioSourceProperties.propTypes = {
+AudioParamsProperties.propTypes = {
   node: PropTypes.object,
   editor: PropTypes.object,
   multiEdit: PropTypes.bool
