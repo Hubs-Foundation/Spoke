@@ -1,7 +1,26 @@
 import { Object3D } from "three";
 
+export const SourceType = Object.freeze({
+  MEDIA_VIDEO: 0,
+  AVATAR_AUDIO_SOURCE: 1,
+  AVATAR_RIG: 2,
+  AUDIO_TARGET: 3,
+  AUDIO_ZONE: 4
+});
+
+export const AudioType = Object.freeze({
+  Stereo: "stereo",
+  PannerNode: "pannernode"
+});
+
+export const DistanceModelType = Object.freeze({
+  Linear: "linear",
+  Inverse: "inverse",
+  Exponential: "exponential"
+});
+
 export const AudioParamsDefaults = Object.freeze({
-  DISTANCE_MODEL: "inverse",
+  DISTANCE_MODEL: DistanceModelType.Inverse,
   ROLLOFF_FACTOR: 1,
   REF_DISTANCE: 1,
   MAX_DISTANCE: 10000,
@@ -11,16 +30,27 @@ export const AudioParamsDefaults = Object.freeze({
   GAIN: 0.5
 });
 
-export const AudioType = {
-  Stereo: "stereo",
-  PannerNode: "pannernode"
-};
+export const AvatarAudioParamsDefaults = Object.freeze({
+  DISTANCE_MODEL: DistanceModelType.Inverse,
+  ROLLOFF_FACTOR: 2,
+  REF_DISTANCE: 1,
+  MAX_DISTANCE: 10000,
+  INNER_ANGLE: 180,
+  OUTER_ANGLE: 360,
+  OUTER_GAIN: 0,
+  VOLUME: 1.0
+});
 
-export const DistanceModelType = {
-  Linear: "linear",
-  Inverse: "inverse",
-  Exponential: "exponential"
-};
+export const MediaAudioParamsDefaults = Object.freeze({
+  DISTANCE_MODEL: DistanceModelType.Inverse,
+  ROLLOFF_FACTOR: 1,
+  REF_DISTANCE: 1,
+  MAX_DISTANCE: 10000,
+  INNER_ANGLE: 360,
+  OUTER_ANGLE: 0,
+  OUTER_GAIN: 0,
+  VOLUME: 0.5
+});
 
 export const AudioTypeOptions = Object.values(AudioType).map(v => ({ label: v, value: v }));
 
