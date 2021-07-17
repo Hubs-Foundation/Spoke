@@ -576,21 +576,16 @@
             "controls": false,
             "autoPlay": true,
             "loop": true,
-            "projection": "flat"
-          }
-        },
-        {
-          "name": "audio-params",
-          "props": {
             "audioType": "pannernode",
-            "gain": 0.75,
+            "volume": 0.75,
             "distanceModel": "inverse",
             "rolloffFactor": 10,
             "refDistance": 3,
             "maxDistance": 100,
             "coneInnerAngle": 20,
             "coneOuterAngle": 180,
-            "coneOuterGain": 0.5
+            "coneOuterGain": 0.5,
+            "projection": "flat"
           }
         }
       ],
@@ -626,21 +621,16 @@
             "controls": true,
             "autoPlay": true,
             "loop": false,
-            "projection": "360-equirectangular"
-          }
-        },
-        {
-          "name": "audio-params",
-          "props": {
             "audioType": "pannernode",
-            "gain": 0.5,
+            "volume": 0.5,
             "distanceModel": "inverse",
             "rolloffFactor": 1,
             "refDistance": 1,
             "maxDistance": 10000,
             "coneInnerAngle": 360,
             "coneOuterAngle": 360,
-            "coneOuterGain": 0
+            "coneOuterGain": 0,
+            "projection": "360-equirectangular"
           }
         }
       ],

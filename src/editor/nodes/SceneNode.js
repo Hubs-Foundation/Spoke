@@ -177,6 +177,82 @@ function migrateV4ToV5(json) {
   return json;
 }
 
+function migrateV5ToV6(json) {
+  json.version = 6;
+
+  for (const entityId in json.entities) {
+    if (!Object.prototype.hasOwnProperty.call(json.entities, entityId)) continue;
+
+    const entity = json.entities[entityId];
+
+    if (!entity.components) {
+      continue;
+    }
+
+    const audioComponent = entity.components.find(c => c.name === "audio");
+
+    if (audioComponent) {
+      // Prior to V6 audio parameters where part of the audio node, now they have been refactored to the audio-params component
+      entity.components.push({
+        name: "audio-params",
+        props: {
+          audioType: audioComponent.props["audioType"],
+          gain: audioComponent.props["volume"],
+          distanceModel: audioComponent.props["distanceModel"],
+          rolloffFactor: audioComponent.props["rolloffFactor"],
+          refDistance: audioComponent.props["refDistance"],
+          maxDistance: audioComponent.props["maxDistance"],
+          coneInnerAngle: audioComponent.props["coneInnerAngle"],
+          coneOuterAngle: audioComponent.props["coneOuterAngle"],
+          coneOuterGain: audioComponent.props["coneOuterGain"]
+        }
+      });
+
+      delete audioComponent.props["audioType"];
+      delete audioComponent.props["volume"];
+      delete audioComponent.props["distanceModel"];
+      delete audioComponent.props["rolloffFactor"];
+      delete audioComponent.props["refDistance"];
+      delete audioComponent.props["maxDistance"];
+      delete audioComponent.props["coneInnerAngle"];
+      delete audioComponent.props["coneOuterAngle"];
+      delete audioComponent.props["coneOuterGain"];
+    }
+
+    const videoComponent = entity.components.find(c => c.name === "video");
+
+    if (videoComponent) {
+      // Prior to V6 audio parameters where part of the audio node, now they have been refactored to the audio-params component
+      entity.components.push({
+        name: "audio-params",
+        props: {
+          audioType: videoComponent.props["audioType"],
+          gain: videoComponent.props["volume"],
+          distanceModel: videoComponent.props["distanceModel"],
+          rolloffFactor: videoComponent.props["rolloffFactor"],
+          refDistance: videoComponent.props["refDistance"],
+          maxDistance: videoComponent.props["maxDistance"],
+          coneInnerAngle: videoComponent.props["coneInnerAngle"],
+          coneOuterAngle: videoComponent.props["coneOuterAngle"],
+          coneOuterGain: videoComponent.props["coneOuterGain"]
+        }
+      });
+
+      delete videoComponent.props["audioType"];
+      delete videoComponent.props["gain"];
+      delete videoComponent.props["distanceModel"];
+      delete videoComponent.props["rolloffFactor"];
+      delete videoComponent.props["refDistance"];
+      delete videoComponent.props["maxDistance"];
+      delete videoComponent.props["coneInnerAngle"];
+      delete videoComponent.props["coneOuterAngle"];
+      delete videoComponent.props["coneOuterGain"];
+    }
+  }
+
+  return json;
+}
+
 export const FogType = {
   Disabled: "disabled",
   Linear: "linear",
@@ -207,6 +283,10 @@ export default class SceneNode extends EditorNodeMixin(Scene) {
 
     if (json.version === 4) {
       json = migrateV4ToV5(json);
+    }
+
+    if (json.version === 5) {
+      json = migrateV5ToV6(json);
     }
 
     const { root, metadata, entities } = json;

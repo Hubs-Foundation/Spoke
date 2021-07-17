@@ -21,8 +21,9 @@ export default class AudioNode extends EditorNodeMixin(AudioSource) {
 
     const audioComp = json.components.find(c => c.name === "audio");
     const { src, controls, autoPlay, loop } = audioComp.props;
-
-    let audioType,
+    const audioParamsComp = json.components.find(c => c.name === "audio-params");
+    const {
+      audioType,
       gain,
       distanceModel,
       rolloffFactor,
@@ -30,33 +31,8 @@ export default class AudioNode extends EditorNodeMixin(AudioSource) {
       maxDistance,
       coneInnerAngle,
       coneOuterAngle,
-      coneOuterGain;
-    const audioParamsComp = json.components.find(c => c.name === "audio-params");
-    if (audioParamsComp) {
-      ({
-        audioType,
-        gain,
-        distanceModel,
-        rolloffFactor,
-        refDistance,
-        maxDistance,
-        coneInnerAngle,
-        coneOuterAngle,
-        coneOuterGain
-      } = audioParamsComp.props);
-    } else {
-      ({
-        audioType,
-        distanceModel,
-        rolloffFactor,
-        refDistance,
-        maxDistance,
-        coneInnerAngle,
-        coneOuterAngle,
-        coneOuterGain
-      } = audioComp.props);
-      gain = audioComp.props.volume;
-    }
+      coneOuterGain
+    } = audioParamsComp.props;
 
     loadAsync(
       (async () => {

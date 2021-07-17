@@ -20,8 +20,9 @@ export default class VideoNode extends EditorNodeMixin(Video) {
 
     const videoComp = json.components.find(c => c.name === "video");
     const { src, controls, autoPlay, loop, projection } = videoComp.props;
-
-    let audioType,
+    const audioParamsComp = json.components.find(c => c.name === "audio-params");
+    const {
+      audioType,
       gain,
       distanceModel,
       rolloffFactor,
@@ -29,33 +30,27 @@ export default class VideoNode extends EditorNodeMixin(Video) {
       maxDistance,
       coneInnerAngle,
       coneOuterAngle,
-      coneOuterGain;
-    const audioParamsComp = json.components.find(c => c.name === "audio-params");
-    if (audioParamsComp) {
-      ({
-        audioType,
-        gain,
-        distanceModel,
-        rolloffFactor,
-        refDistance,
-        maxDistance,
-        coneInnerAngle,
-        coneOuterAngle,
-        coneOuterGain
-      } = audioParamsComp.props);
-    } else {
-      ({
-        audioType,
-        distanceModel,
-        rolloffFactor,
-        refDistance,
-        maxDistance,
-        coneInnerAngle,
-        coneOuterAngle,
-        coneOuterGain
-      } = videoComp.props);
-      gain = videoComp.props.volume;
-    }
+      coneOuterGain
+    } = audioParamsComp.props;
+
+    loadAsync(
+      (async () => {
+        await node.load(src, onError);
+        node.controls = controls || false;
+        node.autoPlay = autoPlay;
+        node.loop = loop;
+        node.projection = projection;
+        node.audioType = audioType;
+        node.gain = gain;
+        node.distanceModel = distanceModel;
+        node.rolloffFactor = rolloffFactor;
+        node.refDistance = refDistance;
+        node.maxDistance = maxDistance;
+        node.coneInnerAngle = coneInnerAngle;
+        node.coneOuterAngle = coneOuterAngle;
+        node.coneOuterGain = coneOuterGain;
+      })()
+    );
 
     if (json.components.find(c => c.name === "billboard")) {
       node.billboard = true;
