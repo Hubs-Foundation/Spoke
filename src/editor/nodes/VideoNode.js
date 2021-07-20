@@ -18,22 +18,39 @@ export default class VideoNode extends EditorNodeMixin(Video) {
   static async deserialize(editor, json, loadAsync, onError) {
     const node = await super.deserialize(editor, json);
 
+    const videoComp = json.components.find(c => c.name === "video");
+    const { src, controls, autoPlay, loop, projection } = videoComp.props;
+    const audioParamsComp = json.components.find(c => c.name === "audio-params");
     const {
-      src,
-      controls,
-      autoPlay,
-      loop,
       audioType,
-      volume,
+      gain,
       distanceModel,
       rolloffFactor,
       refDistance,
       maxDistance,
       coneInnerAngle,
       coneOuterAngle,
-      coneOuterGain,
-      projection
-    } = json.components.find(c => c.name === "video").props;
+      coneOuterGain
+    } = audioParamsComp.props;
+
+    loadAsync(
+      (async () => {
+        await node.load(src, onError);
+        node.controls = controls || false;
+        node.autoPlay = autoPlay;
+        node.loop = loop;
+        node.projection = projection;
+        node.audioType = audioType;
+        node.gain = gain;
+        node.distanceModel = distanceModel;
+        node.rolloffFactor = rolloffFactor;
+        node.refDistance = refDistance;
+        node.maxDistance = maxDistance;
+        node.coneInnerAngle = coneInnerAngle;
+        node.coneOuterAngle = coneOuterAngle;
+        node.coneOuterGain = coneOuterGain;
+      })()
+    );
 
     if (json.components.find(c => c.name === "billboard")) {
       node.billboard = true;
@@ -52,7 +69,7 @@ export default class VideoNode extends EditorNodeMixin(Video) {
         node.autoPlay = autoPlay;
         node.loop = loop;
         node.audioType = audioType;
-        node.volume = volume;
+        node.gain = gain;
         node.distanceModel = distanceModel;
         node.rolloffFactor = rolloffFactor;
         node.refDistance = refDistance;
@@ -72,7 +89,6 @@ export default class VideoNode extends EditorNodeMixin(Video) {
 
     this._canonicalUrl = "";
     this._autoPlay = true;
-    this.volume = 0.5;
     this.controls = true;
     this.billboard = false;
     this.href = "";
@@ -201,16 +217,18 @@ export default class VideoNode extends EditorNodeMixin(Video) {
         controls: this.controls,
         autoPlay: this.autoPlay,
         loop: this.loop,
+        projection: this.projection
+      },
+      "audio-params": {
         audioType: this.audioType,
-        volume: this.volume,
+        gain: this.gain,
         distanceModel: this.distanceModel,
         rolloffFactor: this.rolloffFactor,
         refDistance: this.refDistance,
         maxDistance: this.maxDistance,
         coneInnerAngle: this.coneInnerAngle,
         coneOuterAngle: this.coneOuterAngle,
-        coneOuterGain: this.coneOuterGain,
-        projection: this.projection
+        coneOuterGain: this.coneOuterGain
       }
     };
 
@@ -233,15 +251,6 @@ export default class VideoNode extends EditorNodeMixin(Video) {
       controls: this.controls,
       autoPlay: this.autoPlay,
       loop: this.loop,
-      audioType: this.audioType,
-      volume: this.volume,
-      distanceModel: this.distanceModel,
-      rolloffFactor: this.rolloffFactor,
-      refDistance: this.refDistance,
-      maxDistance: this.maxDistance,
-      coneInnerAngle: this.coneInnerAngle,
-      coneOuterAngle: this.coneOuterAngle,
-      coneOuterGain: this.coneOuterGain,
       projection: this.projection
     });
 
@@ -256,6 +265,18 @@ export default class VideoNode extends EditorNodeMixin(Video) {
     if (this.href && this.projection === "flat") {
       this.addGLTFComponent("link", { href: this.href });
     }
+
+    this.addGLTFComponent("audio-params", {
+      audioType: this.audioType,
+      gain: this.gain,
+      distanceModel: this.distanceModel,
+      rolloffFactor: this.rolloffFactor,
+      refDistance: this.refDistance,
+      maxDistance: this.maxDistance,
+      coneInnerAngle: this.coneInnerAngle,
+      coneOuterAngle: this.coneOuterAngle,
+      coneOuterGain: this.coneOuterGain
+    });
 
     this.replaceObject();
   }

@@ -19,13 +19,12 @@ export default class AudioNode extends EditorNodeMixin(AudioSource) {
   static async deserialize(editor, json, loadAsync, onError) {
     const node = await super.deserialize(editor, json);
 
+    const audioComp = json.components.find(c => c.name === "audio");
+    const { src, controls, autoPlay, loop } = audioComp.props;
+    const audioParamsComp = json.components.find(c => c.name === "audio-params");
     const {
-      src,
-      controls,
-      autoPlay,
-      loop,
       audioType,
-      volume,
+      gain,
       distanceModel,
       rolloffFactor,
       refDistance,
@@ -33,7 +32,7 @@ export default class AudioNode extends EditorNodeMixin(AudioSource) {
       coneInnerAngle,
       coneOuterAngle,
       coneOuterGain
-    } = json.components.find(c => c.name === "audio").props;
+    } = audioParamsComp.props;
 
     loadAsync(
       (async () => {
@@ -42,7 +41,7 @@ export default class AudioNode extends EditorNodeMixin(AudioSource) {
         node.autoPlay = autoPlay;
         node.loop = loop;
         node.audioType = audioType;
-        node.volume = volume;
+        node.gain = gain;
         node.distanceModel = distanceModel;
         node.rolloffFactor = rolloffFactor;
         node.refDistance = refDistance;
@@ -61,7 +60,6 @@ export default class AudioNode extends EditorNodeMixin(AudioSource) {
 
     this._canonicalUrl = "";
     this._autoPlay = true;
-    this.volume = 0.5;
     this.controls = true;
 
     const geometry = new PlaneBufferGeometry();
@@ -178,9 +176,11 @@ export default class AudioNode extends EditorNodeMixin(AudioSource) {
         src: this._canonicalUrl,
         controls: this.controls,
         autoPlay: this.autoPlay,
-        loop: this.loop,
+        loop: this.loop
+      },
+      "audio-params": {
         audioType: this.audioType,
-        volume: this.volume,
+        gain: this.gain,
         distanceModel: this.distanceModel,
         rolloffFactor: this.rolloffFactor,
         refDistance: this.refDistance,
@@ -199,9 +199,11 @@ export default class AudioNode extends EditorNodeMixin(AudioSource) {
       src: this._canonicalUrl,
       controls: this.controls,
       autoPlay: this.autoPlay,
-      loop: this.loop,
+      loop: this.loop
+    });
+    this.addGLTFComponent("audio-params", {
       audioType: this.audioType,
-      volume: this.volume,
+      gain: this.gain,
       distanceModel: this.distanceModel,
       rolloffFactor: this.rolloffFactor,
       refDistance: this.refDistance,

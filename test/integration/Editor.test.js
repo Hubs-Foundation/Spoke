@@ -208,15 +208,16 @@ test("Editor should load V1TestScene", withPage(`/projects/new?template=${v1Test
   t.is(video1Props.controls, false);
   t.is(video1Props.autoPlay, true);
   t.is(video1Props.loop, true);
-  t.is(video1Props.audioType, "pannernode");
-  t.is(video1Props.volume, 0.75);
-  t.is(video1Props.distanceModel, "inverse");
-  t.is(video1Props.rolloffFactor, 10);
-  t.is(video1Props.refDistance, 3);
-  t.is(video1Props.maxDistance, 100);
-  t.is(video1Props.coneInnerAngle, 20);
-  t.is(video1Props.coneOuterAngle, 180);
-  t.is(video1Props.coneOuterGain, 0.5);
+  const audioParams1Props = video1Entity.components.find(c => c.name === "audio-params").props;
+  t.is(audioParams1Props.audioType, "pannernode");
+  t.is(audioParams1Props.gain, 0.75);
+  t.is(audioParams1Props.distanceModel, "inverse");
+  t.is(audioParams1Props.rolloffFactor, 10);
+  t.is(audioParams1Props.refDistance, 3);
+  t.is(audioParams1Props.maxDistance, 100);
+  t.is(audioParams1Props.coneInnerAngle, 20);
+  t.is(audioParams1Props.coneOuterAngle, 180);
+  t.is(audioParams1Props.coneOuterGain, 0.5);
 
   const video2Entity = entities.find(e => e.name === "Video 1");
   t.is(video2Entity.index, 15);
@@ -226,15 +227,16 @@ test("Editor should load V1TestScene", withPage(`/projects/new?template=${v1Test
   t.is(video2Props.controls, true);
   t.is(video2Props.autoPlay, true);
   t.is(video2Props.loop, false);
-  t.is(video2Props.audioType, "pannernode");
-  t.is(video2Props.volume, 0.5);
-  t.is(video2Props.distanceModel, "inverse");
-  t.is(video2Props.rolloffFactor, 1);
-  t.is(video2Props.refDistance, 1);
-  t.is(video2Props.maxDistance, 10000);
-  t.is(video2Props.coneInnerAngle, 360);
-  t.is(video2Props.coneOuterAngle, 360);
-  t.is(video2Props.coneOuterGain, 0);
+  const audioParams2Props = video2Entity.components.find(c => c.name === "audio-params").props;
+  t.is(audioParams2Props.audioType, "pannernode");
+  t.is(audioParams2Props.gain, 0.5);
+  t.is(audioParams2Props.distanceModel, "inverse");
+  t.is(audioParams2Props.rolloffFactor, 1);
+  t.is(audioParams2Props.refDistance, 1);
+  t.is(audioParams2Props.maxDistance, 10000);
+  t.is(audioParams2Props.coneInnerAngle, 360);
+  t.is(audioParams2Props.coneOuterAngle, 360);
+  t.is(audioParams2Props.coneOuterGain, 0);
 
   const boxColliderEntity = entities.find(e => e.name === "Box Collider1");
   t.truthy(boxColliderEntity.components.find(c => c.name === "box-collider"));
@@ -264,6 +266,14 @@ test("Editor should load V4TestScene", withPage(`/projects/new?template=${v4Test
 const v5TestSceneUrl = getFixtureUrl("V5TestScene.spoke");
 
 test("Editor should load V5TestScene", withPage(`/projects/new?template=${v5TestSceneUrl}`), async (t, page) => {
+  const sceneHandle = await waitForProjectLoaded(page);
+  const serializedScene = await getSerializedScene(page, sceneHandle);
+  t.snapshot(serializedScene);
+});
+
+const v6TestSceneUrl = getFixtureUrl("V6TestScene.spoke");
+
+test("Editor should load V6TestScene", withPage(`/projects/new?template=${v6TestSceneUrl}`), async (t, page) => {
   const sceneHandle = await waitForProjectLoaded(page);
   const serializedScene = await getSerializedScene(page, sceneHandle);
   t.snapshot(serializedScene);

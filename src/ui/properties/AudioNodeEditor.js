@@ -4,7 +4,7 @@ import NodeEditor from "./NodeEditor";
 import InputGroup from "../inputs/InputGroup";
 import AudioInput from "../inputs/AudioInput";
 import { VolumeUp } from "styled-icons/fa-solid/VolumeUp";
-import AudioSourceProperties from "./AudioSourceProperties";
+import AudioParamsProperties from "./AudioParamsProperties";
 import useSetPropertySelected from "./useSetPropertySelected";
 
 export default function AudioNodeEditor(props) {
@@ -16,7 +16,7 @@ export default function AudioNodeEditor(props) {
       <InputGroup name="Audio Url">
         <AudioInput value={node.src} onChange={onChangeSrc} />
       </InputGroup>
-      <AudioSourceProperties {...props} />
+      <AudioParamsProperties {...props} />
     </NodeEditor>
   );
 }

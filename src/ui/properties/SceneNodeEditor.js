@@ -10,7 +10,7 @@ import { FogType } from "../../editor/nodes/SceneNode";
 import SelectInput from "../inputs/SelectInput";
 import useSetPropertySelected from "./useSetPropertySelected";
 import BooleanInput from "../inputs/BooleanInput";
-import { DistanceModelOptions, DistanceModelType } from "../../editor/objects/AudioSource";
+import { DistanceModelOptions, DistanceModelType } from "../../editor/objects/AudioParams";
 
 const FogTypeOptions = [
   {
