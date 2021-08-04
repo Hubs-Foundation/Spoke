@@ -20,6 +20,9 @@ export default function VideoNodeEditor(props) {
   const onChangeProjection = useSetPropertySelected(editor, "projection");
   const onChangeBillboard = useSetPropertySelected(editor, "billboard");
   const onChangeHref = useSetPropertySelected(editor, "href");
+  const onChangeControls = useSetPropertySelected(editor, "controls");
+  const onChangeAutoPlay = useSetPropertySelected(editor, "autoPlay");
+  const onChangeLoop = useSetPropertySelected(editor, "loop");
 
   return (
     <NodeEditor description={VideoNodeEditor.description} {...props}>
@@ -36,6 +39,15 @@ export default function VideoNodeEditor(props) {
       )}
       <InputGroup name="Projection">
         <SelectInput options={videoProjectionOptions} value={node.projection} onChange={onChangeProjection} />
+      </InputGroup>
+      <InputGroup name="Controls" info="Toggle the visibility of the media controls in Hubs.">
+        <BooleanInput value={node.controls} onChange={onChangeControls} />
+      </InputGroup>
+      <InputGroup name="Auto Play" info="If true, the media will play when first entering the scene.">
+        <BooleanInput value={node.autoPlay} onChange={onChangeAutoPlay} />
+      </InputGroup>
+      <InputGroup name="Loop" info="If true the media will loop indefinitely.">
+        <BooleanInput value={node.loop} onChange={onChangeLoop} />
       </InputGroup>
       <AudioParamsProperties {...props} />
       <AttributionNodeEditor name="Attribution" {...props} />
