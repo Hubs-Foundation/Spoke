@@ -4,6 +4,7 @@ import audioIconUrl from "../../assets/audio-icon.png";
 import AudioSource from "../objects/AudioSource";
 import loadTexture from "../utils/loadTexture";
 import { RethrownError } from "../utils/errors";
+import { AudioType, DistanceModelType } from "../objects/AudioParams";
 
 let audioHelperTexture = null;
 
@@ -201,11 +202,14 @@ export default class AudioNode extends EditorNodeMixin(AudioSource) {
       autoPlay: this.autoPlay,
       loop: this.loop
     });
+
+    // We don't want artificial distance based attenuation to be applied to stereo audios
+    // so we set the distanceModel and rolloffFactor so the attenuation is always 1.
     this.addGLTFComponent("audio-params", {
       audioType: this.audioType,
       gain: this.gain,
-      distanceModel: this.distanceModel,
-      rolloffFactor: this.rolloffFactor,
+      distanceModel: this.audioType === AudioType.Stereo ? DistanceModelType.Linear : this.distanceModel,
+      rolloffFactor: this.audioType === AudioType.Stereo ? 0 : this.rolloffFactor,
       refDistance: this.refDistance,
       maxDistance: this.maxDistance,
       coneInnerAngle: this.coneInnerAngle,
