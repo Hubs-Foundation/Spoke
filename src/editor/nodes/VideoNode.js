@@ -5,6 +5,7 @@ import isHLS from "../utils/isHLS";
 import spokeLandingVideo from "../../assets/video/SpokePromo.mp4";
 import { RethrownError } from "../utils/errors";
 import { getObjectPerfIssues } from "../utils/performance";
+import { AudioType, DistanceModelType } from "../objects/AudioParams";
 
 export default class VideoNode extends EditorNodeMixin(Video) {
   static componentName = "video";
@@ -266,11 +267,13 @@ export default class VideoNode extends EditorNodeMixin(Video) {
       this.addGLTFComponent("link", { href: this.href });
     }
 
+    // We don't want artificial distance based attenuation to be applied to stereo audios
+    // so we set the distanceModel and rolloffFactor so the attenuation is always 1.
     this.addGLTFComponent("audio-params", {
       audioType: this.audioType,
       gain: this.gain,
-      distanceModel: this.distanceModel,
-      rolloffFactor: this.rolloffFactor,
+      distanceModel: this.audioType === AudioType.Stereo ? DistanceModelType.Linear : this.distanceModel,
+      rolloffFactor: this.audioType === AudioType.Stereo ? 0 : this.rolloffFactor,
       refDistance: this.refDistance,
       maxDistance: this.maxDistance,
       coneInnerAngle: this.coneInnerAngle,
