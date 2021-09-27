@@ -1,10 +1,10 @@
 import { Material, BoxBufferGeometry, Mesh, BoxHelper } from "three";
-import AudioParams from "../objects/AudioParams";
-import EditorNodeMixin from "./EditorNodeMixin";
+import AudioParams, { AudioElementType } from "../objects/AudioParams";
+import AudioParamsNode from "./AudioParamsNode";
 
 const requiredProperties = ["enabled", "inOut", "outIn"];
 
-export default class AudioZoneNode extends EditorNodeMixin(AudioParams) {
+export default class AudioZoneNode extends AudioParamsNode(AudioParams) {
   static componentName = "audio-zone";
 
   static nodeName = "Audio Zone";
@@ -13,8 +13,8 @@ export default class AudioZoneNode extends EditorNodeMixin(AudioParams) {
 
   static _material = new Material();
 
-  static async deserialize(editor, json) {
-    const node = await super.deserialize(editor, json);
+  static async deserialize(editor, json, loadAsync, onError) {
+    const node = await super.deserialize(editor, json, loadAsync, onError);
 
     const zoneProps = json.components.find(c => c.name === "audio-zone").props;
 
@@ -22,23 +22,11 @@ export default class AudioZoneNode extends EditorNodeMixin(AudioParams) {
     node.inOut = zoneProps.inOut;
     node.outIn = zoneProps.outIn;
 
-    const audioParamsProps = json.components.find(c => c.name === "audio-params").props;
-
-    node.audioType = audioParamsProps.audioType;
-    node.gain = audioParamsProps.gain;
-    node.distanceModel = audioParamsProps.distanceModel;
-    node.rolloffFactor = audioParamsProps.rolloffFactor;
-    node.refDistance = audioParamsProps.refDistance;
-    node.maxDistance = audioParamsProps.maxDistance;
-    node.coneInnerAngle = audioParamsProps.coneInnerAngle;
-    node.coneOuterAngle = audioParamsProps.coneOuterAngle;
-    node.coneOuterGain = audioParamsProps.coneOuterGain;
-
     return node;
   }
 
   constructor(editor) {
-    super(editor, editor.audioListener);
+    super(editor, AudioElementType.AUDIO_ZONE);
 
     const boxMesh = new Mesh(AudioZoneNode._geometry, AudioZoneNode._material);
     const box = new BoxHelper(boxMesh, 0x00ff00);
@@ -78,17 +66,6 @@ export default class AudioZoneNode extends EditorNodeMixin(AudioParams) {
         enabled: this.enabled,
         inOut: this.inOut,
         outIn: this.outIn
-      },
-      "audio-params": {
-        audioType: this.audioType,
-        gain: this.gain,
-        distanceModel: this.distanceModel,
-        rolloffFactor: this.rolloffFactor,
-        refDistance: this.refDistance,
-        maxDistance: this.maxDistance,
-        coneInnerAngle: this.coneInnerAngle,
-        coneOuterAngle: this.coneOuterAngle,
-        coneOuterGain: this.coneOuterGain
       }
     });
   }
@@ -109,17 +86,6 @@ export default class AudioZoneNode extends EditorNodeMixin(AudioParams) {
       enabled: this.enabled,
       inOut: this.inOut,
       outIn: this.outIn
-    });
-    this.addGLTFComponent("audio-params", {
-      audioType: this.audioType,
-      gain: this.gain,
-      distanceModel: this.distanceModel,
-      rolloffFactor: this.rolloffFactor,
-      refDistance: this.refDistance,
-      maxDistance: this.maxDistance,
-      coneInnerAngle: this.coneInnerAngle,
-      coneOuterAngle: this.coneOuterAngle,
-      coneOuterGain: this.coneOuterGain
     });
   }
 }

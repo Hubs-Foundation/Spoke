@@ -1,12 +1,12 @@
 import { Audio, PositionalAudio } from "three";
 import { RethrownError } from "../utils/errors";
-import { default as AudioParamsClass, AudioType } from "./AudioParams";
+import AudioParams, { AudioType } from "./AudioParams";
 
-export default class AudioSource extends AudioParamsClass {
-  constructor(audioListener, elTag = "audio") {
-    super();
+export default class AudioSource extends AudioParams {
+  constructor(audioListener, type, ...args) {
+    super(type, ...args);
 
-    const el = document.createElement(elTag);
+    const el = document.createElement(type);
     el.setAttribute("playsinline", "");
     el.setAttribute("webkit-playsinline", "");
     el.crossOrigin = "anonymous";

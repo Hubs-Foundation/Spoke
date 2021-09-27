@@ -566,6 +566,12 @@ export default class SceneNode extends EditorNodeMixin(Scene) {
                 mediaConeOuterAngle: this.mediaConeOuterAngle,
                 mediaConeOuterGain: this.mediaConeOuterGain
               }
+            },
+            {
+              name: "enabled-properties",
+              props: {
+                enabled: this.enabledProperties
+              }
             }
           ]
         }
@@ -637,18 +643,18 @@ export default class SceneNode extends EditorNodeMixin(Scene) {
 
     if (this.overrideAudioSettings) {
       this.addGLTFComponent("audio-settings", {
-        avatarDistanceModel: this.avatarDistanceModel,
-        avatarRolloffFactor: this.avatarRolloffFactor,
-        avatarRefDistance: this.avatarRefDistance,
-        avatarMaxDistance: this.avatarMaxDistance,
-        mediaVolume: this.mediaVolume,
-        mediaDistanceModel: this.mediaDistanceModel,
-        mediaRolloffFactor: this.mediaRolloffFactor,
-        mediaRefDistance: this.mediaRefDistance,
-        mediaMaxDistance: this.mediaMaxDistance,
-        mediaConeInnerAngle: this.mediaConeInnerAngle,
-        mediaConeOuterAngle: this.mediaConeOuterAngle,
-        mediaConeOuterGain: this.mediaConeOuterGain
+        avatarDistanceModel: this.optionalPropertyExportValue("avatarDistanceModel"),
+        avatarRolloffFactor: this.optionalPropertyExportValue("avatarRolloffFactor"),
+        avatarRefDistance: this.optionalPropertyExportValue("avatarRefDistance"),
+        avatarMaxDistance: this.optionalPropertyExportValue("avatarMaxDistance"),
+        mediaVolume: this.optionalPropertyExportValue("mediaVolume"),
+        mediaDistanceModel: this.optionalPropertyExportValue("mediaDistanceModel"),
+        mediaRolloffFactor: this.optionalPropertyExportValue("mediaRolloffFactor"),
+        mediaRefDistance: this.optionalPropertyExportValue("mediaRefDistance"),
+        mediaMaxDistance: this.optionalPropertyExportValue("mediaMaxDistance"),
+        mediaConeInnerAngle: this.optionalPropertyExportValue("mediaConeInnerAngle"),
+        mediaConeOuterAngle: this.optionalPropertyExportValue("mediaConeOuterAngle"),
+        mediaConeOuterGain: this.optionalPropertyExportValue("mediaConeOuterGain")
       });
     }
   }

@@ -1,74 +1,86 @@
+// These enums need to be kept in sync with the ones in the Hubs client for consistency
+
 import { Object3D } from "three";
 
 export const SourceType = Object.freeze({
   MEDIA_VIDEO: 0,
   AVATAR_AUDIO_SOURCE: 1,
-  AVATAR_RIG: 2,
+  // TODO: Fill in missing value (2)
   AUDIO_TARGET: 3,
   AUDIO_ZONE: 4
 });
 
-export const AudioType = Object.freeze({
+export const AudioType = {
   Stereo: "stereo",
   PannerNode: "pannernode"
-});
+};
 
-export const DistanceModelType = Object.freeze({
+export const DistanceModelType = {
   Linear: "linear",
   Inverse: "inverse",
   Exponential: "exponential"
+};
+
+export const MediaAudioDefaults = Object.freeze({
+  audioType: AudioType.PannerNode,
+  distanceModel: DistanceModelType.Inverse,
+  rolloffFactor: 1,
+  refDistance: 1,
+  maxDistance: 10000,
+  coneInnerAngle: 360,
+  coneOuterAngle: 0,
+  coneOuterGain: 0,
+  gain: 0.5
 });
 
-export const AudioParamsDefaults = Object.freeze({
-  DISTANCE_MODEL: DistanceModelType.Inverse,
-  ROLLOFF_FACTOR: 1,
-  REF_DISTANCE: 1,
-  MAX_DISTANCE: 10000,
-  INNER_ANGLE: 360,
-  OUTER_ANGLE: 0,
-  OUTER_GAIN: 0,
-  GAIN: 0.5
+export const AudioZoneDefaults = Object.freeze({
+  audioType: AudioType.PannerNode,
+  distanceModel: DistanceModelType.Inverse,
+  rolloffFactor: 1,
+  refDistance: 1,
+  maxDistance: 10000,
+  coneInnerAngle: 360,
+  coneOuterAngle: 0,
+  coneOuterGain: 0,
+  gain: 0.5
 });
 
-export const AvatarAudioParamsDefaults = Object.freeze({
-  DISTANCE_MODEL: DistanceModelType.Inverse,
-  ROLLOFF_FACTOR: 2,
-  REF_DISTANCE: 1,
-  MAX_DISTANCE: 10000,
-  INNER_ANGLE: 180,
-  OUTER_ANGLE: 360,
-  OUTER_GAIN: 0,
-  VOLUME: 1.0
+export const Defaults = {
+  [SourceType.MEDIA_VIDEO]: MediaAudioDefaults,
+  [SourceType.AUDIO_ZONE]: AudioZoneDefaults
+};
+
+export const AudioElementType = Object.freeze({
+  AUDIO: "audio",
+  VIDEO: "video",
+  AUDIO_ZONE: "audio-zone"
 });
 
-export const MediaAudioParamsDefaults = Object.freeze({
-  DISTANCE_MODEL: DistanceModelType.Inverse,
-  ROLLOFF_FACTOR: 1,
-  REF_DISTANCE: 1,
-  MAX_DISTANCE: 10000,
-  INNER_ANGLE: 360,
-  OUTER_ANGLE: 0,
-  OUTER_GAIN: 0,
-  VOLUME: 0.5
-});
+export const sourceTypeForElementType = {
+  [AudioElementType.AUDIO]: SourceType.MEDIA_VIDEO,
+  [AudioElementType.VIDEO]: SourceType.MEDIA_VIDEO,
+  [AudioElementType.AUDIO_ZONE]: SourceType.AUDIO_ZONE
+};
 
 export const AudioTypeOptions = Object.values(AudioType).map(v => ({ label: v, value: v }));
 
 export const DistanceModelOptions = Object.values(DistanceModelType).map(v => ({ label: v, value: v }));
 
 export default class AudioParams extends Object3D {
-  constructor() {
-    super();
+  constructor(type, ...args) {
+    super(...args);
 
-    this.audioType = AudioType.PannerNode;
-    this.gain = AudioParamsDefaults.GAIN;
-    this.distanceModel = AudioParamsDefaults.DISTANCE_MODEL;
-    this.rolloffFactor = AudioParamsDefaults.ROLLOFF_FACTOR;
-    this.refDistance = AudioParamsDefaults.REF_DISTANCE;
-    this.maxDistance = AudioParamsDefaults.MAX_DISTANCE;
-    this.coneInnerAngle = AudioParamsDefaults.INNER_ANGLE;
-    this.coneOuterAngle = AudioParamsDefaults.OUTER_ANGLE;
-    this.coneOuterGain = AudioParamsDefaults.OUTER_GAIN;
+    this.sourceType = sourceTypeForElementType[type];
+
+    this.audioType = Defaults[this.sourceType].audioType;
+    this.gain = Defaults[this.sourceType].gain;
+    this.distanceModel = Defaults[this.sourceType].distanceModel;
+    this.rolloffFactor = Defaults[this.sourceType].rolloffFactor;
+    this.refDistance = Defaults[this.sourceType].refDistance;
+    this.maxDistance = Defaults[this.sourceType].maxDistance;
+    this.coneInnerAngle = Defaults[this.sourceType].coneInnerAngle;
+    this.coneOuterAngle = Defaults[this.sourceType].coneOuterAngle;
+    this.coneOuterGain = Defaults[this.sourceType].coneOuterGain;
   }
 
   get audioType() {

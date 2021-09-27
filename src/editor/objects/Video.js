@@ -20,8 +20,8 @@ export const VideoProjection = {
 };
 
 export default class Video extends AudioSource {
-  constructor(audioListener) {
-    super(audioListener, "video");
+  constructor(audioListener, sourceType) {
+    super(audioListener, sourceType);
 
     this._videoTexture = new VideoTexture(this.el);
     this._videoTexture.minFilter = LinearFilter;

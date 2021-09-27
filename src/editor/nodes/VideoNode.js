@@ -1,13 +1,13 @@
-import EditorNodeMixin from "./EditorNodeMixin";
 import Video from "../objects/Video";
+import AudioParamsNode from "./AudioParamsNode";
 import Hls from "hls.js/dist/hls.light";
 import isHLS from "../utils/isHLS";
 import spokeLandingVideo from "../../assets/video/SpokePromo.mp4";
 import { RethrownError } from "../utils/errors";
 import { getObjectPerfIssues } from "../utils/performance";
-import { AudioType, DistanceModelType } from "../objects/AudioParams";
+import { AudioElementType } from "../objects/AudioParams";
 
-export default class VideoNode extends EditorNodeMixin(Video) {
+export default class VideoNode extends AudioParamsNode(Video) {
   static componentName = "video";
 
   static nodeName = "Video";
@@ -21,18 +21,6 @@ export default class VideoNode extends EditorNodeMixin(Video) {
 
     const videoComp = json.components.find(c => c.name === "video");
     const { src, controls, autoPlay, loop, projection } = videoComp.props;
-    const audioParamsComp = json.components.find(c => c.name === "audio-params");
-    const {
-      audioType,
-      gain,
-      distanceModel,
-      rolloffFactor,
-      refDistance,
-      maxDistance,
-      coneInnerAngle,
-      coneOuterAngle,
-      coneOuterGain
-    } = audioParamsComp.props;
 
     loadAsync(
       (async () => {
@@ -41,15 +29,6 @@ export default class VideoNode extends EditorNodeMixin(Video) {
         node.autoPlay = autoPlay;
         node.loop = loop;
         node.projection = projection;
-        node.audioType = audioType;
-        node.gain = gain;
-        node.distanceModel = distanceModel;
-        node.rolloffFactor = rolloffFactor;
-        node.refDistance = refDistance;
-        node.maxDistance = maxDistance;
-        node.coneInnerAngle = coneInnerAngle;
-        node.coneOuterAngle = coneOuterAngle;
-        node.coneOuterGain = coneOuterGain;
       })()
     );
 
@@ -69,15 +48,6 @@ export default class VideoNode extends EditorNodeMixin(Video) {
         node.controls = controls || false;
         node.autoPlay = autoPlay;
         node.loop = loop;
-        node.audioType = audioType;
-        node.gain = gain;
-        node.distanceModel = distanceModel;
-        node.rolloffFactor = rolloffFactor;
-        node.refDistance = refDistance;
-        node.maxDistance = maxDistance;
-        node.coneInnerAngle = coneInnerAngle;
-        node.coneOuterAngle = coneOuterAngle;
-        node.coneOuterGain = coneOuterGain;
         node.projection = projection;
       })()
     );
@@ -86,7 +56,7 @@ export default class VideoNode extends EditorNodeMixin(Video) {
   }
 
   constructor(editor) {
-    super(editor, editor.audioListener);
+    super(editor, editor.audioListener, AudioElementType.VIDEO);
 
     this._canonicalUrl = "";
     this._autoPlay = true;
@@ -219,17 +189,6 @@ export default class VideoNode extends EditorNodeMixin(Video) {
         autoPlay: this.autoPlay,
         loop: this.loop,
         projection: this.projection
-      },
-      "audio-params": {
-        audioType: this.audioType,
-        gain: this.gain,
-        distanceModel: this.distanceModel,
-        rolloffFactor: this.rolloffFactor,
-        refDistance: this.refDistance,
-        maxDistance: this.maxDistance,
-        coneInnerAngle: this.coneInnerAngle,
-        coneOuterAngle: this.coneOuterAngle,
-        coneOuterGain: this.coneOuterGain
       }
     };
 
@@ -266,20 +225,6 @@ export default class VideoNode extends EditorNodeMixin(Video) {
     if (this.href && this.projection === "flat") {
       this.addGLTFComponent("link", { href: this.href });
     }
-
-    // We don't want artificial distance based attenuation to be applied to stereo audios
-    // so we set the distanceModel and rolloffFactor so the attenuation is always 1.
-    this.addGLTFComponent("audio-params", {
-      audioType: this.audioType,
-      gain: this.gain,
-      distanceModel: this.audioType === AudioType.Stereo ? DistanceModelType.Linear : this.distanceModel,
-      rolloffFactor: this.audioType === AudioType.Stereo ? 0 : this.rolloffFactor,
-      refDistance: this.refDistance,
-      maxDistance: this.maxDistance,
-      coneInnerAngle: this.coneInnerAngle,
-      coneOuterAngle: this.coneOuterAngle,
-      coneOuterGain: this.coneOuterGain
-    });
 
     this.replaceObject();
   }
