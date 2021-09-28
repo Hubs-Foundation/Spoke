@@ -37,7 +37,7 @@ export const InputGroupContent = styled.div`
   `}
   display: flex;
   flex-direction: row;
-  flex: 3;
+  flex: 2;
   padding-left: 8px;
   align-items: center;
 `;
@@ -95,7 +95,17 @@ InputGroupInfo.propTypes = {
   info: PropTypes.string
 };
 
-export default function InputGroup({ name, children, disabled, info, optional, enabled, onEnable, ...rest }) {
+export default function InputGroup({
+  name,
+  children,
+  disabled,
+  info,
+  optional,
+  enabled,
+  onEnable,
+  resetButton,
+  ...rest
+}) {
   return (
     <InputGroupContainer disabled={disabled} {...rest}>
       <InputGroupHeader>
@@ -105,6 +115,7 @@ export default function InputGroup({ name, children, disabled, info, optional, e
       <InputGroupContent disabled={optional && !enabled}>
         {children}
         {info && <InputGroupInfo info={info} />}
+        {resetButton}
       </InputGroupContent>
     </InputGroupContainer>
   );
@@ -118,5 +129,6 @@ InputGroup.propTypes = {
   info: PropTypes.string,
   optional: PropTypes.bool,
   enabled: PropTypes.bool,
-  onEnable: PropTypes.func
+  onEnable: PropTypes.func,
+  resetButton: PropTypes.any
 };

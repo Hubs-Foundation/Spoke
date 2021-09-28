@@ -21,6 +21,18 @@ export const DistanceModelType = {
   Exponential: "exponential"
 };
 
+export const AvatarAudioDefaults = Object.freeze({
+  audioType: AudioType.PannerNode,
+  distanceModel: DistanceModelType.Inverse,
+  rolloffFactor: 2,
+  refDistance: 1,
+  maxDistance: 10000,
+  coneInnerAngle: 180,
+  coneOuterAngle: 360,
+  coneOuterGain: 0,
+  gain: 1.0
+});
+
 export const MediaAudioDefaults = Object.freeze({
   audioType: AudioType.PannerNode,
   distanceModel: DistanceModelType.Inverse,
@@ -46,6 +58,7 @@ export const AudioZoneDefaults = Object.freeze({
 });
 
 export const Defaults = {
+  [SourceType.AVATAR_AUDIO_SOURCE]: AvatarAudioDefaults,
   [SourceType.MEDIA_VIDEO]: MediaAudioDefaults,
   [SourceType.AUDIO_ZONE]: AudioZoneDefaults
 };

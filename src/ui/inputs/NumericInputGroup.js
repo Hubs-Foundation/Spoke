@@ -5,7 +5,17 @@ import Scrubber from "./Scrubber";
 import NumericInput from "./NumericInput";
 import BooleanInput from "./BooleanInput";
 
-export default function NumericInputGroup({ name, className, info, optional, enabled, onEnable, ...rest }) {
+export default function NumericInputGroup({
+  name,
+  className,
+  info,
+  optional,
+  enabled,
+  onEnable,
+  children,
+  resetButton,
+  ...rest
+}) {
   const { displayPrecision, ...scrubberProps } = rest;
   return (
     <InputGroupContainer>
@@ -17,7 +27,9 @@ export default function NumericInputGroup({ name, className, info, optional, ena
       </InputGroupHeader>
       <InputGroupContent disabled={optional && !enabled}>
         <NumericInput {...rest} />
+        {children}
         {info && <InputGroupInfo info={info} />}
+        {resetButton}
       </InputGroupContent>
     </InputGroupContainer>
   );
@@ -26,8 +38,10 @@ export default function NumericInputGroup({ name, className, info, optional, ena
 NumericInputGroup.propTypes = {
   name: PropTypes.string.isRequired,
   className: PropTypes.string,
+  children: PropTypes.any,
   info: PropTypes.string,
   optional: PropTypes.bool,
   enabled: PropTypes.bool,
-  onEnable: PropTypes.func
+  onEnable: PropTypes.func,
+  resetButton: PropTypes.any
 };

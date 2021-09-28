@@ -6,7 +6,7 @@ import MeshCombinationGroup from "../MeshCombinationGroup";
 import GroupNode from "./GroupNode";
 import getNodeWithUUID from "../utils/getNodeWithUUID";
 import serializeColor from "../utils/serializeColor";
-import { DistanceModelType } from "../objects/AudioParams";
+import { AvatarAudioDefaults, MediaAudioDefaults } from "../objects/AudioParams";
 import traverseFilteredSubtrees from "../utils/traverseFilteredSubtrees";
 
 // Migrate v1 spoke scene to v2
@@ -414,18 +414,18 @@ export default class SceneNode extends EditorNodeMixin(Scene) {
     this._fogExp2 = new FogExp2(0xffffff, 0.0025);
     this.fog = null;
     this.overrideAudioSettings = false;
-    this.avatarDistanceModel = DistanceModelType.Inverse;
-    this.avatarRolloffFactor = 2;
-    this.avatarRefDistance = 1;
-    this.avatarMaxDistance = 10000;
-    this.mediaVolume = 0.5;
-    this.mediaDistanceModel = DistanceModelType.Inverse;
-    this.mediaRolloffFactor = 1;
-    this.mediaRefDistance = 1;
-    this.mediaMaxDistance = 10000;
-    this.mediaConeInnerAngle = 360;
-    this.mediaConeOuterAngle = 0;
-    this.mediaConeOuterGain = 0;
+    this.avatarDistanceModel = AvatarAudioDefaults.distanceModel;
+    this.avatarRolloffFactor = AvatarAudioDefaults.rolloffFactor;
+    this.avatarRefDistance = AvatarAudioDefaults.refDistance;
+    this.avatarMaxDistance = AvatarAudioDefaults.maxDistance;
+    this.mediaVolume = MediaAudioDefaults.gain;
+    this.mediaDistanceModel = MediaAudioDefaults.distanceModel;
+    this.mediaRolloffFactor = MediaAudioDefaults.rolloffFactor;
+    this.mediaRefDistance = MediaAudioDefaults.refDistance;
+    this.mediaMaxDistance = MediaAudioDefaults.maxDistance;
+    this.mediaConeInnerAngle = MediaAudioDefaults.coneInnerAngle;
+    this.mediaConeOuterAngle = MediaAudioDefaults.coneOuterAngle;
+    this.mediaConeOuterGain = MediaAudioDefaults.coneOuterGain;
     setStaticMode(this, StaticModes.Static);
   }
 

@@ -4,22 +4,64 @@ import InputGroup from "../inputs/InputGroup";
 import SelectInput from "../inputs/SelectInput";
 import NumericInputGroup from "../inputs/NumericInputGroup";
 import CompoundNumericInput from "../inputs/CompoundNumericInput";
-import { AudioType, AudioTypeOptions, DistanceModelOptions, DistanceModelType } from "../../editor/objects/AudioParams";
-import useEnablePropertySelected from "./useEnablePropertySelected";
+import {
+  AudioType,
+  AudioTypeOptions,
+  DistanceModelOptions,
+  DistanceModelType,
+  SourceType
+} from "../../editor/objects/AudioParams";
+import { useAudioParamsPropertySelected } from "./useAudioParamsPropertySelected";
 import useSetPropertySelected from "./useSetPropertySelected";
 import BooleanInput from "../inputs/BooleanInput";
+import ResetButton from "../inputs/ResetButton";
+import { useIsAudioPropertyDefault } from "./useIsAudioPropertyDefault";
 
-export default function AudioParamsProperties({ node, editor, multiEdit }) {
+export default function AudioParamsProperties({ node, editor, multiEdit, sourceType }) {
   const onChangeOverrideAudioSettings = useSetPropertySelected(editor, "overrideAudioSettings");
-  const [onChangeAudioType, onEnableAudioType] = useEnablePropertySelected(editor, "audioType");
-  const [onChangeGain, onEnableGain] = useEnablePropertySelected(editor, "gain");
-  const [onChangeDistanceModel, onEnableDistanceModel] = useEnablePropertySelected(editor, "distanceModel");
-  const [onChangeRolloffFactor, onEnableRolloffFactor] = useEnablePropertySelected(editor, "rolloffFactor");
-  const [onChangeRefDistance, onEnableRefDistance] = useEnablePropertySelected(editor, "refDistance");
-  const [onChangeMaxDistance, onEnableMaxDistance] = useEnablePropertySelected(editor, "maxDistance");
-  const [onChangeConeInnerAngle, onEnableConeInnerAngle] = useEnablePropertySelected(editor, "coneInnerAngle");
-  const [onChangeConeOuterAngle, onEnableConeOuterAngle] = useEnablePropertySelected(editor, "coneOuterAngle");
-  const [onChangeConeOuterGain, onEnableConeOuterGain] = useEnablePropertySelected(editor, "coneOuterGain");
+  const [onChangeAudioType, onEnableAudioType, onResetAudioType] = useAudioParamsPropertySelected(
+    editor,
+    sourceType,
+    "audioType"
+  );
+  const [onChangeGain, onEnableGain, onResetGain] = useAudioParamsPropertySelected(editor, sourceType, "gain");
+  const [onChangeDistanceModel, onEnableDistanceModel, onResetDistanceModel] = useAudioParamsPropertySelected(
+    editor,
+    sourceType,
+    "distanceModel"
+  );
+  const [onChangeRolloffFactor, onEnableRolloffFactor, onResetRolloffFactor] = useAudioParamsPropertySelected(
+    editor,
+    sourceType,
+    "rolloffFactor"
+  );
+  const [onChangeRefDistance, onEnableRefDistance, onResetRefDistance] = useAudioParamsPropertySelected(
+    editor,
+    sourceType,
+    "refDistance"
+  );
+  const [onChangeMaxDistance, onEnableMaxDistance, onResetMaxDistance] = useAudioParamsPropertySelected(
+    editor,
+    sourceType,
+    "maxDistance"
+  );
+  const [onChangeConeInnerAngle, onEnableConeInnerAngle, onResetConeInnerAngle] = useAudioParamsPropertySelected(
+    editor,
+    sourceType,
+    "coneInnerAngle"
+  );
+  const [onChangeConeOuterAngle, onEnableConeOuterAngle, onResetConeOuterAngle] = useAudioParamsPropertySelected(
+    editor,
+    sourceType,
+    "coneOuterAngle"
+  );
+  const [onChangeConeOuterGain, onEnableConeOuterGain, onResetConeOuterGain] = useAudioParamsPropertySelected(
+    editor,
+    sourceType,
+    "coneOuterGain"
+  );
+
+  const isAudioPropertyDisabled = useIsAudioPropertyDefault(node);
 
   // TODO: Make node audio settings work with multi-edit
 
@@ -35,10 +77,24 @@ export default function AudioParamsProperties({ node, editor, multiEdit }) {
             optional
             enabled={node.enabledProperties["audioType"]}
             onEnable={onEnableAudioType}
+            resetButton={
+              <ResetButton
+                disabled={isAudioPropertyDisabled("audioType", SourceType.MEDIA_VIDEO)}
+                onClick={onResetAudioType}
+              />
+            }
           >
             <SelectInput options={AudioTypeOptions} value={node.audioType} onChange={onChangeAudioType} />
           </InputGroup>
-          <InputGroup name="Volume" optional enabled={node.enabledProperties["gain"]} onEnable={onEnableGain}>
+          <InputGroup
+            name="Volume"
+            optional
+            enabled={node.enabledProperties["gain"]}
+            onEnable={onEnableGain}
+            resetButton={
+              <ResetButton disabled={isAudioPropertyDisabled("gain", SourceType.MEDIA_VIDEO)} onClick={onResetGain} />
+            }
+          >
             <CompoundNumericInput value={node.gain} onChange={onChangeGain} />
           </InputGroup>
           {!multiEdit && node.audioType === AudioType.PannerNode && (
@@ -49,6 +105,12 @@ export default function AudioParamsProperties({ node, editor, multiEdit }) {
                 optional
                 enabled={node.enabledProperties["distanceModel"]}
                 onEnable={onEnableDistanceModel}
+                resetButton={
+                  <ResetButton
+                    disabled={isAudioPropertyDisabled("distanceModel", SourceType.MEDIA_VIDEO)}
+                    onClick={onResetDistanceModel}
+                  />
+                }
               >
                 <SelectInput
                   options={DistanceModelOptions}
@@ -64,6 +126,12 @@ export default function AudioParamsProperties({ node, editor, multiEdit }) {
                   optional
                   enabled={node.enabledProperties["rolloffFactor"]}
                   onEnable={onEnableRolloffFactor}
+                  resetButton={
+                    <ResetButton
+                      disabled={isAudioPropertyDisabled("rolloffFactor", SourceType.MEDIA_VIDEO)}
+                      onClick={onResetRolloffFactor}
+                    />
+                  }
                 >
                   <CompoundNumericInput
                     min={0}
@@ -88,6 +156,12 @@ export default function AudioParamsProperties({ node, editor, multiEdit }) {
                   optional
                   enabled={node.enabledProperties["rolloffFactor"]}
                   onEnable={onEnableRolloffFactor}
+                  resetButton={
+                    <ResetButton
+                      disabled={isAudioPropertyDisabled("rolloffFactor", SourceType.MEDIA_VIDEO)}
+                      onClick={onResetRolloffFactor}
+                    />
+                  }
                 />
               )}
               <NumericInputGroup
@@ -103,6 +177,12 @@ export default function AudioParamsProperties({ node, editor, multiEdit }) {
                 optional
                 enabled={node.enabledProperties["refDistance"]}
                 onEnable={onEnableRefDistance}
+                resetButton={
+                  <ResetButton
+                    disabled={isAudioPropertyDisabled("refDistance", SourceType.MEDIA_VIDEO)}
+                    onClick={onResetRefDistance}
+                  />
+                }
               />
               <NumericInputGroup
                 name="Max Distance"
@@ -117,6 +197,12 @@ export default function AudioParamsProperties({ node, editor, multiEdit }) {
                 optional
                 enabled={node.enabledProperties["maxDistance"]}
                 onEnable={onEnableMaxDistance}
+                resetButton={
+                  <ResetButton
+                    disabled={isAudioPropertyDisabled("maxDistance", SourceType.MEDIA_VIDEO)}
+                    onClick={onResetMaxDistance}
+                  />
+                }
               />
               <NumericInputGroup
                 name="Cone Inner Angle"
@@ -133,6 +219,12 @@ export default function AudioParamsProperties({ node, editor, multiEdit }) {
                 optional
                 enabled={node.enabledProperties["coneInnerAngle"]}
                 onEnable={onEnableConeInnerAngle}
+                resetButton={
+                  <ResetButton
+                    disabled={isAudioPropertyDisabled("coneInnerAngle", SourceType.MEDIA_VIDEO)}
+                    onClick={onResetConeInnerAngle}
+                  />
+                }
               />
               <NumericInputGroup
                 name="Cone Outer Angle"
@@ -149,6 +241,12 @@ export default function AudioParamsProperties({ node, editor, multiEdit }) {
                 optional
                 enabled={node.enabledProperties["coneOuterAngle"]}
                 onEnable={onEnableConeOuterAngle}
+                resetButton={
+                  <ResetButton
+                    disabled={isAudioPropertyDisabled("coneOuterAngle", SourceType.MEDIA_VIDEO)}
+                    onClick={onResetConeOuterAngle}
+                  />
+                }
               />
               <InputGroup
                 name="Cone Outer Gain"
@@ -156,6 +254,12 @@ export default function AudioParamsProperties({ node, editor, multiEdit }) {
                 optional
                 enabled={node.enabledProperties["coneOuterGain"]}
                 onEnable={onEnableConeOuterGain}
+                resetButton={
+                  <ResetButton
+                    disabled={isAudioPropertyDisabled("coneOuterGain", SourceType.MEDIA_VIDEO)}
+                    onClick={onResetConeOuterGain}
+                  />
+                }
               >
                 <CompoundNumericInput
                   min={0}
@@ -176,5 +280,6 @@ export default function AudioParamsProperties({ node, editor, multiEdit }) {
 AudioParamsProperties.propTypes = {
   node: PropTypes.object,
   editor: PropTypes.object,
-  multiEdit: PropTypes.bool
+  multiEdit: PropTypes.bool,
+  sourceType: PropTypes.number
 };

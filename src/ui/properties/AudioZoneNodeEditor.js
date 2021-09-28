@@ -5,6 +5,7 @@ import InputGroup from "../inputs/InputGroup";
 import BooleanInput from "../inputs/BooleanInput";
 import { DiceD6 } from "styled-icons/fa-solid/DiceD6";
 import AudioParamsProperties from "./AudioParamsProperties";
+import { SourceType } from "../../editor/objects/AudioParams";
 
 export default class AudioZoneNodeEditor extends Component {
   static propTypes = {
@@ -71,7 +72,7 @@ export default class AudioZoneNodeEditor extends Component {
         >
           <BooleanInput value={node.outIn} onChange={this.onChangeOutIn} />
         </InputGroup>
-        <AudioParamsProperties {...this.props} />
+        <AudioParamsProperties sourceType={SourceType.AUDIO_ZONE} {...this.props} />
       </NodeEditor>
     );
   }

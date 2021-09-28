@@ -7,6 +7,7 @@ import BooleanInput from "../inputs/BooleanInput";
 import { VolumeUp } from "styled-icons/fa-solid/VolumeUp";
 import AudioParamsProperties from "./AudioParamsProperties";
 import useSetPropertySelected from "./useSetPropertySelected";
+import { SourceType } from "../../editor/objects/AudioParams";
 
 export default function AudioNodeEditor(props) {
   const { editor, node } = props;
@@ -29,7 +30,7 @@ export default function AudioNodeEditor(props) {
       <InputGroup name="Loop" info="If true the media will loop indefinitely.">
         <BooleanInput value={node.loop} onChange={onChangeLoop} />
       </InputGroup>
-      <AudioParamsProperties {...props} />
+      <AudioParamsProperties sourceType={SourceType.MEDIA_VIDEO} {...props} />
     </NodeEditor>
   );
 }
