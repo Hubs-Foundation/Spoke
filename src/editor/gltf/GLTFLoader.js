@@ -1995,7 +1995,20 @@ class GLTFLoader {
           const components = getComponents(object);
           for (const [componentName, componentProps] of Object.entries(components)) {
             for (const [propName, propValue] of Object.entries(componentProps)) {
-              if (
+              const type = propValue && propValue.__mhc_link_type;
+              if (type && propValue.index !== undefined) {
+                // TODO support other types
+                if (type === "node") {
+                  this.getDependency(type, propValue.index).then(node => {
+                    node.userData.MOZ_spoke_uuid = node.uuid;
+                    componentProps[propName] = { __gltfIndexForUUID: node.uuid };
+                  });
+                } else {
+                  console.warn(
+                    `Spoke currently only supports "node" component references. This component ${componentName} is using a ${type} ref for ${propName}`
+                  );
+                }
+              } else if (
                 HUBS_NODEREF_COMPONENTS[componentName] &&
                 HUBS_NODEREF_COMPONENTS[componentName].indexOf(propName) !== -1
               ) {
