@@ -4,6 +4,7 @@ import styled from "styled-components";
 import { QuestionCircle } from "styled-icons/fa-regular/QuestionCircle";
 import { InfoTooltip } from "../layout/Tooltip";
 import BooleanInput from "./BooleanInput";
+import ResetButton from "./ResetButton";
 
 export const InputGroupContainer = styled.div`
   display: flex;
@@ -103,7 +104,8 @@ export default function InputGroup({
   optional,
   enabled,
   onEnable,
-  resetButton,
+  onReset,
+  onResetEnabled,
   ...rest
 }) {
   return (
@@ -115,7 +117,7 @@ export default function InputGroup({
       <InputGroupContent disabled={optional && !enabled}>
         {children}
         {info && <InputGroupInfo info={info} />}
-        {resetButton}
+        {onReset && <ResetButton disabled={onResetEnabled} onClick={onReset} />}
       </InputGroupContent>
     </InputGroupContainer>
   );
@@ -130,5 +132,6 @@ InputGroup.propTypes = {
   optional: PropTypes.bool,
   enabled: PropTypes.bool,
   onEnable: PropTypes.func,
-  resetButton: PropTypes.any
+  onReset: PropTypes.func,
+  onResetEnabled: PropTypes.bool
 };

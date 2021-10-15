@@ -12,7 +12,6 @@ import useSetPropertySelected from "./useSetPropertySelected";
 import BooleanInput from "../inputs/BooleanInput";
 import { DistanceModelOptions, DistanceModelType, SourceType } from "../../editor/objects/AudioParams";
 import { useSceneAudioParamsPropertySelected } from "./useAudioParamsPropertySelected";
-import ResetButton from "../inputs/ResetButton";
 import { useIsSceneAudioPropertyDefault } from "./useIsAudioPropertyDefault";
 
 const FogTypeOptions = [
@@ -113,7 +112,7 @@ export default function SceneNodeEditor(props) {
     onResetAvatarMaxDistance
   ] = useSceneAudioParamsPropertySelected(editor, SourceType.AVATAR_AUDIO_SOURCE, "maxDistance", "avatarMaxDistance");
 
-  const isAudioPropertyDisabled = useIsSceneAudioPropertyDefault(node);
+  const isAudioPropertyDefault = useIsSceneAudioPropertyDefault(node);
 
   return (
     <NodeEditor {...props} description={SceneNodeEditor.description}>
@@ -172,16 +171,12 @@ export default function SceneNodeEditor(props) {
             optional
             enabled={node.enabledProperties["avatarDistanceModel"]}
             onEnable={onEnableAvatarDistanceModel}
-            resetButton={
-              <ResetButton
-                disabled={isAudioPropertyDisabled(
-                  "distanceModel",
-                  "avatarDistanceModel",
-                  SourceType.AVATAR_AUDIO_SOURCE
-                )}
-                onClick={onResetAvatarDistanceModel}
-              />
-            }
+            onReset={onResetAvatarDistanceModel}
+            onResetEnabled={isAudioPropertyDefault(
+              "distanceModel",
+              "avatarDistanceModel",
+              SourceType.AVATAR_AUDIO_SOURCE
+            )}
           >
             <SelectInput
               options={DistanceModelOptions}
@@ -197,16 +192,12 @@ export default function SceneNodeEditor(props) {
               optional
               enabled={node.enabledProperties["avatarRolloffFactor"]}
               onEnable={onEnableAvatarRolloffFactor}
-              resetButton={
-                <ResetButton
-                  disabled={isAudioPropertyDisabled(
-                    "rolloffFactor",
-                    "avatarRolloffFactor",
-                    SourceType.AVATAR_AUDIO_SOURCE
-                  )}
-                  onClick={onResetAvatarRolloffFactor}
-                />
-              }
+              onReset={onResetAvatarRolloffFactor}
+              onResetEnabled={isAudioPropertyDefault(
+                "rolloffFactor",
+                "avatarRolloffFactor",
+                SourceType.AVATAR_AUDIO_SOURCE
+              )}
             >
               <CompoundNumericInput
                 min={0}
@@ -231,16 +222,12 @@ export default function SceneNodeEditor(props) {
               optional
               enabled={node.enabledProperties["avatarRolloffFactor"]}
               onEnable={onEnableAvatarRolloffFactor}
-              resetButton={
-                <ResetButton
-                  disabled={isAudioPropertyDisabled(
-                    "rolloffFactor",
-                    "avatarRolloffFactor",
-                    SourceType.AVATAR_AUDIO_SOURCE
-                  )}
-                  onClick={onResetAvatarRolloffFactor}
-                />
-              }
+              onReset={onResetAvatarRolloffFactor}
+              onResetEnabled={isAudioPropertyDefault(
+                "rolloffFactor",
+                "avatarRolloffFactor",
+                SourceType.AVATAR_AUDIO_SOURCE
+              )}
             />
           )}
           <NumericInputGroup
@@ -256,12 +243,8 @@ export default function SceneNodeEditor(props) {
             optional
             enabled={node.enabledProperties["avatarRefDistance"]}
             onEnable={onEnableAvatarRefDistance}
-            resetButton={
-              <ResetButton
-                disabled={isAudioPropertyDisabled("refDistance", "avatarRefDistance", SourceType.AVATAR_AUDIO_SOURCE)}
-                onClick={onResetAvatarRefDistance}
-              />
-            }
+            onReset={onResetAvatarRefDistance}
+            onResetEnabled={isAudioPropertyDefault("refDistance", "avatarRefDistance", SourceType.AVATAR_AUDIO_SOURCE)}
           />
           <NumericInputGroup
             name="Avatar Max Distance"
@@ -276,24 +259,16 @@ export default function SceneNodeEditor(props) {
             optional
             enabled={node.enabledProperties["avatarMaxDistance"]}
             onEnable={onEnableAvatarMaxDistance}
-            resetButton={
-              <ResetButton
-                disabled={isAudioPropertyDisabled("maxDistance", "avatarMaxDistance", SourceType.AVATAR_AUDIO_SOURCE)}
-                onClick={onResetAvatarMaxDistance}
-              />
-            }
+            onReset={onResetAvatarMaxDistance}
+            onResetEnabled={isAudioPropertyDefault("maxDistance", "avatarMaxDistance", SourceType.AVATAR_AUDIO_SOURCE)}
           />
           <InputGroup
             name="Media Volume"
             optional
             enabled={node.enabledProperties["mediaVolume"]}
             onEnable={onEnableMediaVolume}
-            resetButton={
-              <ResetButton
-                disabled={isAudioPropertyDisabled("gain", "mediaVolume", SourceType.MEDIA_VIDEO)}
-                onClick={onResetMediaGain}
-              />
-            }
+            onReset={onResetMediaGain}
+            onResetEnabled={isAudioPropertyDefault("gain", "mediaVolume", SourceType.MEDIA_VIDEO)}
           >
             <CompoundNumericInput value={node.mediaVolume} onChange={onChangeMediaVolume} />
           </InputGroup>
@@ -303,12 +278,8 @@ export default function SceneNodeEditor(props) {
             optional
             enabled={node.enabledProperties["mediaDistanceModel"]}
             onEnable={onEnableMediaDistanceModel}
-            resetButton={
-              <ResetButton
-                disabled={isAudioPropertyDisabled("distanceModel", "mediaDistanceModel", SourceType.MEDIA_VIDEO)}
-                onClick={onResetMediaDistanceModel}
-              />
-            }
+            onReset={onResetMediaDistanceModel}
+            onResetEnabled={isAudioPropertyDefault("distanceModel", "mediaDistanceModel", SourceType.MEDIA_VIDEO)}
           >
             <SelectInput
               options={DistanceModelOptions}
@@ -324,12 +295,8 @@ export default function SceneNodeEditor(props) {
               optional
               enabled={node.enabledProperties["mediaRolloffFactor"]}
               onEnable={onEnableMediaRolloffFactor}
-              resetButton={
-                <ResetButton
-                  disabled={isAudioPropertyDisabled("rolloffFactor", "mediaRolloffFactor", SourceType.MEDIA_VIDEO)}
-                  onClick={onResetMediaRolloffFactor}
-                />
-              }
+              onReset={onResetMediaRolloffFactor}
+              onResetEnabled={isAudioPropertyDefault("rolloffFactor", "mediaRolloffFactor", SourceType.MEDIA_VIDEO)}
             >
               <CompoundNumericInput
                 min={0}
@@ -354,12 +321,8 @@ export default function SceneNodeEditor(props) {
               optional
               enabled={node.enabledProperties["mediaRolloffFactor"]}
               onEnable={onEnableMediaRolloffFactor}
-              resetButton={
-                <ResetButton
-                  disabled={isAudioPropertyDisabled("rolloffFactor", "mediaRolloffFactor", SourceType.MEDIA_VIDEO)}
-                  onClick={onResetMediaRolloffFactor}
-                />
-              }
+              onReset={onResetMediaRolloffFactor}
+              onResetEnabled={isAudioPropertyDefault("rolloffFactor", "mediaRolloffFactor", SourceType.MEDIA_VIDEO)}
             />
           )}
           <NumericInputGroup
@@ -375,12 +338,8 @@ export default function SceneNodeEditor(props) {
             optional
             enabled={node.enabledProperties["mediaRefDistance"]}
             onEnable={onEnableMediaRefDistance}
-            resetButton={
-              <ResetButton
-                disabled={isAudioPropertyDisabled("refDistance", "mediaRefDistance", SourceType.MEDIA_VIDEO)}
-                onClick={onResetMediaRefDistance}
-              />
-            }
+            onReset={onResetMediaRefDistance}
+            onResetEnabled={isAudioPropertyDefault("refDistance", "mediaRefDistance", SourceType.MEDIA_VIDEO)}
           />
           <NumericInputGroup
             name="Media Max Distance"
@@ -395,12 +354,8 @@ export default function SceneNodeEditor(props) {
             optional
             enabled={node.enabledProperties["mediaMaxDistance"]}
             onEnable={onEnableMediaMaxDistance}
-            resetButton={
-              <ResetButton
-                disabled={isAudioPropertyDisabled("maxDistance", "mediaMaxDistance", SourceType.MEDIA_VIDEO)}
-                onClick={onResetMediaMaxDistance}
-              />
-            }
+            onReset={onResetMediaMaxDistance}
+            onResetEnabled={isAudioPropertyDefault("maxDistance", "mediaMaxDistance", SourceType.MEDIA_VIDEO)}
           />
           <NumericInputGroup
             name="Media Cone Inner Angle"
@@ -416,12 +371,8 @@ export default function SceneNodeEditor(props) {
             optional
             enabled={node.enabledProperties["mediaConeInnerAngle"]}
             onEnable={onEnableMediaConeInnerAngle}
-            resetButton={
-              <ResetButton
-                disabled={isAudioPropertyDisabled("coneInnerAngle", "mediaConeInnerAngle", SourceType.MEDIA_VIDEO)}
-                onClick={onResetMediaConeInnerAngle}
-              />
-            }
+            onReset={onResetMediaConeInnerAngle}
+            onResetEnabled={isAudioPropertyDefault("coneInnerAngle", "mediaConeInnerAngle", SourceType.MEDIA_VIDEO)}
           />
           <NumericInputGroup
             name="Media Cone Outer Angle"
@@ -437,12 +388,8 @@ export default function SceneNodeEditor(props) {
             optional
             enabled={node.enabledProperties["mediaConeOuterAngle"]}
             onEnable={onEnableMediaConeOuterAngle}
-            resetButton={
-              <ResetButton
-                disabled={isAudioPropertyDisabled("coneOuterAngle", "mediaConeOuterAngle", SourceType.MEDIA_VIDEO)}
-                onClick={onResetMediaConeOuterAngle}
-              />
-            }
+            onReset={onResetMediaConeOuterAngle}
+            onResetEnabled={isAudioPropertyDefault("coneOuterAngle", "mediaConeOuterAngle", SourceType.MEDIA_VIDEO)}
           />
           <InputGroup
             name="Media Cone Outer Gain"
@@ -450,12 +397,8 @@ export default function SceneNodeEditor(props) {
             optional
             enabled={node.enabledProperties["mediaConeOuterGain"]}
             onEnable={onEnableMediaConeOuterGain}
-            resetButton={
-              <ResetButton
-                disabled={isAudioPropertyDisabled("coneOuterGain", "mediaConeOuterGain", SourceType.MEDIA_VIDEO)}
-                onClick={onResetMediaConeOuterGain}
-              />
-            }
+            onReset={onResetMediaConeOuterGain}
+            onResetEnabled={isAudioPropertyDefault("coneOuterGain", "mediaConeOuterGain", SourceType.MEDIA_VIDEO)}
           >
             <CompoundNumericInput
               min={0}
