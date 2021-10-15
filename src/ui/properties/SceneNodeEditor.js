@@ -11,7 +11,7 @@ import SelectInput from "../inputs/SelectInput";
 import useSetPropertySelected from "./useSetPropertySelected";
 import BooleanInput from "../inputs/BooleanInput";
 import { DistanceModelOptions, DistanceModelType, SourceType } from "../../editor/objects/AudioParams";
-import { useSceneAudioParamsPropertySelected } from "./useAudioParamsPropertySelected";
+import { useAudioParamsPropertySelected } from "./useAudioParamsPropertySelected";
 import { useIsSceneAudioPropertyDefault } from "./useIsAudioPropertyDefault";
 
 const FogTypeOptions = [
@@ -40,7 +40,7 @@ export default function SceneNodeEditor(props) {
   const onChangeFogDensity = useSetPropertySelected(editor, "fogDensity");
 
   const onChangeOverrideAudioSettings = useSetPropertySelected(editor, "overrideAudioSettings");
-  const [onChangeMediaVolume, onEnableMediaVolume, onResetMediaGain] = useSceneAudioParamsPropertySelected(
+  const [onChangeMediaVolume, onEnableMediaVolume, onResetMediaGain] = useAudioParamsPropertySelected(
     editor,
     SourceType.MEDIA_VIDEO,
     "gain",
@@ -50,67 +50,59 @@ export default function SceneNodeEditor(props) {
     onChangeMediaDistanceModel,
     onEnableMediaDistanceModel,
     onResetMediaDistanceModel
-  ] = useSceneAudioParamsPropertySelected(editor, SourceType.MEDIA_VIDEO, "distanceModel", "mediaDistanceModel");
+  ] = useAudioParamsPropertySelected(editor, SourceType.MEDIA_VIDEO, "distanceModel", "mediaDistanceModel");
   const [
     onChangeMediaRolloffFactor,
     onEnableMediaRolloffFactor,
     onResetMediaRolloffFactor
-  ] = useSceneAudioParamsPropertySelected(editor, SourceType.MEDIA_VIDEO, "rolloffFactor", "mediaRolloffFactor");
-  const [
-    onChangeMediaRefDistance,
-    onEnableMediaRefDistance,
-    onResetMediaRefDistance
-  ] = useSceneAudioParamsPropertySelected(editor, SourceType.MEDIA_VIDEO, "refDistance", "mediaRefDistance");
-  const [
-    onChangeMediaMaxDistance,
-    onEnableMediaMaxDistance,
-    onResetMediaMaxDistance
-  ] = useSceneAudioParamsPropertySelected(editor, SourceType.MEDIA_VIDEO, "maxDistance", "mediaMaxDistance");
+  ] = useAudioParamsPropertySelected(editor, SourceType.MEDIA_VIDEO, "rolloffFactor", "mediaRolloffFactor");
+  const [onChangeMediaRefDistance, onEnableMediaRefDistance, onResetMediaRefDistance] = useAudioParamsPropertySelected(
+    editor,
+    SourceType.MEDIA_VIDEO,
+    "refDistance",
+    "mediaRefDistance"
+  );
+  const [onChangeMediaMaxDistance, onEnableMediaMaxDistance, onResetMediaMaxDistance] = useAudioParamsPropertySelected(
+    editor,
+    SourceType.MEDIA_VIDEO,
+    "maxDistance",
+    "mediaMaxDistance"
+  );
   const [
     onChangeMediaConeInnerAngle,
     onEnableMediaConeInnerAngle,
     onResetMediaConeInnerAngle
-  ] = useSceneAudioParamsPropertySelected(editor, SourceType.MEDIA_VIDEO, "coneInnerAngle", "mediaConeInnerAngle");
+  ] = useAudioParamsPropertySelected(editor, SourceType.MEDIA_VIDEO, "coneInnerAngle", "mediaConeInnerAngle");
   const [
     onChangeMediaConeOuterAngle,
     onEnableMediaConeOuterAngle,
     onResetMediaConeOuterAngle
-  ] = useSceneAudioParamsPropertySelected(editor, SourceType.MEDIA_VIDEO, "coneOuterAngle", "mediaConeOuterAngle");
+  ] = useAudioParamsPropertySelected(editor, SourceType.MEDIA_VIDEO, "coneOuterAngle", "mediaConeOuterAngle");
   const [
     onChangeMediaConeOuterGain,
     onEnableMediaConeOuterGain,
     onResetMediaConeOuterGain
-  ] = useSceneAudioParamsPropertySelected(editor, SourceType.MEDIA_VIDEO, "coneOuterGain", "mediaConeOuterGain");
+  ] = useAudioParamsPropertySelected(editor, SourceType.MEDIA_VIDEO, "coneOuterGain", "mediaConeOuterGain");
   const [
     onChangeAvatarDistanceModel,
     onEnableAvatarDistanceModel,
     onResetAvatarDistanceModel
-  ] = useSceneAudioParamsPropertySelected(
-    editor,
-    SourceType.AVATAR_AUDIO_SOURCE,
-    "distanceModel",
-    "avatarDistanceModel"
-  );
+  ] = useAudioParamsPropertySelected(editor, SourceType.AVATAR_AUDIO_SOURCE, "distanceModel", "avatarDistanceModel");
   const [
     onChangeAvatarRolloffFactor,
     onEnableAvatarRolloffFactor,
     onResetAvatarRolloffFactor
-  ] = useSceneAudioParamsPropertySelected(
-    editor,
-    SourceType.AVATAR_AUDIO_SOURCE,
-    "rolloffFactor",
-    "avatarRolloffFactor"
-  );
+  ] = useAudioParamsPropertySelected(editor, SourceType.AVATAR_AUDIO_SOURCE, "rolloffFactor", "avatarRolloffFactor");
   const [
     onChangeAvatarRefDistance,
     onEnableAvatarRefDistance,
     onResetAvatarRefDistance
-  ] = useSceneAudioParamsPropertySelected(editor, SourceType.AVATAR_AUDIO_SOURCE, "refDistance", "avatarRefDistance");
+  ] = useAudioParamsPropertySelected(editor, SourceType.AVATAR_AUDIO_SOURCE, "refDistance", "avatarRefDistance");
   const [
     onChangeAvatarMaxDistance,
     onEnableAvatarMaxDistance,
     onResetAvatarMaxDistance
-  ] = useSceneAudioParamsPropertySelected(editor, SourceType.AVATAR_AUDIO_SOURCE, "maxDistance", "avatarMaxDistance");
+  ] = useAudioParamsPropertySelected(editor, SourceType.AVATAR_AUDIO_SOURCE, "maxDistance", "avatarMaxDistance");
 
   const isAudioPropertyDefault = useIsSceneAudioPropertyDefault(node);
 
