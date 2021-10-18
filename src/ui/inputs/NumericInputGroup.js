@@ -11,11 +11,11 @@ export default function NumericInputGroup({
   className,
   info,
   optional,
+  children,
   enabled,
   onEnable,
-  children,
+  reset,
   onReset,
-  onResetEnabled,
   ...rest
 }) {
   const { displayPrecision, ...scrubberProps } = rest;
@@ -31,7 +31,7 @@ export default function NumericInputGroup({
         <NumericInput {...rest} />
         {children}
         {info && <InputGroupInfo info={info} />}
-        {onReset && <ResetButton disabled={onResetEnabled} onClick={onReset} />}
+        {onReset && <ResetButton disabled={!reset} onClick={onReset} />}
       </InputGroupContent>
     </InputGroupContainer>
   );
@@ -45,7 +45,6 @@ NumericInputGroup.propTypes = {
   optional: PropTypes.bool,
   enabled: PropTypes.bool,
   onEnable: PropTypes.func,
-  resetButton: PropTypes.any,
   onReset: PropTypes.func,
-  onResetEnabled: PropTypes.bool
+  reset: PropTypes.bool
 };

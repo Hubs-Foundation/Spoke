@@ -96,20 +96,9 @@ InputGroupInfo.propTypes = {
   info: PropTypes.string
 };
 
-export default function InputGroup({
-  name,
-  children,
-  disabled,
-  info,
-  optional,
-  enabled,
-  onEnable,
-  onReset,
-  onResetEnabled,
-  ...rest
-}) {
+export default function InputGroup({ name, children, disabled, info, optional, enabled, onEnable, reset, onReset }) {
   return (
-    <InputGroupContainer disabled={disabled} {...rest}>
+    <InputGroupContainer disabled={disabled}>
       <InputGroupHeader>
         {optional && <BooleanInput value={enabled} onChange={onEnable} />}
         <OptionalGroup disabled={optional && !enabled}>{name && <label>{name}:</label>}</OptionalGroup>
@@ -117,7 +106,7 @@ export default function InputGroup({
       <InputGroupContent disabled={optional && !enabled}>
         {children}
         {info && <InputGroupInfo info={info} />}
-        {onReset && <ResetButton disabled={onResetEnabled} onClick={onReset} />}
+        {onReset && <ResetButton disabled={!reset} onClick={onReset} />}
       </InputGroupContent>
     </InputGroupContainer>
   );
@@ -133,5 +122,5 @@ InputGroup.propTypes = {
   enabled: PropTypes.bool,
   onEnable: PropTypes.func,
   onReset: PropTypes.func,
-  onResetEnabled: PropTypes.bool
+  reset: PropTypes.bool
 };
