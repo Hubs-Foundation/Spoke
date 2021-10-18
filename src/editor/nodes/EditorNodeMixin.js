@@ -64,12 +64,7 @@ export default function EditorNodeMixin(Object3DClass) {
 
         if (editorSettingsComponent) {
           node.enabled = editorSettingsComponent.props.enabled;
-        }
-
-        const enabledProperties = json.components.find(c => c.name === "enabled-properties");
-
-        if (enabledProperties) {
-          node.enabledProperties = enabledProperties.props.enabled;
+          node.modifiedProperties = editorSettingsComponent.props.modifiedProperties;
         }
       }
 
@@ -95,7 +90,7 @@ export default function EditorNodeMixin(Object3DClass) {
       this.loadingCube = null;
       this.errorIcon = null;
       this.issues = [];
-      this._enabledProperties = {};
+      this._modifiedProperties = {};
     }
 
     clone(recursive) {
@@ -127,7 +122,7 @@ export default function EditorNodeMixin(Object3DClass) {
       this.issues = source.issues.slice();
       this._visible = source._visible;
       this.enabled = source.enabled;
-      this._enabledProperties = source.enabledProperties;
+      this._modifiedProperties = source.modifiedProperties;
 
       return this;
     }
@@ -195,13 +190,8 @@ export default function EditorNodeMixin(Object3DClass) {
           {
             name: "editor-settings",
             props: {
-              enabled: this.enabled
-            }
-          },
-          {
-            name: "enabled-properties",
-            props: {
-              enabled: this.enabledProperties
+              enabled: this.enabled,
+              modifiedProperties: this.modifiedProperties
             }
           }
         ]
@@ -473,15 +463,15 @@ export default function EditorNodeMixin(Object3DClass) {
     }
 
     optionalPropertyExportValue(propName) {
-      return this.enabledProperties[propName] ? this[propName] : undefined;
+      return this.modifiedProperties[propName] ? this[propName] : undefined;
     }
 
-    set enabledProperties(object) {
-      this._enabledProperties = { ...this._enabledProperties, ...object };
+    set modifiedProperties(object) {
+      this._modifiedProperties = { ...this._modifiedProperties, ...object };
     }
 
-    get enabledProperties() {
-      return this._enabledProperties;
+    get modifiedProperties() {
+      return this._modifiedProperties;
     }
   };
 }

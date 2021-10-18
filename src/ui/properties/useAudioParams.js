@@ -5,11 +5,11 @@ export default function useAudioParams(node, editor, sourceType, propName, scene
   const targetPropName = (scenePropName && scenePropName) || propName;
   return {
     onChange: useCallback(value => editor.setPropertySelected(targetPropName, value), [editor, targetPropName]),
-    onEnable: useCallback(value => editor.setPropertySelected("enabledProperties", { [targetPropName]: value }), [
+    onEnable: useCallback(value => editor.setPropertySelected("modifiedProperties", { [targetPropName]: value }), [
       editor,
       targetPropName
     ]),
-    enabled: node.enabledProperties[targetPropName],
+    enabled: node.modifiedProperties[targetPropName],
     onReset: useCallback(() => editor.setPropertySelected(targetPropName, Defaults[sourceType][propName]), [
       editor,
       targetPropName,

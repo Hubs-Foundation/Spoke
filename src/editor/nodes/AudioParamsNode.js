@@ -36,7 +36,7 @@ export default function AudioParamsNode(Type) {
     set overrideAudioSettings(overriden) {
       this._overrideAudioSettings = overriden;
       if (!overriden) {
-        this.enabledProperties = {};
+        this.modifiedProperties = {};
       }
     }
 

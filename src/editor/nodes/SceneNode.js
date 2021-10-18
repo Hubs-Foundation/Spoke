@@ -568,9 +568,10 @@ export default class SceneNode extends EditorNodeMixin(Scene) {
               }
             },
             {
-              name: "enabled-properties",
+              name: "editor-settings",
               props: {
-                enabled: this.enabledProperties
+                enabled: true,
+                modifiedProperties: this.modifiedProperties
               }
             }
           ]
