@@ -467,10 +467,12 @@ export default function EditorNodeMixin(Object3DClass) {
     }
 
     set modifiedProperties(object) {
-      const keys = Object.keys(object);
-      keys.forEach(key => {
-        this._modifiedProperties[key] = { ...this._modifiedProperties[key], ...object[key] };
-      });
+      if (object) {
+        const keys = Object.keys(object);
+        keys.forEach(key => {
+          this._modifiedProperties[key] = { ...this._modifiedProperties[key], ...object[key] };
+        });
+      }
     }
 
     get modifiedProperties() {
