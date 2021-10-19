@@ -270,19 +270,47 @@ function migrateV6ToV7(json) {
       // Prior to V6 we didn't have dirty params so we need to enable all properties
       // to make sure that the old settings are applied config is enabled.
       const editorSettingsComponent = entity.components.find(c => c.name === "editor-settings");
-      editorSettingsComponent.props["modifiedProperties"] = {
-        "audio-params": {
-          audioType: true,
-          gain: true,
-          distanceModel: true,
-          rolloffFactor: true,
-          refDistance: true,
-          maxDistance: true,
-          coneInnerAngle: true,
-          coneOuterAngle: true,
-          coneOuterGain: true
-        }
-      };
+      if (editorSettingsComponent) {
+        editorSettingsComponent.props["modifiedProperties"] = {
+          "audio-params": {
+            audioType: true,
+            gain: true,
+            distanceModel: true,
+            rolloffFactor: true,
+            refDistance: true,
+            maxDistance: true,
+            coneInnerAngle: true,
+            coneOuterAngle: true,
+            coneOuterGain: true
+          }
+        };
+      }
+    }
+
+    const audioSettingsComponent = entity.components.find(c => c.name === "audio-settings");
+    if (audioSettingsComponent) {
+      const overriden = audioSettingsComponent.props && audioSettingsComponent.props.overrideAudioSettings;
+      // Prior to V6 we didn't have dirty params so we need to enable all properties
+      // to make sure that the old settings are applied config is enabled.
+      const editorSettingsComponent = entity.components.find(c => c.name === "editor-settings");
+      if (editorSettingsComponent && overriden) {
+        editorSettingsComponent.props["modifiedProperties"] = {
+          scene: {
+            avatarDistanceModel: true,
+            avatarRolloffFactor: true,
+            avatarRefDistance: true,
+            avatarMaxDistance: true,
+            mediaVolume: true,
+            mediaDistanceModel: true,
+            mediaRolloffFactor: true,
+            mediaRefDistance: true,
+            mediaMaxDistance: true,
+            mediaConeInnerAngle: true,
+            mediaConeOuterAngle: true,
+            mediaConeOuterGain: true
+          }
+        };
+      }
     }
   }
 
