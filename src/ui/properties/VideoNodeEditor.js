@@ -11,6 +11,7 @@ import { Video } from "styled-icons/fa-solid/Video";
 import AudioParamsProperties from "./AudioParamsProperties";
 import useSetPropertySelected from "./useSetPropertySelected";
 import AttributionNodeEditor from "./AttributionNodeEditor";
+import { SourceType } from "../../editor/objects/AudioParams";
 
 const videoProjectionOptions = Object.values(VideoProjection).map(v => ({ label: v, value: v }));
 
@@ -49,7 +50,7 @@ export default function VideoNodeEditor(props) {
       <InputGroup name="Loop" info="If true the media will loop indefinitely.">
         <BooleanInput value={node.loop} onChange={onChangeLoop} />
       </InputGroup>
-      <AudioParamsProperties {...props} />
+      <AudioParamsProperties sourceType={SourceType.MEDIA_VIDEO} {...props} />
       <AttributionNodeEditor name="Attribution" {...props} />
     </NodeEditor>
   );

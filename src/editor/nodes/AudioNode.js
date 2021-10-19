@@ -1,14 +1,14 @@
-import EditorNodeMixin from "./EditorNodeMixin";
 import { PlaneBufferGeometry, MeshBasicMaterial, Mesh, DoubleSide } from "three";
 import audioIconUrl from "../../assets/audio-icon.png";
+import AudioParamsNode from "./AudioParamsNode";
 import AudioSource from "../objects/AudioSource";
 import loadTexture from "../utils/loadTexture";
 import { RethrownError } from "../utils/errors";
-import { AudioType, DistanceModelType } from "../objects/AudioParams";
+import { AudioElementType } from "../objects/AudioParams";
 
 let audioHelperTexture = null;
 
-export default class AudioNode extends EditorNodeMixin(AudioSource) {
+export default class AudioNode extends AudioParamsNode(AudioSource) {
   static componentName = "audio";
 
   static nodeName = "Audio";
@@ -22,18 +22,6 @@ export default class AudioNode extends EditorNodeMixin(AudioSource) {
 
     const audioComp = json.components.find(c => c.name === "audio");
     const { src, controls, autoPlay, loop } = audioComp.props;
-    const audioParamsComp = json.components.find(c => c.name === "audio-params");
-    const {
-      audioType,
-      gain,
-      distanceModel,
-      rolloffFactor,
-      refDistance,
-      maxDistance,
-      coneInnerAngle,
-      coneOuterAngle,
-      coneOuterGain
-    } = audioParamsComp.props;
 
     loadAsync(
       (async () => {
@@ -41,15 +29,6 @@ export default class AudioNode extends EditorNodeMixin(AudioSource) {
         node.controls = controls || false;
         node.autoPlay = autoPlay;
         node.loop = loop;
-        node.audioType = audioType;
-        node.gain = gain;
-        node.distanceModel = distanceModel;
-        node.rolloffFactor = rolloffFactor;
-        node.refDistance = refDistance;
-        node.maxDistance = maxDistance;
-        node.coneInnerAngle = coneInnerAngle;
-        node.coneOuterAngle = coneOuterAngle;
-        node.coneOuterGain = coneOuterGain;
       })()
     );
 
@@ -57,7 +36,7 @@ export default class AudioNode extends EditorNodeMixin(AudioSource) {
   }
 
   constructor(editor) {
-    super(editor, editor.audioListener);
+    super(editor, editor.audioListener, AudioElementType.AUDIO);
 
     this._canonicalUrl = "";
     this._autoPlay = true;
@@ -178,17 +157,6 @@ export default class AudioNode extends EditorNodeMixin(AudioSource) {
         controls: this.controls,
         autoPlay: this.autoPlay,
         loop: this.loop
-      },
-      "audio-params": {
-        audioType: this.audioType,
-        gain: this.gain,
-        distanceModel: this.distanceModel,
-        rolloffFactor: this.rolloffFactor,
-        refDistance: this.refDistance,
-        maxDistance: this.maxDistance,
-        coneInnerAngle: this.coneInnerAngle,
-        coneOuterAngle: this.coneOuterAngle,
-        coneOuterGain: this.coneOuterGain
       }
     });
   }
@@ -201,20 +169,6 @@ export default class AudioNode extends EditorNodeMixin(AudioSource) {
       controls: this.controls,
       autoPlay: this.autoPlay,
       loop: this.loop
-    });
-
-    // We don't want artificial distance based attenuation to be applied to stereo audios
-    // so we set the distanceModel and rolloffFactor so the attenuation is always 1.
-    this.addGLTFComponent("audio-params", {
-      audioType: this.audioType,
-      gain: this.gain,
-      distanceModel: this.audioType === AudioType.Stereo ? DistanceModelType.Linear : this.distanceModel,
-      rolloffFactor: this.audioType === AudioType.Stereo ? 0 : this.rolloffFactor,
-      refDistance: this.refDistance,
-      maxDistance: this.maxDistance,
-      coneInnerAngle: this.coneInnerAngle,
-      coneOuterAngle: this.coneOuterAngle,
-      coneOuterGain: this.coneOuterGain
     });
     this.addGLTFComponent("networked", {
       id: this.uuid

@@ -64,6 +64,7 @@ export default function EditorNodeMixin(Object3DClass) {
 
         if (editorSettingsComponent) {
           node.enabled = editorSettingsComponent.props.enabled;
+          node.modifiedProperties = editorSettingsComponent.props.modifiedProperties;
         }
       }
 
@@ -89,6 +90,7 @@ export default function EditorNodeMixin(Object3DClass) {
       this.loadingCube = null;
       this.errorIcon = null;
       this.issues = [];
+      this._modifiedProperties = {};
     }
 
     clone(recursive) {
@@ -120,6 +122,7 @@ export default function EditorNodeMixin(Object3DClass) {
       this.issues = source.issues.slice();
       this._visible = source._visible;
       this.enabled = source.enabled;
+      this._modifiedProperties = source.modifiedProperties;
 
       return this;
     }
@@ -187,7 +190,8 @@ export default function EditorNodeMixin(Object3DClass) {
           {
             name: "editor-settings",
             props: {
-              enabled: this.enabled
+              enabled: this.enabled,
+              modifiedProperties: this.modifiedProperties
             }
           }
         ]
@@ -456,6 +460,21 @@ export default function EditorNodeMixin(Object3DClass) {
           }
         }
       }
+    }
+
+    optionalPropertyExportValue(componentName, propName) {
+      return this.modifiedProperties[componentName][propName] ? this[propName] : undefined;
+    }
+
+    set modifiedProperties(object) {
+      const keys = Object.keys(object);
+      keys.forEach(key => {
+        this._modifiedProperties[key] = { ...this._modifiedProperties[key], ...object[key] };
+      });
+    }
+
+    get modifiedProperties() {
+      return this._modifiedProperties;
     }
   };
 }
