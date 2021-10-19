@@ -463,7 +463,10 @@ export default function EditorNodeMixin(Object3DClass) {
     }
 
     optionalPropertyExportValue(componentName, propName) {
-      return this.modifiedProperties[componentName][propName] ? this[propName] : undefined;
+      if (this.modifiedProperties[componentName]) {
+        return this.modifiedProperties[componentName][propName] ? this[propName] : undefined;
+      }
+      return undefined;
     }
 
     set modifiedProperties(object) {
