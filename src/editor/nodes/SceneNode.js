@@ -269,22 +269,29 @@ function migrateV6ToV7(json) {
     if (audioParamsComponent) {
       // Prior to V6 we didn't have dirty params so we need to enable all properties
       // to make sure that the old settings are applied config is enabled.
-      const editorSettingsComponent = entity.components.find(c => c.name === "editor-settings");
-      if (editorSettingsComponent) {
-        editorSettingsComponent.props["modifiedProperties"] = {
-          "audio-params": {
-            audioType: true,
-            gain: true,
-            distanceModel: true,
-            rolloffFactor: true,
-            refDistance: true,
-            maxDistance: true,
-            coneInnerAngle: true,
-            coneOuterAngle: true,
-            coneOuterGain: true
+      let editorSettingsComponent = entity.components.find(c => c.name === "editor-settings");
+      if (!editorSettingsComponent) {
+        editorSettingsComponent = {
+          name: "editor-settings",
+          props: {
+            enabled: true
           }
         };
+        entity.components.push(editorSettingsComponent);
       }
+      editorSettingsComponent.props["modifiedProperties"] = {
+        "audio-params": {
+          audioType: true,
+          gain: true,
+          distanceModel: true,
+          rolloffFactor: true,
+          refDistance: true,
+          maxDistance: true,
+          coneInnerAngle: true,
+          coneOuterAngle: true,
+          coneOuterGain: true
+        }
+      };
     }
 
     const audioSettingsComponent = entity.components.find(c => c.name === "audio-settings");
@@ -292,8 +299,17 @@ function migrateV6ToV7(json) {
       const overriden = audioSettingsComponent.props && audioSettingsComponent.props.overrideAudioSettings;
       // Prior to V6 we didn't have dirty params so we need to enable all properties
       // to make sure that the old settings are applied config is enabled.
-      const editorSettingsComponent = entity.components.find(c => c.name === "editor-settings");
-      if (editorSettingsComponent && overriden) {
+      if (overriden) {
+        let editorSettingsComponent = entity.components.find(c => c.name === "editor-settings");
+        if (!editorSettingsComponent) {
+          editorSettingsComponent = {
+            name: "editor-settings",
+            props: {
+              enabled: true
+            }
+          };
+          entity.components.push(editorSettingsComponent);
+        }
         editorSettingsComponent.props["modifiedProperties"] = {
           scene: {
             avatarDistanceModel: true,
