@@ -253,6 +253,42 @@ function migrateV5ToV6(json) {
   return json;
 }
 
+function migrateV6ToV7(json) {
+  json.version = 7;
+
+  for (const entityId in json.entities) {
+    if (!Object.prototype.hasOwnProperty.call(json.entities, entityId)) continue;
+
+    const entity = json.entities[entityId];
+
+    if (!entity.components) {
+      continue;
+    }
+
+    const audioParamsComponent = entity.components.find(c => c.name === "audio-params");
+    if (audioParamsComponent) {
+      // Prior to V6 we didn't have dirty params so we need to enable all properties
+      // to make sure that the old settings are applied config is enabled.
+      const editorSettingsComponent = entity.components.find(c => c.name === "editor-settings");
+      editorSettingsComponent.props["modifiedProperties"] = {
+        "audio-params": {
+          audioType: true,
+          gain: true,
+          distanceModel: true,
+          rolloffFactor: true,
+          refDistance: true,
+          maxDistance: true,
+          coneInnerAngle: true,
+          coneOuterAngle: true,
+          coneOuterGain: true
+        }
+      };
+    }
+  }
+
+  return json;
+}
+
 export const FogType = {
   Disabled: "disabled",
   Linear: "linear",
@@ -287,6 +323,10 @@ export default class SceneNode extends EditorNodeMixin(Scene) {
 
     if (json.version === 5) {
       json = migrateV5ToV6(json);
+    }
+
+    if (json.version === 6) {
+      json = migrateV6ToV7(json);
     }
 
     const { root, metadata, entities } = json;
@@ -526,7 +566,7 @@ export default class SceneNode extends EditorNodeMixin(Scene) {
 
   serialize() {
     const sceneJson = {
-      version: 5,
+      version: 7,
       root: this.uuid,
       metadata: JSON.parse(JSON.stringify(this.metadata)),
       entities: {
