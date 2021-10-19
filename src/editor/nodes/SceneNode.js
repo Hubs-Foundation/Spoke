@@ -643,19 +643,31 @@ export default class SceneNode extends EditorNodeMixin(Scene) {
     }
 
     if (this.overrideAudioSettings) {
+      const avatarDistanceModel = this.optionalPropertyExportValue("scene", "avatarDistanceModel");
+      const avatarRolloffFactor = this.optionalPropertyExportValue("scene", "avatarRolloffFactor");
+      const avatarRefDistance = this.optionalPropertyExportValue("scene", "avatarRefDistance");
+      const avatarMaxDistance = this.optionalPropertyExportValue("scene", "avatarMaxDistance");
+      const mediaVolume = this.optionalPropertyExportValue("scene", "mediaVolume");
+      const mediaDistanceModel = this.optionalPropertyExportValue("scene", "mediaDistanceModel");
+      const mediaRolloffFactor = this.optionalPropertyExportValue("scene", "mediaRolloffFactor");
+      const mediaRefDistance = this.optionalPropertyExportValue("scene", "mediaRefDistance");
+      const mediaMaxDistance = this.optionalPropertyExportValue("scene", "mediaMaxDistance");
+      const mediaConeInnerAngle = this.optionalPropertyExportValue("scene", "mediaConeInnerAngle");
+      const mediaConeOuterAngle = this.optionalPropertyExportValue("scene", "mediaConeOuterAngle");
+      const mediaConeOuterGain = this.optionalPropertyExportValue("scene", "mediaConeOuterGain");
       this.addGLTFComponent("audio-settings", {
-        avatarDistanceModel: this.optionalPropertyExportValue("avatarDistanceModel"),
-        avatarRolloffFactor: this.optionalPropertyExportValue("avatarRolloffFactor"),
-        avatarRefDistance: this.optionalPropertyExportValue("avatarRefDistance"),
-        avatarMaxDistance: this.optionalPropertyExportValue("avatarMaxDistance"),
-        mediaVolume: this.optionalPropertyExportValue("mediaVolume"),
-        mediaDistanceModel: this.optionalPropertyExportValue("mediaDistanceModel"),
-        mediaRolloffFactor: this.optionalPropertyExportValue("mediaRolloffFactor"),
-        mediaRefDistance: this.optionalPropertyExportValue("mediaRefDistance"),
-        mediaMaxDistance: this.optionalPropertyExportValue("mediaMaxDistance"),
-        mediaConeInnerAngle: this.optionalPropertyExportValue("mediaConeInnerAngle"),
-        mediaConeOuterAngle: this.optionalPropertyExportValue("mediaConeOuterAngle"),
-        mediaConeOuterGain: this.optionalPropertyExportValue("mediaConeOuterGain")
+        ...(avatarDistanceModel && { avatarDistanceModel }),
+        ...(avatarRolloffFactor && { avatarRolloffFactor }),
+        ...(avatarRefDistance && { avatarRefDistance }),
+        ...(avatarMaxDistance && { avatarMaxDistance }),
+        ...(mediaVolume && { mediaVolume }),
+        ...(mediaDistanceModel && { mediaDistanceModel }),
+        ...(mediaRolloffFactor && { mediaRolloffFactor }),
+        ...(mediaRefDistance && { mediaRefDistance }),
+        ...(mediaMaxDistance && { mediaMaxDistance }),
+        ...(mediaConeInnerAngle && { mediaConeInnerAngle }),
+        ...(mediaConeOuterAngle && { mediaConeOuterAngle }),
+        ...(mediaConeOuterGain && { mediaConeOuterGain })
       });
     }
   }

@@ -10,8 +10,8 @@ import { FogType } from "../../editor/nodes/SceneNode";
 import SelectInput from "../inputs/SelectInput";
 import useSetPropertySelected from "./useSetPropertySelected";
 import BooleanInput from "../inputs/BooleanInput";
-import { DistanceModelOptions, DistanceModelType, SourceType } from "../../editor/objects/AudioParams";
-import useAudioParams from "./useAudioParams";
+import { Defaults, DistanceModelOptions, DistanceModelType, SourceType } from "../../editor/objects/AudioParams";
+import useOptionalParam from "./useOptionalParam";
 
 const FogTypeOptions = [
   {
@@ -40,20 +40,86 @@ export default function SceneNodeEditor(props) {
 
   const onChangeOverrideAudioSettings = useSetPropertySelected(editor, "overrideAudioSettings");
   const mediaParamProps = {
-    gain: useAudioParams(node, editor, SourceType.MEDIA_VIDEO, "gain", "mediaVolume"),
-    distanceModel: useAudioParams(node, editor, SourceType.MEDIA_VIDEO, "distanceModel", "mediaDistanceModel"),
-    rolloffFactor: useAudioParams(node, editor, SourceType.MEDIA_VIDEO, "rolloffFactor", "mediaRolloffFactor"),
-    refDistance: useAudioParams(node, editor, SourceType.MEDIA_VIDEO, "refDistance", "mediaRefDistance"),
-    maxDistance: useAudioParams(node, editor, SourceType.MEDIA_VIDEO, "maxDistance", "mediaMaxDistance"),
-    coneInnerAngle: useAudioParams(node, editor, SourceType.MEDIA_VIDEO, "coneInnerAngle", "mediaConeInnerAngle"),
-    coneOuterAngle: useAudioParams(node, editor, SourceType.MEDIA_VIDEO, "coneOuterAngle", "mediaConeOuterAngle"),
-    coneOuterGain: useAudioParams(node, editor, SourceType.MEDIA_VIDEO, "coneOuterGain", "mediaConeOuterGain")
+    gain: useOptionalParam(node, editor, "scene", "mediaVolume", Defaults[SourceType.MEDIA_VIDEO]["gain"]),
+    distanceModel: useOptionalParam(
+      node,
+      editor,
+      "scene",
+      "mediaDistanceModel",
+      Defaults[SourceType.MEDIA_VIDEO]["distanceModel"]
+    ),
+    rolloffFactor: useOptionalParam(
+      node,
+      editor,
+      "scene",
+      "mediaRolloffFactor",
+      Defaults[SourceType.MEDIA_VIDEO]["rolloffFactor"]
+    ),
+    refDistance: useOptionalParam(
+      node,
+      editor,
+      "scene",
+      "mediaRefDistance",
+      Defaults[SourceType.MEDIA_VIDEO]["refDistance"]
+    ),
+    maxDistance: useOptionalParam(
+      node,
+      editor,
+      "scene",
+      "mediaMaxDistance",
+      Defaults[SourceType.MEDIA_VIDEO]["maxDistance"]
+    ),
+    coneInnerAngle: useOptionalParam(
+      node,
+      editor,
+      "scene",
+      "mediaConeInnerAngle",
+      Defaults[SourceType.MEDIA_VIDEO]["coneInnerAngle"]
+    ),
+    coneOuterAngle: useOptionalParam(
+      node,
+      editor,
+      "scene",
+      "mediaConeOuterAngle",
+      Defaults[SourceType.MEDIA_VIDEO]["coneOuterAngle"]
+    ),
+    coneOuterGain: useOptionalParam(
+      node,
+      editor,
+      "scene",
+      "mediaConeOuterGain",
+      Defaults[SourceType.MEDIA_VIDEO]["coneOuterGain"]
+    )
   };
   const avatarParamProps = {
-    distanceModel: useAudioParams(node, editor, SourceType.AVATAR_AUDIO_SOURCE, "distanceModel", "avatarDistanceModel"),
-    rolloffFactor: useAudioParams(node, editor, SourceType.AVATAR_AUDIO_SOURCE, "rolloffFactor", "avatarRolloffFactor"),
-    refDistance: useAudioParams(node, editor, SourceType.AVATAR_AUDIO_SOURCE, "refDistance", "avatarRefDistance"),
-    maxDistance: useAudioParams(node, editor, SourceType.AVATAR_AUDIO_SOURCE, "maxDistance", "avatarMaxDistance")
+    distanceModel: useOptionalParam(
+      node,
+      editor,
+      "scene",
+      "avatarDistanceModel",
+      Defaults[SourceType.AVATAR_AUDIO_SOURCE]["distanceModel"]
+    ),
+    rolloffFactor: useOptionalParam(
+      node,
+      editor,
+      "scene",
+      "avatarRolloffFactor",
+      Defaults[SourceType.AVATAR_AUDIO_SOURCE]["rolloffFactor"]
+    ),
+    refDistance: useOptionalParam(
+      node,
+      editor,
+      "scene",
+      "avatarRefDistance",
+      Defaults[SourceType.AVATAR_AUDIO_SOURCE]["refDistance"]
+    ),
+    maxDistance: useOptionalParam(
+      node,
+      editor,
+      "scene",
+      "avatarMaxDistance",
+      Defaults[SourceType.AVATAR_AUDIO_SOURCE]["maxDistance"]
+    )
   };
 
   return (

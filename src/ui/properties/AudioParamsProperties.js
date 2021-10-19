@@ -4,23 +4,59 @@ import InputGroup from "../inputs/InputGroup";
 import SelectInput from "../inputs/SelectInput";
 import NumericInputGroup from "../inputs/NumericInputGroup";
 import CompoundNumericInput from "../inputs/CompoundNumericInput";
-import { AudioType, AudioTypeOptions, DistanceModelOptions, DistanceModelType } from "../../editor/objects/AudioParams";
-import useAudioParams from "./useAudioParams";
+import {
+  AudioType,
+  AudioTypeOptions,
+  Defaults,
+  DistanceModelOptions,
+  DistanceModelType
+} from "../../editor/objects/AudioParams";
+import useOptionalParam from "./useOptionalParam";
 import useSetPropertySelected from "./useSetPropertySelected";
 import BooleanInput from "../inputs/BooleanInput";
 
 export default function AudioParamsProperties({ node, editor, multiEdit, sourceType }) {
   const onChangeOverrideAudioSettings = useSetPropertySelected(editor, "overrideAudioSettings");
   const paramProps = {
-    audioType: useAudioParams(node, editor, sourceType, "audioType"),
-    gain: useAudioParams(node, editor, sourceType, "gain"),
-    distanceModel: useAudioParams(node, editor, sourceType, "distanceModel"),
-    rolloffFactor: useAudioParams(node, editor, sourceType, "rolloffFactor"),
-    refDistance: useAudioParams(node, editor, sourceType, "refDistance"),
-    maxDistance: useAudioParams(node, editor, sourceType, "maxDistance"),
-    coneInnerAngle: useAudioParams(node, editor, sourceType, "coneInnerAngle"),
-    coneOuterAngle: useAudioParams(node, editor, sourceType, "coneOuterAngle"),
-    coneOuterGain: useAudioParams(node, editor, sourceType, "coneOuterGain")
+    audioType: useOptionalParam(node, editor, "audio-params", "audioType", Defaults[sourceType]["audioType"]),
+    gain: useOptionalParam(node, editor, "audio-params", "gain", Defaults[sourceType]["gain"]),
+    distanceModel: useOptionalParam(
+      node,
+      editor,
+      "audio-params",
+      "distanceModel",
+      Defaults[sourceType]["distanceModel"]
+    ),
+    rolloffFactor: useOptionalParam(
+      node,
+      editor,
+      "audio-params",
+      "rolloffFactor",
+      Defaults[sourceType]["rolloffFactor"]
+    ),
+    refDistance: useOptionalParam(node, editor, "audio-params", "refDistance", Defaults[sourceType]["refDistance"]),
+    maxDistance: useOptionalParam(node, editor, "audio-params", "maxDistance", Defaults[sourceType]["maxDistance"]),
+    coneInnerAngle: useOptionalParam(
+      node,
+      editor,
+      "audio-params",
+      "coneInnerAngle",
+      Defaults[sourceType]["coneInnerAngle"]
+    ),
+    coneOuterAngle: useOptionalParam(
+      node,
+      editor,
+      "audio-params",
+      "coneOuterAngle",
+      Defaults[sourceType]["coneOuterAngle"]
+    ),
+    coneOuterGain: useOptionalParam(
+      node,
+      editor,
+      "audio-params",
+      "coneOuterGain",
+      Defaults[sourceType]["coneOuterGain"]
+    )
   };
 
   // TODO: Make node audio settings work with multi-edit
