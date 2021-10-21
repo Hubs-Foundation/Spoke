@@ -97,7 +97,7 @@ export default class AudioParams extends Object3D {
   }
 
   get audioType() {
-    return this._audioType;
+    return this._audioType || Defaults[this.sourceType].audioType;
   }
 
   set audioType(type) {
@@ -105,7 +105,7 @@ export default class AudioParams extends Object3D {
   }
 
   get gain() {
-    return this._gain;
+    return this._gain || Defaults[this.sourceType].gain;
   }
 
   set gain(value) {
@@ -113,7 +113,7 @@ export default class AudioParams extends Object3D {
   }
 
   get distanceModel() {
-    return this._distanceModel;
+    return this._distanceModel || Defaults[this.sourceType].distanceModel;
   }
 
   set distanceModel(value) {
@@ -121,7 +121,7 @@ export default class AudioParams extends Object3D {
   }
 
   get rolloffFactor() {
-    return this._rolloffFactor;
+    return this._rolloffFactor || Defaults[this.sourceType].rolloffFactor;
   }
 
   set rolloffFactor(value) {
@@ -129,7 +129,7 @@ export default class AudioParams extends Object3D {
   }
 
   get refDistance() {
-    return this._refDistance;
+    return this._refDistance || Defaults[this.sourceType].refDistance;
   }
 
   set refDistance(value) {
@@ -137,7 +137,7 @@ export default class AudioParams extends Object3D {
   }
 
   get maxDistance() {
-    return this._maxDistance;
+    return this._maxDistance || Defaults[this.sourceType].maxDistance;
   }
 
   set maxDistance(value) {
@@ -145,7 +145,7 @@ export default class AudioParams extends Object3D {
   }
 
   get coneInnerAngle() {
-    return this._coneInnerAngle;
+    return this._coneInnerAngle || Defaults[this.sourceType].coneInnerAngle;
   }
 
   set coneInnerAngle(value) {
@@ -153,7 +153,7 @@ export default class AudioParams extends Object3D {
   }
 
   get coneOuterAngle() {
-    return this._coneOuterAngle;
+    return this._coneOuterAngle || Defaults[this.sourceType].coneOuterAngle;
   }
 
   set coneOuterAngle(value) {
@@ -161,7 +161,7 @@ export default class AudioParams extends Object3D {
   }
 
   get coneOuterGain() {
-    return this._coneOuterGain;
+    return this._coneOuterGain || Defaults[this.sourceType].coneOuterGain;
   }
 
   set coneOuterGain(value) {

@@ -64,7 +64,10 @@ export default function EditorNodeMixin(Object3DClass) {
 
         if (editorSettingsComponent) {
           node.enabled = editorSettingsComponent.props.enabled;
-          node.modifiedProperties = editorSettingsComponent.props.modifiedProperties;
+          node._modifiedProperties =
+            editorSettingsComponent.props.modifiedProperties === undefined
+              ? {}
+              : JSON.parse(JSON.stringify(editorSettingsComponent.props.modifiedProperties));
         }
       }
 
@@ -122,7 +125,8 @@ export default function EditorNodeMixin(Object3DClass) {
       this.issues = source.issues.slice();
       this._visible = source._visible;
       this.enabled = source.enabled;
-      this._modifiedProperties = source.modifiedProperties;
+      this._modifiedProperties =
+        source._modifiedProperties === undefined ? {} : JSON.parse(JSON.stringify(source._modifiedProperties));
 
       return this;
     }
@@ -191,7 +195,8 @@ export default function EditorNodeMixin(Object3DClass) {
             name: "editor-settings",
             props: {
               enabled: this.enabled,
-              modifiedProperties: this.modifiedProperties
+              modifiedProperties:
+                this._modifiedProperties === undefined ? {} : JSON.parse(JSON.stringify(this._modifiedProperties))
             }
           }
         ]
@@ -463,17 +468,26 @@ export default function EditorNodeMixin(Object3DClass) {
     }
 
     optionalPropertyExportValue(componentName, propName) {
-      if (this.modifiedProperties[componentName]) {
-        return this.modifiedProperties[componentName][propName] ? this[propName] : undefined;
+      if (this._modifiedProperties[componentName]) {
+        return this._modifiedProperties[componentName].includes(propName) ? this[propName] : undefined;
       }
       return undefined;
     }
 
     set modifiedProperties(object) {
       if (object) {
-        const keys = Object.keys(object);
-        keys.forEach(key => {
-          this._modifiedProperties[key] = { ...this._modifiedProperties[key], ...object[key] };
+        const compKeys = Object.keys(object);
+        compKeys.forEach(compKey => {
+          const modifiedProps = new Set(this._modifiedProperties[compKey]);
+          const propKeys = Object.keys(object[compKey]);
+          propKeys.forEach(propKey => {
+            if (object[compKey][propKey] === true) {
+              modifiedProps.add(propKey);
+            } else {
+              modifiedProps.delete(propKey);
+            }
+          });
+          this._modifiedProperties[compKey] = Array.from(modifiedProps);
         });
       }
     }

@@ -3,8 +3,8 @@ import PropTypes from "prop-types";
 import styled from "styled-components";
 import { QuestionCircle } from "styled-icons/fa-regular/QuestionCircle";
 import { InfoTooltip } from "../layout/Tooltip";
-import BooleanInput from "./BooleanInput";
 import ResetButton from "./ResetButton";
+import { PropertyLabel } from "./PropertyLabel";
 
 export const InputGroupContainer = styled.div`
   display: flex;
@@ -96,14 +96,15 @@ InputGroupInfo.propTypes = {
   info: PropTypes.string
 };
 
-export default function InputGroup({ name, children, disabled, info, optional, enabled, onEnable, reset, onReset }) {
+export default function InputGroup({ name, children, disabled, info, optional, reset, onReset }) {
   return (
     <InputGroupContainer disabled={disabled}>
       <InputGroupHeader>
-        {optional && <BooleanInput value={enabled} onChange={onEnable} />}
-        <OptionalGroup disabled={optional && !enabled}>{name && <label>{name}:</label>}</OptionalGroup>
+        <OptionalGroup disabled={optional}>
+          {name && <PropertyLabel modified={!reset}>{name}:</PropertyLabel>}
+        </OptionalGroup>
       </InputGroupHeader>
-      <InputGroupContent disabled={optional && !enabled}>
+      <InputGroupContent disabled={optional}>
         {children}
         {info && <InputGroupInfo info={info} />}
         {onReset && <ResetButton disabled={!reset} onClick={onReset} />}
@@ -119,8 +120,6 @@ InputGroup.propTypes = {
   className: PropTypes.string,
   info: PropTypes.string,
   optional: PropTypes.bool,
-  enabled: PropTypes.bool,
-  onEnable: PropTypes.func,
   onReset: PropTypes.func,
   reset: PropTypes.bool
 };
