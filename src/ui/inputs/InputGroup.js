@@ -12,7 +12,6 @@ export const InputGroupContainer = styled.div`
   padding: 4px 8px;
   flex: 1;
   min-height: 24px;
-  align-items: center;
 
   ${props =>
     props.disabled &&
@@ -23,6 +22,7 @@ export const InputGroupContainer = styled.div`
 
   & > label {
     display: block;
+    width: 25%;
     color: ${props => props.theme.text2};
     padding-bottom: 2px;
     padding-top: 4px;
@@ -30,15 +30,9 @@ export const InputGroupContainer = styled.div`
 `;
 
 export const InputGroupContent = styled.div`
-  ${props =>
-    props.disabled &&
-    `
-    pointer-events: none;
-    opacity: 0.3;
-  `}
   display: flex;
   flex-direction: row;
-  flex: 2;
+  flex: 1;
   padding-left: 8px;
   align-items: center;
 `;
@@ -50,38 +44,6 @@ export const InputGroupInfoIcon = styled(QuestionCircle)`
   color: ${props => props.theme.blue};
   cursor: pointer;
   align-self: center;
-`;
-
-export const InputGroupHeader = styled.div`
-  display: flex;
-  flex-direction: row;
-  flex: 1;
-  align-items: center;
-
-  ${props =>
-    props.disabled &&
-    `
-    pointer-events: none;
-    opacity: 0.3;
-  `}
-
-  & > :first-child {
-    padding-right: 8px;
-  }
-`;
-
-export const OptionalGroup = styled.div`
-  display: flex;
-  flex-direction: row;
-  flex: 1;
-  align-items: center;
-
-  ${props =>
-    props.disabled &&
-    `
-    pointer-events: none;
-    opacity: 0.3;
-  `}
 `;
 
 export function InputGroupInfo({ info }) {
@@ -96,15 +58,11 @@ InputGroupInfo.propTypes = {
   info: PropTypes.string
 };
 
-export default function InputGroup({ name, children, disabled, info, optional, reset, onReset }) {
+export default function InputGroup({ name, children, disabled, info, reset, onReset }) {
   return (
     <InputGroupContainer disabled={disabled}>
-      <InputGroupHeader>
-        <OptionalGroup disabled={optional}>
-          {name && <PropertyLabel modified={!reset}>{name}:</PropertyLabel>}
-        </OptionalGroup>
-      </InputGroupHeader>
-      <InputGroupContent disabled={optional}>
+      <PropertyLabel modified={!reset}>{name}:</PropertyLabel>
+      <InputGroupContent>
         {children}
         {info && <InputGroupInfo info={info} />}
         {onReset && <ResetButton disabled={!reset} onClick={onReset} />}
@@ -119,7 +77,6 @@ InputGroup.propTypes = {
   disabled: PropTypes.bool,
   className: PropTypes.string,
   info: PropTypes.string,
-  optional: PropTypes.bool,
   onReset: PropTypes.func,
   reset: PropTypes.bool
 };
