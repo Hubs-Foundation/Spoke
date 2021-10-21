@@ -268,7 +268,7 @@ function migrateV6ToV7(json) {
     const audioParamsComponent = entity.components.find(c => c.name === "audio-params");
     if (audioParamsComponent) {
       // Prior to V6 we didn't have dirty params so we need to enable all properties
-      // to make sure that the old settings are applied config is enabled.
+      // to make sure that the old settings are applied.
       let editorSettingsComponent = entity.components.find(c => c.name === "editor-settings");
       if (!editorSettingsComponent) {
         editorSettingsComponent = {
@@ -298,7 +298,7 @@ function migrateV6ToV7(json) {
     if (audioSettingsComponent) {
       const overriden = audioSettingsComponent.props && audioSettingsComponent.props.overrideAudioSettings;
       // Prior to V6 we didn't have dirty params so we need to enable all properties
-      // to make sure that the old settings are applied config is enabled.
+      // to make sure that the old settings are applied.
       if (overriden) {
         let editorSettingsComponent = entity.components.find(c => c.name === "editor-settings");
         if (!editorSettingsComponent) {
@@ -326,6 +326,61 @@ function migrateV6ToV7(json) {
             mediaConeOuterGain: true
           }
         };
+      }
+    }
+  }
+
+  return json;
+}
+
+function migrateV7ToV8(json) {
+  json.version = 8;
+
+  for (const entityId in json.entities) {
+    if (!Object.prototype.hasOwnProperty.call(json.entities, entityId)) continue;
+
+    const entity = json.entities[entityId];
+
+    if (!entity.components) {
+      continue;
+    }
+
+    const updateModifiedProps = oldProps => {
+      const compKeys = Object.keys(oldProps["modifiedProperties"]);
+      compKeys.forEach(compKey => {
+        const newModifiedProps = [];
+        const propKeys = Object.keys(oldProps["modifiedProperties"][compKey]);
+        propKeys.forEach(propKey => {
+          if (oldProps["modifiedProperties"][compKey][propKey] === true) {
+            newModifiedProps.push(propKey);
+          }
+        });
+        oldProps["modifiedProperties"][compKey] = newModifiedProps;
+      });
+    };
+
+    const audioParamsComponent = entity.components.find(c => c.name === "audio-params");
+    if (audioParamsComponent) {
+      // Migrate old modified params object to a set
+      const editorSettingsComponent = entity.components.find(c => c.name === "editor-settings");
+      const modifiedProps = editorSettingsComponent.props["modifiedProperties"];
+      if (modifiedProps) {
+        updateModifiedProps(editorSettingsComponent.props);
+      }
+    }
+
+    const audioSettingsComponent = entity.components.find(c => c.name === "audio-settings");
+    if (audioSettingsComponent) {
+      const overriden = audioSettingsComponent.props && audioSettingsComponent.props.overrideAudioSettings;
+      // Migrate old modified params object to a se
+      if (overriden) {
+        const editorSettingsComponent = entity.components.find(c => c.name === "editor-settings");
+        if (editorSettingsComponent) {
+          const modifiedProps = editorSettingsComponent.props["modifiedProperties"];
+          if (modifiedProps) {
+            updateModifiedProps(editorSettingsComponent.props);
+          }
+        }
       }
     }
   }
@@ -371,6 +426,10 @@ export default class SceneNode extends EditorNodeMixin(Scene) {
 
     if (json.version === 6) {
       json = migrateV6ToV7(json);
+    }
+
+    if (json.version === 7) {
+      json = migrateV7ToV8(json);
     }
 
     const { root, metadata, entities } = json;
@@ -610,7 +669,7 @@ export default class SceneNode extends EditorNodeMixin(Scene) {
 
   serialize() {
     const sceneJson = {
-      version: 7,
+      version: 8,
       root: this.uuid,
       metadata: JSON.parse(JSON.stringify(this.metadata)),
       entities: {

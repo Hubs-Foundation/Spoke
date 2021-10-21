@@ -176,7 +176,6 @@ export default function SceneNodeEditor(props) {
           <InputGroup
             name="Avatar Distance Model"
             info="The algorithim used to calculate audio rolloff."
-            optional
             {...avatarParamProps.distanceModel}
           >
             <SelectInput
@@ -190,7 +189,6 @@ export default function SceneNodeEditor(props) {
             <InputGroup
               name="Avatar Rolloff Factor"
               info="A double value describing how quickly the volume is reduced as the source moves away from the listener. 0 to 1"
-              optional
               {...avatarParamProps.rolloffFactor}
             >
               <CompoundNumericInput
@@ -212,7 +210,6 @@ export default function SceneNodeEditor(props) {
               mediumStep={1}
               largeStep={10}
               value={node.avatarRolloffFactor}
-              optional
               onChange={avatarParamProps.rolloffFactor.onChange}
               {...avatarParamProps.rolloffFactor}
             />
@@ -226,7 +223,6 @@ export default function SceneNodeEditor(props) {
             largeStep={10}
             value={node.avatarRefDistance}
             unit="m"
-            optional
             onChange={avatarParamProps.refDistance.onChange}
             {...avatarParamProps.refDistance}
           />
@@ -239,17 +235,15 @@ export default function SceneNodeEditor(props) {
             largeStep={10}
             value={node.avatarMaxDistance}
             unit="m"
-            optional
             onChange={avatarParamProps.maxDistance.onChange}
             {...avatarParamProps.maxDistance}
           />
-          <InputGroup name="Media Volume" optional {...mediaParamProps.gain}>
+          <InputGroup name="Media Volume" {...mediaParamProps.gain}>
             <CompoundNumericInput value={node.mediaVolume} onChange={mediaParamProps.gain.onChange} />
           </InputGroup>
           <InputGroup
             name="Media Distance Model"
             info="The algorithim used to calculate audio rolloff."
-            optional
             {...mediaParamProps.distanceModel}
           >
             <SelectInput
@@ -263,7 +257,6 @@ export default function SceneNodeEditor(props) {
             <InputGroup
               name="Media Rolloff Factor"
               info="A double value describing how quickly the volume is reduced as the source moves away from the listener. 0 to 1"
-              optional
               {...mediaParamProps.rolloffFactor}
             >
               <CompoundNumericInput
@@ -285,7 +278,6 @@ export default function SceneNodeEditor(props) {
               mediumStep={1}
               largeStep={10}
               value={node.mediaRolloffFactor}
-              optional
               onChange={mediaParamProps.rolloffFactor.onChange}
               {...mediaParamProps.rolloffFactor}
             />
@@ -299,7 +291,6 @@ export default function SceneNodeEditor(props) {
             largeStep={10}
             value={node.mediaRefDistance}
             unit="m"
-            optional
             onChange={mediaParamProps.refDistance.onChange}
             {...mediaParamProps.refDistance}
           />
@@ -312,7 +303,6 @@ export default function SceneNodeEditor(props) {
             largeStep={10}
             value={node.mediaMaxDistance}
             unit="m"
-            optional
             onChange={mediaParamProps.maxDistance.onChange}
             {...mediaParamProps.maxDistance}
           />
@@ -326,7 +316,6 @@ export default function SceneNodeEditor(props) {
             largeStep={10}
             value={node.mediaConeInnerAngle}
             unit="°"
-            optional
             onChange={mediaParamProps.coneInnerAngle.onChange}
             {...mediaParamProps.coneInnerAngle}
           />
@@ -340,14 +329,12 @@ export default function SceneNodeEditor(props) {
             largeStep={10}
             value={node.mediaConeOuterAngle}
             unit="°"
-            optional
             onChange={mediaParamProps.coneOuterAngle.onChange}
             {...mediaParamProps.coneOuterAngle}
           />
           <InputGroup
             name="Media Cone Outer Gain"
             info="A double value describing the amount of volume reduction outside the cone defined by the coneOuterGain attribute. Its default value is 0, meaning that no sound can be heard."
-            optional
             {...mediaParamProps.coneOuterGain}
           >
             <CompoundNumericInput
