@@ -13,6 +13,20 @@ export default class AudioZoneNode extends AudioParamsNode(AudioParams) {
 
   static _material = new Material();
 
+  static optionalProperties = {
+    "audio-params": [
+      "audioType",
+      "gain",
+      "distanceModel",
+      "rolloffFactor",
+      "refDistance",
+      "maxDistance",
+      "coneInnerAngle",
+      "coneOuterAngle",
+      "coneOuterGain"
+    ]
+  };
+
   static async deserialize(editor, json, loadAsync, onError) {
     const node = await super.deserialize(editor, json, loadAsync, onError);
 

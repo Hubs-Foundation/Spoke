@@ -70,29 +70,29 @@ export default function AudioParamsNode(Type) {
 
     prepareForExport() {
       if (this.overrideAudioSettings) {
-        const audioType = this.optionalPropertyExportValue("audio-params", "audioType");
-        const gain = this.optionalPropertyExportValue("audio-params", "gain");
-        let distanceModel = this.optionalPropertyExportValue("audio-params", "distanceModel");
-        let rolloffFactor = this.optionalPropertyExportValue("audio-params", "rolloffFactor");
+        const audioType = this.exportPropertyValue("audio-params", "audioType");
+        const gain = this.exportPropertyValue("audio-params", "gain");
+        let distanceModel = this.exportPropertyValue("audio-params", "distanceModel");
+        let rolloffFactor = this.exportPropertyValue("audio-params", "rolloffFactor");
         if (this.sourcetype === SourceType.MEDIA_VIDEO) {
           // We don't want artificial distance based attenuation to be applied to media stereo audios
           // so we set the distanceModel and rolloffFactor so the attenuation is always 1.
-          distanceModel = this.optionalPropertyExportValue[("audio-params", "distanceModel")]
+          distanceModel = this.exportPropertyValue[("audio-params", "distanceModel")]
             ? this.audioType === AudioType.Stereo
               ? DistanceModelType.Linear
-              : this.optionalPropertyExportValue("audio-params", "distanceModel")
+              : this.exportPropertyValue("audio-params", "distanceModel")
             : undefined;
-          rolloffFactor = this.optionalPropertyExportValue[("audio-params", "rolloffFactor")]
+          rolloffFactor = this.exportPropertyValue[("audio-params", "rolloffFactor")]
             ? this.audioType === AudioType.Stereo
               ? 0
-              : this.optionalPropertyExportValue("audio-params", "rolloffFactor")
+              : this.exportPropertyValue("audio-params", "rolloffFactor")
             : undefined;
         }
-        const refDistance = this.optionalPropertyExportValue("audio-params", "refDistance");
-        const maxDistance = this.optionalPropertyExportValue("audio-params", "maxDistance");
-        const coneInnerAngle = this.optionalPropertyExportValue("audio-params", "coneInnerAngle");
-        const coneOuterAngle = this.optionalPropertyExportValue("audio-params", "coneOuterAngle");
-        const coneOuterGain = this.optionalPropertyExportValue("audio-params", "coneOuterGain");
+        const refDistance = this.exportPropertyValue("audio-params", "refDistance");
+        const maxDistance = this.exportPropertyValue("audio-params", "maxDistance");
+        const coneInnerAngle = this.exportPropertyValue("audio-params", "coneInnerAngle");
+        const coneOuterAngle = this.exportPropertyValue("audio-params", "coneOuterAngle");
+        const coneOuterGain = this.exportPropertyValue("audio-params", "coneOuterGain");
 
         this.addGLTFComponent("audio-params", {
           ...(audioType && { audioType }),

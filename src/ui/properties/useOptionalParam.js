@@ -13,6 +13,16 @@ export default function useOptionalParam(node, editor, componentName, propName, 
       },
       [componentName, editor, propName]
     ),
+    onEnable: useCallback(
+      value =>
+        editor.setPropertySelected("enabledProperties", {
+          [componentName]: {
+            [propName]: value
+          }
+        }),
+      [editor, componentName, propName]
+    ),
+    enabled: node.enabledProperties[componentName] ? node.enabledProperties[componentName].includes(propName) : false,
     onReset: useCallback(() => {
       editor.setPropertySelected(propName, defaultValue);
       editor.setPropertySelected("modifiedProperties", {

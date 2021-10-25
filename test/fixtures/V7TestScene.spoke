@@ -1,8 +1,8 @@
 {
-  "version": 6,
+  "version": 7,
   "root": "2266BED7-6CC4-48A6-95DD-9BCD3CF9EAFC",
   "metadata": {
-    "name": "V6TestScene",
+    "name": "V7TestScene",
     "allowRemixing": true,
     "allowPromotion": true,
     "previewCameraTransform": {
@@ -28,7 +28,7 @@
   },
   "entities": {
     "2266BED7-6CC4-48A6-95DD-9BCD3CF9EAFC": {
-      "name": "V6TestScene",
+      "name": "V7TestScene",
       "components": [
         {
           "name": "fog",
@@ -59,9 +59,20 @@
             "mediaRolloffFactor": 1,
             "mediaRefDistance": 1,
             "mediaMaxDistance": 10000,
-            "mediaConeInnerAngle": 360,
+            "mediaConeInnerAngle": 180,
             "mediaConeOuterAngle": 0,
             "mediaConeOuterGain": 0
+          }
+        },
+        {
+          "name": "editor-settings",
+          "props": {
+            "enabled": true,
+            "modifiedProperties": {
+              "scene": {
+                "mediaConeInnerAngle": true
+              }
+            }
           }
         }
       ]
@@ -895,7 +906,12 @@
         {
           "name": "editor-settings",
           "props": {
-            "enabled": true
+            "enabled": true,
+            "modifiedProperties": {
+              "audio-params": {
+                "rolloffFactor": true
+              }
+            }
           }
         },
         {
@@ -914,11 +930,11 @@
             "audioType": "pannernode",
             "gain": 0.5,
             "distanceModel": "inverse",
-            "rolloffFactor": 1,
+            "rolloffFactor": 5,
             "refDistance": 1,
             "maxDistance": 10000,
             "coneInnerAngle": 360,
-            "coneOuterAngle": 360,
+            "coneOuterAngle": 0,
             "coneOuterGain": 0
           }
         }
@@ -958,7 +974,12 @@
         {
           "name": "editor-settings",
           "props": {
-            "enabled": true
+            "enabled": true,
+            "modifiedProperties": {
+              "audio-params": {
+                "coneInnerAngle": true
+              }
+            }
           }
         },
         {
@@ -979,8 +1000,8 @@
             "rolloffFactor": 1,
             "refDistance": 1,
             "maxDistance": 10000,
-            "coneInnerAngle": 360,
-            "coneOuterAngle": 360,
+            "coneInnerAngle": 180,
+            "coneOuterAngle": 0,
             "coneOuterGain": 0
           }
         }
@@ -1510,7 +1531,12 @@
         {
           "name": "editor-settings",
           "props": {
-            "enabled": true
+            "enabled": true,
+            "modifiedProperties": {
+              "audio-params": {
+                "coneOuterAngle": true
+              }
+            }
           }
         },
         {
@@ -1577,7 +1603,12 @@
         {
           "name": "editor-settings",
           "props": {
-            "enabled": true
+            "enabled": true,
+            "modifiedProperties": {
+              "audio-params": {
+                "gain": true
+              }
+            }
           }
         },
         {

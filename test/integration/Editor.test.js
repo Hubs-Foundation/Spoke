@@ -278,3 +278,19 @@ test("Editor should load V6TestScene", withPage(`/projects/new?template=${v6Test
   const serializedScene = await getSerializedScene(page, sceneHandle);
   t.snapshot(serializedScene);
 });
+
+const v7TestSceneUrl = getFixtureUrl("V7TestScene.spoke");
+
+test("Editor should load V7TestScene", withPage(`/projects/new?template=${v7TestSceneUrl}`), async (t, page) => {
+  const sceneHandle = await waitForProjectLoaded(page);
+  const serializedScene = await getSerializedScene(page, sceneHandle);
+  t.snapshot(serializedScene);
+});
+
+const v8TestSceneUrl = getFixtureUrl("V8TestScene.spoke");
+
+test("Editor should load V8TestScene", withPage(`/projects/new?template=${v8TestSceneUrl}`), async (t, page) => {
+  const sceneHandle = await waitForProjectLoaded(page);
+  const serializedScene = await getSerializedScene(page, sceneHandle);
+  t.snapshot(serializedScene);
+});

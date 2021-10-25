@@ -9,7 +9,8 @@ import {
   AudioTypeOptions,
   Defaults,
   DistanceModelOptions,
-  DistanceModelType
+  DistanceModelType,
+  SourceType
 } from "../../editor/objects/AudioParams";
 import useOptionalParam from "./useOptionalParam";
 import useSetPropertySelected from "./useSetPropertySelected";
@@ -17,6 +18,7 @@ import BooleanInput from "../inputs/BooleanInput";
 
 export default function AudioParamsProperties({ node, editor, multiEdit, sourceType }) {
   const onChangeOverrideAudioSettings = useSetPropertySelected(editor, "overrideAudioSettings");
+  const isOptional = sourceType === SourceType.AUDIO_ZONE;
   const paramProps = {
     audioType: useOptionalParam(node, editor, "audio-params", "audioType", Defaults[sourceType]["audioType"]),
     gain: useOptionalParam(node, editor, "audio-params", "gain", Defaults[sourceType]["gain"]),
@@ -68,10 +70,10 @@ export default function AudioParamsProperties({ node, editor, multiEdit, sourceT
       </InputGroup>
       {node.overrideAudioSettings && (
         <>
-          <InputGroup name="Audio Type" {...paramProps.audioType}>
+          <InputGroup name="Audio Type" optional={isOptional} {...paramProps.audioType}>
             <SelectInput options={AudioTypeOptions} value={node.audioType} onChange={paramProps.audioType.onChange} />
           </InputGroup>
-          <InputGroup name="Volume" {...paramProps.gain}>
+          <InputGroup name="Volume" optional={isOptional} {...paramProps.gain}>
             <CompoundNumericInput value={node.gain} onChange={paramProps.gain.onChange} />
           </InputGroup>
           {!multiEdit && node.audioType === AudioType.PannerNode && (
@@ -79,6 +81,7 @@ export default function AudioParamsProperties({ node, editor, multiEdit, sourceT
               <InputGroup
                 name="Distance Model"
                 info="The algorithim used to calculate audio rolloff."
+                optional={isOptional}
                 {...paramProps.distanceModel}
               >
                 <SelectInput
@@ -92,6 +95,7 @@ export default function AudioParamsProperties({ node, editor, multiEdit, sourceT
                 <InputGroup
                   name="Rolloff Factor"
                   info="A double value describing how quickly the volume is reduced as the source moves away from the listener. 0 to 1"
+                  optional={isOptional}
                   {...paramProps.rolloffFactor}
                 >
                   <CompoundNumericInput
@@ -113,6 +117,7 @@ export default function AudioParamsProperties({ node, editor, multiEdit, sourceT
                   mediumStep={1}
                   largeStep={10}
                   value={node.rolloffFactor}
+                  optional={isOptional}
                   onChange={paramProps.rolloffFactor.onChange}
                   {...paramProps.rolloffFactor}
                 />
@@ -125,6 +130,7 @@ export default function AudioParamsProperties({ node, editor, multiEdit, sourceT
                 mediumStep={1}
                 largeStep={10}
                 value={node.refDistance}
+                optional={isOptional}
                 unit="m"
                 onChange={paramProps.refDistance.onChange}
                 {...paramProps.refDistance}
@@ -137,6 +143,7 @@ export default function AudioParamsProperties({ node, editor, multiEdit, sourceT
                 mediumStep={1}
                 largeStep={10}
                 value={node.maxDistance}
+                optional={isOptional}
                 unit="m"
                 onChange={paramProps.maxDistance.onChange}
                 {...paramProps.maxDistance}
@@ -150,6 +157,7 @@ export default function AudioParamsProperties({ node, editor, multiEdit, sourceT
                 mediumStep={1}
                 largeStep={10}
                 value={node.coneInnerAngle}
+                optional={isOptional}
                 unit="°"
                 disabled={multiEdit}
                 onChange={paramProps.coneInnerAngle.onChange}
@@ -164,6 +172,7 @@ export default function AudioParamsProperties({ node, editor, multiEdit, sourceT
                 mediumStep={1}
                 largeStep={10}
                 value={node.coneOuterAngle}
+                optional={isOptional}
                 unit="°"
                 disabled={multiEdit}
                 onChange={paramProps.coneOuterAngle.onChange}
@@ -172,6 +181,7 @@ export default function AudioParamsProperties({ node, editor, multiEdit, sourceT
               <InputGroup
                 name="Cone Outer Gain"
                 info="A double value describing the amount of volume reduction outside the cone defined by the coneOuterAngle attribute. Its default value is 0, meaning that no sound can be heard."
+                optional={isOptional}
                 {...paramProps.coneOuterGain}
               >
                 <CompoundNumericInput
