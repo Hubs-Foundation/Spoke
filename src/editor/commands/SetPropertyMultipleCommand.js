@@ -9,27 +9,15 @@ export default class SetPropertyMultipleCommand extends Command {
     this.objects = objects.slice(0);
     this.propertyName = propertyName;
 
-    if (value && (value.clone || typeof value === "object")) {
-      if (value.clone) {
-        this.newValue = value.clone();
-      } else {
-        this.newValue = Object.assign({}, value);
-      }
+    if (value && value.clone) {
+      this.newValue = value.clone();
     } else {
       this.newValue = value;
     }
 
     this.oldValues = this.objects.map(object => {
       const oldValue = object[propertyName];
-      let value = oldValue;
-      if (oldValue && (oldValue.clone || typeof oldValue === "object")) {
-        if (oldValue.clone) {
-          value = oldValue.clone();
-        } else {
-          value = Object.assign({}, oldValue);
-        }
-      }
-      return value;
+      return oldValue && oldValue.clone ? oldValue.clone() : oldValue;
     });
   }
 
