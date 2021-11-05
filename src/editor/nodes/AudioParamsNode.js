@@ -95,15 +95,15 @@ export default function AudioParamsNode(Type) {
         const coneOuterGain = this.exportPropertyValue("audio-params", "coneOuterGain");
 
         this.addGLTFComponent("audio-params", {
-          ...(audioType && { audioType }),
-          ...(gain && { gain }),
-          ...(distanceModel && { distanceModel }),
-          ...(rolloffFactor && { rolloffFactor }),
-          ...(refDistance && { refDistance }),
-          ...(maxDistance && { maxDistance }),
-          ...(coneInnerAngle && { coneInnerAngle }),
-          ...(coneOuterAngle && { coneOuterAngle }),
-          ...(coneOuterGain && { coneOuterGain })
+          ...(audioType !== undefined && { audioType }),
+          ...(gain !== undefined && { gain }),
+          ...(distanceModel !== undefined && { distanceModel }),
+          ...(rolloffFactor !== undefined && { rolloffFactor }),
+          ...(refDistance !== undefined && { refDistance }),
+          ...(maxDistance !== undefined && { maxDistance }),
+          ...(coneInnerAngle !== undefined && { coneInnerAngle }),
+          ...(coneOuterAngle !== undefined && { coneOuterAngle }),
+          ...(coneOuterGain !== undefined && { coneOuterGain })
         });
       }
     }
