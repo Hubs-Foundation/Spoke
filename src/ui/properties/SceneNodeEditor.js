@@ -10,7 +10,8 @@ import { FogType } from "../../editor/nodes/SceneNode";
 import SelectInput from "../inputs/SelectInput";
 import useSetPropertySelected from "./useSetPropertySelected";
 import BooleanInput from "../inputs/BooleanInput";
-import { DistanceModelOptions, DistanceModelType } from "../../editor/objects/AudioSource";
+import { Defaults, DistanceModelOptions, DistanceModelType, SourceType } from "../../editor/objects/AudioParams";
+import useOptionalParam from "./useOptionalParam";
 
 const FogTypeOptions = [
   {
@@ -38,18 +39,88 @@ export default function SceneNodeEditor(props) {
   const onChangeFogDensity = useSetPropertySelected(editor, "fogDensity");
 
   const onChangeOverrideAudioSettings = useSetPropertySelected(editor, "overrideAudioSettings");
-  const onChangeMediaVolume = useSetPropertySelected(editor, "mediaVolume");
-  const onChangeMediaDistanceModel = useSetPropertySelected(editor, "mediaDistanceModel");
-  const onChangeMediaRolloffFactor = useSetPropertySelected(editor, "mediaRolloffFactor");
-  const onChangeMediaRefDistance = useSetPropertySelected(editor, "mediaRefDistance");
-  const onChangeMediaMaxDistance = useSetPropertySelected(editor, "mediaMaxDistance");
-  const onChangeMediaConeInnerAngle = useSetPropertySelected(editor, "mediaConeInnerAngle");
-  const onChangeMediaConeOuterAngle = useSetPropertySelected(editor, "mediaConeOuterAngle");
-  const onChangeMediaConeOuterGain = useSetPropertySelected(editor, "mediaConeOuterGain");
-  const onChangeAvatarDistanceModel = useSetPropertySelected(editor, "avatarDistanceModel");
-  const onChangeAvatarRolloffFactor = useSetPropertySelected(editor, "avatarRolloffFactor");
-  const onChangeAvatarRefDistance = useSetPropertySelected(editor, "avatarRefDistance");
-  const onChangeAvatarMaxDistance = useSetPropertySelected(editor, "avatarMaxDistance");
+  const mediaParamProps = {
+    gain: useOptionalParam(node, editor, "scene", "mediaVolume", Defaults[SourceType.MEDIA_VIDEO]["gain"]),
+    distanceModel: useOptionalParam(
+      node,
+      editor,
+      "scene",
+      "mediaDistanceModel",
+      Defaults[SourceType.MEDIA_VIDEO]["distanceModel"]
+    ),
+    rolloffFactor: useOptionalParam(
+      node,
+      editor,
+      "scene",
+      "mediaRolloffFactor",
+      Defaults[SourceType.MEDIA_VIDEO]["rolloffFactor"]
+    ),
+    refDistance: useOptionalParam(
+      node,
+      editor,
+      "scene",
+      "mediaRefDistance",
+      Defaults[SourceType.MEDIA_VIDEO]["refDistance"]
+    ),
+    maxDistance: useOptionalParam(
+      node,
+      editor,
+      "scene",
+      "mediaMaxDistance",
+      Defaults[SourceType.MEDIA_VIDEO]["maxDistance"]
+    ),
+    coneInnerAngle: useOptionalParam(
+      node,
+      editor,
+      "scene",
+      "mediaConeInnerAngle",
+      Defaults[SourceType.MEDIA_VIDEO]["coneInnerAngle"]
+    ),
+    coneOuterAngle: useOptionalParam(
+      node,
+      editor,
+      "scene",
+      "mediaConeOuterAngle",
+      Defaults[SourceType.MEDIA_VIDEO]["coneOuterAngle"]
+    ),
+    coneOuterGain: useOptionalParam(
+      node,
+      editor,
+      "scene",
+      "mediaConeOuterGain",
+      Defaults[SourceType.MEDIA_VIDEO]["coneOuterGain"]
+    )
+  };
+  const avatarParamProps = {
+    distanceModel: useOptionalParam(
+      node,
+      editor,
+      "scene",
+      "avatarDistanceModel",
+      Defaults[SourceType.AVATAR_AUDIO_SOURCE]["distanceModel"]
+    ),
+    rolloffFactor: useOptionalParam(
+      node,
+      editor,
+      "scene",
+      "avatarRolloffFactor",
+      Defaults[SourceType.AVATAR_AUDIO_SOURCE]["rolloffFactor"]
+    ),
+    refDistance: useOptionalParam(
+      node,
+      editor,
+      "scene",
+      "avatarRefDistance",
+      Defaults[SourceType.AVATAR_AUDIO_SOURCE]["refDistance"]
+    ),
+    maxDistance: useOptionalParam(
+      node,
+      editor,
+      "scene",
+      "avatarMaxDistance",
+      Defaults[SourceType.AVATAR_AUDIO_SOURCE]["maxDistance"]
+    )
+  };
 
   return (
     <NodeEditor {...props} description={SceneNodeEditor.description}>
@@ -102,11 +173,15 @@ export default function SceneNodeEditor(props) {
       </InputGroup>
       {node.overrideAudioSettings && (
         <>
-          <InputGroup name="Avatar Distance Model" info="The algorithim used to calculate audio rolloff.">
+          <InputGroup
+            name="Avatar Distance Model"
+            info="The algorithim used to calculate audio rolloff."
+            {...avatarParamProps.distanceModel}
+          >
             <SelectInput
               options={DistanceModelOptions}
               value={node.avatarDistanceModel}
-              onChange={onChangeAvatarDistanceModel}
+              onChange={avatarParamProps.distanceModel.onChange}
             />
           </InputGroup>
 
@@ -114,6 +189,7 @@ export default function SceneNodeEditor(props) {
             <InputGroup
               name="Avatar Rolloff Factor"
               info="A double value describing how quickly the volume is reduced as the source moves away from the listener. 0 to 1"
+              {...avatarParamProps.rolloffFactor}
             >
               <CompoundNumericInput
                 min={0}
@@ -122,7 +198,7 @@ export default function SceneNodeEditor(props) {
                 mediumStep={0.01}
                 largeStep={0.1}
                 value={node.avatarRolloffFactor}
-                onChange={onChangeAvatarRolloffFactor}
+                onChange={avatarParamProps.rolloffFactor.onChange}
               />
             </InputGroup>
           ) : (
@@ -134,7 +210,8 @@ export default function SceneNodeEditor(props) {
               mediumStep={1}
               largeStep={10}
               value={node.avatarRolloffFactor}
-              onChange={onChangeAvatarRolloffFactor}
+              onChange={avatarParamProps.rolloffFactor.onChange}
+              {...avatarParamProps.rolloffFactor}
             />
           )}
           <NumericInputGroup
@@ -145,8 +222,9 @@ export default function SceneNodeEditor(props) {
             mediumStep={1}
             largeStep={10}
             value={node.avatarRefDistance}
-            onChange={onChangeAvatarRefDistance}
             unit="m"
+            onChange={avatarParamProps.refDistance.onChange}
+            {...avatarParamProps.refDistance}
           />
           <NumericInputGroup
             name="Avatar Max Distance"
@@ -156,17 +234,22 @@ export default function SceneNodeEditor(props) {
             mediumStep={1}
             largeStep={10}
             value={node.avatarMaxDistance}
-            onChange={onChangeAvatarMaxDistance}
             unit="m"
+            onChange={avatarParamProps.maxDistance.onChange}
+            {...avatarParamProps.maxDistance}
           />
-          <InputGroup name="Media Volume">
-            <CompoundNumericInput value={node.mediaVolume} onChange={onChangeMediaVolume} />
+          <InputGroup name="Media Volume" {...mediaParamProps.gain}>
+            <CompoundNumericInput value={node.mediaVolume} onChange={mediaParamProps.gain.onChange} />
           </InputGroup>
-          <InputGroup name="Media Distance Model" info="The algorithim used to calculate audio rolloff.">
+          <InputGroup
+            name="Media Distance Model"
+            info="The algorithim used to calculate audio rolloff."
+            {...mediaParamProps.distanceModel}
+          >
             <SelectInput
               options={DistanceModelOptions}
               value={node.mediaDistanceModel}
-              onChange={onChangeMediaDistanceModel}
+              onChange={mediaParamProps.distanceModel.onChange}
             />
           </InputGroup>
 
@@ -174,6 +257,7 @@ export default function SceneNodeEditor(props) {
             <InputGroup
               name="Media Rolloff Factor"
               info="A double value describing how quickly the volume is reduced as the source moves away from the listener. 0 to 1"
+              {...mediaParamProps.rolloffFactor}
             >
               <CompoundNumericInput
                 min={0}
@@ -182,7 +266,7 @@ export default function SceneNodeEditor(props) {
                 mediumStep={0.01}
                 largeStep={0.1}
                 value={node.mediaRolloffFactor}
-                onChange={onChangeMediaRolloffFactor}
+                onChange={mediaParamProps.rolloffFactor.onChange}
               />
             </InputGroup>
           ) : (
@@ -194,7 +278,8 @@ export default function SceneNodeEditor(props) {
               mediumStep={1}
               largeStep={10}
               value={node.mediaRolloffFactor}
-              onChange={onChangeMediaRolloffFactor}
+              onChange={mediaParamProps.rolloffFactor.onChange}
+              {...mediaParamProps.rolloffFactor}
             />
           )}
           <NumericInputGroup
@@ -205,8 +290,9 @@ export default function SceneNodeEditor(props) {
             mediumStep={1}
             largeStep={10}
             value={node.mediaRefDistance}
-            onChange={onChangeMediaRefDistance}
             unit="m"
+            onChange={mediaParamProps.refDistance.onChange}
+            {...mediaParamProps.refDistance}
           />
           <NumericInputGroup
             name="Media Max Distance"
@@ -216,8 +302,9 @@ export default function SceneNodeEditor(props) {
             mediumStep={1}
             largeStep={10}
             value={node.mediaMaxDistance}
-            onChange={onChangeMediaMaxDistance}
             unit="m"
+            onChange={mediaParamProps.maxDistance.onChange}
+            {...mediaParamProps.maxDistance}
           />
           <NumericInputGroup
             name="Media Cone Inner Angle"
@@ -228,8 +315,9 @@ export default function SceneNodeEditor(props) {
             mediumStep={1}
             largeStep={10}
             value={node.mediaConeInnerAngle}
-            onChange={onChangeMediaConeInnerAngle}
             unit="°"
+            onChange={mediaParamProps.coneInnerAngle.onChange}
+            {...mediaParamProps.coneInnerAngle}
           />
           <NumericInputGroup
             name="Media Cone Outer Angle"
@@ -240,19 +328,21 @@ export default function SceneNodeEditor(props) {
             mediumStep={1}
             largeStep={10}
             value={node.mediaConeOuterAngle}
-            onChange={onChangeMediaConeOuterAngle}
             unit="°"
+            onChange={mediaParamProps.coneOuterAngle.onChange}
+            {...mediaParamProps.coneOuterAngle}
           />
           <InputGroup
             name="Media Cone Outer Gain"
-            info="A double value describing the amount of volume reduction outside the cone defined by the coneOuterAngle attribute. Its default value is 0, meaning that no sound can be heard."
+            info="A double value describing the amount of volume reduction outside the cone defined by the coneOuterGain attribute. Its default value is 0, meaning that no sound can be heard."
+            {...mediaParamProps.coneOuterGain}
           >
             <CompoundNumericInput
               min={0}
               max={1}
               step={0.01}
               value={node.mediaConeOuterGain}
-              onChange={onChangeMediaConeOuterGain}
+              onChange={mediaParamProps.coneOuterGain.onChange}
             />
           </InputGroup>
         </>

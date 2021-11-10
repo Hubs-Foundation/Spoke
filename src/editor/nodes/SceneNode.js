@@ -6,182 +6,17 @@ import MeshCombinationGroup from "../MeshCombinationGroup";
 import GroupNode from "./GroupNode";
 import getNodeWithUUID from "../utils/getNodeWithUUID";
 import serializeColor from "../utils/serializeColor";
-import { DistanceModelType } from "../objects/AudioSource";
+import { AvatarAudioDefaults, MediaAudioDefaults } from "../objects/AudioParams";
 import traverseFilteredSubtrees from "../utils/traverseFilteredSubtrees";
-
-// Migrate v1 spoke scene to v2
-function migrateV1ToV2(json) {
-  const { root, metadata, entities } = json;
-
-  // Generate UUIDs for all existing entity names.
-  const rootUUID = _Math.generateUUID();
-  const nameToUUID = { [root]: rootUUID };
-  for (const name in entities) {
-    if (Object.prototype.hasOwnProperty.call(entities, name)) {
-      nameToUUID[name] = _Math.generateUUID();
-    }
-  }
-
-  // Replace names with uuids in entities and add the name property.
-  const newEntities = { [rootUUID]: { name: root } };
-  for (const [name, entity] of Object.entries(entities)) {
-    const uuid = nameToUUID[name];
-    newEntities[uuid] = Object.assign({}, entity, {
-      name,
-      parent: nameToUUID[entity.parent]
-    });
-  }
-
-  return {
-    version: 2,
-    root: nameToUUID[root],
-    entities: newEntities,
-    metadata
-  };
-}
-
-function migrateV2ToV3(json) {
-  json.version = 3;
-
-  for (const entityId in json.entities) {
-    if (!Object.prototype.hasOwnProperty.call(json.entities, entityId)) continue;
-
-    const entity = json.entities[entityId];
-
-    if (!entity.components) {
-      continue;
-    }
-
-    entity.components.push({
-      name: "visible",
-      props: {
-        value: true
-      }
-    });
-
-    const modelComponent = entity.components.find(c => c.name === "gltf-model");
-    const navMeshComponent = entity.components.find(c => c.name === "nav-mesh");
-
-    if (!navMeshComponent && modelComponent && modelComponent.props.includeInFloorPlan) {
-      entity.components.push({
-        name: "collidable",
-        props: {}
-      });
-
-      entity.components.push({
-        name: "walkable",
-        props: {}
-      });
-    }
-
-    const groundPlaneComponent = entity.components.find(c => c.name === "ground-plane");
-
-    if (groundPlaneComponent) {
-      entity.components.push({
-        name: "walkable",
-        props: {}
-      });
-    }
-
-    if (modelComponent && navMeshComponent) {
-      entity.components = [
-        {
-          name: "floor-plan",
-          props: {
-            autoCellSize: true,
-            cellSize: 1,
-            cellHeight: 0.1,
-            agentHeight: 1.0,
-            agentRadius: 0.0001,
-            agentMaxClimb: 0.5,
-            agentMaxSlope: 45,
-            regionMinSize: 4
-          }
-        }
-      ];
-    }
-  }
-
-  return json;
-}
-
-function migrateV3ToV4(json) {
-  json.version = 4;
-
-  for (const entityId in json.entities) {
-    if (!Object.prototype.hasOwnProperty.call(json.entities, entityId)) continue;
-
-    const entity = json.entities[entityId];
-
-    if (!entity.components) {
-      continue;
-    }
-
-    const visibleComponent = entity.components.find(c => c.name === "visible");
-
-    if (visibleComponent) {
-      if (visibleComponent.props.visible !== undefined) {
-        continue;
-      }
-
-      if (visibleComponent.props.value !== undefined) {
-        visibleComponent.props = {
-          visible: visibleComponent.props.value
-        };
-      } else {
-        visibleComponent.props = {
-          visible: true
-        };
-      }
-    }
-  }
-
-  return json;
-}
-
-const combineComponents = ["gltf-model", "kit-piece"];
-
-function migrateV4ToV5(json) {
-  json.version = 5;
-
-  for (const entityId in json.entities) {
-    if (!Object.prototype.hasOwnProperty.call(json.entities, entityId)) continue;
-
-    const entity = json.entities[entityId];
-
-    if (!entity.components) {
-      continue;
-    }
-
-    const animationComponent = entity.components.find(c => c.name === "loop-animation");
-
-    if (animationComponent) {
-      // Prior to V5 animation clips were stored in activeClipIndex as an integer
-      const { activeClipIndex } = animationComponent.props;
-      delete animationComponent.props.activeClipIndex;
-      // In V5+ activeClipIndices stores an array of integers. It may be undefined if migrating from a legacy scene where the
-      // clip property stores the animation clip name. We can't migrate this here so we do it in ModelNode and KitPieceNode.
-      animationComponent.props.activeClipIndices = activeClipIndex !== undefined ? [activeClipIndex] : [];
-    }
-
-    const hasCombineComponent = entity.components.find(c => combineComponents.indexOf(c.name) !== -1);
-
-    if (hasCombineComponent) {
-      entity.components.push({
-        name: "combine",
-        props: {}
-      });
-    }
-  }
-
-  return json;
-}
+import MigrateScene from "./SceneMigration";
 
 export const FogType = {
   Disabled: "disabled",
   Linear: "linear",
   Exponential: "exponential"
 };
+
+const JSON_VERSION = 9;
 
 export default class SceneNode extends EditorNodeMixin(Scene) {
   static nodeName = "Scene";
@@ -193,21 +28,7 @@ export default class SceneNode extends EditorNodeMixin(Scene) {
   }
 
   static async loadProject(editor, json) {
-    if (!json.version) {
-      json = migrateV1ToV2(json);
-    }
-
-    if (json.version === 2) {
-      json = migrateV2ToV3(json);
-    }
-
-    if (json.version === 3) {
-      json = migrateV3ToV4(json);
-    }
-
-    if (json.version === 4) {
-      json = migrateV4ToV5(json);
-    }
+    json = MigrateScene(json, JSON_VERSION);
 
     const { root, metadata, entities } = json;
 
@@ -334,18 +155,18 @@ export default class SceneNode extends EditorNodeMixin(Scene) {
     this._fogExp2 = new FogExp2(0xffffff, 0.0025);
     this.fog = null;
     this.overrideAudioSettings = false;
-    this.avatarDistanceModel = DistanceModelType.Inverse;
-    this.avatarRolloffFactor = 2;
-    this.avatarRefDistance = 1;
-    this.avatarMaxDistance = 10000;
-    this.mediaVolume = 0.5;
-    this.mediaDistanceModel = DistanceModelType.Inverse;
-    this.mediaRolloffFactor = 1;
-    this.mediaRefDistance = 1;
-    this.mediaMaxDistance = 10000;
-    this.mediaConeInnerAngle = 360;
-    this.mediaConeOuterAngle = 0;
-    this.mediaConeOuterGain = 0;
+    this.avatarDistanceModel = AvatarAudioDefaults.distanceModel;
+    this.avatarRolloffFactor = AvatarAudioDefaults.rolloffFactor;
+    this.avatarRefDistance = AvatarAudioDefaults.refDistance;
+    this.avatarMaxDistance = AvatarAudioDefaults.maxDistance;
+    this.mediaVolume = MediaAudioDefaults.gain;
+    this.mediaDistanceModel = MediaAudioDefaults.distanceModel;
+    this.mediaRolloffFactor = MediaAudioDefaults.rolloffFactor;
+    this.mediaRefDistance = MediaAudioDefaults.refDistance;
+    this.mediaMaxDistance = MediaAudioDefaults.maxDistance;
+    this.mediaConeInnerAngle = MediaAudioDefaults.coneInnerAngle;
+    this.mediaConeOuterAngle = MediaAudioDefaults.coneOuterAngle;
+    this.mediaConeOuterGain = MediaAudioDefaults.coneOuterGain;
     setStaticMode(this, StaticModes.Static);
   }
 
@@ -446,7 +267,7 @@ export default class SceneNode extends EditorNodeMixin(Scene) {
 
   serialize() {
     const sceneJson = {
-      version: 5,
+      version: JSON_VERSION,
       root: this.uuid,
       metadata: JSON.parse(JSON.stringify(this.metadata)),
       entities: {
@@ -485,6 +306,13 @@ export default class SceneNode extends EditorNodeMixin(Scene) {
                 mediaConeInnerAngle: this.mediaConeInnerAngle,
                 mediaConeOuterAngle: this.mediaConeOuterAngle,
                 mediaConeOuterGain: this.mediaConeOuterGain
+              }
+            },
+            {
+              name: "editor-settings",
+              props: {
+                enabled: true,
+                modifiedProperties: this.modifiedProperties
               }
             }
           ]
@@ -556,19 +384,31 @@ export default class SceneNode extends EditorNodeMixin(Scene) {
     }
 
     if (this.overrideAudioSettings) {
+      const avatarDistanceModel = this.exportPropertyValue("scene", "avatarDistanceModel");
+      const avatarRolloffFactor = this.exportPropertyValue("scene", "avatarRolloffFactor");
+      const avatarRefDistance = this.exportPropertyValue("scene", "avatarRefDistance");
+      const avatarMaxDistance = this.exportPropertyValue("scene", "avatarMaxDistance");
+      const mediaVolume = this.exportPropertyValue("scene", "mediaVolume");
+      const mediaDistanceModel = this.exportPropertyValue("scene", "mediaDistanceModel");
+      const mediaRolloffFactor = this.exportPropertyValue("scene", "mediaRolloffFactor");
+      const mediaRefDistance = this.exportPropertyValue("scene", "mediaRefDistance");
+      const mediaMaxDistance = this.exportPropertyValue("scene", "mediaMaxDistance");
+      const mediaConeInnerAngle = this.exportPropertyValue("scene", "mediaConeInnerAngle");
+      const mediaConeOuterAngle = this.exportPropertyValue("scene", "mediaConeOuterAngle");
+      const mediaConeOuterGain = this.exportPropertyValue("scene", "mediaConeOuterGain");
       this.addGLTFComponent("audio-settings", {
-        avatarDistanceModel: this.avatarDistanceModel,
-        avatarRolloffFactor: this.avatarRolloffFactor,
-        avatarRefDistance: this.avatarRefDistance,
-        avatarMaxDistance: this.avatarMaxDistance,
-        mediaVolume: this.mediaVolume,
-        mediaDistanceModel: this.mediaDistanceModel,
-        mediaRolloffFactor: this.mediaRolloffFactor,
-        mediaRefDistance: this.mediaRefDistance,
-        mediaMaxDistance: this.mediaMaxDistance,
-        mediaConeInnerAngle: this.mediaConeInnerAngle,
-        mediaConeOuterAngle: this.mediaConeOuterAngle,
-        mediaConeOuterGain: this.mediaConeOuterGain
+        ...(avatarDistanceModel && { avatarDistanceModel }),
+        ...(avatarRolloffFactor && { avatarRolloffFactor }),
+        ...(avatarRefDistance && { avatarRefDistance }),
+        ...(avatarMaxDistance && { avatarMaxDistance }),
+        ...(mediaVolume && { mediaVolume }),
+        ...(mediaDistanceModel && { mediaDistanceModel }),
+        ...(mediaRolloffFactor && { mediaRolloffFactor }),
+        ...(mediaRefDistance && { mediaRefDistance }),
+        ...(mediaMaxDistance && { mediaMaxDistance }),
+        ...(mediaConeInnerAngle && { mediaConeInnerAngle }),
+        ...(mediaConeOuterAngle && { mediaConeOuterAngle }),
+        ...(mediaConeOuterGain && { mediaConeOuterGain })
       });
     }
   }

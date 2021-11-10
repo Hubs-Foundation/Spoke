@@ -473,7 +473,10 @@ export default class Editor extends EventEmitter {
               typeof property === "object" &&
               Object.prototype.hasOwnProperty.call(property, "__gltfIndexForUUID")
             ) {
-              component[propertyName] = uuidToIndexMap[property.__gltfIndexForUUID];
+              component[propertyName] = {
+                __mhc_link_type: "node",
+                index: uuidToIndexMap[property.__gltfIndexForUUID]
+              };
             }
           }
         }

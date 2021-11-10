@@ -166,14 +166,12 @@ export default class NumericInput extends Component {
   };
 
   handleBlur = () => {
-    const { value, onCommit, onChange } = this.props;
+    const { value, onCommit } = this.props;
 
     this.setState({ tempValue: null, focused: false });
 
     if (onCommit) {
       onCommit(value);
-    } else {
-      onChange(value);
     }
   };
 
