@@ -1,3 +1,7 @@
+// This is a port of https://github.com/protectwise/troika/tree/master/packages/troika-three-text
+// that has been made functional and restyled for Mozilla Hubs and Spoke (hubs.mozilla.com)
+// by @jamesckane at Paradowski Creative (paradowski.com)
+
 import { Color, Object3D } from "three";
 import EditorNodeMixin from "../../../../src/editor/nodes/EditorNodeMixin";
 import { Text } from "troika-three-text";

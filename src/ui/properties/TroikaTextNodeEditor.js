@@ -1,3 +1,7 @@
+// This is a port of https://github.com/protectwise/troika/tree/master/packages/troika-three-text
+// that has been made functional and restyled for Mozilla Hubs and Spoke (hubs.mozilla.com)
+// by @jamesckane at Paradowski Creative (paradowski.com)
+
 import React, { Component } from "react";
 import PropTypes from "prop-types";
 import NodeEditor from "../../../../src/ui/properties/NodeEditor";
