@@ -12,6 +12,24 @@ import LoadingCube from "../objects/LoadingCube";
 import ErrorIcon from "../objects/ErrorIcon";
 import traverseFilteredSubtrees from "../utils/traverseFilteredSubtrees";
 
+function updateObjectArrayProperty(property, value) {
+  if (value) {
+    const compKeys = Object.keys(value);
+    compKeys.forEach(compKey => {
+      const enabledProps = new Set(property[compKey]);
+      const propKeys = Object.keys(value[compKey]);
+      propKeys.forEach(propKey => {
+        if (value[compKey][propKey] === true) {
+          enabledProps.add(propKey);
+        } else {
+          enabledProps.delete(propKey);
+        }
+      });
+      property[compKey] = Array.from(enabledProps);
+    });
+  }
+}
+
 export default function EditorNodeMixin(Object3DClass) {
   return class extends Object3DClass {
     static nodeName = "Unknown Node";
@@ -26,6 +44,8 @@ export default function EditorNodeMixin(Object3DClass) {
     static initialElementProps = {};
 
     static hideInElementsPanel = false;
+
+    static optionalProperties = {};
 
     static canAddNode(_editor) {
       return true;
@@ -64,6 +84,14 @@ export default function EditorNodeMixin(Object3DClass) {
 
         if (editorSettingsComponent) {
           node.enabled = editorSettingsComponent.props.enabled;
+          node._modifiedProperties =
+            editorSettingsComponent.props.modifiedProperties === undefined
+              ? {}
+              : JSON.parse(JSON.stringify(editorSettingsComponent.props.modifiedProperties));
+          node._enabledProperties =
+            editorSettingsComponent.props.enabledProperties === undefined
+              ? {}
+              : JSON.parse(JSON.stringify(editorSettingsComponent.props.enabledProperties));
         }
       }
 
@@ -89,6 +117,8 @@ export default function EditorNodeMixin(Object3DClass) {
       this.loadingCube = null;
       this.errorIcon = null;
       this.issues = [];
+      this._modifiedProperties = {};
+      this._enabledProperties = {};
     }
 
     clone(recursive) {
@@ -120,6 +150,10 @@ export default function EditorNodeMixin(Object3DClass) {
       this.issues = source.issues.slice();
       this._visible = source._visible;
       this.enabled = source.enabled;
+      this._modifiedProperties =
+        source._modifiedProperties === undefined ? {} : JSON.parse(JSON.stringify(source._modifiedProperties));
+      this._enabledProperties =
+        source._enabledProperties === undefined ? {} : JSON.parse(JSON.stringify(source._enabledProperties));
 
       return this;
     }
@@ -187,7 +221,11 @@ export default function EditorNodeMixin(Object3DClass) {
           {
             name: "editor-settings",
             props: {
-              enabled: this.enabled
+              enabled: this.enabled,
+              modifiedProperties:
+                this._modifiedProperties === undefined ? {} : JSON.parse(JSON.stringify(this._modifiedProperties)),
+              enabledProperties:
+                this._enabledProperties === undefined ? {} : JSON.parse(JSON.stringify(this._enabledProperties))
             }
           }
         ]
@@ -456,6 +494,48 @@ export default function EditorNodeMixin(Object3DClass) {
           }
         }
       }
+    }
+
+    enabledPropertyExportValue(componentName, propName) {
+      if (this._enabledProperties[componentName]) {
+        return this._enabledProperties[componentName].includes(propName) ? this[propName] : undefined;
+      }
+      return undefined;
+    }
+
+    modifiedPropertyExportValue(componentName, propName) {
+      if (this._modifiedProperties[componentName]) {
+        return this._modifiedProperties[componentName].includes(propName) ? this[propName] : undefined;
+      }
+      return undefined;
+    }
+
+    exportPropertyValue(componentName, propName) {
+      if (this.constructor.optionalProperties[componentName]) {
+        if (this.constructor.optionalProperties[componentName].includes(propName)) {
+          return this.enabledPropertyExportValue(componentName, propName);
+        } else {
+          return this.modifiedPropertyExportValue(componentName, propName);
+        }
+      } else {
+        return this.modifiedPropertyExportValue(componentName, propName);
+      }
+    }
+
+    set modifiedProperties(object) {
+      updateObjectArrayProperty(this._modifiedProperties, object);
+    }
+
+    get modifiedProperties() {
+      return this._modifiedProperties;
+    }
+
+    set enabledProperties(object) {
+      updateObjectArrayProperty(this._enabledProperties, object);
+    }
+
+    get enabledProperties() {
+      return this._enabledProperties;
     }
   };
 }

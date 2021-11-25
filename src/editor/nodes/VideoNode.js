@@ -1,12 +1,13 @@
-import EditorNodeMixin from "./EditorNodeMixin";
 import Video from "../objects/Video";
+import AudioParamsNode from "./AudioParamsNode";
 import Hls from "hls.js/dist/hls.light";
 import isHLS from "../utils/isHLS";
 import spokeLandingVideo from "../../assets/video/SpokePromo.mp4";
 import { RethrownError } from "../utils/errors";
 import { getObjectPerfIssues } from "../utils/performance";
+import { AudioElementType } from "../objects/AudioParams";
 
-export default class VideoNode extends EditorNodeMixin(Video) {
+export default class VideoNode extends AudioParamsNode(Video) {
   static componentName = "video";
 
   static nodeName = "Video";
@@ -18,22 +19,18 @@ export default class VideoNode extends EditorNodeMixin(Video) {
   static async deserialize(editor, json, loadAsync, onError) {
     const node = await super.deserialize(editor, json);
 
-    const {
-      src,
-      controls,
-      autoPlay,
-      loop,
-      audioType,
-      volume,
-      distanceModel,
-      rolloffFactor,
-      refDistance,
-      maxDistance,
-      coneInnerAngle,
-      coneOuterAngle,
-      coneOuterGain,
-      projection
-    } = json.components.find(c => c.name === "video").props;
+    const videoComp = json.components.find(c => c.name === "video");
+    const { src, controls, autoPlay, loop, projection } = videoComp.props;
+
+    loadAsync(
+      (async () => {
+        await node.load(src, onError);
+        node.controls = controls || false;
+        node.autoPlay = autoPlay;
+        node.loop = loop;
+        node.projection = projection;
+      })()
+    );
 
     if (json.components.find(c => c.name === "billboard")) {
       node.billboard = true;
@@ -51,15 +48,6 @@ export default class VideoNode extends EditorNodeMixin(Video) {
         node.controls = controls || false;
         node.autoPlay = autoPlay;
         node.loop = loop;
-        node.audioType = audioType;
-        node.volume = volume;
-        node.distanceModel = distanceModel;
-        node.rolloffFactor = rolloffFactor;
-        node.refDistance = refDistance;
-        node.maxDistance = maxDistance;
-        node.coneInnerAngle = coneInnerAngle;
-        node.coneOuterAngle = coneOuterAngle;
-        node.coneOuterGain = coneOuterGain;
         node.projection = projection;
       })()
     );
@@ -68,11 +56,10 @@ export default class VideoNode extends EditorNodeMixin(Video) {
   }
 
   constructor(editor) {
-    super(editor, editor.audioListener);
+    super(editor, editor.audioListener, AudioElementType.VIDEO);
 
     this._canonicalUrl = "";
     this._autoPlay = true;
-    this.volume = 0.5;
     this.controls = true;
     this.billboard = false;
     this.href = "";
@@ -201,15 +188,6 @@ export default class VideoNode extends EditorNodeMixin(Video) {
         controls: this.controls,
         autoPlay: this.autoPlay,
         loop: this.loop,
-        audioType: this.audioType,
-        volume: this.volume,
-        distanceModel: this.distanceModel,
-        rolloffFactor: this.rolloffFactor,
-        refDistance: this.refDistance,
-        maxDistance: this.maxDistance,
-        coneInnerAngle: this.coneInnerAngle,
-        coneOuterAngle: this.coneOuterAngle,
-        coneOuterGain: this.coneOuterGain,
         projection: this.projection
       }
     };
@@ -233,15 +211,6 @@ export default class VideoNode extends EditorNodeMixin(Video) {
       controls: this.controls,
       autoPlay: this.autoPlay,
       loop: this.loop,
-      audioType: this.audioType,
-      volume: this.volume,
-      distanceModel: this.distanceModel,
-      rolloffFactor: this.rolloffFactor,
-      refDistance: this.refDistance,
-      maxDistance: this.maxDistance,
-      coneInnerAngle: this.coneInnerAngle,
-      coneOuterAngle: this.coneOuterAngle,
-      coneOuterGain: this.coneOuterGain,
       projection: this.projection
     });
 

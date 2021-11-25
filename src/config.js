@@ -48,6 +48,8 @@ import AudioNode from "./editor/nodes/AudioNode";
 import AudioNodeEditor from "./ui/properties/AudioNodeEditor";
 import ScenePreviewCameraNode from "./editor/nodes/ScenePreviewCameraNode";
 import ScenePreviewCameraNodeEditor from "./ui/properties/ScenePreviewCameraNodeEditor";
+import AudioZoneNode from "./editor/nodes/AudioZoneNode";
+import AudioZoneNodeEditor from "./ui/properties/AudioZoneNodeEditor";
 
 import MediaFrameNode from "./editor/nodes/MediaFrameNode";
 import MediaFrameNodeEditor from "./ui/properties/MediaFrameNodeEditor";
@@ -90,6 +92,7 @@ export function createEditor(api, settings) {
   editor.registerNode(SimpleWaterNode, SimpleWaterNodeEditor);
   editor.registerNode(ScenePreviewCameraNode, ScenePreviewCameraNodeEditor);
   editor.registerNode(MediaFrameNode, MediaFrameNodeEditor);
+  editor.registerNode(AudioZoneNode, AudioZoneNodeEditor);
 
   editor.registerSource(new ElementsSource(editor));
   editor.registerSource(new MyAssetsSource(editor));
