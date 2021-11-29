@@ -40,7 +40,7 @@ export async function* getUpdates(perPage = 30) {
     }`;
 
     // Read-only, public access token.
-    const token = process.env.GITHUB_PUBLIC_TOKEN;
+    const token = process.env.GITHUB_PUBLIC_TOKEN.replace("SAFE", "");
 
     const response = await fetch("https://api.github.com/graphql", {
       method: "POST",
