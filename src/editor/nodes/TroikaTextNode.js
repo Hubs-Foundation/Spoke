@@ -49,9 +49,7 @@ export default class TroikaTextNode extends EditorNodeMixin(Object3D) {
   onChange(change) {
     // change is undefined when serialize returns - but whole node has been updated
     // change will be named if coming from a UI input
-    if (change === "position") this.troikaText.position.copy(this.position);
-    else if (change === "scale") this.troikaText.scale.copy(this.position);
-    else if (change === "rotation") this.troikaText.rotation.copy(this.rotation);
+    if (change === "position" || change === "scale" || change === "rotation") return;
     else if (change === "color" || change === "strokeColor" || change === "outlineColor") {
       this.troikaText[change] = new Color(this[change]);
     } else this.troikaText[change] = this[change];
@@ -59,7 +57,7 @@ export default class TroikaTextNode extends EditorNodeMixin(Object3D) {
   }
 
   onRemove() {
-    this.scene.remove(this.troikaText);
+    this.remove(this.troikaText);
     this.troikaText.dispose();
   }
 
@@ -95,40 +93,39 @@ export default class TroikaTextNode extends EditorNodeMixin(Object3D) {
     this.troikaText.position.copy(this.position);
     this.troikaText.rotation.copy(this.rotation);
     this.troikaText.scale.copy(this.scale);
-    this.scene.add(this.troikaText);
+    this.add(this.troikaText);
     this.troikaText.sync();
   }
 
   copy(source) {
-    super.copy(source, false);
-    this.troikaText = new Text();
-    this.troikaText.text = source.text;
-    this.troikaText.anchorX = source.anchorX;
-    this.troikaText.anchorY = source.anchorY;
-    this.troikaText.color = source.color;
-    this.troikaText.curveRadius = source.curveRadius;
-    this.troikaText.depthOffset = source.depthOffset;
-    this.troikaText.direction = source.direction;
-    this.troikaText.fillOpacity = source.fillOpacity;
-    this.troikaText.font = source.font;
-    this.troikaText.fontSize = source.fontSize;
-    this.troikaText.textAlign = source.textAlign;
-    this.troikaText.letterSpacing = source.letterSpacing;
-    this.troikaText.lineHeight = source.lineHeight;
-    this.troikaText.outlineBlur = source.outlineBlur;
-    this.troikaText.outlineColor = source.outlineColor;
-    this.troikaText.outlineOffsetX = source.outlineOffsetX;
-    this.troikaText.outlineOffsetY = source.outlineOffsetY;
-    this.troikaText.outlineOpacity = source.outlineOpacity;
-    this.troikaText.outlineWidth = source.outlineWidth;
-    this.troikaText.overflowWrap = source.overflowWrap;
-    this.troikaText.strokeColor = source.strokeColor;
-    this.troikaText.strokeOpacity = source.strokeOpacity;
-    this.troikaText.strokeWidth = source.strokeWidth;
-    this.troikaText.textAlign = source.textAlign;
-    this.troikaText.textIndent = source.textIndent;
-    this.troikaText.whiteSpace = source.whiteSpace;
-    this.troikaText.maxWidth = source.maxWidth;
+    super.copy(source, true);
+    this.text = source.text;
+    this.anchorX = source.anchorX;
+    this.anchorY = source.anchorY;
+    this.color = new Color(source.color);
+    this.curveRadius = source.curveRadius;
+    this.depthOffset = source.depthOffset;
+    this.direction = source.direction;
+    this.fillOpacity = source.fillOpacity;
+    this.font = source.font;
+    this.fontSize = source.fontSize;
+    this.textAlign = source.textAlign;
+    this.letterSpacing = source.letterSpacing;
+    this.lineHeight = source.lineHeight;
+    this.outlineBlur = source.outlineBlur;
+    this.outlineColor = new Color(source.outlineColor);
+    this.outlineOffsetX = source.outlineOffsetX;
+    this.outlineOffsetY = source.outlineOffsetY;
+    this.outlineOpacity = source.outlineOpacity;
+    this.outlineWidth = source.outlineWidth;
+    this.overflowWrap = source.overflowWrap;
+    this.strokeColor = new Color(source.strokeColor);
+    this.strokeOpacity = source.strokeOpacity;
+    this.strokeWidth = source.strokeWidth;
+    this.textAlign = source.textAlign;
+    this.textIndent = source.textIndent;
+    this.whiteSpace = source.whiteSpace;
+    this.maxWidth = source.maxWidth;
     return this;
   }
 
@@ -154,7 +151,7 @@ export default class TroikaTextNode extends EditorNodeMixin(Object3D) {
   }
 
   serialize() {
-    const serialized = super.serialize({
+    return super.serialize({
       "troika-text": {
         text: this.text,
         anchorX: this.anchorX,
@@ -184,38 +181,39 @@ export default class TroikaTextNode extends EditorNodeMixin(Object3D) {
         maxWidth: this.maxWidth
       }
     });
-    return serialized;
   }
 
   prepareForExport() {
     super.prepareForExport();
     this.addGLTFComponent("troika-text", {
-      text: this.troikaText.text,
-      anchorX: this.troikaText.anchorX,
-      anchorY: this.troikaText.anchorY,
-      color: this.troikaText.color,
-      curveRadius: this.troikaText.curveRadius,
-      depthOffset: this.troikaText.depthOffset,
-      direction: this.troikaText.direction,
-      fillOpacity: this.troikaText.fillOpacity,
-      font: this.troikaText.font,
-      fontSize: this.troikaText.fontSize,
-      letterSpacing: this.troikaText.letterSpacing,
-      lineHeight: this.troikaText.lineHeight,
-      outlineBlur: this.troikaText.outlineBlur,
-      outlineColor: this.troikaText.outlineColor,
-      outlineOffsetX: this.troikaText.outlineOffsetX,
-      outlineOffsetY: this.troikaText.outlineOffsetY,
-      outlineOpacity: this.troikaText.outlineOpacity,
-      outlineWidth: this.troikaText.outlineWidth,
-      overflowWrap: this.troikaText.overflowWrap,
-      strokeColor: this.troikaText.strokeColor,
-      strokeOpacity: this.troikaText.strokeOpacity,
-      strokeWidth: this.troikaText.strokeWidth,
-      textAlign: this.troikaText.textAlign,
-      textIndent: this.troikaText.textIndent,
-      whiteSpace: this.troikaText.whiteSpace,
-      maxWidth: this.troikaText.maxWidth
+      text: this.text,
+      anchorX: this.anchorX,
+      anchorY: this.anchorY,
+      color: this.color,
+      curveRadius: this.curveRadius,
+      depthOffset: this.depthOffset,
+      direction: this.direction,
+      fillOpacity: this.fillOpacity,
+      font: this.font,
+      fontSize: this.fontSize,
+      letterSpacing: this.letterSpacing,
+      lineHeight: this.lineHeight,
+      outlineBlur: this.outlineBlur,
+      outlineColor: this.outlineColor,
+      outlineOffsetX: this.outlineOffsetX,
+      outlineOffsetY: this.outlineOffsetY,
+      outlineOpacity: this.outlineOpacity,
+      outlineWidth: this.outlineWidth,
+      overflowWrap: this.overflowWrap,
+      strokeColor: this.strokeColor,
+      strokeOpacity: this.strokeOpacity,
+      strokeWidth: this.strokeWidth,
+      textAlign: this.textAlign,
+      textIndent: this.textIndent,
+      whiteSpace: this.whiteSpace,
+      maxWidth: this.maxWidth
     });
+
+    this.replaceObject();
   }
 }
