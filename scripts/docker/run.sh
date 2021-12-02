@@ -1,4 +1,5 @@
-find /www/spoke/ -type f -name *.html -exec sed -i "s/{{rawspoke-base-assets-path}}\//${turkeyCfg_base_assets_path}/g" {} \;
+turkeyCfg_base_assets_path=${turkeyCfg_base_assets_path//\//\\\/}
+find /www/spoke/ -type f -name *.html -exec sed -i "s/{{rawspoke-base-assets-path}}\//${turkeyCfg_base_assets_path////\/}/g" {} \;
 find /www/spoke/ -type f -name *.html -exec sed -i "s/{{rawspoke-base-assets-path}}/${turkeyCfg_base_assets_path}/g" {} \;
 find /www/spoke/ -type f -name *.css -exec sed -i "s/{{rawspoke-base-assets-path}}\//${turkeyCfg_base_assets_path}/g" {} \;
 find /www/spoke/ -type f -name *.css -exec sed -i "s/{{rawspoke-base-assets-path}}/${turkeyCfg_base_assets_path}/g" {} \;
