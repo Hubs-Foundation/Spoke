@@ -1,16 +1,13 @@
-// This is a port of https://github.com/protectwise/troika/tree/master/packages/troika-three-text
-// that has been made functional and restyled for Mozilla Hubs and Spoke (hubs.mozilla.com)
-// by @jamesckane at Paradowski Creative (paradowski.com)
-
 import React, { Component } from "react";
 import PropTypes from "prop-types";
-import NodeEditor from "../../../../src/ui/properties/NodeEditor";
-import InputGroup from "../../../../src/ui/inputs/InputGroup";
-import StringInput from "../../../../src/ui/inputs/StringInput";
+import NodeEditor from "src/ui/properties/NodeEditor";
+import InputGroup from "src/ui/inputs/InputGroup";
+import StringInput from "src/ui/inputs/StringInput";
 import { AlignCenter } from "styled-icons/fa-solid/AlignCenter";
-import SelectInput from "@src/ui/inputs/SelectInput";
-import NumericInputGroup from "@src/ui/inputs/NumericInputGroup";
-import ColorInput from "@src/ui/inputs/ColorInput";
+import SelectInput from "src/ui/inputs/SelectInput";
+import NumericInputGroup from "src/ui/inputs/NumericInputGroup";
+import ColorInput from "src/ui/inputs/ColorInput";
+import Vector2Input from "src/ui/inputs/Vector2Input";
 
 const textAlignments = [
   {
@@ -209,6 +206,30 @@ export default class TroikaTextNodeEditor extends Component {
           }}
           unit="em"
         />
+
+        <InputGroup name="Clip Rect Min">
+          <Vector2Input
+            smallStep={0.01}
+            mediumStep={0.1}
+            largeStep={0.25}
+            value={node.clipRectMin}
+            onChange={value => {
+              this.onChangeProperty("clipRectMin", value);
+            }}
+          />
+        </InputGroup>
+
+        <InputGroup name="Clip Rect Max">
+          <Vector2Input
+            smallStep={0.01}
+            mediumStep={0.1}
+            largeStep={0.25}
+            value={node.clipRectMax}
+            onChange={value => {
+              this.onChangeProperty("clipRectMax", value);
+            }}
+          />
+        </InputGroup>
 
         <NumericInputGroup
           name="Line Height"
