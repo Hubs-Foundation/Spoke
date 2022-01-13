@@ -1,13 +1,13 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
-import NodeEditor from "src/ui/properties/NodeEditor";
-import InputGroup from "src/ui/inputs/InputGroup";
-import StringInput from "src/ui/inputs/StringInput";
+import NodeEditor from "./NodeEditor";
+import InputGroup from "../inputs/InputGroup";
+import StringInput from "../inputs/StringInput";
 import { AlignCenter } from "styled-icons/fa-solid/AlignCenter";
-import SelectInput from "src/ui/inputs/SelectInput";
-import NumericInputGroup from "src/ui/inputs/NumericInputGroup";
-import ColorInput from "src/ui/inputs/ColorInput";
-import Vector2Input from "src/ui/inputs/Vector2Input";
+import SelectInput from "../inputs/SelectInput";
+import NumericInputGroup from "../inputs/NumericInputGroup";
+import ColorInput from "../inputs/ColorInput";
+import Vector2Input from "../inputs/Vector2Input";
 
 const textAlignments = [
   {

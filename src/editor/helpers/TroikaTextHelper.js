@@ -1,4 +1,4 @@
-import { addIsHelperFlag } from "@src/editor/helpers/utils";
+import { addIsHelperFlag } from "./utils";
 import { Text } from "troika-three-text";
 
 export default class TroikaTextHelper extends Text {
