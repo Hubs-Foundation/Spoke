@@ -53,6 +53,8 @@ import AudioZoneNodeEditor from "./ui/properties/AudioZoneNodeEditor";
 
 import MediaFrameNode from "./editor/nodes/MediaFrameNode";
 import MediaFrameNodeEditor from "./ui/properties/MediaFrameNodeEditor";
+import MirrorNode from "./editor/nodes/MirrorNode";
+import MirrorNodeEditor from "./ui/properties/MirrorNodeEditor";
 
 import SketchfabSource from "./ui/assets/sources/SketchfabSource";
 import BingImagesSource from "./ui/assets/sources/BingImagesSource";
@@ -93,6 +95,7 @@ export function createEditor(api, settings) {
   editor.registerNode(ScenePreviewCameraNode, ScenePreviewCameraNodeEditor);
   editor.registerNode(MediaFrameNode, MediaFrameNodeEditor);
   editor.registerNode(AudioZoneNode, AudioZoneNodeEditor);
+  editor.registerNode(MirrorNode, MirrorNodeEditor);
 
   editor.registerSource(new ElementsSource(editor));
   editor.registerSource(new MyAssetsSource(editor));
