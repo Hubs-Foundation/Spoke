@@ -1,4 +1,4 @@
-import { Material, BoxBufferGeometry, Mesh, BoxHelper } from "three";
+import { Material, BoxBufferGeometry, Mesh, BoxHelper, Vector3, Quaternion } from "three";
 import AudioParams, { AudioElementType } from "../objects/AudioParams";
 import AudioParamsNode from "./AudioParamsNode";
 
@@ -46,15 +46,26 @@ export default class AudioZoneNode extends AudioParamsNode(AudioParams) {
     const box = new BoxHelper(boxMesh, 0x00ff00);
     box.layers.set(1);
     this.helper = box;
-    this.add(box);
+    editor.scene.attach(box);
     this.enabled = true;
     this.inOut = true;
     this.outIn = true;
   }
 
+  onUpdate() {
+    const pos = new Vector3();
+    const rot = new Quaternion();
+    const scale = new Vector3();
+    this.matrixWorld.decompose(pos, rot, scale);
+    this.helper.position.copy(pos);
+    this.helper.scale.copy(scale);
+    this.helper.updateMatrix();
+    this.helper.update();
+  }
+
   copy(source, recursive = true) {
     if (recursive) {
-      this.remove(this.helper);
+      this.editor.scene.remove(this.helper);
     }
 
     super.copy(source, recursive);
@@ -75,18 +86,42 @@ export default class AudioZoneNode extends AudioParamsNode(AudioParams) {
   }
 
   serialize() {
-    return super.serialize({
+    const json = super.serialize({
       "audio-zone": {
         enabled: this.enabled,
         inOut: this.inOut,
         outIn: this.outIn
       }
     });
+    const transformComponent = json.components.find(c => c.name === "transform");
+    const worldPos = new Vector3();
+    const worldQuat = new Quaternion();
+    const worldScale = new Vector3();
+    this.helper.matrixWorld.decompose(worldPos, worldQuat, worldScale);
+    const worldRot = new Vector3().applyQuaternion(worldQuat);
+    transformComponent.props = {
+      position: {
+        x: worldPos.x,
+        y: worldPos.y,
+        z: worldPos.z
+      },
+      rotation: {
+        x: worldRot.x,
+        y: worldRot.y,
+        z: worldRot.z
+      },
+      scale: {
+        x: worldScale.x,
+        y: worldScale.y,
+        z: worldScale.z
+      }
+    };
+    return json;
   }
 
   prepareForExport() {
     super.prepareForExport();
-    this.remove(this.helper);
+    this.editor.scene.remove(this.helper);
 
     for (const prop of requiredProperties) {
       if (this[prop] === null || this[prop] === undefined) {
