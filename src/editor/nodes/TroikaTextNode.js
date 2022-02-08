@@ -165,7 +165,7 @@ export default class TroikaTextNode extends EditorNodeMixin(Object3D) {
     const clipRect = !clipRectMinMax.every(value => value == 0) ? clipRectMinMax : null;
 
     this.addGLTFComponent("text", {
-      text: this.text,
+      value: this.text,
       anchorX: this.anchorX,
       anchorY: this.anchorY,
       color: this.color,
