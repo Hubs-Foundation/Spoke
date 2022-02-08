@@ -7,7 +7,7 @@ import EditorNodeMixin from "./EditorNodeMixin";
 import TroikaTextHelper from "../helpers/TroikaTextHelper";
 
 export default class TroikaTextNode extends EditorNodeMixin(Object3D) {
-  static legacyComponentName = "troika-text";
+  static componentName = "troika-text";
 
   static nodeName = "Troika Text";
 
