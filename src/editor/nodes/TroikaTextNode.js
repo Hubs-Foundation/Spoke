@@ -62,7 +62,20 @@ export default class TroikaTextNode extends EditorNodeMixin(Object3D) {
   }
 
   copy(source) {
-    super.copy(source, true);
+    super.copy(source, false);
+
+    this.remove(this.helper);
+
+    for (let i = 0; i < source.children.length; i++) {
+      const child = source.children[i];
+      if (child === source.helper) {
+        this.helper = new TroikaTextHelper(this);
+        this.add(this.helper);
+      } else {
+        this.add(child.clone());
+      }
+    }
+
     this.text = source.text;
     this.anchorX = source.anchorX;
     this.anchorY = source.anchorY;
@@ -92,6 +105,7 @@ export default class TroikaTextNode extends EditorNodeMixin(Object3D) {
     this.textIndent = source.textIndent;
     this.whiteSpace = source.whiteSpace;
     this.maxWidth = source.maxWidth;
+
     return this;
   }
 
