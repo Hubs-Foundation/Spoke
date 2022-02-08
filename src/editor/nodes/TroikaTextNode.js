@@ -7,7 +7,7 @@ import EditorNodeMixin from "./EditorNodeMixin";
 import TroikaTextHelper from "../helpers/TroikaTextHelper";
 
 export default class TroikaTextNode extends EditorNodeMixin(Object3D) {
-  static componentName = "troika-text";
+  static componentName = "text";
 
   static nodeName = "Troika Text";
 
@@ -111,7 +111,7 @@ export default class TroikaTextNode extends EditorNodeMixin(Object3D) {
 
   static async deserialize(editor, json) {
     const node = await super.deserialize(editor, json);
-    const props = json.components.find(c => c.name === "troika-text").props;
+    const props = json.components.find(c => c.name === "text").props;
 
     Object.keys(props).forEach(key => {
       if (["color", "strokeColor", "outlineColor"].includes(key)) node[key] = new Color(props[key]);
@@ -123,7 +123,7 @@ export default class TroikaTextNode extends EditorNodeMixin(Object3D) {
 
   serialize() {
     const serialized = super.serialize({
-      "troika-text": {
+      text: {
         text: this.text,
         anchorX: this.anchorX,
         anchorY: this.anchorY,
@@ -164,7 +164,7 @@ export default class TroikaTextNode extends EditorNodeMixin(Object3D) {
     const clipRectMinMax = [...this.clipRectMin.toArray(), ...this.clipRectMax.toArray()];
     const clipRect = !clipRectMinMax.every(value => value == 0) ? clipRectMinMax : null;
 
-    this.addGLTFComponent("troika-text", {
+    this.addGLTFComponent("text", {
       text: this.text,
       anchorX: this.anchorX,
       anchorY: this.anchorY,
