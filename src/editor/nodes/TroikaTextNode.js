@@ -23,7 +23,6 @@ export default class TroikaTextNode extends EditorNodeMixin(Object3D) {
     this.depthOffset = 0;
     this.direction = "auto";
     this.fillOpacity = 1;
-    this.font;
     this.fontSize = 1;
     this.textAlign = "left";
     this.letterSpacing = 0;
@@ -84,7 +83,6 @@ export default class TroikaTextNode extends EditorNodeMixin(Object3D) {
     this.depthOffset = source.depthOffset;
     this.direction = source.direction;
     this.fillOpacity = source.fillOpacity;
-    this.font = source.font;
     this.fontSize = source.fontSize;
     this.textAlign = source.textAlign;
     this.letterSpacing = source.letterSpacing;
@@ -132,7 +130,6 @@ export default class TroikaTextNode extends EditorNodeMixin(Object3D) {
         depthOffset: this.depthOffset,
         direction: this.direction,
         fillOpacity: this.fillOpacity,
-        font: this.font,
         fontSize: this.fontSize,
         letterSpacing: this.letterSpacing,
         clipRectMin: this.clipRectMin.toArray(),
@@ -173,7 +170,6 @@ export default class TroikaTextNode extends EditorNodeMixin(Object3D) {
       depthOffset: this.depthOffset,
       direction: this.direction,
       fillOpacity: this.fillOpacity,
-      font: this.font,
       fontSize: this.fontSize,
       letterSpacing: this.letterSpacing,
       clipRect,

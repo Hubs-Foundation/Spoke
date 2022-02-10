@@ -144,18 +144,6 @@ export default class TroikaTextNodeEditor extends Component {
           />
         </InputGroup>
 
-        <InputGroup
-          name="Font URL"
-          info="URL for remotely-hosted .otf, .ttf or .woff assets. WARNING: Watch for CORS errors."
-        >
-          <StringInput
-            value={node.font}
-            onChange={value => {
-              this.onChangeProperty("font", value);
-            }}
-          />
-        </InputGroup>
-
         <NumericInputGroup
           name="Font Size"
           info="The em-height at which to render the font, in local world units."

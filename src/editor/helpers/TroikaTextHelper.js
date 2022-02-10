@@ -27,7 +27,6 @@ export default class TroikaTextHelper extends Text {
     this.depthOffset = this.node.depthOffset;
     this.direction = this.node.direction;
     this.fillOpacity = this.node.fillOpacity;
-    this.font = this.node.font;
     this.fontSize = this.node.fontSize;
     this.textAlign = this.node.textAlign;
     this.letterSpacing = this.node.letterSpacing;
