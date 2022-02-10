@@ -40,10 +40,6 @@ const xAnchors = [
   {
     label: "center",
     value: "center"
-  },
-  {
-    label: "align",
-    value: "align"
   }
 ];
 
@@ -155,7 +151,7 @@ export default class TroikaTextNodeEditor extends Component {
           onChange={value => {
             this.onChangeProperty("fontSize", value);
           }}
-          unit="cd"
+          unit="m"
         />
 
         <InputGroup name="Color" info="Set the color of the text's material.">
@@ -192,7 +188,7 @@ export default class TroikaTextNodeEditor extends Component {
           onChange={value => {
             this.onChangeProperty("letterSpacing", value);
           }}
-          unit="em"
+          unit="m"
         />
 
         <InputGroup name="Clip Rect Min">
@@ -293,7 +289,7 @@ export default class TroikaTextNodeEditor extends Component {
           onChange={value => {
             this.onChangeProperty("textIndent", value);
           }}
-          unit="em"
+          unit="m"
         />
 
         <NumericInputGroup
@@ -307,7 +303,7 @@ export default class TroikaTextNodeEditor extends Component {
           onChange={value => {
             this.onChangeProperty("curveRadius", value);
           }}
-          unit="degrees"
+          unit="m"
         />
 
         <InputGroup

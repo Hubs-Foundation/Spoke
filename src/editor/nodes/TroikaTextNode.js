@@ -16,14 +16,14 @@ export default class TroikaTextNode extends EditorNodeMixin(Object3D) {
     this.editor = editor;
     this.scene = editor.scene;
     this.text = "Text";
-    this.anchorX = "left";
-    this.anchorY = "bottom-baseline";
+    this.anchorX = "center";
+    this.anchorY = "middle";
     this.color = new Color();
     this.curveRadius = 0;
     this.depthOffset = 0;
     this.direction = "auto";
     this.fillOpacity = 1;
-    this.fontSize = 1;
+    this.fontSize = 0.075;
     this.textAlign = "left";
     this.letterSpacing = 0;
     this.clipRectMin = new Vector2(0, 0);
