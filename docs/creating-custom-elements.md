@@ -35,7 +35,7 @@ The constructor will be the constructor for the `Object3D` that we are applying 
 
 We'll stop there for now with the node class and move onto the node editor.
 
-Create a new file, `SpinningCubeEditor` in `src/ui/properties`.
+Create a new file, `SpinningCubeNodeEditor` in `src/ui/properties`.
 
 This file will be a React component that should use the `<NodeEditor>` component as it's root element. The rest of the editor properties will be added as children of this element.
 
