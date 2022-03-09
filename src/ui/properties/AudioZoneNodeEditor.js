@@ -9,7 +9,10 @@ import { SourceType } from "../../editor/objects/AudioParams";
 import SelectInput from "../inputs/SelectInput";
 import { AudioZoneShape } from "../../editor/nodes/AudioZoneNode";
 
-export const AudioZoneShapeOptions = Object.keys(AudioZoneShape).map((k, v) => ({ label: k, value: v }));
+export const AudioZoneShapeOptions = Object.keys(AudioZoneShape).map(k => ({
+  label: k,
+  value: AudioZoneShape[k]
+}));
 
 export default class AudioZoneNodeEditor extends Component {
   static propTypes = {
@@ -80,7 +83,7 @@ export default class AudioZoneNodeEditor extends Component {
         >
           <BooleanInput value={node.outIn} onChange={this.onChangeOutIn} />
         </InputGroup>
-        <InputGroup name="Shape" info="Shape of the Audio Zone. It can be a box or a sphere">
+        <InputGroup name="Shape" info="Shape of the Audio Zone.">
           <SelectInput options={AudioZoneShapeOptions} value={node.shape} onChange={this.onChangeShape} />
         </InputGroup>
         <AudioParamsProperties sourceType={SourceType.AUDIO_ZONE} {...this.props} />

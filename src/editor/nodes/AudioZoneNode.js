@@ -20,8 +20,8 @@ const debugMaterial = new LineBasicMaterial({
 });
 
 export const AudioZoneShape = Object.freeze({
-  Box: 0,
-  Sphere: 1
+  Box: "box",
+  Sphere: "sphere"
 });
 
 export default class AudioZoneNode extends AudioParamsNode(AudioParams) {
