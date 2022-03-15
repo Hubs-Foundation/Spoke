@@ -18,12 +18,12 @@ export default class MirrorNode extends EditorNodeMixin(Mirror) {
 
   constructor(editor) {
     super(editor);
+
+    this.color = "#7f7f7f";
   }
 
   copy(source, recursive = true) {
     super.copy(source, recursive);
-
-    this.color = source.color;
 
     return this;
   }

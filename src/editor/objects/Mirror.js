@@ -17,8 +17,22 @@ export default class Mirror extends Object3D {
     this.mesh.material.uniforms.color.value = new Color(value);
   }
 
-  copy(source) {
-    super.copy(source, false);
+  copy(source, recursive = true) {
+    if (recursive) {
+      this.remove(this.mesh);
+    }
+
+    super.copy(source, recursive);
+
+    if (recursive) {
+      const _meshIndex = source.children.indexOf(source.mesh);
+
+      if (_meshIndex !== -1) {
+        this.mesh = this.children[_meshIndex];
+      }
+    }
+
+    this.color = source.color;
 
     return this;
   }
