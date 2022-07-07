@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import mozillaLogo from "../../assets/mozilla-logo.png";
 import styled from "styled-components";
 import configs from "../../configs";
+import { TERMS, PRIVACY } from "../../constants";
 
 const StyledFooter = styled.footer`
   display: flex;
@@ -87,14 +88,14 @@ export default class Footer extends Component {
             )}
             {configs.isMoz() && (
               <NavListItem>
-                <a href="https://github.com/mozilla/hubs/blob/master/TERMS.md" rel="noopener noreferrer">
+                <a href={TERMS} rel="noopener noreferrer">
                   Terms of Use
                 </a>
               </NavListItem>
             )}
             {configs.isMoz() && (
               <NavListItem>
-                <a href="https://github.com/mozilla/hubs/blob/master/PRIVACY.md" rel="noopener noreferrer">
+                <a href={PRIVACY} rel="noopener noreferrer">
                   Privacy Notice
                 </a>
               </NavListItem>
