@@ -41,6 +41,8 @@ import Editor from "../editor/Editor";
 import defaultTemplateUrl from "./../assets/templates/crater.spoke";
 import tutorialTemplateUrl from "./../assets/templates/tutorial.spoke";
 
+import { TERMS, PRIVACY } from "../constants";
+
 const StyledEditorContainer = styled.div`
   display: flex;
   flex: 1;
@@ -409,11 +411,11 @@ class EditorContainer extends Component {
           },
           {
             name: "Terms of Use",
-            action: () => window.open("https://github.com/mozilla/hubs/blob/master/TERMS.md")
+            action: () => window.open(TERMS)
           },
           {
             name: "Privacy Notice",
-            action: () => window.open("https://github.com/mozilla/hubs/blob/master/PRIVACY.md")
+            action: () => window.open(PRIVACY)
           }
         ]
       },

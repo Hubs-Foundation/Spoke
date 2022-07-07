@@ -3,6 +3,7 @@ import PropTypes from "prop-types";
 import configs from "../configs";
 import styled from "styled-components";
 import Input from "../ui/inputs/Input";
+import { PRIVACY, TERMS } from "../constants";
 
 const StyledAuthForm = styled.form`
   display: flex;
@@ -93,11 +94,11 @@ export default class AuthForm extends Component {
         />
         <LegalText>
           By proceeding, you agree to the{" "}
-          <a rel="noopener noreferrer" target="_blank" href="https://github.com/mozilla/hubs/blob/master/TERMS.md">
+          <a rel="noopener noreferrer" target="_blank" href={TERMS}>
             terms of use
           </a>{" "}
           and{" "}
-          <a rel="noopener noreferrer" target="_blank" href="https://github.com/mozilla/hubs/blob/master/PRIVACY.md">
+          <a rel="noopener noreferrer" target="_blank" href={PRIVACY}>
             privacy notice
           </a>
           .
