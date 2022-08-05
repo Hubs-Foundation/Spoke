@@ -765,7 +765,7 @@ AFRAME.registerComponent("rotate", {
     const obj = this.el.object3D;
     // The code for rotating should also be roughly the same as the code in onUpdate
     // The main difference is dt is in milliseconds so we need to convert to seconds.
-    obj.rotation.y += (dt / 1000) * THREE.Math.degToRad(this.data.speed);
+    obj.rotation.y += (dt / 1000) * THREE.MathUtils.degToRad(this.data.speed);
     // Hubs has an optimization for matrix updates. We need to manually set this flag for the rotation
     // to be applied each frame. Otherwise it won't move.
     obj.matrixNeedsUpdate = true;
