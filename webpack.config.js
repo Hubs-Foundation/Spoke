@@ -37,6 +37,7 @@ function createHTTPSConfig() {
       ],
       {
         days: 365,
+        keySize: 2048,
         algorithm: "sha256",
         extensions: [
           {
@@ -70,6 +71,7 @@ function createHTTPSConfig() {
 const defaultHostName = "hubs.local";
 const host = process.env.HOST_IP || defaultHostName;
 const port = process.env.HOST_PORT || 9090;
+const internalHostname = process.env.INTERNAL_HOSTNAME || defaultHostName;
 
 module.exports = env => {
   return {
@@ -87,7 +89,7 @@ module.exports = env => {
       public: `${host}:${port}`,
       publicPath: process.env.BASE_ASSETS_PATH || "",
       useLocalIp: true,
-      allowedHosts: [host],
+      allowedHosts: [host, internalHostname],
       headers: {
         "Access-Control-Allow-Origin": "*"
       },
