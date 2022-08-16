@@ -1,13 +1,15 @@
 
-export turkeyCfg_thumbnail_server="nearspark.reticulum.io"
-export turkeyCfg_base_assets_path="https://$SUB_DOMAIN-assets.$DOMAIN/spoke/"
-export turkeyCfg_non_cors_proxy_domains="$SUB_DOMAIN.$DOMAIN,$SUB_DOMAIN-assets.$DOMAIN"
-export turkeyCfg_cors_proxy_server="$SUB_DOMAIN-cors.$DOMAIN"
-export turkeyCfg_ga_tracking_id=""
-export turkeyCfg_hubs_server="$SUB_DOMAIN.$DOMAIN"
-export turkeyCfg_is_moz="false"
-export turkeyCfg_reticulum_server="$SUB_DOMAIN.$DOMAIN"
-export turkeyCfg_sentry_dsn=""
+#export turkeyCfg_ga_tracking_id=""
+#export turkeyCfg_sentry_dsn=""
+
+if [ -z ${turkeyCfg_thumbnail_server+x} ]; then export turkeyCfg_thumbnail_server="nearspark.reticulum.io"; fi
+if [ -z ${turkeyCfg_base_assets_path+x} ]; then export turkeyCfg_base_assets_path="https://$SUB_DOMAIN-assets.$DOMAIN/hubs/"; fi
+if [ -z ${turkeyCfg_non_cors_proxy_domains+x} ]; then export turkeyCfg_non_cors_proxy_domains="$SUB_DOMAIN.$DOMAIN,$SUB_DOMAIN-assets.$DOMAIN"; fi
+if [ -z ${turkeyCfg_reticulum_server+x} ]; then export turkeyCfg_reticulum_server="$SUB_DOMAIN.$DOMAIN"; fi
+if [ -z ${turkeyCfg_cors_proxy_server+x} ]; then export turkeyCfg_cors_proxy_server="$SUB_DOMAIN-cors.$DOMAIN"; fi
+if [ -z ${turkeyCfg_shortlink_domain+x} ]; then export turkeyCfg_shortlink_domain="$SUB_DOMAIN.$DOMAIN"; fi
+if [ -z ${turkeyCfg_hubs_server+x} ]; then export turkeyCfg_hubs_server="$SUB_DOMAIN.$DOMAIN"; fi
+if [ -z ${turkeyCfg_is_moz+x} ]; then export turkeyCfg_is_moz="false"; fi
 
 find /www/spoke/ -type f -name *.html -exec sed -i "s~{{rawspoke-base-assets-path}}\/~${turkeyCfg_base_assets_path}~g" {} \;
 find /www/spoke/ -type f -name *.html -exec sed -i "s~{{rawspoke-base-assets-path}}~${turkeyCfg_base_assets_path}~g" {} \;
