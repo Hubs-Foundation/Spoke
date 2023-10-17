@@ -1,0 +1,72 @@
+{
+    "menu": {
+        "backToProjects": "Back to Projects",
+        "file": {
+            "title": "File",
+            "newProjects": "New Projects",
+            "saveProjects": "Save Project",
+            "duplicatedSave": "Save As",
+            "publishProjects": "Publish Scene...",
+            "exportProjects": "Export as binary glTF (.glb) ...",
+            "importProjects": "Import legacy .spoke project",
+            "exportLegacy": "Export legacy .spoke project"
+        },
+        "help": {
+            "title": "Help",
+            "tutorial": "Tutorial",
+            "controls": "Keyboard and Mouse Controls",
+            "getSupport": "Get Support",
+            "submitFeedback": "Submit Feedback",
+            "reportIssue": "Report an Issue",
+            "joinDiscord": "Join us on Discord",
+            "termsofuse": "Terms of Use",
+            "privacyNotice": "Privacy Notice"
+        },
+        "developer": {
+            "title": "Developer",
+            "disableDeveloperMode": "Disable Experimental Features",
+            "enableDeveloperMode": "Enable Experimental Features"
+        },
+        "submitFeedback": "Submit Feedback"
+    },
+
+    "test": {
+        "helloworld": "helloworld",
+        "hello world": "hello world"
+    },
+
+    "header": {
+        "publish": "Publish Scene...",
+        "translateTooltip": "[T] Translate",
+        "rotateTooltip": "[R] Rotate",
+        "scaleTooltip": "[Y] Scale",
+        "spaceTooltip": "[Z] Toggle Transform Space",
+        "pivotTooltip": "[X] Toggle Transform Pivot",
+        "snapTooltip": "[C] Toggle Snap Mode",
+        "showGridTooltip": "Toggle Grid Visibility",
+        "minusHeightGridTooltip": "[-] Increment Grid Height",
+        "plusHeightGridTooltip": "[=] Decrement Grid Height"
+    },
+
+    "viewport": {
+        "title": "Viewport",
+        "flyModeEnabled": "[W][A][S][D] Move Camera | [Shift] Fly faster",
+        "flyModeDisabled": "[LMB] Orbit / Select | [MMB] Pan | [RMB] Fly",
+        "objectSelected": " | [F] Focus | [Q] Rotate Left | [E] Rotate Right",
+        "placement": " | [ESC / G] Cancel Placement",
+        "grap": " | [Shift + Click] Place Duplicate | [ESC / G] Cancel Grab",
+        "objectSelectedNotTransform": "| [G] Grab | [ESC] Deselect All"
+    },
+
+    "elements": {
+        "group": "Group"
+    },
+
+    "hierarchy": {
+        "title": "Hierarchy"
+    },
+
+    "assets": {
+        "title": "Assets"
+    }
+}

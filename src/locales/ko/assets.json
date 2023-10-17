@@ -1,0 +1,30 @@
+{
+    "elements": {
+      "title": "3D 독립체 요소"
+    },
+    "assets": {
+      "title": "내 에셋"
+    },
+    "architecture-kit": {
+      "title": "아키텍쳐 키트"
+    },
+    "rock-kit": {
+      "title": "바위 키트"
+    },
+    "sketchfab": {
+      "title": "스케치팹"
+    },
+    "bing_images": {
+      "title": "빙 이미지"
+    },
+    "bing_videos": {
+      "title": "빙 비디오"
+    },
+    "https://assets-prod.reticulum.io/hubs-sound-pack/asset-manifest.json": {
+      "title": "허브 사운드 팩"
+    },
+    "tenor": {
+      "title": "테너 GIF"
+    }
+  }
+  
