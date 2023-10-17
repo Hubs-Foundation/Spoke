@@ -40,6 +40,7 @@ import Editor from "../editor/Editor";
 
 import defaultTemplateUrl from "./../assets/templates/crater.spoke";
 import tutorialTemplateUrl from "./../assets/templates/tutorial.spoke";
+import { withTranslation } from "react-i18next";
 
 import { TERMS, PRIVACY } from "../constants";
 
@@ -64,7 +65,8 @@ class EditorContainer extends Component {
     api: PropTypes.object.isRequired,
     history: PropTypes.object.isRequired,
     match: PropTypes.object.isRequired,
-    location: PropTypes.object.isRequired
+    location: PropTypes.object.isRequired,
+    t: PropTypes.func
   };
 
   constructor(props) {
@@ -336,48 +338,44 @@ class EditorContainer extends Component {
   generateToolbarMenu = () => {
     return [
       {
-        name: "Back to Projects",
-        action: this.onOpenProject
-      },
-      {
-        name: "File",
+        name: this.props.t("menu.file.title"),
         items: [
           {
-            name: "New Project",
+            name: this.props.t("menu.file.newProjects"),
             action: this.onNewProject
           },
           {
-            name: "Save Project",
+            name: this.props.t("menu.file.saveProjects"),
             hotkey: `${cmdOrCtrlString} + S`,
             action: this.onSaveProject
           },
           {
-            name: "Save As",
+            name: this.props.t("menu.file.duplicatedSave"),
             action: this.onDuplicateProject
           },
           {
-            name: configs.isMoz() ? "Publish to Hubs..." : "Publish Scene...",
+            name: this.props.t("menu.file.publishProjects"),
             action: this.onPublishProject
           },
           {
-            name: "Export as binary glTF (.glb) ...",
+            name: this.props.t("menu.file.exportProjects"),
             action: this.onExportProject
           },
           {
-            name: "Import legacy .spoke project",
+            name: this.props.t("menu.file.importProjects"),
             action: this.onImportLegacyProject
           },
           {
-            name: "Export legacy .spoke project",
+            name: this.props.t("menu.file.exportLegacy"),
             action: this.onExportLegacyProject
           }
         ]
       },
       {
-        name: "Help",
+        name: this.props.t("menu.help.title"),
         items: [
           {
-            name: "Tutorial",
+            name: this.props.t("menu.help.tutorial"),
             action: () => {
               const { projectId } = this.props.match.params;
 
@@ -390,42 +388,42 @@ class EditorContainer extends Component {
             }
           },
           {
-            name: "Keyboard and Mouse Controls",
+            name: this.props.t("menu.help.controls"),
             action: () => window.open("https://hubs.mozilla.com/docs/spoke-controls.html")
           },
           {
-            name: "Get Support",
+            name: this.props.t("menu.help.getSupport"),
             action: () => this.showDialog(SupportDialog)
           },
           {
-            name: "Submit Feedback",
+            name: this.props.t("menu.help.submitFeedback"),
             action: () => window.open("https://forms.gle/2PAFXKwW1SXdfSK17")
           },
           {
-            name: "Report an Issue",
+            name: this.props.t("menu.help.reportIssue"),
             action: () => window.open("https://github.com/mozilla/Spoke/issues/new")
           },
           {
-            name: "Join us on Discord",
+            name: this.props.t("menu.help.joinDiscord"),
             action: () => window.open("https://discord.gg/wHmY4nd")
           },
           {
-            name: "Terms of Use",
+            name: this.props.t("menu.help.termsofuse"),
             action: () => window.open(TERMS)
           },
           {
-            name: "Privacy Notice",
+            name: this.props.t("menu.help.privacyNotice"),
             action: () => window.open(PRIVACY)
           }
         ]
       },
       {
-        name: "Developer",
+        name: this.props.t("menu.developer.title"),
         items: [
           {
             name: this.state.settingsContext.settings.enableExperimentalFeatures
-              ? "Disable Experimental Features"
-              : "Enable Experimental Features",
+              ? this.props.t("menu.developer.disableDeveloperMode")
+              : this.props.t("menu.developer.enableDeveloperMode"),
             action: () =>
               this.updateSetting(
                 "enableExperimentalFeatures",
@@ -435,7 +433,7 @@ class EditorContainer extends Component {
         ]
       },
       {
-        name: "Submit Feedback",
+        name: this.props.t("menu.submitFeedback"),
         action: () => window.open("https://forms.gle/2PAFXKwW1SXdfSK17")
       }
     ];
@@ -960,4 +958,4 @@ class EditorContainer extends Component {
   }
 }
 
-export default withApi(EditorContainer);
+export default withApi(withTranslation()(EditorContainer));

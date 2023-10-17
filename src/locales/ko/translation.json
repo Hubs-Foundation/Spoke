@@ -1,0 +1,72 @@
+{
+    "menu": {
+        "backToProjects": "프로젝트로 돌아가기",
+        "file": {
+            "title": "파일",
+            "newProjects": "새 프로젝트",
+            "saveProjects": "프로젝트 저장",
+            "duplicatedSave": "다른 이름으로 저장",
+            "publishProjects": "씬 만들기...",
+            "exportProjects": "바이너리 glTF(.glb)로 내보내기 ...",
+            "importProjects": "레거시 .spoke 프로젝트 가져오기",
+            "exportLegacy": "레거시 .spoke 프로젝트 내보내기"
+        },
+        "help": {
+            "title": "도움말",
+            "tutorial": "튜토리얼",
+            "controls": "키보드 및 마우스 컨트롤",
+            "getSupport": "지원 받기",
+            "submitFeedback": "피드백 제출",
+            "reportIssue": "버그 제보",
+            "joinDiscord": "디스코드에 참여하기",
+            "termsofuse": "이용 약관",
+            "privacyNotice": "개인정보처리방침"
+        },
+        "developer": {
+            "title": "개발자 모드",
+            "disableDeveloperMode": "개발자 모드 끄기",
+            "enableDeveloperMode": "개발자 모드 켜기"
+        },
+        "submitFeedback": "피드백 주기"
+    },
+
+    "test": {
+        "helloworld": "헬로우월드",
+        "hello world": "헬로우 월드"
+    },
+
+    "header": {
+        "publish": "씬 만들기...",
+        "translateTooltip": "[T] 이동하기",
+        "rotateTooltip": "[R] 회전하기",
+        "scaleTooltip": "[Y] 규모 늘/줄이기",
+        "spaceTooltip": "[Z] 방향 변환 토글",
+        "pivotTooltip": "[X] 중심 전환 토글",
+        "snapTooltip": "[C] 맵 격자 간격 설정",
+        "showGridTooltip": "격자 노출하기",
+        "minusHeightGridTooltip": "[-] 격자 Y값 낮추기",
+        "plusHeightGridTooltip": "[=] 격자 Y값 높이기"
+    },
+
+    "viewport": {
+        "title": "화면 편집",
+        "flyModeEnabled": "[W][A][S][D] 카메라 이동 | [Shift] 더 빠르게 날기",
+        "flyModeDisabled": "[LMB] 궤도/선택 | [MMB] 이동 | [RMB] 비행",
+        "objectSelected": " | F] 초점 | [Q] 왼쪽 회전 | [E] 오른쪽 회전",
+        "placement": " | [ESC/G] 배치 취소",
+        "grap": " | [Shift + 클릭] 복제 배치 | [ESC/G] 잡기 취소",
+        "objectSelectedNotTransform": "| [G] 잡기 | [ESC] 모두 선택 해제"
+    },
+
+    "elements": {
+        "group": "그룹"
+    },
+
+    "hierarchy": {
+        "title": "리소스 나열"
+    },
+
+    "assets": {
+        "title": "에셋"
+    }
+}

@@ -1,0 +1,29 @@
+{
+    "elements": {
+      "title": "Elements"
+    },
+    "assets": {
+      "title": "My assets"
+    },
+    "architecture-kit": {
+      "title": "Architecture Kit"
+    },
+    "rock-kit": {
+      "title": "Rock Kit"
+    },
+    "sketchfab": {
+      "title": "Sketchfab"
+    },
+    "bing_images": {
+      "title": "Bing Images"
+    },
+    "bing_videos": {
+      "title": "Bing Videos"
+    },
+    "https://assets-prod.reticulum.io/hubs-sound-pack/asset-manifest.json": {
+      "title": "Hubs Sound Pack"
+    },
+    "tenor": {
+      "title": "Tenor GIFs"
+    }
+}

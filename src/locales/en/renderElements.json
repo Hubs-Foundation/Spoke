@@ -1,0 +1,106 @@
+{
+  "Scene": {
+    "title": "Creater",
+    "description": "The root object of the scene."
+  },
+  "Group": {
+    "title": "Group",
+    "description": "A group of multiple objects that can be moved or d…and drop objects into the Group in the Hierarchy."
+  },
+  "Model": {
+    "title": "Model",
+    "description": "A 3D model in your scene, loaded from a GLTF URL or file."
+  },
+  "Ground Plane": {
+    "title": "Ground Plane",
+    "description": "A flat ground plane that extends into the distance."
+  },
+  "Box Collider": {
+    "title": "Box Collider",
+    "description": "An invisible box that objects will bounce off of or rest on top of. Without colliders, objects will fall through floors and go through walls."
+  },
+  "Ambient Light": {
+    "title": "Ambient Light",
+    "description": "A light which illuminates all objects in your scene."
+  },
+  "Directional Light": {
+    "title": "Directional Light",
+    "description": "A light which illuminates the entire scene, but emits along a single direction."
+  },
+  "Hemisphere Light": {
+    "title": "Hemisphere Light",
+    "description": "A light which illuminates the scene from directly overhead."
+  },
+  "Spot Light": {
+    "title": "Spot Light",
+    "description": "A light which emits along a direction, illuminating objects within a cone."
+  },
+  "Point Light": {
+    "title": "Point Light",
+    "description": "A light which emits in all directions from a single point."
+  },
+  "Spawn Point": {
+    "title": "Spawn Point",
+    "description": "A point where people will appear when they enter your scene. The icon in the Viewport represents the actual size of an avatar."
+  },
+  "Way Point": {
+    "title": "Way Point",
+    "description": "A point people can teleport to."
+  },
+  "Skybox": {
+    "title": "Skybox",
+    "description": "Creates a visualization of an open sky and atmosphere around your scene. Also used as the environment map for your scene."
+  },
+  "Floor Plan": {
+    "title": "Floor Plan",
+    "description": "Sets the walkable surface area in your scene."
+  },
+  "Image": {
+    "title": "Image",
+    "description": "Dynamically loads an image."
+  },
+  "Video": {
+    "title": "Video",
+    "description": "Dynamically loads a video."
+  },
+  "Audio": {
+    "title": "Audio",
+    "description": "Dynamically loads audio."
+  },
+  "Spawner": {
+    "title": "Spawner",
+    "description": "Spawns a model as an interactable object."
+  },
+  "Link": {
+    "title": "Link",
+    "description": "Link to a room or a website."
+  },
+  "Particle Emitter": {
+    "title": "Particle Emitter",
+    "description": "Particle emitter to create particles."
+  },
+  "Simple Water": {
+    "title": "Simple Water",
+    "description": "Renders a water plane."
+  },
+  "Media Frame": {
+    "title": "Media Frame",
+    "description": "A frame to capture media objects."
+  },
+  "Audio Zone": {
+    "title": "Audio Zone",
+    "description": "Defines a 3D area where audio parameters are overriden for contained audio sources."
+  },
+  "Troika Text": {
+    "title": "Troika Text",
+    "description": "Creates a 3D text element using the troika-three-text library."
+  },
+  "Mirror": {
+    "title": "Mirror",
+    "description": "Renders a plane mirror."
+  },
+  "Shared Screen": {
+    "title": "Shared Screen",
+    "description": "It's a shared screen! You can share any media on the screen."
+  }
+}
