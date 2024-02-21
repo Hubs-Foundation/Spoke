@@ -20,3 +20,5 @@ test/integration/project/generated
 .tersercache
 results/
 test/reports/*.xml
+/nginx.conf
+.env.prod
