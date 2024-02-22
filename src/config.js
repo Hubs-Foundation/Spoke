@@ -38,6 +38,8 @@ import TriggerVolumeNode from "./editor/nodes/TriggerVolumeNode";
 import TriggerVolumeNodeEditor from "./ui/properties/TriggerVolumeNodeEditor";
 import LinkNode from "./editor/nodes/LinkNode";
 import LinkNodeEditor from "./ui/properties/LinkNodeEditor";
+import InlineViewNode from "./editor/nodes/InlineViewNode";
+import InlineViewNodeEditor from "./ui/properties/InlineViewNodeEditor";
 import ParticleEmitterNode from "./editor/nodes/ParticleEmitterNode";
 import ParticleEmitterNodeEditor from "./ui/properties/ParticleEmitterNodeEditor";
 import KitPieceNode from "./editor/nodes/KitPieceNode";
@@ -52,6 +54,8 @@ import AudioZoneNode from "./editor/nodes/AudioZoneNode";
 import AudioZoneNodeEditor from "./ui/properties/AudioZoneNodeEditor";
 import MirrorNode from "./editor/nodes/MirrorNode";
 import MirrorNodeEditor from "./ui/properties/MirrorNodeEditor";
+import SharedScreenNode from "./editor/nodes/SharedScreenNode";
+import SharedScreenNodeEditor from "./ui/properties/SharedScreenNodeEditor";
 
 import MediaFrameNode from "./editor/nodes/MediaFrameNode";
 import MediaFrameNodeEditor from "./ui/properties/MediaFrameNodeEditor";
@@ -92,6 +96,7 @@ export function createEditor(api, settings) {
   editor.registerNode(SpawnerNode, SpawnerNodeEditor);
   editor.registerNode(TriggerVolumeNode, TriggerVolumeNodeEditor);
   editor.registerNode(LinkNode, LinkNodeEditor);
+  editor.registerNode(InlineViewNode, InlineViewNodeEditor);
   editor.registerNode(ParticleEmitterNode, ParticleEmitterNodeEditor);
   editor.registerNode(KitPieceNode, KitPieceNodeEditor);
   editor.registerNode(SimpleWaterNode, SimpleWaterNodeEditor);
@@ -100,7 +105,11 @@ export function createEditor(api, settings) {
   editor.registerNode(AudioZoneNode, AudioZoneNodeEditor);
   editor.registerNode(TroikaTextNode, TroikaTextNodeEditor);
   editor.registerNode(MirrorNode, MirrorNodeEditor);
-
+  /**
+   * belivvr custom
+   * 화면공유(칠판) 노드를 등록함
+   */
+  editor.registerNode(SharedScreenNode, SharedScreenNodeEditor);
 
   editor.registerSource(new ElementsSource(editor));
   editor.registerSource(new MyAssetsSource(editor));
