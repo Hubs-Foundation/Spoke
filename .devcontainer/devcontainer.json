@@ -1,0 +1,30 @@
+// For format details, see https://aka.ms/vscode-remote/devcontainer.json or this file's README at:
+// https://github.com/microsoft/vscode-dev-containers/tree/v0.122.1/containers/docker-existing-dockerfile
+{
+    "name": "${containerWorkspaceFolderBasename}",
+    "context": ".",
+    "dockerFile": "Dockerfile",
+    "mounts": [
+        "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
+    ],
+    "customizations": {
+        "vscode": {
+            "extensions": []
+        }
+    },
+    "remoteEnv": {
+        "GIT_AUTHOR_NAME": "$(git config --global user.name)",
+        "GIT_AUTHOR_EMAIL": "$(git config --global user.email)",
+        "WORKSPACE_ROOT": "${containerWorkspaceFolder}",
+        "NODE_ENV": "development"
+    },
+    "initializeCommand": "docker rm -f spoke",
+    "runArgs": [
+        "--name",
+        "${containerWorkspaceFolderBasename}-vscode"
+    ],
+    "postCreateCommand": "sh postCreateCommand.sh",
+    "appPort": [
+        "0.0.0.0:9090:9090"
+    ]
+}
