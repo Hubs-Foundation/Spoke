@@ -268,7 +268,8 @@ module.exports = env => {
         IS_MOZ: false,
         GITHUB_ORG: "mozilla",
         GITHUB_REPO: "spoke",
-        GITHUB_PUBLIC_TOKEN: "ghp_SAFEPB2zzes9TEpAOSx2McNjJLQ1GXLBES2FsfWU"
+        GITHUB_PUBLIC_TOKEN: "ghp_SAFEPB2zzes9TEpAOSx2McNjJLQ1GXLBES2FsfWU",
+        BACKEND_URL: ""
       })
     ]
   };
