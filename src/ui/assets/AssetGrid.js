@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useEffect, useContext, memo } from "react";
+import React, { useCallback, useRef, useEffect, useContext, memo, useState } from "react";
 import PropTypes from "prop-types";
 import InfiniteScroll from "react-infinite-scroller";
 import styled from "styled-components";
@@ -14,6 +14,7 @@ import { OnboardingContext } from "../contexts/OnboardingContext";
 import { ItemTypes } from "../dnd";
 import AudioPreview from "./AudioPreview";
 import Tooltip, { TooltipContainer } from "../layout/Tooltip";
+import { useTranslation } from "react-i18next";
 
 const AssetGridTooltipContainer = styled(TooltipContainer)`
   max-width: initial;
@@ -121,10 +122,24 @@ export default function AssetGrid({ isLoading, selectedItems, items, onSelect, o
   const editor = useContext(EditorContext);
   const onboarding = useContext(OnboardingContext);
   const uniqueId = useRef(`AssetGrid${lastId}`);
+  const [assets, setAssets] = useState([]);
+  const [isChangeAssets, setIsChangeAssets] = useState(false);
+  const { i18n } = useTranslation();
 
   useEffect(() => {
     lastId++;
   }, []);
+
+  useEffect(() => {
+    if (!items.length) return
+    const data = unique(items, "id", i18n.language)
+    setAssets(data)
+    setIsChangeAssets(true)
+  }, [items, i18n.language])
+
+  useEffect(() => {
+    setIsChangeAssets(false)
+  }, [isChangeAssets])
 
   const placeObject = useCallback(
     (_, trigger) => {
@@ -180,17 +195,19 @@ export default function AssetGrid({ isLoading, selectedItems, items, onSelect, o
       <VerticalScrollContainer flex>
         <InfiniteScroll pageStart={0} loadMore={onLoadMore} hasMore={hasMore} threshold={100} useWindow={false}>
           <MediaGrid>
-            {unique(items, "id").map(item => (
-              <MemoAssetGridItem
-                key={item.id}
-                tooltipComponent={tooltip}
-                disableTooltip={onboarding.enabled}
-                contextMenuId={uniqueId.current}
-                item={item}
-                selected={selectedItems.indexOf(item) !== -1}
-                onClick={onSelect}
-              />
-            ))}
+            {!isChangeAssets && assets.map(item => {
+              return (
+                    <MemoAssetGridItem
+                    key={item.id}
+                    tooltipComponent={tooltip}
+                    disableTooltip={onboarding.enabled}
+                    contextMenuId={uniqueId.current}
+                    item={item}
+                    selected={selectedItems.indexOf(item) !== -1}
+                    onClick={onSelect}
+                  />
+              )
+            })}
             {isLoading && <LoadingItem>Loading...</LoadingItem>}
           </MediaGrid>
         </InfiniteScroll>

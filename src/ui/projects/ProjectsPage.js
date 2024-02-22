@@ -92,6 +92,7 @@ class ProjectsPage extends Component {
   }
 
   componentDidMount() {
+    this.props.history.goBack();
     document.title = configs.longName();
 
     // We dont need to load projects if the user isn't logged in
@@ -148,7 +149,13 @@ class ProjectsPage extends Component {
 
     return (
       <>
-        <NavBar />
+        {
+          /**
+           * belivvr custom
+           * NavigationBar 를 없애달라는 요구사항에 숨김
+           */
+          /* <NavBar /> */
+        }
         <main>
           {!isAuthenticated || (projects.length === 0 && !loading) ? (
             <ProjectsSection flex={0}>
@@ -156,7 +163,7 @@ class ProjectsPage extends Component {
                 <h1>Welcome{configs.isMoz() ? " to Spoke" : ""}</h1>
                 <h2>
                   If you&#39;re new here we recommend going through the tutorial. Otherwise, jump right in and create a
-                  project from scratch or from one of our templates.
+                  project from scratch or from one of our templates!!.
                 </h2>
                 <MediumButton as={Link} to="/projects/tutorial">
                   Start Tutorial

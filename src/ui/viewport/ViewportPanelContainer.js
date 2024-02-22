@@ -14,6 +14,7 @@ import AssetDropZone from "../assets/AssetDropZone";
 import { ChartArea } from "styled-icons/fa-solid/ChartArea";
 import { InfoTooltip } from "../layout/Tooltip";
 import Stats from "./Stats";
+import { useTranslation } from "react-i18next";
 
 function borderColor(props, defaultColor) {
   if (props.canDrop) {
@@ -171,6 +172,7 @@ export default function ViewportPanelContainer() {
   const [objectSelected, setObjectSelected] = useState(false);
   const [transformMode, setTransformMode] = useState(null);
   const [showStats, setShowStats] = useState(false);
+  const { t } = useTranslation();
 
   const onSelectionChanged = useCallback(() => {
     setObjectSelected(editor.selected.length > 0);
@@ -250,28 +252,28 @@ export default function ViewportPanelContainer() {
   let controlsText;
 
   if (flyModeEnabled) {
-    controlsText = "[W][A][S][D] Move Camera | [Shift] Fly faster";
+    controlsText = t('viewport.flyModeEnabled');
   } else {
-    controlsText = "[LMB] Orbit / Select | [MMB] Pan | [RMB] Fly";
+    controlsText = t('viewport.flyModeDisabled');
   }
 
   if (objectSelected) {
-    controlsText += " | [F] Focus | [Q] Rotate Left | [E] Rotate Right";
+    controlsText += t('viewport.objectSelected');
   }
 
   if (transformMode === TransformMode.Placement) {
-    controlsText += " | [ESC / G] Cancel Placement";
+    controlsText += t('viewport.placement');
   } else if (transformMode === TransformMode.Grab) {
-    controlsText += " | [Shift + Click] Place Duplicate | [ESC / G] Cancel Grab";
+    controlsText += t('viewport.grap');
   } else if (objectSelected) {
-    controlsText += "| [G] Grab | [ESC] Deselect All";
+    controlsText += t('viewport.objectSelectedNotTransform');
   }
 
   // id used in onboarding
   return (
     <Panel
       id="viewport-panel"
-      title="Viewport"
+      title={t('viewport.title')}
       icon={WindowMaximize}
       toolbarContent={<ViewportToolbar onToggleStats={setShowStats} showStats={showStats} />}
     >

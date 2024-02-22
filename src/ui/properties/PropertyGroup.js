@@ -1,6 +1,7 @@
-import React, { Fragment } from "react";
+import React, { Fragment, useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import styled from "styled-components";
+import { useTranslation } from "react-i18next";
 
 const StyledPropertyGroup = styled.div`
   display: flex;
@@ -36,12 +37,27 @@ const PropertyGroupContent = styled.div`
 `;
 
 function PropertyGroup(props) {
-  const { name, description, children, ...rest } = props;
+  const { children, ...rest } = props;
+  const [name, setName] = useState(props.name)
+  const [description, setDescription] = useState(props.description)
+  const { i18n } = useTranslation();
+
+  useEffect(() => {
+    if (!props.name && !props.description) return
+
+    const localeData = require(`../../locales/${i18n.language}/renderElements.json`)
+    const data = localeData[props.name]
+
+    if (data) {
+      setName(data.title)
+      setDescription(data.description)
+    }
+  }, [name, description, i18n.language])
 
   return (
     <StyledPropertyGroup {...rest}>
-      <PropertyGroupHeader>{name}</PropertyGroupHeader>
-      {description && (
+      <PropertyGroupHeader>{name ? name : ""}</PropertyGroupHeader>
+      {description ? (
         <PropertyGroupDescription>
           {description.split("\\n").map((line, i) => (
             <Fragment key={i}>
@@ -50,7 +66,7 @@ function PropertyGroup(props) {
             </Fragment>
           ))}
         </PropertyGroupDescription>
-      )}
+      ): null}
       <PropertyGroupContent>{children}</PropertyGroupContent>
     </StyledPropertyGroup>
   );

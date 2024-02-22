@@ -21,6 +21,8 @@ import styled from "styled-components";
 import styledTheme from "../theme";
 import { InfoTooltip } from "../layout/Tooltip";
 import { Pause } from "styled-icons/fa-solid";
+import { withTranslation } from 'react-i18next';
+import i18n from "../../locales/i18n.ts";
 
 const StyledToolbar = styled.div`
   display: flex;
@@ -56,6 +58,27 @@ const PublishButton = styled(Button)`
   margin: 1em;
   padding: 0 2em;
 `;
+
+const LocaleWrapper = styled.div`
+  display: flex;
+  justify-contents: center;
+  align-items: center;
+`
+
+const LocaleSelect = styled.select`
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background: transparent;
+  background-image: url("data:image/svg+xml;utf8,<svg fill='white' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/><path d='M0 0h24v24H0z' fill='none'/></svg>");
+  background-repeat: no-repeat;
+  background-position-x: 100%;
+  background-position-y: -1px;
+  border: 1px solid #dfdfdf;
+  border-radius: 2px;
+  padding: 0.2rem 2.5rem 0.2rem 1.5rem;
+  color: #ffffff;
+  cursor: pointer;
+`
 
 const snapInputStyles = {
   container: base => ({
@@ -205,7 +228,7 @@ const transformSpaceOptions = [
   { label: "World", value: TransformSpace.World }
 ];
 
-export default class ToolBar extends Component {
+class ToolBar extends Component {
   static propTypes = {
     menu: PropTypes.array,
     editor: PropTypes.object,
@@ -358,7 +381,12 @@ export default class ToolBar extends Component {
     }
   };
 
+  onChangeLocales = (lang) => {
+    i18n.changeLanguage(lang);
+  };
+
   render() {
+    const { t } = this.props;
     const { editorInitialized, menuOpen } = this.state;
 
     if (!editorInitialized) {
@@ -380,21 +408,21 @@ export default class ToolBar extends Component {
           <ToolButton icon={Bars} onClick={this.onMenuSelected} selected={menuOpen} id="menu" />
           <ToolButton
             id="translate-button"
-            tooltip="[T] Translate"
+            tooltip={t('header.translateTooltip')}
             icon={ArrowsAlt}
             onClick={this.onSelectTranslate}
             selected={transformMode === TransformMode.Translate}
           />
           <ToolButton
             id="rotate-button"
-            tooltip="[R] Rotate"
+            tooltip={t('header.rotateTooltip')}
             icon={SyncAlt}
             onClick={this.onSelectRotate}
             selected={transformMode === TransformMode.Rotate}
           />
           <ToolButton
             id="scale-button"
-            tooltip="[Y] Scale"
+            tooltip={t('header.scaleTooltip')}
             icon={ArrowsAltV}
             onClick={this.onSelectScale}
             selected={transformMode === TransformMode.Scale}
@@ -402,7 +430,7 @@ export default class ToolBar extends Component {
         </ToolButtons>
         <ToolToggles>
           <ToolbarInputGroup id="transform-space">
-            <InfoTooltip info="[Z] Toggle Transform Space" position="bottom">
+            <InfoTooltip info={t('header.spaceTooltip')} position="bottom">
               <ToggleButton onClick={this.onToggleTransformSpace}>
                 <Globe size={12} />
               </ToggleButton>
@@ -415,7 +443,7 @@ export default class ToolBar extends Component {
             />
           </ToolbarInputGroup>
           <ToolbarInputGroup id="transform-pivot">
-            <ToggleButton onClick={this.onToggleTransformPivot} tooltip="[X] Toggle Transform Pivot">
+            <ToggleButton onClick={this.onToggleTransformPivot} tooltip={t('header.pivotTooltip')}>
               <Bullseye size={12} />
             </ToggleButton>
             <SelectInput
@@ -429,7 +457,7 @@ export default class ToolBar extends Component {
             <ToggleButton
               value={snapMode === SnapMode.Grid}
               onClick={this.onToggleSnapMode}
-              tooltip={"[C] Toggle Snap Mode"}
+              tooltip={t('header.snapTooltip')}
             >
               <Magnet size={12} />
             </ToggleButton>
@@ -455,7 +483,7 @@ export default class ToolBar extends Component {
             />
           </ToolbarInputGroup>
           <ToolbarInputGroup id="transform-grid">
-            <ToggleButton onClick={this.onToggleGridVisible} tooltip="Toggle Grid Visibility">
+            <ToggleButton onClick={this.onToggleGridVisible} tooltip={t('header.showGridTooltip')}>
               <Grid size={16} />
             </ToggleButton>
             <ToolbarNumericStepperInput
@@ -466,8 +494,8 @@ export default class ToolBar extends Component {
               mediumStep={1.5}
               largeStep={4.5}
               unit="m"
-              incrementTooltip="[-] Increment Grid Height"
-              decrementTooltip="[=] Decrement Grid Height"
+              incrementTooltip={t('header.minusHeightGridTooltip')}
+              decrementTooltip={t('header.plusHeightGridTooltip')}
             />
           </ToolbarInputGroup>
           {this.props.editor.settings.enableExperimentalFeatures && (
@@ -482,13 +510,29 @@ export default class ToolBar extends Component {
           )}
         </ToolToggles>
         <Spacer />
-        {this.props.isPublishedScene && (
+        {/**
+         * belivvr custom
+         * Open Scene은 눌러도 index.html을 찾을 수 없다고 나오길래 제거
+         */}
+        {/* {this.props.isPublishedScene && (
           <PublishButton onClick={this.props.onOpenScene}>
             {configs.isMoz() ? "Open in Hubs" : "Open Scene"}
           </PublishButton>
-        )}
+        )} */}
+        <LocaleWrapper>
+          <select style={{
+            height: 'fit-content',
+            padding: '0 8px',
+            borderRadius: '4px',
+            backgroundColor: '#4d535b',
+            color: '#fff',
+          }} onChange={(e) => this.onChangeLocales(e.target.value)}>
+            <option value="en">en</option>
+            <option value="ko">한국어</option>
+          </select>
+        </LocaleWrapper>
         <PublishButton id="publish-button" onClick={this.props.onPublish}>
-          {configs.isMoz() ? "Publish to Hubs..." : "Publish Scene..."}
+          {configs.isMoz() ? "Publish to Hubs..." : t('header.publish')}
         </PublishButton>
         <ContextMenu id="menu">
           {this.props.menu.map(menu => {
@@ -499,3 +543,5 @@ export default class ToolBar extends Component {
     );
   }
 }
+
+export default withTranslation()(ToolBar)

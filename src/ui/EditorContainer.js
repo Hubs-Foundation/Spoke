@@ -40,6 +40,7 @@ import Editor from "../editor/Editor";
 
 import defaultTemplateUrl from "./../assets/templates/crater.spoke";
 import tutorialTemplateUrl from "./../assets/templates/tutorial.spoke";
+import { withTranslation } from 'react-i18next';
 
 import { TERMS, PRIVACY } from "../constants";
 
@@ -76,6 +77,9 @@ class EditorContainer extends Component {
       settings = JSON.parse(storedSettings);
     }
 
+    /**
+     * 1. 하단 elements 최초 생성지점
+     */
     const editor = createEditor(props.api, settings);
     window.editor = editor;
     editor.init();
@@ -85,6 +89,7 @@ class EditorContainer extends Component {
       error: null,
       project: null,
       parentSceneId: null,
+      outdoorOption: null,
       editor,
       settingsContext: {
         settings,
@@ -103,6 +108,28 @@ class EditorContainer extends Component {
     const { match, location } = this.props;
     const projectId = match.params.projectId;
     const queryParams = new URLSearchParams(location.search);
+
+    fetch(`${window.eventCallback}/api/scenes/option/${window.optId}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      }
+    }).then(async (res) => {
+      const outdoorOption = await res.json()
+      const token = outdoorOption.token;
+      window.token = token;
+      
+      if (token) {
+        localStorage.clear();
+        localStorage.setItem("___hubs_store", JSON.stringify({ credentials: { email: "default", token } }));
+      }
+      this.setState({
+        outdoorOption,
+      })
+      
+    }).catch((err) => {
+      console.log(err)
+    })
 
     if (projectId === "new") {
       if (queryParams.has("template")) {
@@ -325,7 +352,6 @@ class EditorContainer extends Component {
 
   updateModifiedState = then => {
     const nextModified = this.state.editor.sceneModified && !this.state.creatingProject;
-
     if (nextModified !== this.state.modified) {
       this.setState({ modified: nextModified }, then);
     } else if (then) {
@@ -336,48 +362,48 @@ class EditorContainer extends Component {
   generateToolbarMenu = () => {
     return [
       {
-        name: "Back to Projects",
-        action: this.onOpenProject
+        name: this.props.t("menu.backToProjects"),
+        action: this.onBackMySite
       },
       {
-        name: "File",
+        name: this.props.t("menu.file.title"),
         items: [
+          // {
+          //   name: this.props.t("menu.file.newProjects"),
+          //   action: this.onNewProject
+          // },
+          // {
+          //   name: this.props.t("menu.file.saveProjects"),
+          //   hotkey: `${cmdOrCtrlString} + S`,
+          //   action: this.onSaveProject
+          // },
+          // {
+          //   name: this.props.t("menu.file.duplicatedSave"),
+          //   action: this.onDuplicateProject
+          // },
           {
-            name: "New Project",
-            action: this.onNewProject
-          },
-          {
-            name: "Save Project",
-            hotkey: `${cmdOrCtrlString} + S`,
-            action: this.onSaveProject
-          },
-          {
-            name: "Save As",
-            action: this.onDuplicateProject
-          },
-          {
-            name: configs.isMoz() ? "Publish to Hubs..." : "Publish Scene...",
+            name: this.props.t("menu.file.publishProjects"),
             action: this.onPublishProject
           },
           {
-            name: "Export as binary glTF (.glb) ...",
+            name: this.props.t("menu.file.exportProjects"),
             action: this.onExportProject
           },
           {
-            name: "Import legacy .spoke project",
+            name: this.props.t("menu.file.importProjects"),
             action: this.onImportLegacyProject
           },
           {
-            name: "Export legacy .spoke project",
+            name: this.props.t("menu.file.exportLegacy"),
             action: this.onExportLegacyProject
           }
         ]
       },
       {
-        name: "Help",
+        name: this.props.t("menu.help.title"),
         items: [
           {
-            name: "Tutorial",
+            name: this.props.t("menu.help.tutorial"),
             action: () => {
               const { projectId } = this.props.match.params;
 
@@ -390,42 +416,42 @@ class EditorContainer extends Component {
             }
           },
           {
-            name: "Keyboard and Mouse Controls",
+            name: this.props.t("menu.help.controls"),
             action: () => window.open("https://hubs.mozilla.com/docs/spoke-controls.html")
           },
           {
-            name: "Get Support",
+            name: this.props.t("menu.help.getSupport"),
             action: () => this.showDialog(SupportDialog)
           },
           {
-            name: "Submit Feedback",
+            name: this.props.t("menu.help.submitFeedback"),
             action: () => window.open("https://forms.gle/2PAFXKwW1SXdfSK17")
           },
           {
-            name: "Report an Issue",
+            name: this.props.t("menu.help.reportIssue"),
             action: () => window.open("https://github.com/mozilla/Spoke/issues/new")
           },
           {
-            name: "Join us on Discord",
+            name: this.props.t("menu.help.joinDiscord"),
             action: () => window.open("https://discord.gg/wHmY4nd")
           },
           {
-            name: "Terms of Use",
+            name: this.props.t("menu.help.termsofuse"),
             action: () => window.open(TERMS)
           },
           {
-            name: "Privacy Notice",
+            name: this.props.t("menu.help.privacyNotice"),
             action: () => window.open(PRIVACY)
           }
         ]
       },
       {
-        name: "Developer",
+        name: this.props.t("menu.developer.title"),
         items: [
           {
             name: this.state.settingsContext.settings.enableExperimentalFeatures
-              ? "Disable Experimental Features"
-              : "Enable Experimental Features",
+              ? this.props.t("menu.developer.disableDeveloperMode") 
+              : this.props.t("menu.developer.enableDeveloperMode"),
             action: () =>
               this.updateSetting(
                 "enableExperimentalFeatures",
@@ -435,7 +461,7 @@ class EditorContainer extends Component {
         ]
       },
       {
-        name: "Submit Feedback",
+        name: this.props.t("menu.submitFeedback"),
         action: () => window.open("https://forms.gle/2PAFXKwW1SXdfSK17")
       }
     ];
@@ -612,6 +638,7 @@ class EditorContainer extends Component {
 
     this.updateModifiedState(() => {
       this.setState({ creatingProject: true, project }, () => {
+        window.projectId = project.project_id;
         this.props.history.replace(`/projects/${project.project_id}`);
         this.setState({ creatingProject: false });
       });
@@ -627,6 +654,11 @@ class EditorContainer extends Component {
   onOpenProject = () => {
     this.props.history.push("/projects");
   };
+
+  onBackMySite = () => {
+    const callback = new URLSearchParams(location.search).get("callback");
+    window.location.href = `https://${callback}`;
+  }
 
   onSaveProject = async () => {
     trackEvent("Project Save Start");
@@ -826,12 +858,19 @@ class EditorContainer extends Component {
   };
 
   onPublishProject = async () => {
+    /**
+     * belivvr custom
+     * ClassV return URL 로 보냄
+     */
+    const callback = new URLSearchParams(location.search).get("callback");
+    if(callback) window.classV = `https://${callback}`;
     trackEvent("Project Publish Started");
 
     try {
       const editor = this.state.editor;
       let project = this.state.project;
 
+      
       if (!project) {
         project = await this.createProject();
       }
@@ -840,7 +879,7 @@ class EditorContainer extends Component {
         return;
       }
 
-      project = await this.props.api.publishProject(project, editor, this.showDialog, this.hideDialog);
+      project = await this.props.api.publishProject(project, editor, this.showDialog, this.hideDialog, this.state.outdoorOption);
 
       if (!project) {
         return;
@@ -960,4 +999,4 @@ class EditorContainer extends Component {
   }
 }
 
-export default withApi(EditorContainer);
+export default withApi(withTranslation()(EditorContainer));

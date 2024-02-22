@@ -20,7 +20,10 @@ export function insertSeparator(children, separatorFn) {
   }, []);
 }
 
-export function unique(arr, maybeComp) {
+/**
+ * 3. 데이터 수정 부분
+ */
+export function unique(arr, maybeComp, locale) {
   const set = new Set();
   const newArr = [];
 
@@ -36,6 +39,13 @@ export function unique(arr, maybeComp) {
     const key = comp(item);
 
     if (set.has(key)) continue;
+
+    const data = require(`../locales/${locale}/renderElements.json`)
+
+    if (data[item.id]) {
+      item.label = data[item.id].title
+      item.description = data[item.id].description
+    }
 
     newArr.push(item);
 

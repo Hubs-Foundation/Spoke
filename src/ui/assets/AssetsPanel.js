@@ -5,6 +5,7 @@ import { Column, Row } from "../layout/Flex";
 import { List, ListItem } from "../layout/List";
 import { EditorContext } from "../contexts/EditorContext";
 import AssetDropZone from "./AssetDropZone";
+import { useTranslation } from "react-i18next";
 
 const AssetsPanelContainer = styled(Row)`
   position: relative;
@@ -68,6 +69,16 @@ export default function AssetsPanel() {
   );
   const [selectedSource, setSelectedSource] = useState(sources.length > 0 ? sources[0] : null);
   const SourceComponent = selectedSource && selectedSource.component;
+  const { t, i18n } = useTranslation();
+
+  useEffect(() => {
+    const localeData = require(`../../locales/${i18n.language}/assets.json`)
+    const newSources = sources.map((source) => {
+      source.name = localeData[source.id].title
+      return source
+    })
+    setSources(newSources)
+  }, [i18n.language])
 
   useEffect(() => {
     const onSetSource = sourceId => {
@@ -92,7 +103,6 @@ export default function AssetsPanel() {
     editor.addListener("settingsChanged", onSettingsChanged);
     editor.addListener("setSource", onSetSource);
     editor.api.addListener("authentication-changed", onAuthChanged);
-
     return () => {
       editor.removeListener("setSource", onSetSource);
       editor.api.removeListener("authentication-changed", onAuthChanged);
@@ -116,7 +126,7 @@ export default function AssetsPanel() {
   return (
     <AssetsPanelContainer id="assets-panel">
       <AssetsPanelColumn flex>
-        <AssetsPanelToolbar title="Assets" />
+        <AssetsPanelToolbar title={t("assets.title")} />
         <List>
           {sources.map(source => (
             <ListItem key={source.id} onClick={() => setSelectedSource(source)} selected={selectedSource === source}>

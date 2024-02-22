@@ -101,7 +101,13 @@ export default function CreateProjectPage({ history, location }) {
 
   return (
     <>
-      <NavBar />
+      {
+        /**
+         * belivvr custom
+         * NavigationBar 를 없애달라는 요구사항에 숨김
+         */
+        /* <NavBar /> */
+      }
       <main>
         <ProjectsSection>
           <ProjectsContainer>
