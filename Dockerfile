@@ -5,7 +5,6 @@ WORKDIR /app/spoke
 COPY ./package.json ./
 COPY ./yarn.lock ./
 
-RUN yarn add react-i18next i18next
 RUN yarn install
 
 COPY . .
