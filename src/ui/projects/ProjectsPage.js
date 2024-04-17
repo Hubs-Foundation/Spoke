@@ -18,6 +18,7 @@ import { Link } from "react-router-dom";
 import LatestUpdate from "../whats-new/LatestUpdate";
 import { connectMenu, ContextMenu, MenuItem } from "../layout/ContextMenu";
 import styled from "styled-components";
+import Notification from "../layout/Notification";
 
 export const ProjectsSection = styled.section`
   padding-bottom: 100px;
@@ -87,7 +88,10 @@ class ProjectsPage extends Component {
       scenes: [],
       loading: isAuthenticated,
       isAuthenticated,
-      error: null
+      error: null,
+      showGlobalNotification: false,
+      globalNotificationBody: null,
+      globalNotificationLink: null
     };
   }
 
@@ -121,6 +125,15 @@ class ProjectsPage extends Component {
 
           this.setState({ error, loading: false });
         });
+    }
+
+    const features = window.APP_CONFIG && window.APP_CONFIG["features"];
+    if (features) {
+      this.setState({
+        showGlobalNotification: features["show_global_notification"],
+        globalNotificationBody: features["global_notification_body"],
+        globalNotificationLink: features["global_notification_link"]
+      });
     }
   }
 
@@ -172,6 +185,9 @@ class ProjectsPage extends Component {
                 <h1>Projects</h1>
               </ProjectsHeader>
               <ProjectGridContainer>
+                {this.state.showGlobalNotification && (
+                  <Notification body={this.state.globalNotificationBody} link={this.state.globalNotificationLink} />
+                )}
                 <ProjectGridHeader>
                   <ProjectGridHeaderRow></ProjectGridHeaderRow>
                   <ProjectGridHeaderRow>
