@@ -126,7 +126,7 @@ class EditorContainer extends Component {
       }
     };
 
-    const features = window.APP_CONFIG;
+    const features = window.APP_CONFIG && window.APP_CONFIG["features"];
     if (features["show_global_notification"]) {
       this.showDialog(NotificationDialog, {
         title: "Admin notification",
