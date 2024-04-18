@@ -46,5 +46,11 @@ configs.isMoz = () => configs.IS_MOZ === "true";
 configs.name = () => (configs.isMoz() ? "Spoke" : "Scene Editor");
 configs.longName = () => (configs.isMoz() ? "Spoke by Mozilla" : "Scene Editor");
 configs.icon = () => (configs.isMoz() ? fixBaseAssetsPath(spokeIcon) : fixBaseAssetsPath(editorIcon));
+configs.sunset = {
+  notification: {
+    body: "COPY HERE",
+    link: "https://www.mozilla.org"
+  }
+};
 
 export default configs;

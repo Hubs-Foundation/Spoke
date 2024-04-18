@@ -126,16 +126,11 @@ class EditorContainer extends Component {
       }
     };
 
-    const features = {
-      show_global_notification: true,
-      global_notification_body: "COPY HERE",
-      global_notification_link: "https://mozilla.org"
-    };
-    if (features["show_global_notification"]) {
+    if (configs.sunset.notification) {
       this.showDialog(NotificationDialog, {
         title: "Admin notification",
-        message: features["global_notification_body"],
-        link: features["global_notification_link"],
+        message: configs.sunset.notification.body,
+        link: configs.sunset.notification.link,
         onClosed: load,
         onConfirm: load,
         onCancel: null
