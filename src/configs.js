@@ -48,8 +48,9 @@ configs.longName = () => (configs.isMoz() ? "Spoke by Mozilla" : "Scene Editor")
 configs.icon = () => (configs.isMoz() ? fixBaseAssetsPath(spokeIcon) : fixBaseAssetsPath(editorIcon));
 configs.sunset = {
   notification: {
-    body: "COPY HERE",
-    link: "https://www.mozilla.org"
+    body:
+      'Mozilla Hubs will shut down on May 31, 2024. After May 31, you will permanently lose access to your data. For more information about the shutdown and how to download your data, click "Learn More".',
+    link: "https://hubs.mozilla.com/labs/downloading-your-data/"
   }
 };
 

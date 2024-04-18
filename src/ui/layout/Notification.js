@@ -23,8 +23,6 @@ const StyledNotification = styled.div`
 const Content = styled.span`
   max-width: 50vw;
   overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
 `;
 
 const ViewMore = styled.div`
