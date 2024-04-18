@@ -127,14 +127,11 @@ class ProjectsPage extends Component {
         });
     }
 
-    const features = window.APP_CONFIG && window.APP_CONFIG["features"];
-    if (features) {
-      this.setState({
-        showGlobalNotification: features["show_global_notification"],
-        globalNotificationBody: features["global_notification_body"],
-        globalNotificationLink: features["global_notification_link"]
-      });
-    }
+    this.setState({
+      showGlobalNotification: true,
+      globalNotificationBody: "COPY HERE",
+      globalNotificationLink: "https://mozilla.org"
+    });
   }
 
   onDeleteProject = project => {

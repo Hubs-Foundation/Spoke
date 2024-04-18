@@ -126,7 +126,11 @@ class EditorContainer extends Component {
       }
     };
 
-    const features = window.APP_CONFIG && window.APP_CONFIG["features"];
+    const features = {
+      show_global_notification: true,
+      global_notification_body: "COPY HERE",
+      global_notification_link: "https://mozilla.org"
+    };
     if (features["show_global_notification"]) {
       this.showDialog(NotificationDialog, {
         title: "Admin notification",
