@@ -144,7 +144,6 @@
     "eslint-plugin-react-hooks": "^2.0.1",
     "esm": "^3.2.25",
     "file-loader": "^4.2.0",
-    "gltf-webpack-loader": "https://github.com/MozillaReality/gltf-webpack-loader.git#fix/relative-and-output-paths",
     "html-webpack-plugin": "^3.2.0",
     "husky": "^3.0.5",
     "jsdom": "^15.1.1",
