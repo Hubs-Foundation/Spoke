@@ -1,15 +1,10 @@
 <h1 align="center">Spoke</h1>
 
-<p align="center"><a href="https://hubs.mozilla.com/spoke" target="_blank"><img width="480" alt="Spoke" src="https://user-images.githubusercontent.com/21111451/66261819-ffd9ff00-e799-11e9-88bf-981d238b4f20.gif"></a></p>
-
-[![CircleCI](https://circleci.com/gh/mozilla/Spoke.svg?style=svg)](https://circleci.com/gh/mozilla/Spoke)
-
+<p align="center"><img width="480" alt="Spoke" src="https://user-images.githubusercontent.com/21111451/66261819-ffd9ff00-e799-11e9-88bf-981d238b4f20.gif"></p>
 
   **Easily create custom 3D environments for Hubs.**
 
-**[Launch Spoke](https://hubs.mozilla.com/spoke)**
-
-**[Spoke Documentation](https://hubs.mozilla.com/docs/spoke-creating-projects.html)**
+**[Spoke Documentation](https://github.com/Hubs-Foundation/hubs-docs/blob/master/docs/spoke-creating-projects.md)**
 
 ## Features
 
