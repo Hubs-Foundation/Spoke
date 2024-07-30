@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import { Link } from "react-router-dom";
-import mozillaLogo from "../../assets/mozilla-logo.png";
+import hubsLogo from "../../assets/hubs-logo.png";
 import styled from "styled-components";
 import configs from "../../configs";
 import { TERMS, PRIVACY } from "../../constants";
@@ -103,7 +103,7 @@ export default class Footer extends Component {
             {configs.isMoz() && (
               <NavListItem>
                 <a href="https://hubsfoundation.org" rel="noopener noreferrer">
-                  <img alt="Hubs" src={mozillaLogo} />
+                  <img alt="Hubs" src={hubsLogo} />
                 </a>
               </NavListItem>
             )}
