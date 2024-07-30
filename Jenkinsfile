@@ -72,7 +72,7 @@ pipeline {
           if (showQAPromoteCommand == "true") {
             def text = (
               "*<http://localhost:8080/job/${jobName}/${buildNumber}|#${buildNumber}>* *${jobName}* " +
-              "<https://github.com/mozilla/Spoke/commit/$gitSha|$gitSha> ${spokeVersion} " +
+              "<https://github.com/Hubs-Foundation/Spoke/commit/$gitSha|$gitSha> ${spokeVersion} " +
               "Spoke: ```${gitSha} ${gitMessage}```\n" +
               "${packageIdent} built and uploaded - to promote:\n" +
               "`/mr promote-spoke-qa ${packageIdent}`"
@@ -81,7 +81,7 @@ pipeline {
           } else {
             def text = (
               "*<http://localhost:8080/job/${jobName}/${buildNumber}|#${buildNumber}>* *${jobName}* " +
-              "<https://github.com/mozilla/Spoke/commit/$gitSha|$gitSha> ${spokeVersion} " +
+              "<https://github.com/Hubs-Foundation/Spoke/commit/$gitSha|$gitSha> ${spokeVersion} " +
               "Spoke: ```${gitSha} ${gitMessage}```\n" +
               "<${smokeURL}?required_version=${spokeVersion}|Smoke Test> - to push:\n" +
               "`/mr spoke deploy ${spokeVersion} s3://${targetS3Bucket}`"

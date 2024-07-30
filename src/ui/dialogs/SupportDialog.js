@@ -9,10 +9,9 @@ export default function SupportDialog({ onCancel, ...props }) {
         <p>Need to report a problem?</p>
         <p>
           You can file a{" "}
-          <a href="https://github.com/mozilla/Spoke/issues/new" target="_blank" rel="noopener noreferrer">
+          <a href="https://github.com/Hubs-Foundation/Spoke/issues/new" target="_blank" rel="noopener noreferrer">
             GitHub Issue
-          </a>{" "}
-          or e-mail us for support at <a href="mailto:hubs@mozilla.com">hubs@mozilla.com</a>
+          </a>
         </p>
         <p>
           You can also find us on{" "}

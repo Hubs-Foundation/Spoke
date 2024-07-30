@@ -1,8 +1,8 @@
 # Creating Kits
 
-Kits, like the [Architecture Kit](https://github.com/MozillaReality/hubs-architecture-kit) and the [Rock Kit](https://github.com/MozillaReality/hubs-rock-kit) are special asset sources in Spoke. They are intended to reduce material usage and increase our ability to combine objects before exporting. In this guide we'll go over how to create a kit using Blender, the Spoke Kit Packager, and write the code to add it to Spoke.
+Kits, like the [Architecture Kit](https://github.com/Hubs-Foundation/hubs-architecture-kit) and the [Rock Kit](https://github.com/Hubs-Foundation/hubs-rock-kit) are special asset sources in Spoke. They are intended to reduce material usage and increase our ability to combine objects before exporting. In this guide we'll go over how to create a kit using Blender, the Spoke Kit Packager, and write the code to add it to Spoke.
 
-To start out, we'll need to grab [Blender](https://www.blender.org/) and install the [Hubs Blender Exporter](https://github.com/MozillaReality/hubs-blender-exporter). Follow the guide in the Hubs Blender Exporter repository to install the addon.
+To start out, we'll need to grab [Blender](https://www.blender.org/) and install the [Hubs Blender Exporter](https://github.com/Hubs-Foundation/hubs-blender-exporter). Follow the guide in the Hubs Blender Exporter repository to install the addon.
 
 Once you've got the addon set up, let's create a new Blender project. We won't be going into the details of how to model with Blender and we'll only be working with primitive shapes.
 

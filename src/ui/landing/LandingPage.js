@@ -101,12 +101,12 @@ export default class LandingPage extends Component {
             <HeroContainer>
               <HeroLeft>
                 <LogoContainer>
-                  <img src={spokeLogo} alt="Spoke by Mozilla" />
+                  <img src={spokeLogo} alt="Spoke by the Hubs Community" />
                   <h2>make your space</h2>
                 </LogoContainer>
                 <h3>
                   Create 3D social scenes for{" "}
-                  <a href="https://hubs.mozilla.com" rel="noopener noreferrer">
+                  <a href="https://hubsfoundation.org" rel="noopener noreferrer">
                     Hubs
                   </a>
                 </h3>

@@ -1,5 +1,5 @@
-const PRIVACY = "https://www.mozilla.org/en-US/privacy/hubs/";
-const TERMS = "https://www.mozilla.org/en-US/about/legal/terms/hubs/";
+const PRIVACY = "https://hubsfoundation.org/hubs-privacy-policy";
+const TERMS = "https://hubsfoundation.org/hubs-terms-of-use";
 
 module.exports = {
   PRIVACY,

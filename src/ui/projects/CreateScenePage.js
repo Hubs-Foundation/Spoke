@@ -315,7 +315,7 @@ function CreateScenePage({ match, api }) {
               <label htmlFor="allowRemixing">
                 Allow{" "}
                 <a
-                  href="https://github.com/mozilla/Spoke/blob/master/REMIXING.md"
+                  href="https://github.com/Hubs-Foundation/Spoke/blob/master/REMIXING.md"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
@@ -332,9 +332,9 @@ function CreateScenePage({ match, api }) {
             </FormField>
             <FormField inline>
               <label htmlFor="allowPromotion">
-                Allow {configs.isMoz() ? "Mozilla to " : ""}
+                Allow {configs.isMoz() ? "Hubs to " : ""}
                 <a
-                  href="https://github.com/mozilla/Spoke/blob/master/PROMOTION.md"
+                  href="https://github.com/Hubs-Foundation/Spoke/blob/master/PROMOTION.md"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
@@ -365,7 +365,7 @@ function CreateScenePage({ match, api }) {
       </SceneUploadFormContainer>
       <InfoBox>
         For more info on creating scenes in Blender, check out the{" "}
-        <a href="https://github.com/mozillareality/hubs-blender-exporter">Hubs Blender Exporter</a>
+        <a href="https://github.com/Hubs-Foundation/hubs-blender-exporter">Hubs Blender Exporter</a>
       </InfoBox>
     </>
   );

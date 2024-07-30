@@ -75,7 +75,7 @@ export default class PublishDialog extends Component {
           <label htmlFor="allowRemixing">
             Allow{" "}
             <a
-              href="https://github.com/mozilla/Spoke/blob/master/REMIXING.md"
+              href="https://github.com/Hubs-Foundation/Spoke/blob/master/REMIXING.md"
               target="_blank"
               rel="noopener noreferrer"
             >
@@ -92,9 +92,9 @@ export default class PublishDialog extends Component {
         </FormField>
         <FormField inline>
           <label htmlFor="allowPromotion">
-            Allow {configs.isMoz() ? "Mozilla to " : ""}
+            Allow {configs.isMoz() ? "Hubs Foundation to " : ""}
             <a
-              href="https://github.com/mozilla/Spoke/blob/master/PROMOTION.md"
+              href="https://github.com/Hubs-Foundation/Spoke/blob/master/PROMOTION.md"
               target="_blank"
               rel="noopener noreferrer"
             >

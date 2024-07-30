@@ -23,7 +23,7 @@
 
 ## Getting Started
 
-- `git clone https://github.com/mozilla/Spoke.git`
+- `git clone https://github.com/Hubs-Foundation/Spoke.git`
 - `cd Spoke`
 - `yarn install`
 - `yarn start`
@@ -408,6 +408,6 @@ export default class HubsSoundPackSource extends AssetManifestSource {
 
 ```
 
-Our [Hubs Sound Pack repository](https://github.com/MozillaReality/hubs-sound-pack) is a great example and starting point for creating your own asset manifest source.
+Our [Hubs Sound Pack repository](https://github.com/Hubs-Foundation/hubs-sound-pack) is a great example and starting point for creating your own asset manifest source.
 
-Note that the repository contains a [script for generating an asset manifest](https://github.com/MozillaReality/hubs-sound-pack/blob/master/scripts/manifest-generator.js) from the repository's folder structure. It's fairly specific for this project, but you could easily adopt it for your own project.
+Note that the repository contains a [script for generating an asset manifest](https://github.com/Hubs-Foundation/hubs-sound-pack/blob/master/scripts/manifest-generator.js) from the repository's folder structure. It's fairly specific for this project, but you could easily adopt it for your own project.
