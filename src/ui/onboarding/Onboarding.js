@@ -21,7 +21,7 @@ import { Link } from "react-router-dom";
 class CreateModelPopover extends Component {
   componentDidMount() {
     // TODO: Check if object was added
-    this.props.editor.setSource("sketchfab");
+    this.props.editor.setSource("poly");
     this.props.editor.addListener("sceneGraphChanged", this.onObjectAdded);
   }
 
