@@ -1,11 +1,11 @@
 import ModelMediaSource from "../ModelMediaSource";
 import { TransformPivot } from "../../../editor/controls/SpokeControls";
 
-export default class PolySource extends ModelMediaSource {
+export default class IcosaSource extends ModelMediaSource {
   constructor(api) {
     super(api);
-    this.id = "poly";
-    this.name = "Google Poly";
+    this.id = "icosa";
+    this.name = "Icosa Gallery";
     this.tags = [
       { label: "Featured", value: "" },
       { label: "Animals", value: "animals" },
@@ -19,8 +19,8 @@ export default class PolySource extends ModelMediaSource {
       { label: "Transport", value: "transport" }
     ];
 
-    this.searchLegalCopy = "Search by Google";
-    this.privacyPolicyUrl = "https://policies.google.com/privacy";
+    this.searchLegalCopy = "Search by Icosa";
+    this.privacyPolicyUrl = "https://icosa.gallery/privacy";
     this.transformPivot = TransformPivot.Bottom;
   }
 }
