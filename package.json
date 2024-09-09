@@ -15,7 +15,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/mozilla/Spoke.git"
+    "url": "https://github.com/Hubs-Foundation/Spoke.git"
   },
   "scripts": {
     "start": "cross-env NODE_ENV=development webpack-dev-server --mode development",
@@ -102,7 +102,7 @@
     "recharts": "^1.8.5",
     "styled-components": "4.4.0",
     "styled-icons": "^8.4.2",
-    "three": "https://github.com/MozillaReality/three.js.git#0f9b0024725f0dd917caa54c2934a4ba1fc12c4f",
+    "three": "https://github.com/Hubs-Foundation/three.js.git#0f9b0024725f0dd917caa54c2934a4ba1fc12c4f",
     "three-mesh-bvh": "^0.1.4",
     "troika-three-text": "^0.44.0",
     "url-toolkit": "^2.1.6",

@@ -77,7 +77,7 @@ class NavBar extends Component {
                 <Link to="/whats-new">What&apos;s New</Link>
               </li>
               <li>
-                <a href="https://github.com/mozilla/Spoke" rel="noopener noreferrer">
+                <a href="https://github.com/Hubs-Foundation/Spoke" rel="noopener noreferrer">
                   Source
                 </a>
               </li>
@@ -90,7 +90,7 @@ class NavBar extends Component {
               )}
               {configs.isMoz() && (
                 <li>
-                  <a href="https://hubs.mozilla.com" rel="noopener noreferrer">
+                  <a href="https://hubsfoundation.org" rel="noopener noreferrer">
                     Hubs
                   </a>
                 </li>

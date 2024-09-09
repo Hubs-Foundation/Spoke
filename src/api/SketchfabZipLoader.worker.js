@@ -1,4 +1,4 @@
-// Keep in sync with https://github.com/mozilla/hubs/blob/master/src/workers/sketchfab-zip.worker.js
+// Keep in sync with https://github.com/Hubs-Foundation/hubs/blob/master/src/workers/sketchfab-zip.worker.js
 import JSZip from "jszip";
 
 async function fetchZipAndGetBlobs(src) {

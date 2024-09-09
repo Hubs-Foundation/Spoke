@@ -13039,9 +13039,9 @@ three-mesh-bvh@^0.1.4:
   resolved "https://registry.yarnpkg.com/three-mesh-bvh/-/three-mesh-bvh-0.1.4.tgz#c392bcb9318224e0422aa939e855ca0ee45a831a"
   integrity sha512-RW16Adn4L7Z7aOWlkTPDAgIYyQZnI0izTERPxYF7cLb/AmExdm2fk6cXQCGzj5RkI8872KzlAKxZKMv/3LT/Lw==
 
-"three@https://github.com/MozillaReality/three.js.git#0f9b0024725f0dd917caa54c2934a4ba1fc12c4f":
+"three@https://github.com/Hubs-Foundation/three.js.git#0f9b0024725f0dd917caa54c2934a4ba1fc12c4f":
   version "0.105.1"
-  resolved "https://github.com/MozillaReality/three.js.git#0f9b0024725f0dd917caa54c2934a4ba1fc12c4f"
+  resolved "https://github.com/Hubs-Foundation/three.js.git#0f9b0024725f0dd917caa54c2934a4ba1fc12c4f"
 
 throttle-debounce@^2.1.0:
   version "2.1.0"

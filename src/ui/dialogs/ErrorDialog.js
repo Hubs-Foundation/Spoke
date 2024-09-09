@@ -37,7 +37,7 @@ export default class ErrorDialog extends Component {
       eventId: this.state.eventId,
       user: {
         name: "Anonymous Spoke User",
-        email: "anonymous.spoke.user@mozilla.com"
+        email: "anonymous.spoke.user@example.com"
       }
     });
   };

@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import { Link } from "react-router-dom";
-import mozillaLogo from "../../assets/mozilla-logo.png";
+import hubsLogo from "../../assets/hubs-logo.png";
 import styled from "styled-components";
 import configs from "../../configs";
 import { TERMS, PRIVACY } from "../../constants";
@@ -68,7 +68,7 @@ export default class Footer extends Component {
               <Link to="/whats-new">What&apos;s New</Link>
             </NavListItem>
             <NavListItem mobileOnly>
-              <a href="https://github.com/mozilla/Spoke" rel="noopener noreferrer">
+              <a href="https://github.com/Hubs-Foundation/Spoke" rel="noopener noreferrer">
                 Source
               </a>
             </NavListItem>
@@ -81,7 +81,7 @@ export default class Footer extends Component {
             )}
             {configs.isMoz() && (
               <NavListItem mobileOnly>
-                <a href="https://hubs.mozilla.com" rel="noopener noreferrer">
+                <a href="https://hubsfoundation.org" rel="noopener noreferrer">
                   Hubs
                 </a>
               </NavListItem>
@@ -89,21 +89,21 @@ export default class Footer extends Component {
             {configs.isMoz() && (
               <NavListItem>
                 <a href={TERMS} rel="noopener noreferrer">
-                  Terms of Use
+                  Terms of Use {"(TBD)"}
                 </a>
               </NavListItem>
             )}
             {configs.isMoz() && (
               <NavListItem>
                 <a href={PRIVACY} rel="noopener noreferrer">
-                  Privacy Notice
+                  Privacy Notice {"(TBD)"}
                 </a>
               </NavListItem>
             )}
             {configs.isMoz() && (
               <NavListItem>
-                <a href="https://mozilla.com" rel="noopener noreferrer">
-                  <img alt="Mozilla" src={mozillaLogo} />
+                <a href="https://hubsfoundation.org" rel="noopener noreferrer">
+                  <img alt="Hubs" src={hubsLogo} />
                 </a>
               </NavListItem>
             )}

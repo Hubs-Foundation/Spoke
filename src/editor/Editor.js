@@ -432,12 +432,12 @@ export default class Editor extends EventEmitter {
     }
 
     // Increment this version when you are making a breaking change.
-    // Document your changes here: https://github.com/mozilla/hubs/wiki/MOZ_hubs_components-Changelog
+    // Document your changes here: https://github.com/Hubs-Foundation/hubs/wiki/MOZ_hubs_components-Changelog
     json.extensions.MOZ_hubs_components = {
       version: 4
     };
 
-    json.asset.generator = `Mozilla Spoke ${process.env.BUILD_VERSION}`;
+    json.asset.generator = `Spoke ${process.env.BUILD_VERSION}`;
 
     try {
       const glbBlob = await exporter.exportGLBBlob(chunks);
