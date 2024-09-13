@@ -69,8 +69,13 @@ export const scaledThumbnailUrlFor = (url, width, height) => {
   if (configs.RETICULUM_SERVER.includes("hubs.local") && url.includes("hubs.local")) {
     return url;
   }
-
-  return `https://${configs.THUMBNAIL_SERVER}/thumbnail/${farsparkEncodeUrl(url)}?w=${width}&h=${height}`;
+  // Temporary workaround for lack of farspark thumbnail server
+  const disableThumbs = true;
+  if (disableThumbs) {
+    return url;
+  } else {
+    return `https://${configs.THUMBNAIL_SERVER}/thumbnail/${farsparkEncodeUrl(url)}?w=${width}&h=${height}`;
+  }
 };
 
 const CommonKnownContentTypes = {
