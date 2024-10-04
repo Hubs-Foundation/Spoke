@@ -399,7 +399,7 @@ class EditorContainer extends Component {
           },
           {
             name: "Submit Feedback",
-            action: () => window.open("https://forms.gle/2PAFXKwW1SXdfSK17")
+            action: () => window.open("https://discord.gg/wHmY4nd")
           },
           {
             name: "Report an Issue",
@@ -436,7 +436,7 @@ class EditorContainer extends Component {
       },
       {
         name: "Submit Feedback",
-        action: () => window.open("https://forms.gle/2PAFXKwW1SXdfSK17")
+        action: () => window.open("https://discord.gg/wHmY4nd")
       }
     ];
   };
