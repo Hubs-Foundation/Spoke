@@ -95,12 +95,12 @@ export default class AuthForm extends Component {
         <LegalText>
           By proceeding, you agree to the{" "}
           <a rel="noopener noreferrer" target="_blank" href={TERMS}>
-            terms of use
+            terms of use (TBD)
           </a>{" "}
           and{" "}
           <a rel="noopener noreferrer" target="_blank" href={PRIVACY}>
-            privacy notice
-          </a>
+            privacy notice (TBD)
+          </a>{" "}
           .
         </LegalText>
         <button type="submit">Send Magic Link</button>

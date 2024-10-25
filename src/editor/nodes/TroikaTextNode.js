@@ -1,5 +1,5 @@
 // This is a port of https://github.com/protectwise/troika/tree/master/packages/troika-three-text
-// that has been made functional and restyled for Mozilla Hubs and Spoke (hubs.mozilla.com)
+// that has been made functional and restyled for Hubs and Spoke (https://hubsfoundation.org)
 // by @jamesckane at Paradowski Creative (paradowski.com)
 
 import { Color, Object3D, Vector2 } from "three";

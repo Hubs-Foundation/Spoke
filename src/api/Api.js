@@ -14,7 +14,7 @@ import { matchesFileTypes, AudioFileTypes } from "../ui/assets/fileTypes";
 import { RethrownError } from "../editor/utils/errors";
 
 // Media related functions should be kept up to date with Hubs media-utils:
-// https://github.com/mozilla/hubs/blob/master/src/utils/media-utils.js
+// https://github.com/Hubs-Foundation/hubs/blob/master/src/utils/media-utils.js
 
 const resolveUrlCache = new Map();
 const resolveMediaCache = new Map();
@@ -1020,7 +1020,7 @@ export default class Project extends EventEmitter {
   }
 
   async upload(blob, onUploadProgress, signal) {
-    // Use direct upload API, see: https://github.com/mozilla/reticulum/pull/319
+    // Use direct upload API, see: https://github.com/Hubs-Foundation/reticulum/pull/319
     const { phx_host: uploadHost } = await (await this.fetch(`https://${RETICULUM_SERVER}/api/v1/meta`)).json();
     const uploadPort = new URL(`https://${RETICULUM_SERVER}`).port;
 
