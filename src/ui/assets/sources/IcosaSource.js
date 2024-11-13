@@ -20,7 +20,7 @@ export default class IcosaSource extends ModelMediaSource {
     ];
 
     this.searchLegalCopy = "Search by Icosa";
-    this.privacyPolicyUrl = "https://icosa.gallery/privacy";
+    this.privacyPolicyUrl = "https://icosa.gallery/privacy-policy";
     this.transformPivot = TransformPivot.Bottom;
   }
 }
