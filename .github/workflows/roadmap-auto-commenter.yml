@@ -1,0 +1,19 @@
+# When modifying this file, make sure to pass on the update to all repositories.  A tool like https://github.com/gruntwork-io/git-xargs may be useful for this.
+
+# WARNING: This workflow is sometimes triggered by pull_request_target and so will always run automatically on pull requests made by anyone.  Do not do any sort of processing of user input, such as checking out code.
+
+name: Roadmap Auto Commenter
+on:
+  issues:
+    types:
+      - opened
+  pull_request_target:
+    types:
+      - opened
+
+jobs:
+  call_reusable_roadmap_auto_commenter:
+    permissions:
+      issues: write
+      pull-requests: write
+    uses: Hubs-Foundation/.github/.github/workflows/reusable-roadmap-auto-commenter.yml@main
