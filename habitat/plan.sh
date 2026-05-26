@@ -1,11 +1,11 @@
 pkg_name=spoke
-pkg_origin=mozillareality
-pkg_maintainer="Mozilla Mixed Reality <mixreality@mozilla.com>"
+pkg_origin=hubsfoundation
+pkg_maintainer="Hubs Foundation <info@hubsfoundation.org>"
 
 pkg_version="1.0.0"
 pkg_license=('MPLv2')
 pkg_description="Beaver-powered 3D scene composer."
-pkg_upstream_url="https://hubs.mozilla.com/spoke"
+pkg_upstream_url="https://github.com/Hubs-Foundation/Spoke"
 pkg_build_deps=(
     core/coreutils
     core/bash

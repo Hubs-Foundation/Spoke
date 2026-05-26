@@ -33,7 +33,7 @@ touch /hab/svc/$pkg_name/var/deploying
 
 rm -rf results
 mkdir -p results
-sudo /usr/bin/hab-docker-studio -k mozillareality run build
+sudo /usr/bin/hab-docker-studio -k hubsfoundation run build
 hab svc unload $PKG
 sudo /usr/bin/hab-pkg-install results/*.hart
 hab svc load $PKG

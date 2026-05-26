@@ -61,7 +61,7 @@
   },
   "storybook-deployer": {
     "gitUsername": "SpokeBot",
-    "gitEmail": "hubs@mozilla.com",
+    "gitEmail": "info@hubsfoundation.org",
     "commitMessage": "Deploy Storybook [skip ci]"
   },
   "dependencies": {
