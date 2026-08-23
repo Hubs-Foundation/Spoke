@@ -798,7 +798,7 @@ If you're running Spoke, you'll want to stop it and add a `.env` file to the roo
 
 ```
 HUBS_SERVER="localhost:8080"
-RETICULUM_SERVER="dev.reticulum.io"
+RETICULUM_SERVER="dev.reticulum.io.invalid"
 ```
 
 That will set Spoke to properly publish to the dev server and open the scene in your locally running Hubs client.

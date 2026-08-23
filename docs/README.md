@@ -325,7 +325,7 @@ export default class ArchitectureKitSource extends KitSource {
   constructor(api) {
     super(
       api,
-      "https://assets-prod.reticulum.io/kits/architecture/ArchKit-64274f78e194a993850e208cbaa2fe7c5a35a955.gltf"
+      "https://assets-prod.reticulum.io.invalid/kits/architecture/ArchKit-64274f78e194a993850e208cbaa2fe7c5a35a955.gltf"
     );
     this.id = "architecture-kit";
     this.name = "Architecture Kit";
@@ -402,7 +402,7 @@ import AssetManifestSource from "../AssetManifestSource";
 
 export default class HubsSoundPackSource extends AssetManifestSource {
   constructor(editor) {
-    super(editor, "Hubs Sound Pack", "https://assets-prod.reticulum.io/hubs-sound-pack/asset-manifest.json");
+    super(editor, "Hubs Sound Pack", "https://assets-prod.reticulum.io.invalid/hubs-sound-pack/asset-manifest.json");
   }
 }
 
