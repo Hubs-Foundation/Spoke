@@ -29,7 +29,7 @@ export default function CreateProjectPage({ history, location }) {
 
   const [params, setParams] = useState({
     source: "scene_listings",
-    filter: queryParams.get("filter") || "featured-remixable",
+    filter: queryParams.get("filter") || "featured",
     q: queryParams.get("q") || ""
   });
 
@@ -66,7 +66,7 @@ export default function CreateProjectPage({ history, location }) {
   const onSetFeaturedRemixable = useCallback(() => {
     updateParams({
       ...params,
-      filter: "featured-remixable",
+      filter: "featured",
       q: ""
     });
   }, [updateParams, params]);
@@ -112,7 +112,7 @@ export default function CreateProjectPage({ history, location }) {
             <ProjectGridContainer>
               <ProjectGridHeader>
                 <ProjectGridHeaderRow>
-                  <Filter onClick={onSetFeaturedRemixable} active={params.filter === "featured-remixable"}>
+                  <Filter onClick={onSetFeaturedRemixable} active={params.filter === "featured"}>
                     Featured
                   </Filter>
                   <Filter onClick={onSetAll} active={params.filter === "remixable"}>
